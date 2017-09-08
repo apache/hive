@@ -122,7 +122,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1korc
-                  Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 183632 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -134,19 +134,19 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumns: [7, 12, 11]
                         selectExpressions: StringGroupColConcatStringScalar(col 11, val       )(children: StringScalarConcatStringGroupCol(val       , col 7) -> 11:String_Family) -> 12:String_Family, StringGroupColConcatStringScalar(col 13, val |)(children: StringScalarConcatStringGroupCol(val |, col 11)(children: StringRTrim(col 13)(children: StringGroupColConcatStringScalar(col 11, val       )(children: StringScalarConcatStringGroupCol(val       , col 7) -> 11:String_Family) -> 13:String_Family) -> 11:String) -> 13:String_Family) -> 11:String_Family
-                    Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 183632 Basic stats: COMPLETE Column stats: NONE
                     Limit
                       Number of rows: 20
                       Limit Vectorization:
                           className: VectorLimitOperator
                           native: true
-                      Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -340,7 +340,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vectortab2korc
-                  Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 106456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
@@ -352,7 +352,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumns: [19]
                         selectExpressions: StringGroupConcatColCol(col 17, col 18)(children: StringGroupColConcatStringScalar(col 18, val -)(children: StringScalarConcatStringGroupCol(val Quarter , col 17)(children: CastLongToString(col 13)(children: CastDoubleToLong(col 15)(children: DoubleColAddDoubleScalar(col 16, val 1.0)(children: DoubleColDivideDoubleScalar(col 15, val 3.0)(children: CastLongToDouble(col 14)(children: LongColSubtractLongScalar(col 13, val 1)(children: VectorUDFMonthDate(col 12, field MONTH) -> 13:long) -> 14:long) -> 15:double) -> 16:double) -> 15:double) -> 13:long) -> 17:String) -> 18:String_Family) -> 17:String_Family, CastLongToString(col 13)(children: VectorUDFYearDate(col 12, field YEAR) -> 13:long) -> 18:String) -> 19:String_Family
-                    Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 106456 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
@@ -365,7 +365,7 @@ STAGE PLANS:
                       keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 106456 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
@@ -374,7 +374,7 @@ STAGE PLANS:
                             className: VectorReduceSinkStringOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2000 Data size: 106456 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -408,7 +408,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 53228 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
@@ -416,7 +416,7 @@ STAGE PLANS:
                       className: VectorReduceSinkObjectHashOperator
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                  Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 53228 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized, llap
@@ -435,19 +435,19 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0]
-                Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 53228 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 50
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
-                  Statistics: Num rows: 50 Data size: 22950 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 50 Data size: 2650 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 50 Data size: 22950 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 50 Data size: 2650 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

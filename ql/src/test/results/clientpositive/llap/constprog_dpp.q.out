@@ -52,34 +52,34 @@ Stage-0
     Stage-1
       Reducer 2 llap
       File Output Operator [FS_17]
-        Merge Join Operator [MERGEJOIN_21] (rows=1 width=0)
+        Merge Join Operator [MERGEJOIN_21] (rows=1 width=4)
           Conds:RS_13._col0=RS_14._col0(Left Outer),Output:["_col0"]
         <-Map 1 [SIMPLE_EDGE] llap
           SHUFFLE [RS_13]
             PartitionCols:_col0
-            Select Operator [SEL_1] (rows=1 width=0)
+            Select Operator [SEL_1] (rows=1 width=4)
               Output:["_col0"]
-              TableScan [TS_0] (rows=1 width=0)
-                default@tb1,a,Tbl:PARTIAL,Col:NONE,Output:["id"]
+              TableScan [TS_0] (rows=1 width=4)
+                default@tb1,a,Tbl:COMPLETE,Col:NONE,Output:["id"]
         <-Reducer 5 [SIMPLE_EDGE] llap
           SHUFFLE [RS_14]
             PartitionCols:_col0
-            Limit [LIM_11] (rows=1 width=0)
+            Limit [LIM_11] (rows=1 width=8)
               Number of rows:1
-              Select Operator [SEL_10] (rows=1 width=0)
+              Select Operator [SEL_10] (rows=1 width=8)
                 Output:["_col0"]
               <-Union 4 [CUSTOM_SIMPLE_EDGE]
                 <-Map 3 [CONTAINS] llap
                   Reduce Output Operator [RS_9]
-                    Limit [LIM_8] (rows=1 width=0)
+                    Limit [LIM_8] (rows=1 width=4)
                       Number of rows:1
-                      Select Operator [SEL_3] (rows=1 width=0)
+                      Select Operator [SEL_3] (rows=1 width=4)
                         Output:["_col0"]
-                        TableScan [TS_2] (rows=1 width=0)
+                        TableScan [TS_2] (rows=1 width=4)
                           Output:["id"]
                 <-Map 6 [CONTAINS] llap
                   Reduce Output Operator [RS_9]
-                    Limit [LIM_8] (rows=1 width=0)
+                    Limit [LIM_8] (rows=1 width=4)
                       Number of rows:1
                       Select Operator [SEL_5] (rows=1 width=0)
                         Output:["_col0"]

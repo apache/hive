@@ -13,30 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.registry;
+package org.apache.hadoop.hive.registry;
 
 /**
  * Callback listener for instance state change events
  */
-public interface ServiceInstanceStateChangeListener {
+public interface ServiceInstanceStateChangeListener<InstanceType extends ServiceInstance> {
   /**
    * Called when new {@link ServiceInstance} is created.
    *
    * @param serviceInstance - created service instance
    */
-  void onCreate(ServiceInstance serviceInstance);
+  void onCreate(InstanceType serviceInstance);
 
   /**
    * Called when an existing {@link ServiceInstance} is updated.
    *
    * @param serviceInstance - updated service instance
    */
-  void onUpdate(ServiceInstance serviceInstance);
+  void onUpdate(InstanceType serviceInstance);
 
   /**
    * Called when an existing {@link ServiceInstance} is removed.
    *
    * @param serviceInstance - removed service instance
    */
-  void onRemove(ServiceInstance serviceInstance);
+  void onRemove(InstanceType serviceInstance);
 }

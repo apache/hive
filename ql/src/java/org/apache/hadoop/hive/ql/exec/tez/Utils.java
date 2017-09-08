@@ -25,7 +25,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
@@ -43,12 +43,12 @@ public class Utils {
       LlapRegistryService serviceRegistry = LlapRegistryService.getClient(conf);
       LOG.info("Using LLAP instance " + serviceRegistry.getApplicationId());
 
-      Collection<ServiceInstance> serviceInstances =
+      Collection<LlapServiceInstance> serviceInstances =
           serviceRegistry.getInstances().getAllInstancesOrdered(true);
       Preconditions.checkArgument(!serviceInstances.isEmpty(),
           "No running LLAP daemons! Please check LLAP service status and zookeeper configuration");
       ArrayList<String> locations = new ArrayList<>(serviceInstances.size());
-      for (ServiceInstance serviceInstance : serviceInstances) {
+      for (LlapServiceInstance serviceInstance : serviceInstances) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Adding " + serviceInstance.getWorkerIdentity() + " with hostname=" +
               serviceInstance.getHost() + " to list for split locations");

@@ -478,7 +478,7 @@ public class GenSparkUtils {
     }
 
     desc.setPath(new Path(tmpPath, sourceId));
-    desc.setTargetWork(targetWork.getName());
+    desc.setTargetMapWork(targetWork);
 
     // store table descriptor in map-targetWork
     if (!targetWork.getEventSourceTableDescMap().containsKey(sourceId)) {

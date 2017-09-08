@@ -141,6 +141,7 @@ public class TestReplicationScenarios {
     hconf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hconf.set(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL.varname,
               "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
+    hconf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, true);
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
@@ -548,6 +549,81 @@ public class TestReplicationScenarios {
     verifyIfPartitionNotExist(dbName + "_dupe", "ptned", new ArrayList<>(Arrays.asList("2")), metaStoreClientMirror);
     verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", empty, driverMirror);
     verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", empty, driverMirror);
+  }
+
+  @Test
+  public void testBootstrapWithConcurrentRename() throws IOException {
+    String name = testName.getMethodName();
+    String dbName = createDB(name, driver);
+    String replDbName = dbName + "_dupe";
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+
+    String[] ptn_data = new String[]{ "eleven" , "twelve" };
+    String[] empty = new String[]{};
+    String ptn_locn = new Path(TEST_PATH, name + "_ptn").toUri().getPath();
+
+    createTestDataFile(ptn_locn, ptn_data);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
+
+    BehaviourInjection<Table,Table> ptnedTableRenamer = new BehaviourInjection<Table,Table>(){
+      boolean success = false;
+
+      @Nullable
+      @Override
+      public Table apply(@Nullable Table table) {
+        if (injectionPathCalled) {
+          nonInjectedPathCalled = true;
+        } else {
+          // getTable is invoked after fetching the table names
+          injectionPathCalled = true;
+          Thread t = new Thread(new Runnable() {
+            public void run() {
+              try {
+                LOG.info("Entered new thread");
+                Driver driver2 = new Driver(hconf);
+                SessionState.start(new CliSessionState(hconf));
+                CommandProcessorResponse ret = driver2.run("ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=10)");
+                success = (ret.getException() == null);
+                assertFalse(success);
+                ret = driver2.run("ALTER TABLE " + dbName + ".ptned RENAME TO " + dbName + ".ptned_renamed");
+                success = (ret.getException() == null);
+                assertFalse(success);
+                LOG.info("Exit new thread success - {}", success);
+              } catch (CommandNeedRetryException e) {
+                LOG.info("Hit Exception {} from new thread", e.getMessage());
+                throw new RuntimeException(e);
+              }
+            }
+          });
+          t.start();
+          LOG.info("Created new thread {}", t.getName());
+          try {
+            t.join();
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+        return table;
+      }
+    };
+    InjectableBehaviourObjectStore.setGetTableBehaviour(ptnedTableRenamer);
+
+    // The intermediate rename would've failed as bootstrap dump in progress
+    bootstrapLoadAndVerify(dbName, replDbName);
+
+    ptnedTableRenamer.assertInjectionsPerformed(true,true);
+    InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+
+    // The ptned table should be there in both source and target as rename was not successful
+    verifyRun("SELECT a from " + dbName + ".ptned WHERE (b=1) ORDER BY a", ptn_data, driver);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE (b=1) ORDER BY a", ptn_data, driverMirror);
+
+    // Verify if Rename after bootstrap is successful
+    run("ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=10)", driver);
+    verifyIfPartitionNotExist(dbName, "ptned", new ArrayList<>(Arrays.asList("1")), metaStoreClient);
+    run("ALTER TABLE " + dbName + ".ptned RENAME TO " + dbName + ".ptned_renamed", driver);
+    verifyIfTableNotExist(dbName, "ptned", metaStoreClient);
+    verifyRun("SELECT a from " + dbName + ".ptned_renamed WHERE (b=10) ORDER BY a", ptn_data, driver);
   }
 
   @Test
@@ -2775,6 +2851,75 @@ public class TestReplicationScenarios {
     } catch (TException te) {
       assertNull(te);
     }
+  }
+
+  @Test
+  public void testRemoveStats() throws IOException {
+    String name = testName.getMethodName();
+    String dbName = createDB(name, driver);
+
+    String[] unptn_data = new String[]{ "1" , "2" };
+    String[] ptn_data_1 = new String[]{ "5", "7", "8"};
+    String[] ptn_data_2 = new String[]{ "3", "2", "9"};
+
+    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptn_locn, unptn_data);
+    createTestDataFile(ptn_locn_1, ptn_data_1);
+    createTestDataFile(ptn_locn_2, ptn_data_2);
+
+    run("CREATE TABLE " + dbName + ".unptned(a int) STORED AS TEXTFILE", driver);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a int) partitioned by (b int) STORED AS TEXTFILE", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
+    run("ANALYZE TABLE " + dbName + ".unptned COMPUTE STATISTICS FOR COLUMNS", driver);
+    run("ANALYZE TABLE " + dbName + ".unptned COMPUTE STATISTICS", driver);
+    run("ANALYZE TABLE " + dbName + ".ptned partition(b) COMPUTE STATISTICS FOR COLUMNS", driver);
+    run("ANALYZE TABLE " + dbName + ".ptned partition(b) COMPUTE STATISTICS", driver);
+
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
+    verifySetup("SELECT count(*) from " + dbName + ".unptned", new String[]{"2"}, driver);
+    verifySetup("SELECT count(*) from " + dbName + ".ptned", new String[]{"3"}, driver);
+    verifySetup("SELECT max(a) from " + dbName + ".unptned", new String[]{"2"}, driver);
+    verifySetup("SELECT max(a) from " + dbName + ".ptned where b=1", new String[]{"8"}, driver);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0,0,driver);
+    String replDumpId = getResult(0,1,true,driver);
+    LOG.info("Dumped to {} with id {}",replDumpLocn,replDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
+
+    verifyRun("SELECT count(*) from " + dbName + "_dupe.unptned", new String[]{"2"}, driverMirror);
+    verifyRun("SELECT count(*) from " + dbName + "_dupe.ptned", new String[]{"3"}, driverMirror);
+    verifyRun("SELECT max(a) from " + dbName + "_dupe.unptned", new String[]{"2"}, driverMirror);
+    verifyRun("SELECT max(a) from " + dbName + "_dupe.ptned where b=1", new String[]{"8"}, driverMirror);
+
+    run("CREATE TABLE " + dbName + ".unptned2(a int) STORED AS TEXTFILE", driver);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned2", driver);
+    run("CREATE TABLE " + dbName + ".ptned2(a int) partitioned by (b int) STORED AS TEXTFILE", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b=1)", driver);
+    run("ANALYZE TABLE " + dbName + ".unptned2 COMPUTE STATISTICS FOR COLUMNS", driver);
+    run("ANALYZE TABLE " + dbName + ".unptned2 COMPUTE STATISTICS", driver);
+    run("ANALYZE TABLE " + dbName + ".ptned2 partition(b) COMPUTE STATISTICS FOR COLUMNS", driver);
+    run("ANALYZE TABLE " + dbName + ".ptned2 partition(b) COMPUTE STATISTICS", driver);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String incrementalDumpLocn = getResult(0,0,driver);
+    String incrementalDumpId = getResult(0,1,true,driver);
+    LOG.info("Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'", driverMirror);
+
+    verifyRun("SELECT count(*) from " + dbName + "_dupe.unptned2", new String[]{"2"}, driverMirror);
+    verifyRun("SELECT count(*) from " + dbName + "_dupe.ptned2", new String[]{"3"}, driverMirror);
+    verifyRun("SELECT max(a) from " + dbName + "_dupe.unptned2", new String[]{"2"}, driverMirror);
+    verifyRun("SELECT max(a) from " + dbName + "_dupe.ptned2 where b=1", new String[]{"8"}, driverMirror);
   }
 
   private static String createDB(String name, Driver myDriver) {

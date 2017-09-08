@@ -263,7 +263,7 @@ public class HiveStatement implements java.sql.Statement {
     TGetOperationStatusResp status = waitForOperationToComplete();
 
     // The query should be completed by now
-    if (!status.isHasResultSet()) {
+    if (!status.isHasResultSet() && !stmtHandle.isHasResultSet()) {
       return false;
     }
     resultSet =  new HiveQueryResultSet.Builder(this).setClient(client).setSessionHandle(sessHandle)

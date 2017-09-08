@@ -63,8 +63,8 @@ public class OperationLog {
     // If in test mod create a test log file which will contain only logs which are supposed to
     // be written to the qtest output
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
-      isRemoveLogs = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REMOVE_LOGS);
-      if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_SHORT_LOGS)) {
+      isRemoveLogs = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_TESTING_REMOVE_LOGS);
+      if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_TESTING_SHORT_LOGS)) {
         testLogFile = new LogFile(new File(file.getAbsolutePath() + ".test"));
         isShortLogs = true;
       } else {

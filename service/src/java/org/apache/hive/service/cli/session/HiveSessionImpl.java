@@ -111,9 +111,8 @@ public class HiveSessionImpl implements HiveSession {
   // TODO: the control flow for this needs to be defined. Hive is supposed to be thread-local.
   private Hive sessionHive;
 
-  private volatile long lastAccessTime;
-  private volatile long lastIdleTime;
-  private volatile int activeCalls = 0;
+  private volatile long lastAccessTime = System.currentTimeMillis();
+  private volatile boolean lockedByUser;
   private final Semaphore operationLock;
 
 
@@ -184,7 +183,6 @@ public class HiveSessionImpl implements HiveSession {
       configureSession(sessionConfMap);
     }
     lastAccessTime = System.currentTimeMillis();
-    lastIdleTime = lastAccessTime;
   }
 
 /**
@@ -384,12 +382,11 @@ public class HiveSessionImpl implements HiveSession {
     sessionState.setIsUsingThriftJDBCBinarySerDe(updateIsUsingThriftJDBCBinarySerDe());
     if (userAccess) {
       lastAccessTime = System.currentTimeMillis();
+      lockedByUser = true;
     }
     // set the thread name with the logging prefix.
     sessionState.updateThreadName();
     Hive.set(sessionHive);
-    activeCalls++;
-    lastIdleTime = 0;
   }
 
   /**
@@ -424,12 +421,7 @@ public class HiveSessionImpl implements HiveSession {
     }
     if (userAccess) {
       lastAccessTime = System.currentTimeMillis();
-    }
-    activeCalls--;
-    // lastIdleTime is only set by the last one
-    // who calls release with empty opHandleSet.
-    if (activeCalls == 0 && opHandleSet.isEmpty()) {
-      lastIdleTime = System.currentTimeMillis();
+      lockedByUser = false;
     }
   }
 
@@ -778,7 +770,7 @@ public class HiveSessionImpl implements HiveSession {
 
   private void cleanupSessionLogDir() {
     // In case of test, if we might not want to remove the log directory
-    if (isOperationLogEnabled && sessionConf.getBoolVar(ConfVars.HIVE_IN_TEST_REMOVE_LOGS)) {
+    if (isOperationLogEnabled && sessionConf.getBoolVar(ConfVars.HIVE_TESTING_REMOVE_LOGS)) {
       try {
         FileUtils.forceDelete(sessionLogDir);
         LOG.info("Operation log session directory is deleted: "
@@ -830,16 +822,18 @@ public class HiveSessionImpl implements HiveSession {
 
   @Override
   public long getNoOperationTime() {
-    return lastIdleTime > 0 ? System.currentTimeMillis() - lastIdleTime : 0;
+    boolean noMoreOpHandle = false;
+    synchronized (opHandleSet) {
+      noMoreOpHandle = opHandleSet.isEmpty();
+    }
+    return noMoreOpHandle && !lockedByUser ? System.currentTimeMillis() - lastAccessTime : 0;
   }
 
   private void closeTimedOutOperations(List<Operation> operations) {
     acquire(false, false);
     try {
       for (Operation operation : operations) {
-        synchronized (opHandleSet) {
-          opHandleSet.remove(operation.getHandle());
-        }
+        removeOpHandle(operation.getHandle());
         try {
           operation.close();
         } catch (Exception e) {

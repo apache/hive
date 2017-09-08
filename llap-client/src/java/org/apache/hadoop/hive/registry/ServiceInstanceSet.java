@@ -11,7 +11,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.hadoop.hive.llap.registry;
+package org.apache.hadoop.hive.registry;
 
 import java.util.Collection;
 import java.util.Set;
@@ -21,7 +21,7 @@ import java.util.Set;
  * one invocation is the same as the instance returned by another invocation. e.g. the ZK registry
  * returns a new ServiceInstance object each time a getInstance call is made.
  */
-public interface ServiceInstanceSet {
+public interface ServiceInstanceSet<InstanceType extends ServiceInstance> {
 
   /**
    * Get an instance mapping which map worker identity to each instance.
@@ -31,16 +31,7 @@ public interface ServiceInstanceSet {
    * 
    * @return
    */
-  Collection<ServiceInstance> getAll();
-
-  /**
-   * Gets a list containing all the instances. This list has the same iteration order across
-   * different processes, assuming the list of registry entries is the same.
-   * @param consistentIndexes if true, also try to maintain the same exact index for each node
-   *                          across calls, by inserting inactive instances to replace the
-   *                          removed ones.
-   */
-  Collection<ServiceInstance> getAllInstancesOrdered(boolean consistentIndexes);
+  Collection<InstanceType> getAll();
 
   /**
    * Get an instance by worker identity.
@@ -48,7 +39,7 @@ public interface ServiceInstanceSet {
    * @param name
    * @return
    */
-  ServiceInstance getInstance(String name);
+  InstanceType getInstance(String name);
 
   /**
    * Get a list of service instances for a given host.
@@ -58,7 +49,7 @@ public interface ServiceInstanceSet {
    * @param host
    * @return
    */
-  Set<ServiceInstance> getByHost(String host);
+  Set<InstanceType> getByHost(String host);
 
   /**
    * Get number of instances in the currently availabe.
@@ -66,4 +57,5 @@ public interface ServiceInstanceSet {
    * @return - number of instances
    */
   int size();
+
 }

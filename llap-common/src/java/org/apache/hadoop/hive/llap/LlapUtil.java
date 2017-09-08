@@ -20,18 +20,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto.Builder;
+import org.apache.hadoop.ipc.ProtobufRpcEngine;
+import org.apache.hadoop.ipc.RPC;
+import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authorize.PolicyProvider;
+import org.apache.hadoop.security.token.SecretManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.protobuf.BlockingService;
 
 public class LlapUtil {
   private static final Logger LOG = LoggerFactory.getLogger(LlapUtil.class);
@@ -230,5 +238,65 @@ public class LlapUtil {
     int exp = (int) (Math.log(bytes) / Math.log(unit));
     String suffix = "KMGTPE".charAt(exp-1) + "";
     return String.format("%.2f%sB", bytes / Math.pow(unit, exp), suffix);
+  }
+
+  public static RPC.Server createRpcServer(Class<?> pbProtocol, InetSocketAddress addr,
+      Configuration conf, int numHandlers, BlockingService blockingService,
+      SecretManager<?> secretManager, PolicyProvider provider, ConfVars... aclVars)
+          throws IOException {
+    Configuration serverConf = conf;
+    boolean isSecurityEnabled = conf.getBoolean(
+        CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION, false);
+    if (isSecurityEnabled) {
+      // Enforce Hive defaults.
+      for (ConfVars acl : aclVars) {
+        if (conf.get(acl.varname) != null) continue; // Some value is set.
+        if (serverConf == conf) {
+          serverConf = new Configuration(conf);
+        }
+        serverConf.set(acl.varname, HiveConf.getVar(serverConf, acl)); // Set the default.
+      }
+    }
+    RPC.setProtocolEngine(serverConf, pbProtocol, ProtobufRpcEngine.class);
+    RPC.Builder builder = new RPC.Builder(serverConf)
+        .setProtocol(pbProtocol)
+        .setInstance(blockingService)
+        .setBindAddress(addr.getHostName())
+        .setPort(addr.getPort())
+        .setNumHandlers(numHandlers);
+    if (secretManager != null) {
+      builder = builder.setSecretManager(secretManager);
+    }
+    RPC.Server server = builder.build();
+    if (isSecurityEnabled) {
+      server.refreshServiceAcl(serverConf, provider);
+    }
+    return server;
+  }
+
+  public static RPC.Server startProtocolServer(int srvPort, int numHandlers,
+      AtomicReference<InetSocketAddress> bindAddress, Configuration conf,
+      BlockingService impl, Class<?> protocolClass, SecretManager<?> secretManager,
+      PolicyProvider provider, ConfVars... aclVars) {
+    InetSocketAddress addr = new InetSocketAddress(srvPort);
+    RPC.Server server;
+    try {
+      server = createRpcServer(protocolClass, addr, conf,
+          numHandlers, impl, secretManager, provider, aclVars);
+      server.start();
+    } catch (IOException e) {
+      LOG.error("Failed to run RPC Server on port: " + srvPort, e);
+      throw new RuntimeException(e);
+    }
+
+    InetSocketAddress serverBindAddress = NetUtils.getConnectAddress(server);
+    InetSocketAddress bindAddressVal = NetUtils.createSocketAddrForHost(
+        serverBindAddress.getAddress().getCanonicalHostName(),
+        serverBindAddress.getPort());
+    if (bindAddress != null) {
+      bindAddress.set(bindAddressVal);
+    }
+    LOG.info("Instantiated " + protocolClass.getSimpleName() + " at " + bindAddressVal);
+    return server;
   }
 }

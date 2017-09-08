@@ -654,7 +654,7 @@ POSTHOOK: Input: default@partitioned_table1@part_col=3
 POSTHOOK: Input: default@regular_table1
 #### A masked pattern was here ####
 6
-Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, partitioned_table2, regular_table1 rt1 
 , regular_table1 rt2 WHERE rt1.col1 = partitioned_table1.part_col AND rt2.col1 = 
 partitioned_table2.part_col AND rt1.col2 > 0 AND rt2.col2 > 1
@@ -665,7 +665,8 @@ partitioned_table2.part_col AND rt1.col2 > 0 AND rt2.col2 > 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
@@ -673,7 +674,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 5 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: rt1
@@ -705,6 +706,11 @@ STAGE PLANS:
                             target work: Map 1
             Local Work:
               Map Reduce Local Work
+
+  Stage: Stage-3
+    Spark
+#### A masked pattern was here ####
+      Vertices:
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -719,7 +725,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
-                          0 _col1 (type: int)
+                          0 _col0 (type: int)
                           1 _col0 (type: int)
                       Select Operator
                         expressions: _col0 (type: int)
@@ -734,14 +740,14 @@ STAGE PLANS:
                             Target column: part_col (int)
                             partition key expr: part_col
                             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 4
+                            target work: Map 5
             Local Work:
               Map Reduce Local Work
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 5 (PARTITION-LEVEL SORT, 1)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -754,11 +760,21 @@ STAGE PLANS:
                     expressions: part_col (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: int)
-        Map 4 
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col0 (type: int)
+                        1 _col0 (type: int)
+                      input vertices:
+                        1 Map 4
+                      Statistics: Num rows: 19 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 19 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+            Local Work:
+              Map Reduce Local Work
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table2
@@ -767,13 +783,21 @@ STAGE PLANS:
                     expressions: part_col (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: int)
-        Reducer 2 
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col0 (type: int)
+                        1 _col0 (type: int)
+                      input vertices:
+                        1 Map 6
+                      Statistics: Num rows: 19 Data size: 19 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 19 Data size: 19 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
+        Reducer 2 
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -781,36 +805,16 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 324 Data size: 972 Basic stats: COMPLETE Column stats: NONE
-                Map Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  keys:
-                    0 _col0 (type: int)
-                    1 _col0 (type: int)
-                  outputColumnNames: _col1
-                  input vertices:
-                    1 Map 5
-                  Statistics: Num rows: 356 Data size: 1069 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 _col1 (type: int)
-                      1 _col0 (type: int)
-                    input vertices:
-                      1 Map 6
-                    Statistics: Num rows: 391 Data size: 1175 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: bigint)
+                Statistics: Num rows: 361 Data size: 1083 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -832,7 +836,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: SELECT count(*)
 FROM   partitioned_table1,
 	   partitioned_table2,
@@ -1462,7 +1466,7 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: regular_table1
@@ -1492,10 +1496,10 @@ STAGE PLANS:
                             Target column: part_col (int)
                             partition key expr: part_col
                             Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target work: Map 3
             Local Work:
               Map Reduce Local Work
-        Map 4 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: regular_table2
@@ -1525,17 +1529,17 @@ STAGE PLANS:
                             Target column: part_col (int)
                             partition key expr: part_col
                             Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target work: Map 3
             Local Work:
               Map Reduce Local Work
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 4 <- Map 3 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table1
@@ -1547,14 +1551,14 @@ STAGE PLANS:
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
-                           Inner Join 1 to 2
+                           Inner Join 0 to 2
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
                         2 _col0 (type: int)
                       input vertices:
-                        1 Map 3
-                        2 Map 4
+                        0 Map 1
+                        1 Map 2
                       Statistics: Num rows: 39 Data size: 39 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
@@ -1567,7 +1571,7 @@ STAGE PLANS:
                           value expressions: _col0 (type: bigint)
             Local Work:
               Map Reduce Local Work
-        Reducer 2 
+        Reducer 4 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)

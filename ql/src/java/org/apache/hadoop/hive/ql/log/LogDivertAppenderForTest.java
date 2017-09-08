@@ -169,19 +169,21 @@ public final class LogDivertAppenderForTest {
     Route defaultRoute = Route.createRoute(null, "${ctx:queryId}", defaultRouteNode);
     Route mdcRoute = Route.createRoute(null, null, queryIdRouteNode);
     // Create the routes group
-    Routes routes = Routes.createRoutes("${ctx:queryId}", defaultRoute, mdcRoute);
+    Routes routes = Routes.newBuilder()
+        .withPattern("${ctx:queryId}")
+        .withRoutes(new Route[]{defaultRoute, mdcRoute})
+        .build();
 
     LoggerContext context = (LoggerContext)LogManager.getContext(false);
     Configuration configuration = context.getConfiguration();
 
     // Create the appender
-    RoutingAppender routingAppender = RoutingAppender.createAppender(TEST_QUERY_ROUTING_APPENDER,
-        "true",
-        routes,
-        configuration,
-        null,
-        null,
-        null);
+    RoutingAppender routingAppender = RoutingAppender.newBuilder()
+        .withName(TEST_QUERY_ROUTING_APPENDER)
+        .withIgnoreExceptions(true)
+        .withRoutes(routes)
+        .setConfiguration(configuration)
+        .build();
 
     LoggerConfig loggerConfig = configuration.getRootLogger();
     loggerConfig.addAppender(routingAppender, null, null);

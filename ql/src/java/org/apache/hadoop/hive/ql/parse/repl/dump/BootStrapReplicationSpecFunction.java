@@ -49,7 +49,6 @@ class BootStrapReplicationSpecFunction implements HiveWrapper.Tuple.Function<Rep
       return replicationSpec;
     } catch (Exception e) {
       throw new SemanticException(e);
-      // TODO : simple wrap & rethrow for now, clean up with error codes
     }
   }
 }

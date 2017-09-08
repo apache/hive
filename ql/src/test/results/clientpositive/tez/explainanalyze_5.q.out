@@ -57,13 +57,13 @@ Stage-3
         Stage-0
           Reducer 2
           File Output Operator [FS_5]
-            Group By Operator [GBY_3] (rows=1/1 width=880)
+            Group By Operator [GBY_3] (rows=1/1 width=1248)
               Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0, 'hll')","compute_stats(VALUE._col2, 'hll')"]
             <-Map 1 [CUSTOM_SIMPLE_EDGE]
               PARTITION_ONLY_SHUFFLE [RS_2]
-                Select Operator [SEL_1] (rows=500/500 width=10)
+                Select Operator [SEL_1] (rows=500/500 width=350)
                   Output:["key","value"]
-                  TableScan [TS_0] (rows=500/500 width=10)
+                  TableScan [TS_0] (rows=500/500 width=350)
                     default@src_stats,src_stats,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: drop table src_multi2
@@ -409,16 +409,16 @@ Stage-3
               Reducer 2
               File Output Operator [FS_7]
                 table:{"name:":"default.acid_dot"}
-                Select Operator [SEL_4] (rows=31436/8 width=4)
+                Select Operator [SEL_4] (rows=1/8 width=3)
                   Output:["_col0"]
                 <-Map 1 [SIMPLE_EDGE]
                   SHUFFLE [RS_3]
                     PartitionCols:UDFToInteger(_col0)
-                    Select Operator [SEL_2] (rows=31436/8 width=4)
+                    Select Operator [SEL_2] (rows=1/8 width=3)
                       Output:["_col0"]
-                      Filter Operator [FIL_8] (rows=31436/8 width=4)
+                      Filter Operator [FIL_8] (rows=1/8 width=3)
                         predicate:(cint < -1070551679)
-                        TableScan [TS_0] (rows=94309/12288 width=4)
+                        TableScan [TS_0] (rows=94309/12288 width=3)
                           default@acid_dot,acid_dot, ACID table,Tbl:COMPLETE,Col:NONE,Output:["cint"]
 
 PREHOOK: query: select count(*) from acid_dot

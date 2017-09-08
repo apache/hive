@@ -55,22 +55,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -78,22 +78,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -101,22 +101,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -124,22 +124,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -147,22 +147,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -174,18 +174,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 12 
             Execution mode: llap
@@ -195,18 +195,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 2 
             Execution mode: llap
@@ -216,18 +216,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 4 
             Execution mode: llap
@@ -237,17 +237,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col2 = 5) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -260,18 +260,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 8 
             Execution mode: llap
@@ -281,18 +281,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Union 3 
             Vertex: Union 3
@@ -327,22 +327,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -350,22 +350,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -373,22 +373,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -396,22 +396,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -423,18 +423,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 6 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 6 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 2 
             Execution mode: llap
@@ -444,18 +444,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 6 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 6 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 4 
             Execution mode: llap
@@ -465,17 +465,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col2 = 4) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -488,18 +488,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 6 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 6 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 8 
             Execution mode: llap
@@ -509,18 +509,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 6 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 6 Data size: 18 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Union 3 
             Vertex: Union 3
@@ -556,22 +556,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -579,22 +579,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -602,22 +602,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -625,22 +625,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -648,22 +648,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -675,18 +675,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 12 
             Execution mode: llap
@@ -696,18 +696,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 2 
             Execution mode: llap
@@ -717,18 +717,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 4 
             Execution mode: llap
@@ -738,17 +738,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col2 = 5) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -761,18 +761,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 8 
             Execution mode: llap
@@ -782,18 +782,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Union 3 
             Vertex: Union 3
@@ -829,22 +829,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -852,22 +852,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -875,22 +875,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -898,22 +898,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -921,22 +921,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -948,18 +948,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 12 
             Execution mode: llap
@@ -969,18 +969,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 2 
             Execution mode: llap
@@ -990,18 +990,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 4 
             Execution mode: llap
@@ -1011,17 +1011,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col2 = 5) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1034,18 +1034,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 8 
             Execution mode: llap
@@ -1055,18 +1055,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Union 3 
             Vertex: Union 3
@@ -1102,22 +1102,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -1125,22 +1125,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -1148,22 +1148,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -1171,22 +1171,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -1194,22 +1194,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -1221,18 +1221,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 12 
             Execution mode: llap
@@ -1242,18 +1242,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 2 
             Execution mode: llap
@@ -1263,18 +1263,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 4 
             Execution mode: llap
@@ -1284,17 +1284,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col2 = 5) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1307,18 +1307,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 8 
             Execution mode: llap
@@ -1328,18 +1328,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 7 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Union 3 
             Vertex: Union 3
@@ -1373,22 +1373,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -1396,22 +1396,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -1419,22 +1419,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -1446,18 +1446,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 4 
             Execution mode: llap
@@ -1467,17 +1467,17 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col2 = 3) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1490,18 +1490,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 8 
             Execution mode: llap
@@ -1511,18 +1511,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Union 3 
             Vertex: Union 3
@@ -1556,22 +1556,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -1579,22 +1579,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -1602,22 +1602,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -1629,18 +1629,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: min(_col2), count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint), _col3 (type: bigint)
         Reducer 4 
             Execution mode: llap
@@ -1650,24 +1650,24 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col3 = 3) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: bigint), _col0 (type: int), _col1 (type: int)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       function name: UDTFReplicateRows
                       Select Operator
                         expressions: col1 (type: int), col2 (type: int)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1680,18 +1680,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: min(_col2), count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint), _col3 (type: bigint)
         Reducer 8 
             Execution mode: llap
@@ -1701,18 +1701,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: min(_col2), count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint), _col3 (type: bigint)
         Union 3 
             Vertex: Union 3
@@ -1747,28 +1747,28 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -1776,22 +1776,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -1803,18 +1803,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: min(_col2), count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint), _col3 (type: bigint)
         Reducer 4 
             Execution mode: llap
@@ -1824,24 +1824,24 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col3 = 2) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: bigint), _col0 (type: int), _col1 (type: int)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       function name: UDTFReplicateRows
                       Select Operator
                         expressions: col1 (type: int), col2 (type: int)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1854,18 +1854,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Reducer 7 
             Execution mode: llap
@@ -1875,31 +1875,31 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: (_col2 = 2) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: _col0 (type: int), _col1 (type: int)
                       mode: complete
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: min(_col2), count(_col2)
                         keys: _col0 (type: int), _col1 (type: int)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: int), _col1 (type: int)
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col2 (type: bigint), _col3 (type: bigint)
         Reducer 9 
             Execution mode: llap
@@ -1909,18 +1909,18 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(_col2)
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                    Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: bigint)
         Union 3 
             Vertex: Union 3

@@ -108,11 +108,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: llap_stats
-                  Statistics: Num rows: 10 Data size: 116 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 10 Data size: 196 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int)
                     outputColumnNames: ctinyint, csmallint, cint
-                    Statistics: Num rows: 10 Data size: 116 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 10 Data size: 196 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(ctinyint, 'hll'), compute_stats(csmallint, 'hll')
                       keys: cint (type: int)

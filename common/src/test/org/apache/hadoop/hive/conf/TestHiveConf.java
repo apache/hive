@@ -138,6 +138,7 @@ public class TestHiveConf {
     try {
       final String name = HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname;
       conf.verifyAndSet(name, "");
+      conf.verifyAndSet(name + "postfix", "");
       Assert.fail("Setting config property " + name + " should fail");
     } catch (IllegalArgumentException e) {
       // the verifyAndSet in this case is expected to fail with the IllegalArgumentException
@@ -147,6 +148,9 @@ public class TestHiveConf {
     conf2.set(HiveConf.ConfVars.METASTOREPWD.varname, "password");
     conf2.set(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname, "password");
     conf.stripHiddenConfigurations(conf2);
+    Assert.assertTrue(conf.isHiddenConfig(HiveConf.ConfVars.METASTOREPWD.varname + "postfix"));
+    Assert.assertTrue(
+        conf.isHiddenConfig(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname + "postfix"));
     Assert.assertEquals("", conf2.get(HiveConf.ConfVars.METASTOREPWD.varname));
     Assert.assertEquals("", conf2.get(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname));
   }

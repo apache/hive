@@ -56,17 +56,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpartbucket
-                  Statistics: Num rows: 40 Data size: 7600 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 40 Data size: 14776 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: true
                     predicate: (((hash(key) & 2147483647) % 4) = 0) (type: boolean)
                     sampleDesc: BUCKET 1 OUT OF 4
-                    Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: ds
-                      Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: PARTIAL
                       Group By Operator
                         aggregations: count(1)
                         keys: ds (type: string)
