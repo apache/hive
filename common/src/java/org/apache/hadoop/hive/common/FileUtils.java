@@ -1023,6 +1023,11 @@ public final class FileUtils {
 
   public static void inheritPerms(Configuration conf, HdfsUtils.HadoopFileStatus sourceStatus, String targetGroup,
                                   FileSystem fs, Path target, boolean recursive) {
-    HdfsUtils.setFullFileStatus(conf, sourceStatus, targetGroup, fs, target, recursive);
+    inheritPerms(conf, sourceStatus, targetGroup, fs, target, recursive, true);
+  }
+
+  public static void inheritPerms(Configuration conf, HdfsUtils.HadoopFileStatus sourceStatus, String targetGroup,
+                                  FileSystem fs, Path target, boolean recursive, boolean isDir) {
+    HdfsUtils.setFullFileStatus(conf, sourceStatus, targetGroup, fs, target, recursive, isDir);
   }
 }

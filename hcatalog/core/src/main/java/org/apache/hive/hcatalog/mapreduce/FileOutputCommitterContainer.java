@@ -33,6 +33,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.AclEntry;
+import org.apache.hadoop.fs.permission.AclEntryScope;
+import org.apache.hadoop.fs.permission.AclEntryType;
+import org.apache.hadoop.fs.permission.AclStatus;
+import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -64,6 +69,9 @@ import org.apache.hive.hcatalog.har.HarOutputCommitterPostProcessor;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 /**
  * Part of the FileOutput*Container classes
@@ -335,7 +343,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     String partLocnRoot, String dynPartPath, Map<String, String> partKVs,
     HCatSchema outputSchema, Map<String, String> params,
     Table table, FileSystem fs,
-    String grpName, FsPermission perms) throws IOException {
+    String grpName, FsPermission perms, List<AclEntry> acls) throws IOException {
 
     Partition partition = new Partition();
     partition.setDbName(table.getDbName());
@@ -372,7 +380,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       for (FieldSchema partKey : table.getPartitionKeys()) {
         if (i++ != 0) {
           fs.mkdirs(partPath); // Attempt to make the path in case it does not exist before we check
-          applyGroupAndPerms(fs, partPath, perms, grpName, false);
+          applyGroupAndPerms(fs, partPath, perms, acls, grpName, false);
         }
         partPath = constructPartialPartPath(partPath, partKey.getName().toLowerCase(), partKVs);
       }
@@ -382,7 +390,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     // Need not bother in case of HDFS as permission is taken care of by setting UMask
     fs.mkdirs(partPath); // Attempt to make the path in case it does not exist before we check
     if (!ShimLoader.getHadoopShims().getHCatShim().isFileInHDFS(fs, partPath)) {
-      applyGroupAndPerms(fs, partPath, perms, grpName, true);
+      applyGroupAndPerms(fs, partPath, perms, acls, grpName, true);
     }
 
     // Set the location in the StorageDescriptor
@@ -401,21 +409,29 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     return partition;
   }
 
-  private void applyGroupAndPerms(FileSystem fs, Path dir, FsPermission permission,
-                  String group, boolean recursive)
+  private void applyGroupAndPerms(FileSystem fs, Path path, FsPermission permission,
+                  List<AclEntry> acls, String group, boolean recursive)
     throws IOException {
     if(LOG.isDebugEnabled()) {
-      LOG.debug("applyGroupAndPerms : " + dir +
-          " perms: " + permission +
+      LOG.debug("applyGroupAndPerms : " + path +
+          " perms: " + permission + " acls: " + acls + 
           " group: " + group + " recursive: " + recursive);
     }
-    fs.setPermission(dir, permission);
+
+    if (acls != null && ! acls.isEmpty()) {
+      fs.setAcl(path, acls);
+    } else {
+      fs.setPermission(path, permission);
+    }
+
     if (recursive) {
-      for (FileStatus fileStatus : fs.listStatus(dir)) {
+      List<AclEntry> fileAcls = removeDefaultAcls(acls);
+
+      for (FileStatus fileStatus : fs.listStatus(path)) {
         if (fileStatus.isDir()) {
-          applyGroupAndPerms(fs, fileStatus.getPath(), permission, group, true);
+          applyGroupAndPerms(fs, fileStatus.getPath(), permission, acls, group, true);
         } else {
-          fs.setPermission(fileStatus.getPath(), permission);
+          applyGroupAndPerms(fs, fileStatus.getPath(), permission, fileAcls, group, false);
         }
       }
     }
@@ -775,6 +791,23 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     try {
       HiveConf hiveConf = HCatUtil.getHiveConf(conf);
       client = HCatUtil.getHiveMetastoreClient(hiveConf);
+
+      FileStatus tblStat = fs.getFileStatus(tblPath);
+      String grpName = tblStat.getGroup();
+      FsPermission perms = tblStat.getPermission();
+      List<AclEntry> acls = null;
+
+      if (conf.getBoolean("dfs.namenode.acls.enabled", false)) {
+        try {
+          AclStatus stat = fs.getAclStatus(tblPath);
+          if (stat != null && ! stat.getEntries().isEmpty()) {
+            acls = generateChildAcls(stat.getEntries(), perms);
+          }
+        } catch (UnsupportedOperationException e) {
+          LOG.debug("Skipping ACLs", e);
+        }
+      }
+
       if (table.getPartitionKeys().size() == 0) {
         // Move data from temp directory the actual table directory
         // No metastore operation required.
@@ -788,27 +821,26 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
           table.getParameters().remove(StatsSetupConst.COLUMN_STATS_ACCURATE);
           client.alter_table(table.getDbName(), table.getTableName(), table.getTTable());
         }
+
+        applyGroupAndPerms(fs, tblPath, tblStat.getPermission(), acls, grpName, true);
+
         return;
       }
 
       StorerInfo storer = InternalUtil.extractStorerInfo(table.getTTable().getSd(),
           table.getParameters());
 
-      FileStatus tblStat = fs.getFileStatus(tblPath);
-      String grpName = tblStat.getGroup();
-      FsPermission perms = tblStat.getPermission();
-
       List<Partition> partitionsToAdd = new ArrayList<Partition>();
       if (!dynamicPartitioningUsed) {
         partitionsToAdd.add(constructPartition(context, jobInfo, tblPath.toString(), null,
             jobInfo.getPartitionValues(), jobInfo.getOutputSchema(), getStorerParameterMap(storer),
-            table, fs, grpName, perms));
+            table, fs, grpName, perms, acls));
       } else {
         for (Entry<String, Map<String, String>> entry : partitionsDiscoveredByPath.entrySet()) {
           partitionsToAdd.add(constructPartition(context, jobInfo,
               getPartitionRootLocation(entry.getKey(), entry.getValue().size()), entry.getKey(),
               entry.getValue(), jobInfo.getOutputSchema(), getStorerParameterMap(storer), table,
-              fs, grpName, perms));
+              fs, grpName, perms, acls));
         }
       }
 
@@ -950,7 +982,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         // Set permissions appropriately for each of the partitions we just created
         // so as to have their permissions mimic the table permissions
         for (Partition p : partitionsAdded){
-          applyGroupAndPerms(fs,new Path(p.getSd().getLocation()),tblStat.getPermission(),tblStat.getGroup(),true);
+          applyGroupAndPerms(fs,new Path(p.getSd().getLocation()), tblStat.getPermission(), acls, tblStat.getGroup(), true);
         }
 
       }
@@ -1024,5 +1056,84 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
     }
   }
 
+  private AclEntry createAclEntry(AclEntryScope scope, AclEntryType type, String name, FsAction perm) {
+    return new AclEntry.Builder().setScope(scope).setType(type)
+      .setName(name).setPermission(perm).build();
+  }
 
+  private List<AclEntry> generateChildAcls(List<AclEntry> parentAcls, FsPermission parentPerms) {
+    List<AclEntry> acls = null;
+    List<AclEntry> defaults = extractDefaultAcls(parentAcls);
+    if (! defaults.isEmpty()) {
+      // Generate child ACLs based on parent DEFAULTs.
+      acls = new ArrayList<AclEntry>(defaults.size() * 2);
+
+      // All ACCESS ACLs are derived from the DEFAULT ACLs of the parent.
+      // All DEFAULT ACLs of the parent are inherited by the child.
+      // If DEFAULT ACLs exist, it should include DEFAULTs for USER, OTHER, and MASK.
+      for (AclEntry acl : defaults) {
+        // OTHER permissions are not inherited by the child.
+        if (acl.getType() == AclEntryType.OTHER) {
+          acls.add(createAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, null, FsAction.NONE));
+        } else {
+          acls.add(createAclEntry(AclEntryScope.ACCESS, acl.getType(), acl.getName(), acl.getPermission()));
+        }
+      }
+
+      // Inherit all DEFAULT ACLs.
+      acls.addAll(defaults);
+    } else {
+      // Parent has no DEFAULTs, hence child inherits no ACLs.
+      // Set basic permissions only.
+      FsAction groupAction = null;
+
+      for (AclEntry acl : parentAcls) {
+        if (acl.getType() == AclEntryType.GROUP) {
+          groupAction = acl.getPermission();
+          break;
+        }
+      }
+
+      acls = new ArrayList<AclEntry>(3);
+      acls.add(createAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, null, parentPerms.getUserAction()));
+      acls.add(createAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, null, groupAction));
+      acls.add(createAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, null, FsAction.NONE));
+    }
+
+    return acls;
+  }
+
+  private static List<AclEntry> extractDefaultAcls(List<AclEntry> acls) {
+    List<AclEntry> defaults = new ArrayList<AclEntry>(acls);
+    Iterables.removeIf(defaults, new Predicate<AclEntry>() {
+      @Override
+      public boolean apply(AclEntry acl) {
+        if (! acl.getScope().equals(AclEntryScope.DEFAULT)) {
+          return true;
+        }
+        return false;
+      }
+    });
+
+    return defaults;
+  }
+
+  private List<AclEntry> removeDefaultAcls(List<AclEntry> acls) {
+    List<AclEntry> nonDefaults = null;
+
+    if (acls != null) {
+      nonDefaults = new ArrayList<AclEntry>(acls);
+      Iterables.removeIf(nonDefaults, new Predicate<AclEntry>() {
+        @Override
+        public boolean apply(AclEntry acl) {
+          if (acl.getScope().equals(AclEntryScope.DEFAULT)) {
+            return true;
+          }
+          return false;
+        }
+      });
+    }
+
+    return nonDefaults;
+  }
 }

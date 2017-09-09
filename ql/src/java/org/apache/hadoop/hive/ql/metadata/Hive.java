@@ -2938,7 +2938,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
               Path destPath = mvFile(conf, srcFs, srcP, destFs, destf, isSrcLocal, isRenameAllowed);
 
               if (inheritPerms) {
-                FileUtils.inheritPerms(conf, fullDestStatus, srcGroup, destFs, destPath, false);
+                // TODO: These are all files.
+                FileUtils.inheritPerms(conf, fullDestStatus, srcGroup, destFs, destPath, false, false);
               }
 
               if (null != newFiles) {
@@ -3177,7 +3178,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
                     final String group = srcStatus.getGroup();
                     if(destFs.rename(srcStatus.getPath(), destFile)) {
                       if (inheritPerms) {
-                        FileUtils.inheritPerms(conf, desiredStatus, group, destFs, destFile, false);
+                        // TODO: These are all files.
+                        FileUtils.inheritPerms(conf, desiredStatus, group, destFs, destFile, false, false);
                       }
                     } else {
                       throw new IOException("rename for src path: " + srcStatus.getPath() + " to dest path:"

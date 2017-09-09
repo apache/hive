@@ -60,11 +60,11 @@ public abstract class FolderPermissionBase {
     }
   };
 
-
   public abstract void setPermission(String locn, int permIndex) throws Exception;
 
   public abstract void verifyPermission(String locn, int permIndex) throws Exception;
 
+  public abstract void verifyInheritedPermission(String locn, int permIndex) throws Exception;
 
   public void setPermission(String locn) throws Exception {
     setPermission(locn, 0);
@@ -74,6 +74,9 @@ public abstract class FolderPermissionBase {
     verifyPermission(locn, 0);
   }
 
+  public void verifyInheritedPermission(String locn) throws Exception {
+    verifyInheritedPermission(locn, 0);
+  }
 
   public static void baseSetup() throws Exception {
     MiniDFSShim dfs = ShimLoader.getHadoopShims().getMiniDfs(conf, 4, true, null);
@@ -138,7 +141,7 @@ public abstract class FolderPermissionBase {
     Assert.assertEquals(0,ret.getResponseCode());
 
     assertExistence(warehouseDir + "/" + testDb + ".db");
-    verifyPermission(warehouseDir + "/" + testDb + ".db");
+    verifyInheritedPermission(warehouseDir + "/" + testDb + ".db");
 
     ret = driver.run("USE " + testDb);
     Assert.assertEquals(0,ret.getResponseCode());
@@ -146,20 +149,26 @@ public abstract class FolderPermissionBase {
     ret = driver.run("CREATE TABLE " + tableName + " (key string, value string)");
     Assert.assertEquals(0,ret.getResponseCode());
 
-    verifyPermission(warehouseDir + "/" + testDb + ".db/" + tableName);
+    verifyInheritedPermission(warehouseDir + "/" + testDb + ".db/" + tableName);
 
     ret = driver.run("insert into table " + tableName + " select key,value from default.mysrc");
     Assert.assertEquals(0,ret.getResponseCode());
 
     assertExistence(warehouseDir + "/" + testDb + ".db/" + tableName);
-    verifyPermission(warehouseDir + "/" + testDb + ".db/" + tableName);
+    verifyInheritedPermission(warehouseDir + "/" + testDb + ".db/" + tableName);
 
     Assert.assertTrue(listStatus(warehouseDir + "/" + testDb + ".db/" + tableName).size() > 0);
     for (String child : listStatus(warehouseDir + "/" + testDb + ".db/" + tableName)) {
-      verifyPermission(child);
+      verifyInheritedPermission(child);
     }
 
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
+
     ret = driver.run("USE default");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    ret = driver.run("DROP DATABASE " + testDb);
     Assert.assertEquals(0,ret.getResponseCode());
 
     //cleanup after the test.
@@ -186,20 +195,26 @@ public abstract class FolderPermissionBase {
     ret = driver.run("CREATE TABLE " + tableName + " (key string, value string)");
     Assert.assertEquals(0,ret.getResponseCode());
 
-    verifyPermission(warehouseDir + "/" + testDb + ".db/" + tableName);
+    verifyInheritedPermission(warehouseDir + "/" + testDb + ".db/" + tableName);
 
     ret = driver.run("insert into table " + tableName + " select key,value from default.mysrc");
     Assert.assertEquals(0,ret.getResponseCode());
 
     assertExistence(warehouseDir + "/" + testDb + ".db/" + tableName);
-    verifyPermission(warehouseDir + "/" + testDb + ".db/" + tableName);
+    verifyInheritedPermission(warehouseDir + "/" + testDb + ".db/" + tableName);
 
     Assert.assertTrue(listStatus(warehouseDir + "/" + testDb + ".db/" + tableName).size() > 0);
     for (String child : listStatus(warehouseDir + "/" + testDb + ".db/" + tableName)) {
-      verifyPermission(child);
+      verifyInheritedPermission(child);
     }
 
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
+
     ret = driver.run("USE default");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    ret = driver.run("DROP DATABASE " + testDb);
     Assert.assertEquals(0,ret.getResponseCode());
   }
 
@@ -223,7 +238,7 @@ public abstract class FolderPermissionBase {
     verifyPermission(warehouseDir + "/" + tableName);
     Assert.assertTrue(listStatus(tableLoc).size() > 0);
     for (String child : listStatus(tableLoc)) {
-      verifyPermission(child);
+      verifyInheritedPermission(child);
     }
 
     //case1B: insert overwrite non-partitioned-table
@@ -234,8 +249,11 @@ public abstract class FolderPermissionBase {
     verifyPermission(warehouseDir + "/" + tableName, 1);
     Assert.assertTrue(listStatus(tableLoc).size() > 0);
     for (String child : listStatus(tableLoc)) {
-      verifyPermission(child, 1);
+      verifyInheritedPermission(child, 1);
     }
+
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
   }
 
   @Test
@@ -252,11 +270,11 @@ public abstract class FolderPermissionBase {
     Assert.assertEquals(0, ret.getResponseCode());
 
     verifyPermission(warehouseDir + "/" + tableName);
-    verifyPermission(warehouseDir + "/" + tableName + "/part1=1");
+    verifyInheritedPermission(warehouseDir + "/" + tableName + "/part1=1");
 
     Assert.assertTrue(listStatus(warehouseDir + "/" + tableName + "/part1=1").size() > 0);
     for (String child : listStatus(warehouseDir + "/" + tableName + "/part1=1")) {
-      verifyPermission(child);
+      verifyInheritedPermission(child);
     }
 
     //insert overwrite test
@@ -270,8 +288,11 @@ public abstract class FolderPermissionBase {
 
     Assert.assertTrue(listStatus(warehouseDir + "/" + tableName + "/part1=1").size() > 0);
     for (String child : listStatus(warehouseDir + "/" + tableName + "/part1=1")) {
-      verifyPermission(child, 1);
+      verifyInheritedPermission(child, 1);
     }
+
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
   }
 
   @Test
@@ -288,12 +309,12 @@ public abstract class FolderPermissionBase {
     Assert.assertEquals(0, ret.getResponseCode());
 
     verifyPermission(warehouseDir + "/" + tableName);
-    verifyPermission(warehouseDir + "/" + tableName + "/part1=1");
-    verifyPermission(warehouseDir + "/" + tableName + "/part1=1/part2=1");
+    verifyInheritedPermission(warehouseDir + "/" + tableName + "/part1=1");
+    verifyInheritedPermission(warehouseDir + "/" + tableName + "/part1=1/part2=1");
 
     Assert.assertTrue(listStatus(warehouseDir + "/" + tableName + "/part1=1/part2=1").size() > 0);
     for (String child : listStatus(warehouseDir + "/" + tableName + "/part1=1/part2=1")) {
-      verifyPermission(child);
+      verifyInheritedPermission(child);
     }
 
     //insert overwrite test
@@ -310,8 +331,11 @@ public abstract class FolderPermissionBase {
 
     Assert.assertTrue(listStatus(warehouseDir + "/" + tableName + "/part1=1/part2=1").size() > 0);
     for (String child : listStatus(warehouseDir + "/" + tableName + "/part1=1/part2=1")) {
-      verifyPermission(child, 1);
+      verifyInheritedPermission(child, 1);
     }
+
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
   }
 
   @Test
@@ -327,7 +351,7 @@ public abstract class FolderPermissionBase {
     ret = driver.run("insert into table " + tableName + " partition (part1,part2) select key,value,part1,part2 from mysrc");
     Assert.assertEquals(0, ret.getResponseCode());
 
-    verifyDualPartitionTable(warehouseDir + "/" + tableName, 0);
+    verifyDualPartitionTable(warehouseDir + "/" + tableName, 0, true);
 
     //Insert overwrite test, with permission set 1.  We need reset existing partitions to 1 since the permissions
     //should be inherited from existing partition
@@ -335,7 +359,10 @@ public abstract class FolderPermissionBase {
     ret = driver.run("insert overwrite table " + tableName + " partition (part1,part2) select key,value,part1,part2 from mysrc");
     Assert.assertEquals(0, ret.getResponseCode());
 
-    verifyDualPartitionTable(warehouseDir + "/" + tableName, 1);
+    verifyDualPartitionTable(warehouseDir + "/" + tableName, 1, false);
+
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
   }
 
   @Test
@@ -358,6 +385,7 @@ public abstract class FolderPermissionBase {
     setSinglePartition(tableLoc, 1);
     ret = driver.run("insert overwrite table " + tableName + " partition (part1) select key,value,part1 from mysrc");
     Assert.assertEquals(0,ret.getResponseCode());
+    // NOTE: OVERWRITE deletes partition directory, thus creating a new partition inheriting the previously set permissions.
     verifySinglePartition(tableLoc, 1);
 
     //delete and re-insert using insert overwrite.  There's different code paths insert vs insert overwrite for new tables.
@@ -373,6 +401,9 @@ public abstract class FolderPermissionBase {
     Assert.assertEquals(0, ret.getResponseCode());
 
     verifySinglePartition(tableLoc, 0);
+
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
   }
 
   @Test
@@ -394,13 +425,13 @@ public abstract class FolderPermissionBase {
     ret = driver.run("alter table " + tableName + " partition (part1='1',part2='1',part3='1') rename to partition (part1='2',part2='2',part3='2')");
     Assert.assertEquals(0,ret.getResponseCode());
 
-    verifyPermission(warehouseDir + "/" + tableName + "/part1=2", 1);
-    verifyPermission(warehouseDir + "/" + tableName + "/part1=2/part2=2", 1);
-    verifyPermission(warehouseDir + "/" + tableName + "/part1=2/part2=2/part3=2", 1);
+    verifyInheritedPermission(warehouseDir + "/" + tableName + "/part1=2", 1);
+    verifyInheritedPermission(warehouseDir + "/" + tableName + "/part1=2/part2=2", 1);
+    verifyInheritedPermission(warehouseDir + "/" + tableName + "/part1=2/part2=2/part3=2", 1);
 
     Assert.assertTrue(listStatus(warehouseDir + "/" + tableName + "/part1=2/part2=2/part3=2").size() > 0);
     for (String child : listStatus(warehouseDir + "/" + tableName + "/part1=2/part2=2/part3=2")) {
-      verifyPermission(child, 1);
+      verifyInheritedPermission(child, 1);
     }
 
     String tableName2 = "alterpart2";
@@ -414,9 +445,15 @@ public abstract class FolderPermissionBase {
 
     //alter exchange can not change base table's permission
     //alter exchange can only control final partition folder's permission
-    verifyPermission(warehouseDir + "/" + tableName2 + "/part1=2", 0);
-    verifyPermission(warehouseDir + "/" + tableName2 + "/part1=2/part2=2", 0);
-    verifyPermission(warehouseDir + "/" + tableName2 + "/part1=2/part2=2/part3=2", 1);
+    verifyInheritedPermission(warehouseDir + "/" + tableName2 + "/part1=2", 0);
+    verifyInheritedPermission(warehouseDir + "/" + tableName2 + "/part1=2/part2=2", 0);
+    verifyInheritedPermission(warehouseDir + "/" + tableName2 + "/part1=2/part2=2/part3=2", 1);
+
+    ret = driver.run("DROP TABLE " + tableName2);
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
   }
 
   @Test
@@ -436,8 +473,11 @@ public abstract class FolderPermissionBase {
 
     Assert.assertTrue(listStatus(myLocation).size() > 0);
     for (String child : listStatus(myLocation)) {
-      verifyPermission(child);
+      verifyInheritedPermission(child);
     }
+
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
   }
 
   @Test
@@ -459,7 +499,7 @@ public abstract class FolderPermissionBase {
 
     Assert.assertTrue(listStatus(tableLoc).size() > 0);
     for (String child : listStatus(tableLoc)) {
-      verifyPermission(child);
+      verifyInheritedPermission(child);
     }
 
     //case1B: load data local into overwrite non-partitioned-table
@@ -472,8 +512,11 @@ public abstract class FolderPermissionBase {
 
     Assert.assertTrue(listStatus(tableLoc).size() > 0);
     for (String child : listStatus(tableLoc)) {
-      verifyPermission(child, 1);
+      verifyInheritedPermission(child, 1);
     }
+
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
 
     //case 2 is partitioned table.
     tableName = "loadlocalpartition";
@@ -491,7 +534,7 @@ public abstract class FolderPermissionBase {
     String partLoc = warehouseDir + "/" + tableName + "/part1=1/part2=1";
     Assert.assertTrue(listStatus(partLoc).size() > 0);
     for (String child : listStatus(partLoc)) {
-      verifyPermission(child);
+      verifyInheritedPermission(child);
     }
 
     //case 2B: insert data overwrite into partitioned table. set testing table/partition folder hierarchy 1
@@ -506,8 +549,11 @@ public abstract class FolderPermissionBase {
 
     Assert.assertTrue(listStatus(tableLoc).size() > 0);
     for (String child : listStatus(partLoc)) {
-      verifyPermission(child, 1);
+      verifyInheritedPermission(child, 1);
     }
+
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
   }
 
   @Test
@@ -530,7 +576,7 @@ public abstract class FolderPermissionBase {
 
     Assert.assertTrue(listStatus(tableLoc).size() > 0);
     for (String child : listStatus(tableLoc)) {
-      verifyPermission(child);
+      verifyInheritedPermission(child);
     }
 
     //case1B: load data into overwrite non-partitioned-table
@@ -545,8 +591,11 @@ public abstract class FolderPermissionBase {
 
     Assert.assertTrue(listStatus(tableLoc).size() > 0);
     for (String child : listStatus(tableLoc)) {
-      verifyPermission(child, 1);
+      verifyInheritedPermission(child, 1);
     }
+
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
 
     //case 2 is partitioned table.
     tableName = "loadpartition";
@@ -565,7 +614,7 @@ public abstract class FolderPermissionBase {
     String partLoc = warehouseDir + "/" + tableName + "/part1=1/part2=1";
     Assert.assertTrue(listStatus(partLoc).size() > 0);
     for (String child : listStatus(partLoc)) {
-      verifyPermission(child);
+      verifyInheritedPermission(child);
     }
 
     //case 2B: insert data overwrite into partitioned table. set testing table/partition folder hierarchy 1
@@ -583,8 +632,11 @@ public abstract class FolderPermissionBase {
 
     Assert.assertTrue(listStatus(tableLoc).size() > 0);
     for (String child : listStatus(partLoc)) {
-      verifyPermission(child, 1);
+      verifyInheritedPermission(child, 1);
     }
+
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
   }
 
   @Test
@@ -605,14 +657,20 @@ public abstract class FolderPermissionBase {
     Assert.assertEquals(0,ret.getResponseCode());
 
     assertExistence(warehouseDir + "/" + testDb + ".db/" + tableName);
-    verifyPermission(warehouseDir + "/" + testDb + ".db/" + tableName);
+    verifyInheritedPermission(warehouseDir + "/" + testDb + ".db/" + tableName);
 
     Assert.assertTrue(listStatus(warehouseDir + "/" + testDb + ".db/" + tableName).size() > 0);
     for (String child : listStatus(warehouseDir + "/" + testDb + ".db/" + tableName)) {
-      verifyPermission(child);
+      verifyInheritedPermission(child);
     }
 
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
+
     ret = driver.run("USE default");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    ret = driver.run("DROP DATABASE " + testDb);
     Assert.assertEquals(0,ret.getResponseCode());
   }
 
@@ -631,20 +689,20 @@ public abstract class FolderPermissionBase {
 
     //check if exported data has inherited the permissions.
     assertExistence(myLocation);
-    verifyPermission(myLocation);
+    verifyInheritedPermission(myLocation);
 
     assertExistence(myLocation + "/part1=1/part2=1");
-    verifyPermission(myLocation + "/part1=1/part2=1");
+    verifyInheritedPermission(myLocation + "/part1=1/part2=1");
     Assert.assertTrue(listStatus(myLocation + "/part1=1/part2=1").size() > 0);
     for (String child : listStatus(myLocation + "/part1=1/part2=1")) {
-      verifyPermission(child);
+      verifyInheritedPermission(child);
     }
 
     assertExistence(myLocation + "/part1=2/part2=2");
-    verifyPermission(myLocation + "/part1=2/part2=2");
+    verifyInheritedPermission(myLocation + "/part1=2/part2=2");
     Assert.assertTrue(listStatus(myLocation + "/part1=2/part2=2").size() > 0);
     for (String child : listStatus(myLocation + "/part1=2/part2=2")) {
-      verifyPermission(child);
+      verifyInheritedPermission(child);
     }
 
     //import the table back into another database
@@ -664,25 +722,31 @@ public abstract class FolderPermissionBase {
 
     //check permissions of imported, from the exported table
     assertExistence(warehouseDir + "/" + testDb + ".db/mysrc");
-    verifyPermission(warehouseDir + "/" + testDb + ".db/mysrc", 1);
+    verifyInheritedPermission(warehouseDir + "/" + testDb + ".db/mysrc", 1);
 
     myLocation = warehouseDir + "/" + testDb + ".db/mysrc";
     assertExistence(myLocation);
-    verifyPermission(myLocation, 1);
+    verifyInheritedPermission(myLocation, 1);
 
     assertExistence(myLocation + "/part1=1/part2=1");
-    verifyPermission(myLocation + "/part1=1/part2=1", 1);
+    verifyInheritedPermission(myLocation + "/part1=1/part2=1", 1);
     Assert.assertTrue(listStatus(myLocation + "/part1=1/part2=1").size() > 0);
     for (String child : listStatus(myLocation + "/part1=1/part2=1")) {
-      verifyPermission(child, 1);
+      verifyInheritedPermission(child, 1);
     }
 
     assertExistence(myLocation + "/part1=2/part2=2");
-    verifyPermission(myLocation + "/part1=2/part2=2", 1);
+    verifyInheritedPermission(myLocation + "/part1=2/part2=2", 1);
     Assert.assertTrue(listStatus(myLocation + "/part1=2/part2=2").size() > 0);
     for (String child : listStatus(myLocation + "/part1=2/part2=2")) {
-      verifyPermission(child, 1);
+      verifyInheritedPermission(child, 1);
     }
+
+    ret = driver.run("USE default");
+    Assert.assertEquals(0,ret.getResponseCode());
+
+    ret = driver.run("DROP DATABASE " + testDb + " CASCADE");
+    Assert.assertEquals(0,ret.getResponseCode());
   }
 
   /**
@@ -705,13 +769,16 @@ public abstract class FolderPermissionBase {
     assertExistence(warehouseDir + "/" + tableName);
 
     verifyPermission(warehouseDir + "/" + tableName);
-    verifyPermission(partition);
+    verifyInheritedPermission(partition);
 
     ret = driver.run("TRUNCATE TABLE " + tableName);
     Assert.assertEquals(0, ret.getResponseCode());
 
+    // NOTE: TRUNCATE will delete partition directories and recreates them; restores previous permissions.
     assertExistence(warehouseDir + "/" + tableName);
+    assertExistence(partition);
     verifyPermission(warehouseDir + "/" + tableName);
+    verifyInheritedPermission(partition);
 
     ret = driver.run("insert into table " + tableName + " partition(part1='1') select key,value from mysrc where part1='1' and part2='1'");
     Assert.assertEquals(0, ret.getResponseCode());
@@ -719,14 +786,17 @@ public abstract class FolderPermissionBase {
     verifyPermission(warehouseDir + "/" + tableName);
 
     assertExistence(partition);
-    verifyPermission(partition);    
+    verifyInheritedPermission(partition);    
 
     // Also test the partition folder if the partition is truncated
     ret = driver.run("TRUNCATE TABLE " + tableName + " partition(part1='1')");
     Assert.assertEquals(0, ret.getResponseCode());
 
     assertExistence(partition);
-    verifyPermission(partition);
+    verifyInheritedPermission(partition);
+
+    ret = driver.run("DROP TABLE " + tableName);
+    Assert.assertEquals(0,ret.getResponseCode());
   }
 
   private void setSinglePartition(String tableLoc, int index) throws Exception {
@@ -735,17 +805,17 @@ public abstract class FolderPermissionBase {
   }
 
   private void verifySinglePartition(String tableLoc, int index) throws Exception {
-    verifyPermission(tableLoc + "/part1=1", index);
-    verifyPermission(tableLoc + "/part1=2", index);
+    verifyInheritedPermission(tableLoc + "/part1=1", index);
+    verifyInheritedPermission(tableLoc + "/part1=2", index);
 
     Assert.assertTrue(listStatus(tableLoc + "/part1=1").size() > 0);
     for (String child : listStatus(tableLoc + "/part1=1")) {
-      verifyPermission(child, index);
+      verifyInheritedPermission(child, index);
     }
 
     Assert.assertTrue(listStatus(tableLoc + "/part1=2").size() > 0);
     for (String child : listStatus(tableLoc + "/part1=2")) {
-      verifyPermission(child, index);
+      verifyInheritedPermission(child, index);
     }
   }
 
@@ -758,22 +828,27 @@ public abstract class FolderPermissionBase {
     setPermission(baseTablePath + "/part1=2/part2=2", index);
   }
 
-  private void verifyDualPartitionTable(String baseTablePath, int index) throws Exception {
+  private void verifyDualPartitionTable(String baseTablePath, int index, boolean inherit) throws Exception {
     verifyPermission(baseTablePath, index);
-    verifyPermission(baseTablePath + "/part1=1", index);
-    verifyPermission(baseTablePath + "/part1=1/part2=1", index);
+    if (inherit) {
+      verifyInheritedPermission(baseTablePath + "/part1=1", index);
+      verifyInheritedPermission(baseTablePath + "/part1=2", index);
+    } else {
+      verifyPermission(baseTablePath + "/part1=1", index);
+      verifyPermission(baseTablePath + "/part1=2", index);
+    }
 
-    verifyPermission(baseTablePath + "/part1=2", index);
-    verifyPermission(baseTablePath + "/part1=2/part2=2", index);
+    verifyInheritedPermission(baseTablePath + "/part1=1/part2=1", index);
+    verifyInheritedPermission(baseTablePath + "/part1=2/part2=2", index);
 
     Assert.assertTrue(listStatus(baseTablePath + "/part1=1/part2=1").size() > 0);
     for (String child : listStatus(baseTablePath + "/part1=1/part2=1")) {
-      verifyPermission(child, index);
+      verifyInheritedPermission(child, index);
     }
 
     Assert.assertTrue(listStatus(baseTablePath + "/part1=2/part2=2").size() > 0);
     for (String child : listStatus(baseTablePath + "/part1=2/part2=2")) {
-      verifyPermission(child, index);
+      verifyInheritedPermission(child, index);
     }
   }
 

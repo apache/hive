@@ -77,7 +77,7 @@ public class HdfsUtils {
   public static void setFullFileStatus(Configuration conf, HdfsUtils.HadoopFileStatus sourceStatus,
       FileSystem fs, Path target, boolean recursion) {
     if (StorageUtils.shouldSetPerms(conf, fs)) {
-      setFullFileStatus(conf, sourceStatus, null, fs, target, recursion);
+      setFullFileStatus(conf, sourceStatus, null, fs, target, recursion, true);
     }
   }
 
@@ -95,14 +95,25 @@ public class HdfsUtils {
    */
   public static void setFullFileStatus(Configuration conf, HdfsUtils.HadoopFileStatus sourceStatus,
       String targetGroup, FileSystem fs, Path target, boolean recursion) {
+    setFullFileStatus(conf, sourceStatus, targetGroup, fs, target, recursion, true);
+  }
+
+  public static void setFullFileStatus(Configuration conf, HdfsUtils.HadoopFileStatus sourceStatus,
+      String targetGroup, FileSystem fs, Path target, boolean recursion, boolean isDir) {
     if (StorageUtils.shouldSetPerms(conf, fs)) {
-      setFullFileStatus(conf, sourceStatus, targetGroup, fs, target, recursion, recursion ? new FsShell() : null);
+      setFullFileStatus(conf, sourceStatus, targetGroup, fs, target, recursion, recursion ? new FsShell() : null, isDir);
     }
   }
 
   @VisibleForTesting
   static void setFullFileStatus(Configuration conf, HdfsUtils.HadoopFileStatus sourceStatus,
     String targetGroup, FileSystem fs, Path target, boolean recursion, FsShell fsShell) {
+    setFullFileStatus(conf, sourceStatus, targetGroup, fs, target, recursion, fsShell, true);
+  }
+
+  @VisibleForTesting
+  static void setFullFileStatus(Configuration conf, HdfsUtils.HadoopFileStatus sourceStatus,
+    String targetGroup, FileSystem fs, Path target, boolean recursion, FsShell fsShell, boolean isDir) {
     try {
       FileStatus fStatus = sourceStatus.getFileStatus();
       String group = fStatus.getGroup();
@@ -110,15 +121,47 @@ public class HdfsUtils {
       FsPermission sourcePerm = fStatus.getPermission();
       List<AclEntry> aclEntries = null;
       if (aclEnabled) {
-        if (sourceStatus.getAclEntries() != null) {
+        if (sourceStatus.getAclEntries() != null && ! sourceStatus.getAclEntries().isEmpty()) {
           LOG.trace(sourceStatus.getAclStatus().toString());
-          aclEntries = new ArrayList<>(sourceStatus.getAclEntries());
-          removeBaseAclEntries(aclEntries);
 
-          //the ACL api's also expect the tradition user/group/other permission in the form of ACL
-          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
-          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
-          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
+          List<AclEntry> defaults = extractDefaultAcls(sourceStatus.getAclEntries());
+          if (! defaults.isEmpty()) {
+            // Generate child ACLs based on parent DEFAULTs.
+            aclEntries = new ArrayList<AclEntry>(defaults.size() * 2);
+
+            // All ACCESS ACLs are derived from the DEFAULT ACLs of the parent.
+            // All DEFAULT ACLs of the parent are inherited by the child.
+            // If DEFAULT ACLs exist, it should include DEFAULTs for USER, OTHER, and MASK.
+            for (AclEntry acl : defaults) {
+              // OTHER permissions are not inherited by the child.
+              if (acl.getType() == AclEntryType.OTHER) {
+                aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, FsAction.NONE));
+              } else {
+                aclEntries.add(newAclEntry(AclEntryScope.ACCESS, acl.getType(), acl.getName(), acl.getPermission()));
+              }
+            }
+
+            // Add DEFAULTs for directories only; adding DEFAULTs for files throws an exception.
+            if (isDir) {
+              aclEntries.addAll(defaults);
+            }
+          } else {
+            // Parent has no DEFAULTs, hence child inherits no ACLs.
+            // Set basic permissions only.
+            FsAction groupAction = null;
+
+            for (AclEntry acl : sourceStatus.getAclEntries()) {
+              if (acl.getType() == AclEntryType.GROUP) {
+                groupAction = acl.getPermission();
+                break;
+              }
+            }
+
+            aclEntries = new ArrayList<AclEntry>(3);
+            aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
+            aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, groupAction));
+            aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, FsAction.NONE));
+          }
         }
       }
 
@@ -129,19 +172,16 @@ public class HdfsUtils {
         if (group != null && !group.isEmpty()) {
           run(fsShell, new String[]{"-chgrp", "-R", group, target.toString()});
         }
-        if (aclEnabled) {
-          if (null != aclEntries) {
-            //Attempt extended Acl operations only if its enabled, 8791but don't fail the operation regardless.
-            try {
-              //construct the -setfacl command
-              String aclEntry = Joiner.on(",").join(aclEntries);
-              run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
 
-            } catch (Exception e) {
-              LOG.info("Skipping ACL inheritance: File system for path " + target + " " +
-                  "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
-              LOG.debug("The details are: " + e, e);
-            }
+        if (aclEntries != null) {
+          try {
+            //construct the -setfacl command
+            String aclEntry = Joiner.on(",").join(aclEntries);
+            run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
+          } catch (Exception e) {
+            LOG.info("Skipping ACL inheritance: File system for path " + target + " " +
+                "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
+            LOG.debug("The details are: " + e, e);
           }
         } else {
           String permission = Integer.toString(sourcePerm.toShort(), 8);
@@ -149,15 +189,13 @@ public class HdfsUtils {
         }
       } else {
         if (group != null && !group.isEmpty()) {
-          if (targetGroup == null ||
-              !group.equals(targetGroup)) {
+          if (targetGroup == null || !group.equals(targetGroup)) {
             fs.setOwner(target, null, group);
           }
         }
-        if (aclEnabled) {
-          if (null != aclEntries) {
-            fs.setAcl(target, aclEntries);
-          }
+
+        if (aclEntries != null) {
+          fs.setAcl(target, aclEntries);
         } else {
           fs.setPermission(target, sourcePerm);
         }
@@ -172,35 +210,48 @@ public class HdfsUtils {
 
   /**
    * Create a new AclEntry with scope, type and permission (no name).
-   *
-   * @param scope
-   *          AclEntryScope scope of the ACL entry
-   * @param type
-   *          AclEntryType ACL entry type
-   * @param permission
-   *          FsAction set of permissions in the ACL entry
+   * @param scope AclEntryScope scope of the ACL entry
+   * @param type AclEntryType ACL entry type
+   * @param permission FsAction set of permissions in the ACL entry
    * @return AclEntry new AclEntry
    */
   private static AclEntry newAclEntry(AclEntryScope scope, AclEntryType type,
       FsAction permission) {
-    return new AclEntry.Builder().setScope(scope).setType(type)
+    return newAclEntry(scope, type, null, permission);
+  }
+
+  /**
+   * Create a new AclEntry with scope, type and permission (no name).
+   * @param scope AclEntryScope scope of the ACL entry
+   * @param type AclEntryType ACL entry type
+   * @param name AclEntry name
+   * @param permission FsAction set of permissions in the ACL entry
+   * @return AclEntry new AclEntry
+   */
+  private static AclEntry newAclEntry(AclEntryScope scope, AclEntryType type,
+      String name, FsAction permission) {
+    return new AclEntry.Builder().setScope(scope).setType(type).setName(name)
         .setPermission(permission).build();
   }
 
   /**
-   * Removes basic permission acls (unamed acls) from the list of acl entries
-   * @param entries acl entries to remove from.
+   * Extracts the DEFAULT ACL entries from the list of acl entries
+   * @param acls acl entries to extract from
+   * @return default unnamed acl entries
    */
-  private static void removeBaseAclEntries(List<AclEntry> entries) {
-    Iterables.removeIf(entries, new Predicate<AclEntry>() {
+  private static List<AclEntry> extractDefaultAcls(List<AclEntry> acls) {
+    List<AclEntry> defaults = new ArrayList<AclEntry>(acls);
+    Iterables.removeIf(defaults, new Predicate<AclEntry>() {
       @Override
-      public boolean apply(AclEntry input) {
-        if (input.getName() == null) {
+      public boolean apply(AclEntry acl) {
+        if (! acl.getScope().equals(AclEntryScope.DEFAULT)) {
           return true;
         }
         return false;
       }
     });
+
+    return defaults;
   }
 
   private static void run(FsShell shell, String[] command) throws Exception {

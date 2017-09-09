@@ -515,7 +515,7 @@ public class HiveAlterHandler implements AlterHandler {
               }
 
               //rename the data directory
-              wh.renameDir(srcPath, destPath);
+              wh.renameDir(srcPath, destPath, FileUtils.shouldInheritPerms(hiveConf, destFs));
               LOG.info("Partition directory rename from " + srcPath + " to " + destPath + " done.");
               dataWasMoved = true;
             }

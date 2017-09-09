@@ -29,7 +29,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.AclEntry;
+import org.apache.hadoop.fs.permission.AclEntryScope;
+import org.apache.hadoop.fs.permission.AclEntryType;
 import org.apache.hadoop.fs.permission.AclStatus;
+import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -79,11 +82,15 @@ public class TestHdfsUtils {
     FileStatus mockSourceStatus = mock(FileStatus.class);
     AclStatus mockAclStatus = mock(AclStatus.class);
     FileSystem mockFs = mock(FileSystem.class);
+    ArrayList<AclEntry> acls = new ArrayList<AclEntry>();
+    acls.add(new AclEntry.Builder().setScope(AclEntryScope.ACCESS).setType(AclEntryType.USER).setPermission(FsAction.ALL).build());
+    acls.add(new AclEntry.Builder().setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).setPermission(FsAction.READ_EXECUTE).build());
+    acls.add(new AclEntry.Builder().setScope(AclEntryScope.ACCESS).setType(AclEntryType.OTHER).setPermission(FsAction.NONE).build());
 
     when(mockSourceStatus.getPermission()).thenReturn(new FsPermission((short) 777));
     when(mockAclStatus.toString()).thenReturn("");
     when(mockHadoopFileStatus.getFileStatus()).thenReturn(mockSourceStatus);
-    when(mockHadoopFileStatus.getAclEntries()).thenReturn(new ArrayList<AclEntry>());
+    when(mockHadoopFileStatus.getAclEntries()).thenReturn(acls);
     when(mockHadoopFileStatus.getAclStatus()).thenReturn(mockAclStatus);
     doThrow(RuntimeException.class).when(mockFs).setAcl(any(Path.class), any(List.class));
 

@@ -49,17 +49,15 @@ public class MiniCluster {
   private JobConf m_conf = null;
 
   private final static MiniCluster INSTANCE = new MiniCluster();
-  private static boolean isSetup = true;
+  private static boolean isSetup = false;
 
   private MiniCluster() {
-    setupMiniDfsAndMrClusters();
   }
 
-  private void setupMiniDfsAndMrClusters() {
+  private void setupMiniDfsAndMrClusters(Configuration config) {
     try {
       final int dataNodes = 1;     // There will be 4 data nodes
       final int taskTrackers = 1;  // There will be 4 task tracker nodes
-      Configuration config = new Configuration();
 
       // Builds and starts the mini dfs and mapreduce clusters
       if(System.getProperty("hadoop.log.dir") == null) {
@@ -97,8 +95,12 @@ public class MiniCluster {
    * mapreduce cluster.
    */
   public static MiniCluster buildCluster() {
+    return buildCluster(new Configuration());
+  }
+
+  public static MiniCluster buildCluster(Configuration config) {
     if (!isSetup) {
-      INSTANCE.setupMiniDfsAndMrClusters();
+      INSTANCE.setupMiniDfsAndMrClusters(config);
       isSetup = true;
     }
     return INSTANCE;
@@ -131,6 +133,10 @@ public class MiniCluster {
     m_fileSys = null;
     m_dfs = null;
     m_mr = null;
+  }
+
+  public Configuration getConfiguration() {
+    return new Configuration(m_conf);
   }
 
   public Properties getProperties() {
