@@ -49,4 +49,9 @@ public class TestFolderPermissions extends FolderPermissionBase {
     FsPermission actual =  fs.getFileStatus(new Path(locn)).getPermission();
     Assert.assertEquals(expected[permIndex], actual);
   }
+
+  @Override
+  public void verifyInheritedPermission(String locn, int permIndex) throws Exception {
+    verifyPermission(locn, permIndex);
+  }
 }

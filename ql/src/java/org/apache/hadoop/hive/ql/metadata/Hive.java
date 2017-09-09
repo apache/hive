@@ -2863,7 +2863,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               }
 
               if (inheritPerms) {
-                HdfsUtils.setFullFileStatus(conf, fullDestStatus, srcGroup, destFs, destPath, false);
+                HdfsUtils.setFullFileStatus(conf, fullDestStatus, srcGroup, destFs, destPath, false, false);
               }
               if (null != newFiles) {
                 newFiles.add(destPath);
@@ -3086,7 +3086,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                     final String group = srcStatus.getGroup();
                     if(destFs.rename(srcStatus.getPath(), destFile)) {
                       if (inheritPerms) {
-                        HdfsUtils.setFullFileStatus(conf, desiredStatus, group, destFs, destFile, false);
+                        HdfsUtils.setFullFileStatus(conf, desiredStatus, group, destFs, destFile, false, false);
                       }
                     } else {
                       throw new IOException("rename for src path: " + srcStatus.getPath() + " to dest path:"
