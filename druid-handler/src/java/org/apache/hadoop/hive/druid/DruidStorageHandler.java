@@ -305,6 +305,9 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
       final String coordinatorAddress = HiveConf
               .getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_COORDINATOR_DEFAULT_ADDRESS);
       int maxTries = HiveConf.getIntVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_MAX_TRIES);
+      if (maxTries == 0) {
+        return;
+      }
       LOG.info("checking load status from coordinator {}", coordinatorAddress);
 
       String coordinatorResponse = null;

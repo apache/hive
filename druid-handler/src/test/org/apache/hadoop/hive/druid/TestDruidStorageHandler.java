@@ -115,6 +115,7 @@ public class TestDruidStorageHandler {
     config.set(String.valueOf(HiveConf.ConfVars.DRUID_WORKING_DIR), tableWorkingPath);
     config.set(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY),
             new Path(tableWorkingPath, "finalSegmentDir").toString());
+    config.set("hive.druid.maxTries", "0");
     druidStorageHandler = new DruidStorageHandler(
             derbyConnectorRule.getConnector(),
             derbyConnectorRule.metadataTablesConfigSupplier().get()
