@@ -48,6 +48,12 @@ public class AddPrimaryKeyHandler extends AbstractMessageHandler {
         throw (SemanticException)e;
       }
     }
+
+    List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
+    if (pks.isEmpty()) {
+      return tasks;
+    }
+
     String actualDbName = context.isDbNameEmpty() ? pks.get(0).getTable_db() : context.dbName;
     String actualTblName = context.isTableNameEmpty() ? pks.get(0).getTable_name() : context.tableName;
 
@@ -59,7 +65,6 @@ public class AddPrimaryKeyHandler extends AbstractMessageHandler {
     AlterTableDesc addConstraintsDesc = new AlterTableDesc(actualDbName + "." + actualTblName, pks, new ArrayList<SQLForeignKey>(),
         new ArrayList<SQLUniqueConstraint>(), context.eventOnlyReplicationSpec());
     Task<DDLWork> addConstraintsTask = TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet, addConstraintsDesc), context.hiveConf);
-    List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
     tasks.add(addConstraintsTask);
     context.log.debug("Added add constrains task : {}:{}", addConstraintsTask.getId(), actualTblName);
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);

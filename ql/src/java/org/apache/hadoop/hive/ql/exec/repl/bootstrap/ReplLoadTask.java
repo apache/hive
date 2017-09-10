@@ -25,11 +25,14 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.BootstrapEvent;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.ConstraintEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.DatabaseEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.FunctionEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.PartitionEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.ConstraintEventsIterator;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadConstraint;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadFunction;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
@@ -77,6 +80,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           a database ( directory )
       */
       BootstrapEventsIterator iterator = work.iterator();
+      ConstraintEventsIterator constraintIterator = work.constraintIterator();
       /*
       This is used to get hold of a reference during the current creation of tasks and is initialized
       with "0" tasks such that it will be non consequential in any operations done with task tracker
@@ -85,8 +89,17 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       TaskTracker dbTracker = new TaskTracker(ZERO_TASKS);
       TaskTracker tableTracker = new TaskTracker(ZERO_TASKS);
       Scope scope = new Scope();
-      while (iterator.hasNext() && loadTaskTracker.canAddMoreTasks()) {
-        BootstrapEvent next = iterator.next();
+      boolean loadingConstraint = false;
+      if (!iterator.hasNext() && constraintIterator.hasNext()) {
+        loadingConstraint = true;
+      }
+      while ((iterator.hasNext() || (loadingConstraint && constraintIterator.hasNext())) && loadTaskTracker.canAddMoreTasks()) {
+        BootstrapEvent next;
+        if (!loadingConstraint) {
+          next = iterator.next();
+        } else {
+          next = constraintIterator.next();
+        }
         switch (next.eventType()) {
         case Database:
           DatabaseEvent dbEvent = (DatabaseEvent) next;
@@ -173,15 +186,24 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           functionsTracker.debugLog("functions");
           break;
         }
+        case Constraint: {
+          LoadConstraint loadConstraint =
+              new LoadConstraint(context, (ConstraintEvent) next, work.dbNameToLoadIn, dbTracker);
+          TaskTracker constraintTracker = loadConstraint.tasks();
+          scope.rootTasks.addAll(constraintTracker.tasks());
+          loadTaskTracker.update(constraintTracker);
+          constraintTracker.debugLog("constraints");
+        }
         }
 
-        if (!iterator.currentDbHasNext()) {
+        if (!loadingConstraint && !iterator.currentDbHasNext()) {
           createEndReplLogTask(context, scope, iterator.replLogger());
         }
       }
-      boolean addAnotherLoadTask = iterator.hasNext() || loadTaskTracker.hasReplicationState();
+      boolean addAnotherLoadTask = iterator.hasNext() || loadTaskTracker.hasReplicationState()
+          || constraintIterator.hasNext();
       createBuilderTask(scope.rootTasks, addAnotherLoadTask);
-      if (!iterator.hasNext()) {
+      if (!iterator.hasNext() && !constraintIterator.hasNext()) {
         loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, context, scope));
         work.updateDbEventState(null);
       }

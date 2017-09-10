@@ -49,19 +49,27 @@ public class AddForeignKeyHandler extends AbstractMessageHandler {
       }
     }
 
+    List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
+    if (fks.isEmpty()) {
+      return tasks;
+    }
+
     String actualDbName = context.isDbNameEmpty() ? fks.get(0).getFktable_db() : context.dbName;
-    String actualTblName = context.isTableNameEmpty() ? fks.get(0).getPktable_name() : context.tableName;
+    String actualTblName = context.isTableNameEmpty() ? fks.get(0).getFktable_name() : context.tableName;
 
     for (SQLForeignKey fk : fks) {
-      fk.setPktable_db(actualDbName);
-      fk.setPktable_name(actualTblName);
+      // If parent table is in the same database, change it to the actual db on destination
+      // Otherwise, keep db name
+      if (fk.getPktable_db().equals(fk.getFktable_db())) {
+        fk.setPktable_db(actualDbName);
+      }
       fk.setFktable_db(actualDbName);
+      fk.setFktable_name(actualTblName);
     }
 
     AlterTableDesc addConstraintsDesc = new AlterTableDesc(actualDbName + "." + actualTblName, new ArrayList<SQLPrimaryKey>(), fks,
         new ArrayList<SQLUniqueConstraint>(), context.eventOnlyReplicationSpec());
     Task<DDLWork> addConstraintsTask = TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet, addConstraintsDesc), context.hiveConf);
-    List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
     tasks.add(addConstraintsTask);
     context.log.debug("Added add constrains task : {}:{}", addConstraintsTask.getId(), actualTblName);
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);

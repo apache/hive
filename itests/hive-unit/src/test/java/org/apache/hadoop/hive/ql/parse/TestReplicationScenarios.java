@@ -2776,16 +2776,15 @@ public class TestReplicationScenarios {
     LOG.info("Dumped to {} with id {}", replDumpLocn, replDumpId);
     run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
-    // bootstrap replication for constraint is not implemented. Will verify it works once done
     try {
       List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(dbName+ "_dupe" , "tbl1"));
-      assertTrue(pks.isEmpty());
+      assertEquals(pks.size(), 1);
       List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(dbName+ "_dupe" , "tbl1"));
-      assertTrue(uks.isEmpty());
+      assertEquals(uks.size(), 1);
       List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, dbName+ "_dupe" , "tbl2"));
-      assertTrue(fks.isEmpty());
+      assertEquals(fks.size(), 1);
       List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(dbName+ "_dupe" , "tbl3"));
-      assertTrue(nns.isEmpty());
+      assertEquals(nns.size(), 1);
     } catch (TException te) {
       assertNull(te);
     }
