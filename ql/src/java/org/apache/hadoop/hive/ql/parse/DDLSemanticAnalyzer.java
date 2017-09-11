@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -1673,23 +1674,35 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // throw a HiveException for other than rcfile and orcfile.
       if (!((inputFormatClass.equals(RCFileInputFormat.class) ||
           (inputFormatClass.equals(OrcInputFormat.class))))) {
-        throw new SemanticException(
-            "Only RCFile and ORCFile Formats are supported right now.");
+        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_FILE_FORMAT.getMsg());
       }
       mergeDesc.setInputFormatClass(inputFormatClass);
 
       // throw a HiveException if the table/partition is bucketized
       if (bucketCols != null && bucketCols.size() > 0) {
-        throw new SemanticException(
-            "Merge can not perform on bucketized partition/table.");
+        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_BUCKETED.getMsg());
       }
 
       // throw a HiveException if the table/partition is archived
       if (isArchived) {
-        throw new SemanticException(
-            "Merge can not perform on archived partitions.");
+        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_PARTITION_ARCHIVED.getMsg());
       }
 
+      // non-native and non-managed tables are not supported as MoveTask requires filenames to be in specific format,
+      // violating which can cause data loss
+      if (tblObj.isNonNative()) {
+        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NON_NATIVE.getMsg());
+      }
+
+      if (tblObj.getTableType() != TableType.MANAGED_TABLE) {
+        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NOT_MANAGED.getMsg());
+      }
+
+      // transactional tables are compacted and no longer needs to be bucketed, so not safe for merge/concatenation
+      boolean isAcid = AcidUtils.isAcidTable(tblObj);
+      if (isAcid) {
+        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_TRANSACTIONAL.getMsg());
+      }
       inputDir.add(oldTblPartLoc);
 
       mergeDesc.setInputDir(inputDir);
