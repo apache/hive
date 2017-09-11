@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,7 +41,6 @@ import io.druid.timeline.partition.NumberedShardSpec;
 import io.druid.timeline.partition.PartitionChunk;
 import io.druid.timeline.partition.ShardSpec;
 
-import org.apache.calcite.adapter.druid.LocalInterval;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -56,7 +55,6 @@ import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -114,7 +112,6 @@ import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nullable;
 
 /**
  * Utils class for Druid storage handler.
@@ -124,12 +121,14 @@ public final class DruidStorageHandlerUtils {
   private static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandlerUtils.class);
 
   private static final String SMILE_CONTENT_TYPE = "application/x-jackson-smile";
+
   public static final String DEFAULT_TIMESTAMP_COLUMN = "__time";
 
   public static final Interval DEFAULT_INTERVAL = new Interval(
           new DateTime("1900-01-01", ISOChronology.getInstanceUTC()),
           new DateTime("3000-01-01", ISOChronology.getInstanceUTC())
   ).withChronology(ISOChronology.getInstanceUTC());
+
   /**
    * Mapper to use to serialize/deserialize Druid objects (JSON)
    */
@@ -140,8 +139,11 @@ public final class DruidStorageHandlerUtils {
    */
   public static final ObjectMapper SMILE_MAPPER = new DefaultObjectMapper(new SmileFactory());
 
-  static
-  {
+  public static final String INDEX_ZIP = "index.zip";
+  public static final String DESCRIPTOR_JSON = "descriptor.json";
+
+
+  static {
     // This is needed for serde of PagingSpec as it uses JacksonInject for injecting SelectQueryConfig
     InjectableValues.Std injectableValues = new InjectableValues.Std()
             .addValue(SelectQueryConfig.class, new SelectQueryConfig(false))
@@ -394,134 +396,137 @@ public final class DruidStorageHandlerUtils {
           final List<DataSegment> segments,
           boolean overwrite,
           String segmentDirectory,
-          Configuration conf) {
-    try {
-      connector.getDBI().inTransaction(
-              new TransactionCallback<Void>() {
-                @Override
-                public Void inTransaction(Handle handle, TransactionStatus transactionStatus)
-                        throws Exception {
-                  final List<DataSegment> finalSegmentsToPublish = Lists.newArrayList();
-                  VersionedIntervalTimeline<String, DataSegment> timeline;
-                  if (overwrite) {
-                    disableDataSourceWithHandle(handle, metadataStorageTablesConfig, dataSource);
-                    // When overwriting start with empty timeline, as we are overwriting segments with new versions
-                    timeline = new VersionedIntervalTimeline<>(
-                            Ordering.natural()
-                    );
-                  } else {
-                    // Append Mode - build a timeline of existing segments in metadata storage.
-                    Interval indexedInterval = JodaUtils
-                            .umbrellaInterval(Iterables.transform(segments,
-                                    new Function<DataSegment, Interval>() {
-                                      @Override
-                                      public Interval apply(@Nullable DataSegment input) {
-                                        return input.getInterval();
-                                      }
-                                    }));
-                    timeline = getTimelineForIntervalWithHandle(
-                            handle, dataSource, indexedInterval, metadataStorageTablesConfig);
-                  }
-                  for (DataSegment segment : segments) {
-                    List<TimelineObjectHolder<String, DataSegment>> existingChunks = timeline
-                            .lookup(segment.getInterval());
-                    if (existingChunks.size() > 1) {
-                      // Not possible to expand since we have more than one chunk with a single segment.
-                      // This is the case when user wants to append a segment with coarser granularity.
-                      // e.g If metadata storage already has segments for with granularity HOUR and segments to append have DAY granularity.
-                      // Druid shard specs does not support multiple partitions for same interval with different granularity.
-                      throw new IllegalStateException(
-                              String.format(
-                                      "Cannot allocate new segment for dataSource[%s], interval[%s], already have [%,d] chunks. Not possible to append new segment.",
-                                      dataSource,
-                                      segment.getInterval(),
-                                      existingChunks.size()
-                              )
-                      );
-                    }
-                    // Find out the segment with latest version and maximum partition number
-                    SegmentIdentifier max = null;
-                    final ShardSpec newShardSpec;
-                    final String newVersion;
-                    if (!existingChunks.isEmpty()) {
-                      // Some existing chunk, Find max
-                      TimelineObjectHolder<String, DataSegment> existingHolder = Iterables
-                              .getOnlyElement(existingChunks);
-                      for (PartitionChunk<DataSegment> existing : existingHolder.getObject()) {
-                        if (max == null ||
-                                max.getShardSpec().getPartitionNum() < existing.getObject()
-                                        .getShardSpec()
-                                        .getPartitionNum()) {
-                          max = SegmentIdentifier.fromDataSegment(existing.getObject());
-                        }
-                      }
-                    }
-
-                    if (max == null) {
-                      // No existing shard present in the database, use the current version.
-                      newShardSpec = segment.getShardSpec();
-                      newVersion = segment.getVersion();
-                    } else  {
-                      // use version of existing max segment to generate new shard spec
-                      newShardSpec = getNextPartitionShardSpec(max.getShardSpec());
-                      newVersion = max.getVersion();
-                    }
-
-                    DataSegment publishedSegment = publishSegmentWithShardSpec(segment,
-                            newShardSpec, newVersion,
-                            segmentDirectory, getPath(segment).getFileSystem(conf));
-                    finalSegmentsToPublish.add(publishedSegment);
-                    timeline.add(publishedSegment.getInterval(), publishedSegment.getVersion(),
-                            publishedSegment.getShardSpec().createChunk(publishedSegment));
-
-                  }
-
-                  // Publish new segments to metadata storage
-                  final PreparedBatch batch = handle.prepareBatch(
-                          String.format(
-                                  "INSERT INTO %1$s (id, dataSource, created_date, start, \"end\", partitioned, version, used, payload) "
-                                      + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",
-                                  metadataStorageTablesConfig.getSegmentsTable()
-                          )
-
-                  );
-
-                  for (final DataSegment segment : finalSegmentsToPublish) {
-
-                    batch.add(
-                            new ImmutableMap.Builder<String, Object>()
-                                    .put("id", segment.getIdentifier())
-                                    .put("dataSource", segment.getDataSource())
-                                    .put("created_date", new DateTime().toString())
-                                    .put("start", segment.getInterval().getStart().toString())
-                                    .put("end", segment.getInterval().getEnd().toString())
-                                    .put("partitioned",
-                                            (segment.getShardSpec() instanceof NoneShardSpec) ?
-                                                    false :
-                                                    true)
-                                    .put("version", segment.getVersion())
-                                    .put("used", true)
-                                    .put("payload", JSON_MAPPER.writeValueAsBytes(segment))
-                                    .build()
-                    );
-
-                    LOG.info("Published {}", segment.getIdentifier());
-
-                  }
-                  batch.execute();
-
-                  return null;
-                }
+          Configuration conf,
+          DataSegmentPusher dataSegmentPusher
+  ) throws CallbackFailedException {
+    connector.getDBI().inTransaction(
+            (TransactionCallback<Void>) (handle, transactionStatus) -> {
+              final List<DataSegment> finalSegmentsToPublish = Lists.newArrayList();
+              VersionedIntervalTimeline<String, DataSegment> timeline;
+              if (overwrite) {
+                disableDataSourceWithHandle(handle, metadataStorageTablesConfig, dataSource);
+                // When overwriting start with empty timeline, as we are overwriting segments with new versions
+                timeline = new VersionedIntervalTimeline<>(
+                        Ordering.natural()
+                );
+              } else {
+                // Append Mode - build a timeline of existing segments in metadata storage.
+                Interval indexedInterval = JodaUtils
+                        .umbrellaInterval(Iterables.transform(segments,
+                                input -> input.getInterval()
+                        ));
+                LOG.info("Building timeline for umbrella Interval [{}]", indexedInterval);
+                timeline = getTimelineForIntervalWithHandle(
+                        handle, dataSource, indexedInterval, metadataStorageTablesConfig);
               }
-      );
-    } catch (CallbackFailedException e) {
-      LOG.error("Exception while publishing segments", e.getCause());
-      throw Throwables.propagate(e.getCause());
-    }
+              for (DataSegment segment : segments) {
+                List<TimelineObjectHolder<String, DataSegment>> existingChunks = timeline
+                        .lookup(segment.getInterval());
+                if (existingChunks.size() > 1) {
+                  // Not possible to expand since we have more than one chunk with a single segment.
+                  // This is the case when user wants to append a segment with coarser granularity.
+                  // e.g If metadata storage already has segments for with granularity HOUR and segments to append have DAY granularity.
+                  // Druid shard specs does not support multiple partitions for same interval with different granularity.
+                  throw new IllegalStateException(
+                          String.format(
+                                  "Cannot allocate new segment for dataSource[%s], interval[%s], already have [%,d] chunks. Not possible to append new segment.",
+                                  dataSource,
+                                  segment.getInterval(),
+                                  existingChunks.size()
+                          )
+                  );
+                }
+                // Find out the segment with latest version and maximum partition number
+                SegmentIdentifier max = null;
+                final ShardSpec newShardSpec;
+                final String newVersion;
+                if (!existingChunks.isEmpty()) {
+                  // Some existing chunk, Find max
+                  TimelineObjectHolder<String, DataSegment> existingHolder = Iterables
+                          .getOnlyElement(existingChunks);
+                  for (PartitionChunk<DataSegment> existing : existingHolder.getObject()) {
+                    if (max == null ||
+                            max.getShardSpec().getPartitionNum() < existing.getObject()
+                                    .getShardSpec()
+                                    .getPartitionNum()) {
+                      max = SegmentIdentifier.fromDataSegment(existing.getObject());
+                    }
+                  }
+                }
+
+                if (max == null) {
+                  // No existing shard present in the database, use the current version.
+                  newShardSpec = segment.getShardSpec();
+                  newVersion = segment.getVersion();
+                  LOG.info("no Old segment covering this segment {}", segment.getIdentifier());
+                } else {
+                  // use version of existing max segment to generate new shard spec
+                  newShardSpec = getNextPartitionShardSpec(max.getShardSpec());
+                  newVersion = max.getVersion();
+                  LOG.info("Found older segment with Version {} and Shared spec{}", newVersion,
+                          newShardSpec
+                  );
+                }
+                //@TODO THE partition is missing we are trying to publish a segment from the same interval with the same version
+                // but that segment exist in HDFS
+                //hdfs dfs -ls -R /druid/segments/druid_login_test_tmp/20150309T000000.000-0400_20150310T000000.000-0400/2017-09-08T20_51_53.960-04_00
+                //-rw-r--r--   3 sbouguerra hadoop        558 2017-09-08 20:52 /druid/segments/druid_login_test_tmp/20150309T000000.000-0400_20150310T000000.000-0400/2017-09-08T20_51_53.960-04_00/descriptor.json
+                //        -rw-r--r--   3 sbouguerra hdfs         1086 2017-09-08 20:52 /druid/segments/druid_login_test_tmp/20150309T000000.000-0400_20150310T000000.000-0400/2017-09-08T20_51_53.960-04_00/index.zip
+                // find out how we are doing the partition thus if i try to append it will work
+                // but not if the same segment exists
+                DataSegment publishedSegment = publishSegmentWithShardSpec(segment,
+                        newShardSpec, newVersion,
+                        segmentDirectory, getPath(segment).getFileSystem(conf), dataSegmentPusher
+                );
+                finalSegmentsToPublish.add(publishedSegment);
+                timeline.add(publishedSegment.getInterval(), publishedSegment.getVersion(),
+                        publishedSegment.getShardSpec().createChunk(publishedSegment)
+                );
+
+              }
+
+              // Publish new segments to metadata storage
+              final PreparedBatch batch = handle.prepareBatch(
+                      String.format(
+                              "INSERT INTO %1$s (id, dataSource, created_date, start, \"end\", partitioned, version, used, payload) "
+                                      + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",
+                              metadataStorageTablesConfig.getSegmentsTable()
+                      )
+
+              );
+
+              for (final DataSegment segment : finalSegmentsToPublish) {
+
+                batch.add(
+                        new ImmutableMap.Builder<String, Object>()
+                                .put("id", segment.getIdentifier())
+                                .put("dataSource", segment.getDataSource())
+                                .put("created_date", new DateTime().toString())
+                                .put("start", segment.getInterval().getStart().toString())
+                                .put("end", segment.getInterval().getEnd().toString())
+                                .put("partitioned",
+                                        (segment.getShardSpec() instanceof NoneShardSpec) ?
+                                                false :
+                                                true
+                                )
+                                .put("version", segment.getVersion())
+                                .put("used", true)
+                                .put("payload", JSON_MAPPER.writeValueAsBytes(segment))
+                                .build()
+                );
+
+                LOG.info("Published {}", segment.getIdentifier());
+              }
+              batch.execute();
+
+              return null;
+            }
+    );
   }
 
   public static void disableDataSourceWithHandle(Handle handle,
-          MetadataStorageTablesConfig metadataStorageTablesConfig, String dataSource) {
+          MetadataStorageTablesConfig metadataStorageTablesConfig, String dataSource
+  ) {
     handle.createStatement(
             String.format("UPDATE %s SET used=false WHERE dataSource = :dataSource",
                     metadataStorageTablesConfig.getSegmentsTable()
@@ -672,7 +677,8 @@ public final class DruidStorageHandlerUtils {
                 DataSegment.class
         );
         timeline.add(segment.getInterval(), segment.getVersion(),
-                segment.getShardSpec().createChunk(segment));
+                segment.getShardSpec().createChunk(segment)
+        );
       }
     } finally {
       dbSegments.close();
@@ -681,7 +687,8 @@ public final class DruidStorageHandlerUtils {
   }
 
   public static DataSegmentPusher createSegmentPusherForDirectory(String segmentDirectory,
-          Configuration configuration) throws IOException {
+          Configuration configuration
+  ) throws IOException {
     final HdfsDataSegmentPusherConfig hdfsDataSegmentPusherConfig = new HdfsDataSegmentPusherConfig();
     hdfsDataSegmentPusherConfig.setStorageDirectory(segmentDirectory);
     return new HdfsDataSegmentPusher(
@@ -689,7 +696,8 @@ public final class DruidStorageHandlerUtils {
   }
 
   public static DataSegment publishSegmentWithShardSpec(DataSegment segment, ShardSpec shardSpec,
-          String version, String segmentDirectory, FileSystem fs)
+          String version, String segmentDirectory, FileSystem fs, DataSegmentPusher dataSegmentPusher
+  )
           throws IOException {
     boolean retry = true;
     DataSegment.Builder dataSegmentBuilder = new DataSegment.Builder(segment).version(version);
@@ -698,8 +706,9 @@ public final class DruidStorageHandlerUtils {
       retry = false;
       dataSegmentBuilder.shardSpec(shardSpec);
       final Path intermediatePath = getPath(segment);
-      finalPath = finalPathForSegment(segmentDirectory, dataSegmentBuilder.build());
 
+      finalPath = new Path(dataSegmentPusher.getPathForHadoop(), dataSegmentPusher
+              .makeIndexPathName(dataSegmentBuilder.build(), DruidStorageHandlerUtils.INDEX_ZIP));
       // Create parent if it does not exist, recreation is not an error
       fs.mkdirs(finalPath.getParent());
 
@@ -718,26 +727,12 @@ public final class DruidStorageHandlerUtils {
       }
     }
     DataSegment dataSegment = dataSegmentBuilder
-            .loadSpec(ImmutableMap.<String, Object>of("type", "hdfs", "path", finalPath.toString()))
+            .loadSpec(dataSegmentPusher.makeLoadSpec(finalPath.toUri()))
             .build();
 
-    writeSegmentDescriptor(fs, dataSegment, new Path(finalPath.getParent(), "descriptor.json"));
+    writeSegmentDescriptor(fs, dataSegment, new Path(finalPath.getParent(), DruidStorageHandlerUtils.DESCRIPTOR_JSON));
 
     return dataSegment;
-  }
-
-  public static Path finalPathForSegment(String segmentDirectory, DataSegment segment) {
-    String path = DataSegmentPusher.JOINER.join(
-            segment.getDataSource(),
-            String.format(
-                    "%s_%s",
-                    segment.getInterval().getStart().toString(ISODateTimeFormat.basicDateTime()),
-                    segment.getInterval().getEnd().toString(ISODateTimeFormat.basicDateTime())
-            ),
-            segment.getVersion().replaceAll(":", "_")
-    );
-
-    return new Path(String.format("%s/%s/index.zip", segmentDirectory, path));
   }
 
   private static ShardSpec getNextPartitionShardSpec(ShardSpec shardSpec) {
@@ -745,7 +740,8 @@ public final class DruidStorageHandlerUtils {
       return new LinearShardSpec(shardSpec.getPartitionNum() + 1);
     } else if (shardSpec instanceof NumberedShardSpec) {
       return new NumberedShardSpec(shardSpec.getPartitionNum(),
-              ((NumberedShardSpec) shardSpec).getPartitions());
+              ((NumberedShardSpec) shardSpec).getPartitions()
+      );
     } else {
       // Druid only support appending more partitions to Linear and Numbered ShardSpecs.
       throw new IllegalStateException(
