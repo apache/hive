@@ -1,29 +1,25 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
  */
 package org.apache.hadoop.hive.metastore;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import com.codahale.metrics.Counter;
+import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -34,10 +30,10 @@ import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Role;
@@ -49,19 +45,33 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.model.MNotificationLog;
+import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
-
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
-
 import javax.jdo.Query;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestObjectStore {
   private ObjectStore objectStore = null;
@@ -204,7 +214,7 @@ public class TestObjectStore {
     StorageDescriptor sd1 = new StorageDescriptor(ImmutableList.of(new FieldSchema("pk_col", "double", null)),
             "location", null, null, false, 0, new SerDeInfo("SerDeName", "serializationLib", null),
             null, null, null);
-    HashMap<String,String> params = new HashMap<String,String>();
+    HashMap<String, String> params = new HashMap<>();
     params.put("EXTERNAL", "false");
     Table tbl1 = new Table(TABLE1, DB1, "owner", 1, 2, 3, sd1, null, params, null, null, "MANAGED_TABLE");
     objectStore.createTable(tbl1);
@@ -273,13 +283,13 @@ public class TestObjectStore {
     Database db1 = new Database(DB1, "description", "locationurl", null);
     objectStore.createDatabase(db1);
     StorageDescriptor sd = new StorageDescriptor(null, "location", null, null, false, 0, new SerDeInfo("SerDeName", "serializationLib", null), null, null, null);
-    HashMap<String,String> tableParams = new HashMap<String,String>();
+    HashMap<String, String> tableParams = new HashMap<>();
     tableParams.put("EXTERNAL", "false");
     FieldSchema partitionKey1 = new FieldSchema("Country", ColumnType.STRING_TYPE_NAME, "");
     FieldSchema partitionKey2 = new FieldSchema("State", ColumnType.STRING_TYPE_NAME, "");
     Table tbl1 = new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, Arrays.asList(partitionKey1, partitionKey2), tableParams, null, null, "MANAGED_TABLE");
     objectStore.createTable(tbl1);
-    HashMap<String, String> partitionParams = new HashMap<String, String>();
+    HashMap<String, String> partitionParams = new HashMap<>();
     partitionParams.put("PARTITION_LEVEL_PRIVILEGE", "true");
     List<String> value1 = Arrays.asList("US", "CA");
     Partition part1 = new Partition(value1, DB1, TABLE1, 111, 111, sd, partitionParams);
@@ -360,6 +370,10 @@ public class TestObjectStore {
     HiveConf conf = new HiveConf();
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
     Metrics.initialize(conf);
+    conf.setVar(HiveConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES,
+        "org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter, " +
+            "org.apache.hadoop.hive.common.metrics.metrics2.JmxMetricsReporter"
+    );
 
     // recall setup so that we get an object store with the metrics initalized
     setUp();
@@ -397,16 +411,16 @@ public class TestObjectStore {
     Assert.assertEquals(1, directSqlErrors.getCount());
   }
 
-  public static void dropAllStoreObjects(RawStore store) throws MetaException, InvalidObjectException, InvalidInputException {
+  private static void dropAllStoreObjects(RawStore store)
+      throws MetaException, InvalidObjectException, InvalidInputException {
     try {
       Deadline.registerIfNot(100000);
-      List<Function> funcs = store.getAllFunctions();
-      for (Function func : funcs) {
+      List<Function> functions = store.getAllFunctions();
+      for (Function func : functions) {
         store.dropFunction(func.getDbName(), func.getFunctionName());
       }
       List<String> dbs = store.getAllDatabases();
-      for (int i = 0; i < dbs.size(); i++) {
-        String db = dbs.get(i);
+      for (String db : dbs) {
         List<String> tbls = store.getAllTables(db);
         for (String tbl : tbls) {
           List<Index> indexes = store.getIndexes(db, tbl, 100);
@@ -458,5 +472,88 @@ public class TestObjectStore {
     spy.getPartitionCount();
     Mockito.verify(spy, Mockito.times(3))
         .rollbackAndCleanup(Mockito.anyBoolean(), Mockito.<Query>anyObject());
+  }
+
+    @Ignore(
+        "This test is here to allow testing with other databases like mysql / postgres etc\n"
+            + " with  user changes to the code. This cannot be run on apache derby because of\n"
+            + " https://db.apache.org/derby/docs/10.10/devguide/cdevconcepts842385.html"
+    )
+  @Test
+  public void testConcurrentAddNotifications() throws ExecutionException, InterruptedException {
+
+    final int NUM_THREADS = 10;
+    CyclicBarrier cyclicBarrier = new CyclicBarrier(NUM_THREADS,
+        () -> LoggerFactory.getLogger("test")
+            .debug(NUM_THREADS + " threads going to add notification"));
+
+    HiveConf conf = new HiveConf();
+    conf.setVar(HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS,
+        MockPartitionExpressionProxy.class.getName());
+    /*
+       Below are the properties that need to be set based on what database this test is going to be run
+     */
+
+//    conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER, "com.mysql.jdbc.Driver");
+//    conf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY,
+//        "jdbc:mysql://localhost:3306/metastore_db");
+//    conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME, "");
+//    conf.setVar(HiveConf.ConfVars.METASTOREPWD, "");
+
+    /*
+     we have to  add this one manually as for tests the db is initialized via the metastoreDiretSQL
+     and we don't run the schema creation sql that includes the an insert for notification_sequence
+     which can be locked. the entry in notification_sequence happens via notification_event insertion.
+    */
+      objectStore.getPersistenceManager().newQuery(MNotificationLog.class, "eventType==''").execute();
+      objectStore.getPersistenceManager().newQuery(MNotificationNextId.class, "nextEventId==-1").execute();
+
+      objectStore.addNotificationEvent(
+        new NotificationEvent(0, 0,
+            EventMessage.EventType.CREATE_DATABASE.toString(),
+            "CREATE DATABASE DB initial"));
+
+    ExecutorService executorService = Executors.newFixedThreadPool(NUM_THREADS);
+    for (int i = 0; i < NUM_THREADS; i++) {
+      final int n = i;
+
+      executorService.execute(
+          () -> {
+            ObjectStore store = new ObjectStore();
+            store.setConf(conf);
+
+            String eventType = EventMessage.EventType.CREATE_DATABASE.toString();
+            NotificationEvent dbEvent =
+                new NotificationEvent(0, 0, eventType,
+                    "CREATE DATABASE DB" + n);
+            System.out.println("ADDING NOTIFICATION");
+
+            try {
+              cyclicBarrier.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+              throw new RuntimeException(e);
+            }
+            store.addNotificationEvent(dbEvent);
+            System.out.println("FINISH NOTIFICATION");
+          });
+    }
+    executorService.shutdown();
+    assertTrue(executorService.awaitTermination(15, TimeUnit.SECONDS));
+
+    // we have to setup this again as the underlying PMF keeps getting reinitialized with original
+    // reference closed
+    ObjectStore store = new ObjectStore();
+    store.setConf(conf);
+
+    NotificationEventResponse eventResponse = store.getNextNotification(
+        new NotificationEventRequest());
+    assertEquals(NUM_THREADS + 1, eventResponse.getEventsSize());
+    long previousId = 0;
+    for (NotificationEvent event : eventResponse.getEvents()) {
+      assertTrue("previous:" + previousId + " current:" + event.getEventId(),
+          previousId < event.getEventId());
+      assertTrue(previousId + 1 == event.getEventId());
+      previousId = event.getEventId();
+    }
   }
 }
