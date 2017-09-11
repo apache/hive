@@ -241,6 +241,7 @@
               <sources>
                 <source>src/gen/thrift/gen-javabean</source>
                 <source>src/gen/protobuf/gen-java</source>
+                <source>src/gen/org</source>
               </sources>
             </configuration>
           </execution>
