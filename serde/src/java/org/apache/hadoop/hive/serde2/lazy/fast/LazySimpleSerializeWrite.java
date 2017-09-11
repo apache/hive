@@ -224,15 +224,13 @@ public final class LazySimpleSerializeWrite implements SerializeWrite {
 
   /*
    * STRING.
-   * 
+   *
    * Can be used to write CHAR and VARCHAR when the caller takes responsibility for
    * truncation/padding issues.
    */
   @Override
   public void writeString(byte[] v) throws IOException  {
     beginPrimitive();
-    if (v.equals(nullSequenceBytes)) {
-    }
     LazyUtils.writeEscaped(output, v, 0, v.length, isEscaped, escapeChar,
         needsEscape);
     finishPrimitive();
