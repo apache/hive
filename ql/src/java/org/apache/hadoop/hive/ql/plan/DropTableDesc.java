@@ -117,6 +117,13 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   }
 
   /**
+   * @return the expectedType
+   */
+  public TableType getExpectedType() {
+    return expectedType;
+  }
+
+  /**
    * @return whether to expect a view being dropped
    */
   public boolean getExpectView() {
