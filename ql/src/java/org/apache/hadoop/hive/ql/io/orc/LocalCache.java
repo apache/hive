@@ -48,7 +48,7 @@ class LocalCache implements OrcInputFormat.FooterCache {
     public long fileLength, fileModTime;
 
     public int getMemoryUsage() {
-      return bb.remaining() + 100; // 100 is for 2 longs, BB and java overheads (semi-arbitrary).
+      return bb.capacity() + 100; // 100 is for 2 longs, BB and java overheads (semi-arbitrary).
     }
   }
 
@@ -78,8 +78,12 @@ class LocalCache implements OrcInputFormat.FooterCache {
   }
 
   public void put(Path path, OrcTail tail) {
+    ByteBuffer bb = tail.getSerializedTail();
+    if (bb.capacity() != bb.remaining()) {
+      throw new RuntimeException("Bytebuffer allocated for path: " + path + " has remaining: " + bb.remaining() + " != capacity: " + bb.capacity());
+    }
     cache.put(path, new TailAndFileData(tail.getFileTail().getFileLength(),
-        tail.getFileModificationTime(), tail.getSerializedTail().duplicate()));
+        tail.getFileModificationTime(), bb.duplicate()));
   }
 
   @Override
