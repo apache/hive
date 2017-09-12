@@ -254,13 +254,13 @@ public class LlapZookeeperRegistryImpl
       this.instancesCache = cache;
       this.parent = parent;
       this.encoder = encoder;
-      parent.populateCache(instancesCache);
+      parent.populateCache(instancesCache, false);
     }
 
 
     @Override
     public Collection<LlapServiceInstance> getAll() {
-      return parent.getAll();
+      return parent.getAllInternal();
     }
 
     @Override
@@ -281,12 +281,12 @@ public class LlapZookeeperRegistryImpl
 
     @Override
     public Set<LlapServiceInstance> getByHost(String host) {
-      return parent.getByHost(host);
+      return parent.getByHostInternal(host);
     }
 
     @Override
     public int size() {
-      return parent.size();
+      return parent.sizeInternal();
     }
 
     @Override
@@ -402,14 +402,9 @@ public class LlapZookeeperRegistryImpl
   }
 
   @Override
-  public void start() throws IOException {
-    super.start();
-  }
-
-  @Override
-  public void stop() throws IOException {
-    super.stop();
+  public void stop() {
     CloseableUtils.closeQuietly(slotZnode);
+    super.stop();
   }
 
   @Override

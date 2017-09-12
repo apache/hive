@@ -86,7 +86,6 @@ public class HiveConf extends Configuration {
 
   private static byte[] confVarByteArray = null;
 
-
   private static final Map<String, ConfVars> vars = new HashMap<String, ConfVars>();
   private static final Map<String, ConfVars> metaConfs = new HashMap<String, ConfVars>();
   private final List<String> restrictList = new ArrayList<String>();
@@ -3274,6 +3273,12 @@ public class HiveConf extends Configuration {
       "llap.daemon.communicator.num.threads"),
     LLAP_DAEMON_DOWNLOAD_PERMANENT_FNS("hive.llap.daemon.download.permanent.fns", false,
         "Whether LLAP daemon should localize the resources for permanent UDFs."),
+    LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME("hive.llap.task.scheduler.am.registry", "llap",
+      "AM registry name for LLAP task scheduler plugin to register with."),
+    LLAP_TASK_SCHEDULER_AM_REGISTRY_PRINCIPAL("hive.llap.task.scheduler.am.registry.principal", "",
+      "The name of the principal used to access ZK AM registry securely."),
+    LLAP_TASK_SCHEDULER_AM_REGISTRY_KEYTAB_FILE("hive.llap.task.scheduler.am.registry.keytab.file", "",
+      "The path to the Kerberos keytab file used to access ZK AM registry securely."),
     LLAP_TASK_SCHEDULER_NODE_REENABLE_MIN_TIMEOUT_MS(
       "hive.llap.task.scheduler.node.reenable.min.timeout.ms", "200ms",
       new TimeValidator(TimeUnit.MILLISECONDS),

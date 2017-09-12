@@ -49,8 +49,14 @@ public class TestTezSessionPool {
     }
 
     @Override
-    public TezSessionPoolSession createSession(String sessionId) {
-      return new SampleTezSessionState(sessionId, this);
+    public void setupPool(HiveConf conf) throws InterruptedException {
+      conf.setVar(ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME, "");
+      super.setupPool(conf);
+    }
+
+    @Override
+    public TezSessionPoolSession createSession(String sessionId, HiveConf conf) {
+      return new SampleTezSessionState(sessionId, this, conf);
     }
   }
 
@@ -188,7 +194,7 @@ public class TestTezSessionPool {
       poolManager.reopenSession(session, conf);
 
       Mockito.verify(session).close(true);
-      Mockito.verify(session).open(conf, new HashSet<String>(), null);
+      Mockito.verify(session).open(new HashSet<String>(), null);
 
       // mocked session starts with default queue
       assertEquals("default", session.getQueueName());
@@ -325,7 +331,7 @@ public class TestTezSessionPool {
     poolManager.reopenSession(session, conf);
 
     Mockito.verify(session).close(true);
-    Mockito.verify(session).open(conf, new HashSet<String>(), null);
+    Mockito.verify(session).open(new HashSet<String>(), null);
   }
 
   @Test

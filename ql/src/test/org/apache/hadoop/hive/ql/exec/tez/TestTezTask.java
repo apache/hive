@@ -227,8 +227,7 @@ public class TestTezTask {
     task.submit(conf, dag, path, appLr, sessionState, Collections.<LocalResource> emptyList(),
         new String[0], Collections.<String,LocalResource> emptyMap());
     // validate close/reopen
-    verify(sessionState, times(1)).open(
-        any(HiveConf.class), any(Collection.class), any(Path.class));
+    verify(sessionState, times(1)).open(any(Collection.class), any(Path.class));
     verify(sessionState, times(1)).close(eq(true)); // now uses pool after HIVE-7043
     verify(session, times(2)).submitDAG(any(DAG.class));
   }

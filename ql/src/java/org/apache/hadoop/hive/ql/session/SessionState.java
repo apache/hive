@@ -627,7 +627,11 @@ public class SessionState {
 
     try {
       if (startSs.tezSessionState == null) {
-        startSs.setTezSession(new TezSessionState(startSs.getSessionId()));
+        startSs.setTezSession(new TezSessionState(startSs.getSessionId(), startSs.sessionConf));
+      } else {
+        // Only TezTask sets this, and then removes when done, so we don't expect to see it.
+        LOG.warn("Tez session was already present in SessionState before start: "
+            + startSs.tezSessionState);
       }
       if (startSs.tezSessionState.isOpen()) {
         return;
@@ -640,9 +644,9 @@ public class SessionState {
       }
       // Neither open nor opening.
       if (!isAsync) {
-        startSs.tezSessionState.open(startSs.sessionConf); // should use conf on session start-up
+        startSs.tezSessionState.open();
       } else {
-        startSs.tezSessionState.beginOpen(startSs.sessionConf, null, console);
+        startSs.tezSessionState.beginOpen(null, console);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);

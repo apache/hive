@@ -339,10 +339,9 @@ public class TezTask extends Task<TezWork> {
     TezClient client = session.getSession();
     // TODO null can also mean that this operation was interrupted. Should we really try to re-create the session in that case ?
     if (client == null) {
-      // can happen if the user sets the tez flag after the session was
-      // established
+      // Can happen if the user sets the tez flag after the session was established.
       LOG.info("Tez session hasn't been created yet. Opening session");
-      session.open(conf, inputOutputJars);
+      session.open(inputOutputJars);
     } else {
       LOG.info("Session is already open");
 
