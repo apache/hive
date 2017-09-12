@@ -2936,6 +2936,42 @@ public class TestReplicationScenarios {
     verifyRun("SELECT max(a) from " + dbName + "_dupe.ptned2 where b=1", new String[]{"8"}, driverMirror);
   }
 
+  @Test
+  public void testSkipTables() throws IOException {
+    String testName = "skipTables";
+    String dbName = createDB(testName, driver);
+
+    // Create table
+    run("CREATE TABLE " + dbName + ".acid_table (key int, value int) PARTITIONED BY (load_date date) " +
+        "CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+    verifyIfTableExist(dbName, "acid_table", metaStoreClient);
+
+    // Bootstrap test
+    advanceDumpDir();
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0,driver);
+    String replDumpId = getResult(0, 1, true, driver);
+    LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
+    verifyIfTableNotExist(dbName + "_dupe", "acid_table", metaStoreClientMirror);
+
+    // // Create another table for incremental repl verification
+    run("CREATE TABLE " + dbName + ".acid_table_incremental (key int, value int) PARTITIONED BY (load_date date) " +
+        "CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+    verifyIfTableExist(dbName, "acid_table_incremental", metaStoreClient);
+
+    // Perform REPL-DUMP/LOAD
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String incrementalDumpLocn = getResult(0,0,driver);
+    String incrementalDumpId = getResult(0,1,true,driver);
+    LOG.info("Incremental-dump: Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'", driverMirror);
+    verifyIfTableNotExist(dbName + "_dupe", "acid_table_incremental", metaStoreClientMirror);
+  }
+
   private static String createDB(String name, Driver myDriver) {
     LOG.info("Testing " + name);
     String dbName = name + "_" + tid;

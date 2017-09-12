@@ -420,7 +420,8 @@ public class EximUtil {
     }
 
     if (replicationSpec.isInReplicationScope()) {
-      return !(tableHandle == null || tableHandle.isTemporary() || tableHandle.isNonNative());
+      return !(tableHandle == null || tableHandle.isTemporary() || tableHandle.isNonNative() ||
+          (tableHandle.getParameters() != null && StringUtils.equals(tableHandle.getParameters().get("transactional"), "true")));
     }
 
     if (tableHandle.isNonNative()) {
