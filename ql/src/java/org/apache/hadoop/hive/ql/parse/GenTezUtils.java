@@ -25,6 +25,7 @@ import java.util.*;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -314,7 +315,7 @@ public class GenTezUtils {
         linked = context.linkedFileSinks.get(path);
         linked.add(desc);
 
-        desc.setDirName(new Path(path, "" + linked.size()));
+        desc.setDirName(new Path(path, AbstractFileMergeOperator.UNION_SUDBIR_PREFIX + linked.size()));
         desc.setLinkedFileSink(true);
         desc.setParentDir(path);
         desc.setLinkedFileSinkDesc(linked);
