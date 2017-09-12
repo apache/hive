@@ -127,7 +127,7 @@ Stage-0
                           Select Operator [SEL_48] (rows=1704 width=1910)
                             Output:["_col0","_col1"]
                             Filter Operator [FIL_97] (rows=1704 width=1910)
-                              predicate:(s_store_sk is not null and s_store_id is not null)
+                              predicate:(s_store_id is not null and s_store_sk is not null)
                               TableScan [TS_46] (rows=1704 width=1910)
                                 default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_id"]
                       <-Reducer 10 [SIMPLE_EDGE]
@@ -189,7 +189,7 @@ Stage-0
                           Select Operator [SEL_20] (rows=1704 width=1910)
                             Output:["_col0","_col1","_col2"]
                             Filter Operator [FIL_93] (rows=1704 width=1910)
-                              predicate:(s_store_sk is not null and s_store_id is not null)
+                              predicate:(s_store_id is not null and s_store_sk is not null)
                               TableScan [TS_18] (rows=1704 width=1910)
                                 default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_id","s_store_name"]
                       <-Reducer 4 [SIMPLE_EDGE]

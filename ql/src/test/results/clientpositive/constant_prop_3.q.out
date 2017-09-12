@@ -185,7 +185,7 @@ STAGE PLANS:
             alias: part_hive
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((p_size) IN (22, 14, 27, 49, 21, 33, 35, 28) and (p_brand <> 'Brand#34') and p_partkey is not null and (not (p_type like 'ECONOMY BRUSHED%'))) (type: boolean)
+              predicate: ((not (p_type like 'ECONOMY BRUSHED%')) and (p_brand <> 'Brand#34') and (p_size) IN (22, 14, 27, 49, 21, 33, 35, 28) and p_partkey is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int)

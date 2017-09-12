@@ -175,7 +175,7 @@ STAGE PLANS:
                   alias: over1k_orc
                   Statistics: Num rows: 1049 Data size: 23952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is null or (t = 27)) (type: boolean)
+                    predicate: ((t = 27) or t is null) (type: boolean)
                     Statistics: Num rows: 57 Data size: 1301 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -250,7 +250,7 @@ STAGE PLANS:
                   alias: over1k_orc
                   Statistics: Num rows: 1049 Data size: 23952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is null or (t = 27)) (type: boolean)
+                    predicate: ((t = 27) or t is null) (type: boolean)
                     Statistics: Num rows: 57 Data size: 1301 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -342,7 +342,7 @@ STAGE PLANS:
                   alias: over1k_orc
                   Statistics: Num rows: 1049 Data size: 23952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is null or (t = 27)) (type: boolean)
+                    predicate: ((t = 27) or t is null) (type: boolean)
                     Statistics: Num rows: 57 Data size: 1301 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -415,7 +415,7 @@ STAGE PLANS:
                   alias: over1k_orc
                   Statistics: Num rows: 1049 Data size: 23952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is null or (t = 27)) (type: boolean)
+                    predicate: ((t = 27) or t is null) (type: boolean)
                     Statistics: Num rows: 57 Data size: 1301 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -556,7 +556,7 @@ STAGE PLANS:
                   alias: over1k_orc
                   Statistics: Num rows: 1049 Data size: 23952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is null or (t = 27)) (type: boolean)
+                    predicate: ((t = 27) or t is null) (type: boolean)
                     Statistics: Num rows: 57 Data size: 1301 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -631,7 +631,7 @@ STAGE PLANS:
                   alias: over1k_orc
                   Statistics: Num rows: 1049 Data size: 23952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is null or (t = 27)) (type: boolean)
+                    predicate: ((t = 27) or t is null) (type: boolean)
                     Statistics: Num rows: 57 Data size: 1301 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -723,7 +723,7 @@ STAGE PLANS:
                   alias: over1k_orc
                   Statistics: Num rows: 1049 Data size: 23952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is null or (t = 27)) (type: boolean)
+                    predicate: ((t = 27) or t is null) (type: boolean)
                     Statistics: Num rows: 57 Data size: 1301 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -796,7 +796,7 @@ STAGE PLANS:
                   alias: over1k_orc
                   Statistics: Num rows: 1049 Data size: 23952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is null or (t = 27)) (type: boolean)
+                    predicate: ((t = 27) or t is null) (type: boolean)
                     Statistics: Num rows: 57 Data size: 1301 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -1339,7 +1339,7 @@ STAGE PLANS:
                   alias: over1k_orc
                   Statistics: Num rows: 1049 Data size: 23952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is null or (t = 27)) (type: boolean)
+                    predicate: ((t = 27) or t is null) (type: boolean)
                     Statistics: Num rows: 57 Data size: 1301 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -1411,7 +1411,7 @@ STAGE PLANS:
                   alias: over1k_orc
                   Statistics: Num rows: 1049 Data size: 23952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is null or (t = 27)) (type: boolean)
+                    predicate: ((t = 27) or t is null) (type: boolean)
                     Statistics: Num rows: 57 Data size: 1301 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -1508,7 +1508,7 @@ STAGE PLANS:
                   Number of rows: 10
                   Statistics: Num rows: 10 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (_col0 is null or (_col0 = 27)) (type: boolean)
+                    predicate: ((_col0 = 27) or _col0 is null) (type: boolean)
                     Statistics: Num rows: 10 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float), _col0 (type: tinyint)
@@ -1580,7 +1580,7 @@ STAGE PLANS:
                   alias: over1k_orc
                   Statistics: Num rows: 1049 Data size: 23952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is null or (t = 27)) (type: boolean)
+                    predicate: ((t = 27) or t is null) (type: boolean)
                     Statistics: Num rows: 57 Data size: 1301 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float)
@@ -1658,7 +1658,7 @@ STAGE PLANS:
                   alias: over1k_orc
                   Statistics: Num rows: 1049 Data size: 23952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is null or (t = 27)) (type: boolean)
+                    predicate: ((t = 27) or t is null) (type: boolean)
                     Statistics: Num rows: 57 Data size: 1301 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float)
@@ -2049,7 +2049,7 @@ STAGE PLANS:
                   alias: over1k_orc
                   Statistics: Num rows: 1049 Data size: 23952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is null or (t = 27)) (type: boolean)
+                    predicate: ((t = 27) or t is null) (type: boolean)
                     Statistics: Num rows: 57 Data size: 1301 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)
@@ -2121,7 +2121,7 @@ STAGE PLANS:
                   alias: over1k_orc
                   Statistics: Num rows: 1049 Data size: 23952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is null or (t = 27)) (type: boolean)
+                    predicate: ((t = 27) or t is null) (type: boolean)
                     Statistics: Num rows: 57 Data size: 1301 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: si (type: smallint), i (type: int), b (type: bigint), f (type: float), t (type: tinyint)

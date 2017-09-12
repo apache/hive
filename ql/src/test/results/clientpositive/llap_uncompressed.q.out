@@ -157,7 +157,7 @@ STAGE PLANS:
             filterExpr: ((cint > 10) and (cint < 5000000)) (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((cint > 10) and (cint < 5000000)) (type: boolean)
+              predicate: ((cint < 5000000) and (cint > 10)) (type: boolean)
               Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)

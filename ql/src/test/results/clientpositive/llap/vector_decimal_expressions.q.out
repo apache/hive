@@ -48,7 +48,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDecimalColGreaterDecimalScalar(col 1, val 0) -> boolean, FilterDecimalColLessDecimalScalar(col 1, val 12345.5678) -> boolean, FilterDecimalColNotEqualDecimalScalar(col 2, val 0) -> boolean, FilterDecimalColGreaterDecimalScalar(col 2, val 1000) -> boolean, SelectColumnIsNotNull(col 0) -> boolean) -> boolean
-                    predicate: ((cdecimal1 > 0) and (cdecimal1 < 12345.5678) and (cdecimal2 <> 0) and (cdecimal2 > 1000) and cdouble is not null) (type: boolean)
+                    predicate: ((cdecimal1 < 12345.5678) and (cdecimal1 > 0) and (cdecimal2 <> 0) and (cdecimal2 > 1000) and cdouble is not null) (type: boolean)
                     Statistics: Num rows: 455 Data size: 100294 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (cdecimal1 + cdecimal2) (type: decimal(25,14)), (cdecimal1 - (2 * cdecimal2)) (type: decimal(26,14)), ((cdecimal1 + 2.34) / cdecimal2) (type: decimal(38,13)), (cdecimal1 * (cdecimal2 / 3.4)) (type: decimal(38,17)), (cdecimal1 % 10) (type: decimal(12,10)), UDFToInteger(cdecimal1) (type: int), UDFToShort(cdecimal2) (type: smallint), UDFToByte(cdecimal2) (type: tinyint), UDFToLong(cdecimal1) (type: bigint), UDFToBoolean(cdecimal1) (type: boolean), UDFToDouble(cdecimal2) (type: double), UDFToFloat(cdecimal1) (type: float), UDFToString(cdecimal2) (type: string), CAST( cdecimal1 AS TIMESTAMP) (type: timestamp)

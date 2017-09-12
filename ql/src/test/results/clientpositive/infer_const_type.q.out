@@ -59,7 +59,7 @@ STAGE PLANS:
             alias: infertypes
             Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((ti = 127) and (si = 32767) and (i = 12345) and (bi = -12345) and (fl = 906) and (db = -307.0) and (UDFToDouble(str) = 1234.0)) (type: boolean)
+              predicate: ((UDFToDouble(str) = 1234.0) and (bi = -12345) and (db = -307.0) and (fl = 906) and (i = 12345) and (si = 32767) and (ti = 127)) (type: boolean)
               Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: 127 (type: tinyint), 32767 (type: smallint), 12345 (type: int), -12345 (type: bigint), 906.0 (type: float), -307.0 (type: double), str (type: string)
@@ -131,7 +131,7 @@ STAGE PLANS:
             alias: infertypes
             Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(ti) = 128.0) or (UDFToInteger(si) = 32768) or (UDFToDouble(i) = 2.147483648E9) or (UDFToDouble(bi) = 9.223372036854776E18)) (type: boolean)
+              predicate: ((UDFToDouble(bi) = 9.223372036854776E18) or (UDFToDouble(i) = 2.147483648E9) or (UDFToDouble(ti) = 128.0) or (UDFToInteger(si) = 32768)) (type: boolean)
               Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint), fl (type: float), db (type: double), str (type: string)
@@ -194,7 +194,7 @@ STAGE PLANS:
             alias: infertypes
             Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(ti) = 127.0) or (CAST( si AS decimal(5,0)) = 327) or (UDFToDouble(i) = -100.0)) (type: boolean)
+              predicate: ((CAST( si AS decimal(5,0)) = 327) or (UDFToDouble(i) = -100.0) or (UDFToDouble(ti) = 127.0)) (type: boolean)
               Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint), fl (type: float), db (type: double), str (type: string)
@@ -251,7 +251,7 @@ STAGE PLANS:
             alias: infertypes
             Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(ti) < 127.0) and (UDFToDouble(i) > 100.0) and (UDFToDouble(str) = 1.57)) (type: boolean)
+              predicate: ((UDFToDouble(i) > 100.0) and (UDFToDouble(str) = 1.57) and (UDFToDouble(ti) < 127.0)) (type: boolean)
               Statistics: Num rows: 1 Data size: 117 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ti (type: tinyint), si (type: smallint), i (type: int), bi (type: bigint), fl (type: float), db (type: double), str (type: string)

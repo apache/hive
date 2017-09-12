@@ -209,7 +209,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12) -> boolean, SelectColumnIsNotNull(col 10) -> boolean, SelectColumnIsNotNull(col 8) -> boolean) -> boolean
-                    predicate: (dt is not null and ts is not null and s is not null) (type: boolean)
+                    predicate: (dt is not null and s is not null and ts is not null) (type: boolean)
                     Statistics: Num rows: 850 Data size: 226338 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
@@ -275,7 +275,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12) -> boolean, SelectColumnIsNotNull(col 10) -> boolean, SelectColumnIsNotNull(col 8) -> boolean) -> boolean
-                    predicate: (dt is not null and ts is not null and s is not null) (type: boolean)
+                    predicate: (dt is not null and s is not null and ts is not null) (type: boolean)
                     Statistics: Num rows: 850 Data size: 226338 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)

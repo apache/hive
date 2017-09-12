@@ -134,7 +134,7 @@ Stage-0
                                                         Select Operator [SEL_32] (rows=18262 width=1119)
                                                           Output:["d_month_seq"]
                                                           Filter Operator [FIL_106] (rows=18262 width=1119)
-                                                            predicate:((d_year = 2000) and (d_moy = 2))
+                                                            predicate:((d_moy = 2) and (d_year = 2000))
                                                             TableScan [TS_3] (rows=73049 width=1119)
                                                               default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_month_seq","d_year","d_moy"]
                                   <-Reducer 19 [CUSTOM_SIMPLE_EDGE]
@@ -191,7 +191,7 @@ Stage-0
                                   Select Operator [SEL_12] (rows=575995635 width=88)
                                     Output:["_col0","_col1","_col2"]
                                     Filter Operator [FIL_102] (rows=575995635 width=88)
-                                      predicate:(ss_customer_sk is not null and ss_sold_date_sk is not null and ss_item_sk is not null)
+                                      predicate:(ss_customer_sk is not null and ss_item_sk is not null and ss_sold_date_sk is not null)
                                       TableScan [TS_10] (rows=575995635 width=88)
                                         default@store_sales,s,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_item_sk","ss_customer_sk"]
                               <-Reducer 2 [SIMPLE_EDGE]
@@ -221,6 +221,6 @@ Stage-0
                                             Select Operator [SEL_5] (rows=18262 width=1119)
                                               Output:["d_month_seq"]
                                               Filter Operator [FIL_101] (rows=18262 width=1119)
-                                                predicate:((d_year = 2000) and (d_moy = 2) and d_month_seq is not null)
+                                                predicate:((d_moy = 2) and (d_year = 2000) and d_month_seq is not null)
                                                  Please refer to the previous TableScan [TS_3]
 

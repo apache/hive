@@ -193,7 +193,7 @@ Stage-0
                                                   Select Operator [SEL_2] (rows=18262 width=1119)
                                                     Output:["_col0"]
                                                     Filter Operator [FIL_174] (rows=18262 width=1119)
-                                                      predicate:((d_year = 1999) and (d_moy = 3))
+                                                      predicate:((d_moy = 3) and (d_year = 1999))
                                                       TableScan [TS_73] (rows=73049 width=1119)
                                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_month_seq","d_year","d_moy"]
                                         <-Reducer 32 [CUSTOM_SIMPLE_EDGE]
@@ -310,7 +310,7 @@ Stage-0
                                                                       Select Operator [SEL_51] (rows=80000000 width=860)
                                                                         Output:["_col0","_col1"]
                                                                         Filter Operator [FIL_173] (rows=80000000 width=860)
-                                                                          predicate:(c_customer_sk is not null and c_current_addr_sk is not null)
+                                                                          predicate:(c_current_addr_sk is not null and c_customer_sk is not null)
                                                                           TableScan [TS_49] (rows=80000000 width=860)
                                                                             default@customer,customer,Tbl:COMPLETE,Col:NONE,Output:["c_customer_sk","c_current_addr_sk"]
                                                                   <-Reducer 18 [SIMPLE_EDGE]
@@ -348,7 +348,7 @@ Stage-0
                                                                                 Select Operator [SEL_37] (rows=287989836 width=135)
                                                                                   Output:["_col0","_col1","_col2"]
                                                                                   Filter Operator [FIL_169] (rows=287989836 width=135)
-                                                                                    predicate:(cs_item_sk is not null and cs_sold_date_sk is not null and cs_bill_customer_sk is not null)
+                                                                                    predicate:(cs_bill_customer_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null)
                                                                                     TableScan [TS_35] (rows=287989836 width=135)
                                                                                       Output:["cs_sold_date_sk","cs_bill_customer_sk","cs_item_sk"]
                                                                             <-Map 21 [CONTAINS]
@@ -357,7 +357,7 @@ Stage-0
                                                                                 Select Operator [SEL_40] (rows=144002668 width=135)
                                                                                   Output:["_col0","_col1","_col2"]
                                                                                   Filter Operator [FIL_170] (rows=144002668 width=135)
-                                                                                    predicate:(ws_item_sk is not null and ws_sold_date_sk is not null and ws_bill_customer_sk is not null)
+                                                                                    predicate:(ws_bill_customer_sk is not null and ws_item_sk is not null and ws_sold_date_sk is not null)
                                                                                     TableScan [TS_38] (rows=144002668 width=135)
                                                                                       Output:["ws_sold_date_sk","ws_item_sk","ws_bill_customer_sk"]
                                                   <-Reducer 2 [SIMPLE_EDGE]

@@ -150,7 +150,7 @@ Stage-0
                             Select Operator [SEL_23] (rows=21333171 width=88)
                               Output:["ss_list_price"]
                               Filter Operator [FIL_55] (rows=21333171 width=88)
-                                predicate:(ss_quantity BETWEEN 16 AND 20 and (ss_list_price BETWEEN 142 AND 152 or ss_coupon_amt BETWEEN 3054 AND 4054 or ss_wholesale_cost BETWEEN 80 AND 100))
+                                predicate:((ss_list_price BETWEEN 142 AND 152 or ss_coupon_amt BETWEEN 3054 AND 4054 or ss_wholesale_cost BETWEEN 80 AND 100) and ss_quantity BETWEEN 16 AND 20)
                                 TableScan [TS_0] (rows=575995635 width=88)
                                   default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity","ss_wholesale_cost","ss_list_price","ss_coupon_amt"]
             <-Reducer 12 [CUSTOM_SIMPLE_EDGE]
@@ -171,7 +171,7 @@ Stage-0
                             Select Operator [SEL_30] (rows=21333171 width=88)
                               Output:["ss_list_price"]
                               Filter Operator [FIL_56] (rows=21333171 width=88)
-                                predicate:(ss_quantity BETWEEN 11 AND 15 and (ss_list_price BETWEEN 66 AND 76 or ss_coupon_amt BETWEEN 920 AND 1920 or ss_wholesale_cost BETWEEN 4 AND 24))
+                                predicate:((ss_list_price BETWEEN 66 AND 76 or ss_coupon_amt BETWEEN 920 AND 1920 or ss_wholesale_cost BETWEEN 4 AND 24) and ss_quantity BETWEEN 11 AND 15)
                                  Please refer to the previous TableScan [TS_0]
             <-Reducer 14 [CUSTOM_SIMPLE_EDGE]
               PARTITION_ONLY_SHUFFLE [RS_47]
@@ -191,7 +191,7 @@ Stage-0
                             Select Operator [SEL_37] (rows=21333171 width=88)
                               Output:["ss_list_price"]
                               Filter Operator [FIL_57] (rows=21333171 width=88)
-                                predicate:(ss_quantity BETWEEN 6 AND 10 and (ss_list_price BETWEEN 91 AND 101 or ss_coupon_amt BETWEEN 1430 AND 2430 or ss_wholesale_cost BETWEEN 32 AND 52))
+                                predicate:((ss_list_price BETWEEN 91 AND 101 or ss_coupon_amt BETWEEN 1430 AND 2430 or ss_wholesale_cost BETWEEN 32 AND 52) and ss_quantity BETWEEN 6 AND 10)
                                  Please refer to the previous TableScan [TS_0]
             <-Reducer 3 [CUSTOM_SIMPLE_EDGE]
               PARTITION_ONLY_SHUFFLE [RS_42]
@@ -211,7 +211,7 @@ Stage-0
                             Select Operator [SEL_2] (rows=21333171 width=88)
                               Output:["ss_list_price"]
                               Filter Operator [FIL_52] (rows=21333171 width=88)
-                                predicate:(ss_quantity BETWEEN 0 AND 5 and (ss_list_price BETWEEN 11 AND 21 or ss_coupon_amt BETWEEN 460 AND 1460 or ss_wholesale_cost BETWEEN 14 AND 34))
+                                predicate:((ss_list_price BETWEEN 11 AND 21 or ss_coupon_amt BETWEEN 460 AND 1460 or ss_wholesale_cost BETWEEN 14 AND 34) and ss_quantity BETWEEN 0 AND 5)
                                  Please refer to the previous TableScan [TS_0]
             <-Reducer 6 [CUSTOM_SIMPLE_EDGE]
               PARTITION_ONLY_SHUFFLE [RS_43]
@@ -231,7 +231,7 @@ Stage-0
                             Select Operator [SEL_9] (rows=21333171 width=88)
                               Output:["ss_list_price"]
                               Filter Operator [FIL_53] (rows=21333171 width=88)
-                                predicate:(ss_quantity BETWEEN 26 AND 30 and (ss_list_price BETWEEN 28 AND 38 or ss_coupon_amt BETWEEN 2513 AND 3513 or ss_wholesale_cost BETWEEN 42 AND 62))
+                                predicate:((ss_list_price BETWEEN 28 AND 38 or ss_coupon_amt BETWEEN 2513 AND 3513 or ss_wholesale_cost BETWEEN 42 AND 62) and ss_quantity BETWEEN 26 AND 30)
                                  Please refer to the previous TableScan [TS_0]
             <-Reducer 8 [CUSTOM_SIMPLE_EDGE]
               PARTITION_ONLY_SHUFFLE [RS_44]
@@ -251,6 +251,6 @@ Stage-0
                             Select Operator [SEL_16] (rows=21333171 width=88)
                               Output:["ss_list_price"]
                               Filter Operator [FIL_54] (rows=21333171 width=88)
-                                predicate:(ss_quantity BETWEEN 21 AND 25 and (ss_list_price BETWEEN 135 AND 145 or ss_coupon_amt BETWEEN 14180 AND 15180 or ss_wholesale_cost BETWEEN 38 AND 58))
+                                predicate:((ss_list_price BETWEEN 135 AND 145 or ss_coupon_amt BETWEEN 14180 AND 15180 or ss_wholesale_cost BETWEEN 38 AND 58) and ss_quantity BETWEEN 21 AND 25)
                                  Please refer to the previous TableScan [TS_0]
 

@@ -103,7 +103,7 @@ STAGE PLANS:
           alias: hbase_ck_5
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
-            predicate: ((key.col1 >= '165') and (key.col1 < '27')) (type: boolean)
+            predicate: ((key.col1 < '27') and (key.col1 >= '165')) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: key (type: struct<col1:string,col2:string,col3:string>), value (type: string)

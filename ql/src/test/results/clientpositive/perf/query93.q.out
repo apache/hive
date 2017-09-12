@@ -83,7 +83,7 @@ Stage-0
                               Select Operator [SEL_2] (rows=57591150 width=77)
                                 Output:["_col0","_col1","_col2","_col3"]
                                 Filter Operator [FIL_30] (rows=57591150 width=77)
-                                  predicate:(sr_reason_sk is not null and sr_item_sk is not null and sr_ticket_number is not null)
+                                  predicate:(sr_item_sk is not null and sr_reason_sk is not null and sr_ticket_number is not null)
                                   TableScan [TS_0] (rows=57591150 width=77)
                                     default@store_returns,store_returns,Tbl:COMPLETE,Col:NONE,Output:["sr_item_sk","sr_reason_sk","sr_ticket_number","sr_return_quantity"]
                           <-Map 6 [SIMPLE_EDGE]

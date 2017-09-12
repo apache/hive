@@ -10195,7 +10195,7 @@ STAGE PLANS:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7, val tom allen) -> boolean, FilterStringGroupColEqualStringScalar(col 7, val bob steinbeck) -> boolean) -> boolean
-              predicate: ((s = 'tom allen') or (s = 'bob steinbeck')) (type: boolean)
+              predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
               Statistics: Num rows: 3912 Data size: 1017283 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: s (type: string), dec (type: decimal(4,2))
@@ -10420,7 +10420,7 @@ STAGE PLANS:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7, val tom allen) -> boolean, FilterStringGroupColEqualStringScalar(col 7, val bob steinbeck) -> boolean) -> boolean
-              predicate: ((s = 'tom allen') or (s = 'bob steinbeck')) (type: boolean)
+              predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
               Statistics: Num rows: 9084 Data size: 1017431 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: s (type: string)
@@ -10638,7 +10638,7 @@ STAGE PLANS:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7, val tom allen) -> boolean, FilterStringGroupColEqualStringScalar(col 7, val bob steinbeck) -> boolean) -> boolean
-              predicate: ((s = 'tom allen') or (s = 'bob steinbeck')) (type: boolean)
+              predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
               Statistics: Num rows: 4892 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: s (type: string), bo (type: boolean)
@@ -10858,7 +10858,7 @@ STAGE PLANS:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7, val tom allen) -> boolean, FilterStringGroupColEqualStringScalar(col 7, val bob steinbeck) -> boolean) -> boolean
-              predicate: ((s = 'tom allen') or (s = 'bob steinbeck')) (type: boolean)
+              predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
               Statistics: Num rows: 9420 Data size: 1017435 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: i (type: int)
@@ -11087,7 +11087,7 @@ STAGE PLANS:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7, val tom allen) -> boolean, FilterStringGroupColEqualStringScalar(col 7, val bob steinbeck) -> boolean) -> boolean
-              predicate: ((s = 'tom allen') or (s = 'bob steinbeck')) (type: boolean)
+              predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
               Statistics: Num rows: 4624 Data size: 1017323 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: s (type: string), dec (type: decimal(4,2))

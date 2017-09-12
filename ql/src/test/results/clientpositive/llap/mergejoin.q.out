@@ -25,7 +25,7 @@ STAGE PLANS:
                   filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_b_key_min) AND DynamicValue(RS_7_b_key_max) and in_bloom_filter(key, DynamicValue(RS_7_b_key_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and (key BETWEEN DynamicValue(RS_7_b_key_min) AND DynamicValue(RS_7_b_key_max) and in_bloom_filter(key, DynamicValue(RS_7_b_key_bloom_filter)))) (type: boolean)
+                    predicate: ((key BETWEEN DynamicValue(RS_7_b_key_min) AND DynamicValue(RS_7_b_key_max) and in_bloom_filter(key, DynamicValue(RS_7_b_key_bloom_filter))) and key is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1717,7 +1717,7 @@ STAGE PLANS:
                   filterExpr: (key is not null and value is not null and (value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 242 Data size: 43428 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and value is not null and (value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter)))) (type: boolean)
+                    predicate: ((value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) and key is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 218 Data size: 39121 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -2289,7 +2289,7 @@ STAGE PLANS:
                   filterExpr: (key is not null and value is not null and (value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 242 Data size: 43428 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key is not null and value is not null and (value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter)))) (type: boolean)
+                    predicate: ((value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) and key is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 218 Data size: 39121 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)

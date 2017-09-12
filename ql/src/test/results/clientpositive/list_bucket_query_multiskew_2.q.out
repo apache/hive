@@ -314,7 +314,7 @@ STAGE PLANS:
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: (((key = '484') and (value = 'val_484')) or ((key = '238') and (value = 'val_238'))) (type: boolean)
+            predicate: (((key = '238') and (value = 'val_238')) or ((key = '484') and (value = 'val_484'))) (type: boolean)
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)

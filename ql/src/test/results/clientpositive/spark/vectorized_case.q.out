@@ -60,7 +60,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 1, val 418) -> boolean, FilterLongColEqualLongScalar(col 1, val 12205) -> boolean, FilterLongColEqualLongScalar(col 1, val 10583) -> boolean) -> boolean
-                    predicate: ((csmallint = 418) or (csmallint = 12205) or (csmallint = 10583)) (type: boolean)
+                    predicate: ((csmallint = 10583) or (csmallint = 12205) or (csmallint = 418)) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: csmallint (type: smallint), CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN ('b') ELSE ('c') END (type: string), CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN ('b') ELSE ('c') END (type: string)
@@ -201,7 +201,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 1, val 418) -> boolean, FilterLongColEqualLongScalar(col 1, val 12205) -> boolean, FilterLongColEqualLongScalar(col 1, val 10583) -> boolean) -> boolean
-                    predicate: ((csmallint = 418) or (csmallint = 12205) or (csmallint = 10583)) (type: boolean)
+                    predicate: ((csmallint = 10583) or (csmallint = 12205) or (csmallint = 418)) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: csmallint (type: smallint), CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN ('b') ELSE (null) END (type: string), CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN (null) ELSE ('c') END (type: string)

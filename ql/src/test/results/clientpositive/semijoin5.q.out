@@ -79,7 +79,7 @@ STAGE PLANS:
             alias: t2
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (tinyint_col_15 is not null and decimal2709_col_9 is not null and tinyint_col_20 is not null) (type: boolean)
+              predicate: (decimal2709_col_9 is not null and tinyint_col_15 is not null and tinyint_col_20 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: decimal2709_col_9 (type: decimal(27,9)), int_col_10 (type: int), tinyint_col_15 (type: tinyint), smallint_col_19 (type: smallint), tinyint_col_20 (type: tinyint)
@@ -255,7 +255,7 @@ STAGE PLANS:
             alias: tt2
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (timestamp_col_18 is not null and decimal1911_col_16 is not null) (type: boolean)
+              predicate: (decimal1911_col_16 is not null and timestamp_col_18 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: decimal1911_col_16 (type: decimal(19,11)), timestamp_col_18 (type: timestamp)

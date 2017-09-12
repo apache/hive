@@ -23,9 +23,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.collections.Bag;
+import org.apache.commons.collections.bag.TreeBag;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableSortedMultiset;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -33,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
@@ -163,6 +169,23 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
     }
 
     return genericUDF.getDisplayString(childrenExprStrings);
+  }
+
+  @Override
+  public String getExprString(boolean sortChildren) {
+    if (sortChildren) {
+      UDFType udfType = genericUDF.getClass().getAnnotation(UDFType.class);
+      if (udfType.commutative()) {
+        // Get the sorted children expr strings
+        String[] childrenExprStrings = new String[chidren.size()];
+        for (int i = 0; i < childrenExprStrings.length; i++) {
+          childrenExprStrings[i] = chidren.get(i).getExprString();
+        }
+        return genericUDF.getDisplayString(
+            ImmutableSortedMultiset.copyOf(childrenExprStrings).toArray(new String[childrenExprStrings.length]));
+      }
+    }
+    return getExprString();
   }
 
   @Override

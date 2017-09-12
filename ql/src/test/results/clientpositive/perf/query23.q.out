@@ -340,7 +340,7 @@ Stage-0
                                                     Select Operator [SEL_8] (rows=575995635 width=88)
                                                       Output:["_col0","_col1"]
                                                       Filter Operator [FIL_323] (rows=575995635 width=88)
-                                                        predicate:(ss_sold_date_sk is not null and ss_item_sk is not null)
+                                                        predicate:(ss_item_sk is not null and ss_sold_date_sk is not null)
                                                         TableScan [TS_6] (rows=575995635 width=88)
                                                           default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_item_sk"]
                                                 <-Map 18 [SIMPLE_EDGE]
@@ -363,7 +363,7 @@ Stage-0
                                 Select Operator [SEL_5] (rows=18262 width=1119)
                                   Output:["_col0"]
                                   Filter Operator [FIL_322] (rows=18262 width=1119)
-                                    predicate:((d_year = 1999) and (d_moy = 1) and d_date_sk is not null)
+                                    predicate:((d_moy = 1) and (d_year = 1999) and d_date_sk is not null)
                                     TableScan [TS_3] (rows=73049 width=1119)
                                       default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
                             <-Map 47 [SIMPLE_EDGE]
@@ -372,7 +372,7 @@ Stage-0
                                 Select Operator [SEL_121] (rows=144002668 width=135)
                                   Output:["_col0","_col1","_col2","_col3","_col4"]
                                   Filter Operator [FIL_334] (rows=144002668 width=135)
-                                    predicate:(ws_item_sk is not null and ws_bill_customer_sk is not null and ws_sold_date_sk is not null)
+                                    predicate:(ws_bill_customer_sk is not null and ws_item_sk is not null and ws_sold_date_sk is not null)
                                     TableScan [TS_119] (rows=144002668 width=135)
                                       default@web_sales,web_sales,Tbl:COMPLETE,Col:NONE,Output:["ws_sold_date_sk","ws_item_sk","ws_bill_customer_sk","ws_quantity","ws_list_price"]
             <-Reducer 4 [CONTAINS]
@@ -550,7 +550,7 @@ Stage-0
                                 Select Operator [SEL_2] (rows=287989836 width=135)
                                   Output:["_col0","_col1","_col2","_col3","_col4"]
                                   Filter Operator [FIL_321] (rows=287989836 width=135)
-                                    predicate:(cs_item_sk is not null and cs_bill_customer_sk is not null and cs_sold_date_sk is not null)
+                                    predicate:(cs_bill_customer_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null)
                                     TableScan [TS_0] (rows=287989836 width=135)
                                       default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:NONE,Output:["cs_sold_date_sk","cs_bill_customer_sk","cs_item_sk","cs_quantity","cs_list_price"]
 

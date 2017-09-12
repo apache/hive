@@ -35,7 +35,7 @@ STAGE PLANS:
             alias: default__src_src_index__
             filterExpr: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
             Filter Operator
-              predicate: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
+              predicate: ((UDFToDouble(key) < 100.0) and (UDFToDouble(key) > 80.0) and (not EWAH_BITMAP_EMPTY(_bitmaps))) (type: boolean)
               Select Operator
                 expressions: _bucketname (type: string), _offset (type: bigint)
                 outputColumnNames: _bucketname, _offset
@@ -76,7 +76,7 @@ STAGE PLANS:
             filterExpr: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 100.0)) (type: boolean)
+              predicate: ((UDFToDouble(key) < 100.0) and (UDFToDouble(key) > 80.0)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

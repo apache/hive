@@ -186,7 +186,7 @@ STAGE PLANS:
                   filterExpr: (str is not null and (str BETWEEN DynamicValue(RS_7_v_key1_min) AND DynamicValue(RS_7_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_7_v_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (str is not null and (str BETWEEN DynamicValue(RS_7_v_key1_min) AND DynamicValue(RS_7_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_7_v_key1_bloom_filter)))) (type: boolean)
+                    predicate: ((str BETWEEN DynamicValue(RS_7_v_key1_min) AND DynamicValue(RS_7_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_7_v_key1_bloom_filter))) and str is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: str (type: string)
@@ -455,7 +455,7 @@ STAGE PLANS:
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_9_srcpart_date_str_min) AND DynamicValue(RS_9_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_9_srcpart_date_str_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (key1 is not null and (key1 BETWEEN DynamicValue(RS_9_srcpart_date_str_min) AND DynamicValue(RS_9_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_9_srcpart_date_str_bloom_filter)))) (type: boolean)
+                    predicate: ((key1 BETWEEN DynamicValue(RS_9_srcpart_date_str_min) AND DynamicValue(RS_9_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_9_srcpart_date_str_bloom_filter))) and key1 is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
@@ -611,7 +611,7 @@ STAGE PLANS:
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_3_i_cstring_min) AND DynamicValue(RS_3_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_3_i_cstring_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (key1 is not null and (key1 BETWEEN DynamicValue(RS_3_i_cstring_min) AND DynamicValue(RS_3_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_3_i_cstring_bloom_filter)))) (type: boolean)
+                    predicate: ((key1 BETWEEN DynamicValue(RS_3_i_cstring_min) AND DynamicValue(RS_3_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_3_i_cstring_bloom_filter))) and key1 is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
@@ -760,7 +760,7 @@ STAGE PLANS:
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (key1 is not null and (key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter)))) (type: boolean)
+                    predicate: ((key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter))) and key1 is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
@@ -1028,7 +1028,7 @@ STAGE PLANS:
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_6_k_str_min) AND DynamicValue(RS_6_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_6_k_str_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (key1 is not null and (key1 BETWEEN DynamicValue(RS_6_k_str_min) AND DynamicValue(RS_6_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_6_k_str_bloom_filter)))) (type: boolean)
+                    predicate: ((key1 BETWEEN DynamicValue(RS_6_k_str_min) AND DynamicValue(RS_6_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_6_k_str_bloom_filter))) and key1 is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
@@ -1048,7 +1048,7 @@ STAGE PLANS:
                   filterExpr: (str is not null and (str BETWEEN DynamicValue(RS_21_v_key1_min) AND DynamicValue(RS_21_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_21_v_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (str is not null and (str BETWEEN DynamicValue(RS_21_v_key1_min) AND DynamicValue(RS_21_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_21_v_key1_bloom_filter)))) (type: boolean)
+                    predicate: ((str BETWEEN DynamicValue(RS_21_v_key1_min) AND DynamicValue(RS_21_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_21_v_key1_bloom_filter))) and str is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: str (type: string)
@@ -1188,7 +1188,7 @@ STAGE PLANS:
                   filterExpr: (str is not null and (str BETWEEN DynamicValue(RS_7_v_key1_min) AND DynamicValue(RS_7_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_7_v_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (str is not null and (str BETWEEN DynamicValue(RS_7_v_key1_min) AND DynamicValue(RS_7_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_7_v_key1_bloom_filter)))) (type: boolean)
+                    predicate: ((str BETWEEN DynamicValue(RS_7_v_key1_min) AND DynamicValue(RS_7_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_7_v_key1_bloom_filter))) and str is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: str (type: string)
@@ -1453,7 +1453,7 @@ STAGE PLANS:
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_12_srcpart_date_str_min) AND DynamicValue(RS_12_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_12_srcpart_date_str_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (key1 is not null and (key1 BETWEEN DynamicValue(RS_12_srcpart_date_str_min) AND DynamicValue(RS_12_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_12_srcpart_date_str_bloom_filter)))) (type: boolean)
+                    predicate: ((key1 BETWEEN DynamicValue(RS_12_srcpart_date_str_min) AND DynamicValue(RS_12_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_12_srcpart_date_str_bloom_filter))) and key1 is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
@@ -1607,7 +1607,7 @@ STAGE PLANS:
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_9_i_cstring_min) AND DynamicValue(RS_9_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_9_i_cstring_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (key1 is not null and (key1 BETWEEN DynamicValue(RS_9_i_cstring_min) AND DynamicValue(RS_9_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_9_i_cstring_bloom_filter)))) (type: boolean)
+                    predicate: ((key1 BETWEEN DynamicValue(RS_9_i_cstring_min) AND DynamicValue(RS_9_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_9_i_cstring_bloom_filter))) and key1 is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
@@ -1754,7 +1754,7 @@ STAGE PLANS:
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_6_k_str_min) AND DynamicValue(RS_6_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_6_k_str_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (key1 is not null and (key1 BETWEEN DynamicValue(RS_6_k_str_min) AND DynamicValue(RS_6_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_6_k_str_bloom_filter)))) (type: boolean)
+                    predicate: ((key1 BETWEEN DynamicValue(RS_6_k_str_min) AND DynamicValue(RS_6_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_6_k_str_bloom_filter))) and key1 is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
@@ -2010,7 +2010,7 @@ STAGE PLANS:
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (key1 is not null and (key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter)))) (type: boolean)
+                    predicate: ((key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter))) and key1 is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: key1 (type: string)
@@ -2026,7 +2026,7 @@ STAGE PLANS:
                   filterExpr: (str is not null and (str BETWEEN DynamicValue(RS_17_v_key1_min) AND DynamicValue(RS_17_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_17_v_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (str is not null and (str BETWEEN DynamicValue(RS_17_v_key1_min) AND DynamicValue(RS_17_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_17_v_key1_bloom_filter)))) (type: boolean)
+                    predicate: ((str BETWEEN DynamicValue(RS_17_v_key1_min) AND DynamicValue(RS_17_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_17_v_key1_bloom_filter))) and str is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: str (type: string)
@@ -2162,7 +2162,7 @@ STAGE PLANS:
                   filterExpr: (str is not null and (str BETWEEN DynamicValue(RS_5_v_key1_min) AND DynamicValue(RS_5_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_5_v_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (str is not null and (str BETWEEN DynamicValue(RS_5_v_key1_min) AND DynamicValue(RS_5_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_5_v_key1_bloom_filter)))) (type: boolean)
+                    predicate: ((str BETWEEN DynamicValue(RS_5_v_key1_min) AND DynamicValue(RS_5_v_key1_max) and in_bloom_filter(str, DynamicValue(RS_5_v_key1_bloom_filter))) and str is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: str (type: string)
@@ -2400,7 +2400,7 @@ STAGE PLANS:
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_4_srcpart_date_str_min) AND DynamicValue(RS_4_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_4_srcpart_date_str_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (key1 is not null and (key1 BETWEEN DynamicValue(RS_4_srcpart_date_str_min) AND DynamicValue(RS_4_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_4_srcpart_date_str_bloom_filter)))) (type: boolean)
+                    predicate: ((key1 BETWEEN DynamicValue(RS_4_srcpart_date_str_min) AND DynamicValue(RS_4_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_4_srcpart_date_str_bloom_filter))) and key1 is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: key1 (type: string)
@@ -2536,7 +2536,7 @@ STAGE PLANS:
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_8_i_cstring_min) AND DynamicValue(RS_8_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_8_i_cstring_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (key1 is not null and (key1 BETWEEN DynamicValue(RS_8_i_cstring_min) AND DynamicValue(RS_8_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_8_i_cstring_bloom_filter)))) (type: boolean)
+                    predicate: ((key1 BETWEEN DynamicValue(RS_8_i_cstring_min) AND DynamicValue(RS_8_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_8_i_cstring_bloom_filter))) and key1 is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: key1 (type: string)
@@ -2684,7 +2684,7 @@ STAGE PLANS:
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (key1 is not null and (key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter)))) (type: boolean)
+                    predicate: ((key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter))) and key1 is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: key1 (type: string)

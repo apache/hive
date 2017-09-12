@@ -134,7 +134,7 @@ STAGE PLANS:
             alias: t5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_to') and subject is not null and object is not null) (type: boolean)
+              predicate: ((predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_to') and object is not null and subject is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: subject (type: string), object (type: string)
@@ -272,7 +272,7 @@ STAGE PLANS:
             alias: t4
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL') and (object = 'http://ontos/OntosMiner/Common.English/ontology#Author') and subject is not null) (type: boolean)
+              predicate: ((object = 'http://ontos/OntosMiner/Common.English/ontology#Author') and (predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL') and subject is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: subject (type: string)
@@ -322,7 +322,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL') and (object = 'http://ontos/OntosMiner/Common.English/ontology#Citation') and subject is not null) (type: boolean)
+              predicate: ((object = 'http://ontos/OntosMiner/Common.English/ontology#Citation') and (predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL') and subject is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: subject (type: string)

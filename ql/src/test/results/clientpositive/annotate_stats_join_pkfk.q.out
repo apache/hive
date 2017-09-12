@@ -1101,7 +1101,7 @@ STAGE PLANS:
             alias: ss
             Statistics: Num rows: 1000 Data size: 7664 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (ss_store_sk is not null and ss_addr_sk is not null) (type: boolean)
+              predicate: (ss_addr_sk is not null and ss_store_sk is not null) (type: boolean)
               Statistics: Num rows: 914 Data size: 7004 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ss_addr_sk (type: int), ss_store_sk (type: int)

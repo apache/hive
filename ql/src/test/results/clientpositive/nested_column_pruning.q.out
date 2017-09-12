@@ -1041,7 +1041,7 @@ STAGE PLANS:
             alias: t2
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (s2.f8.f9 and s1.f6 is not null) (type: boolean)
+              predicate: (s1.f6 is not null and s2.f8.f9) (type: boolean)
               Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>), s2 (type: struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>)

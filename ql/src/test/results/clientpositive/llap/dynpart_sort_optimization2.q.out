@@ -92,7 +92,7 @@ STAGE PLANS:
                   alias: ss
                   Statistics: Num rows: 46 Data size: 540 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: ss_sold_date_sk (type: int), ss_net_paid_inc_tax (type: float), ss_net_profit (type: float)
@@ -335,7 +335,7 @@ STAGE PLANS:
                   alias: ss
                   Statistics: Num rows: 46 Data size: 540 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: float), ss_net_profit (type: float), ss_sold_date_sk (type: int)
@@ -573,7 +573,7 @@ STAGE PLANS:
                   alias: ss
                   Statistics: Num rows: 46 Data size: 540 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: ss_sold_date_sk (type: int), ss_net_paid_inc_tax (type: float), ss_net_profit (type: float)
@@ -815,7 +815,7 @@ STAGE PLANS:
                   alias: ss
                   Statistics: Num rows: 46 Data size: 540 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: float), ss_net_profit (type: float), ss_sold_date_sk (type: int)
@@ -1106,7 +1106,7 @@ STAGE PLANS:
                   alias: ss_orc
                   Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: ss_sold_date_sk (type: int), ss_net_paid_inc_tax (type: float), ss_net_profit (type: float)
@@ -1348,7 +1348,7 @@ STAGE PLANS:
                   alias: ss_orc
                   Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
+                    predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: float), ss_net_profit (type: float), ss_sold_date_sk (type: int)

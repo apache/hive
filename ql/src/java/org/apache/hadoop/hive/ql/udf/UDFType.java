@@ -76,4 +76,12 @@ public @interface UDFType {
    * @return true if the function implies order
    */
   boolean impliesOrder() default false;
+
+  /**
+   * Whether result of this operation will be altered by reordering its
+   * children.
+   *
+   * @return true if commutative law applies to this function
+   */
+  boolean commutative() default false;
 }

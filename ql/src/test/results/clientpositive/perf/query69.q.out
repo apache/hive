@@ -153,7 +153,7 @@ Stage-0
                                           Select Operator [SEL_14] (rows=4058 width=1119)
                                             Output:["_col0"]
                                             Filter Operator [FIL_103] (rows=4058 width=1119)
-                                              predicate:((d_year = 1999) and d_moy BETWEEN 1 AND 3 and d_date_sk is not null)
+                                              predicate:((d_year = 1999) and d_date_sk is not null and d_moy BETWEEN 1 AND 3)
                                               TableScan [TS_12] (rows=73049 width=1119)
                                                 default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
                                       <-Map 19 [SIMPLE_EDGE]

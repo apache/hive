@@ -80,7 +80,7 @@ STAGE PLANS:
                   alias: v1
                   Statistics: Num rows: 12288 Data size: 146796 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (ctinyint is not null and csmallint is not null) (type: boolean)
+                    predicate: (csmallint is not null and ctinyint is not null) (type: boolean)
                     Statistics: Num rows: 6059 Data size: 72396 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cdouble (type: double)

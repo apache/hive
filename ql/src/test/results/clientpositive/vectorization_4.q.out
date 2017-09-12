@@ -67,7 +67,7 @@ STAGE PLANS:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterExprOrExpr(children: FilterLongColGreaterEqualLongColumn(col 1, col 2)(children: col 1) -> boolean, FilterExprAndExpr(children: FilterLongScalarGreaterEqualLongColumn(val -89010, col 0)(children: col 0) -> boolean, FilterDoubleColGreaterDoubleScalar(col 5, val 79.553) -> boolean) -> boolean, FilterExprAndExpr(children: FilterLongScalarNotEqualLongColumn(val -563, col 3) -> boolean, FilterExprOrExpr(children: FilterLongColNotEqualLongColumn(col 0, col 3)(children: col 0) -> boolean, FilterDoubleScalarGreaterEqualDoubleColumn(val -3728.0, col 5) -> boolean) -> boolean) -> boolean) -> boolean
-              predicate: ((UDFToInteger(csmallint) >= cint) or ((-89010 >= UDFToInteger(ctinyint)) and (cdouble > 79.553)) or ((-563 <> cbigint) and ((UDFToLong(ctinyint) <> cbigint) or (-3728.0 >= cdouble)))) (type: boolean)
+              predicate: (((-563 <> cbigint) and ((UDFToLong(ctinyint) <> cbigint) or (-3728.0 >= cdouble))) or ((-89010 >= UDFToInteger(ctinyint)) and (cdouble > 79.553)) or (UDFToInteger(csmallint) >= cint)) (type: boolean)
               Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ctinyint (type: tinyint), cint (type: int), cdouble (type: double)

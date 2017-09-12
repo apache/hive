@@ -63,7 +63,7 @@ STAGE PLANS:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 5, col 12)(children: CastLongToDouble(col 0) -> 12:double) -> boolean, FilterLongColGreaterLongScalar(col 11, val 0) -> boolean) -> boolean, FilterLongColLessLongColumn(col 3, col 0)(children: col 0) -> boolean, FilterLongColGreaterLongColumn(col 2, col 3)(children: col 2) -> boolean, FilterLongColLessLongScalar(col 10, val 0) -> boolean) -> boolean
-              predicate: (((cdouble > UDFToDouble(ctinyint)) and (cboolean2 > 0)) or (cbigint < UDFToLong(ctinyint)) or (UDFToLong(cint) > cbigint) or (cboolean1 < 0)) (type: boolean)
+              predicate: (((cdouble > UDFToDouble(ctinyint)) and (cboolean2 > 0)) or (UDFToLong(cint) > cbigint) or (cbigint < UDFToLong(ctinyint)) or (cboolean1 < 0)) (type: boolean)
               Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ctinyint (type: tinyint), cint (type: int), cfloat (type: float), cdouble (type: double)

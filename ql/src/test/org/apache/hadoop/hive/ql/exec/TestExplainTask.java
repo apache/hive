@@ -62,6 +62,10 @@ public class TestExplainTask {
     uut = new ExplainTask();
     uut.conf = mock(HiveConf.class);
     out = mock(PrintStream.class);
+    QueryState qs = mock(QueryState.class);
+    HiveConf hiveConf = new HiveConf();
+    when(qs.getConf()).thenReturn(hiveConf);
+    uut.queryState = qs;
   }
 
   public static class DummyExplainDesc<K, V> extends TableScanDesc {
@@ -160,7 +164,9 @@ public class TestExplainTask {
     work.setParseContext(pCtx);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     work.setConfig(new ExplainConfiguration());
-    new ExplainTask().getJSONLogicalPlan(new PrintStream(baos), work);
+    ExplainTask newExplainTask = new ExplainTask();
+    newExplainTask.queryState = uut.queryState;
+    newExplainTask.getJSONLogicalPlan(new PrintStream(baos), work);
     baos.close();
     return baos.toString();
   }

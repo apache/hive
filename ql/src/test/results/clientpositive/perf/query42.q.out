@@ -93,7 +93,7 @@ Stage-0
                                 Select Operator [SEL_2] (rows=575995635 width=88)
                                   Output:["_col0","_col1","_col2"]
                                   Filter Operator [FIL_30] (rows=575995635 width=88)
-                                    predicate:(ss_sold_date_sk is not null and ss_item_sk is not null)
+                                    predicate:(ss_item_sk is not null and ss_sold_date_sk is not null)
                                     TableScan [TS_0] (rows=575995635 width=88)
                                       default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_item_sk","ss_ext_sales_price"]
                             <-Map 6 [SIMPLE_EDGE]

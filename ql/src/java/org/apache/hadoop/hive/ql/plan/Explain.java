@@ -74,4 +74,7 @@ public @interface Explain {
     }
   };
   Vectorization vectorization() default Vectorization.NON_VECTORIZED;
+
+  boolean postProcess() default false;
+
 }

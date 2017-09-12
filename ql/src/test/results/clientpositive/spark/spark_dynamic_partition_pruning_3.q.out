@@ -900,7 +900,7 @@ STAGE PLANS:
                   alias: regular_table1
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (col2 BETWEEN 1 AND 3 and col1 is not null) (type: boolean)
+                    predicate: (col1 is not null and col2 BETWEEN 1 AND 3) (type: boolean)
                     Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: col1 (type: int)

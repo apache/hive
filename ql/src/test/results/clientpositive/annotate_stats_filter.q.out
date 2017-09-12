@@ -628,7 +628,7 @@ STAGE PLANS:
             alias: loc_orc
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((state = 'OH') or (state = 'CA')) (type: boolean)
+              predicate: ((state = 'CA') or (state = 'OH')) (type: boolean)
               Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)

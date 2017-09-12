@@ -140,7 +140,7 @@ Stage-0
                   Select Operator [SEL_2] (rows=5 width=192)
                     Output:["_col0","_col2"]
                     Filter Operator [FIL_24] (rows=5 width=192)
-                      predicate:((val = 't1val01') and id is not null and dimid is not null)
+                      predicate:((val = 't1val01') and dimid is not null and id is not null)
                       TableScan [TS_0] (rows=10 width=192)
                         default@table1,table1,Tbl:COMPLETE,Col:NONE,Output:["id","val","dimid"]
               <-Map 4 [SIMPLE_EDGE] llap

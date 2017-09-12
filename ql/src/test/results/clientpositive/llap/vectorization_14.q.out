@@ -94,7 +94,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterLongColLessEqualLongColumn(col 0, col 3)(children: col 0) -> boolean, FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleColumn(col 12, col 5)(children: CastLongToDouble(col 2) -> 12:double) -> boolean, FilterTimestampColLessTimestampColumn(col 9, col 8) -> boolean) -> boolean, FilterDoubleColLessDoubleColumn(col 5, col 12)(children: CastLongToDouble(col 0) -> 12:double) -> boolean, FilterExprOrExpr(children: FilterLongColGreaterLongScalar(col 3, val -257) -> boolean, FilterDoubleColLessDoubleColumn(col 4, col 12)(children: CastLongToFloatViaLongToDouble(col 2) -> 12:double) -> boolean) -> boolean) -> boolean
-                    predicate: ((UDFToLong(ctinyint) <= cbigint) and ((UDFToDouble(cint) <= cdouble) or (ctimestamp2 < ctimestamp1)) and (cdouble < UDFToDouble(ctinyint)) and ((cbigint > -257) or (cfloat < UDFToFloat(cint)))) (type: boolean)
+                    predicate: (((UDFToDouble(cint) <= cdouble) or (ctimestamp2 < ctimestamp1)) and ((cbigint > -257) or (cfloat < UDFToFloat(cint))) and (UDFToLong(ctinyint) <= cbigint) and (cdouble < UDFToDouble(ctinyint))) (type: boolean)
                     Statistics: Num rows: 606 Data size: 105558 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ctimestamp1 (type: timestamp), cfloat (type: float), cstring1 (type: string), cboolean1 (type: boolean), cdouble (type: double), (- (-26.28 + cdouble)) (type: double)

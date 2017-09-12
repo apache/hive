@@ -1067,7 +1067,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
+              predicate: ((ds = '2008-04-08') and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2))) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
@@ -1092,7 +1092,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (ds = '2008-04-08')) (type: boolean)
+              predicate: ((ds = '2008-04-08') and (struct(ds)) IN (const struct('2000-04-08'), const struct('2000-04-09')) and (struct(ds,key)) IN (const struct('2000-04-08',1), const struct('2000-04-09',2))) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
@@ -1657,7 +1657,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((key = 3) or ((struct(((ds = '2000-04-08') or (key = 2)),key)) IN (const struct(true,2), const struct(false,3)) and ((key + 5) > 0))) (type: boolean)
+              predicate: (((struct(((ds = '2000-04-08') or (key = 2)),key)) IN (const struct(true,2), const struct(false,3)) and ((key + 5) > 0)) or (key = 3)) (type: boolean)
               Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ds (type: string)

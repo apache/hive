@@ -44,7 +44,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key = '0') and (value = '8')) or ((key = '1') and (value = '5')) or ((key = '2') and (value = '6')) or ((key = '3') and (value = '8')) or ((key = '4') and (value = '1')) or ((key = '5') and (value = '6')) or ((key = '6') and (value = '1')) or ((key = '7') and (value = '1')) or ((key = '8') and (value = '1')) or ((key = '9') and (value = '1')) or ((key = '10') and (value = '3'))) (type: boolean)
+              predicate: (((key = '0') and (value = '8')) or ((key = '1') and (value = '5')) or ((key = '10') and (value = '3')) or ((key = '2') and (value = '6')) or ((key = '3') and (value = '8')) or ((key = '4') and (value = '1')) or ((key = '5') and (value = '6')) or ((key = '6') and (value = '1')) or ((key = '7') and (value = '1')) or ((key = '8') and (value = '1')) or ((key = '9') and (value = '1'))) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)

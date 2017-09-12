@@ -35,7 +35,7 @@ STAGE PLANS:
             alias: predicate_fold_tb
             Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (value is null or (value <> 3)) (type: boolean)
+              predicate: ((value <> 3) or value is null) (type: boolean)
               Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: int)
@@ -86,7 +86,7 @@ STAGE PLANS:
             alias: predicate_fold_tb
             Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (value is null or (value < 3)) (type: boolean)
+              predicate: ((value < 3) or value is null) (type: boolean)
               Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: int)
@@ -135,7 +135,7 @@ STAGE PLANS:
             alias: predicate_fold_tb
             Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (value is null or (value > 3)) (type: boolean)
+              predicate: ((value > 3) or value is null) (type: boolean)
               Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: int)
@@ -184,7 +184,7 @@ STAGE PLANS:
             alias: predicate_fold_tb
             Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (value is null or (value <= 3)) (type: boolean)
+              predicate: ((value <= 3) or value is null) (type: boolean)
               Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: int)
@@ -234,7 +234,7 @@ STAGE PLANS:
             alias: predicate_fold_tb
             Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (value is null or (value >= 3)) (type: boolean)
+              predicate: ((value >= 3) or value is null) (type: boolean)
               Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: int)
@@ -284,7 +284,7 @@ STAGE PLANS:
             alias: predicate_fold_tb
             Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (value is null or (value = 3)) (type: boolean)
+              predicate: ((value = 3) or value is null) (type: boolean)
               Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: int)
@@ -332,7 +332,7 @@ STAGE PLANS:
             alias: predicate_fold_tb
             Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (value is null or (value <= 1) or (value > 3)) (type: boolean)
+              predicate: ((value <= 1) or (value > 3) or value is null) (type: boolean)
               Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: int)

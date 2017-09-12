@@ -164,7 +164,7 @@ STAGE PLANS:
               insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((key = 86) and (ds = '1')) (type: boolean)
+              predicate: ((ds = '1') and (key = 86)) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: value (type: string)
@@ -189,7 +189,7 @@ STAGE PLANS:
               insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((key = 86) and (ds = '1')) (type: boolean)
+              predicate: ((ds = '1') and (key = 86)) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: value (type: string)
@@ -214,7 +214,7 @@ STAGE PLANS:
               insideView TRUE
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((key = 86) and (ds = '1')) (type: boolean)
+              predicate: ((ds = '1') and (key = 86)) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: value (type: string)

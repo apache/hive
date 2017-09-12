@@ -1038,10 +1038,15 @@ public final class PlanUtils {
   }
 
   public static String getExprListString(Collection<? extends ExprNodeDesc> exprs) {
-    return getExprListString(exprs, false);
+    return getExprListString(exprs, false, false);
   }
 
   public static String getExprListString(Collection<?  extends ExprNodeDesc> exprs, boolean userLevelExplain) {
+    return getExprListString(exprs, userLevelExplain, false);
+  }
+
+  public static String getExprListString(Collection<?  extends ExprNodeDesc> exprs,
+          boolean userLevelExplain, boolean sortExpressions) {
     StringBuilder sb = new StringBuilder();
     boolean first = true;
     for (ExprNodeDesc expr: exprs) {
@@ -1050,15 +1055,19 @@ public final class PlanUtils {
       } else {
         first = false;
       }
-      addExprToStringBuffer(expr, sb, userLevelExplain);
+      addExprToStringBuffer(expr, sb, userLevelExplain, sortExpressions);
     }
-
     return sb.length() == 0 ? null : sb.toString();
   }
 
   public static void addExprToStringBuffer(ExprNodeDesc expr, Appendable sb, boolean userLevelExplain) {
+    addExprToStringBuffer(expr, sb, userLevelExplain, false);
+  }
+
+  public static void addExprToStringBuffer(ExprNodeDesc expr, Appendable sb,
+          boolean userLevelExplain, boolean sortExpressions) {
     try {
-      sb.append(expr.getExprString());
+      sb.append(expr.getExprString(sortExpressions));
       if (!userLevelExplain) {
         sb.append(" (type: ");
         sb.append(expr.getTypeString());
