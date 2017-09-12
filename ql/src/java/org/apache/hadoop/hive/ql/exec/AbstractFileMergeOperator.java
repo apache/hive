@@ -43,6 +43,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
     extends Operator<T> implements Serializable {
 
   public static final String BACKUP_PREFIX = "_backup.";
+  public static final String UNION_SUDBIR_PREFIX = "HIVE_UNION_SUBDIR_";
   public static final Logger LOG = LoggerFactory.getLogger(AbstractFileMergeOperator.class);
 
   protected JobConf jc;
@@ -193,12 +194,19 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
       }
     } else {
       if (hasDynamicPartitions || (listBucketingDepth > 0)) {
+        // In light of results from union queries, we need to be aware that
+        // sub-directories can exist in the partition directory. We want to
+        // ignore these sub-directories and promote merged files to the
+        // partition directory.
+        String name = path.getName();
+        Path realPartitionPath = name.startsWith(UNION_SUDBIR_PREFIX) ? path.getParent() : path;
+
         if (tmpPathFixed) {
-          checkPartitionsMatch(path);
+          checkPartitionsMatch(realPartitionPath);
         } else {
           // We haven't fixed the TMP path for this mapper yet
-          int depthDiff = path.depth() - tmpPath.depth();
-          fixTmpPath(path, depthDiff);
+          int depthDiff = realPartitionPath.depth() - tmpPath.depth();
+          fixTmpPath(realPartitionPath, depthDiff);
           tmpPathFixed = true;
         }
       }
