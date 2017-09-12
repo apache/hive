@@ -4112,7 +4112,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public List<String> get_partition_names(final String db_name, final String tbl_name,
-        final short max_parts) throws MetaException, NoSuchObjectException {
+        final short max_parts) throws NoSuchObjectException, MetaException {
       startTableFunction("get_partition_names", db_name, tbl_name);
       fireReadTablePreEvent(db_name, tbl_name);
       List<String> ret = null;

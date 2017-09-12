@@ -1272,7 +1272,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
   list<string> get_partition_names(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
-                       throws(1:MetaException o2)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
   // get_partition*_ps methods allow filtering by a partial partition specification,
   // as needed for dynamic partitions. The values that are not restricted should

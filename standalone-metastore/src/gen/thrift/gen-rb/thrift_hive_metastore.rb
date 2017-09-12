@@ -1059,6 +1059,7 @@ module ThriftHiveMetastore
     def recv_get_partition_names()
       result = receive_message(Get_partition_names_result)
       return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partition_names failed: unknown result')
     end
@@ -3508,6 +3509,8 @@ module ThriftHiveMetastore
       result = Get_partition_names_result.new()
       begin
         result.success = @handler.get_partition_names(args.db_name, args.tbl_name, args.max_parts)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
       rescue ::MetaException => o2
         result.o2 = o2
       end
@@ -7045,10 +7048,12 @@ module ThriftHiveMetastore
   class Get_partition_names_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
-    O2 = 1
+    O1 = 1
+    O2 = 2
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
 

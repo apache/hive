@@ -627,6 +627,70 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testBootstrapWithDropPartitionedTable() throws IOException {
+    String name = testName.getMethodName();
+    String dbName = createDB(name, driver);
+    String replDbName = dbName + "_dupe";
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+
+    String[] ptn_data = new String[]{ "eleven" , "twelve" };
+    String[] empty = new String[]{};
+    String ptn_locn = new Path(TEST_PATH, name + "_ptn").toUri().getPath();
+
+    createTestDataFile(ptn_locn, ptn_data);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
+
+    BehaviourInjection<Table,Table> ptnedTableRenamer = new BehaviourInjection<Table,Table>(){
+      boolean success = false;
+
+      @Nullable
+      @Override
+      public Table apply(@Nullable Table table) {
+        if (injectionPathCalled) {
+          nonInjectedPathCalled = true;
+        } else {
+          // getTable is invoked after fetching the table names
+          injectionPathCalled = true;
+          Thread t = new Thread(new Runnable() {
+            public void run() {
+              try {
+                LOG.info("Entered new thread");
+                Driver driver2 = new Driver(hconf);
+                SessionState.start(new CliSessionState(hconf));
+                CommandProcessorResponse ret = driver2.run("DROP TABLE " + dbName + ".ptned");
+                success = (ret.getException() == null);
+                assertTrue(success);
+                LOG.info("Exit new thread success - {}", success);
+              } catch (CommandNeedRetryException e) {
+                LOG.info("Hit Exception {} from new thread", e.getMessage());
+                throw new RuntimeException(e);
+              }
+            }
+          });
+          t.start();
+          LOG.info("Created new thread {}", t.getName());
+          try {
+            t.join();
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+        return table;
+      }
+    };
+    InjectableBehaviourObjectStore.setGetTableBehaviour(ptnedTableRenamer);
+
+    Tuple bootstrap = bootstrapLoadAndVerify(dbName, replDbName);
+
+    ptnedTableRenamer.assertInjectionsPerformed(true,true);
+    InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+
+    incrementalLoadAndVerify(dbName, bootstrap.lastReplId, replDbName);
+    verifyIfTableNotExist(replDbName, "ptned", metaStoreClientMirror);
+
+  }
+
+  @Test
   public void testIncrementalAdds() throws IOException {
     String name = testName.getMethodName();
     String dbName = createDB(name, driver);
