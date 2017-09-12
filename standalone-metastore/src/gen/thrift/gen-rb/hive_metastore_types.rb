@@ -1901,6 +1901,73 @@ class DropPartitionsRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class PartitionValuesRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TBLNAME = 2
+  PARTITIONKEYS = 3
+  APPLYDISTINCT = 4
+  FILTER = 5
+  PARTITIONORDER = 6
+  ASCENDING = 7
+  MAXPARTS = 8
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
+    PARTITIONKEYS => {:type => ::Thrift::Types::LIST, :name => 'partitionKeys', :element => {:type => ::Thrift::Types::STRUCT, :class => ::FieldSchema}},
+    APPLYDISTINCT => {:type => ::Thrift::Types::BOOL, :name => 'applyDistinct', :default => true, :optional => true},
+    FILTER => {:type => ::Thrift::Types::STRING, :name => 'filter', :optional => true},
+    PARTITIONORDER => {:type => ::Thrift::Types::LIST, :name => 'partitionOrder', :element => {:type => ::Thrift::Types::STRUCT, :class => ::FieldSchema}, :optional => true},
+    ASCENDING => {:type => ::Thrift::Types::BOOL, :name => 'ascending', :default => true, :optional => true},
+    MAXPARTS => {:type => ::Thrift::Types::I64, :name => 'maxParts', :default => -1, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partitionKeys is unset!') unless @partitionKeys
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PartitionValuesRow
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ROW = 1
+
+  FIELDS = {
+    ROW => {:type => ::Thrift::Types::LIST, :name => 'row', :element => {:type => ::Thrift::Types::STRING}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field row is unset!') unless @row
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PartitionValuesResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PARTITIONVALUES = 1
+
+  FIELDS = {
+    PARTITIONVALUES => {:type => ::Thrift::Types::LIST, :name => 'partitionValues', :element => {:type => ::Thrift::Types::STRUCT, :class => ::PartitionValuesRow}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partitionValues is unset!') unless @partitionValues
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class ResourceUri
   include ::Thrift::Struct, ::Thrift::Struct_Union
   RESOURCETYPE = 1

@@ -727,13 +727,13 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
           case 4: // PARTITIONNAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list574 = iprot.readListBegin();
-                struct.partitionnames = new ArrayList<String>(_list574.size);
-                String _elem575;
-                for (int _i576 = 0; _i576 < _list574.size; ++_i576)
+                org.apache.thrift.protocol.TList _list606 = iprot.readListBegin();
+                struct.partitionnames = new ArrayList<String>(_list606.size);
+                String _elem607;
+                for (int _i608 = 0; _i608 < _list606.size; ++_i608)
                 {
-                  _elem575 = iprot.readString();
-                  struct.partitionnames.add(_elem575);
+                  _elem607 = iprot.readString();
+                  struct.partitionnames.add(_elem607);
                 }
                 iprot.readListEnd();
               }
@@ -780,9 +780,9 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
         oprot.writeFieldBegin(PARTITIONNAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.partitionnames.size()));
-          for (String _iter577 : struct.partitionnames)
+          for (String _iter609 : struct.partitionnames)
           {
-            oprot.writeString(_iter577);
+            oprot.writeString(_iter609);
           }
           oprot.writeListEnd();
         }
@@ -817,9 +817,9 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
       oprot.writeString(struct.tablename);
       {
         oprot.writeI32(struct.partitionnames.size());
-        for (String _iter578 : struct.partitionnames)
+        for (String _iter610 : struct.partitionnames)
         {
-          oprot.writeString(_iter578);
+          oprot.writeString(_iter610);
         }
       }
       BitSet optionals = new BitSet();
@@ -842,13 +842,13 @@ public class AddDynamicPartitions implements org.apache.thrift.TBase<AddDynamicP
       struct.tablename = iprot.readString();
       struct.setTablenameIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list579 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.partitionnames = new ArrayList<String>(_list579.size);
-        String _elem580;
-        for (int _i581 = 0; _i581 < _list579.size; ++_i581)
+        org.apache.thrift.protocol.TList _list611 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.partitionnames = new ArrayList<String>(_list611.size);
+        String _elem612;
+        for (int _i613 = 0; _i613 < _list611.size; ++_i613)
         {
-          _elem580 = iprot.readString();
-          struct.partitionnames.add(_elem580);
+          _elem612 = iprot.readString();
+          struct.partitionnames.add(_elem612);
         }
       }
       struct.setPartitionnamesIsSet(true);

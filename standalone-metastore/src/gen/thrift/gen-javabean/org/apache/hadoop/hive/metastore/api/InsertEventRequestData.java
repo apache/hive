@@ -538,13 +538,13 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
           case 2: // FILES_ADDED
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list590 = iprot.readListBegin();
-                struct.filesAdded = new ArrayList<String>(_list590.size);
-                String _elem591;
-                for (int _i592 = 0; _i592 < _list590.size; ++_i592)
+                org.apache.thrift.protocol.TList _list622 = iprot.readListBegin();
+                struct.filesAdded = new ArrayList<String>(_list622.size);
+                String _elem623;
+                for (int _i624 = 0; _i624 < _list622.size; ++_i624)
                 {
-                  _elem591 = iprot.readString();
-                  struct.filesAdded.add(_elem591);
+                  _elem623 = iprot.readString();
+                  struct.filesAdded.add(_elem623);
                 }
                 iprot.readListEnd();
               }
@@ -556,13 +556,13 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
           case 3: // FILES_ADDED_CHECKSUM
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list593 = iprot.readListBegin();
-                struct.filesAddedChecksum = new ArrayList<String>(_list593.size);
-                String _elem594;
-                for (int _i595 = 0; _i595 < _list593.size; ++_i595)
+                org.apache.thrift.protocol.TList _list625 = iprot.readListBegin();
+                struct.filesAddedChecksum = new ArrayList<String>(_list625.size);
+                String _elem626;
+                for (int _i627 = 0; _i627 < _list625.size; ++_i627)
                 {
-                  _elem594 = iprot.readString();
-                  struct.filesAddedChecksum.add(_elem594);
+                  _elem626 = iprot.readString();
+                  struct.filesAddedChecksum.add(_elem626);
                 }
                 iprot.readListEnd();
               }
@@ -593,9 +593,9 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
         oprot.writeFieldBegin(FILES_ADDED_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filesAdded.size()));
-          for (String _iter596 : struct.filesAdded)
+          for (String _iter628 : struct.filesAdded)
           {
-            oprot.writeString(_iter596);
+            oprot.writeString(_iter628);
           }
           oprot.writeListEnd();
         }
@@ -606,9 +606,9 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
           oprot.writeFieldBegin(FILES_ADDED_CHECKSUM_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filesAddedChecksum.size()));
-            for (String _iter597 : struct.filesAddedChecksum)
+            for (String _iter629 : struct.filesAddedChecksum)
             {
-              oprot.writeString(_iter597);
+              oprot.writeString(_iter629);
             }
             oprot.writeListEnd();
           }
@@ -634,9 +634,9 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.filesAdded.size());
-        for (String _iter598 : struct.filesAdded)
+        for (String _iter630 : struct.filesAdded)
         {
-          oprot.writeString(_iter598);
+          oprot.writeString(_iter630);
         }
       }
       BitSet optionals = new BitSet();
@@ -653,9 +653,9 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
       if (struct.isSetFilesAddedChecksum()) {
         {
           oprot.writeI32(struct.filesAddedChecksum.size());
-          for (String _iter599 : struct.filesAddedChecksum)
+          for (String _iter631 : struct.filesAddedChecksum)
           {
-            oprot.writeString(_iter599);
+            oprot.writeString(_iter631);
           }
         }
       }
@@ -665,13 +665,13 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
     public void read(org.apache.thrift.protocol.TProtocol prot, InsertEventRequestData struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list600 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.filesAdded = new ArrayList<String>(_list600.size);
-        String _elem601;
-        for (int _i602 = 0; _i602 < _list600.size; ++_i602)
+        org.apache.thrift.protocol.TList _list632 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.filesAdded = new ArrayList<String>(_list632.size);
+        String _elem633;
+        for (int _i634 = 0; _i634 < _list632.size; ++_i634)
         {
-          _elem601 = iprot.readString();
-          struct.filesAdded.add(_elem601);
+          _elem633 = iprot.readString();
+          struct.filesAdded.add(_elem633);
         }
       }
       struct.setFilesAddedIsSet(true);
@@ -682,13 +682,13 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list603 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.filesAddedChecksum = new ArrayList<String>(_list603.size);
-          String _elem604;
-          for (int _i605 = 0; _i605 < _list603.size; ++_i605)
+          org.apache.thrift.protocol.TList _list635 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.filesAddedChecksum = new ArrayList<String>(_list635.size);
+          String _elem636;
+          for (int _i637 = 0; _i637 < _list635.size; ++_i637)
           {
-            _elem604 = iprot.readString();
-            struct.filesAddedChecksum.add(_elem604);
+            _elem636 = iprot.readString();
+            struct.filesAddedChecksum.add(_elem636);
           }
         }
         struct.setFilesAddedChecksumIsSet(true);

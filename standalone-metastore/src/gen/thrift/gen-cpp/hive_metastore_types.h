@@ -318,6 +318,12 @@ class RequestPartsSpec;
 
 class DropPartitionsRequest;
 
+class PartitionValuesRequest;
+
+class PartitionValuesRow;
+
+class PartitionValuesResponse;
+
 class ResourceUri;
 
 class Function;
@@ -5079,6 +5085,181 @@ class DropPartitionsRequest {
 void swap(DropPartitionsRequest &a, DropPartitionsRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const DropPartitionsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _PartitionValuesRequest__isset {
+  _PartitionValuesRequest__isset() : applyDistinct(true), filter(false), partitionOrder(false), ascending(true), maxParts(true) {}
+  bool applyDistinct :1;
+  bool filter :1;
+  bool partitionOrder :1;
+  bool ascending :1;
+  bool maxParts :1;
+} _PartitionValuesRequest__isset;
+
+class PartitionValuesRequest {
+ public:
+
+  PartitionValuesRequest(const PartitionValuesRequest&);
+  PartitionValuesRequest& operator=(const PartitionValuesRequest&);
+  PartitionValuesRequest() : dbName(), tblName(), applyDistinct(true), filter(), ascending(true), maxParts(-1LL) {
+  }
+
+  virtual ~PartitionValuesRequest() throw();
+  std::string dbName;
+  std::string tblName;
+  std::vector<FieldSchema>  partitionKeys;
+  bool applyDistinct;
+  std::string filter;
+  std::vector<FieldSchema>  partitionOrder;
+  bool ascending;
+  int64_t maxParts;
+
+  _PartitionValuesRequest__isset __isset;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tblName(const std::string& val);
+
+  void __set_partitionKeys(const std::vector<FieldSchema> & val);
+
+  void __set_applyDistinct(const bool val);
+
+  void __set_filter(const std::string& val);
+
+  void __set_partitionOrder(const std::vector<FieldSchema> & val);
+
+  void __set_ascending(const bool val);
+
+  void __set_maxParts(const int64_t val);
+
+  bool operator == (const PartitionValuesRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (!(partitionKeys == rhs.partitionKeys))
+      return false;
+    if (__isset.applyDistinct != rhs.__isset.applyDistinct)
+      return false;
+    else if (__isset.applyDistinct && !(applyDistinct == rhs.applyDistinct))
+      return false;
+    if (__isset.filter != rhs.__isset.filter)
+      return false;
+    else if (__isset.filter && !(filter == rhs.filter))
+      return false;
+    if (__isset.partitionOrder != rhs.__isset.partitionOrder)
+      return false;
+    else if (__isset.partitionOrder && !(partitionOrder == rhs.partitionOrder))
+      return false;
+    if (__isset.ascending != rhs.__isset.ascending)
+      return false;
+    else if (__isset.ascending && !(ascending == rhs.ascending))
+      return false;
+    if (__isset.maxParts != rhs.__isset.maxParts)
+      return false;
+    else if (__isset.maxParts && !(maxParts == rhs.maxParts))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionValuesRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionValuesRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(PartitionValuesRequest &a, PartitionValuesRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const PartitionValuesRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class PartitionValuesRow {
+ public:
+
+  PartitionValuesRow(const PartitionValuesRow&);
+  PartitionValuesRow& operator=(const PartitionValuesRow&);
+  PartitionValuesRow() {
+  }
+
+  virtual ~PartitionValuesRow() throw();
+  std::vector<std::string>  row;
+
+  void __set_row(const std::vector<std::string> & val);
+
+  bool operator == (const PartitionValuesRow & rhs) const
+  {
+    if (!(row == rhs.row))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionValuesRow &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionValuesRow & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(PartitionValuesRow &a, PartitionValuesRow &b);
+
+inline std::ostream& operator<<(std::ostream& out, const PartitionValuesRow& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class PartitionValuesResponse {
+ public:
+
+  PartitionValuesResponse(const PartitionValuesResponse&);
+  PartitionValuesResponse& operator=(const PartitionValuesResponse&);
+  PartitionValuesResponse() {
+  }
+
+  virtual ~PartitionValuesResponse() throw();
+  std::vector<PartitionValuesRow>  partitionValues;
+
+  void __set_partitionValues(const std::vector<PartitionValuesRow> & val);
+
+  bool operator == (const PartitionValuesResponse & rhs) const
+  {
+    if (!(partitionValues == rhs.partitionValues))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionValuesResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionValuesResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(PartitionValuesResponse &a, PartitionValuesResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const PartitionValuesResponse& obj)
 {
   obj.printTo(out);
   return out;
