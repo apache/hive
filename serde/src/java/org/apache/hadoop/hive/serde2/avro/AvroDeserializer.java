@@ -201,8 +201,8 @@ class AvroDeserializer {
     // Klaxon! Klaxon! Klaxon!
     // Avro requires NULLable types to be defined as unions of some type T
     // and NULL.  This is annoying and we're going to hide it from the user.
-    if(AvroSerdeUtils.isNullableType(recordSchema)) {
-      return deserializeNullableUnion(datum, fileSchema, recordSchema);
+    if (AvroSerdeUtils.isNullableType(recordSchema)) {
+      return deserializeNullableUnion(datum, fileSchema, recordSchema, columnType);
     }
 
     switch(columnType.getCategory()) {
@@ -301,29 +301,28 @@ class AvroDeserializer {
   }
 
   /**
-   * Extract either a null or the correct type from a Nullable type.  This is
-   * horrible in that we rebuild the TypeInfo every time.
+   * Extract either a null or the correct type from a Nullable type.
    */
-  private Object deserializeNullableUnion(Object datum, Schema fileSchema, Schema recordSchema)
+  private Object deserializeNullableUnion(Object datum, Schema fileSchema, Schema recordSchema, TypeInfo columnType)
                                             throws AvroSerdeException {
     if (recordSchema.getTypes().size() == 2) {
       // A type like [NULL, T]
-      return deserializeSingleItemNullableUnion(datum, fileSchema, recordSchema);
+      return deserializeSingleItemNullableUnion(datum, fileSchema, recordSchema, columnType);
     } else {
       // Types like [NULL, T1, T2, ...]
       if (datum == null) {
         return null;
       } else {
         Schema newRecordSchema = AvroSerdeUtils.getOtherTypeFromNullableType(recordSchema);
-        return worker(datum, fileSchema, newRecordSchema,
-            SchemaToTypeInfo.generateTypeInfo(newRecordSchema, null));
+        return worker(datum, fileSchema, newRecordSchema, columnType);
       }
     }
   }
 
   private Object deserializeSingleItemNullableUnion(Object datum,
                                                     Schema fileSchema,
-                                                    Schema recordSchema)
+                                                    Schema recordSchema,
+                                                    TypeInfo columnType)
       throws AvroSerdeException {
     int tag = GenericData.get().resolveUnion(recordSchema, datum); // Determine index of value
     Schema schema = recordSchema.getTypes().get(tag);
@@ -361,8 +360,7 @@ class AvroDeserializer {
         currentFileSchema = fileSchema;
       }
     }
-    return worker(datum, currentFileSchema, schema,
-      SchemaToTypeInfo.generateTypeInfo(schema, null));
+    return worker(datum, currentFileSchema, schema, columnType);
   }
 
   private Object deserializeStruct(GenericData.Record datum, Schema fileSchema, StructTypeInfo columnType)
@@ -377,7 +375,7 @@ class AvroDeserializer {
 
   private Object deserializeUnion(Object datum, Schema fileSchema, Schema recordSchema,
                                   UnionTypeInfo columnType) throws AvroSerdeException {
-    // Calculate tags individually since the schema can evolve and can have different tags. In worst case, both schemas are same 
+    // Calculate tags individually since the schema can evolve and can have different tags. In worst case, both schemas are same
     // and we would end up doing calculations twice to get the same tag
     int fsTag = GenericData.get().resolveUnion(fileSchema, datum); // Determine index of value from fileSchema
     int rsTag = GenericData.get().resolveUnion(recordSchema, datum); // Determine index of value from recordSchema
