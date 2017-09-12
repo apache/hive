@@ -25,8 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * HiveVersionInfo.
- *
+ * Class that uses package information to figure out which version of the metastore this program is.
  */
 @InterfaceAudience.Private
 @InterfaceStability.Unstable

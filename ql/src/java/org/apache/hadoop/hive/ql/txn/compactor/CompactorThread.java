@@ -52,8 +52,7 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
   static final private String CLASS_NAME = CompactorThread.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
-  protected Configuration conf;
-  protected HiveConf hiveConf;
+  protected HiveConf conf;
   protected TxnStore txnHandler;
   protected RawStore rs;
   protected int threadId;
@@ -62,11 +61,11 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
 
   @Override
   public void setConf(Configuration configuration) {
-    conf = configuration;
-    // TODO for now, keep a copy of HiveConf around as we need to call other methods with it.
-    // This should be removed once everything that this calls that requires HiveConf is moved to
-    // the standalone metastore.
-    hiveConf = (conf instanceof HiveConf) ? (HiveConf)conf : new HiveConf(conf, HiveConf.class);
+    // TODO MS-SPLIT for now, keep a copy of HiveConf around as we need to call other methods with
+    // it. This should be changed to Configuration once everything that this calls that requires
+    // HiveConf is moved to the standalone metastore.
+    conf = (configuration instanceof HiveConf) ? (HiveConf)configuration :
+        new HiveConf(configuration, HiveConf.class);
   }
 
   @Override
@@ -88,10 +87,10 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
     setDaemon(true); // this means the process will exit without waiting for this thread
 
     // Get our own instance of the transaction handler
-    txnHandler = TxnUtils.getTxnStore(hiveConf);
+    txnHandler = TxnUtils.getTxnStore(conf);
 
     // Get our own connection to the database so we can get table and partition information.
-    rs = RawStoreProxy.getProxy(hiveConf, conf,
+    rs = RawStoreProxy.getProxy(conf, conf,
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL), threadId);
   }
 
@@ -119,7 +118,7 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
    */
   protected Partition resolvePartition(CompactionInfo ci) throws Exception {
     if (ci.partName != null) {
-      List<Partition> parts = null;
+      List<Partition> parts;
       try {
         parts = rs.getPartitionsByNames(ci.dbname, ci.tableName,
             Collections.singletonList(ci.partName));

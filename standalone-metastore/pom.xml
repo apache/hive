@@ -181,39 +181,6 @@
         </plugins>
       </build>
     </profile>
-    <profile>
-      <id>protobuf</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>generate-protobuf-sources</id>
-                <phase>generate-sources</phase>
-                <configuration>
-                  <target>
-                    <property name="protobuf.src.dir"  location="${basedir}/src/main/protobuf"/>
-                    <property name="protobuf.build.dir"  location="${basedir}/src/gen/protobuf/gen-java"/>
-                    <echo>Building Protobuf</echo>
-                    <mkdir dir="${protobuf.build.dir}"/>
-                    <exec executable="protoc" failonerror="true">
-                      <arg value="--java_out=${protobuf.build.dir}"/>
-                      <arg value="-I=${protobuf.src.dir}/org/apache/hadoop/hive/metastore"/>
-                      <arg value="${protobuf.src.dir}/org/apache/hadoop/hive/metastore/metastore.proto"/>
-                    </exec>
-                  </target>
-                </configuration>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
   </profiles>
 
   <build>
@@ -228,6 +195,26 @@
     <plugins>
       <!-- plugins are always listed in sorted order by groupId, artifectId -->
       <plugin>
+        <groupId>com.github.os72</groupId>
+        <artifactId>protoc-jar-maven-plugin</artifactId>
+        <version>3.0.0-a3</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <protocVersion>2.5.0</protocVersion>
+              <addSources>none</addSources>
+              <inputDirectories>
+                <include>${basedir}/src/main/protobuf/org/apache/hadoop/hive/metastore</include>
+              </inputDirectories>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
@@ -240,7 +227,7 @@
             <configuration>
               <sources>
                 <source>src/gen/thrift/gen-javabean</source>
-                <source>src/gen/protobuf/gen-java</source>
+                <source>${project.build.directory}/generated-sources</source>
                 <source>src/gen/org</source>
               </sources>
             </configuration>
