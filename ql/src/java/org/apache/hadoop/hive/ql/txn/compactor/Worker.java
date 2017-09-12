@@ -157,20 +157,20 @@ public class Worker extends CompactorThread {
         LOG.info("Starting " + ci.type.toString() + " compaction for " +
             ci.getFullPartitionName());
 
-        final StatsUpdater su = StatsUpdater.init(ci, txnHandler.findColumnsWithStats(ci), hiveConf,
+        final StatsUpdater su = StatsUpdater.init(ci, txnHandler.findColumnsWithStats(ci), conf,
           runJobAsSelf(runAs) ? runAs : t.getOwner());
         final CompactorMR mr = new CompactorMR();
         launchedJob = true;
         try {
           if (runJobAsSelf(runAs)) {
-            mr.run(hiveConf, jobName.toString(), t, sd, txns, ci, su, txnHandler);
+            mr.run(conf, jobName.toString(), t, sd, txns, ci, su, txnHandler);
           } else {
             UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
               UserGroupInformation.getLoginUser());
             ugi.doAs(new PrivilegedExceptionAction<Object>() {
               @Override
               public Object run() throws Exception {
-                mr.run(hiveConf, jobName.toString(), t, sd, txns, ci, su, txnHandler);
+                mr.run(conf, jobName.toString(), t, sd, txns, ci, su, txnHandler);
                 return null;
               }
             });
@@ -182,7 +182,7 @@ public class Worker extends CompactorThread {
             }
           }
           txnHandler.markCompacted(ci);
-          if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+          if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
             mrJob = mr.getMrJob();
           }
         } catch (Exception e) {
