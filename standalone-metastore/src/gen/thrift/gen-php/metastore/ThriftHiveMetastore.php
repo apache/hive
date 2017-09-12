@@ -537,6 +537,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
    * @param string $tbl_name
    * @param int $max_parts
    * @return string[]
+   * @throws \metastore\NoSuchObjectException
    * @throws \metastore\MetaException
    */
   public function get_partition_names($db_name, $tbl_name, $max_parts);
@@ -4853,6 +4854,9 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     }
     if ($result->success !== null) {
       return $result->success;
+    }
+    if ($result->o1 !== null) {
+      throw $result->o1;
     }
     if ($result->o2 !== null) {
       throw $result->o2;
@@ -25914,6 +25918,10 @@ class ThriftHiveMetastore_get_partition_names_result {
    */
   public $success = null;
   /**
+   * @var \metastore\NoSuchObjectException
+   */
+  public $o1 = null;
+  /**
    * @var \metastore\MetaException
    */
   public $o2 = null;
@@ -25930,6 +25938,11 @@ class ThriftHiveMetastore_get_partition_names_result {
             ),
           ),
         1 => array(
+          'var' => 'o1',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\NoSuchObjectException',
+          ),
+        2 => array(
           'var' => 'o2',
           'type' => TType::STRUCT,
           'class' => '\metastore\MetaException',
@@ -25939,6 +25952,9 @@ class ThriftHiveMetastore_get_partition_names_result {
     if (is_array($vals)) {
       if (isset($vals['success'])) {
         $this->success = $vals['success'];
+      }
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
       }
       if (isset($vals['o2'])) {
         $this->o2 = $vals['o2'];
@@ -25984,6 +26000,14 @@ class ThriftHiveMetastore_get_partition_names_result {
           break;
         case 1:
           if ($ftype == TType::STRUCT) {
+            $this->o1 = new \metastore\NoSuchObjectException();
+            $xfer += $this->o1->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRUCT) {
             $this->o2 = new \metastore\MetaException();
             $xfer += $this->o2->read($input);
           } else {
@@ -26020,8 +26044,13 @@ class ThriftHiveMetastore_get_partition_names_result {
       }
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
+      $xfer += $this->o1->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
     if ($this->o2 !== null) {
-      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 1);
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
       $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }

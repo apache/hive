@@ -8697,8 +8697,9 @@ class ThriftHiveMetastore_get_partition_names_pargs {
 };
 
 typedef struct _ThriftHiveMetastore_get_partition_names_result__isset {
-  _ThriftHiveMetastore_get_partition_names_result__isset() : success(false), o2(false) {}
+  _ThriftHiveMetastore_get_partition_names_result__isset() : success(false), o1(false), o2(false) {}
   bool success :1;
+  bool o1 :1;
   bool o2 :1;
 } _ThriftHiveMetastore_get_partition_names_result__isset;
 
@@ -8712,17 +8713,22 @@ class ThriftHiveMetastore_get_partition_names_result {
 
   virtual ~ThriftHiveMetastore_get_partition_names_result() throw();
   std::vector<std::string>  success;
+  NoSuchObjectException o1;
   MetaException o2;
 
   _ThriftHiveMetastore_get_partition_names_result__isset __isset;
 
   void __set_success(const std::vector<std::string> & val);
 
+  void __set_o1(const NoSuchObjectException& val);
+
   void __set_o2(const MetaException& val);
 
   bool operator == (const ThriftHiveMetastore_get_partition_names_result & rhs) const
   {
     if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
       return false;
     if (!(o2 == rhs.o2))
       return false;
@@ -8740,8 +8746,9 @@ class ThriftHiveMetastore_get_partition_names_result {
 };
 
 typedef struct _ThriftHiveMetastore_get_partition_names_presult__isset {
-  _ThriftHiveMetastore_get_partition_names_presult__isset() : success(false), o2(false) {}
+  _ThriftHiveMetastore_get_partition_names_presult__isset() : success(false), o1(false), o2(false) {}
   bool success :1;
+  bool o1 :1;
   bool o2 :1;
 } _ThriftHiveMetastore_get_partition_names_presult__isset;
 
@@ -8751,6 +8758,7 @@ class ThriftHiveMetastore_get_partition_names_presult {
 
   virtual ~ThriftHiveMetastore_get_partition_names_presult() throw();
   std::vector<std::string> * success;
+  NoSuchObjectException o1;
   MetaException o2;
 
   _ThriftHiveMetastore_get_partition_names_presult__isset __isset;
