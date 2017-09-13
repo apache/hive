@@ -139,7 +139,8 @@ STAGE PLANS:
               name: default.tmptable
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-4
     Map Reduce

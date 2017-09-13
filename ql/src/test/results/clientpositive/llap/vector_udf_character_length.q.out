@@ -87,7 +87,8 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM src1 INSERT OVERWRITE TABLE dest1 SELECT character_length(src1.value)
 PREHOOK: type: QUERY

@@ -49,7 +49,8 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
@@ -58,10 +59,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table t1 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table t1 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted t1 value
 PREHOOK: type: DESCTABLE

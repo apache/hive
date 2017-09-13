@@ -112,41 +112,57 @@ PREHOOK: query: analyze table srcbucket_mapjoin compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket_mapjoin
 PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
+PREHOOK: Output: default@srcbucket_mapjoin
+PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table srcbucket_mapjoin compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin
 POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
+POSTHOOK: Output: default@srcbucket_mapjoin
+POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
 #### A masked pattern was here ####
 PREHOOK: query: analyze table srcbucket_mapjoin_part compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket_mapjoin_part
 PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Output: default@srcbucket_mapjoin_part
+PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table srcbucket_mapjoin_part compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_part
 POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Output: default@srcbucket_mapjoin_part
+POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
 #### A masked pattern was here ####
 PREHOOK: query: analyze table tab compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab
 PREHOOK: Input: default@tab@ds=2008-04-08
+PREHOOK: Output: default@tab
+PREHOOK: Output: default@tab@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table tab compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab
 POSTHOOK: Input: default@tab@ds=2008-04-08
+POSTHOOK: Output: default@tab
+POSTHOOK: Output: default@tab@ds=2008-04-08
 #### A masked pattern was here ####
 PREHOOK: query: analyze table tab_part compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_part
 PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Output: default@tab_part
+PREHOOK: Output: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table tab_part compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_part
 POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Output: default@tab_part
+POSTHOOK: Output: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
 PREHOOK: query: explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value
 PREHOOK: type: QUERY
@@ -399,10 +415,12 @@ POSTHOOK: Lineage: tab1.value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.Field
 PREHOOK: query: analyze table tab1 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab1
+PREHOOK: Output: default@tab1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table tab1 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab1
+POSTHOOK: Output: default@tab1
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select a.key, a.value, b.value
@@ -1406,11 +1424,15 @@ PREHOOK: query: analyze table tab_part1 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_part1
 PREHOOK: Input: default@tab_part1@ds=2008-04-08
+PREHOOK: Output: default@tab_part1
+PREHOOK: Output: default@tab_part1@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table tab_part1 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_part1
 POSTHOOK: Input: default@tab_part1@ds=2008-04-08
+POSTHOOK: Output: default@tab_part1
+POSTHOOK: Output: default@tab_part1@ds=2008-04-08
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select count(*)

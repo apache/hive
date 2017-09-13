@@ -374,6 +374,44 @@ POSTHOOK: query: create table if not exists nzhang_part14 (key string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part14
+PREHOOK: query: desc formatted nzhang_part14
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part14
+POSTHOOK: query: desc formatted nzhang_part14
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_part14
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: insert overwrite table nzhang_part14 partition(value) 
 select key, value from (
   select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
@@ -399,6 +437,42 @@ POSTHOOK: Output: default@nzhang_part14@value=
 POSTHOOK: Output: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
+PREHOOK: query: desc formatted nzhang_part14 partition (value=' ')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@nzhang_part14
+POSTHOOK: query: desc formatted nzhang_part14 partition (value=' ')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@nzhang_part14
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+value               	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[ ]                 	 
+Database:           	default             	 
+Table:              	nzhang_part14       	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	4                   
+	totalSize           	6                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: explain select key from nzhang_part14
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select key from nzhang_part14

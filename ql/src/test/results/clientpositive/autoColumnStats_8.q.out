@@ -47,10 +47,8 @@ STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-0
-  Stage-6 depends on stages: Stage-3, Stage-4, Stage-5
-  Stage-7 depends on stages: Stage-3, Stage-4, Stage-5
   Stage-1 depends on stages: Stage-2
-  Stage-4 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-1, Stage-5
   Stage-5 depends on stages: Stage-2
 
 STAGE PLANS:
@@ -447,24 +445,9 @@ STAGE PLANS:
               name: default.nzhang_part8
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
-
-  Stage: Stage-6
-    Column Stats Work
-      Column Stats Desc:
-          Columns: key, value
-          Column Types: string, string
-          Table: default.nzhang_part8
-          Is Table Level Stats: false
-
-  Stage: Stage-7
-    Column Stats Work
-      Column Stats Desc:
-          Columns: key, value
-          Column Types: string, string
-          Table: default.nzhang_part8
-          Is Table Level Stats: false
 
   Stage: Stage-1
     Move Operator
@@ -495,8 +478,14 @@ STAGE PLANS:
               name: default.nzhang_part8
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: string, string
+          Table: default.nzhang_part8
+          Is Table Level Stats: false
 
   Stage: Stage-5
     Map Reduce

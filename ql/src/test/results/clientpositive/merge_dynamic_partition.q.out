@@ -92,7 +92,8 @@ STAGE PLANS:
               name: default.merge_dynamic_part
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp where ds='2008-04-08'
 PREHOOK: type: QUERY
@@ -692,7 +693,8 @@ STAGE PLANS:
               name: default.merge_dynamic_part
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Map Reduce
@@ -1322,7 +1324,8 @@ STAGE PLANS:
               name: default.merge_dynamic_part
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Map Reduce

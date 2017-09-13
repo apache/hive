@@ -153,8 +153,9 @@ STAGE PLANS:
               /analyze_srcpart/ds=2008-04-08/hr=12 [analyze_srcpart]
 
   Stage: Stage-1
-    Stats-Aggr Operator
-      Stats Aggregation Key Prefix: default.analyze_srcpart/
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: default.analyze_srcpart/
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr) compute statistics
 PREHOOK: type: QUERY

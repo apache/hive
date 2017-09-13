@@ -107,7 +107,8 @@ STAGE PLANS:
               name: default.t2
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key) T ORDER BY key, value LIMIT 20
 PREHOOK: type: QUERY

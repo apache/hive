@@ -53,7 +53,8 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: user id, user name
           Column Types: bigint, string
@@ -62,10 +63,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table user_web_events compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@user_web_events
+PREHOOK: Output: default@user_web_events
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table user_web_events compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@user_web_events
+POSTHOOK: Output: default@user_web_events
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze table user_web_events compute statistics for columns `user id`
 PREHOOK: type: QUERY
@@ -110,7 +113,8 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: user id
           Column Types: bigint
@@ -119,8 +123,10 @@ STAGE PLANS:
 PREHOOK: query: analyze table user_web_events compute statistics for columns `user id`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@user_web_events
+PREHOOK: Output: default@user_web_events
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table user_web_events compute statistics for columns `user id`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@user_web_events
+POSTHOOK: Output: default@user_web_events
 #### A masked pattern was here ####

@@ -144,7 +144,8 @@ STAGE PLANS:
               name: default.ss_part
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
@@ -378,7 +379,8 @@ STAGE PLANS:
               name: default.ss_part
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
@@ -616,7 +618,8 @@ STAGE PLANS:
               name: default.ss_part
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
@@ -848,7 +851,8 @@ STAGE PLANS:
               name: default.ss_part
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
@@ -1141,7 +1145,8 @@ STAGE PLANS:
               name: default.ss_part_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table ss_part_orc partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
@@ -1373,7 +1378,8 @@ STAGE PLANS:
               name: default.ss_part_orc
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table ss_part_orc partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
@@ -1647,7 +1653,8 @@ STAGE PLANS:
               name: default.hive13_dp1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table `hive13_dp1` partition(`day`)
 select
@@ -1777,7 +1784,8 @@ STAGE PLANS:
               name: default.hive13_dp1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table `hive13_dp1` partition(`day`)
 select 

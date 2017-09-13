@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
  *
  */
 @Explain(displayName = "File Output Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class FileSinkDesc extends AbstractOperatorDesc {
+public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDesc {
   private static final long serialVersionUID = 1L;
 
   public enum DPSortState {
@@ -373,6 +373,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.gatherStats = gatherStats;
   }
 
+  @Override
   @Explain(displayName = "GatherStats", explainLevels = { Level.EXTENDED })
   public boolean isGatherStats() {
     return gatherStats;
@@ -389,6 +390,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
    * will be aggregated.
    * @return key prefix used for stats publishing and aggregation.
    */
+  @Override
   @Explain(displayName = "Stats Publishing Key Prefix", explainLevels = { Level.EXTENDED })
   public String getStatsAggPrefix() {
     // dirName uniquely identifies destination directory of a FileSinkOperator.
@@ -511,7 +513,8 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   }
 
 
-  public String getStatsTmpDir() {
+  @Override
+  public String getTmpStatsDir() {
     return statsTmpDir;
   }
 
@@ -577,4 +580,5 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

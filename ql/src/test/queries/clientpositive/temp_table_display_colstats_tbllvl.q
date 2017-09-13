@@ -15,8 +15,11 @@ CREATE TEMPORARY EXTERNAL TABLE UserVisits_web_text_none (
 row format delimited fields terminated by '|'  stored as textfile
 location 'pfile://${system:test.tmp.dir}/uservisits_web_text_none';
 
+desc formatted UserVisits_web_text_none;
+
 LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none;
 
+desc formatted UserVisits_web_text_none;
 desc extended UserVisits_web_text_none sourceIP;
 desc formatted UserVisits_web_text_none sourceIP;
 
@@ -27,6 +30,7 @@ explain extended
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue;
 
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue;
+desc formatted UserVisits_web_text_none;
 desc formatted UserVisits_web_text_none sourceIP;
 desc formatted UserVisits_web_text_none avgTimeOnSite;
 desc formatted UserVisits_web_text_none adRevenue;

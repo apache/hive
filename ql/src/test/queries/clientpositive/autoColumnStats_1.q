@@ -60,6 +60,8 @@ drop table nzhang_part14;
 create table if not exists nzhang_part14 (key string)
   partitioned by (value string);
 
+desc formatted nzhang_part14;
+
 insert overwrite table nzhang_part14 partition(value) 
 select key, value from (
   select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
@@ -68,6 +70,8 @@ select key, value from (
   union all 
   select * from (select 'k3' as key, ' ' as value from src limit 2)c
 ) T;
+
+desc formatted nzhang_part14 partition (value=' ');
 
 explain select key from nzhang_part14;
 

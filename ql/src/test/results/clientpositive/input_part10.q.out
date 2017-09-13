@@ -85,7 +85,8 @@ STAGE PLANS:
               name: default.part_special
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE part_special PARTITION(ds='2008 04 08', ts = '10:11:12=455')
 SELECT 1, 2 FROM src LIMIT 1

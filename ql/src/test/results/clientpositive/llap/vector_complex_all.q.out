@@ -854,7 +854,8 @@ STAGE PLANS:
               name: default.orc_create_complex
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_1, $hdt$_2, $hdt$_3, $hdt$_0]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: INSERT INTO TABLE orc_create_complex

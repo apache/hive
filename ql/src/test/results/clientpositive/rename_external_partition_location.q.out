@@ -69,11 +69,15 @@ PREHOOK: query: ANALYZE TABLE ex_table PARTITION (part='part1') COMPUTE STATISTI
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ex_table
 PREHOOK: Input: default@ex_table@part=part1
+PREHOOK: Output: default@ex_table
+PREHOOK: Output: default@ex_table@part=part1
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE ex_table PARTITION (part='part1') COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ex_table
 POSTHOOK: Input: default@ex_table@part=part1
+POSTHOOK: Output: default@ex_table
+POSTHOOK: Output: default@ex_table@part=part1
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED ex_table
 PREHOOK: type: DESCTABLE

@@ -59,10 +59,12 @@ POSTHOOK: Output: default@over1k
 PREHOOK: query: analyze table over1k compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k
+PREHOOK: Output: default@over1k
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table over1k compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k
+POSTHOOK: Output: default@over1k
 #### A masked pattern was here ####
 PREHOOK: query: explain select count(*) from over1k where (
 (t=1 and si=2)

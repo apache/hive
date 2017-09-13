@@ -89,7 +89,8 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: fl_date
           Column Types: date
@@ -98,10 +99,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table tab_date compute statistics for columns fl_date
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_date
+PREHOOK: Output: default@tab_date
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table tab_date compute statistics for columns fl_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_date
+POSTHOOK: Output: default@tab_date
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted tab_date fl_date
 PREHOOK: type: DESCTABLE
@@ -121,7 +124,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"fl_date\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"fl_date\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
 POSTHOOK: query: alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
@@ -144,4 +147,4 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"fl_date\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"fl_date\":\"true\"}}	 	 	 	 	 	 	 	 	 	 

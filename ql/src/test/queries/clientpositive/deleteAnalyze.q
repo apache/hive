@@ -20,6 +20,8 @@ describe formatted testdeci2 amount;
 
 analyze table testdeci2 compute statistics for columns;
 
+describe formatted testdeci2;
+
 set hive.stats.fetch.column.stats=true;
 
 analyze table testdeci2 compute statistics for columns;

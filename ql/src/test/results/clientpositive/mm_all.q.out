@@ -105,7 +105,8 @@ STAGE PLANS:
           micromanaged table: true
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Merge File Operator
@@ -1593,10 +1594,10 @@ POSTHOOK: Output: default@multi1_mm@p=1
 POSTHOOK: Output: default@multi1_mm@p=455
 POSTHOOK: Output: default@multi1_mm@p=456
 POSTHOOK: Output: default@multi1_mm@p=457
-POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=455).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=456).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]

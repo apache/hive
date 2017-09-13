@@ -81,7 +81,6 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -369,10 +368,10 @@ public abstract class BaseSemanticAnalyzer {
       String dbName = dbTablePair.getKey();
       String tableName = dbTablePair.getValue();
       if (dbName != null){
-        return StatsUtils.getFullyQualifiedTableName(dbName, tableName);
+        return dbName + "." + tableName;
       }
       if (currentDatabase != null) {
-        return StatsUtils.getFullyQualifiedTableName(currentDatabase, tableName);
+        return currentDatabase + "." + tableName;
       }
       return tableName;
     } else if (tokenType == HiveParser.StringLiteral) {
@@ -1120,19 +1119,22 @@ public abstract class BaseSemanticAnalyzer {
 
     public TableSpec(Table table) {
       tableHandle = table;
-      tableName = table.getFullyQualifiedName();
+      tableName = table.getDbName() + "." + table.getTableName();
       specType = SpecType.TABLE_ONLY;
     }
 
     public TableSpec(Hive db, String tableName, Map<String, String> partSpec)
         throws HiveException {
       Table table = db.getTable(tableName);
-      final Partition partition = partSpec == null ? null : db.getPartition(table, partSpec, false);
       tableHandle = table;
-      this.tableName = table.getFullyQualifiedName();
-      if (partition == null) {
+      this.tableName = table.getDbName() + "." + table.getTableName();
+      if (partSpec == null) {
         specType = SpecType.TABLE_ONLY;
       } else {
+        Partition partition = db.getPartition(table, partSpec, false);
+        if (partition == null) {
+          throw new SemanticException("partition is unknown: " + table + "/" + partSpec);
+        }
         partHandle = partition;
         partitions = Collections.singletonList(partHandle);
         specType = SpecType.STATIC_PARTITION;
@@ -1733,7 +1735,9 @@ public abstract class BaseSemanticAnalyzer {
   @VisibleForTesting
   static void normalizeColSpec(Map<String, String> partSpec, String colName,
       String colType, String originalColSpec, Object colValue) throws SemanticException {
-    if (colValue == null) return; // nothing to do with nulls
+    if (colValue == null) {
+      return; // nothing to do with nulls
+    }
     String normalizedColSpec = originalColSpec;
     if (colType.equals(serdeConstants.DATE_TYPE_NAME)) {
       normalizedColSpec = normalizeDateCol(colValue, originalColSpec);

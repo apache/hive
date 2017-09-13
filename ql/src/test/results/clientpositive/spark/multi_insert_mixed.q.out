@@ -176,7 +176,8 @@ STAGE PLANS:
               name: default.src_multi1
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -189,7 +190,8 @@ STAGE PLANS:
               name: default.src_multi2
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-2
     Move Operator
@@ -202,7 +204,8 @@ STAGE PLANS:
               name: default.src_multi3
 
   Stage: Stage-6
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src
 insert overwrite table src_multi1 select key, count(1) group by key order by key

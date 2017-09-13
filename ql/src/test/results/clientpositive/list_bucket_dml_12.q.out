@@ -150,7 +150,8 @@ STAGE PLANS:
               name: default.list_bucketing_mul_col
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
 PREHOOK: query: insert overwrite table list_bucketing_mul_col partition (ds = '2008-04-08', hr = '11')

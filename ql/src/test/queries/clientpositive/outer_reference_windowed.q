@@ -34,6 +34,8 @@ ANALYZE TABLE e011_03 COMPUTE STATISTICS FOR COLUMNS;
 
 set hive.explain.user=false;
 
+describe formatted e011_01;
+
 explain select sum(sum(c1)) over() from e011_01;
 select sum(sum(c1)) over() from e011_01;
 

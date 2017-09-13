@@ -54,7 +54,8 @@ STAGE PLANS:
               name: default.srcbucket_mapjoin_part
 
   Stage: Stage-1
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: LOAD
@@ -544,7 +545,8 @@ STAGE PLANS:
               name: default.bucketmapjoin_tmp_result
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
 PREHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
@@ -910,7 +912,8 @@ STAGE PLANS:
               name: default.bucketmapjoin_tmp_result
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
 PREHOOK: query: insert overwrite table bucketmapjoin_tmp_result 

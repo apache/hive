@@ -120,10 +120,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table emp_orc compute statistics for columns deptid
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emp_orc
+PREHOOK: Output: default@emp_orc
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table emp_orc compute statistics for columns deptid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emp_orc
+POSTHOOK: Output: default@emp_orc
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from emp_orc
 PREHOOK: type: QUERY
@@ -170,10 +172,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table emp_orc compute statistics for columns lastname,deptid
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emp_orc
+PREHOOK: Output: default@emp_orc
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table emp_orc compute statistics for columns lastname,deptid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emp_orc
+POSTHOOK: Output: default@emp_orc
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from emp_orc
 PREHOOK: type: QUERY

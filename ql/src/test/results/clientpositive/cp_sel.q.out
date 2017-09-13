@@ -128,7 +128,8 @@ STAGE PLANS:
               name: default.testpartbucket
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table testpartbucket partition(ds,hr) select key,value,'hello' as ds, 'world' as hr from srcpart where hr=11
 PREHOOK: type: QUERY

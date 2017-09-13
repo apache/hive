@@ -562,7 +562,8 @@ STAGE PLANS:
           name: default.union_top
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-0
     Move Operator
@@ -796,7 +797,8 @@ STAGE PLANS:
               name: default.union_top
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert into table union_top
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
@@ -1016,7 +1018,8 @@ STAGE PLANS:
               name: default.union_top
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table union_top
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a

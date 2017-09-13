@@ -23,12 +23,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
@@ -41,10 +39,10 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.StatsWork;
+import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.StatsNoJobWork;
-import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.mapred.InputFormat;
 
 /**
@@ -67,8 +65,8 @@ public class GenMRTableScan1 implements NodeProcessor {
     TableScanOperator op = (TableScanOperator) nd;
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
     ParseContext parseCtx = ctx.getParseCtx();
-    Class<? extends InputFormat> inputFormat = op.getConf().getTableMetadata()
-        .getInputFormatClass();
+    Table table = op.getConf().getTableMetadata();
+    Class<? extends InputFormat> inputFormat = table.getInputFormatClass();
     Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
 
     // create a dummy MapReduce task
@@ -93,19 +91,17 @@ public class GenMRTableScan1 implements NodeProcessor {
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
 
             // There will not be any MR or Tez job above this task
-            StatsNoJobWork snjWork = new StatsNoJobWork(op.getConf().getTableMetadata().getTableSpec());
-            snjWork.setStatsReliable(parseCtx.getConf().getBoolVar(
-                HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+            StatsWork statWork = new StatsWork(table, parseCtx.getConf());
+            statWork.setFooterScan();
+
             // If partition is specified, get pruned partition list
             Set<Partition> confirmedParts = GenMapRedUtils.getConfirmedPartitionsForScan(op);
             if (confirmedParts.size() > 0) {
-              Table source = op.getConf().getTableMetadata();
               List<String> partCols = GenMapRedUtils.getPartitionColumns(op);
-              PrunedPartitionList partList = new PrunedPartitionList(source, confirmedParts,
-                  partCols, false);
-              snjWork.setPrunedPartitionList(partList);
+              PrunedPartitionList partList = new PrunedPartitionList(table, confirmedParts, partCols, false);
+              statWork.addInputPartitions(partList.getPartitions());
             }
-            Task<StatsNoJobWork> snjTask = TaskFactory.get(snjWork, parseCtx.getConf());
+            Task<StatsWork> snjTask = TaskFactory.get(statWork, parseCtx.getConf());
             ctx.setCurrTask(snjTask);
             ctx.setCurrTopOp(null);
             ctx.getRootTasks().clear();
@@ -115,14 +111,15 @@ public class GenMRTableScan1 implements NodeProcessor {
             // The plan consists of a simple MapRedTask followed by a StatsTask.
             // The MR task is just a simple TableScanOperator
 
-            StatsWork statsWork = new StatsWork(op.getConf().getTableMetadata().getTableSpec());
-            statsWork.setAggKey(op.getConf().getStatsAggPrefix());
-            statsWork.setStatsTmpDir(op.getConf().getTmpStatsDir());
-            statsWork.setSourceTask(currTask);
-            statsWork.setStatsReliable(parseCtx.getConf().getBoolVar(
-                HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-            Task<StatsWork> statsTask = TaskFactory.get(statsWork, parseCtx.getConf());
-            currTask.addDependentTask(statsTask);
+            BasicStatsWork statsWork = new BasicStatsWork(table.getTableSpec());
+
+            statsWork.setNoScanAnalyzeCommand(noScan);
+            StatsWork columnStatsWork = new StatsWork(table, statsWork, parseCtx.getConf());
+            columnStatsWork.collectStatsFromAggregator(op.getConf());
+
+            columnStatsWork.setSourceTask(currTask);
+            Task<StatsWork> columnStatsTask = TaskFactory.get(columnStatsWork, parseCtx.getConf());
+            currTask.addDependentTask(columnStatsTask);
             if (!ctx.getRootTasks().contains(currTask)) {
               ctx.getRootTasks().add(currTask);
             }
@@ -130,10 +127,9 @@ public class GenMRTableScan1 implements NodeProcessor {
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
             // The plan consists of a StatsTask only.
             if (noScan) {
-              statsTask.setParentTasks(null);
-              statsWork.setNoScanAnalyzeCommand(true);
+              columnStatsTask.setParentTasks(null);
               ctx.getRootTasks().remove(currTask);
-              ctx.getRootTasks().add(statsTask);
+              ctx.getRootTasks().add(columnStatsTask);
             }
 
             currWork.getMapWork().setGatheringStats(true);
@@ -147,9 +143,8 @@ public class GenMRTableScan1 implements NodeProcessor {
             Set<Partition> confirmedPartns = GenMapRedUtils
                 .getConfirmedPartitionsForScan(op);
             if (confirmedPartns.size() > 0) {
-              Table source = op.getConf().getTableMetadata();
               List<String> partCols = GenMapRedUtils.getPartitionColumns(op);
-              PrunedPartitionList partList = new PrunedPartitionList(source, confirmedPartns, partCols, false);
+              PrunedPartitionList partList = new PrunedPartitionList(table, confirmedPartns, partCols, false);
               GenMapRedUtils.setTaskPlan(currAliasId, op, currTask, false, ctx, partList);
             } else { // non-partitioned table
               GenMapRedUtils.setTaskPlan(currAliasId, op, currTask, false, ctx);

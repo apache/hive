@@ -29,7 +29,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: varchar_const_1
-            Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: 'FF' (type: varchar(4))
               outputColumnNames: _col0

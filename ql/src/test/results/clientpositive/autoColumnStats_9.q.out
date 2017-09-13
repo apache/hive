@@ -20,8 +20,7 @@ STAGE DEPENDENCIES:
   Stage-7
   Stage-5 depends on stages: Stage-7
   Stage-0 depends on stages: Stage-5
-  Stage-2 depends on stages: Stage-0
-  Stage-8 depends on stages: Stage-2, Stage-3
+  Stage-2 depends on stages: Stage-0, Stage-3
   Stage-3 depends on stages: Stage-5
 
 STAGE PLANS:
@@ -166,10 +165,8 @@ STAGE PLANS:
               name: default.dest_j1
 
   Stage: Stage-2
-    Stats-Aggr Operator
-
-  Stage: Stage-8
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string

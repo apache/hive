@@ -28,10 +28,12 @@ POSTHOOK: Output: default@sample
 PREHOOK: query: analyze table sample compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sample
+PREHOOK: Output: default@sample
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table sample compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sample
+POSTHOOK: Output: default@sample
 #### A masked pattern was here ####
 PREHOOK: query: explain select sample_partitioned.x from sample_partitioned, sample where sample.y = sample_partitioned.y
 PREHOOK: type: QUERY

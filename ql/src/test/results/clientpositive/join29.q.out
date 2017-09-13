@@ -121,7 +121,8 @@ STAGE PLANS:
               name: default.dest_j1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-9
     Map Reduce Local Work

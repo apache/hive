@@ -76,10 +76,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table loc_orc compute statistics for columns state
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc
+PREHOOK: Output: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc compute statistics for columns state
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc
+POSTHOOK: Output: default@loc_orc
 #### A masked pattern was here ####
 PREHOOK: query: explain select a, c, min(b)
 from ( select state as a, locid as b, count(*) as c
@@ -177,10 +179,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table loc_orc compute statistics for columns state,locid,year
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc
+PREHOOK: Output: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc compute statistics for columns state,locid,year
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc
+POSTHOOK: Output: default@loc_orc
 #### A masked pattern was here ####
 PREHOOK: query: explain select year from loc_orc group by year
 PREHOOK: type: QUERY

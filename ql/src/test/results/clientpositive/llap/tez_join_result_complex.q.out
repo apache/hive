@@ -369,7 +369,8 @@ STAGE PLANS:
           name: default.ct_events1_test
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-0
@@ -1353,7 +1354,8 @@ STAGE PLANS:
           name: default.ct_events1_test
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-0

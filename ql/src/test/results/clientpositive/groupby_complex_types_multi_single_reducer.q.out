@@ -126,7 +126,8 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-5
     Map Reduce
@@ -191,7 +192,8 @@ STAGE PLANS:
               name: default.dest2
 
   Stage: Stage-7
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM SRC
 INSERT OVERWRITE TABLE DEST1 SELECT ARRAY(SRC.key) as keyarray, COUNT(1) GROUP BY ARRAY(SRC.key) ORDER BY keyarray limit 10

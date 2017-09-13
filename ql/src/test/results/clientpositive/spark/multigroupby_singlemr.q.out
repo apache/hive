@@ -157,7 +157,8 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -170,7 +171,8 @@ STAGE PLANS:
               name: default.dest2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: EXPLAIN
 FROM TBL
@@ -291,7 +293,8 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -304,7 +307,8 @@ STAGE PLANS:
               name: default.dest2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: EXPLAIN
 FROM TBL
@@ -425,7 +429,8 @@ STAGE PLANS:
               name: default.dest3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -438,7 +443,8 @@ STAGE PLANS:
               name: default.dest2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: EXPLAIN
 FROM TBL
@@ -531,7 +537,8 @@ STAGE PLANS:
               name: default.dest3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -544,7 +551,8 @@ STAGE PLANS:
               name: default.dest4
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: EXPLAIN
 FROM TBL
@@ -711,7 +719,8 @@ STAGE PLANS:
               name: default.dest3
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -724,7 +733,8 @@ STAGE PLANS:
               name: default.dest2
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-2
     Move Operator
@@ -737,5 +747,6 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-6
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 

@@ -190,5 +190,6 @@ STAGE PLANS:
               name: default.char_lazy_binary_columnar
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 

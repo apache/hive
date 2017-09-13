@@ -13,10 +13,12 @@ POSTHOOK: Output: default@src_multi1
 PREHOOK: query: analyze table src_multi1 compute statistics for columns key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
+PREHOOK: Output: default@src_multi1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table src_multi1 compute statistics for columns key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
+POSTHOOK: Output: default@src_multi1
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted src_multi1
 PREHOOK: type: DESCTABLE
@@ -222,11 +224,15 @@ PREHOOK: query: analyze table nzhang_part14 partition(ds='1', hr='3') compute st
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part14
 PREHOOK: Input: default@nzhang_part14@ds=1/hr=3
+PREHOOK: Output: default@nzhang_part14
+PREHOOK: Output: default@nzhang_part14@ds=1/hr=3
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table nzhang_part14 partition(ds='1', hr='3') compute statistics for columns value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part14
 POSTHOOK: Input: default@nzhang_part14@ds=1/hr=3
+POSTHOOK: Output: default@nzhang_part14
+POSTHOOK: Output: default@nzhang_part14@ds=1/hr=3
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted nzhang_part14 partition(ds='1', hr='3')
 PREHOOK: type: DESCTABLE
@@ -355,7 +361,7 @@ Database:           	default
 Table:              	nzhang_part14       	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"value\":\"true\"}}
 	numFiles            	2                   
 	numRows             	4                   
 	rawDataSize         	12                  
@@ -393,7 +399,7 @@ Database:           	default
 Table:              	nzhang_part14       	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
 	numRows             	4                   
 	rawDataSize         	16                  

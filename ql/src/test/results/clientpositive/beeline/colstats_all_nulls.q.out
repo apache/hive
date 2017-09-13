@@ -31,10 +31,12 @@ PREHOOK: query: analyze table all_nulls compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@all_nulls
 #### A masked pattern was here ####
+PREHOOK: Output: default@all_nulls
 POSTHOOK: query: analyze table all_nulls compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@all_nulls
 #### A masked pattern was here ####
+POSTHOOK: Output: default@all_nulls
 PREHOOK: query: describe formatted all_nulls a
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@all_nulls

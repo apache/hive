@@ -161,7 +161,8 @@ STAGE PLANS:
               name: default.dest1_rc
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM (
  FROM 

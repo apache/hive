@@ -208,8 +208,9 @@ STAGE PLANS:
               name: default.table1
 
   Stage: Stage-2
-    Stats-Aggr Operator
-      Stats Aggregation Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: ### BLOBSTORE_STAGING_PATH ###
 
 PREHOOK: query: DROP TABLE table1
 PREHOOK: type: DROPTABLE

@@ -7508,7 +7508,7 @@ public class ObjectStore implements RawStore, Configurable {
         MTableColumnStatistics mStatsObj = StatObjectConverter.convertToMTableColumnStatistics(
             ensureGetMTable(statsDesc.getDbName(), statsDesc.getTableName()), statsDesc, statsObj);
         writeMTableColumnStatistics(table, mStatsObj, oldStats.get(statsObj.getColName()));
-        colNames.add(statsObj.getColName());
+        // There is no need to add colname again, otherwise we will get duplicate colNames.
       }
 
       // Set the table properties

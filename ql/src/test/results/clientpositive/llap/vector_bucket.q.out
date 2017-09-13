@@ -110,7 +110,8 @@ STAGE PLANS:
               name: default.non_orc_table
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: select a, b from non_orc_table order by a
 PREHOOK: type: QUERY

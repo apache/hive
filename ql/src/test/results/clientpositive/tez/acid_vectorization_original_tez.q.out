@@ -615,7 +615,8 @@ STAGE PLANS:
           Write Type: UPDATE
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: update over10k_orc_bucketed set i = 0 where b = 4294967363 and t < 100
 PREHOOK: type: QUERY

@@ -33,7 +33,8 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 11603 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-1
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: analyze table analyze_srcbucket compute statistics
 PREHOOK: type: QUERY

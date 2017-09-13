@@ -146,7 +146,8 @@ STAGE PLANS:
               name: default.list_bucketing
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
 PREHOOK: query: insert overwrite table list_bucketing select * from src

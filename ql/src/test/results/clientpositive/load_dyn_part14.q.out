@@ -145,7 +145,8 @@ STAGE PLANS:
               name: default.nzhang_part14
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-4
     Map Reduce

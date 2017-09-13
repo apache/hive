@@ -70,6 +70,10 @@ PREHOOK: Input: default@pcs_t1
 PREHOOK: Input: default@pcs_t1@ds=2000-04-08
 PREHOOK: Input: default@pcs_t1@ds=2000-04-09
 PREHOOK: Input: default@pcs_t1@ds=2000-04-10
+PREHOOK: Output: default@pcs_t1
+PREHOOK: Output: default@pcs_t1@ds=2000-04-08
+PREHOOK: Output: default@pcs_t1@ds=2000-04-09
+PREHOOK: Output: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table pcs_t1 partition(ds) compute statistics for columns
 POSTHOOK: type: QUERY
@@ -77,6 +81,10 @@ POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
+POSTHOOK: Output: default@pcs_t1
+POSTHOOK: Output: default@pcs_t1@ds=2000-04-08
+POSTHOOK: Output: default@pcs_t1@ds=2000-04-09
+POSTHOOK: Output: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 PREHOOK: query: explain extended select key, value, ds from pcs_t1 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2) order by key, value, ds
 PREHOOK: type: QUERY

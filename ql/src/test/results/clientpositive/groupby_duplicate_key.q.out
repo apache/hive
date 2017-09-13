@@ -143,7 +143,8 @@ STAGE PLANS:
           name: default.dummy
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: create table dummy as
 select distinct key, "X" as dummy1, "X" as dummy2 from src tablesample (10 rows)

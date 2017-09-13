@@ -68,7 +68,8 @@ STAGE PLANS:
               name: default.bucket3_1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table bucket3_1 partition (ds='1')
 select * from src
@@ -383,7 +384,8 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-1
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: analyze table bucket3_1 partition (ds) compute statistics
 PREHOOK: type: QUERY

@@ -67,7 +67,8 @@ STAGE PLANS:
               name: default.orc_merge5a
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5 order by userid
 PREHOOK: type: QUERY
@@ -280,7 +281,8 @@ STAGE PLANS:
               name: default.orc_merge5a
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: alter table orc_merge5a partition(st=80.0) concatenate
 PREHOOK: type: ALTER_PARTITION_MERGE

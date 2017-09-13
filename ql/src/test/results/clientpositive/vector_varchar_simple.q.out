@@ -358,7 +358,8 @@ STAGE PLANS:
               name: default.varchar_3
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert into table varchar_3 select cint from alltypesorc limit 10
 PREHOOK: type: QUERY

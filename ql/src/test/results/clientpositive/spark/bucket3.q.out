@@ -163,7 +163,8 @@ STAGE PLANS:
               name: default.bucket3_1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
 PREHOOK: query: insert overwrite table bucket3_1 partition (ds='1')

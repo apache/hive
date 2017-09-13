@@ -45,7 +45,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Stage-3
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-0
       Move Operator
         table:{"name:":"default.src_orc_merge_test_part"}
@@ -80,7 +80,7 @@ Vertex dependency in root stage
 Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-3
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-0
       Move Operator
         table:{"name:":"default.src_orc_merge_test_part"}
@@ -3183,7 +3183,7 @@ Reducer 2 <- Map 1 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 
 Stage-3
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-4
       Create Table Operator:
         name:default.nzhang_CTAS1
@@ -3236,7 +3236,7 @@ Reducer 2 <- Map 1 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 
 Stage-3
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-4
       Create Table Operator:
         name:default.nzhang_ctas3
@@ -4838,7 +4838,7 @@ Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
 
 Stage-4
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-0
       Move Operator
         table:{"name:":"default.part_4"}
@@ -4889,7 +4889,7 @@ Stage-4
                                 PartitionCols:_col2
                                  Please refer to the previous PTF Operator [PTF_3]
 Stage-5
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-1
       Move Operator
         table:{"name:":"default.part_5"}
@@ -5254,7 +5254,7 @@ Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
 
 Stage-3
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-0
       Move Operator
         table:{"name:":"default.dest_j1"}

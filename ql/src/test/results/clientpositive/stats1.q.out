@@ -104,7 +104,8 @@ STAGE PLANS:
               name: default.tmptable
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE tmptable
 SELECT unionsrc.key, unionsrc.value 

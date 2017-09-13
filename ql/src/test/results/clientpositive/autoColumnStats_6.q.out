@@ -30,7 +30,6 @@ STAGE DEPENDENCIES:
   Stage-4
   Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
   Stage-2 depends on stages: Stage-0
-  Stage-8 depends on stages: Stage-2
   Stage-3
   Stage-5
   Stage-6 depends on stages: Stage-5
@@ -113,10 +112,8 @@ STAGE PLANS:
               name: default.orcfile_merge2a
 
   Stage: Stage-2
-    Stats-Aggr Operator
-
-  Stage: Stage-8
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string

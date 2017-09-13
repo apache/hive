@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.util.List;
+import java.util.Set;
+
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -30,8 +33,9 @@ import org.apache.hadoop.hive.ql.parse.GenTezWork;
 import org.apache.hadoop.hive.ql.parse.spark.GenSparkWork;
 import org.apache.hadoop.hive.ql.plan.ArchiveWork;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.BasicStatsNoJobWork;
+import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
-import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
@@ -45,14 +49,10 @@ import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
-import org.apache.hadoop.hive.ql.plan.StatsNoJobWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * Finds Acid FileSinkDesc objects which can be created in the physical (disconnected) plan, e.g.
@@ -92,7 +92,7 @@ public class QueryPlanPostProcessor {
       }
       else if(work instanceof MapredLocalWork) {
         //I don't think this can have any FileSinkOperatorS - more future proofing
-        Set<FileSinkOperator> fileSinkOperatorSet = OperatorUtils.findOperators(((MapredLocalWork)work).getAliasToWork().values(), FileSinkOperator.class);
+        Set<FileSinkOperator> fileSinkOperatorSet = OperatorUtils.findOperators(((MapredLocalWork) work).getAliasToWork().values(), FileSinkOperator.class);
         for(FileSinkOperator fsop : fileSinkOperatorSet) {
           collectFileSinkDescs(fsop, acidSinks);
         }
@@ -100,42 +100,6 @@ public class QueryPlanPostProcessor {
       else if(work instanceof ExplainWork) {
         new QueryPlanPostProcessor(((ExplainWork)work).getRootTasks(), acidSinks, executionId);
       }
-      /*
-      ekoifman:~ ekoifman$ cd dev/hiverwgit/ql/src/java/org/apache/
-ekoifman:apache ekoifman$ find . -name *Work.java
-./hadoop/hive/ql/exec/repl/bootstrap/ReplLoadWork.java
-./hadoop/hive/ql/exec/repl/ReplDumpWork.java
-./hadoop/hive/ql/exec/repl/ReplStateLogWork.java
-./hadoop/hive/ql/index/IndexMetadataChangeWork.java
-./hadoop/hive/ql/io/merge/MergeFileWork.java - extends MapWork
-./hadoop/hive/ql/io/rcfile/truncate/ColumnTruncateWork.java - extends MapWork
-./hadoop/hive/ql/parse/GenTezWork.java
-./hadoop/hive/ql/parse/spark/GenSparkWork.java
-./hadoop/hive/ql/plan/ArchiveWork.java
-./hadoop/hive/ql/plan/BaseWork.java
-./hadoop/hive/ql/plan/ColumnStatsUpdateWork.java
-./hadoop/hive/ql/plan/ColumnStatsWork.java
-./hadoop/hive/ql/plan/ConditionalWork.java
-./hadoop/hive/ql/plan/CopyWork.java
-./hadoop/hive/ql/plan/DDLWork.java
-./hadoop/hive/ql/plan/DependencyCollectionWork.java
-./hadoop/hive/ql/plan/ExplainSQRewriteWork.java
-./hadoop/hive/ql/plan/ExplainWork.java
-./hadoop/hive/ql/plan/FetchWork.java
-./hadoop/hive/ql/plan/FunctionWork.java
-./hadoop/hive/ql/plan/MapredLocalWork.java
-./hadoop/hive/ql/plan/MapredWork.java
-./hadoop/hive/ql/plan/MapWork.java - extends BaseWork
-./hadoop/hive/ql/plan/MergeJoinWork.java - extends BaseWork
-./hadoop/hive/ql/plan/MoveWork.java
-./hadoop/hive/ql/plan/ReduceWork.java
-./hadoop/hive/ql/plan/ReplCopyWork.java - extends CopyWork
-./hadoop/hive/ql/plan/SparkWork.java
-./hadoop/hive/ql/plan/StatsNoJobWork.java
-./hadoop/hive/ql/plan/StatsWork.java
-./hadoop/hive/ql/plan/TezWork.java
-./hadoop/hive/ql/plan/UnionWork.java - extends BaseWork
-      */
       else if(work instanceof ReplLoadWork ||
         work instanceof ReplStateLogWork ||
         work instanceof IndexMetadataChangeWork ||
@@ -143,7 +107,7 @@ ekoifman:apache ekoifman$ find . -name *Work.java
         work instanceof GenSparkWork ||
         work instanceof ArchiveWork ||
         work instanceof ColumnStatsUpdateWork ||
-        work instanceof ColumnStatsWork ||
+        work instanceof BasicStatsWork ||
         work instanceof ConditionalWork ||
         work instanceof CopyWork ||
         work instanceof DDLWork ||
@@ -152,7 +116,7 @@ ekoifman:apache ekoifman$ find . -name *Work.java
         work instanceof FetchWork ||
         work instanceof FunctionWork ||
         work instanceof MoveWork ||
-        work instanceof StatsNoJobWork ||
+        work instanceof BasicStatsNoJobWork ||
         work instanceof StatsWork) {
         LOG.debug("Found " + work.getClass().getName() + " - no FileSinkOperation can be present.  executionId=" + executionId);
       }

@@ -26,8 +26,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
-  Stage-6 depends on stages: Stage-3, Stage-5
+  Stage-3 depends on stages: Stage-0, Stage-5
   Stage-4 depends on stages: Stage-2
   Stage-5 depends on stages: Stage-4
 
@@ -112,10 +111,8 @@ STAGE PLANS:
               name: default.dest_g2
 
   Stage: Stage-3
-    Stats-Aggr Operator
-
-  Stage: Stage-6
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: key, c1, c2
           Column Types: string, int, string

@@ -55,10 +55,12 @@ POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name
 PREHOOK: query: analyze table loc_orc compute statistics for columns state,locid,zip,year
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc
+PREHOOK: Output: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc compute statistics for columns state,locid,zip,year
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc
+POSTHOOK: Output: default@loc_orc
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from loc_orc where locid < 30
 PREHOOK: type: QUERY
@@ -594,10 +596,12 @@ POSTHOOK: Lineage: t.s SIMPLE [(values__tmp__table__1)values__tmp__table__1.Fiel
 PREHOOK: query: analyze table t compute statistics for columns s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
+PREHOOK: Output: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table t compute statistics for columns s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from t where s is null
 PREHOOK: type: QUERY
@@ -723,10 +727,12 @@ POSTHOOK: Lineage: t.s SIMPLE [(values__tmp__table__2)values__tmp__table__2.Fiel
 PREHOOK: query: analyze table t compute statistics for columns s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
+PREHOOK: Output: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table t compute statistics for columns s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from t where s is not null
 PREHOOK: type: QUERY

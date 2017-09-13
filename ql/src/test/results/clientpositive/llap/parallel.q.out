@@ -121,7 +121,8 @@ STAGE PLANS:
               name: default.src_a
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -134,7 +135,8 @@ STAGE PLANS:
               name: default.src_b
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from (select key, value from src group by key, value) s
 insert overwrite table src_a select s.key, s.value group by s.key, s.value

@@ -16,10 +16,12 @@ POSTHOOK: Lineage: test_table.d EXPRESSION [(values__tmp__table__1)values__tmp__
 PREHOOK: query: analyze table test_table compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table
+PREHOOK: Output: default@test_table
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table test_table compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table
+POSTHOOK: Output: default@test_table
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted test_table
 PREHOOK: type: DESCTABLE

@@ -46,6 +46,51 @@ POSTHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' overwr
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_bucket_3
+PREHOOK: query: desc formatted smb_bucket_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@smb_bucket_1
+POSTHOOK: query: desc formatted smb_bucket_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@smb_bucket_1
+	NULL	NULL
+	NULL	NULL
+	SORTBUCKETCOLSPREFIX	TRUE                
+	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	serialization.format	1                   
+	totalSize           	208                 
+#### A masked pattern was here ####
+# Detailed Table Information	NULL	NULL
+# Storage Information	NULL	NULL
+# col_name	data_type	comment
+Bucket Columns:     	[key]               	NULL
+Compressed:         	No                  	NULL
+#### A masked pattern was here ####
+Database:           	test_db_smb_mapjoin_1	NULL
+InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	NULL
+LastAccessTime:     	UNKNOWN             	NULL
+#### A masked pattern was here ####
+Num Buckets:        	1                   	NULL
+OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	NULL
+#### A masked pattern was here ####
+Retention:          	0                   	NULL
+SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	NULL
+Sort Columns:       	[Order(col:key, order:1)]	NULL
+Storage Desc Params:	NULL	NULL
+Table Parameters:	NULL	NULL
+Table Type:         	MANAGED_TABLE       	NULL
+key	int	
+value	string	
+PREHOOK: query: select count(*) from smb_bucket_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_bucket_1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from smb_bucket_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_bucket_1
+#### A masked pattern was here ####
+5
 PREHOOK: query: explain
 select /*+mapjoin(a)*/ * from smb_bucket_1 a join smb_bucket_2 b on a.key = b.key
 PREHOOK: type: QUERY

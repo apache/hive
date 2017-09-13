@@ -102,7 +102,8 @@ STAGE PLANS:
               name: default.outputtbl1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 GROUP BY key
@@ -204,7 +205,8 @@ STAGE PLANS:
               name: default.outputtbl2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE outputTbl2
 SELECT key, val, count(1) FROM T1 GROUP BY key, val

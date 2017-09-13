@@ -29,10 +29,12 @@ POSTHOOK: Output: default@s/c
 PREHOOK: query: ANALYZE TABLE `s/c` COMPUTE STATISTICS FOR COLUMNS key,value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@s/c
+PREHOOK: Output: default@s/c
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE `s/c` COMPUTE STATISTICS FOR COLUMNS key,value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@s/c
+POSTHOOK: Output: default@s/c
 #### A masked pattern was here ####
 PREHOOK: query: SELECT key, value FROM `s/c` WHERE key > 80 AND key < 100
 PREHOOK: type: QUERY

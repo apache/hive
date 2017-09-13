@@ -167,7 +167,8 @@ STAGE PLANS:
               name: default.test_table3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, a.key2, concat(a.value, b.value) 
@@ -353,7 +354,8 @@ STAGE PLANS:
               name: default.test_table3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT subq1.key, subq1.key2, subq1.value from
@@ -539,7 +541,8 @@ STAGE PLANS:
               name: default.test_table3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
@@ -660,7 +663,8 @@ STAGE PLANS:
               name: default.test_table3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
@@ -787,7 +791,8 @@ STAGE PLANS:
               name: default.test_table3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT subq2.key, subq2.key2, subq2.value from
@@ -991,7 +996,8 @@ STAGE PLANS:
               name: default.test_table3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT subq2.k2, subq2.k1, subq2.value from
@@ -1205,5 +1211,6 @@ STAGE PLANS:
               name: default.test_table4
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 

@@ -1090,7 +1090,8 @@ STAGE PLANS:
           name: default.srcx
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain analyze table src compute statistics
 PREHOOK: type: QUERY
@@ -1109,7 +1110,8 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-1
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain select * from src join src src2 on src.key=src2.key
 PREHOOK: type: QUERY

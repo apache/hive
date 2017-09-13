@@ -125,7 +125,8 @@ STAGE PLANS:
               name: default.insert_into3a
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -138,7 +139,8 @@ STAGE PLANS:
               name: default.insert_into3b
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM src INSERT INTO TABLE insert_into3a SELECT * ORDER BY key, value LIMIT 50
          INSERT INTO TABLE insert_into3b SELECT * ORDER BY key, value LIMIT 100
@@ -274,7 +276,8 @@ STAGE PLANS:
               name: default.insert_into3a
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -287,7 +290,8 @@ STAGE PLANS:
               name: default.insert_into3b
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM src INSERT OVERWRITE TABLE insert_into3a SELECT * LIMIT 10
          INSERT INTO TABLE insert_into3b SELECT * LIMIT 10

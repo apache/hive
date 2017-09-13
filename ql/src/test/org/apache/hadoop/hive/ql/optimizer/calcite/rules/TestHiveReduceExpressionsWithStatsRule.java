@@ -92,7 +92,7 @@ public class TestHiveReduceExpressionsWithStatsRule {
 
     builder = HiveRelFactories.HIVE_BUILDER.create(optCluster, schemaMock);
 
-    StatsSetupConst.setStatsStateForCreateTable(tableParams, Lists.newArrayList("_int"), "TRUE");
+    StatsSetupConst.setStatsStateForCreateTable(tableParams, Lists.newArrayList("_int"), StatsSetupConst.TRUE);
     tableParams.put(StatsSetupConst.ROW_COUNT, "3");
 
   }

@@ -117,7 +117,8 @@ STAGE PLANS:
               name: default.union_subq_union
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table union_subq_union 
 select * from (

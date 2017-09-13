@@ -22,11 +22,15 @@ PREHOOK: query: ANALYZE TABLE src_stat_part_one PARTITION(partitionId=1) COMPUTE
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_stat_part_one
 PREHOOK: Input: default@src_stat_part_one@partitionid=1
+PREHOOK: Output: default@src_stat_part_one
+PREHOOK: Output: default@src_stat_part_one@partitionid=1
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE src_stat_part_one PARTITION(partitionId=1) COMPUTE STATISTICS for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_stat_part_one
 POSTHOOK: Input: default@src_stat_part_one@partitionid=1
+POSTHOOK: Output: default@src_stat_part_one
+POSTHOOK: Output: default@src_stat_part_one@partitionid=1
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted src_stat_part_one PARTITION(partitionId=1) key
 PREHOOK: type: DESCTABLE
@@ -92,11 +96,15 @@ PREHOOK: query: ANALYZE TABLE src_stat_part_two PARTITION(px=1) COMPUTE STATISTI
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_stat_part_two
 PREHOOK: Input: default@src_stat_part_two@px=1/py=a
+PREHOOK: Output: default@src_stat_part_two
+PREHOOK: Output: default@src_stat_part_two@px=1/py=a
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE src_stat_part_two PARTITION(px=1) COMPUTE STATISTICS for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_stat_part_two
 POSTHOOK: Input: default@src_stat_part_two@px=1/py=a
+POSTHOOK: Output: default@src_stat_part_two
+POSTHOOK: Output: default@src_stat_part_two@px=1/py=a
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted src_stat_part_two PARTITION(px=1, py='a') key
 PREHOOK: type: DESCTABLE

@@ -189,5 +189,6 @@ STAGE PLANS:
           name: default.tmp_unionall
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 

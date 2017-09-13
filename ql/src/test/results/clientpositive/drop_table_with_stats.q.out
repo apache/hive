@@ -30,10 +30,12 @@ PREHOOK: query: ANALYZE TABLE testtable COMPUTE STATISTICS FOR COLUMNS key
 PREHOOK: type: QUERY
 PREHOOK: Input: tblstatsdb1@testtable
 #### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb1@testtable
 POSTHOOK: query: ANALYZE TABLE testtable COMPUTE STATISTICS FOR COLUMNS key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: tblstatsdb1@testtable
 #### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb1@testtable
 PREHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1 (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:tblstatsdb1
@@ -54,10 +56,12 @@ PREHOOK: query: ANALYZE TABLE TestTable1 COMPUTE STATISTICS FOR COLUMNS key
 PREHOOK: type: QUERY
 PREHOOK: Input: tblstatsdb1@testtable1
 #### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb1@testtable1
 POSTHOOK: query: ANALYZE TABLE TestTable1 COMPUTE STATISTICS FOR COLUMNS key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: tblstatsdb1@testtable1
 #### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb1@testtable1
 PREHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2 (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:tblstatsdb1
@@ -78,10 +82,12 @@ PREHOOK: query: ANALYZE TABLE TESTTABLE2 COMPUTE STATISTICS FOR COLUMNS key
 PREHOOK: type: QUERY
 PREHOOK: Input: tblstatsdb1@testtable2
 #### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb1@testtable2
 POSTHOOK: query: ANALYZE TABLE TESTTABLE2 COMPUTE STATISTICS FOR COLUMNS key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: tblstatsdb1@testtable2
 #### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb1@testtable2
 PREHOOK: query: DROP TABLE tblstatsdb1.testtable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tblstatsdb1@testtable
@@ -146,10 +152,12 @@ PREHOOK: query: ANALYZE TABLE testtable COMPUTE STATISTICS FOR COLUMNS key
 PREHOOK: type: QUERY
 PREHOOK: Input: tblstatsdb2@testtable
 #### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb2@testtable
 POSTHOOK: query: ANALYZE TABLE testtable COMPUTE STATISTICS FOR COLUMNS key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: tblstatsdb2@testtable
 #### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb2@testtable
 PREHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1 (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: TBLSTATSDB2@TestTable1
@@ -170,10 +178,12 @@ PREHOOK: query: ANALYZE TABLE TestTable1 COMPUTE STATISTICS FOR COLUMNS key
 PREHOOK: type: QUERY
 PREHOOK: Input: tblstatsdb2@testtable1
 #### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb2@testtable1
 POSTHOOK: query: ANALYZE TABLE TestTable1 COMPUTE STATISTICS FOR COLUMNS key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: tblstatsdb2@testtable1
 #### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb2@testtable1
 PREHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2 (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: TBLSTATSDB2@TESTTABLE2
@@ -194,10 +204,12 @@ PREHOOK: query: ANALYZE TABLE TESTTABLE2 COMPUTE STATISTICS FOR COLUMNS key
 PREHOOK: type: QUERY
 PREHOOK: Input: tblstatsdb2@testtable2
 #### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb2@testtable2
 POSTHOOK: query: ANALYZE TABLE TESTTABLE2 COMPUTE STATISTICS FOR COLUMNS key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: tblstatsdb2@testtable2
 #### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb2@testtable2
 PREHOOK: query: DROP TABLE TBLSTATSDB2.testtable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: tblstatsdb2@testtable

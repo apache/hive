@@ -46,6 +46,10 @@ PREHOOK: Input: default@ss
 PREHOOK: Input: default@ss@country=US/year=2015/month=1/day=1
 PREHOOK: Input: default@ss@country=US/year=2015/month=1/day=2
 PREHOOK: Input: default@ss@country=US/year=2015/month=2/day=1
+PREHOOK: Output: default@ss
+PREHOOK: Output: default@ss@country=US/year=2015/month=1/day=1
+PREHOOK: Output: default@ss@country=US/year=2015/month=1/day=2
+PREHOOK: Output: default@ss@country=US/year=2015/month=2/day=1
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE ss PARTITION(country,year,month,day) compute statistics for columns
 POSTHOOK: type: QUERY
@@ -53,6 +57,10 @@ POSTHOOK: Input: default@ss
 POSTHOOK: Input: default@ss@country=US/year=2015/month=1/day=1
 POSTHOOK: Input: default@ss@country=US/year=2015/month=1/day=2
 POSTHOOK: Input: default@ss@country=US/year=2015/month=2/day=1
+POSTHOOK: Output: default@ss
+POSTHOOK: Output: default@ss@country=US/year=2015/month=1/day=1
+POSTHOOK: Output: default@ss@country=US/year=2015/month=1/day=2
+POSTHOOK: Output: default@ss@country=US/year=2015/month=2/day=1
 #### A masked pattern was here ####
 PREHOOK: query: explain select sum(order_amount) from ss where (country="US" and year=2015 and month=2 and day=1)
 PREHOOK: type: QUERY

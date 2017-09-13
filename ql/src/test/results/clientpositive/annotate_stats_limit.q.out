@@ -55,10 +55,12 @@ POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name
 PREHOOK: query: analyze table loc_orc compute statistics for columns state, locid, zip, year
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc
+PREHOOK: Output: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc compute statistics for columns state, locid, zip, year
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc
+POSTHOOK: Output: default@loc_orc
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from loc_orc
 PREHOOK: type: QUERY

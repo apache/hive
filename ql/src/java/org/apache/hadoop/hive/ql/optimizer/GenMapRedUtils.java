@@ -33,7 +33,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
@@ -71,7 +70,6 @@ import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -85,16 +83,17 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles.ConditionalResolverMergeFilesCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
+import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc.SampleDesc;
-import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -122,6 +121,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Interner;
 
@@ -496,6 +496,10 @@ public final class GenMapRedUtils {
 
     Path tblDir = null;
     plan.setNameToSplitSample(parseCtx.getNameToSplitSample());
+    // we also collect table stats while collecting column stats.
+    if (parseCtx.getAnalyzeRewrite() != null) {
+      plan.setGatheringStats(true);
+    }
 
     if (partsList == null) {
       try {
@@ -1480,17 +1484,34 @@ public final class GenMapRedUtils {
       Task<? extends Serializable> currTask, HiveConf hconf) {
 
     MoveWork mvWork = mvTask.getWork();
-    StatsWork statsWork = null;
+    BasicStatsWork statsWork = null;
+    Table table = null;
+    boolean truncate = false;
     if (mvWork.getLoadTableWork() != null) {
-      statsWork = new StatsWork(mvWork.getLoadTableWork());
+      statsWork = new BasicStatsWork(mvWork.getLoadTableWork());
+      String tableName = mvWork.getLoadTableWork().getTable().getTableName();
+      truncate = mvWork.getLoadTableWork().getReplace();
+      try {
+        table = Hive.get().getTable(SessionState.get().getCurrentDatabase(), tableName);
+      } catch (HiveException e) {
+        throw new RuntimeException("unexpected; table should be present already..: " + tableName, e);
+      }
     } else if (mvWork.getLoadFileWork() != null) {
-      statsWork = new StatsWork(mvWork.getLoadFileWork());
+      statsWork = new BasicStatsWork(mvWork.getLoadFileWork());
+
+      truncate = true;
+      if (mvWork.getLoadFileWork().getCtasCreateTableDesc() == null) {
+        throw new RuntimeException("unexpected; this should be a CTAS - however no desc present");
+      }
+      try {
+        table = mvWork.getLoadFileWork().getCtasCreateTableDesc().toTable(hconf);
+      } catch (HiveException e) {
+        LOG.debug("can't pre-create table", e);
+        table = null;
+      }
     }
     assert statsWork != null : "Error when generating StatsTask";
 
-    statsWork.setSourceTask(currTask);
-    statsWork.setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
-    statsWork.setStatsTmpDir(nd.getConf().getStatsTmpDir());
     if (currTask.getWork() instanceof MapredWork) {
       MapredWork mrWork = (MapredWork) currTask.getWork();
       mrWork.getMapWork().setGatheringStats(true);
@@ -1509,10 +1530,13 @@ public final class GenMapRedUtils {
       }
     }
 
-    // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
-    // in FileSinkDesc is used for stats publishing. They should be consistent.
-    statsWork.setAggKey(nd.getConf().getStatsAggPrefix());
-    Task<? extends Serializable> statsTask = TaskFactory.get(statsWork, hconf);
+    StatsWork columnStatsWork = new StatsWork(table, statsWork, hconf);
+    columnStatsWork.collectStatsFromAggregator(nd.getConf());
+
+    columnStatsWork.truncateExisting(truncate);
+
+    columnStatsWork.setSourceTask(currTask);
+    Task<? extends Serializable> statsTask = TaskFactory.get(columnStatsWork, hconf);
 
     // subscribe feeds from the MoveTask so that MoveTask can forward the list
     // of dynamic partition list to the StatsTask
@@ -1579,7 +1603,7 @@ public final class GenMapRedUtils {
    */
   public static MapWork createMergeTask(FileSinkDesc fsInputDesc, Path finalName,
       boolean hasDynamicPartitions, CompilationOpContext ctx) throws SemanticException {
-    
+
     Path inputDir = fsInputDesc.getMergeInputDirName();
 
     TableDesc tblDesc = fsInputDesc.getTableInfo();
@@ -1860,7 +1884,9 @@ public final class GenMapRedUtils {
   public static boolean isMergeRequired(List<Task<MoveWork>> mvTasks, HiveConf hconf,
       FileSinkOperator fsOp, Task<? extends Serializable> currTask, boolean isInsertTable) {
     // Has the user enabled merging of files for map-only jobs or for all jobs
-    if (mvTasks == null  || mvTasks.isEmpty()) return false;
+    if (mvTasks == null  || mvTasks.isEmpty()) {
+      return false;
+    }
 
     // no need of merging if the move is to a local file system
     // We are looking based on the original FSOP, so use the original path as is.
@@ -1878,7 +1904,9 @@ public final class GenMapRedUtils {
       }
     }
 
-    if (mvTask == null || mvTask.isLocal() || !fsOp.getConf().canBeMerged()) return false;
+    if (mvTask == null || mvTask.isLocal() || !fsOp.getConf().canBeMerged()) {
+      return false;
+    }
 
     if (currTask.getWork() instanceof TezWork) {
       // tez blurs the boundary between map and reduce, thus it has it's own config

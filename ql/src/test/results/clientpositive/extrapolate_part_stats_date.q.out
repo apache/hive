@@ -33,6 +33,10 @@ PREHOOK: Input: default@date_dim
 PREHOOK: Input: default@date_dim@d_date_sk=2416945
 PREHOOK: Input: default@date_dim@d_date_sk=2416946
 PREHOOK: Input: default@date_dim@d_date_sk=2416947
+PREHOOK: Output: default@date_dim
+PREHOOK: Output: default@date_dim@d_date_sk=2416945
+PREHOOK: Output: default@date_dim@d_date_sk=2416946
+PREHOOK: Output: default@date_dim@d_date_sk=2416947
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table date_dim partition(d_date_sk) compute statistics for columns
 POSTHOOK: type: QUERY
@@ -40,6 +44,10 @@ POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@date_dim@d_date_sk=2416945
 POSTHOOK: Input: default@date_dim@d_date_sk=2416946
 POSTHOOK: Input: default@date_dim@d_date_sk=2416947
+POSTHOOK: Output: default@date_dim
+POSTHOOK: Output: default@date_dim@d_date_sk=2416945
+POSTHOOK: Output: default@date_dim@d_date_sk=2416946
+POSTHOOK: Output: default@date_dim@d_date_sk=2416947
 #### A masked pattern was here ####
 PREHOOK: query: explain select count(*) from date_dim where d_date > date "1900-01-02" and d_date_sk= 2416945
 PREHOOK: type: QUERY

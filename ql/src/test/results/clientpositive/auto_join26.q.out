@@ -110,7 +110,8 @@ STAGE PLANS:
               name: default.dest_j1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
 SELECT  x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key

@@ -82,7 +82,8 @@ STAGE PLANS:
               name: default.test_table2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT x.key, x.value from 
@@ -187,7 +188,8 @@ STAGE PLANS:
               name: default.test_table2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT * from 
@@ -292,7 +294,8 @@ STAGE PLANS:
               name: default.test_table2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
@@ -357,7 +360,8 @@ STAGE PLANS:
               name: default.test_table2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
@@ -411,5 +415,6 @@ STAGE PLANS:
               name: default.test_table2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 

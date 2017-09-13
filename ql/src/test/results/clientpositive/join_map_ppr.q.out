@@ -225,7 +225,8 @@ STAGE PLANS:
               name: default.dest_j1
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-5
@@ -803,7 +804,8 @@ STAGE PLANS:
               name: default.dest_j1
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-5

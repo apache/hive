@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
+
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -6923,39 +6925,80 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (request.isSetNeedMerge() && request.isNeedMerge()) {
             // one single call to get all column stats
             ColumnStatistics csOld = getMS().getTableColumnStatistics(dbName, tableName, colNames);
-            if (csOld != null && csOld.getStatsObjSize() != 0) {
+            Table t = getTable(dbName, tableName);
+            // we first use t.getParameters() to prune the stats
+            MetaStoreUtils.getMergableCols(firstColStats, t.getParameters());
+            // we merge those that can be merged
+            if (csOld != null && csOld.getStatsObjSize() != 0
+                && !firstColStats.getStatsObj().isEmpty()) {
               MetaStoreUtils.mergeColStats(firstColStats, csOld);
             }
+            if (!firstColStats.getStatsObj().isEmpty()) {
+              return update_table_column_statistics(firstColStats);
+            } else {
+              LOG.debug("All the column stats are not accurate to merge.");
+              return true;
+            }
+          } else {
+            // This is the overwrite case, we do not care about the accuracy.
+            return update_table_column_statistics(firstColStats);
           }
-          return update_table_column_statistics(firstColStats);
         }
       } else {
         // partition level column stats merging
-        List<String> partitionNames = new ArrayList<>();
+        List<Partition> partitions = new ArrayList<>();
+        // note that we may have two or more duplicate partition names.
+        // see autoColumnStats_2.q under TestMiniLlapLocalCliDriver
+        Map<String, ColumnStatistics> newStatsMap = new HashMap<>();
         for (ColumnStatistics csNew : csNews) {
-          partitionNames.add(csNew.getStatsDesc().getPartName());
+          String partName = csNew.getStatsDesc().getPartName();
+          if (newStatsMap.containsKey(partName)) {
+            MetaStoreUtils.mergeColStats(csNew, newStatsMap.get(partName));
+          }
+          newStatsMap.put(partName, csNew);
         }
-        Map<String, ColumnStatistics> map = new HashMap<>();
+        
+        Map<String, ColumnStatistics> oldStatsMap = new HashMap<>();
+        Map<String, Partition> mapToPart = new HashMap<>();
         if (request.isSetNeedMerge() && request.isNeedMerge()) {
           // a single call to get all column stats for all partitions
+          List<String> partitionNames = new ArrayList<>();
+          partitionNames.addAll(newStatsMap.keySet());
           List<ColumnStatistics> csOlds = getMS().getPartitionColumnStatistics(dbName, tableName,
               partitionNames, colNames);
-          if (csNews.size() != csOlds.size()) {
+          if (newStatsMap.values().size() != csOlds.size()) {
             // some of the partitions miss stats.
             LOG.debug("Some of the partitions miss stats.");
           }
           for (ColumnStatistics csOld : csOlds) {
-            map.put(csOld.getStatsDesc().getPartName(), csOld);
+            oldStatsMap.put(csOld.getStatsDesc().getPartName(), csOld);
+          }
+          // another single call to get all the partition objects
+          partitions = getMS().getPartitionsByNames(dbName, tableName, partitionNames);
+          for (int index = 0; index < partitionNames.size(); index++) {
+            mapToPart.put(partitionNames.get(index), partitions.get(index));
           }
         }
         Table t = getTable(dbName, tableName);
-        for (int index = 0; index < csNews.size(); index++) {
-          ColumnStatistics csNew = csNews.get(index);
-          ColumnStatistics csOld = map.get(csNew.getStatsDesc().getPartName());
-          if (csOld != null && csOld.getStatsObjSize() != 0) {
-            MetaStoreUtils.mergeColStats(csNew, csOld);
+        for (Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
+          ColumnStatistics csNew = entry.getValue();
+          ColumnStatistics csOld = oldStatsMap.get(entry.getKey());
+          if (request.isSetNeedMerge() && request.isNeedMerge()) {
+            // we first use getParameters() to prune the stats
+            MetaStoreUtils.getMergableCols(csNew, mapToPart.get(entry.getKey()).getParameters());
+            // we merge those that can be merged
+            if (csOld != null && csOld.getStatsObjSize() != 0 && !csNew.getStatsObj().isEmpty()) {
+              MetaStoreUtils.mergeColStats(csNew, csOld);
+            }
+            if (!csNew.getStatsObj().isEmpty()) {
+              ret = ret && updatePartitonColStats(t, csNew);
+            } else {
+              LOG.debug("All the column stats " + csNew.getStatsDesc().getPartName()
+                  + " are not accurate to merge.");
+            }
+          } else {
+            ret = ret && updatePartitonColStats(t, csNew);
           }
-          ret = ret && updatePartitonColStats(t, csNew);
         }
       }
       return ret;

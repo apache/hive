@@ -3181,7 +3181,8 @@ STAGE PLANS:
               name: default.part_4
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -3194,7 +3195,8 @@ STAGE PLANS:
               name: default.part_5
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from noop(on part 
 partition by p_mfgr 

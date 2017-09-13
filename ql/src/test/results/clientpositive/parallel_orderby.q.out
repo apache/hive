@@ -79,7 +79,8 @@ STAGE PLANS:
           name: default.total_ordered
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: create table total_ordered as select * from src5 order by key, value
 PREHOOK: type: CREATETABLE_AS_SELECT

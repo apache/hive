@@ -70,7 +70,8 @@ STAGE PLANS:
               name: default.implicit_cast_during_insert
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table implicit_cast_during_insert partition (p1)
   select key, value, key key1 from (select * from src where key in (0,1)) q

@@ -29,10 +29,12 @@ POSTHOOK: Output: default@location
 PREHOOK: query: analyze table location compute statistics for columns state, country
 PREHOOK: type: QUERY
 PREHOOK: Input: default@location
+PREHOOK: Output: default@location
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table location compute statistics for columns state, country
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@location
+POSTHOOK: Output: default@location
 #### A masked pattern was here ####
 PREHOOK: query: explain select state, country from location group by state, country
 PREHOOK: type: QUERY

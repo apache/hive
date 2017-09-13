@@ -50,7 +50,8 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 23248 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics
 PREHOOK: type: QUERY
@@ -158,7 +159,8 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=12) compute statistics
 PREHOOK: type: QUERY
@@ -227,7 +229,8 @@ STAGE PLANS:
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-09',hr=11) compute statistics
 PREHOOK: type: QUERY
@@ -296,7 +299,8 @@ STAGE PLANS:
             Statistics: Num rows: 1500 Data size: 15936 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-09',hr=12) compute statistics
 PREHOOK: type: QUERY
@@ -365,7 +369,8 @@ STAGE PLANS:
             Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-1
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds, hr) compute statistics
 PREHOOK: type: QUERY

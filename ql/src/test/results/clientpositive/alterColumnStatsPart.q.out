@@ -154,11 +154,15 @@ PREHOOK: query: analyze table p partition(c=1) compute statistics for columns a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@p
 PREHOOK: Input: default@p@c=1
+PREHOOK: Output: default@p
+PREHOOK: Output: default@p@c=1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table p partition(c=1) compute statistics for columns a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@p
 POSTHOOK: Input: default@p@c=1
+POSTHOOK: Output: default@p
+POSTHOOK: Output: default@p@c=1
 #### A masked pattern was here ####
 PREHOOK: query: explain select max(a) from p where c=1
 PREHOOK: type: QUERY
@@ -371,11 +375,15 @@ PREHOOK: query: analyze table p partition(c=100) compute statistics for columns 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@p
 PREHOOK: Input: default@p@c=100
+PREHOOK: Output: default@p
+PREHOOK: Output: default@p@c=100
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table p partition(c=100) compute statistics for columns a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@p
 POSTHOOK: Input: default@p@c=100
+POSTHOOK: Output: default@p
+POSTHOOK: Output: default@p@c=100
 #### A masked pattern was here ####
 PREHOOK: query: explain select max(a) from p where c=100
 PREHOOK: type: QUERY
@@ -474,11 +482,15 @@ PREHOOK: query: analyze table p partition(c=100) compute statistics for columns 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@p
 PREHOOK: Input: default@p@c=100
+PREHOOK: Output: default@p
+PREHOOK: Output: default@p@c=100
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table p partition(c=100) compute statistics for columns a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@p
 POSTHOOK: Input: default@p@c=100
+POSTHOOK: Output: default@p
+POSTHOOK: Output: default@p@c=100
 #### A masked pattern was here ####
 PREHOOK: query: explain select max(a) from p where c=100
 PREHOOK: type: QUERY

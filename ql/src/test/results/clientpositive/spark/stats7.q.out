@@ -53,7 +53,8 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 23248 Basic stats: PARTIAL Column stats: NONE
 
   Stage: Stage-1
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr) compute statistics
 PREHOOK: type: QUERY

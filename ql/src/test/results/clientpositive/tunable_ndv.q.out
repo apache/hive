@@ -60,12 +60,18 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc_1d
 PREHOOK: Input: default@loc_orc_1d@year=2000
 PREHOOK: Input: default@loc_orc_1d@year=2001
+PREHOOK: Output: default@loc_orc_1d
+PREHOOK: Output: default@loc_orc_1d@year=2000
+PREHOOK: Output: default@loc_orc_1d@year=2001
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_1d compute statistics for columns state,locid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc_1d
 POSTHOOK: Input: default@loc_orc_1d@year=2000
 POSTHOOK: Input: default@loc_orc_1d@year=2001
+POSTHOOK: Output: default@loc_orc_1d
+POSTHOOK: Output: default@loc_orc_1d@year=2000
+POSTHOOK: Output: default@loc_orc_1d@year=2001
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted loc_orc_1d partition(year=2000) locid
 PREHOOK: type: DESCTABLE
@@ -197,41 +203,57 @@ PREHOOK: query: analyze table loc_orc_2d partition(zip=94086, year='2000') compu
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc_2d
 PREHOOK: Input: default@loc_orc_2d@zip=94086/year=2000
+PREHOOK: Output: default@loc_orc_2d
+PREHOOK: Output: default@loc_orc_2d@zip=94086/year=2000
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_2d partition(zip=94086, year='2000') compute statistics for columns state,locid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc_2d
 POSTHOOK: Input: default@loc_orc_2d@zip=94086/year=2000
+POSTHOOK: Output: default@loc_orc_2d
+POSTHOOK: Output: default@loc_orc_2d@zip=94086/year=2000
 #### A masked pattern was here ####
 PREHOOK: query: analyze table loc_orc_2d partition(zip=94087, year='2000') compute statistics for columns state,locid
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc_2d
 PREHOOK: Input: default@loc_orc_2d@zip=94087/year=2000
+PREHOOK: Output: default@loc_orc_2d
+PREHOOK: Output: default@loc_orc_2d@zip=94087/year=2000
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_2d partition(zip=94087, year='2000') compute statistics for columns state,locid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc_2d
 POSTHOOK: Input: default@loc_orc_2d@zip=94087/year=2000
+POSTHOOK: Output: default@loc_orc_2d
+POSTHOOK: Output: default@loc_orc_2d@zip=94087/year=2000
 #### A masked pattern was here ####
 PREHOOK: query: analyze table loc_orc_2d partition(zip=94086, year='2001') compute statistics for columns state,locid
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc_2d
 PREHOOK: Input: default@loc_orc_2d@zip=94086/year=2001
+PREHOOK: Output: default@loc_orc_2d
+PREHOOK: Output: default@loc_orc_2d@zip=94086/year=2001
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_2d partition(zip=94086, year='2001') compute statistics for columns state,locid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc_2d
 POSTHOOK: Input: default@loc_orc_2d@zip=94086/year=2001
+POSTHOOK: Output: default@loc_orc_2d
+POSTHOOK: Output: default@loc_orc_2d@zip=94086/year=2001
 #### A masked pattern was here ####
 PREHOOK: query: analyze table loc_orc_2d partition(zip=94087, year='2001') compute statistics for columns state,locid
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc_2d
 PREHOOK: Input: default@loc_orc_2d@zip=94087/year=2001
+PREHOOK: Output: default@loc_orc_2d
+PREHOOK: Output: default@loc_orc_2d@zip=94087/year=2001
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_2d partition(zip=94087, year='2001') compute statistics for columns state,locid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc_2d
 POSTHOOK: Input: default@loc_orc_2d@zip=94087/year=2001
+POSTHOOK: Output: default@loc_orc_2d
+POSTHOOK: Output: default@loc_orc_2d@zip=94087/year=2001
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted loc_orc_2d locid
 PREHOOK: type: DESCTABLE

@@ -84,7 +84,8 @@ STAGE PLANS:
           name: default.tmp_src
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-0
     Move Operator
@@ -480,7 +481,8 @@ STAGE PLANS:
               name: default.tmp_src_part
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
 PREHOOK: type: QUERY
@@ -917,7 +919,8 @@ STAGE PLANS:
               name: default.even
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -930,7 +933,8 @@ STAGE PLANS:
               name: default.odd
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM src
 INSERT INTO TABLE even SELECT key, value WHERE key % 2 = 0 

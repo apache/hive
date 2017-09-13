@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePartitioner;
-import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.StreamingOutputFormat;
@@ -975,7 +974,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         Object recId = ((StructObjectInspector)rowInspector).getStructFieldData(row, recIdField);
         int bucketProperty =
             bucketInspector.get(recIdInspector.getStructFieldData(recId, bucketField));
-        int bucketNum = 
+        int bucketNum =
           BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
         writerOffset = 0;
         if (multiFileSpray) {
@@ -1452,7 +1451,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
 
     StatsCollectionContext sContext = new StatsCollectionContext(hconf);
-    sContext.setStatsTmpDir(conf.getStatsTmpDir());
+    sContext.setStatsTmpDir(conf.getTmpStatsDir());
     if (!statsPublisher.connect(sContext)) {
       // just return, stats gathering should not block the main query
       LOG.error("StatsPublishing error: cannot connect to database");

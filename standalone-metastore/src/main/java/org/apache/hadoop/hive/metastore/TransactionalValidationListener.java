@@ -118,6 +118,11 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       }
     }
 
+    if (transactionalValuePresent && "false".equalsIgnoreCase(transactionalValue)) {
+      transactionalValuePresent = false;
+      transactionalValue = null;
+    }
+
     if (transactionalValuePresent) {
       //normalize prop name
       parameters.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, transactionalValue);

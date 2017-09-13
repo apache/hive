@@ -349,6 +349,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     final List<Task<? extends Serializable>> leafTasks = new ArrayList<Task<?>>();
 
     NodeUtils.iterateTask(rootTasks, Task.class, new NodeUtils.Function<Task>() {
+      @Override
       public void apply(Task task) {
         List dependents = task.getDependentTasks();
         if (dependents == null || dependents.isEmpty()) {
@@ -648,4 +649,5 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public boolean canExecuteInParallel(){
     return true;
   }
+
 }

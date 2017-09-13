@@ -499,7 +499,8 @@ STAGE PLANS:
               name: default.dst_union22
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-4

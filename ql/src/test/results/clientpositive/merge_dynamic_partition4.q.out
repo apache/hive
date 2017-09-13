@@ -184,7 +184,8 @@ STAGE PLANS:
               name: default.merge_dynamic_part
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Merge File Operator

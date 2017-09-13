@@ -76,7 +76,8 @@ STAGE PLANS:
               name: default.insert1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain insert into table INSERT1 select a.key, a.value from insert2 a WHERE (a.key=-1)
 PREHOOK: type: QUERY
@@ -130,7 +131,8 @@ STAGE PLANS:
               name: default.insert1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: create database x
 PREHOOK: type: CREATEDATABASE
@@ -198,7 +200,8 @@ STAGE PLANS:
               name: x.insert1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain insert into table default.INSERT1 select a.key, a.value from insert2 a WHERE (a.key=-1)
 PREHOOK: type: QUERY
@@ -252,7 +255,8 @@ STAGE PLANS:
               name: default.insert1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain
 from insert2
@@ -329,7 +333,8 @@ STAGE PLANS:
               name: default.insert1
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -342,7 +347,8 @@ STAGE PLANS:
               name: x.insert1
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: CREATE DATABASE db2
 PREHOOK: type: CREATEDATABASE

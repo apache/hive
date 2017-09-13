@@ -69,5 +69,6 @@ STAGE PLANS:
               name: default.non_acid
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 

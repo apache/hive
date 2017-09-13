@@ -77,7 +77,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 Plan optimized by CBO.
 
 Stage-3
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-4
       Create Table Operator:
         name:default.t
@@ -121,7 +121,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Stage-3
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-0
       Move Operator
         table:{"name:":"default.t"}

@@ -28,31 +28,25 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class ColumnStatsDesc extends DDLDesc implements Serializable, Cloneable {
 
   private static final long serialVersionUID = 1L;
+  private FetchWork fWork;
+
   private boolean isTblLevel;
   private int numBitVector;
+  private boolean needMerge;
   private String tableName;
   private List<String> colName;
   private List<String> colType;
 
-  public ColumnStatsDesc() {
-  }
 
-  public ColumnStatsDesc(String tableName, List<String> colName, List<String> colType,
-      boolean isTblLevel) {
-    this.tableName = tableName;
-    this.colName = colName;
-    this.colType = colType;
-    this.isTblLevel = isTblLevel;
-    this.numBitVector = 0;
-  }
-  
   public ColumnStatsDesc(String tableName, List<String> colName,
-    List<String> colType, boolean isTblLevel, int numBitVector) {
+      List<String> colType, boolean isTblLevel, int numBitVector, FetchWork fWork1) {
     this.tableName = tableName;
     this.colName = colName;
     this.colType = colType;
     this.isTblLevel = isTblLevel;
     this.numBitVector = numBitVector;
+    this.needMerge = this.numBitVector != 0;
+    this.fWork = fWork1;
   }
 
   @Explain(displayName = "Table")
@@ -97,6 +91,15 @@ public class ColumnStatsDesc extends DDLDesc implements Serializable, Cloneable 
 
   public void setNumBitVector(int numBitVector) {
     this.numBitVector = numBitVector;
+  }
+
+  public boolean isNeedMerge() {
+    return needMerge;
+  }
+
+
+  public FetchWork getFWork() {
+    return fWork;
   }
 
 }

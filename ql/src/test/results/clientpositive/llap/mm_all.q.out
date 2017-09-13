@@ -103,7 +103,8 @@ STAGE PLANS:
           micromanaged table: true
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert into table part_mm partition(key_mm=455) select key from intermediate
 PREHOOK: type: QUERY
@@ -1574,10 +1575,10 @@ POSTHOOK: Output: default@multi1_mm@p=1
 POSTHOOK: Output: default@multi1_mm@p=455
 POSTHOOK: Output: default@multi1_mm@p=456
 POSTHOOK: Output: default@multi1_mm@p=457
-POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=455).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=456).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]

@@ -132,7 +132,8 @@ STAGE PLANS:
               name: default.outputtbl1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
 PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
@@ -282,7 +283,8 @@ STAGE PLANS:
               name: default.outputtbl1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
 PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
@@ -470,7 +472,8 @@ STAGE PLANS:
               name: default.outputtbl1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
 PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1

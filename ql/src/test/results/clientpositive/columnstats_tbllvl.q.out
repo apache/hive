@@ -83,7 +83,8 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: sourceIP, avgTimeOnSite, adRevenue
           Column Types: string, int, float
@@ -106,7 +107,8 @@ STAGE PLANS:
           TableScan
             alias: uservisits_web_text_none
             Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
-            GatherStats: false
+            Statistics Aggregation Key Prefix: default.uservisits_web_text_none/
+            GatherStats: true
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
@@ -205,7 +207,9 @@ STAGE PLANS:
             MultiFileSpray: false
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: default.uservisits_web_text_none/
       Column Stats Desc:
           Columns: sourceIP, avgTimeOnSite, adRevenue
           Column Types: string, int, float
@@ -215,10 +219,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 PREHOOK: type: QUERY
 PREHOOK: Input: default@uservisits_web_text_none
+PREHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
 PREHOOK: query: explain 
 analyze table default.UserVisits_web_text_none compute statistics for columns
@@ -236,11 +242,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: uservisits_web_text_none
-            Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 55 Data size: 7005 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sourceip (type: string), desturl (type: string), visitdate (type: string), adrevenue (type: float), useragent (type: string), ccode (type: string), lcode (type: string), skeyword (type: string), avgtimeonsite (type: int)
               outputColumnNames: sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite
-              Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 7005 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(desturl, 'hll'), compute_stats(visitdate, 'hll'), compute_stats(adrevenue, 'hll'), compute_stats(useragent, 'hll'), compute_stats(ccode, 'hll'), compute_stats(lcode, 'hll'), compute_stats(skeyword, 'hll'), compute_stats(avgtimeonsite, 'hll')
                 mode: hash
@@ -265,7 +271,8 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite
           Column Types: string, string, string, float, string, string, string, string, int
@@ -274,10 +281,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table default.UserVisits_web_text_none compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@uservisits_web_text_none
+PREHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table default.UserVisits_web_text_none compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted UserVisits_web_text_none destURL
 PREHOOK: type: DESCTABLE
@@ -297,7 +306,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted UserVisits_web_text_none adRevenue
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@uservisits_web_text_none
@@ -316,7 +325,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted UserVisits_web_text_none avgTimeOnSite
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@uservisits_web_text_none
@@ -335,7 +344,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: CREATE TABLE empty_tab(
    a int,
    b double,
@@ -401,7 +410,8 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: a, b, c, d, e
           Column Types: int, double, string, boolean, binary
@@ -410,10 +420,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table empty_tab compute statistics for columns a,b,c,d,e
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty_tab
+PREHOOK: Output: default@empty_tab
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table empty_tab compute statistics for columns a,b,c,d,e
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_tab
+POSTHOOK: Output: default@empty_tab
 #### A masked pattern was here ####
 PREHOOK: query: create database if not exists dummydb
 PREHOOK: type: CREATEDATABASE
@@ -430,10 +442,12 @@ POSTHOOK: Input: database:dummydb
 PREHOOK: query: analyze table default.UserVisits_web_text_none compute statistics for columns destURL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@uservisits_web_text_none
+PREHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table default.UserVisits_web_text_none compute statistics for columns destURL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Output: default@uservisits_web_text_none
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted default.UserVisits_web_text_none destURL
 PREHOOK: type: DESCTABLE
@@ -453,7 +467,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: CREATE TABLE UserVisits_in_dummy_db (
   sourceIP string,
   destURL string,
@@ -541,7 +555,8 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: sourceIP, avgTimeOnSite, adRevenue
           Column Types: string, int, float
@@ -564,7 +579,8 @@ STAGE PLANS:
           TableScan
             alias: uservisits_in_dummy_db
             Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
-            GatherStats: false
+            Statistics Aggregation Key Prefix: dummydb.uservisits_in_dummy_db/
+            GatherStats: true
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
@@ -663,7 +679,9 @@ STAGE PLANS:
             MultiFileSpray: false
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: dummydb.uservisits_in_dummy_db/
       Column Stats Desc:
           Columns: sourceIP, avgTimeOnSite, adRevenue
           Column Types: string, int, float
@@ -673,10 +691,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 PREHOOK: type: QUERY
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
+PREHOOK: Output: dummydb@uservisits_in_dummy_db
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
+POSTHOOK: Output: dummydb@uservisits_in_dummy_db
 #### A masked pattern was here ####
 PREHOOK: query: explain 
 analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns
@@ -694,11 +714,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: uservisits_in_dummy_db
-            Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 55 Data size: 7005 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sourceip (type: string), desturl (type: string), visitdate (type: string), adrevenue (type: float), useragent (type: string), ccode (type: string), lcode (type: string), skeyword (type: string), avgtimeonsite (type: int)
               outputColumnNames: sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite
-              Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 55 Data size: 7005 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(desturl, 'hll'), compute_stats(visitdate, 'hll'), compute_stats(adrevenue, 'hll'), compute_stats(useragent, 'hll'), compute_stats(ccode, 'hll'), compute_stats(lcode, 'hll'), compute_stats(skeyword, 'hll'), compute_stats(avgtimeonsite, 'hll')
                 mode: hash
@@ -723,7 +743,8 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite
           Column Types: string, string, string, float, string, string, string, string, int
@@ -732,10 +753,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
+PREHOOK: Output: dummydb@uservisits_in_dummy_db
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
+POSTHOOK: Output: dummydb@uservisits_in_dummy_db
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db destURL
 PREHOOK: type: DESCTABLE
@@ -755,7 +778,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db adRevenue
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
@@ -774,7 +797,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db avgTimeOnSite
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
@@ -793,7 +816,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table dummydb.UserVisits_in_dummy_db
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: dummydb@uservisits_in_dummy_db

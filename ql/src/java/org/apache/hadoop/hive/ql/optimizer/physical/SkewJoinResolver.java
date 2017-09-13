@@ -86,7 +86,9 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
       ParseContext pc = physicalContext.getParseContext();
       if (pc.getLoadTableWork() != null) {
         for (LoadTableDesc ltd : pc.getLoadTableWork()) {
-          if (!ltd.isMmTable()) continue;
+          if (!ltd.isMmTable()) {
+            continue;
+          }
           // See the path in FSOP that calls fs.exists on finalPath.
           LOG.debug("Not using skew join because the destination table "
               + ltd.getTable().getTableName() + " is an insert_only table");
@@ -95,9 +97,10 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
       }
       if (pc.getLoadFileWork() != null) {
         for (LoadFileDesc lfd : pc.getLoadFileWork()) {
-          if (!lfd.isMmCtas()) continue;
-          LOG.debug("Not using skew join because the destination table "
-              + lfd.getDestinationCreateTable() + " is an insert_only table");
+          if (!lfd.isMmCtas()) {
+            continue;
+          }
+          LOG.debug("Not using skew join because the destination table is an insert_only table");
           return null;
         }
       }

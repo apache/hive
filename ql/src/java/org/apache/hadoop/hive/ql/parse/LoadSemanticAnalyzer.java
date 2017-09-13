@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
@@ -36,7 +35,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -50,11 +48,12 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
-import org.apache.hadoop.hive.ql.plan.StatsWork;
+import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.InputFormat;
 
@@ -225,8 +224,10 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     List<String> bucketCols = ts.tableHandle.getBucketCols();
     if (bucketCols != null && !bucketCols.isEmpty()) {
       String error = StrictChecks.checkBucketing(conf);
-      if (error != null) throw new SemanticException("Please load into an intermediate table"
-          + " and use 'insert... select' to allow Hive to enforce bucketing. " + error);
+      if (error != null) {
+        throw new SemanticException("Please load into an intermediate table"
+            + " and use 'insert... select' to allow Hive to enforce bucketing. " + error);
+      }
     }
 
     if(AcidUtils.isAcidTable(ts.tableHandle) && !AcidUtils.isInsertOnlyTable(ts.tableHandle.getParameters())) {
@@ -313,11 +314,11 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // Update the stats which do not require a complete scan.
     Task<? extends Serializable> statTask = null;
     if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-      StatsWork statDesc = new StatsWork(loadTableWork);
-      statDesc.setNoStatsAggregator(true);
-      statDesc.setClearAggregatorStats(true);
-      statDesc.setStatsReliable(conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
-      statTask = TaskFactory.get(statDesc, conf);
+      BasicStatsWork basicStatsWork = new BasicStatsWork(loadTableWork);
+      basicStatsWork.setNoStatsAggregator(true);
+      basicStatsWork.setClearAggregatorStats(true);
+      StatsWork columnStatsWork = new StatsWork(ts.tableHandle, basicStatsWork, conf);
+      statTask = TaskFactory.get(columnStatsWork, conf);
     }
 
     // HIVE-3334 has been filed for load file with index auto update

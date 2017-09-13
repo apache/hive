@@ -68,7 +68,8 @@ STAGE PLANS:
               name: default.insert_into1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT INTO TABLE insert_into1 SELECT * from src ORDER BY key LIMIT 100
 PREHOOK: type: QUERY
@@ -176,7 +177,8 @@ STAGE PLANS:
               name: default.insert_into1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT INTO TABLE insert_into1 SELECT * FROM src ORDER BY key LIMIT 100
 PREHOOK: type: QUERY
@@ -284,7 +286,8 @@ STAGE PLANS:
               name: default.insert_into1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE insert_into1 SELECT * FROM src ORDER BY key LIMIT 10
 PREHOOK: type: QUERY
@@ -389,7 +392,8 @@ STAGE PLANS:
               name: default.insert_into1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Map Reduce
@@ -486,7 +490,8 @@ STAGE PLANS:
               name: default.insert_into1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Map Reduce

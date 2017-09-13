@@ -35,10 +35,12 @@ POSTHOOK: Output: default@src_stat_int
 PREHOOK: query: ANALYZE TABLE src_stat COMPUTE STATISTICS for columns key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_stat
+PREHOOK: Output: default@src_stat
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE src_stat COMPUTE STATISTICS for columns key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_stat
+POSTHOOK: Output: default@src_stat
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted src_stat key
 PREHOOK: type: DESCTABLE
@@ -108,10 +110,12 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true
 PREHOOK: query: ANALYZE TABLE src_stat_int COMPUTE STATISTICS for columns key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_stat_int
+PREHOOK: Output: default@src_stat_int
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE src_stat_int COMPUTE STATISTICS for columns key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_stat_int
+POSTHOOK: Output: default@src_stat_int
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted src_stat_int key
 PREHOOK: type: DESCTABLE
@@ -131,7 +135,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ALTER TABLE src_stat_int UPDATE STATISTICS for column key SET ('numDVs'='2222','lowValue'='333.22','highValue'='22.22')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
 POSTHOOK: query: ALTER TABLE src_stat_int UPDATE STATISTICS for column key SET ('numDVs'='2222','lowValue'='333.22','highValue'='22.22')
@@ -154,7 +158,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: create database if not exists dummydb
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:dummydb

@@ -76,7 +76,8 @@ STAGE PLANS:
               name: default.test_table2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: drop table test_table2
 PREHOOK: type: DROPTABLE
@@ -153,7 +154,8 @@ STAGE PLANS:
               name: default.test_table2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: drop table test_table2
 PREHOOK: type: DROPTABLE
@@ -229,7 +231,8 @@ STAGE PLANS:
               name: default.test_table2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: drop table test_table2
 PREHOOK: type: DROPTABLE
@@ -306,7 +309,8 @@ STAGE PLANS:
               name: default.test_table2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: drop table test_table2
 PREHOOK: type: DROPTABLE
@@ -383,7 +387,8 @@ STAGE PLANS:
               name: default.test_table2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: drop table test_table2
 PREHOOK: type: DROPTABLE
@@ -459,5 +464,6 @@ STAGE PLANS:
               name: default.test_table2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 

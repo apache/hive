@@ -415,7 +415,8 @@ STAGE PLANS:
               name: default.bucketmapjoin_tmp_result
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-4
@@ -956,7 +957,8 @@ STAGE PLANS:
               name: default.bucketmapjoin_tmp_result
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-4

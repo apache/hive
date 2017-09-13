@@ -108,7 +108,8 @@ STAGE PLANS:
           name: default.srcpart_date
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-0
     Move Operator

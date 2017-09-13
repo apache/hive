@@ -76,7 +76,8 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Map Reduce
@@ -234,8 +235,8 @@ POSTHOOK: query: SELECT octet_length(dest2.name) FROM dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
-NULL
 6
+NULL
 PREHOOK: query: DROP TABLE dest1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1

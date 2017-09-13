@@ -161,7 +161,8 @@ STAGE PLANS:
               name: default.mi1
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -174,7 +175,8 @@ STAGE PLANS:
               name: default.mi2
 
   Stage: Stage-6
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-2
     Move Operator
@@ -190,7 +192,8 @@ STAGE PLANS:
               name: default.mi3
 
   Stage: Stage-7
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Move Operator
@@ -1426,7 +1429,8 @@ STAGE PLANS:
               name: default.mi1
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -1439,7 +1443,8 @@ STAGE PLANS:
               name: default.mi2
 
   Stage: Stage-6
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-2
     Move Operator
@@ -1455,7 +1460,8 @@ STAGE PLANS:
               name: default.mi3
 
   Stage: Stage-7
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Move Operator

@@ -38,11 +38,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.metastore.api.Decimal;
-import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.slf4j.Logger;
@@ -1596,6 +1595,19 @@ public class MetaStoreUtils {
     return new URLClassLoader(curPath.toArray(new URL[0]), loader);
   }
 
+  protected static void getMergableCols(ColumnStatistics csNew, Map<String, String> parameters) {
+    List<ColumnStatisticsObj> list = new ArrayList<>();
+    for (int index = 0; index < csNew.getStatsObj().size(); index++) {
+      ColumnStatisticsObj statsObjNew = csNew.getStatsObj().get(index);
+      // canColumnStatsMerge guarantees that it is accurate before we do merge
+      if (StatsSetupConst.canColumnStatsMerge(parameters, statsObjNew.getColName())) {
+        list.add(statsObjNew);
+      }
+      // in all the other cases, we can not merge
+    }
+    csNew.setStatsObj(list);
+  }
+
   // this function will merge csOld into csNew.
   public static void mergeColStats(ColumnStatistics csNew, ColumnStatistics csOld)
       throws InvalidObjectException {
@@ -1619,13 +1631,20 @@ public class MetaStoreUtils {
       ColumnStatisticsObj statsObjNew = csNew.getStatsObj().get(index);
       ColumnStatisticsObj statsObjOld = map.get(statsObjNew.getColName());
       if (statsObjOld != null) {
+        // because we already confirm that the stats is accurate
+        // it is impossible that the column types have been changed while the
+        // column stats is still accurate.
+        assert (statsObjNew.getStatsData().getSetField() == statsObjOld.getStatsData()
+            .getSetField());
         // If statsObjOld is found, we can merge.
         ColumnStatsMerger merger = ColumnStatsMergerFactory.getColumnStatsMerger(statsObjNew,
             statsObjOld);
         merger.merge(statsObjNew, statsObjOld);
       }
+      // If statsObjOld is not found, we just use statsObjNew as it is accurate.
       list.add(statsObjNew);
     }
+    // in all the other cases, we can not merge
     csNew.setStatsObj(list);
   }
 

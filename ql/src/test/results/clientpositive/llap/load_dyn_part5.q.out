@@ -73,7 +73,8 @@ STAGE PLANS:
               name: default.nzhang_part5
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table nzhang_part5 partition (value) select key, value from src
 PREHOOK: type: QUERY

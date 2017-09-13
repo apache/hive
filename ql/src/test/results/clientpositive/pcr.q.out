@@ -3649,7 +3649,8 @@ STAGE PLANS:
               name: default.pcr_t2
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-4
@@ -3870,7 +3871,8 @@ STAGE PLANS:
               name: default.pcr_t3
 
   Stage: Stage-9
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-10
@@ -4279,7 +4281,8 @@ STAGE PLANS:
               name: default.pcr_t2
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-4
@@ -4500,7 +4503,8 @@ STAGE PLANS:
               name: default.pcr_t3
 
   Stage: Stage-9
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-10

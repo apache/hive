@@ -652,7 +652,8 @@ STAGE PLANS:
               name: default.t2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-5
     Map Reduce
@@ -720,7 +721,8 @@ STAGE PLANS:
               name: default.t3
 
   Stage: Stage-7
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM T1
 INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with cube

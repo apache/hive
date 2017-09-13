@@ -175,7 +175,8 @@ STAGE PLANS:
           name: default.srcpart_date
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: create table srcpart_date stored as orc as select ds as ds, ds as `date` from srcpart group by ds
 PREHOOK: type: CREATETABLE_AS_SELECT

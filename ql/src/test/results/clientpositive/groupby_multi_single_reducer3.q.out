@@ -116,7 +116,8 @@ STAGE PLANS:
               name: default.e1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -129,7 +130,8 @@ STAGE PLANS:
               name: default.e2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src
 insert overwrite table e1
@@ -282,7 +284,8 @@ STAGE PLANS:
               name: default.e1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -295,7 +298,8 @@ STAGE PLANS:
               name: default.e2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src
 insert overwrite table e1
@@ -448,7 +452,8 @@ STAGE PLANS:
               name: default.e1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -461,7 +466,8 @@ STAGE PLANS:
               name: default.e2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src
 insert overwrite table e1
@@ -614,7 +620,8 @@ STAGE PLANS:
               name: default.e1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -627,7 +634,8 @@ STAGE PLANS:
               name: default.e2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src
 insert overwrite table e1

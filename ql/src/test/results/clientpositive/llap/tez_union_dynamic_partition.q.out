@@ -122,7 +122,8 @@ STAGE PLANS:
               name: default.partunion1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert into table partunion1 partition(part1)
 select temps.* from (

@@ -5182,7 +5182,8 @@ STAGE PLANS:
               name: default.part_1
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-5
     Map Reduce
@@ -5415,7 +5416,8 @@ STAGE PLANS:
               name: default.part_2
 
   Stage: Stage-8
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-9
     Map Reduce
@@ -5564,7 +5566,8 @@ STAGE PLANS:
               name: default.part_3
 
   Stage: Stage-11
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from part 
 INSERT OVERWRITE TABLE part_1 

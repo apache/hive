@@ -170,7 +170,8 @@ STAGE PLANS:
               name: default.orc_rn1
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -183,7 +184,8 @@ STAGE PLANS:
               name: default.orc_rn2
 
   Stage: Stage-6
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-2
     Move Operator
@@ -196,7 +198,8 @@ STAGE PLANS:
               name: default.orc_rn3
 
   Stage: Stage-7
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from orc1 a
 insert overwrite table orc_rn1 select a.* where a.rn < 100

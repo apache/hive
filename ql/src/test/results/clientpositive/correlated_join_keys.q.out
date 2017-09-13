@@ -61,10 +61,12 @@ POSTHOOK: Output: default@customer_address
 PREHOOK: query: analyze table customer_address compute statistics for columns ca_state, ca_zip
 PREHOOK: type: QUERY
 PREHOOK: Input: default@customer_address
+PREHOOK: Output: default@customer_address
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table customer_address compute statistics for columns ca_state, ca_zip
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customer_address
+POSTHOOK: Output: default@customer_address
 #### A masked pattern was here ####
 PREHOOK: query: explain select count(*) from customer_address a join customer_address b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
 PREHOOK: type: QUERY

@@ -103,7 +103,8 @@ STAGE PLANS:
               name: default.test_table_out
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, count(*) FROM test_table1 GROUP BY key
@@ -260,7 +261,8 @@ STAGE PLANS:
               name: default.test_table_out
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT a.key, a.value FROM (
@@ -381,7 +383,8 @@ STAGE PLANS:
               name: default.test_table_out
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key
@@ -516,7 +519,8 @@ STAGE PLANS:
               name: default.test_table_out
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key

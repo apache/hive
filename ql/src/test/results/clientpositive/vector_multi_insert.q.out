@@ -186,7 +186,8 @@ STAGE PLANS:
               name: default.orc_rn1
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-5
     Map Reduce
@@ -238,7 +239,8 @@ STAGE PLANS:
               name: default.orc_rn2
 
   Stage: Stage-10
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-11
     Map Reduce
@@ -290,7 +292,8 @@ STAGE PLANS:
               name: default.orc_rn3
 
   Stage: Stage-16
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-17
     Map Reduce

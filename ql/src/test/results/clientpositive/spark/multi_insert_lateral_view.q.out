@@ -159,7 +159,8 @@ STAGE PLANS:
               name: default.src_lv1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -172,7 +173,8 @@ STAGE PLANS:
               name: default.src_lv2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src_10
 insert overwrite table src_lv1 select key, C lateral view explode(array(key+1, key+2)) A as C
@@ -421,7 +423,8 @@ STAGE PLANS:
               name: default.src_lv1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -434,7 +437,8 @@ STAGE PLANS:
               name: default.src_lv2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src_10
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
@@ -659,7 +663,8 @@ STAGE PLANS:
               name: default.src_lv1
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -672,7 +677,8 @@ STAGE PLANS:
               name: default.src_lv2
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-2
     Move Operator
@@ -685,7 +691,8 @@ STAGE PLANS:
               name: default.src_lv3
 
   Stage: Stage-6
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src_10
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
@@ -969,7 +976,8 @@ STAGE PLANS:
               name: default.src_lv1
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -982,7 +990,8 @@ STAGE PLANS:
               name: default.src_lv2
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-2
     Move Operator
@@ -995,7 +1004,8 @@ STAGE PLANS:
               name: default.src_lv3
 
   Stage: Stage-6
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src_10
 insert overwrite table src_lv1 select C, sum(distinct key) lateral view explode(array(key+1, key+2)) A as C group by C
@@ -1340,7 +1350,8 @@ STAGE PLANS:
               name: default.src_lv1
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -1353,7 +1364,8 @@ STAGE PLANS:
               name: default.src_lv2
 
   Stage: Stage-6
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-2
     Move Operator
@@ -1366,7 +1378,8 @@ STAGE PLANS:
               name: default.src_lv3
 
   Stage: Stage-7
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Move Operator
@@ -1379,7 +1392,8 @@ STAGE PLANS:
               name: default.src_lv4
 
   Stage: Stage-8
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src_10
 insert overwrite table src_lv1 select key, sum(distinct C) lateral view explode(array(key+1, key+2)) A as C group by key

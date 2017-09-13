@@ -273,11 +273,15 @@ PREHOOK: query: analyze table loc_orc partition(year='2001') compute statistics 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc
 PREHOOK: Input: default@loc_orc@year=2001
+PREHOOK: Output: default@loc_orc
+PREHOOK: Output: default@loc_orc@year=2001
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc partition(year='2001') compute statistics for columns state,locid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc
 POSTHOOK: Input: default@loc_orc@year=2001
+POSTHOOK: Output: default@loc_orc
+POSTHOOK: Output: default@loc_orc@year=2001
 #### A masked pattern was here ####
 PREHOOK: query: explain select zip from loc_orc
 PREHOOK: type: QUERY

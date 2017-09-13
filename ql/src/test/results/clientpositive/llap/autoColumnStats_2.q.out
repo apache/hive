@@ -747,7 +747,6 @@ Database:           	default
 Table:              	alter5              	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col1\":\"true\"}}
 	numFiles            	1                   
 	totalSize           	1906                
 #### A masked pattern was here ####

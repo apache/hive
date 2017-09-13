@@ -117,7 +117,8 @@ STAGE PLANS:
               name: default.orcfile_merge3b
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: INSERT OVERWRITE TABLE orcfile_merge3b
     SELECT key, value FROM orcfile_merge3a

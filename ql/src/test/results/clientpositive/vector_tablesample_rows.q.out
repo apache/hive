@@ -175,7 +175,8 @@ STAGE PLANS:
               name: default.decimal_2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Merge File Operator
@@ -371,7 +372,8 @@ STAGE PLANS:
           isTemporary: true
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-3
     Map Reduce

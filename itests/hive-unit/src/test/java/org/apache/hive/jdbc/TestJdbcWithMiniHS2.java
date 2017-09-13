@@ -203,6 +203,7 @@ public class TestJdbcWithMiniHS2 {
   private static void startMiniHS2(HiveConf conf, boolean httpMode) throws Exception {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
+    conf.setBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER, false);
     MiniHS2.Builder builder = new MiniHS2.Builder().withConf(conf).cleanupLocalDirOnStartup(false);
     if (httpMode) {
       builder = builder.withHTTPTransport();

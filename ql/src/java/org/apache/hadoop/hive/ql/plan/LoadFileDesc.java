@@ -35,7 +35,7 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   // list of columns, comma separated
   private String columns;
   private String columnTypes;
-  private String destinationCreateTable;
+  private transient CreateTableDesc ctasCreateTableDesc;
   private boolean isMmCtas;
 
   public LoadFileDesc(final LoadFileDesc o) {
@@ -45,23 +45,16 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     this.isDfsDir = o.isDfsDir;
     this.columns = o.columns;
     this.columnTypes = o.columnTypes;
-    this.destinationCreateTable = o.destinationCreateTable;
     this.isMmCtas = o.isMmCtas;
+    this.ctasCreateTableDesc = o.ctasCreateTableDesc;
   }
 
   public LoadFileDesc(final CreateTableDesc createTableDesc, final CreateViewDesc  createViewDesc,
                       final Path sourcePath, final Path targetDir, final boolean isDfsDir,
-                      final String columns, final String columnTypes, AcidUtils.Operation writeType, boolean isMmCtas) {
+      final String columns, final String columnTypes, AcidUtils.Operation writeType, boolean isMmCtas) {
     this(sourcePath, targetDir, isDfsDir, columns, columnTypes, writeType, isMmCtas);
-    if (createTableDesc != null && createTableDesc.getDatabaseName() != null
-        && createTableDesc.getTableName() != null) {
-      destinationCreateTable = (createTableDesc.getTableName().contains(".") ? "" : createTableDesc
-          .getDatabaseName() + ".")
-          + createTableDesc.getTableName();
-    } else if (createViewDesc != null) {
-      // The work is already done in analyzeCreateView to assure that the view name is fully
-      // qualified.
-      destinationCreateTable = createViewDesc.getViewName();
+      if (createTableDesc != null && createTableDesc.isCTAS()) {
+        ctasCreateTableDesc = createTableDesc;
     }
   }
 
@@ -131,11 +124,8 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     this.columnTypes = columnTypes;
   }
 
-  /**
-   * @return the destinationCreateTable
-   */
-  public String getDestinationCreateTable(){
-    return destinationCreateTable;
+  public CreateTableDesc getCtasCreateTableDesc() {
+    return ctasCreateTableDesc;
   }
 
   public boolean isMmCtas() {

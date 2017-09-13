@@ -27,8 +27,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-0
-  Stage-4 depends on stages: Stage-2, Stage-3
+  Stage-2 depends on stages: Stage-0, Stage-3
   Stage-3 depends on stages: Stage-1
 
 STAGE PLANS:
@@ -89,10 +88,8 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-2
-    Stats-Aggr Operator
-
-  Stage: Stage-4
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string

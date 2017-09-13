@@ -88,7 +88,8 @@ STAGE PLANS:
               name: default.blobstore_table
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: SELECT * FROM blobstore_table
 PREHOOK: type: QUERY

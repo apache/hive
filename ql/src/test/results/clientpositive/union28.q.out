@@ -153,7 +153,8 @@ STAGE PLANS:
               name: default.union_subq_union
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-4
     Map Reduce

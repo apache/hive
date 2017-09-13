@@ -3677,7 +3677,8 @@ STAGE PLANS:
               name: default.pcr_t2
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-1
@@ -3709,7 +3710,8 @@ STAGE PLANS:
               name: default.pcr_t3
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
 PREHOOK: query: from pcr_t1
@@ -3922,7 +3924,8 @@ STAGE PLANS:
               name: default.pcr_t2
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-1
@@ -3954,7 +3957,8 @@ STAGE PLANS:
               name: default.pcr_t3
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
 PREHOOK: query: from pcr_t1

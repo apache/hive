@@ -248,7 +248,8 @@ STAGE PLANS:
               name: default.bucketed_table
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-1
@@ -280,7 +281,8 @@ STAGE PLANS:
               name: default.unbucketed_table
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
   Stage: Stage-10

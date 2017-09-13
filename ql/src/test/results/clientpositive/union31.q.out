@@ -193,7 +193,8 @@ STAGE PLANS:
               name: default.t3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-4
     Map Reduce
@@ -236,7 +237,8 @@ STAGE PLANS:
               name: default.t4
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from
 (select * from t1
@@ -456,7 +458,8 @@ STAGE PLANS:
               name: default.t5
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -469,7 +472,8 @@ STAGE PLANS:
               name: default.t6
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-6
     Map Reduce
@@ -782,7 +786,8 @@ STAGE PLANS:
               name: default.t7
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -795,7 +800,8 @@ STAGE PLANS:
               name: default.t8
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from
 (

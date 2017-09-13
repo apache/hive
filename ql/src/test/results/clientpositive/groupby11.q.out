@@ -121,7 +121,8 @@ STAGE PLANS:
               name: default.dest1
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-5
     Map Reduce
@@ -189,7 +190,8 @@ STAGE PLANS:
               name: default.dest2
 
   Stage: Stage-7
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 partition(ds='111')

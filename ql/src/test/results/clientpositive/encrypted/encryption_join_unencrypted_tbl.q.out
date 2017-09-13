@@ -546,22 +546,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
-            Statistics: Num rows: 1 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: UDFToDouble(_col0) (type: double)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-                  Statistics: Num rows: 1 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   tag: 0
                   value expressions: _col0 (type: string), _col1 (type: string)
                   auto parallelism: false
@@ -641,6 +641,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns key,value
@@ -649,8 +650,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src
               numFiles 1
-              numRows 0
-              rawDataSize 0
+              numRows 500
+              rawDataSize 5312
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -661,6 +662,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,value
@@ -669,8 +671,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src
                 numFiles 1
-                numRows 0
-                rawDataSize 0
+                numRows 500
+                rawDataSize 5312
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

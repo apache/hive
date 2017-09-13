@@ -407,7 +407,8 @@ STAGE PLANS:
               name: default.dst_union22
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 #### A masked pattern was here ####
 
 PREHOOK: query: insert overwrite table dst_union22 partition (ds='2')

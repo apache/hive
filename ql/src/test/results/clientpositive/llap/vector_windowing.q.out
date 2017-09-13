@@ -5717,7 +5717,8 @@ STAGE PLANS:
               name: default.part_1
 
   Stage: Stage-5
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -5730,7 +5731,8 @@ STAGE PLANS:
               name: default.part_2
 
   Stage: Stage-6
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-2
     Move Operator
@@ -5743,7 +5745,8 @@ STAGE PLANS:
               name: default.part_3
 
   Stage: Stage-7
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from part 
 INSERT OVERWRITE TABLE part_1 

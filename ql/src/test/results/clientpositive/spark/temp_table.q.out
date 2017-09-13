@@ -52,7 +52,8 @@ STAGE PLANS:
           isTemporary: true
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: CREATE TEMPORARY TABLE foo AS SELECT * FROM src WHERE key % 2 = 0
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -118,7 +119,8 @@ STAGE PLANS:
           isTemporary: true
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: CREATE TEMPORARY TABLE bar AS SELECT * FROM src WHERE key % 2 = 1
 PREHOOK: type: CREATETABLE_AS_SELECT

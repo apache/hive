@@ -87,7 +87,8 @@ STAGE PLANS:
               name: default.test1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table test1
 select key, count(1) from src group by key
@@ -513,7 +514,8 @@ STAGE PLANS:
               name: default.test1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table test1 select key from test_src
 PREHOOK: type: QUERY
@@ -579,7 +581,8 @@ STAGE PLANS:
               name: default.test1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table test1 select key from test_src
 PREHOOK: type: QUERY

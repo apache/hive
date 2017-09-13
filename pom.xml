@@ -1000,6 +1000,7 @@
           <configuration>
             <downloadJavadocs>true</downloadJavadocs>
             <downloadSources>true</downloadSources>
+            <buildOutputDirectory>target/eclipse/classes</buildOutputDirectory>
             <workspaceActiveCodeStyleProfileName>Hive</workspaceActiveCodeStyleProfileName>
             <workspaceCodeStylesURL>${basedir}/dev-support/eclipse-styles.xml</workspaceCodeStylesURL>
           </configuration>

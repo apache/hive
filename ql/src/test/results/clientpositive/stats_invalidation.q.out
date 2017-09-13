@@ -21,10 +21,12 @@ POSTHOOK: Lineage: stats_invalid.value SIMPLE [(src)src.FieldSchema(name:value, 
 PREHOOK: query: analyze table stats_invalid compute statistics for columns key,value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_invalid
+PREHOOK: Output: default@stats_invalid
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_invalid compute statistics for columns key,value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_invalid
+POSTHOOK: Output: default@stats_invalid
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted stats_invalid
 PREHOOK: type: DESCTABLE

@@ -21,10 +21,12 @@ POSTHOOK: Output: default@dec
 PREHOOK: query: ANALYZE TABLE `dec` COMPUTE STATISTICS FOR COLUMNS value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dec
+PREHOOK: Output: default@dec
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE `dec` COMPUTE STATISTICS FOR COLUMNS value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dec
+POSTHOOK: Output: default@dec
 #### A masked pattern was here ####
 PREHOOK: query: DESC FORMATTED `dec` value
 PREHOOK: type: DESCTABLE
@@ -44,7 +46,7 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: DROP TABLE IF EXISTS avro_dec
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS avro_dec

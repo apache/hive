@@ -142,7 +142,8 @@ STAGE PLANS:
               name: default.temp1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: CREATE TABLE temp2
 (
@@ -221,7 +222,8 @@ STAGE PLANS:
               name: default.temp2
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: select * from bucketoutput1 a join bucketoutput2 b on (a.data=b.data)
 PREHOOK: type: QUERY

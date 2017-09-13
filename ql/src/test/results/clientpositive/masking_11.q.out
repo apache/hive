@@ -13,8 +13,10 @@ POSTHOOK: Lineage: masking_test.value SIMPLE [(src)src.FieldSchema(name:value, t
 PREHOOK: query: analyze table `masking_test` compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@masking_test
+PREHOOK: Output: default@masking_test
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table `masking_test` compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@masking_test
+POSTHOOK: Output: default@masking_test
 #### A masked pattern was here ####

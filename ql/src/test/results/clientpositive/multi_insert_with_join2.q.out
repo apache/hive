@@ -130,7 +130,8 @@ STAGE PLANS:
               name: default.join_result_1
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain
@@ -212,7 +213,8 @@ STAGE PLANS:
               name: default.join_result_3
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain
 FROM T_A a LEFT JOIN T_B b ON a.id = b.id
@@ -312,7 +314,8 @@ STAGE PLANS:
               name: default.join_result_3
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-0
     Move Operator
@@ -325,7 +328,8 @@ STAGE PLANS:
               name: default.join_result_1
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain
 FROM T_A a LEFT JOIN T_B b ON a.id = b.id
@@ -425,7 +429,8 @@ STAGE PLANS:
               name: default.join_result_1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -438,7 +443,8 @@ STAGE PLANS:
               name: default.join_result_3
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain
 FROM T_A a JOIN T_B b ON a.id = b.id
@@ -544,7 +550,8 @@ STAGE PLANS:
               name: default.join_result_1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -557,7 +564,8 @@ STAGE PLANS:
               name: default.join_result_3
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain
 FROM T_A a JOIN T_B b ON a.id = b.id
@@ -663,7 +671,8 @@ STAGE PLANS:
               name: default.join_result_1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -676,7 +685,8 @@ STAGE PLANS:
               name: default.join_result_3
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain
 FROM T_A a JOIN T_B b ON a.id = b.id
@@ -794,7 +804,8 @@ STAGE PLANS:
               name: default.join_result_1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -807,7 +818,8 @@ STAGE PLANS:
               name: default.join_result_3
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: explain
 FROM T_A a JOIN T_B b ON a.id = b.id
@@ -925,7 +937,8 @@ STAGE PLANS:
               name: default.join_result_1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -938,5 +951,6 @@ STAGE PLANS:
               name: default.join_result_3
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 

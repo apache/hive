@@ -83,7 +83,8 @@ STAGE PLANS:
               name: default.src_multi1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -96,7 +97,8 @@ STAGE PLANS:
               name: default.src_multi2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
@@ -220,7 +222,8 @@ STAGE PLANS:
               name: default.src_multi1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -233,7 +236,8 @@ STAGE PLANS:
               name: default.src_multi2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
@@ -357,7 +361,8 @@ STAGE PLANS:
               name: default.src_multi1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -370,7 +375,8 @@ STAGE PLANS:
               name: default.src_multi2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
@@ -494,7 +500,8 @@ STAGE PLANS:
               name: default.src_multi1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -507,7 +514,8 @@ STAGE PLANS:
               name: default.src_multi2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
@@ -647,7 +655,8 @@ STAGE PLANS:
               name: default.src_multi1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -660,7 +669,8 @@ STAGE PLANS:
               name: default.src_multi2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10 group by key, value
@@ -793,7 +803,8 @@ STAGE PLANS:
               name: default.src_multi1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -806,7 +817,8 @@ STAGE PLANS:
               name: default.src_multi2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10 group by key, value
@@ -939,7 +951,8 @@ STAGE PLANS:
               name: default.src_multi1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -952,7 +965,8 @@ STAGE PLANS:
               name: default.src_multi2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10 group by key, value
@@ -1085,7 +1099,8 @@ STAGE PLANS:
               name: default.src_multi1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -1098,7 +1113,8 @@ STAGE PLANS:
               name: default.src_multi2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10 group by key, value
@@ -1242,7 +1258,8 @@ STAGE PLANS:
               name: default.src_multi1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -1255,7 +1272,8 @@ STAGE PLANS:
               name: default.src_multi2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
@@ -1425,7 +1443,8 @@ STAGE PLANS:
               name: default.src_multi1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -1438,7 +1457,8 @@ STAGE PLANS:
               name: default.src_multi2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
@@ -1608,7 +1628,8 @@ STAGE PLANS:
               name: default.src_multi1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -1621,7 +1642,8 @@ STAGE PLANS:
               name: default.src_multi2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
@@ -1791,7 +1813,8 @@ STAGE PLANS:
               name: default.src_multi1
 
   Stage: Stage-3
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-1
     Move Operator
@@ -1804,7 +1827,8 @@ STAGE PLANS:
               name: default.src_multi2
 
   Stage: Stage-4
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10

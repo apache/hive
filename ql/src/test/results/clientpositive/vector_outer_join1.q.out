@@ -186,10 +186,12 @@ POSTHOOK: Output: default@small_alltypesorc_a
 PREHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a
+PREHOOK: Output: default@small_alltypesorc_a
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: Output: default@small_alltypesorc_a
 #### A masked pattern was here ####
 PREHOOK: query: select * from small_alltypesorc_a
 PREHOOK: type: QUERY

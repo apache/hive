@@ -51,10 +51,12 @@ POSTHOOK: Output: default@part_hive
 PREHOOK: query: analyze table part_hive compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_hive
+PREHOOK: Output: default@part_hive
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table part_hive compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_hive
+POSTHOOK: Output: default@part_hive
 #### A masked pattern was here ####
 PREHOOK: query: analyze table partsupp_hive compute statistics
 PREHOOK: type: QUERY
@@ -67,10 +69,12 @@ POSTHOOK: Output: default@partsupp_hive
 PREHOOK: query: analyze table partsupp_hive compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partsupp_hive
+PREHOOK: Output: default@partsupp_hive
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partsupp_hive compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partsupp_hive
+POSTHOOK: Output: default@partsupp_hive
 #### A masked pattern was here ####
 PREHOOK: query: analyze table supplier_hive compute statistics
 PREHOOK: type: QUERY
@@ -83,10 +87,12 @@ POSTHOOK: Output: default@supplier_hive
 PREHOOK: query: analyze table supplier_hive compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@supplier_hive
+PREHOOK: Output: default@supplier_hive
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table supplier_hive compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@supplier_hive
+POSTHOOK: Output: default@supplier_hive
 #### A masked pattern was here ####
 Warning: Shuffle Join JOIN[25][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain select

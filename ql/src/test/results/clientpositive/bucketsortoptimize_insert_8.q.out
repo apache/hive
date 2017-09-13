@@ -156,7 +156,8 @@ STAGE PLANS:
               name: default.test_table3
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-8
     Map Reduce Local Work
@@ -435,7 +436,8 @@ STAGE PLANS:
               name: default.test_table3
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
   Stage: Stage-8
     Map Reduce Local Work

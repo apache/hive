@@ -45,7 +45,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Stage-2
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-0
       Move Operator
         table:{"name:":"default.src_orc_merge_test_part"}
@@ -78,7 +78,7 @@ Vertex dependency in root stage
 Reducer 2 <- Map 1 (GROUP)
 
 Stage-2
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-0
       Move Operator
         table:{"name:":"default.src_orc_merge_test_part"}
@@ -3197,7 +3197,7 @@ Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
 Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT)
 
 Stage-2
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-3
       Create Table Operator:
         name:default.nzhang_CTAS1
@@ -3247,7 +3247,7 @@ Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
 Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT)
 
 Stage-2
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-3
       Create Table Operator:
         name:default.nzhang_ctas3
@@ -4809,7 +4809,7 @@ Reducer 6 <- Map 1 (PARTITION-LEVEL SORT)
 Reducer 7 <- Map 1 (PARTITION-LEVEL SORT)
 
 Stage-3
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-0
       Move Operator
         table:{"name:":"default.part_4"}
@@ -4862,7 +4862,7 @@ Stage-3
                                 Output:["_col1","_col2","_col5","_col7"]
                               <- Please refer to the previous Map 1 [PARTITION-LEVEL SORT]
 Stage-4
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-1
       Move Operator
         table:{"name:":"default.part_5"}
@@ -5227,7 +5227,7 @@ Vertex dependency in root stage
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT), Map 3 (PARTITION-LEVEL SORT)
 
 Stage-2
-  Stats-Aggr Operator
+  Stats Work{}
     Stage-0(CONDITIONAL)
       Move Operator
         table:{"name:":"default.dest_j1"}

@@ -76,7 +76,8 @@ STAGE PLANS:
               name: default.tst_dest30
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table dest30
 select count(1) from src
@@ -159,7 +160,8 @@ STAGE PLANS:
               name: default.dest30
 
   Stage: Stage-2
-    Stats-Aggr Operator
+    Stats Work
+      Basic Stats Work:
 
 PREHOOK: query: insert overwrite table dest30
 select count(1) from src

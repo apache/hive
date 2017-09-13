@@ -58,7 +58,8 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: key
           Column Types: int
@@ -67,10 +68,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table n compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@n
+PREHOOK: Output: default@n
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table n compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@n
+POSTHOOK: Output: default@n
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted n key
 PREHOOK: type: DESCTABLE
@@ -151,7 +154,8 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-1
-    Column Stats Work
+    Stats Work
+      Basic Stats Work:
       Column Stats Desc:
           Columns: key
           Column Types: int
@@ -160,10 +164,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table i compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@i
+PREHOOK: Output: default@i
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table i compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@i
+POSTHOOK: Output: default@i
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted i key
 PREHOOK: type: DESCTABLE
@@ -212,10 +218,12 @@ POSTHOOK: Lineage: i.key EXPRESSION [(src)src.FieldSchema(name:key, type:string,
 PREHOOK: query: analyze table i compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@i
+PREHOOK: Output: default@i
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table i compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@i
+POSTHOOK: Output: default@i
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted i key
 PREHOOK: type: DESCTABLE
@@ -264,10 +272,12 @@ POSTHOOK: Lineage: i.key EXPRESSION [(src)src.FieldSchema(name:key, type:string,
 PREHOOK: query: analyze table i compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@i
+PREHOOK: Output: default@i
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table i compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@i
+POSTHOOK: Output: default@i
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted i key
 PREHOOK: type: DESCTABLE
@@ -342,10 +352,12 @@ POSTHOOK: Lineage: i.key EXPRESSION [(values__tmp__table__5)values__tmp__table__
 PREHOOK: query: analyze table i compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@i
+PREHOOK: Output: default@i
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table i compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@i
+POSTHOOK: Output: default@i
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted i key
 PREHOOK: type: DESCTABLE

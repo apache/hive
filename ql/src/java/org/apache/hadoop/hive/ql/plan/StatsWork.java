@@ -19,136 +19,153 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
- * ConditionalStats.
+ * Stats Work, may include basic stats work and column stats desc
  *
  */
-@Explain(displayName = "Stats-Aggr Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+@Explain(displayName = "Stats Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class StatsWork implements Serializable {
+
   private static final long serialVersionUID = 1L;
+  // this is for basic stats
+  private BasicStatsWork basicStatsWork;
+  private BasicStatsNoJobWork basicStatsNoJobWork;
+  private ColumnStatsDesc colStats;
+  private static final int LIMIT = -1;
 
-  private TableSpec tableSpecs;         // source table spec -- for TableScanOperator
-  private LoadTableDesc loadTableDesc;  // same as MoveWork.loadTableDesc -- for FileSinkOperator
-  private LoadFileDesc loadFileDesc;    // same as MoveWork.loadFileDesc -- for FileSinkOperator
-  private String aggKey;                // aggregation key prefix
-  private boolean statsReliable;        // are stats completely reliable
+  private String currentDatabase;
+  private boolean statsReliable;
+  private Table table;
+  private boolean truncate;
+  private boolean footerScan;
+  private Set<Partition> partitions = new HashSet<>();
 
-  // If stats aggregator is not present, clear the current aggregator stats.
-  // For eg. if a merge is being performed, stats already collected by aggregator (numrows etc.)
-  // are still valid. However, if a load file is being performed, the old stats collected by
-  // aggregator are not valid. It might be a good idea to clear them instead of leaving wrong
-  // and old stats.
-  // Since HIVE-12661, we maintain the old stats (although may be wrong) for CBO
-  // purpose. We use a flag COLUMN_STATS_ACCURATE to
-  // show the accuracy of the stats.
-
-  private boolean clearAggregatorStats = false;
-
-  private boolean noStatsAggregator = false;
-
-  private boolean isNoScanAnalyzeCommand = false;
-
-  // sourceTask for TS is not changed (currently) but that of FS might be changed
-  // by various optimizers (auto.convert.join, for example)
-  // so this is set by DriverContext in runtime
-  private transient Task sourceTask;
-
-  // used by FS based stats collector
-  private String statsTmpDir;
-
-  public StatsWork() {
+  public StatsWork(Table table, BasicStatsWork basicStatsWork, HiveConf hconf) {
+    super();
+    this.table = table;
+    this.basicStatsWork = basicStatsWork;
+    this.currentDatabase = SessionState.get().getCurrentDatabase();
+    statsReliable = hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE);
+    basicStatsWork.setStatsReliable(statsReliable);
   }
 
-  public StatsWork(TableSpec tableSpecs) {
-    this.tableSpecs = tableSpecs;
+  public StatsWork(Table table, HiveConf hconf) {
+    super();
+    this.table = table;
+    this.currentDatabase = SessionState.get().getCurrentDatabase();
+    statsReliable = hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE);
   }
 
-  public StatsWork(LoadTableDesc loadTableDesc) {
-    this.loadTableDesc = loadTableDesc;
+  @Override
+  public String toString() {
+    return String.format("StatWork; fetch: %s", getfWork());
   }
 
-  public StatsWork(LoadFileDesc loadFileDesc) {
-    this.loadFileDesc = loadFileDesc;
+  FetchWork getfWork() {
+    return colStats == null ? null : colStats.getFWork();
   }
 
-  public TableSpec getTableSpecs() {
-    return tableSpecs;
+  @Explain(displayName = "Column Stats Desc")
+  public ColumnStatsDesc getColStats() {
+    return colStats;
   }
 
-  public LoadTableDesc getLoadTableDesc() {
-    return loadTableDesc;
+  public void setColStats(ColumnStatsDesc colStats) {
+    this.colStats = colStats;
   }
 
-  public LoadFileDesc getLoadFileDesc() {
-    return loadFileDesc;
+  // unused / unknown reason
+  @Deprecated
+  public static int getLimit() {
+    return LIMIT;
   }
 
-  public void setAggKey(String aggK) {
-    aggKey = aggK;
+  @Explain(displayName = "Basic Stats Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public BasicStatsWork getBasicStatsWork() {
+    return basicStatsWork;
   }
 
-  @Explain(displayName = "Stats Aggregation Key Prefix", explainLevels = { Level.EXTENDED })
-  public String getAggKey() {
-    return aggKey;
+  // only explain uses it
+  @Explain(displayName = "Basic Stats NoJob Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public BasicStatsNoJobWork getBasicStatsNoJobWork() {
+    return basicStatsNoJobWork;
   }
 
-  public String getStatsTmpDir() {
-    return statsTmpDir;
+  public void setSourceTask(Task<?> sourceTask) {
+    basicStatsWork.setSourceTask(sourceTask);
   }
 
-  public void setStatsTmpDir(String statsTmpDir) {
-    this.statsTmpDir = statsTmpDir;
+  public String getCurrentDatabaseName() {
+    return currentDatabase;
   }
 
-  public boolean getNoStatsAggregator() {
-    return noStatsAggregator;
+  public boolean hasColStats() {
+    return colStats != null;
   }
 
-  public void setNoStatsAggregator(boolean noStatsAggregator) {
-    this.noStatsAggregator = noStatsAggregator;
+  public Table getTable() {
+    return table;
   }
 
-  public boolean isStatsReliable() {
+  public void collectStatsFromAggregator(IStatsGatherDesc conf) {
+    // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
+    // in FileSinkDesc is used for stats publishing. They should be consistent.
+    basicStatsWork.setAggKey(conf.getStatsAggPrefix());
+    basicStatsWork.setStatsTmpDir(conf.getTmpStatsDir());
+    basicStatsWork.setStatsReliable(statsReliable);
+  }
+
+  public void truncateExisting(boolean truncate) {
+    this.truncate = truncate;
+  }
+
+
+  public void setFooterScan() {
+    basicStatsNoJobWork = new BasicStatsNoJobWork(table.getTableSpec());
+    basicStatsNoJobWork.setStatsReliable(getStatsReliable());
+    footerScan = true;
+  }
+
+  public void addInputPartitions(Set<Partition> partitions) {
+    this.partitions.addAll(partitions);
+  }
+
+  public Set<Partition> getPartitions() {
+    return partitions;
+  }
+
+  public boolean isFooterScan() {
+    return footerScan;
+  }
+
+  public boolean getStatsReliable() {
     return statsReliable;
   }
 
-  public void setStatsReliable(boolean statsReliable) {
-    this.statsReliable = statsReliable;
-  }
-
-  public boolean isClearAggregatorStats() {
-    return clearAggregatorStats;
-  }
-
-  public void setClearAggregatorStats(boolean clearAggregatorStats) {
-    this.clearAggregatorStats = clearAggregatorStats;
-  }
-
-  /**
-   * @return the isNoScanAnalyzeCommand
-   */
-  public boolean isNoScanAnalyzeCommand() {
-    return isNoScanAnalyzeCommand;
-  }
-
-  /**
-   * @param isNoScanAnalyzeCommand the isNoScanAnalyzeCommand to set
-   */
-  public void setNoScanAnalyzeCommand(boolean isNoScanAnalyzeCommand) {
-    this.isNoScanAnalyzeCommand = isNoScanAnalyzeCommand;
+  public String getFullTableName() {
+    return table.getDbName() + "." + table.getTableName();
   }
 
   public Task getSourceTask() {
-    return sourceTask;
+    return basicStatsWork == null ? null : basicStatsWork.getSourceTask();
   }
 
-  public void setSourceTask(Task sourceTask) {
-    this.sourceTask = sourceTask;
+  public String getAggKey() {
+    return basicStatsWork.getAggKey();
+  }
+
+  public boolean isAggregating() {
+    return basicStatsWork != null && basicStatsWork.getAggKey() != null;
   }
 }
