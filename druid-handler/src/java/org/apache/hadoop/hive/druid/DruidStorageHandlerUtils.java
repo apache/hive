@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -77,7 +77,6 @@ import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.chrono.ISOChronology;
-import org.joda.time.format.ISODateTimeFormat;
 import org.skife.jdbi.v2.FoldController;
 import org.skife.jdbi.v2.Folder3;
 import org.skife.jdbi.v2.Handle;
@@ -120,10 +119,14 @@ public final class DruidStorageHandlerUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandlerUtils.class);
 
+  private static final int NUM_RETRIES = 8;
+  private static final int SECONDS_BETWEEN_RETRIES = 2;
+  private static final int DEFAULT_FS_BUFFER_SIZE = 1 << 18; // 256KB
+  private static final int DEFAULT_STREAMING_RESULT_SIZE = 100;
   private static final String SMILE_CONTENT_TYPE = "application/x-jackson-smile";
-
   public static final String DEFAULT_TIMESTAMP_COLUMN = "__time";
-
+  public static final String INDEX_ZIP = "index.zip";
+  public static final String DESCRIPTOR_JSON = "descriptor.json";
   public static final Interval DEFAULT_INTERVAL = new Interval(
           new DateTime("1900-01-01", ISOChronology.getInstanceUTC()),
           new DateTime("3000-01-01", ISOChronology.getInstanceUTC())
@@ -139,10 +142,6 @@ public final class DruidStorageHandlerUtils {
    */
   public static final ObjectMapper SMILE_MAPPER = new DefaultObjectMapper(new SmileFactory());
 
-  public static final String INDEX_ZIP = "index.zip";
-  public static final String DESCRIPTOR_JSON = "descriptor.json";
-
-
   static {
     // This is needed for serde of PagingSpec as it uses JacksonInject for injecting SelectQueryConfig
     InjectableValues.Std injectableValues = new InjectableValues.Std()
@@ -153,15 +152,21 @@ public final class DruidStorageHandlerUtils {
     HiveDruidSerializationModule hiveDruidSerializationModule = new HiveDruidSerializationModule();
     JSON_MAPPER.registerModule(hiveDruidSerializationModule);
     SMILE_MAPPER.registerModule(hiveDruidSerializationModule);
+    // Register the shard sub type to be used by the mapper
+    JSON_MAPPER.registerSubtypes(new NamedType(LinearShardSpec.class, "linear"));
+    // set the timezone of the object mapper
+    // THIS IS NOT WORKING workaround is to set it as part of java opts -Duser.timezone="UTC"
+    JSON_MAPPER.setTimeZone(TimeZone.getTimeZone("UTC"));
+    try {
+      // No operation emitter will be used by some internal druid classes.
+      EmittingLogger.registerEmitter(
+              new ServiceEmitter("druid-hive-indexer", InetAddress.getLocalHost().getHostName(),
+                      new NoopEmitter()
+              ));
+    } catch (UnknownHostException e) {
+      throw Throwables.propagate(e);
+    }
   }
-
-  private static final int NUM_RETRIES = 8;
-
-  private static final int SECONDS_BETWEEN_RETRIES = 2;
-
-  private static final int DEFAULT_FS_BUFFER_SIZE = 1 << 18; // 256KB
-
-  private static final int DEFAULT_STREAMING_RESULT_SIZE = 100;
 
   /**
    * Used by druid to perform IO on indexes
@@ -184,23 +189,6 @@ public final class DruidStorageHandlerUtils {
    * Generic Interner implementation used to read segments object from metadata storage
    */
   public static final Interner<DataSegment> DATA_SEGMENT_INTERNER = Interners.newWeakInterner();
-
-  static {
-    // Register the shard sub type to be used by the mapper
-    JSON_MAPPER.registerSubtypes(new NamedType(LinearShardSpec.class, "linear"));
-    // set the timezone of the object mapper
-    // THIS IS NOT WORKING workaround is to set it as part of java opts -Duser.timezone="UTC"
-    JSON_MAPPER.setTimeZone(TimeZone.getTimeZone("UTC"));
-    try {
-      // No operation emitter will be used by some internal druid classes.
-      EmittingLogger.registerEmitter(
-              new ServiceEmitter("druid-hive-indexer", InetAddress.getLocalHost().getHostName(),
-                      new NoopEmitter()
-              ));
-    } catch (UnknownHostException e) {
-      throw Throwables.propagate(e);
-    }
-  }
 
   /**
    * Method that creates a request for Druid JSON query (using SMILE).
@@ -289,29 +277,26 @@ public final class DruidStorageHandlerUtils {
   )
           throws IOException {
     final DataPusher descriptorPusher = (DataPusher) RetryProxy.create(
-            DataPusher.class, new DataPusher() {
-              @Override
-              public long push() throws IOException {
-                try {
-                  if (outputFS.exists(descriptorPath)) {
-                    if (!outputFS.delete(descriptorPath, false)) {
-                      throw new IOException(
-                              String.format("Failed to delete descriptor at [%s]", descriptorPath));
-                    }
+            DataPusher.class, () -> {
+              try {
+                if (outputFS.exists(descriptorPath)) {
+                  if (!outputFS.delete(descriptorPath, false)) {
+                    throw new IOException(
+                            String.format("Failed to delete descriptor at [%s]", descriptorPath));
                   }
-                  try (final OutputStream descriptorOut = outputFS.create(
-                          descriptorPath,
-                          true,
-                          DEFAULT_FS_BUFFER_SIZE
-                  )) {
-                    JSON_MAPPER.writeValue(descriptorOut, segment);
-                    descriptorOut.flush();
-                  }
-                } catch (RuntimeException | IOException ex) {
-                  throw ex;
                 }
-                return -1;
+                try (final OutputStream descriptorOut = outputFS.create(
+                        descriptorPath,
+                        true,
+                        DEFAULT_FS_BUFFER_SIZE
+                )) {
+                  JSON_MAPPER.writeValue(descriptorOut, segment);
+                  descriptorOut.flush();
+                }
+              } catch (RuntimeException | IOException ex) {
+                throw ex;
               }
+              return -1;
             },
             RetryPolicies
                     .exponentialBackoffRetry(NUM_RETRIES, SECONDS_BETWEEN_RETRIES, TimeUnit.SECONDS)
@@ -329,31 +314,25 @@ public final class DruidStorageHandlerUtils {
           final MetadataStorageTablesConfig metadataStorageTablesConfig
   ) {
     return connector.getDBI().withHandle(
-            new HandleCallback<List<String>>() {
-              @Override
-              public List<String> withHandle(Handle handle) throws Exception {
-                return handle.createQuery(
-                        String.format("SELECT DISTINCT(datasource) FROM %s WHERE used = true",
-                                metadataStorageTablesConfig.getSegmentsTable()
-                        ))
-                        .fold(Lists.<String>newArrayList(),
-                                new Folder3<ArrayList<String>, Map<String, Object>>() {
-                                  @Override
-                                  public ArrayList<String> fold(ArrayList<String> druidDataSources,
-                                          Map<String, Object> stringObjectMap,
-                                          FoldController foldController,
-                                          StatementContext statementContext
-                                  ) throws SQLException {
-                                    druidDataSources.add(
-                                            MapUtils.getString(stringObjectMap, "datasource")
-                                    );
-                                    return druidDataSources;
-                                  }
-                                }
-                        );
-
-              }
-            }
+            (HandleCallback<List<String>>) handle -> handle.createQuery(
+                    String.format("SELECT DISTINCT(datasource) FROM %s WHERE used = true",
+                            metadataStorageTablesConfig.getSegmentsTable()
+                    ))
+                    .fold(Lists.<String>newArrayList(),
+                            new Folder3<ArrayList<String>, Map<String, Object>>() {
+                              @Override
+                              public ArrayList<String> fold(ArrayList<String> druidDataSources,
+                                      Map<String, Object> stringObjectMap,
+                                      FoldController foldController,
+                                      StatementContext statementContext
+                              ) throws SQLException {
+                                druidDataSources.add(
+                                        MapUtils.getString(stringObjectMap, "datasource")
+                                );
+                                return druidDataSources;
+                              }
+                            }
+                    )
     );
   }
 
@@ -374,12 +353,9 @@ public final class DruidStorageHandlerUtils {
       }
 
       connector.getDBI().withHandle(
-              new HandleCallback<Void>() {
-                @Override
-                public Void withHandle(Handle handle) throws Exception {
-                  disableDataSourceWithHandle(handle, metadataStorageTablesConfig, dataSource);
-                  return null;
-                }
+              (HandleCallback<Void>) handle -> {
+                disableDataSourceWithHandle(handle, metadataStorageTablesConfig, dataSource);
+                return null;
               }
       );
 
@@ -458,28 +434,22 @@ public final class DruidStorageHandlerUtils {
                   // No existing shard present in the database, use the current version.
                   newShardSpec = segment.getShardSpec();
                   newVersion = segment.getVersion();
-                  LOG.info("no Old segment covering this segment {}", segment.getIdentifier());
                 } else {
                   // use version of existing max segment to generate new shard spec
                   newShardSpec = getNextPartitionShardSpec(max.getShardSpec());
                   newVersion = max.getVersion();
-                  LOG.info("Found older segment with Version {} and Shared spec{}", newVersion,
-                          newShardSpec
-                  );
                 }
-                //@TODO THE partition is missing we are trying to publish a segment from the same interval with the same version
-                // but that segment exist in HDFS
-                //hdfs dfs -ls -R /druid/segments/druid_login_test_tmp/20150309T000000.000-0400_20150310T000000.000-0400/2017-09-08T20_51_53.960-04_00
-                //-rw-r--r--   3 sbouguerra hadoop        558 2017-09-08 20:52 /druid/segments/druid_login_test_tmp/20150309T000000.000-0400_20150310T000000.000-0400/2017-09-08T20_51_53.960-04_00/descriptor.json
-                //        -rw-r--r--   3 sbouguerra hdfs         1086 2017-09-08 20:52 /druid/segments/druid_login_test_tmp/20150309T000000.000-0400_20150310T000000.000-0400/2017-09-08T20_51_53.960-04_00/index.zip
-                // find out how we are doing the partition thus if i try to append it will work
-                // but not if the same segment exists
-                DataSegment publishedSegment = publishSegmentWithShardSpec(segment,
-                        newShardSpec, newVersion,
-                        segmentDirectory, getPath(segment).getFileSystem(conf), dataSegmentPusher
+                DataSegment publishedSegment = publishSegmentWithShardSpec(
+                        segment,
+                        newShardSpec,
+                        newVersion,
+                        getPath(segment).getFileSystem(conf),
+                        dataSegmentPusher
                 );
                 finalSegmentsToPublish.add(publishedSegment);
-                timeline.add(publishedSegment.getInterval(), publishedSegment.getVersion(),
+                timeline.add(
+                        publishedSegment.getInterval(),
+                        publishedSegment.getVersion(),
                         publishedSegment.getShardSpec().createChunk(publishedSegment)
                 );
 
@@ -547,44 +517,31 @@ public final class DruidStorageHandlerUtils {
           final MetadataStorageTablesConfig metadataStorageTablesConfig, final String dataSource
   ) {
     List<DataSegment> segmentList = connector.retryTransaction(
-            new TransactionCallback<List<DataSegment>>() {
-              @Override
-              public List<DataSegment> inTransaction(
-                      Handle handle, TransactionStatus status
-              ) throws Exception {
-                return handle
-                        .createQuery(String.format(
-                                "SELECT payload FROM %s WHERE dataSource = :dataSource",
-                                metadataStorageTablesConfig.getSegmentsTable()
-                        ))
-                        .setFetchSize(getStreamingFetchSize(connector))
-                        .bind("dataSource", dataSource)
-                        .map(ByteArrayMapper.FIRST)
-                        .fold(
-                                new ArrayList<DataSegment>(),
-                                new Folder3<List<DataSegment>, byte[]>() {
-                                  @Override
-                                  public List<DataSegment> fold(List<DataSegment> accumulator,
-                                          byte[] payload, FoldController control,
-                                          StatementContext ctx
-                                  ) throws SQLException {
-                                    try {
-                                      final DataSegment segment = DATA_SEGMENT_INTERNER.intern(
-                                              JSON_MAPPER.readValue(
-                                                      payload,
-                                                      DataSegment.class
-                                              ));
+            (handle, status) -> handle
+                    .createQuery(String.format(
+                            "SELECT payload FROM %s WHERE dataSource = :dataSource",
+                            metadataStorageTablesConfig.getSegmentsTable()
+                    ))
+                    .setFetchSize(getStreamingFetchSize(connector))
+                    .bind("dataSource", dataSource)
+                    .map(ByteArrayMapper.FIRST)
+                    .fold(
+                            new ArrayList<>(),
+                            (Folder3<List<DataSegment>, byte[]>) (accumulator, payload, control, ctx) -> {
+                              try {
+                                final DataSegment segment = DATA_SEGMENT_INTERNER.intern(
+                                        JSON_MAPPER.readValue(
+                                                payload,
+                                                DataSegment.class
+                                        ));
 
-                                      accumulator.add(segment);
-                                      return accumulator;
-                                    } catch (Exception e) {
-                                      throw new SQLException(e.toString());
-                                    }
-                                  }
-                                }
-                        );
-              }
-            }
+                                accumulator.add(segment);
+                                return accumulator;
+                              } catch (Exception e) {
+                                throw new SQLException(e.toString());
+                              }
+                            }
+                    )
             , 3, SQLMetadataConnector.DEFAULT_MAX_TRIES);
     return segmentList;
   }
@@ -696,7 +653,7 @@ public final class DruidStorageHandlerUtils {
   }
 
   public static DataSegment publishSegmentWithShardSpec(DataSegment segment, ShardSpec shardSpec,
-          String version, String segmentDirectory, FileSystem fs, DataSegmentPusher dataSegmentPusher
+          String version, FileSystem fs, DataSegmentPusher dataSegmentPusher
   )
           throws IOException {
     boolean retry = true;
