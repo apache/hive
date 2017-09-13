@@ -115,6 +115,7 @@ public class TestDruidStorageHandler {
     config.set(String.valueOf(HiveConf.ConfVars.DRUID_WORKING_DIR), tableWorkingPath);
     config.set(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY),
             new Path(tableWorkingPath, "finalSegmentDir").toString());
+    config.set("hive.druid.maxTries", "0");
     druidStorageHandler = new DruidStorageHandler(
             derbyConnectorRule.getConnector(),
             derbyConnectorRule.metadataTablesConfigSupplier().get()
@@ -245,26 +246,35 @@ public class TestDruidStorageHandler {
     DerbyConnectorTestUtility connector = derbyConnectorRule.getConnector();
     MetadataStorageTablesConfig metadataStorageTablesConfig = derbyConnectorRule
             .metadataTablesConfigSupplier().get();
-
     druidStorageHandler.preCreateTable(tableMock);
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
     Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
-    DataSegment dataSegment = createSegment(new Path(taskDirPath, "index.zip").toString(),
-            new Interval(180, 250), "v1", new LinearShardSpec(0));
-    Path descriptorPath = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment,
-            new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
-    );
+    HdfsDataSegmentPusherConfig pusherConfig = new HdfsDataSegmentPusherConfig();
+    pusherConfig.setStorageDirectory(config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)));
+    DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
+
+    // This create and publish the segment to be overwritten
     List<DataSegment> existingSegments = Arrays
-            .asList(createSegment(new Path(taskDirPath, "index_old.zip").toString(),
+            .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
                     new Interval(100, 150), "v0", new LinearShardSpec(0)));
     DruidStorageHandlerUtils
             .publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
                     true,
                     taskDirPath.toString(),
-                    config
+                    config,
+                    dataSegmentPusher
             );
+
+    // This creates and publish new segment
+    DataSegment dataSegment = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
+            new Interval(180, 250), "v1", new LinearShardSpec(0));
+
+    Path descriptorPath = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment,
+            new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
+    );
     DruidStorageHandlerUtils.writeSegmentDescriptor(localFileSystem, dataSegment, descriptorPath);
+
     druidStorageHandler.commitInsertTable(tableMock, true);
     Assert.assertArrayEquals(Lists.newArrayList(DATA_SOURCE_NAME).toArray(), Lists.newArrayList(
             DruidStorageHandlerUtils.getAllDataSourceNames(connector,
@@ -277,13 +287,12 @@ public class TestDruidStorageHandler {
     DataSegment persistedSegment = Iterables.getOnlyElement(dataSegmentList);
     Assert.assertEquals(dataSegment, persistedSegment);
     Assert.assertEquals(dataSegment.getVersion(), persistedSegment.getVersion());
-    String expectedFinalPath = DruidStorageHandlerUtils.finalPathForSegment(
-            config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)), persistedSegment)
-            .toString();
-    Assert.assertEquals(ImmutableMap.of("type", "hdfs", "path", expectedFinalPath),
+    Path expectedFinalHadoopPath =  new Path(dataSegmentPusher.getPathForHadoop(), dataSegmentPusher
+            .makeIndexPathName(persistedSegment, DruidStorageHandlerUtils.INDEX_ZIP));
+    Assert.assertEquals(ImmutableMap.of("type", "hdfs", "path", expectedFinalHadoopPath.toString()),
             persistedSegment.getLoadSpec());
     Assert.assertEquals("dummySegmentData",
-            FileUtils.readFileToString(new File(expectedFinalPath)));
+            FileUtils.readFileToString(new File(expectedFinalHadoopPath.toUri())));
   }
 
   private List<DataSegment> getUsedSegmentsList(DerbyConnectorTestUtility connector,
@@ -325,16 +334,21 @@ public class TestDruidStorageHandler {
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
     Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
     List<DataSegment> existingSegments = Arrays
-            .asList(createSegment(new Path(taskDirPath, "index_old.zip").toString(),
+            .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
                     new Interval(100, 150), "v0", new LinearShardSpec(1)));
+    HdfsDataSegmentPusherConfig pusherConfig = new HdfsDataSegmentPusherConfig();
+    pusherConfig.setStorageDirectory(config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)));
+    DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
+
     DruidStorageHandlerUtils
             .publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
                     true,
                     taskDirPath.toString(),
-                    config
+                    config,
+                    dataSegmentPusher
             );
-    DataSegment dataSegment = createSegment(new Path(taskDirPath, "index.zip").toString(),
+    DataSegment dataSegment = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
             new Interval(100, 150), "v1", new LinearShardSpec(0));
     Path descriptorPath = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment,
             new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
@@ -355,13 +369,68 @@ public class TestDruidStorageHandler {
     Assert.assertEquals("v0", persistedSegment.getVersion());
     Assert.assertTrue(persistedSegment.getShardSpec() instanceof LinearShardSpec);
     Assert.assertEquals(2, persistedSegment.getShardSpec().getPartitionNum());
-    String expectedFinalPath = DruidStorageHandlerUtils.finalPathForSegment(
-            config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)), persistedSegment)
-            .toString();
-    Assert.assertEquals(ImmutableMap.of("type", "hdfs", "path", expectedFinalPath),
+
+    Path expectedFinalHadoopPath =  new Path(dataSegmentPusher.getPathForHadoop(), dataSegmentPusher
+            .makeIndexPathName(persistedSegment, DruidStorageHandlerUtils.INDEX_ZIP));
+
+    Assert.assertEquals(ImmutableMap.of("type", "hdfs", "path", expectedFinalHadoopPath.toString()),
             persistedSegment.getLoadSpec());
     Assert.assertEquals("dummySegmentData",
-            FileUtils.readFileToString(new File(expectedFinalPath)));
+            FileUtils.readFileToString(new File(expectedFinalHadoopPath.toUri())));
+  }
+
+  @Test
+  public void testInsertIntoAppendOneMorePartition() throws MetaException, IOException {
+    DerbyConnectorTestUtility connector = derbyConnectorRule.getConnector();
+    MetadataStorageTablesConfig metadataStorageTablesConfig = derbyConnectorRule
+            .metadataTablesConfigSupplier().get();
+    druidStorageHandler.preCreateTable(tableMock);
+    LocalFileSystem localFileSystem = FileSystem.getLocal(config);
+    Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
+    HdfsDataSegmentPusherConfig pusherConfig = new HdfsDataSegmentPusherConfig();
+    pusherConfig.setStorageDirectory(config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)));
+    DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
+
+    List<DataSegment> existingSegments = Arrays
+            .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
+                    new Interval(100, 150), "v0", new LinearShardSpec(0)));
+    DruidStorageHandlerUtils
+            .publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
+                    existingSegments,
+                    true,
+                    taskDirPath.toString(),
+                    config,
+                    dataSegmentPusher
+            );
+
+    DataSegment dataSegment = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
+            new Interval(100, 150), "v0", new LinearShardSpec(0));
+    Path descriptorPath = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment,
+            new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
+    );
+    DruidStorageHandlerUtils.writeSegmentDescriptor(localFileSystem, dataSegment, descriptorPath);
+    druidStorageHandler.commitInsertTable(tableMock, false);
+    Assert.assertArrayEquals(Lists.newArrayList(DATA_SOURCE_NAME).toArray(), Lists.newArrayList(
+            DruidStorageHandlerUtils.getAllDataSourceNames(connector,
+                    metadataStorageTablesConfig
+            )).toArray());
+
+    final List<DataSegment> dataSegmentList = getUsedSegmentsList(connector,
+            metadataStorageTablesConfig);
+    Assert.assertEquals(2, dataSegmentList.size());
+
+    DataSegment persistedSegment = dataSegmentList.get(1);
+    Assert.assertEquals("v0", persistedSegment.getVersion());
+    Assert.assertTrue(persistedSegment.getShardSpec() instanceof LinearShardSpec);
+    Assert.assertEquals(1, persistedSegment.getShardSpec().getPartitionNum());
+
+    Path expectedFinalHadoopPath =  new Path(dataSegmentPusher.getPathForHadoop(), dataSegmentPusher
+            .makeIndexPathName(persistedSegment, DruidStorageHandlerUtils.INDEX_ZIP));
+
+    Assert.assertEquals(ImmutableMap.of("type", "hdfs", "path", expectedFinalHadoopPath.toString()),
+            persistedSegment.getLoadSpec());
+    Assert.assertEquals("dummySegmentData",
+            FileUtils.readFileToString(new File(expectedFinalHadoopPath.toUri())));
   }
 
   @Test
@@ -376,12 +445,16 @@ public class TestDruidStorageHandler {
     List<DataSegment> existingSegments = Arrays
             .asList(createSegment(new Path(taskDirPath, "index_old.zip").toString(),
                     new Interval(100, 150), "v0", new LinearShardSpec(1)));
+    HdfsDataSegmentPusherConfig pusherConfig = new HdfsDataSegmentPusherConfig();
+    pusherConfig.setStorageDirectory(config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)));
+    DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
     DruidStorageHandlerUtils
             .publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
                     true,
                     taskDirPath.toString(),
-                    config
+                    config,
+                    dataSegmentPusher
             );
     DataSegment dataSegment = createSegment(new Path(taskDirPath, "index.zip").toString(),
             new Interval(100, 150), "v1", new LinearShardSpec(0));
@@ -391,10 +464,11 @@ public class TestDruidStorageHandler {
     DruidStorageHandlerUtils.writeSegmentDescriptor(localFileSystem, dataSegment, descriptorPath);
 
     // Create segment file at the destination location with LinearShardSpec(2)
-    FileUtils.writeStringToFile(new File(DruidStorageHandlerUtils.finalPathForSegment(
-            config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)),
-            createSegment(new Path(taskDirPath, "index_conflict.zip").toString(),
-                    new Interval(100, 150), "v1", new LinearShardSpec(1))).toString()), "dummy");
+    DataSegment segment = createSegment(new Path(taskDirPath, "index_conflict.zip").toString(),
+            new Interval(100, 150), "v1", new LinearShardSpec(1));
+    Path segmentPath = new Path(dataSegmentPusher.getPathForHadoop(), dataSegmentPusher.makeIndexPathName(segment, DruidStorageHandlerUtils.INDEX_ZIP));
+    FileUtils.writeStringToFile(new File(segmentPath.toUri()), "dummy");
+
     druidStorageHandler.commitInsertTable(tableMock, false);
     Assert.assertArrayEquals(Lists.newArrayList(DATA_SOURCE_NAME).toArray(), Lists.newArrayList(
             DruidStorageHandlerUtils.getAllDataSourceNames(connector,
@@ -411,13 +485,14 @@ public class TestDruidStorageHandler {
     Assert.assertTrue(persistedSegment.getShardSpec() instanceof LinearShardSpec);
     // insert into should skip and increment partition number to 3
     Assert.assertEquals(2, persistedSegment.getShardSpec().getPartitionNum());
-    String expectedFinalPath = DruidStorageHandlerUtils.finalPathForSegment(
-            config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)), persistedSegment)
-            .toString();
-    Assert.assertEquals(ImmutableMap.of("type", "hdfs", "path", expectedFinalPath),
+    Path expectedFinalHadoopPath =  new Path(dataSegmentPusher.getPathForHadoop(), dataSegmentPusher
+            .makeIndexPathName(persistedSegment, DruidStorageHandlerUtils.INDEX_ZIP));
+
+
+    Assert.assertEquals(ImmutableMap.of("type", "hdfs", "path", expectedFinalHadoopPath.toString()),
             persistedSegment.getLoadSpec());
     Assert.assertEquals("dummySegmentData",
-            FileUtils.readFileToString(new File(expectedFinalPath)));
+            FileUtils.readFileToString(new File(expectedFinalHadoopPath.toUri())));
   }
 
   @Test(expected = IllegalStateException.class)
@@ -439,16 +514,20 @@ public class TestDruidStorageHandler {
             createSegment(new Path(taskDirPath, "index_old_3.zip").toString(),
                     new Interval(200, 300),
                     "v0", new LinearShardSpec(0)));
+    HdfsDataSegmentPusherConfig pusherConfig = new HdfsDataSegmentPusherConfig();
+    pusherConfig.setStorageDirectory(taskDirPath.toString());
+    DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
     DruidStorageHandlerUtils
             .publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
                     true,
                     taskDirPath.toString(),
-                    config
+                    config,
+                    dataSegmentPusher
             );
 
     // Try appending segment with conflicting interval
-    DataSegment conflictingSegment = createSegment(new Path(taskDirPath, "index.zip").toString(),
+    DataSegment conflictingSegment = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
             new Interval(100, 300), "v1", new LinearShardSpec(0));
     Path descriptorPath = DruidStorageHandlerUtils
             .makeSegmentDescriptorOutputPath(conflictingSegment,
@@ -474,16 +553,20 @@ public class TestDruidStorageHandler {
                             new Interval(200, 250), "v0", new LinearShardSpec(0)),
                     createSegment(new Path(taskDirPath, "index_old_3.zip").toString(),
                             new Interval(250, 300), "v0", new LinearShardSpec(0)));
+    HdfsDataSegmentPusherConfig pusherConfig = new HdfsDataSegmentPusherConfig();
+    pusherConfig.setStorageDirectory(taskDirPath.toString());
+    DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
     DruidStorageHandlerUtils
             .publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
                     true,
                     taskDirPath.toString(),
-                    config
+                    config,
+                    dataSegmentPusher
             );
 
     // Try appending to non extendable shard spec
-    DataSegment conflictingSegment = createSegment(new Path(taskDirPath, "index.zip").toString(),
+    DataSegment conflictingSegment = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
             new Interval(100, 150), "v1", new LinearShardSpec(0));
     Path descriptorPath = DruidStorageHandlerUtils
             .makeSegmentDescriptorOutputPath(conflictingSegment,
