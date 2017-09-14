@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -28,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -58,8 +60,17 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
   protected AtomicBoolean looped;
 
   @Override
-  public void setHiveConf(HiveConf conf) {
-    this.conf = conf;
+  public void setConf(Configuration configuration) {
+    // TODO MS-SPLIT for now, keep a copy of HiveConf around as we need to call other methods with
+    // it. This should be changed to Configuration once everything that this calls that requires
+    // HiveConf is moved to the standalone metastore.
+    conf = (configuration instanceof HiveConf) ? (HiveConf)configuration :
+        new HiveConf(configuration, HiveConf.class);
+  }
+
+  @Override
+  public Configuration getConf() {
+    return conf;
   }
 
   @Override
@@ -80,7 +91,7 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
 
     // Get our own connection to the database so we can get table and partition information.
     rs = RawStoreProxy.getProxy(conf, conf,
-        conf.getVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL), threadId);
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL), threadId);
   }
 
   /**
@@ -107,7 +118,7 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
    */
   protected Partition resolvePartition(CompactionInfo ci) throws Exception {
     if (ci.partName != null) {
-      List<Partition> parts = null;
+      List<Partition> parts;
       try {
         parts = rs.getPartitionsByNames(ci.dbname, ci.tableName,
             Collections.singletonList(ci.partName));
@@ -163,7 +174,7 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
       LOG.debug("Unable to stat file as current user, trying as table owner");
 
       // Now, try it as the table owner and see if we get better luck.
-      final List<String> wrapper = new ArrayList<String>(1);
+      final List<String> wrapper = new ArrayList<>(1);
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
           UserGroupInformation.getLoginUser());
       ugi.doAs(new PrivilegedExceptionAction<Object>() {

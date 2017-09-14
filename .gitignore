@@ -30,3 +30,4 @@ conf/hive-default.xml.template
 itests/hive-blobstore/src/test/resources/blobstore-conf.xml
 .DS_Store
 patchprocess
+standalone-metastore/src/gen/org/apache/hadoop/hive/metastore/annotation/package-info.java

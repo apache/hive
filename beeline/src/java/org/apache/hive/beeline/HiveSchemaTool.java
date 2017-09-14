@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.NestedScriptParser;
@@ -1016,8 +1017,8 @@ public class HiveSchemaTool {
     private String[] argsWith(String password) throws IOException {
       return new String[]
         {
-          "-u", url == null ? HiveSchemaHelper.getValidConfVar(ConfVars.METASTORECONNECTURLKEY, hiveConf) : url,
-          "-d", driver == null ? HiveSchemaHelper.getValidConfVar(ConfVars.METASTORE_CONNECTION_DRIVER, hiveConf) : driver,
+          "-u", url == null ? HiveSchemaHelper.getValidConfVar(MetastoreConf.ConfVars.CONNECTURLKEY, hiveConf) : url,
+          "-d", driver == null ? HiveSchemaHelper.getValidConfVar(MetastoreConf.ConfVars.CONNECTION_DRIVER, hiveConf) : driver,
           "-n", userName,
           "-p", password,
           "-f", sqlScriptFile

@@ -7907,7 +7907,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static void initializeAndStartThread(MetaStoreThread thread, HiveConf conf) throws
       MetaException {
     LOG.info("Starting metastore thread of type " + thread.getClass().getName());
-    thread.setHiveConf(conf);
+    thread.setConf(conf);
     thread.setThreadId(nextThreadId++);
     thread.init(new AtomicBoolean(), new AtomicBoolean());
     thread.start();
