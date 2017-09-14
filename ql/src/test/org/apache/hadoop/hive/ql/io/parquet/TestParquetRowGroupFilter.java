@@ -24,8 +24,11 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
-import org.apache.hadoop.hive.ql.io.parquet.read.ParquetRecordReaderWrapper;
+import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
+import org.apache.hadoop.hive.ql.io.parquet.read.ParquetFilterPredicateConverter;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
+import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -39,8 +42,15 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.parquet.filter2.predicate.FilterPredicate;
+import org.apache.parquet.hadoop.ParquetInputFormat;
+import org.apache.parquet.hadoop.ParquetInputSplit;
+import org.apache.parquet.hadoop.util.ContextUtil;
 import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
@@ -93,6 +103,14 @@ public class TestParquetRowGroupFilter extends AbstractTestParquetDirect {
           }
         });
 
+    FileSplit testSplit = new FileSplit(testPath, 0, fileLength(testPath), (String[]) null);
+    ParquetInputSplit parquetSplit = new ParquetInputSplit(testPath,
+      testSplit.getStart(),
+      testSplit.getStart() + testSplit.getLength(),
+      testSplit.getLength(),
+      testSplit.getLocations(),
+      null);
+
     // > 50
     GenericUDF udf = new GenericUDFOPGreaterThan();
     List<ExprNodeDesc> children = Lists.newArrayList();
@@ -103,12 +121,22 @@ public class TestParquetRowGroupFilter extends AbstractTestParquetDirect {
     ExprNodeGenericFuncDesc genericFuncDesc = new ExprNodeGenericFuncDesc(inspector, udf, children);
     String searchArgumentStr = SerializationUtilities.serializeExpression(genericFuncDesc);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, searchArgumentStr);
+    SearchArgument sarg = ConvertAstToSearchArg.createFromConf(conf);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, fileSchema);
+    TaskAttemptID taskAttemptID = new org.apache.hadoop.mapred.TaskAttemptID();
+    TaskAttemptContext taskContext = ContextUtil.newTaskAttemptContext(conf, taskAttemptID);
+    ParquetInputFormat<ArrayWritable> inputFormat = new ParquetInputFormat<>(DataWritableReadSupport.class);
+    org.apache.hadoop.mapreduce.RecordReader<Void, ArrayWritable> recordReader =
+      inputFormat.createRecordReader(parquetSplit, taskContext);
+    ParquetInputFormat.setFilterPredicate(conf, p);
 
-    ParquetRecordReaderWrapper recordReader = (ParquetRecordReaderWrapper)
-        new MapredParquetInputFormat().getRecordReader(
-        new FileSplit(testPath, 0, fileLength(testPath), (String[]) null), conf, null);
-
-    Assert.assertEquals("row group is not filtered correctly", 1, recordReader.getFiltedBlocks().size());
+    try {
+      recordReader.initialize(parquetSplit, taskContext);
+      boolean hasValue = recordReader.nextKeyValue();
+      Assert.assertTrue("Row groups should not be filtered.", hasValue);
+    } finally {
+      recordReader.close();
+    }
 
     // > 100
     constantDesc = new ExprNodeConstantDesc(100);
@@ -116,12 +144,20 @@ public class TestParquetRowGroupFilter extends AbstractTestParquetDirect {
     genericFuncDesc = new ExprNodeGenericFuncDesc(inspector, udf, children);
     searchArgumentStr = SerializationUtilities.serializeExpression(genericFuncDesc);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, searchArgumentStr);
+    sarg = ConvertAstToSearchArg.createFromConf(conf);
+    p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, fileSchema);
+    taskAttemptID = new org.apache.hadoop.mapred.TaskAttemptID();
+    taskContext = ContextUtil.newTaskAttemptContext(conf, taskAttemptID);
+    recordReader = inputFormat.createRecordReader(parquetSplit, taskContext);
+    ParquetInputFormat.setFilterPredicate(conf, p);
 
-    recordReader = (ParquetRecordReaderWrapper)
-        new MapredParquetInputFormat().getRecordReader(
-            new FileSplit(testPath, 0, fileLength(testPath), (String[]) null), conf, null);
-
-    Assert.assertEquals("row group is not filtered correctly", 0, recordReader.getFiltedBlocks().size());
+    try {
+      recordReader.initialize(parquetSplit, taskContext);
+      boolean hasValue = recordReader.nextKeyValue();
+      Assert.assertFalse("Row groups should be filtered.", hasValue);
+    } finally {
+      recordReader.close();
+    }
   }
 
   private ArrayWritableObjectInspector getObjectInspector(final String columnNames, final String columnTypes) {

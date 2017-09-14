@@ -88,6 +88,11 @@ public class ParquetRecordReaderWrapper extends ParquetRecordReaderBase
         HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION, skipTimestampConversion);
     }
 
+    if (jobConf.get(ParquetInputFormat.FILTER_PREDICATE) != null) {
+      conf.set(ParquetInputFormat.FILTER_PREDICATE,
+        jobConf.get(ParquetInputFormat.FILTER_PREDICATE));
+    }
+
     final TaskAttemptContext taskContext = ContextUtil.newTaskAttemptContext(conf, taskAttemptID);
     if (split != null) {
       try {
