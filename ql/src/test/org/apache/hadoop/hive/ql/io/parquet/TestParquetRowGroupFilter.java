@@ -18,10 +18,12 @@
 
 package org.apache.hadoop.hive.ql.io.parquet;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetRecordReaderWrapper;
@@ -53,6 +55,7 @@ import org.apache.parquet.hadoop.ParquetInputFormat;
 import org.apache.parquet.io.api.RecordConsumer;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -101,6 +104,19 @@ public class TestParquetRowGroupFilter extends AbstractTestParquetDirect {
           }
         }
       });
+  }
+
+  @After
+  public void tearDown() {
+    FileSystem fs;
+    try {
+      fs = testPath.getFileSystem(conf);
+      if (fs.exists(testPath)) {
+        fs.delete(testPath, true);
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Fail to delete the test path");
+    }
   }
 
   @Test
