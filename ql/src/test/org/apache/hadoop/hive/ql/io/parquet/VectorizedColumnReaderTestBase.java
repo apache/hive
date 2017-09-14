@@ -19,48 +19,32 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.IOConstants;
-import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
-import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
+import org.apache.hadoop.hive.ql.io.parquet.serde.VectorizedColumnReaderTestUtils;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.parquet.example.data.Group;
 import org.apache.parquet.example.data.simple.SimpleGroupFactory;
-import org.apache.parquet.hadoop.ParquetInputFormat;
 import org.apache.parquet.hadoop.ParquetWriter;
-import org.apache.parquet.hadoop.example.GroupReadSupport;
 import org.apache.parquet.hadoop.example.GroupWriteSupport;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.schema.MessageType;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.List;
 
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertFalse;
 import static org.apache.parquet.column.ParquetProperties.WriterVersion.PARQUET_1_0;
-import static org.apache.parquet.hadoop.api.ReadSupport.PARQUET_READ_SCHEMA;
 import static org.apache.parquet.hadoop.metadata.CompressionCodecName.GZIP;
 import static org.apache.parquet.schema.MessageTypeParser.parseMessageType;
 import static org.junit.Assert.assertEquals;
@@ -213,18 +197,10 @@ public class VectorizedColumnReaderTestBase {
     return (index % NULL_FREQUENCY == 0);
   }
 
-  protected VectorizedParquetRecordReader createParquetReader(String schemaString, Configuration conf)
-    throws IOException, InterruptedException, HiveException {
-    conf.set(PARQUET_READ_SCHEMA, schemaString);
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
-    HiveConf.setVar(conf, HiveConf.ConfVars.PLAN, "//tmp");
-
-    Job vectorJob = new Job(conf, "read vector");
-    ParquetInputFormat.setInputPaths(vectorJob, file);
-    ParquetInputFormat parquetInputFormat = new ParquetInputFormat(GroupReadSupport.class);
-    InputSplit split = (InputSplit) parquetInputFormat.getSplits(vectorJob).get(0);
-    initialVectorizedRowBatchCtx(conf);
-    return new VectorizedParquetRecordReader(split, new JobConf(conf));
+  public static VectorizedParquetRecordReader createParquetReader(
+    String schemaString,
+    Configuration conf) throws IOException, InterruptedException, HiveException {
+    return VectorizedColumnReaderTestUtils.createParquetReader(schemaString, conf, file);
   }
 
   protected static void writeData(ParquetWriter<Group> writer, boolean isDictionaryEncoding) throws IOException {
@@ -295,24 +271,7 @@ public class VectorizedColumnReaderTestBase {
     writer.close();
   }
 
-  protected void initialVectorizedRowBatchCtx(Configuration conf) throws HiveException {
-    MapWork mapWork = new MapWork();
-    VectorizedRowBatchCtx rbCtx = new VectorizedRowBatchCtx();
-    rbCtx.init(createStructObjectInspector(conf), new String[0]);
-    mapWork.setVectorMode(true);
-    mapWork.setVectorizedRowBatchCtx(rbCtx);
-    Utilities.setMapWork(conf, mapWork);
-  }
 
-  private StructObjectInspector createStructObjectInspector(Configuration conf) {
-    // Create row related objects
-    String columnNames = conf.get(IOConstants.COLUMNS);
-    List<String> columnNamesList = DataWritableReadSupport.getColumnNames(columnNames);
-    String columnTypes = conf.get(IOConstants.COLUMNS_TYPES);
-    List<TypeInfo> columnTypesList = DataWritableReadSupport.getColumnTypes(columnTypes);
-    TypeInfo rowTypeInfo = TypeInfoFactory.getStructTypeInfo(columnNamesList, columnTypesList);
-    return new ArrayWritableObjectInspector((StructTypeInfo) rowTypeInfo);
-  }
 
   protected void intRead(boolean isDictionaryEncoding) throws InterruptedException, HiveException, IOException {
     Configuration conf = new Configuration();

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io.parquet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.parquet.serde.VectorizedColumnReaderTestUtils;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -104,7 +105,7 @@ public class TestVectorizedColumnReader extends VectorizedColumnReaderTestBase {
     conf.set(IOConstants.COLUMNS_TYPES,"int");
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     HiveConf.setVar(conf, HiveConf.ConfVars.PLAN, "//tmp");
-    initialVectorizedRowBatchCtx(conf);
+    VectorizedColumnReaderTestUtils.initialVectorizedRowBatchCtx(conf);
     VectorizedParquetRecordReader reader =
         new VectorizedParquetRecordReader((InputSplit)null, new JobConf(conf));
     assertFalse(reader.next(reader.createKey(), reader.createValue()));
