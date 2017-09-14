@@ -200,7 +200,7 @@ public class TestCompactor {
     Initiator initiator = new Initiator();
     initiator.setThreadId((int)initiator.getId());
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
-    initiator.setHiveConf(conf);
+    initiator.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean();
     stop.set(true);
     initiator.init(stop, new AtomicBoolean());
@@ -303,7 +303,7 @@ public class TestCompactor {
     initiator.setThreadId((int)initiator.getId());
     // Set to 1 so insert doesn't set it off but update does
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 1);
-    initiator.setHiveConf(conf);
+    initiator.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean();
     stop.set(true);
     initiator.init(stop, new AtomicBoolean());
@@ -455,7 +455,7 @@ public class TestCompactor {
     txnHandler.compact(rqst);
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(conf);
+    t.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean();
     AtomicBoolean looped = new AtomicBoolean();
     stop.set(true);
@@ -511,7 +511,7 @@ public class TestCompactor {
     Initiator initiator = new Initiator();
     initiator.setThreadId((int)initiator.getId());
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
-    initiator.setHiveConf(conf);
+    initiator.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean();
     stop.set(true);
     initiator.init(stop, new AtomicBoolean());
@@ -551,7 +551,7 @@ public class TestCompactor {
     initiator.setThreadId((int)initiator.getId());
     // Set to 1 so insert doesn't set it off but update does
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 1);
-    initiator.setHiveConf(conf);
+    initiator.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean();
     stop.set(true);
     initiator.init(stop, new AtomicBoolean());
@@ -593,7 +593,7 @@ public class TestCompactor {
     initiator.setThreadId((int)initiator.getId());
     // Set to 2 so insert and update don't set it off but delete does
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 2);
-    initiator.setHiveConf(conf);
+    initiator.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean();
     stop.set(true);
     initiator.init(stop, new AtomicBoolean());
@@ -643,7 +643,7 @@ public class TestCompactor {
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
-      t.setHiveConf(conf);
+      t.setConf(conf);
       AtomicBoolean stop = new AtomicBoolean(true);
       AtomicBoolean looped = new AtomicBoolean();
       t.init(stop, looped);
@@ -705,7 +705,7 @@ public class TestCompactor {
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
-      t.setHiveConf(conf);
+      t.setConf(conf);
       AtomicBoolean stop = new AtomicBoolean(true);
       AtomicBoolean looped = new AtomicBoolean();
       t.init(stop, looped);
@@ -762,7 +762,7 @@ public class TestCompactor {
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
-      t.setHiveConf(conf);
+      t.setConf(conf);
       AtomicBoolean stop = new AtomicBoolean(true);
       AtomicBoolean looped = new AtomicBoolean();
       t.init(stop, looped);
@@ -828,7 +828,7 @@ public class TestCompactor {
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
-      t.setHiveConf(conf);
+      t.setConf(conf);
       AtomicBoolean stop = new AtomicBoolean(true);
       AtomicBoolean looped = new AtomicBoolean();
       t.init(stop, looped);
@@ -886,7 +886,7 @@ public class TestCompactor {
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
-      t.setHiveConf(conf);
+      t.setConf(conf);
       AtomicBoolean stop = new AtomicBoolean(true);
       AtomicBoolean looped = new AtomicBoolean();
       t.init(stop, looped);
@@ -939,7 +939,7 @@ public class TestCompactor {
     txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(conf);
+    t.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean(true);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
@@ -1016,7 +1016,7 @@ public class TestCompactor {
     txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(conf);
+    t.setConf(conf);
     AtomicBoolean stop = new AtomicBoolean(true);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
@@ -1095,7 +1095,7 @@ public class TestCompactor {
       txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
       Worker t = new Worker();
       t.setThreadId((int) t.getId());
-      t.setHiveConf(conf);
+      t.setConf(conf);
       AtomicBoolean stop = new AtomicBoolean(true);
       AtomicBoolean looped = new AtomicBoolean();
       t.init(stop, looped);
@@ -1203,7 +1203,7 @@ public class TestCompactor {
     AtomicBoolean stop = new AtomicBoolean(true);
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(conf);
+    t.setConf(conf);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();
@@ -1213,7 +1213,7 @@ public class TestCompactor {
     stop = new AtomicBoolean(true);
     t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(conf);
+    t.setConf(conf);
     looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();
@@ -1265,7 +1265,7 @@ public class TestCompactor {
     stop = new AtomicBoolean(true);
     t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(conf);
+    t.setConf(conf);
     looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();
@@ -1416,7 +1416,7 @@ public class TestCompactor {
     AtomicBoolean stop = new AtomicBoolean(true);
     Initiator t = new Initiator();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(hiveConf);
+    t.setConf(hiveConf);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();
@@ -1426,7 +1426,7 @@ public class TestCompactor {
     AtomicBoolean stop = new AtomicBoolean(true);
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(hiveConf);
+    t.setConf(hiveConf);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();
@@ -1436,7 +1436,7 @@ public class TestCompactor {
     AtomicBoolean stop = new AtomicBoolean(true);
     Cleaner t = new Cleaner();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(hiveConf);
+    t.setConf(hiveConf);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();

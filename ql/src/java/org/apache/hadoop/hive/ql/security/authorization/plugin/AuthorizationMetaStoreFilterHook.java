@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
@@ -38,7 +38,7 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
 
   public static final Logger LOG = LoggerFactory.getLogger(AuthorizationMetaStoreFilterHook.class);
 
-  public AuthorizationMetaStoreFilterHook(HiveConf conf) {
+  public AuthorizationMetaStoreFilterHook(Configuration conf) {
     super(conf);
   }
 

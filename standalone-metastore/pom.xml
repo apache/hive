@@ -43,6 +43,11 @@
       <version>${guava.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>${protobuf.version}</version>
+    </dependency>
+    <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-core</artifactId>
       <version>${dropwizard.version}</version>
@@ -190,6 +195,26 @@
     <plugins>
       <!-- plugins are always listed in sorted order by groupId, artifectId -->
       <plugin>
+        <groupId>com.github.os72</groupId>
+        <artifactId>protoc-jar-maven-plugin</artifactId>
+        <version>3.0.0-a3</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <protocVersion>2.5.0</protocVersion>
+              <addSources>none</addSources>
+              <inputDirectories>
+                <include>${basedir}/src/main/protobuf/org/apache/hadoop/hive/metastore</include>
+              </inputDirectories>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
@@ -202,6 +227,8 @@
             <configuration>
               <sources>
                 <source>src/gen/thrift/gen-javabean</source>
+                <source>${project.build.directory}/generated-sources</source>
+                <source>src/gen/org</source>
               </sources>
             </configuration>
           </execution>
@@ -221,6 +248,29 @@
             <phase>process-classes</phase>
             <goals>
               <goal>enhance</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-version-annotation</id>
+            <phase>generate-sources</phase>
+            <configuration>
+              <target>
+                <exec executable="bash" failonerror="true">
+                  <arg value="${basedir}/src/main/resources/saveVersion.sh"/>
+                  <arg value="${project.version}"/>
+                  <arg value="${hive.version.shortname}"/>
+                  <arg value="${basedir}/src"/>
+                </exec>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
             </goals>
           </execution>
         </executions>

@@ -280,7 +280,7 @@ public abstract class CompactorTest {
       default: throw new RuntimeException("Huh? Unknown thread type.");
     }
     t.setThreadId((int) t.getId());
-    t.setHiveConf(conf);
+    t.setConf(conf);
     stop.set(stopAfterOne);
     t.init(stop, looped);
     if (stopAfterOne) t.run();
