@@ -26,12 +26,12 @@ public class Context {
   public final HiveConf hiveConf;
   public final Hive hiveDb;
   public final Warehouse warehouse;
-  public final PathUtils utils;
+  public final PathInfo pathInfo;
 
   public Context(HiveConf hiveConf, Hive hiveDb) throws MetaException {
     this.hiveConf = hiveConf;
     this.hiveDb = hiveDb;
     this.warehouse = new Warehouse(hiveConf);
-    this.utils = new PathUtils(hiveConf);
+    this.pathInfo = new PathInfo(hiveConf);
   }
 }
