@@ -195,11 +195,11 @@ Stage-0
                       <-Reducer 5 [BROADCAST_EDGE] llap
                         BROADCAST [RS_23]
                           Group By Operator [GBY_22] (rows=1 width=552)
-                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=40)"]
+                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=20)"]
                           <-Map 4 [CUSTOM_SIMPLE_EDGE] llap
                             PARTITION_ONLY_SHUFFLE [RS_21]
                               Group By Operator [GBY_20] (rows=1 width=552)
-                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=40)"]
+                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=20)"]
                                 Select Operator [SEL_19] (rows=20 width=87)
                                   Output:["_col0"]
                                    Please refer to the previous Select Operator [SEL_5]
@@ -402,11 +402,11 @@ Stage-0
                       <-Reducer 6 [BROADCAST_EDGE] llap
                         BROADCAST [RS_32]
                           Group By Operator [GBY_31] (rows=1 width=552)
-                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=40)"]
+                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=20)"]
                           <-Map 5 [CUSTOM_SIMPLE_EDGE] llap
                             PARTITION_ONLY_SHUFFLE [RS_30]
                               Group By Operator [GBY_29] (rows=1 width=552)
-                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=40)"]
+                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=20)"]
                                 Select Operator [SEL_28] (rows=20 width=87)
                                   Output:["_col0"]
                                   Select Operator [SEL_5] (rows=20 width=87)
@@ -434,11 +434,11 @@ Stage-0
                       <-Reducer 4 [BROADCAST_EDGE] llap
                         BROADCAST [RS_44]
                           Group By Operator [GBY_41] (rows=1 width=552)
-                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=618)"]
+                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=309)"]
                           <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
                             PARTITION_ONLY_SHUFFLE [RS_40]
                               Group By Operator [GBY_39] (rows=1 width=552)
-                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=618)"]
+                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=309)"]
                                 Select Operator [SEL_38] (rows=2000 width=87)
                                   Output:["_col0"]
                                    Please refer to the previous Select Operator [SEL_2]
@@ -574,22 +574,22 @@ Stage-0
                       <-Reducer 5 [BROADCAST_EDGE] llap
                         BROADCAST [RS_23]
                           Group By Operator [GBY_22] (rows=1 width=552)
-                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=40)"]
+                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=20)"]
                           <-Map 4 [CUSTOM_SIMPLE_EDGE] llap
                             PARTITION_ONLY_SHUFFLE [RS_21]
                               Group By Operator [GBY_20] (rows=1 width=552)
-                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=40)"]
+                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=20)"]
                                 Select Operator [SEL_19] (rows=20 width=87)
                                   Output:["_col0"]
                                    Please refer to the previous Select Operator [SEL_5]
                       <-Reducer 6 [BROADCAST_EDGE] llap
                         BROADCAST [RS_28]
                           Group By Operator [GBY_27] (rows=1 width=552)
-                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=40)"]
+                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=20)"]
                           <-Map 4 [CUSTOM_SIMPLE_EDGE] llap
                             PARTITION_ONLY_SHUFFLE [RS_26]
                               Group By Operator [GBY_25] (rows=1 width=552)
-                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=40)"]
+                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=20)"]
                                 Select Operator [SEL_24] (rows=20 width=91)
                                   Output:["_col0"]
                                    Please refer to the previous Select Operator [SEL_5]
@@ -747,11 +747,11 @@ Stage-0
                           <-Reducer 7 [BROADCAST_EDGE] llap
                             BROADCAST [RS_33]
                               Group By Operator [GBY_32] (rows=1 width=552)
-                                Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=40)"]
+                                Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=20)"]
                               <-Map 6 [CUSTOM_SIMPLE_EDGE] llap
                                 PARTITION_ONLY_SHUFFLE [RS_31]
                                   Group By Operator [GBY_30] (rows=1 width=552)
-                                    Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=40)"]
+                                    Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=20)"]
                                     Select Operator [SEL_29] (rows=20 width=87)
                                       Output:["_col0"]
                                        Please refer to the previous Select Operator [SEL_5]
@@ -767,11 +767,11 @@ Stage-0
                       <-Reducer 5 [BROADCAST_EDGE] llap
                         BROADCAST [RS_48]
                           Group By Operator [GBY_47] (rows=1 width=552)
-                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=40)"]
+                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=20)"]
                           <-Reducer 2 [CUSTOM_SIMPLE_EDGE] llap
                             PARTITION_ONLY_SHUFFLE [RS_46]
                               Group By Operator [GBY_45] (rows=1 width=552)
-                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=40)"]
+                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=20)"]
                                 Select Operator [SEL_44] (rows=129 width=91)
                                   Output:["_col0"]
                                    Please refer to the previous Merge Join Operator [MERGEJOIN_49]
@@ -961,7 +961,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=40)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1127,7 +1127,7 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=40)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL

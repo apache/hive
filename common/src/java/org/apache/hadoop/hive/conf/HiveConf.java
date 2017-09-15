@@ -1445,7 +1445,7 @@ public class HiveConf extends Configuration {
         "This controls how many partitions can be scanned for each partitioned table.\n" +
         "The default value \"-1\" means no limit. (DEPRECATED: Please use " + ConfVars.METASTORE_LIMIT_PARTITION_REQUEST + " in the metastore instead.)"),
 
-    HIVECONVERTJOINMAXENTRIESHASHTABLE("hive.auto.convert.join.hashtable.max.entries", 40000000L,
+    HIVECONVERTJOINMAXENTRIESHASHTABLE("hive.auto.convert.join.hashtable.max.entries", 21000000L,
         "If hive.auto.convert.join.noconditionaltask is off, this parameter does not take affect. \n" +
         "However, if it is on, and the predicted number of entries in hashtable for a given join \n" +
         "input is larger than this number, the join will not be converted to a mapjoin. \n" +
@@ -1455,7 +1455,7 @@ public class HiveConf extends Configuration {
        "However, if it is on, and the predicted size of the larger input for a given join is greater \n" +
        "than this number, the join will not be converted to a dynamically partitioned hash join. \n" +
        "The value \"-1\" means no limit."),
-    HIVEHASHTABLEKEYCOUNTADJUSTMENT("hive.hashtable.key.count.adjustment", 1.0f,
+    HIVEHASHTABLEKEYCOUNTADJUSTMENT("hive.hashtable.key.count.adjustment", 2.0f,
         "Adjustment to mapjoin hashtable size derived from table and column statistics; the estimate" +
         " of the number of keys is divided by this value. If the value is 0, statistics are not used" +
         "and hive.hashtable.initialCapacity is used instead."),
@@ -2462,7 +2462,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_THRIFT_HTTP_REQUEST_HEADER_SIZE("hive.server2.thrift.http.request.header.size", 6*1024,
         "Request header size in bytes, when using HTTP transport mode. Jetty defaults used."),
     HIVE_SERVER2_THRIFT_HTTP_RESPONSE_HEADER_SIZE("hive.server2.thrift.http.response.header.size", 6*1024,
-        "Response header size in bytes, when using HTTP transport mode. Jetty defaults used."), 
+        "Response header size in bytes, when using HTTP transport mode. Jetty defaults used."),
     HIVE_SERVER2_THRIFT_HTTP_COMPRESSION_ENABLED("hive.server2.thrift.http.compression.enabled", true,
         "Enable thrift http compression via Jetty compression support"),
 
@@ -2953,7 +2953,7 @@ public class HiveConf extends Configuration {
             "Bloom filter should be of at min certain size to be effective"),
     TEZ_MAX_BLOOM_FILTER_ENTRIES("hive.tez.max.bloom.filter.entries", 100000000L,
             "Bloom filter should be of at max certain size to be effective"),
-    TEZ_BLOOM_FILTER_FACTOR("hive.tez.bloom.filter.factor", (float) 2.0,
+    TEZ_BLOOM_FILTER_FACTOR("hive.tez.bloom.filter.factor", (float) 1.0,
             "Bloom filter should be a multiple of this factor with nDV"),
     TEZ_BIGTABLE_MIN_SIZE_SEMIJOIN_REDUCTION("hive.tez.bigtable.minsize.semijoin.reduction", 100000000L,
             "Big table for runtime filteting should be of atleast this size"),

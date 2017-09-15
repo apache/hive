@@ -182,7 +182,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=40)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -230,7 +230,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=40)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL

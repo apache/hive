@@ -327,7 +327,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=40)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -375,7 +375,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=40)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -723,7 +723,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=618)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=309)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -756,7 +756,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=40)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -826,7 +826,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=618)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=309)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -838,7 +838,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=40)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1058,7 +1058,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=40)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1071,7 +1071,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: PARTIAL
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=40)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1119,7 +1119,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=40)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1131,7 +1131,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=40)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1388,7 +1388,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=40)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1439,7 +1439,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 129 Data size: 11739 Basic stats: COMPLETE Column stats: PARTIAL
                   Group By Operator
-                    aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=40)
+                    aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1485,7 +1485,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=40)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1497,7 +1497,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=40)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1697,7 +1697,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=40)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1863,7 +1863,7 @@ STAGE PLANS:
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=40)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -2177,7 +2177,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=40)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -2206,7 +2206,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=40)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -2581,7 +2581,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 129 Data size: 11739 Basic stats: COMPLETE Column stats: PARTIAL
                           Group By Operator
-                            aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=40)
+                            aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2
                             Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -2614,7 +2614,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=40)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -2661,7 +2661,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=40)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -2673,7 +2673,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=40)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -3316,7 +3316,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 10 Data size: 870 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=10)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3360,7 +3360,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=20)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=10)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
