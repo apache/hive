@@ -3010,12 +3010,6 @@ public class HiveConf extends Configuration {
     LLAP_ALLOCATOR_MAX_ALLOC("hive.llap.io.allocator.alloc.max", "16Mb", new SizeValidator(),
         "Maximum allocation possible from LLAP buddy allocator. For ORC, should be as large as\n" +
         "the largest expected ORC compression buffer size. Must be a power of 2."),
-    @Deprecated
-    LLAP_IO_METADATA_FRACTION("hive.llap.io.metadata.fraction", 0.1f,
-        "Temporary setting for on-heap metadata cache fraction of xmx, set to avoid potential\n" +
-        "heap problems on very large datasets when on-heap metadata cache takes over\n" +
-        "everything. -1 managed metadata and data together (which is more flexible). This\n" +
-        "setting will be removed (in effect become -1) once ORC metadata cache is moved off-heap."),
     LLAP_ALLOCATOR_ARENA_COUNT("hive.llap.io.allocator.arena.count", 8,
         "Arena count for LLAP low-level cache; cache will be allocated in the steps of\n" +
         "(size/arena_count) bytes. This size must be <= 1Gb and >= max allocation; if it is\n" +

@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
-import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
+import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
@@ -52,7 +52,7 @@ import org.apache.orc.OrcConf;
 
 public class OrcColumnVectorProducer implements ColumnVectorProducer {
 
-  private final OrcMetadataCache metadataCache;
+  private final MetadataCache metadataCache;
   private final LowLevelCache lowLevelCache;
   private final BufferUsageManager bufferManager;
   private final Configuration conf;
@@ -63,7 +63,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   // TODO: should this rather use a threadlocal for NUMA affinity?
   private final FixedSizedObjectPool<IoTrace> tracePool;
 
-  public OrcColumnVectorProducer(OrcMetadataCache metadataCache,
+  public OrcColumnVectorProducer(MetadataCache metadataCache,
       LowLevelCache lowLevelCache, BufferUsageManager bufferManager,
       Configuration conf, LlapDaemonCacheMetrics cacheMetrics, LlapDaemonIOMetrics ioMetrics,
       FixedSizedObjectPool<IoTrace> tracePool) {

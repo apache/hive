@@ -18,31 +18,22 @@
 
 package org.apache.hadoop.hive.llap.io.metadata;
 
-import com.google.common.annotations.VisibleForTesting;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
-import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
-import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
-import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
-import org.apache.hadoop.hive.ql.io.SyntheticFileId;
+
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.orc.CompressionKind;
 import org.apache.orc.FileMetadata;
 import org.apache.orc.OrcProto;
+import org.apache.orc.OrcProto.StripeStatistics;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
-import org.apache.orc.impl.ReaderImpl;
 
 /** ORC file metadata. Currently contains some duplicate info due to how different parts
  * of ORC use different info. Ideally we would get rid of protobuf structs in code beyond reading,
  * or instead use protobuf structs everywhere instead of the mix of things like now.
  */
-public final class OrcFileMetadata extends LlapCacheableBuffer
-    implements FileMetadata, ConsumerFileMetadata {
+public final class OrcFileMetadata implements FileMetadata, ConsumerFileMetadata {
   private final List<StripeInformation> stripes;
   private final List<Integer> versionList;
   private final List<OrcProto.StripeStatistics> stripeStats;
@@ -58,91 +49,22 @@ public final class OrcFileMetadata extends LlapCacheableBuffer
   private final long numberOfRows;
   private final boolean isOriginalFormat;
 
-  private final int estimatedMemUsage;
-
-  private final static HashMap<Class<?>, ObjectEstimator> SIZE_ESTIMATORS;
-  private final static ObjectEstimator SIZE_ESTIMATOR;
-  static {
-    OrcFileMetadata ofm = createDummy(new SyntheticFileId());
-    SIZE_ESTIMATORS = IncrementalObjectSizeEstimator.createEstimators(ofm);
-    IncrementalObjectSizeEstimator.addEstimator(
-        "com.google.protobuf.LiteralByteString", SIZE_ESTIMATORS);
-    // Add long for the regular file ID estimation.
-    IncrementalObjectSizeEstimator.createEstimators(Long.class, SIZE_ESTIMATORS);
-    SIZE_ESTIMATOR = SIZE_ESTIMATORS.get(OrcFileMetadata.class);
-  }
-
-  @VisibleForTesting
-  public static OrcFileMetadata createDummy(Object fileKey) {
-    OrcFileMetadata ofm = new OrcFileMetadata(fileKey);
-    ofm.stripes.add(new ReaderImpl.StripeInformationImpl(
-        OrcProto.StripeInformation.getDefaultInstance()));
-    ofm.fileStats.add(OrcProto.ColumnStatistics.getDefaultInstance());
-    ofm.stripeStats.add(OrcProto.StripeStatistics.newBuilder().addColStats(createStatsDummy()).build());
-    ofm.types.add(OrcProto.Type.newBuilder().addFieldNames("a").addSubtypes(0).build());
-    ofm.versionList.add(0);
-    return ofm;
-  }
-
-  static OrcProto.ColumnStatistics.Builder createStatsDummy() {
-    return OrcProto.ColumnStatistics.newBuilder().setBucketStatistics(
-            OrcProto.BucketStatistics.newBuilder().addCount(0)).setStringStatistics(
-            OrcProto.StringStatistics.newBuilder().setMaximum("zzz"));
-  }
-
-  // Ctor for memory estimation and tests
-  private OrcFileMetadata(Object fileKey) {
+  public OrcFileMetadata(Object fileKey, OrcProto.Footer footer, OrcProto.PostScript ps,
+      List<StripeStatistics> stats, List<StripeInformation> stripes) {
+    this.stripeStats = stats;
+    this.compressionKind = CompressionKind.valueOf(ps.getCompression().name());
+    this.compressionBufferSize = (int)ps.getCompressionBlockSize();
+    this.stripes = stripes;
+    this.isOriginalFormat = OrcInputFormat.isOriginal(footer);
+    this.writerVersionNum = ps.getWriterVersion();
+    this.versionList = ps.getVersionList();
+    this.metadataSize = (int) ps.getMetadataLength();
+    this.types = footer.getTypesList();
+    this.rowIndexStride = footer.getRowIndexStride();
+    this.contentLength = footer.getContentLength();
+    this.numberOfRows = footer.getNumberOfRows();
+    this.fileStats = footer.getStatisticsList();
     this.fileKey = fileKey;
-    stripes = new ArrayList<StripeInformation>();
-    versionList = new ArrayList<Integer>();
-    fileStats = new ArrayList<>();
-    stripeStats = new ArrayList<>();
-    types = new ArrayList<>();
-    writerVersionNum = metadataSize = compressionBufferSize = rowIndexStride = 0;
-    contentLength = numberOfRows = 0;
-    estimatedMemUsage = 0;
-    isOriginalFormat = false;
-    compressionKind = CompressionKind.NONE;
-  }
-
-  public OrcFileMetadata(Object fileKey, Reader reader) {
-    this.fileKey = fileKey;
-    this.stripeStats = reader.getOrcProtoStripeStatistics();
-    this.compressionKind = reader.getCompressionKind();
-    this.compressionBufferSize = reader.getCompressionSize();
-    this.stripes = reader.getStripes();
-    this.isOriginalFormat = OrcInputFormat.isOriginal(reader);
-    this.writerVersionNum = reader.getWriterVersion().getId();
-    this.versionList = reader.getVersionList();
-    this.metadataSize = reader.getMetadataSize();
-    this.types = reader.getTypes();
-    this.rowIndexStride = reader.getRowIndexStride();
-    this.contentLength = reader.getContentLength();
-    this.numberOfRows = reader.getNumberOfRows();
-    this.fileStats = reader.getOrcProtoFileStatistics();
-
-    this.estimatedMemUsage = SIZE_ESTIMATOR.estimate(this, SIZE_ESTIMATORS);
-  }
-
-  // LlapCacheableBuffer
-  @Override
-  public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
-    evictionDispatcher.notifyEvicted(this);
-  }
-
-  @Override
-  protected int invalidate() {
-    return INVALIDATE_OK; // relies on GC, so it can always be evicted now.
-  }
-
-  @Override
-  public long getMemoryUsage() {
-    return estimatedMemUsage;
-  }
-
-  @Override
-  protected boolean isLocked() {
-    return false;
   }
 
   // FileMetadata

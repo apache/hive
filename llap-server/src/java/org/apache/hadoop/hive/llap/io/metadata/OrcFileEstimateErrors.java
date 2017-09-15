@@ -23,7 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
-import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
 import org.apache.hadoop.hive.common.io.DiskRangeList.MutateHelper;
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
@@ -61,8 +60,8 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
     }
   }
 
-  public DiskRangeList getIncompleteCbs(DiskRangeList ranges, long baseOffset,
-      DiskRangeListFactory factory, BooleanRef gotAllData) {
+  public DiskRangeList getIncompleteCbs(
+      DiskRangeList ranges, long baseOffset, BooleanRef gotAllData) {
     DiskRangeList prev = ranges.prev;
     if (prev == null) {
       prev = new MutateHelper(ranges);

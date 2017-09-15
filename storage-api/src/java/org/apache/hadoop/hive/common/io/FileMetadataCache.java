@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.common.io;
 
+
+import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -30,8 +32,6 @@ public interface FileMetadataCache {
    */
   MemoryBufferOrBuffers getFileMetadata(Object fileKey);
 
-  // TODO: add BB put method(s) when merging with ORC off-heap metadata cache
-
   /**
    * Puts the metadata for a given file (e.g. a footer buffer into cache).
    * @param fileKey The file key.
@@ -43,9 +43,11 @@ public interface FileMetadataCache {
   MemoryBufferOrBuffers putFileMetadata(
       Object fileKey, int length, InputStream is) throws IOException;
 
+  MemoryBufferOrBuffers putFileMetadata(Object fileKey, ByteBuffer tailBuffer);
+
   /**
    * Releases the buffer returned from getFileMetadata or putFileMetadata method.
    * @param buffer The buffer to release.
    */
   void decRefBuffer(MemoryBufferOrBuffers buffer);
-}
+} 
