@@ -292,6 +292,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     Context rewrittenCtx;
     try {
       rewrittenCtx = new Context(conf);
+      // We keep track of all the contexts that are created by this query
+      // so we can clear them when we finish execution
       ctx.addRewrittenStatementContext(rewrittenCtx);
     } catch (IOException e) {
       throw new SemanticException(ErrorMsg.UPDATEDELETE_IO_ERROR.getMsg());
