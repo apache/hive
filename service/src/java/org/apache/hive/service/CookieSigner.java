@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CookieSigner {
   private static final String SIGNATURE = "&s=";
-  private static final String SHA_STRING = "SHA";
+  private static final String SHA_STRING = "SHA-256";
   private byte[] secretBytes;
   private static final Logger LOG = LoggerFactory.getLogger(CookieSigner.class);
 
