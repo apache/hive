@@ -1,0 +1,59 @@
+PREHOOK: query: DROP TABLE load_data_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE load_data_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE load_data_table(
+    a INT,
+    b STRING,
+    value DOUBLE)
+PARTITIONED BY (
+    dateint STRING,
+    hour STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ' '
+COLLECTION ITEMS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/load_data/load_data_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@load_data_table
+POSTHOOK: query: CREATE TABLE load_data_table(
+    a INT,
+    b STRING,
+    value DOUBLE)
+PARTITIONED BY (
+    dateint STRING,
+    hour STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ' '
+COLLECTION ITEMS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/load_data/load_data_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@load_data_table
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/3col_data.txt'
+INTO TABLE load_data_table PARTITION (dateint="aaa", hour="bbb")
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load_data_table
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/3col_data.txt'
+INTO TABLE load_data_table PARTITION (dateint="aaa", hour="bbb")
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load_data_table
+POSTHOOK: Output: default@load_data_table@dateint=aaa/hour=bbb
+PREHOOK: query: SELECT * FROM load_data_table LIMIT 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@load_data_table
+PREHOOK: Input: default@load_data_table@dateint=aaa/hour=bbb
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM load_data_table LIMIT 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@load_data_table
+POSTHOOK: Input: default@load_data_table@dateint=aaa/hour=bbb
+#### A masked pattern was here ####
+1	abc	10.5	aaa	bbb
+2	def	11.5	aaa	bbb

@@ -292,7 +292,7 @@ public class EximUtil {
     }
   }
 
-  private static String readAsString(final FileSystem fs, final Path fromMetadataPath)
+  public static String readAsString(final FileSystem fs, final Path fromMetadataPath)
       throws IOException {
     try (FSDataInputStream stream = fs.open(fromMetadataPath)) {
       byte[] buffer = new byte[1024];
@@ -425,7 +425,8 @@ public class EximUtil {
     }
 
     if (replicationSpec.isInReplicationScope()) {
-      return !(tableHandle == null || tableHandle.isTemporary() || tableHandle.isNonNative());
+      return !(tableHandle == null || tableHandle.isTemporary() || tableHandle.isNonNative() ||
+          (tableHandle.getParameters() != null && StringUtils.equals(tableHandle.getParameters().get("transactional"), "true")));
     }
 
     if (tableHandle.isNonNative()) {

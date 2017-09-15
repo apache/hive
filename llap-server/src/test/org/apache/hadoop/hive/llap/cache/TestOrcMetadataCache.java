@@ -19,10 +19,18 @@ package org.apache.hadoop.hive.llap.cache;
 
 import static org.junit.Assert.*;
 
+import java.nio.ByteBuffer;
+import java.util.Random;
+
+import org.apache.hadoop.hive.common.io.DataCache;
+import org.apache.hadoop.hive.common.io.DiskRange;
+import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
-import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
-import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
-import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
+import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
+import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapBufferOrBuffers;
+import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapMetadataBuffer;
+import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
+import org.apache.hadoop.hive.ql.io.orc.encoded.IncompleteCb;
 import org.junit.Test;
 
 public class TestOrcMetadataCache {
@@ -66,16 +74,12 @@ public class TestOrcMetadataCache {
   }
 
   private static class DummyMemoryManager implements MemoryManager {
-    int allocs = 0;
-
     @Override
     public void reserveMemory(long memoryToReserve) {
-      ++allocs;
     }
 
     @Override
     public void releaseMemory(long memUsage) {
-      --allocs;
     }
 
     @Override
@@ -93,38 +97,119 @@ public class TestOrcMetadataCache {
   }
 
   @Test
-  public void testGetPut() throws Exception {
+  public void testBuffers() throws Exception {
     DummyMemoryManager mm = new DummyMemoryManager();
     DummyCachePolicy cp = new DummyCachePolicy();
-    OrcMetadataCache cache = new OrcMetadataCache(mm, cp, false);
-    OrcFileMetadata ofm1 = OrcFileMetadata.createDummy(1), ofm2 = OrcFileMetadata.createDummy(2);
-    assertSame(ofm1, cache.putFileMetadata(ofm1));
-    assertEquals(1, mm.allocs);
-    cp.verifyEquals(1);
-    assertSame(ofm2, cache.putFileMetadata(ofm2));
-    assertEquals(2, mm.allocs);
-    cp.verifyEquals(2);
-    assertSame(ofm1, cache.getFileMetadata(1));
-    assertSame(ofm2, cache.getFileMetadata(2));
-    cp.verifyEquals(4);
-    OrcFileMetadata ofm3 = OrcFileMetadata.createDummy(1);
-    assertSame(ofm1, cache.putFileMetadata(ofm3));
-    assertEquals(2, mm.allocs);
-    cp.verifyEquals(5);
-    assertSame(ofm1, cache.getFileMetadata(1));
-    cp.verifyEquals(6);
+    final int MAX_ALLOC = 64;
+    LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
+    BuddyAllocator alloc = new BuddyAllocator(
+        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null);
+    MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
+    Object fileKey1 = new Object();
+    Random rdm = new Random();
 
-    OrcStripeMetadata osm1 = OrcStripeMetadata.createDummy(1), osm2 = OrcStripeMetadata.createDummy(2);
-    assertSame(osm1, cache.putStripeMetadata(osm1));
-    assertEquals(3, mm.allocs);
-    assertSame(osm2, cache.putStripeMetadata(osm2));
-    assertEquals(4, mm.allocs);
-    assertSame(osm1, cache.getStripeMetadata(osm1.getKey()));
-    assertSame(osm2, cache.getStripeMetadata(osm2.getKey()));
-    OrcStripeMetadata osm3 = OrcStripeMetadata.createDummy(1);
-    assertSame(osm1, cache.putStripeMetadata(osm3));
-    assertEquals(4, mm.allocs);
-    assertSame(osm1, cache.getStripeMetadata(osm3.getKey()));
-    cp.verifyEquals(12);
+    ByteBuffer smallBuffer = ByteBuffer.allocate(MAX_ALLOC - 1);
+    rdm.nextBytes(smallBuffer.array());
+    LlapBufferOrBuffers result = cache.putFileMetadata(fileKey1, smallBuffer);
+    cache.decRefBuffer(result);
+    ByteBuffer cacheBuf = result.getSingleBuffer().getByteBufferDup();
+    assertEquals(smallBuffer, cacheBuf);
+    result = cache.putFileMetadata(fileKey1, smallBuffer);
+    cache.decRefBuffer(result);
+    cacheBuf = result.getSingleBuffer().getByteBufferDup();
+    assertEquals(smallBuffer, cacheBuf);
+    result = cache.getFileMetadata(fileKey1);
+    cacheBuf = result.getSingleBuffer().getByteBufferDup();
+    assertEquals(smallBuffer, cacheBuf);
+    cache.decRefBuffer(result);
+    cache.notifyEvicted((LlapMetadataBuffer<?>) result.getSingleBuffer());
+    result = cache.getFileMetadata(fileKey1);
+    assertNull(result);
+
+    ByteBuffer largeBuffer = ByteBuffer.allocate((int)(MAX_ALLOC * 2.5));
+    rdm.nextBytes(largeBuffer.array());
+    result = cache.putFileMetadata(fileKey1, largeBuffer);
+    cache.decRefBuffer(result);
+    assertNull(result.getSingleBuffer());
+    assertEquals(largeBuffer, extractResultBbs(result));
+    result = cache.getFileMetadata(fileKey1);
+    assertNull(result.getSingleBuffer());
+    assertEquals(largeBuffer, extractResultBbs(result));
+    LlapAllocatorBuffer b0 = result.getMultipleLlapBuffers()[0],
+        b1 = result.getMultipleLlapBuffers()[1];
+    cache.decRefBuffer(result);
+    cache.notifyEvicted((LlapMetadataBuffer<?>) b1);
+    result = cache.getFileMetadata(fileKey1);
+    assertNull(result);
+    assertFalse(b0.incRef() > 0); // Should have also been thrown out.
   }
+
+  public ByteBuffer extractResultBbs(LlapBufferOrBuffers result) {
+    int totalLen = 0;
+    for (LlapAllocatorBuffer buf : result.getMultipleLlapBuffers()) {
+      totalLen += buf.getByteBufferRaw().remaining();
+    }
+    ByteBuffer combinedBb = ByteBuffer.allocate(totalLen);
+    for (LlapAllocatorBuffer buf : result.getMultipleLlapBuffers()) {
+      combinedBb.put(buf.getByteBufferDup());
+    }
+    combinedBb.flip();
+    return combinedBb;
+  }
+
+  @Test
+  public void testIncompleteCbs() throws Exception {
+    DummyMemoryManager mm = new DummyMemoryManager();
+    DummyCachePolicy cp = new DummyCachePolicy();
+    final int MAX_ALLOC = 64;
+    LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
+    BuddyAllocator alloc = new BuddyAllocator(
+        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null);
+    MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
+    DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
+    Object fileKey1 = new Object();
+
+    // Note: incomplete CBs are always an exact match.
+    cache.putIncompleteCbs(fileKey1, new DiskRange[] { new DiskRangeList(0, 3) }, 0);
+    cp.verifyEquals(1);
+    DiskRangeList result = cache.getIncompleteCbs(
+        fileKey1, new DiskRangeList(0, 3), 0, gotAllData);
+    assertTrue(gotAllData.value);
+    verifyResult(result, INCOMPLETE, 0, 3);
+    cache.putIncompleteCbs(fileKey1, new DiskRange[] { new DiskRangeList(5, 6) }, 0);
+    cp.verifyEquals(3);
+    DiskRangeList ranges = new DiskRangeList(0, 3);
+    ranges.insertAfter(new DiskRangeList(4, 6));
+    result = cache.getIncompleteCbs(fileKey1, ranges, 0, gotAllData);
+    assertFalse(gotAllData.value);
+    verifyResult(result, INCOMPLETE, 0, 3, DRL, 4, 6);
+    ranges = new DiskRangeList(0, 3);
+    ranges.insertAfter(new DiskRangeList(3, 5)).insertAfter(new DiskRangeList(5, 6));
+    result = cache.getIncompleteCbs(fileKey1, ranges, 0, gotAllData);
+    assertFalse(gotAllData.value);
+    verifyResult(result, INCOMPLETE, 0, 3, DRL, 3, 5, INCOMPLETE, 5, 6);
+    result = cache.getIncompleteCbs(fileKey1, new DiskRangeList(5, 6), 0, gotAllData);
+    assertTrue(gotAllData.value);
+    verifyResult(result, INCOMPLETE, 5, 6);
+    result = cache.getIncompleteCbs(fileKey1, new DiskRangeList(4, 5), 0, gotAllData);
+    assertFalse(gotAllData.value);
+    verifyResult(result, DRL, 4, 5);
+  }
+
+  private static final int INCOMPLETE = 0, DRL = 1;
+  public void verifyResult(DiskRangeList result, long... vals) {
+    for (int i = 0; i < vals.length; i += 3) {
+      switch ((int)vals[i]) {
+      case INCOMPLETE: assertTrue(result instanceof IncompleteCb); break;
+      case DRL: assertFalse(result instanceof IncompleteCb); break;
+      default: fail();
+      }
+      assertEquals(vals[i + 1], result.getOffset());
+      assertEquals(vals[i + 2], result.getEnd());
+      result = result.next;
+    }
+    assertNull(result);
+  }
+
+
 }

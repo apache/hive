@@ -160,7 +160,7 @@ public class TestIncrementalObjectSizeEstimator {
     public void close() throws IOException {
     }
   }
-
+/*
   @Test
   public void testMetadata() throws IOException {
     // Mostly tests that it doesn't crash.
@@ -202,7 +202,7 @@ public class TestIncrementalObjectSizeEstimator {
     root = map.get(OrcFileMetadata.class);
 
     LOG.info("Estimated " + root.estimate(ofm, map) + " for a dummy OFM");
-  }
+  }*/
 
   private static class Struct {
     Integer i;

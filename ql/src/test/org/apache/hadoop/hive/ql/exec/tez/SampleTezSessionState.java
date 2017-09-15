@@ -39,13 +39,14 @@ public class SampleTezSessionState extends TezSessionPoolSession {
 
   private boolean open;
   private final String sessionId;
-  private HiveConf hiveConf;
+  private final HiveConf hiveConf;
   private String user;
   private boolean doAsEnabled;
 
-  public SampleTezSessionState(String sessionId, TezSessionPoolManager parent) {
-    super(sessionId, parent, parent.getExpirationTracker());
+  public SampleTezSessionState(String sessionId, TezSessionPoolManager parent, HiveConf conf) {
+    super(sessionId, parent, parent.getExpirationTracker(), conf);
     this.sessionId = sessionId;
+    this.hiveConf = conf;
   }
 
   @Override
@@ -58,12 +59,11 @@ public class SampleTezSessionState extends TezSessionPoolSession {
   }
 
   @Override
-  public void open(HiveConf conf) throws IOException, LoginException, URISyntaxException,
+  public void open() throws IOException, LoginException, URISyntaxException,
       TezException {
-    this.hiveConf = conf;
     UserGroupInformation ugi = Utils.getUGI();
     user = ugi.getShortUserName();
-    this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
+    this.doAsEnabled = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
     setOpen(true);
   }
 

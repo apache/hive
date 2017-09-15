@@ -56,8 +56,8 @@ class TezSessionPoolSession extends TezSessionState {
   private final SessionExpirationTracker expirationTracker;
 
   public TezSessionPoolSession(String sessionId, OpenSessionTracker parent,
-      SessionExpirationTracker expirationTracker) {
-    super(sessionId);
+      SessionExpirationTracker expirationTracker, HiveConf conf) {
+    super(sessionId, conf);
     this.parent = parent;
     this.expirationTracker = expirationTracker;
   }
@@ -83,10 +83,10 @@ class TezSessionPoolSession extends TezSessionState {
   }
 
   @Override
-  protected void openInternal(HiveConf conf, Collection<String> additionalFiles,
+  protected void openInternal(Collection<String> additionalFiles,
       boolean isAsync, LogHelper console, Path scratchDir)
           throws IOException, LoginException, URISyntaxException, TezException {
-    super.openInternal(conf, additionalFiles, isAsync, console, scratchDir);
+    super.openInternal(additionalFiles, isAsync, console, scratchDir);
     parent.registerOpenSession(this);
     if (expirationTracker != null) {
       expirationTracker.addToExpirationQueue(this);

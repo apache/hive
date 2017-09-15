@@ -414,7 +414,7 @@ public class TestStreaming {
     AtomicBoolean stop = new AtomicBoolean(true);
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(hiveConf);
+    t.setConf(hiveConf);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();

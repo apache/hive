@@ -43,6 +43,7 @@ public class LlapPluginServerImpl extends AbstractService implements LlapPluginP
   private final SecretManager<JobTokenIdentifier> secretManager;
   private final int numHandlers;
   private final LlapTaskSchedulerService parent;
+  private final AtomicReference<InetSocketAddress> bindAddress = new AtomicReference<>();
 
   public LlapPluginServerImpl(SecretManager<JobTokenIdentifier> secretManager,
       int numHandlers, int port, LlapTaskSchedulerService parent) {
@@ -66,7 +67,7 @@ public class LlapPluginServerImpl extends AbstractService implements LlapPluginP
     final Configuration conf = getConfig();
     final BlockingService daemonImpl =
         LlapPluginProtocolProtos.LlapPluginProtocol.newReflectiveBlockingService(this);
-    server = LlapUtil.startProtocolServer(port, numHandlers, null, conf, daemonImpl,
+    server = LlapUtil.startProtocolServer(port, numHandlers, bindAddress , conf, daemonImpl,
         LlapPluginProtocolPB.class, secretManager, new LlapPluginPolicyProvider(),
         ConfVars.LLAP_PLUGIN_ACL, ConfVars.LLAP_PLUGIN_ACL_DENY);
   }
@@ -76,5 +77,13 @@ public class LlapPluginServerImpl extends AbstractService implements LlapPluginP
     if (server != null) {
       server.stop();
     }
+  }
+
+  public int getActualPort() {
+    InetSocketAddress bindAddress = this.bindAddress.get();
+    if (bindAddress == null) {
+      throw new RuntimeException("Cannot get port before the service is started");
+    }
+    return bindAddress.getPort();
   }
 }

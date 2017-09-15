@@ -230,7 +230,7 @@ public class TestTxnCommands2 {
     runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'MAJOR'");
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(hiveConf);
+    t.setConf(hiveConf);
     AtomicBoolean stop = new AtomicBoolean();
     AtomicBoolean looped = new AtomicBoolean();
     stop.set(true);
@@ -277,7 +277,7 @@ public class TestTxnCommands2 {
     runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(hiveConf);
+    t.setConf(hiveConf);
     AtomicBoolean stop = new AtomicBoolean();
     AtomicBoolean looped = new AtomicBoolean();
     stop.set(true);
@@ -1012,7 +1012,7 @@ public class TestTxnCommands2 {
     //this should not schedule a new compaction due to prior failures, but will create Attempted entry
     Initiator init = new Initiator();
     init.setThreadId((int)init.getId());
-    init.setHiveConf(hiveConf);
+    init.setConf(hiveConf);
     init.init(stop, new AtomicBoolean());
     init.run();
     int numAttemptedCompactions = 1;
@@ -1162,7 +1162,7 @@ public class TestTxnCommands2 {
     AtomicBoolean stop = new AtomicBoolean(true);
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(hiveConf);
+    t.setConf(hiveConf);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();
@@ -1171,7 +1171,7 @@ public class TestTxnCommands2 {
     AtomicBoolean stop = new AtomicBoolean(true);
     Cleaner t = new Cleaner();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(hiveConf);
+    t.setConf(hiveConf);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
     t.run();
@@ -1222,7 +1222,7 @@ public class TestTxnCommands2 {
     txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(hiveConf);
+    t.setConf(hiveConf);
     AtomicBoolean stop = new AtomicBoolean(true);
     AtomicBoolean looped = new AtomicBoolean();
     t.init(stop, looped);
@@ -1243,14 +1243,14 @@ public class TestTxnCommands2 {
     //run Cleaner
     Cleaner c = new Cleaner();
     c.setThreadId((int)c.getId());
-    c.setHiveConf(hiveConf);
+    c.setConf(hiveConf);
     c.init(stop, new AtomicBoolean());
     c.run();
 
     //this seems odd, but we wan to make sure that to run CompactionTxnHandler.cleanEmptyAbortedTxns()
     Initiator i = new Initiator();
     i.setThreadId((int)i.getId());
-    i.setHiveConf(hiveConf);
+    i.setConf(hiveConf);
     i.init(stop, new AtomicBoolean());
     i.run();
 
@@ -1320,7 +1320,7 @@ public class TestTxnCommands2 {
     runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
     Worker t = new Worker();
     t.setThreadId((int) t.getId());
-    t.setHiveConf(hiveConf);
+    t.setConf(hiveConf);
     AtomicBoolean stop = new AtomicBoolean();
     AtomicBoolean looped = new AtomicBoolean();
     stop.set(true);

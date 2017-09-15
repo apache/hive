@@ -1938,6 +1938,7 @@ public class TestLlapTaskSchedulerService {
         nodeDisableTimeoutMillis + "ms");
       conf.setBoolean(LlapFixedRegistryImpl.FIXED_REGISTRY_RESOLVE_HOST_NAMES, false);
       conf.setLong(ConfVars.LLAP_TASK_SCHEDULER_LOCALITY_DELAY.varname, localityDelayMs);
+      conf.set(ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME.varname, "");
 
       doReturn(appAttemptId).when(mockAppCallback).getApplicationAttemptId();
       doReturn(11111l).when(mockAppCallback).getCustomClusterIdentifier();

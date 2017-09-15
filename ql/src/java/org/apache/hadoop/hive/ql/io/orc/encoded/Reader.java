@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.orc.CompressionCodec;
 import org.apache.orc.DataReader;
 import org.apache.orc.OrcProto;
 
@@ -46,6 +47,9 @@ public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
    */
   EncodedReader encodedReader(Object fileKey, DataCache dataCache, DataReader dataReader,
       PoolFactory pf, IoTrace trace) throws IOException;
+
+  /** Gets the compression codec for the underlying ORC file. */
+  CompressionCodec getCodec();
 
   /** The factory that can create (or return) the pools used by encoded reader. */
   public interface PoolFactory {

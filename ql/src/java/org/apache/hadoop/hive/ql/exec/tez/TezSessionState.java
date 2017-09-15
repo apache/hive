@@ -93,7 +93,7 @@ public class TezSessionState {
   private static final String LLAP_LAUNCHER = LlapContainerLauncher.class.getName();
   private static final String LLAP_TASK_COMMUNICATOR = LlapTaskCommunicator.class.getName();
 
-  private HiveConf conf;
+  private final HiveConf conf;
   private Path tezScratchDir;
   private LocalResource appJarLr;
   private TezClient session;
@@ -116,8 +116,9 @@ public class TezSessionState {
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
    */
-  public TezSessionState(DagUtils utils) {
+  public TezSessionState(DagUtils utils, HiveConf conf) {
     this.utils = utils;
+    this.conf = conf;
   }
 
   public String toString() {
@@ -129,8 +130,8 @@ public class TezSessionState {
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
    */
-  public TezSessionState(String sessionId) {
-    this(DagUtils.getInstance());
+  public TezSessionState(String sessionId, HiveConf conf) {
+    this(DagUtils.getInstance(), conf);
     this.sessionId = sessionId;
   }
 
@@ -176,10 +177,9 @@ public class TezSessionState {
     return UUID.randomUUID().toString();
   }
 
-  public void open(HiveConf conf)
-      throws IOException, LoginException, URISyntaxException, TezException {
+  public void open() throws IOException, LoginException, URISyntaxException, TezException {
     Set<String> noFiles = null;
-    open(conf, noFiles, null);
+    open(noFiles, null);
   }
 
   /**
@@ -191,9 +191,9 @@ public class TezSessionState {
    * @throws TezException
    * @throws InterruptedException
    */
-  public void open(HiveConf conf, String[] additionalFiles)
-    throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
-    openInternal(conf, setFromArray(additionalFiles), false, null, null);
+  public void open(String[] additionalFiles)
+      throws IOException, LoginException, URISyntaxException, TezException {
+    openInternal(setFromArray(additionalFiles), false, null, null);
   }
 
   private static Set<String> setFromArray(String[] additionalFiles) {
@@ -205,20 +205,19 @@ public class TezSessionState {
     return files;
   }
 
-  public void beginOpen(HiveConf conf, String[] additionalFiles, LogHelper console)
-    throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
-    openInternal(conf, setFromArray(additionalFiles), true, console, null);
+  public void beginOpen(String[] additionalFiles, LogHelper console)
+      throws IOException, LoginException, URISyntaxException, TezException {
+    openInternal(setFromArray(additionalFiles), true, console, null);
   }
 
-  public void open(HiveConf conf, Collection<String> additionalFiles, Path scratchDir)
+  public void open(Collection<String> additionalFiles, Path scratchDir)
       throws LoginException, IOException, URISyntaxException, TezException {
-    openInternal(conf, additionalFiles, false, null, scratchDir);
+    openInternal(additionalFiles, false, null, scratchDir);
   }
 
-  protected void openInternal(final HiveConf conf, Collection<String> additionalFiles,
-      boolean isAsync, LogHelper console, Path scratchDir) throws IOException, LoginException,
-        IllegalArgumentException, URISyntaxException, TezException {
-    this.conf = conf;
+  protected void openInternal(Collection<String> additionalFiles,
+      boolean isAsync, LogHelper console, Path scratchDir)
+          throws IOException, LoginException, URISyntaxException, TezException {
     // TODO Why is the queue name set again. It has already been setup via setQueueName. Do only one of the two.
     String confQueueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
     if (queueName != null && !queueName.equals(confQueueName)) {
@@ -464,7 +463,7 @@ public class TezSessionState {
   }
 
   public void refreshLocalResourcesFromConf(HiveConf conf)
-    throws IOException, LoginException, IllegalArgumentException, URISyntaxException, TezException {
+      throws IOException, LoginException, URISyntaxException, TezException {
 
     String dir = tezScratchDir.toString();
 
@@ -531,7 +530,6 @@ public class TezSessionState {
     sessionFuture = null;
     console = null;
     tezScratchDir = null;
-    conf = null;
     appJarLr = null;
     additionalFilesNotFromConf.clear();
     localizedResources.clear();

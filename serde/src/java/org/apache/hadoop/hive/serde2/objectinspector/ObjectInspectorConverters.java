@@ -111,6 +111,7 @@ public final class ObjectInspectorConverters {
         return new PrimitiveObjectInspectorConverter.StringConverter(
             inputOI);
       }
+      break;
     case CHAR:
       return new PrimitiveObjectInspectorConverter.HiveCharConverter(
           inputOI,
@@ -147,11 +148,10 @@ public final class ObjectInspectorConverters {
       return new PrimitiveObjectInspectorConverter.HiveDecimalConverter(
           inputOI,
           (SettableHiveDecimalObjectInspector) outputOI);
-    default:
-      throw new RuntimeException("Hive internal error: conversion of "
-          + inputOI.getTypeName() + " to " + outputOI.getTypeName()
-          + " not supported yet.");
     }
+    throw new RuntimeException("Hive internal error: conversion of "
+            + inputOI.getTypeName() + " to " + outputOI.getTypeName()
+            + " not supported yet.");
   }
 
   /**

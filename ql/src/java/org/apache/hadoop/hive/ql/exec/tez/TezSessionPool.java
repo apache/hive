@@ -17,6 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService;
+
+import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
+import org.apache.hadoop.hive.registry.impl.TezAmInstance;
+import org.apache.hadoop.hive.registry.impl.TezAmRegistryImpl;
+
 import java.io.IOException;
 import java.util.Queue;
 import java.util.Set;
@@ -48,14 +56,31 @@ class TezSessionPool {
   private final HiveConf initConf;
   private final BlockingDeque<TezSessionPoolSession> defaultQueuePool;
 
-  TezSessionPool(HiveConf initConf, int numSessionsTotal) {
+  private final String amRegistryName;
+  private final TezAmRegistryImpl amRegistry;
+
+  private final ConcurrentHashMap<String, TezSessionPoolSession> bySessionId =
+      new ConcurrentHashMap<>();
+
+
+  TezSessionPool(HiveConf initConf, int numSessionsTotal, boolean useAmRegistryIfPresent) {
     this.initConf = initConf;
     assert numSessionsTotal > 0;
     defaultQueuePool = new LinkedBlockingDeque<TezSessionPoolSession>(numSessionsTotal);
+    this.amRegistry = useAmRegistryIfPresent ? TezAmRegistryImpl.create(initConf, true) : null;
+    this.amRegistryName = amRegistry == null ? null : amRegistry.getRegistryName();
   }
 
   void startInitialSessions() throws Exception {
     if (initialSessions.isEmpty()) return;
+    if (amRegistry != null) {
+      amRegistry.start();
+      amRegistry.initializeWithoutRegistering();
+      // Note: we may later have special logic to pick up old AMs, if any.
+      amRegistry.registerStateChangeListener(new ChangeListener());
+      amRegistry.populateCache(true);
+    }
+
     int threadCount = Math.min(initialSessions.size(),
         HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
     Preconditions.checkArgument(threadCount > 0);
@@ -134,7 +159,6 @@ class TezSessionPool {
     // Re-setting the queue config is an old hack that we may remove in future.
     Path scratchDir = oldSession.getTezScratchDir();
     Set<String> additionalFiles = oldSession.getAdditionalFilesNotFromConf();
-    HiveConf conf = oldSession.getConf();
     String queueName = oldSession.getQueueName();
     try {
       oldSession.close(false);
@@ -142,24 +166,67 @@ class TezSessionPool {
       if (!wasRemoved) {
         LOG.error("Old session was closed but it was not in the pool", oldSession);
       }
+      bySessionId.remove(oldSession.getSessionId());
     } finally {
       // There's some bogus code that can modify the queue name. Force-set it for pool sessions.
       // TODO: this might only be applicable to TezSessionPoolManager; try moving it there?
-      conf.set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
-      newSession.open(conf, additionalFiles, scratchDir);
+      newSession.getConf().set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
+      // The caller probably created the new session with the old config, but update the
+      // registry again just in case. TODO: maybe we should enforce that.
+      configureAmRegistry(newSession);
+      newSession.open(additionalFiles, scratchDir);
       defaultQueuePool.put(newSession);
     }
   }
 
-  private void startInitialSession(TezSessionPoolSession sessionState) throws Exception {
-    HiveConf newConf = new HiveConf(initConf);
-    // Makes no senses for it to be mixed up like this.
-    boolean isUsable = sessionState.tryUse();
-    if (!isUsable) throw new IOException(sessionState + " is not usable at pool startup");
-    newConf.set(TezConfiguration.TEZ_QUEUE_NAME, sessionState.getQueueName());
-    sessionState.open(newConf);
-    if (sessionState.returnAfterUse()) {
-      defaultQueuePool.put(sessionState);
+  private void startInitialSession(TezSessionPoolSession session) throws Exception {
+    boolean isUsable = session.tryUse();
+    if (!isUsable) throw new IOException(session + " is not usable at pool startup");
+    session.getConf().set(TezConfiguration.TEZ_QUEUE_NAME, session.getQueueName());
+    configureAmRegistry(session);
+    session.open();
+    if (session.returnAfterUse()) {
+      defaultQueuePool.put(session);
+    }
+  }
+
+  private void configureAmRegistry(TezSessionPoolSession session) {
+    if (amRegistryName != null) {
+      bySessionId.put(session.getSessionId(), session);
+      HiveConf conf = session.getConf();
+      conf.set(ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME.varname, amRegistryName);
+      conf.set(ConfVars.HIVESESSIONID.varname, session.getSessionId());
+      // TODO: can be enable temporarily for testing
+      // conf.set(LlapTaskSchedulerService.LLAP_PLUGIN_ENDPOINT_ENABLED, "true");
+    }
+  }
+
+
+  private final class ChangeListener
+    implements ServiceInstanceStateChangeListener<TezAmInstance> {
+
+    @Override
+    public void onCreate(TezAmInstance serviceInstance) {
+      String sessionId = serviceInstance.getSessionId();
+      TezSessionPoolSession session = bySessionId.get(sessionId);
+      LOG.warn("AM for " + sessionId + " has registered; updating [" + session
+          + "] with an endpoint at " + serviceInstance.getPluginPort());
+      // TODO: actually update the session once WM is committed
+    }
+
+    @Override
+    public void onUpdate(TezAmInstance serviceInstance) {
+      // Presumably we'd get those later if AM updates its stuff.
+      LOG.warn("Received an unexpected update for instance={}. Ignoring", serviceInstance);
+    }
+
+    @Override
+    public void onRemove(TezAmInstance serviceInstance) {
+      String sessionId = serviceInstance.getSessionId();
+      // For now, we don't take any action. In future, we might restore the session based
+      // on this and get rid of the logic outside of the pool that replaces/reopens/etc.
+      LOG.warn("AM for " + sessionId + " has disappeared from the registry");
+      bySessionId.remove(sessionId);
     }
   }
 }

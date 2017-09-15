@@ -49,6 +49,11 @@ public class AddUniqueConstraintHandler extends AbstractMessageHandler {
       }
     }
 
+    List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
+    if (uks.isEmpty()) {
+      return tasks;
+    }
+
     String actualDbName = context.isDbNameEmpty() ? uks.get(0).getTable_db() : context.dbName;
     String actualTblName = context.isTableNameEmpty() ? uks.get(0).getTable_name() : context.tableName;
 
@@ -60,7 +65,6 @@ public class AddUniqueConstraintHandler extends AbstractMessageHandler {
     AlterTableDesc addConstraintsDesc = new AlterTableDesc(actualDbName + "." + actualTblName, new ArrayList<SQLPrimaryKey>(), new ArrayList<SQLForeignKey>(),
         uks, context.eventOnlyReplicationSpec());
     Task<DDLWork> addConstraintsTask = TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet, addConstraintsDesc), context.hiveConf);
-    List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
     tasks.add(addConstraintsTask);
     context.log.debug("Added add constrains task : {}:{}", addConstraintsTask.getId(), actualTblName);
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);

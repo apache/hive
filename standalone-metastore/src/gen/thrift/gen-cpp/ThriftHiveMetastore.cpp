@@ -16454,6 +16454,14 @@ uint32_t ThriftHiveMetastore_get_partition_names_result::read(::apache::thrift::
         break;
       case 1:
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->o1.read(iprot);
+          this->__isset.o1 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += this->o2.read(iprot);
           this->__isset.o2 = true;
         } else {
@@ -16490,8 +16498,12 @@ uint32_t ThriftHiveMetastore_get_partition_names_result::write(::apache::thrift:
       xfer += oprot->writeListEnd();
     }
     xfer += oprot->writeFieldEnd();
+  } else if (this->__isset.o1) {
+    xfer += oprot->writeFieldBegin("o1", ::apache::thrift::protocol::T_STRUCT, 1);
+    xfer += this->o1.write(oprot);
+    xfer += oprot->writeFieldEnd();
   } else if (this->__isset.o2) {
-    xfer += oprot->writeFieldBegin("o2", ::apache::thrift::protocol::T_STRUCT, 1);
+    xfer += oprot->writeFieldBegin("o2", ::apache::thrift::protocol::T_STRUCT, 2);
     xfer += this->o2.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
@@ -16547,6 +16559,14 @@ uint32_t ThriftHiveMetastore_get_partition_names_presult::read(::apache::thrift:
         }
         break;
       case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->o1.read(iprot);
+          this->__isset.o1 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += this->o2.read(iprot);
           this->__isset.o2 = true;
@@ -43729,6 +43749,9 @@ void ThriftHiveMetastoreClient::recv_get_partition_names(std::vector<std::string
     // _return pointer has now been filled
     return;
   }
+  if (result.__isset.o1) {
+    throw result.o1;
+  }
   if (result.__isset.o2) {
     throw result.o2;
   }
@@ -53620,6 +53643,9 @@ void ThriftHiveMetastoreProcessor::process_get_partition_names(int32_t seqid, ::
   try {
     iface_->get_partition_names(result.success, args.db_name, args.tbl_name, args.max_parts);
     result.__isset.success = true;
+  } catch (NoSuchObjectException &o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
   } catch (MetaException &o2) {
     result.o2 = o2;
     result.__isset.o2 = true;
@@ -65155,6 +65181,10 @@ void ThriftHiveMetastoreConcurrentClient::recv_get_partition_names(std::vector<s
         // _return pointer has now been filled
         sentry.commit();
         return;
+      }
+      if (result.__isset.o1) {
+        sentry.commit();
+        throw result.o1;
       }
       if (result.__isset.o2) {
         sentry.commit();

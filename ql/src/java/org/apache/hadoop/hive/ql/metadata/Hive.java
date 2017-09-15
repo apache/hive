@@ -155,7 +155,6 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
@@ -4378,6 +4377,48 @@ private void constructOneLBLocationMap(FileStatus fSta,
     throws HiveException, NoSuchObjectException {
     try {
       getMSC().dropConstraint(dbName, tableName, constraintName);
+    } catch (NoSuchObjectException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<SQLPrimaryKey> getPrimaryKeyList(String dbName, String tblName) throws HiveException, NoSuchObjectException {
+    try {
+      return getMSC().getPrimaryKeys(new PrimaryKeysRequest(dbName, tblName));
+    } catch (NoSuchObjectException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<SQLForeignKey> getForeignKeyList(String dbName, String tblName) throws HiveException, NoSuchObjectException {
+    try {
+      return getMSC().getForeignKeys(new ForeignKeysRequest(null, null, dbName, tblName));
+    } catch (NoSuchObjectException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<SQLUniqueConstraint> getUniqueConstraintList(String dbName, String tblName) throws HiveException, NoSuchObjectException {
+    try {
+      return getMSC().getUniqueConstraints(new UniqueConstraintsRequest(dbName, tblName));
+    } catch (NoSuchObjectException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<SQLNotNullConstraint> getNotNullConstraintList(String dbName, String tblName) throws HiveException, NoSuchObjectException {
+    try {
+      return getMSC().getNotNullConstraints(new NotNullConstraintsRequest(dbName, tblName));
+    } catch (NoSuchObjectException e) {
+      throw e;
     } catch (Exception e) {
       throw new HiveException(e);
     }

@@ -45,6 +45,7 @@ class SessionExpirationTracker {
   private final long sessionLifetimeMs;
   private final long sessionLifetimeJitterMs;
   private final RestartImpl sessionRestartImpl;
+  private volatile SessionState initSessionState;
 
   interface RestartImpl {
     void closeAndReopenPoolSession(TezSessionPoolSession session) throws Exception;
@@ -68,7 +69,6 @@ class SessionExpirationTracker {
       LOG.debug("Session expiration is enabled; session lifetime is "
           + sessionLifetimeMs + " + [0, " + sessionLifetimeJitterMs + ") ms");
     }
-    final SessionState initSessionState = SessionState.get();
     expirationQueue = new PriorityBlockingQueue<>(11, new Comparator<TezSessionPoolSession>() {
       @Override
       public int compare(TezSessionPoolSession o1, TezSessionPoolSession o2) {
@@ -179,6 +179,7 @@ class SessionExpirationTracker {
 
 
   public void start() {
+    initSessionState = SessionState.get();
     expirationThread.start();
     restartThread.start();
   }

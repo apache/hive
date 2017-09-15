@@ -18,6 +18,7 @@
 package org.apache.hive.beeline;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -55,10 +56,10 @@ public class TestHiveSchemaTool {
   public void setup() throws IOException {
     mockStatic(HiveSchemaHelper.class);
     when(HiveSchemaHelper
-        .getValidConfVar(eq(HiveConf.ConfVars.METASTORECONNECTURLKEY), same(hiveConf)))
+        .getValidConfVar(eq(MetastoreConf.ConfVars.CONNECTURLKEY), same(hiveConf)))
         .thenReturn("someURL");
     when(HiveSchemaHelper
-        .getValidConfVar(eq(HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER), same(hiveConf)))
+        .getValidConfVar(eq(MetastoreConf.ConfVars.CONNECTION_DRIVER), same(hiveConf)))
         .thenReturn("someDriver");
 
     File file = new File(scriptFile);
@@ -71,9 +72,9 @@ public class TestHiveSchemaTool {
   @After
   public void globalAssert() throws IOException {
     verifyStatic();
-    HiveSchemaHelper.getValidConfVar(eq(HiveConf.ConfVars.METASTORECONNECTURLKEY), same(hiveConf));
+    HiveSchemaHelper.getValidConfVar(eq(MetastoreConf.ConfVars.CONNECTURLKEY), same(hiveConf));
     HiveSchemaHelper
-        .getValidConfVar(eq(HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER), same(hiveConf));
+        .getValidConfVar(eq(MetastoreConf.ConfVars.CONNECTION_DRIVER), same(hiveConf));
 
     new File(scriptFile).delete();
   }

@@ -112,6 +112,7 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.OrcProto;
+import org.apache.orc.OrcProto.Footer;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.StripeStatistics;
@@ -329,6 +330,16 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   public static boolean isOriginal(Reader file) {
     return !file.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME);
   }
+
+  public static boolean isOriginal(Footer footer) {
+    for(OrcProto.UserMetadataItem item: footer.getMetadataList()) {
+      if (item.hasName() && item.getName().equals(OrcRecordUpdater.ACID_KEY_INDEX_NAME)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
 
   public static boolean[] genIncludedColumns(TypeDescription readerSchema,
                                              List<Integer> included) {

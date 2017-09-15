@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.orc.OrcProto;
+import org.apache.orc.impl.OrcIndex;
 
 public interface EncodedReader {
 
@@ -54,4 +55,17 @@ public interface EncodedReader {
    * to just checking the constant in the first place.
    */
   void setTracing(boolean isEnabled);
+
+  /**
+   * Read the indexes from ORC file.
+   * @param index The destination with pre-allocated arrays to put index data into.
+   * @param stripe Externally provided metadata (from metadata reader or external cache).
+   * @param streams Externally provided metadata (from metadata reader or external cache).
+   * @param included The array of booleans indicating whether each column should be read. 
+   * @param sargColumns The array of booleans indicating whether each column's
+   *                    bloom filters should be read.
+   */
+  void readIndexStreams(OrcIndex index, StripeInformation stripe,
+      List<OrcProto.Stream> streams, boolean[] included, boolean[] sargColumns)
+          throws IOException;
 }

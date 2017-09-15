@@ -86,7 +86,6 @@ public class HiveConf extends Configuration {
 
   private static byte[] confVarByteArray = null;
 
-
   private static final Map<String, ConfVars> vars = new HashMap<String, ConfVars>();
   private static final Map<String, ConfVars> metaConfs = new HashMap<String, ConfVars>();
   private final List<String> restrictList = new ArrayList<String>();
@@ -450,6 +449,12 @@ public class HiveConf extends Configuration {
             "lead to an task increment that would cross the above limit"),
     REPL_PARTITIONS_DUMP_PARALLELISM("hive.repl.partitions.dump.parallelism",5,
         "Number of threads that will be used to dump partition data information during repl dump."),
+    REPL_DUMPDIR_CLEAN_FREQ("hive.repl.dumpdir.clean.freq", "0s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Frequency at which timer task runs to purge expired dump dirs."),
+    REPL_DUMPDIR_TTL("hive.repl.dumpdir.ttl", "7d",
+        new TimeValidator(TimeUnit.DAYS),
+        "TTL of dump dirs before cleanup."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -779,6 +784,13 @@ public class HiveConf extends Configuration {
     METASTORE_TRANSACTIONAL_EVENT_LISTENERS("hive.metastore.transactional.event.listeners", "",
         "A comma separated list of Java classes that implement the org.apache.hadoop.hive.metastore.MetaStoreEventListener" +
             " interface. Both the metastore event and corresponding listener method will be invoked in the same JDO transaction."),
+    NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES("hive.notification.sequence.lock.max.retries", 5,
+        "Number of retries required to acquire a lock when getting the next notification sequential ID for entries "
+            + "in the NOTIFICATION_LOG table."),
+    NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL("hive.notification.sequence.lock.retry.sleep.interval", 500,
+        new TimeValidator(TimeUnit.MILLISECONDS),
+        "Sleep interval between retries to acquire a notification lock as described part of property "
+            + NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES.name()),
     METASTORE_EVENT_DB_LISTENER_TTL("hive.metastore.event.db.listener.timetolive", "86400s",
         new TimeValidator(TimeUnit.SECONDS),
         "time after which events will be removed from the database listener queue"),
@@ -1435,7 +1447,7 @@ public class HiveConf extends Configuration {
         "This controls how many partitions can be scanned for each partitioned table.\n" +
         "The default value \"-1\" means no limit. (DEPRECATED: Please use " + ConfVars.METASTORE_LIMIT_PARTITION_REQUEST + " in the metastore instead.)"),
 
-    HIVECONVERTJOINMAXENTRIESHASHTABLE("hive.auto.convert.join.hashtable.max.entries", 40000000L,
+    HIVECONVERTJOINMAXENTRIESHASHTABLE("hive.auto.convert.join.hashtable.max.entries", 21000000L,
         "If hive.auto.convert.join.noconditionaltask is off, this parameter does not take affect. \n" +
         "However, if it is on, and the predicted number of entries in hashtable for a given join \n" +
         "input is larger than this number, the join will not be converted to a mapjoin. \n" +
@@ -1445,7 +1457,7 @@ public class HiveConf extends Configuration {
        "However, if it is on, and the predicted size of the larger input for a given join is greater \n" +
        "than this number, the join will not be converted to a dynamically partitioned hash join. \n" +
        "The value \"-1\" means no limit."),
-    HIVEHASHTABLEKEYCOUNTADJUSTMENT("hive.hashtable.key.count.adjustment", 1.0f,
+    HIVEHASHTABLEKEYCOUNTADJUSTMENT("hive.hashtable.key.count.adjustment", 2.0f,
         "Adjustment to mapjoin hashtable size derived from table and column statistics; the estimate" +
         " of the number of keys is divided by this value. If the value is 0, statistics are not used" +
         "and hive.hashtable.initialCapacity is used instead."),
@@ -2459,7 +2471,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_THRIFT_HTTP_REQUEST_HEADER_SIZE("hive.server2.thrift.http.request.header.size", 6*1024,
         "Request header size in bytes, when using HTTP transport mode. Jetty defaults used."),
     HIVE_SERVER2_THRIFT_HTTP_RESPONSE_HEADER_SIZE("hive.server2.thrift.http.response.header.size", 6*1024,
-        "Response header size in bytes, when using HTTP transport mode. Jetty defaults used."), 
+        "Response header size in bytes, when using HTTP transport mode. Jetty defaults used."),
     HIVE_SERVER2_THRIFT_HTTP_COMPRESSION_ENABLED("hive.server2.thrift.http.compression.enabled", true,
         "Enable thrift http compression via Jetty compression support"),
 
@@ -2950,7 +2962,7 @@ public class HiveConf extends Configuration {
             "Bloom filter should be of at min certain size to be effective"),
     TEZ_MAX_BLOOM_FILTER_ENTRIES("hive.tez.max.bloom.filter.entries", 100000000L,
             "Bloom filter should be of at max certain size to be effective"),
-    TEZ_BLOOM_FILTER_FACTOR("hive.tez.bloom.filter.factor", (float) 2.0,
+    TEZ_BLOOM_FILTER_FACTOR("hive.tez.bloom.filter.factor", (float) 1.0,
             "Bloom filter should be a multiple of this factor with nDV"),
     TEZ_BIGTABLE_MIN_SIZE_SEMIJOIN_REDUCTION("hive.tez.bigtable.minsize.semijoin.reduction", 100000000L,
             "Big table for runtime filteting should be of atleast this size"),
@@ -3007,12 +3019,6 @@ public class HiveConf extends Configuration {
     LLAP_ALLOCATOR_MAX_ALLOC("hive.llap.io.allocator.alloc.max", "16Mb", new SizeValidator(),
         "Maximum allocation possible from LLAP buddy allocator. For ORC, should be as large as\n" +
         "the largest expected ORC compression buffer size. Must be a power of 2."),
-    @Deprecated
-    LLAP_IO_METADATA_FRACTION("hive.llap.io.metadata.fraction", 0.1f,
-        "Temporary setting for on-heap metadata cache fraction of xmx, set to avoid potential\n" +
-        "heap problems on very large datasets when on-heap metadata cache takes over\n" +
-        "everything. -1 managed metadata and data together (which is more flexible). This\n" +
-        "setting will be removed (in effect become -1) once ORC metadata cache is moved off-heap."),
     LLAP_ALLOCATOR_ARENA_COUNT("hive.llap.io.allocator.arena.count", 8,
         "Arena count for LLAP low-level cache; cache will be allocated in the steps of\n" +
         "(size/arena_count) bytes. This size must be <= 1Gb and >= max allocation; if it is\n" +
@@ -3276,6 +3282,12 @@ public class HiveConf extends Configuration {
       "llap.daemon.communicator.num.threads"),
     LLAP_DAEMON_DOWNLOAD_PERMANENT_FNS("hive.llap.daemon.download.permanent.fns", false,
         "Whether LLAP daemon should localize the resources for permanent UDFs."),
+    LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME("hive.llap.task.scheduler.am.registry", "llap",
+      "AM registry name for LLAP task scheduler plugin to register with."),
+    LLAP_TASK_SCHEDULER_AM_REGISTRY_PRINCIPAL("hive.llap.task.scheduler.am.registry.principal", "",
+      "The name of the principal used to access ZK AM registry securely."),
+    LLAP_TASK_SCHEDULER_AM_REGISTRY_KEYTAB_FILE("hive.llap.task.scheduler.am.registry.keytab.file", "",
+      "The path to the Kerberos keytab file used to access ZK AM registry securely."),
     LLAP_TASK_SCHEDULER_NODE_REENABLE_MIN_TIMEOUT_MS(
       "hive.llap.task.scheduler.node.reenable.min.timeout.ms", "200ms",
       new TimeValidator(TimeUnit.MILLISECONDS),

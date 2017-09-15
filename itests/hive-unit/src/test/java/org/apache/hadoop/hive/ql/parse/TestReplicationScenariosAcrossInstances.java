@@ -232,8 +232,8 @@ public class TestReplicationScenariosAcrossInstances {
         .run("create table t1 (id int)")
         .run("create table t2 (place string) partitioned by (country string)")
         .run("insert into table t2 partition(country='india') values ('bangalore')")
-        .run("insert into table t2 partition(country='india') values ('mumbai')")
-        .run("insert into table t2 partition(country='india') values ('delhi')")
+        .run("insert into table t2 partition(country='us') values ('austin')")
+        .run("insert into table t2 partition(country='france') values ('paris')")
         .run("create table t3 (rank int)")
         .dump(primaryDbName, null);
 
@@ -244,7 +244,8 @@ public class TestReplicationScenariosAcrossInstances {
         .run("show tables")
         .verifyResults(new String[] { "t1", "t2", "t3" })
         .run("repl status " + replicatedDbName)
-        .verifyResult(tuple.lastReplicationId);
-
+        .verifyResult(tuple.lastReplicationId)
+        .run("select country from t2 order by country")
+        .verifyResults(new String[] { "france", "india", "us" });
   }
 }

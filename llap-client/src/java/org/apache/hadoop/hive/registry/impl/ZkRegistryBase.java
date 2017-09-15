@@ -58,6 +58,7 @@ import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.zookeeper.KeeperException.InvalidACLException;
+import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Id;
@@ -278,6 +279,27 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
 
+  protected final void initializeWithoutRegisteringInternal() throws IOException {
+    // Create a znode under the rootNamespace parent for this instance of the server
+    try {
+      try {
+        zooKeeperClient.create().creatingParentsIfNeeded().forPath(workersPath);
+      } catch (NodeExistsException ex) {
+        // Ignore - this is expected.
+      }
+      if (doCheckAcls) {
+        try {
+          checkAndSetAcls();
+        } catch (Exception ex) {
+          throw new IOException("Error validating or setting ACLs. " + disableMessage, ex);
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Unable to create a parent znode for the registry", e);
+      throw (e instanceof IOException) ? (IOException)e : new IOException(e);
+    }
+  }
+
   private void checkAndSetAcls() throws Exception {
     if (!UserGroupInformation.isSecurityEnabled()) return;
     // We are trying to check ACLs on the "workers" directory, which noone except us should be
@@ -356,7 +378,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     instanceSet.add(instance);
   }
 
-  protected final void populateCache(PathChildrenCache instancesCache) {
+  protected final void populateCache(PathChildrenCache instancesCache, boolean doInvokeListeners) {
     for (ChildData childData : instancesCache.getCurrentData()) {
       byte[] data = getWorkerData(childData, workerNodePrefix);
       if (data == null) continue;
@@ -364,6 +386,11 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
         ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
         InstanceType instance = createServiceInstance(srv);
         addToCache(childData.getPath(), instance.getHost(), instance);
+        if (doInvokeListeners) {
+          for (ServiceInstanceStateChangeListener<InstanceType> listener : stateChangeListeners) {
+            listener.onCreate(instance);
+          }
+        }
       } catch (IOException e) {
         LOG.error("Unable to decode data for zkpath: {}." +
             " Ignoring from current instances list..", childData.getPath());
@@ -426,12 +453,12 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   // The real implementation for the instanceset... instanceset has its own copy of the
   // ZK cache yet completely depends on the parent in every other aspect and is thus unneeded.
 
-  public int size() {
+  protected final int sizeInternal() {
     // not using the path child cache here as there could be more than 1 path per host (worker and slot znodes)
     return nodeToInstanceCache.size();
   }
 
-  protected final Set<InstanceType> getByHost(String host) {
+  protected final Set<InstanceType> getByHostInternal(String host) {
     Set<InstanceType> byHost = nodeToInstanceCache.get(host);
     byHost = (byHost == null) ? Sets.<InstanceType>newHashSet() : byHost;
     if (LOG.isDebugEnabled()) {
@@ -440,7 +467,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     return byHost;
   }
 
-  protected final Collection<InstanceType> getAll() {
+  protected final Collection<InstanceType> getAllInternal() {
     Set<InstanceType> instances =  new HashSet<>();
     for(Set<InstanceType> instanceSet : pathToInstanceCache.values()) {
       instances.addAll(instanceSet);
@@ -533,7 +560,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     CloseableUtils.class.getName();
   }
 
-  public void stop() throws IOException {
+  public void stop() {
     CloseableUtils.closeQuietly(znode);
     CloseableUtils.closeQuietly(instancesCache);
     CloseableUtils.closeQuietly(zooKeeperClient);

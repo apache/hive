@@ -22,7 +22,7 @@ public interface BootstrapEvent {
   EventType eventType();
 
   enum EventType {
-    Database, Table, Function, Partition
+    Database, Table, Function, Partition, Constraint
   }
 
 }

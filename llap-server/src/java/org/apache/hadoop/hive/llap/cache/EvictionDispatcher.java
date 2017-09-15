@@ -19,11 +19,8 @@ package org.apache.hadoop.hive.llap.cache;
 
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl.LlapSerDeDataBuffer;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileEstimateErrors;
-import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
-import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
-import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
-import org.apache.hadoop.hive.llap.io.metadata.ParquetMetadataCacheImpl;
-import org.apache.hadoop.hive.llap.io.metadata.ParquetMetadataCacheImpl.LlapFileMetadataBuffer;
+import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
+import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapMetadataBuffer;
 
 /**
  * Eviction dispatcher - uses double dispatch to route eviction notifications to correct caches.
@@ -31,17 +28,13 @@ import org.apache.hadoop.hive.llap.io.metadata.ParquetMetadataCacheImpl.LlapFile
 public final class EvictionDispatcher implements EvictionListener, LlapOomDebugDump {
   private final LowLevelCache dataCache;
   private final SerDeLowLevelCacheImpl serdeCache;
-  private final OrcMetadataCache metadataCache;
+  private final MetadataCache metadataCache;
   private final EvictionAwareAllocator allocator;
-  // TODO# temporary, will be merged with OrcMetadataCache after HIVE-15665.
-  private final ParquetMetadataCacheImpl parquetMetadataCache;
 
   public EvictionDispatcher(LowLevelCache dataCache, SerDeLowLevelCacheImpl serdeCache,
-      OrcMetadataCache metadataCache, EvictionAwareAllocator allocator,
-      ParquetMetadataCacheImpl parquetMetadataCache) {
+      MetadataCache metadataCache, EvictionAwareAllocator allocator) {
     this.dataCache = dataCache;
     this.metadataCache = metadataCache;
-    this.parquetMetadataCache = parquetMetadataCache;
     this.serdeCache = serdeCache;
     this.allocator = allocator;
   }
@@ -49,10 +42,6 @@ public final class EvictionDispatcher implements EvictionListener, LlapOomDebugD
   @Override
   public void notifyEvicted(LlapCacheableBuffer buffer) {
     buffer.notifyEvicted(this); // This will call one of the specific notifyEvicted overloads.
-  }
-
-  public void notifyEvicted(LlapFileMetadataBuffer buffer) {
-    this.parquetMetadataCache.notifyEvicted(buffer);
   }
 
   public void notifyEvicted(LlapSerDeDataBuffer buffer) {
@@ -65,12 +54,10 @@ public final class EvictionDispatcher implements EvictionListener, LlapOomDebugD
     allocator.deallocateEvicted(buffer);
   }
 
-  public void notifyEvicted(OrcFileMetadata buffer) {
+  public void notifyEvicted(LlapMetadataBuffer<?> buffer) {
     metadataCache.notifyEvicted(buffer);
-  }
-
-  public void notifyEvicted(OrcStripeMetadata buffer) {
-    metadataCache.notifyEvicted(buffer);
+    // Note: the metadata cache may deallocate additional buffers, but not this one.
+    allocator.deallocateEvicted(buffer);
   }
 
   public void notifyEvicted(OrcFileEstimateErrors buffer) {

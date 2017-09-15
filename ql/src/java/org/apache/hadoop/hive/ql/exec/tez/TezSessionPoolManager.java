@@ -114,7 +114,9 @@ public class TezSessionPoolManager
     int numSessions = conf.getIntVar(ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE);
     int numSessionsTotal = numSessions * (defaultQueueList.length - emptyNames);
     if (numSessionsTotal > 0) {
-      defaultSessionPool = new TezSessionPool(initConf, numSessionsTotal);
+      // TODO: this can be enabled to test. Will only be used in WM case for now.
+      boolean enableAmRegistry = false;
+      defaultSessionPool = new TezSessionPool(initConf, numSessionsTotal, enableAmRegistry);
     }
 
     numConcurrentLlapQueries = conf.getIntVar(ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES);
@@ -152,14 +154,16 @@ public class TezSessionPoolManager
         if (queueName.isEmpty()) {
           continue;
         }
-        defaultSessionPool.addInitialSession(createAndInitSession(queueName, true));
+        HiveConf sessionConf = new HiveConf(initConf);
+        defaultSessionPool.addInitialSession(createAndInitSession(queueName, true, sessionConf));
       }
     }
   }
 
   // TODO Create and init session sets up queue, isDefault - but does not initialize the configuration
-  private TezSessionPoolSession createAndInitSession(String queue, boolean isDefault) {
-    TezSessionPoolSession sessionState = createSession(TezSessionState.makeSessionId());
+  private TezSessionPoolSession createAndInitSession(
+      String queue, boolean isDefault, HiveConf conf) {
+    TezSessionPoolSession sessionState = createSession(TezSessionState.makeSessionId(), conf);
     // TODO When will the queue ever be null.
     // Pass queue and default in as constructor parameters, and make them final.
     if (queue != null) {
@@ -233,12 +237,12 @@ public class TezSessionPoolManager
    */
   private TezSessionState getNewSessionState(HiveConf conf,
       String queueName, boolean doOpen) throws Exception {
-    TezSessionPoolSession retTezSessionState = createAndInitSession(queueName, false);
+    TezSessionPoolSession retTezSessionState = createAndInitSession(queueName, false, conf);
     if (queueName != null) {
       conf.set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
     }
     if (doOpen) {
-      retTezSessionState.open(conf);
+      retTezSessionState.open();
       LOG.info("Started a new session for queue: " + queueName +
           " session id: " + retTezSessionState.getSessionId());
     }
@@ -316,8 +320,8 @@ public class TezSessionPoolManager
     tezSessionState.close(false);
   }
 
-  protected TezSessionPoolSession createSession(String sessionId) {
-    return new TezSessionPoolSession(sessionId, this, expirationTracker);
+  protected TezSessionPoolSession createSession(String sessionId, HiveConf conf) {
+    return new TezSessionPoolSession(sessionId, this, expirationTracker, conf);
   }
 
   /*
@@ -386,13 +390,8 @@ public class TezSessionPoolManager
   /** Reopens the session that was found to not be running. */
   public void reopenSession(TezSessionState sessionState, Configuration conf) throws Exception {
     HiveConf sessionConf = sessionState.getConf();
-    // TODO: when will sessionConf be null, other than tests? Set in open. Throw?
-    if (sessionConf == null) {
-      LOG.warn("Session configuration is null for " + sessionState);
-      // default queue name when the initial session was created
-      sessionConf = new HiveConf(conf, TezSessionPoolManager.class);
-    }
-    if (sessionState.getQueueName() != null && sessionConf.get(TezConfiguration.TEZ_QUEUE_NAME) == null) {
+    if (sessionState.getQueueName() != null
+        && sessionConf.get(TezConfiguration.TEZ_QUEUE_NAME) == null) {
       sessionConf.set(TezConfiguration.TEZ_QUEUE_NAME, sessionState.getQueueName());
     }
     Set<String> oldAdditionalFiles = sessionState.getAdditionalFilesNotFromConf();
@@ -401,7 +400,7 @@ public class TezSessionPoolManager
     // Close the old one, but keep the tmp files around.
     sessionState.close(true);
     // TODO: should we reuse scratchDir too?
-    sessionState.open(sessionConf, oldAdditionalFiles, null);
+    sessionState.open(oldAdditionalFiles, null);
   }
 
   public void closeNonDefaultSessions(boolean keepTmpDir) throws Exception {
@@ -422,7 +421,8 @@ public class TezSessionPoolManager
     if (queueName == null) {
       LOG.warn("Pool session has a null queue: " + oldSession);
     }
-    TezSessionPoolSession newSession = createAndInitSession(queueName, oldSession.isDefault());
+    TezSessionPoolSession newSession = createAndInitSession(
+        queueName, oldSession.isDefault(), oldSession.getConf());
     defaultSessionPool.replaceSession(oldSession, newSession);
   }
 

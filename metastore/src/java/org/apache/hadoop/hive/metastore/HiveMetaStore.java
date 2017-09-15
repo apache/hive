@@ -127,6 +127,7 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
 import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
@@ -541,6 +542,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         cleaner.schedule(new EventCleanerTask(this), cleanFreq, cleanFreq);
       }
 
+      cleanFreq = hiveConf.getTimeVar(ConfVars.REPL_DUMPDIR_CLEAN_FREQ, TimeUnit.MILLISECONDS);
+      if (cleanFreq > 0) {
+        // In default config, there is no timer.
+        Timer cleaner = new Timer("Repl Dump Dir Cleaner Thread", true);
+        cleaner.schedule(new DumpDirCleanerTask(hiveConf), cleanFreq, cleanFreq);
+      }
       expressionProxy = PartFilterExprUtil.createExpressionProxy(hiveConf);
       fileMetadataManager = new FileMetadataManager((ThreadLocalRawStore)this, hiveConf);
     }
@@ -4068,7 +4075,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public List<String> get_partition_names(final String db_name, final String tbl_name,
-        final short max_parts) throws MetaException, NoSuchObjectException {
+        final short max_parts) throws NoSuchObjectException, MetaException {
       startTableFunction("get_partition_names", db_name, tbl_name);
       fireReadTablePreEvent(db_name, tbl_name);
       List<String> ret = null;
@@ -7841,7 +7848,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static void initializeAndStartThread(MetaStoreThread thread, HiveConf conf) throws
       MetaException {
     LOG.info("Starting metastore thread of type " + thread.getClass().getName());
-    thread.setHiveConf(conf);
+    thread.setConf(conf);
     thread.setThreadId(nextThreadId++);
     thread.init(new AtomicBoolean(), new AtomicBoolean());
     thread.start();

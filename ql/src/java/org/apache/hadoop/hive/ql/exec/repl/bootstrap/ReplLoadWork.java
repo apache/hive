@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl.bootstrap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.DatabaseEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.ConstraintEventsIterator;
 import org.apache.hadoop.hive.ql.plan.Explain;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ public class ReplLoadWork implements Serializable {
   final String dbNameToLoadIn;
   final String tableNameToLoadIn;
   private final BootstrapEventsIterator iterator;
+  private final ConstraintEventsIterator constraintsIterator;
   private int loadTaskRunCount = 0;
   private DatabaseEvent.State state = null;
 
@@ -39,6 +41,7 @@ public class ReplLoadWork implements Serializable {
       String tableNameToLoadIn) throws IOException {
     this.tableNameToLoadIn = tableNameToLoadIn;
     this.iterator = new BootstrapEventsIterator(dumpDirectory, dbNameToLoadIn, hiveConf);
+    this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
     this.dbNameToLoadIn = dbNameToLoadIn;
   }
 
@@ -49,6 +52,10 @@ public class ReplLoadWork implements Serializable {
 
   public BootstrapEventsIterator iterator() {
     return iterator;
+  }
+
+  public ConstraintEventsIterator constraintIterator() {
+    return constraintsIterator;
   }
 
   int executedLoadTask() {

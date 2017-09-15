@@ -49,6 +49,7 @@ import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -266,7 +267,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     String msg = "Unable to create instance of " + authProviderClass.getName() + ": ";
     try {
       Constructor<? extends MetaStoreFilterHook> constructor =
-          authProviderClass.getConstructor(HiveConf.class);
+          authProviderClass.getConstructor(Configuration.class);
       return constructor.newInstance(conf);
     } catch (NoSuchMethodException e) {
       throw new IllegalStateException(msg + e.getMessage(), e);
@@ -1525,7 +1526,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public List<String> listPartitionNames(String dbName, String tblName,
-      short max) throws MetaException, TException {
+      short max) throws NoSuchObjectException, MetaException, TException {
     return filterHook.filterPartitionNames(dbName, tblName,
         client.get_partition_names(dbName, tblName, max));
   }
