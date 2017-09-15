@@ -237,7 +237,6 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
       Map<String, Integer> bucketFileNameMapping = new HashMap<String, Integer>();
       for (int pos = 0; pos < srcs.length; pos++) {
         if (ShimLoader.getHadoopShims().isDirectory(srcs[pos])) {
-          // TODO# HERE
           throw new RuntimeException("Was expecting '" + srcs[pos].getPath() + "' to be bucket file.");
         }
         bucketFileNameMapping.put(srcs[pos].getPath().getName(), pos);

@@ -1124,9 +1124,6 @@ public final class Utilities {
     if (orig.getName().indexOf(tmpPrefix) == 0) {
       return orig;
     }
-    if (orig.getName().contains("=1")) {
-      LOG.error("TODO# creating tmp path from " + orig, new Exception());
-    }
     return new Path(orig.getParent(), tmpPrefix + orig.getName());
   }
 
@@ -1466,7 +1463,8 @@ public final class Utilities {
         Set<Path> filesKept = new HashSet<Path>();
         perfLogger.PerfLogBegin("FileSinkOperator", "RemoveTempOrDuplicateFiles");
         // remove any tmp file or double-committed output files
-        List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(fs, statuses, dpCtx, conf, hconf, filesKept);
+        List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
+            fs, statuses, dpCtx, conf, hconf, filesKept);
         perfLogger.PerfLogEnd("FileSinkOperator", "RemoveTempOrDuplicateFiles");
         // create empty buckets if necessary
         if (emptyBuckets.size() > 0) {
@@ -1578,11 +1576,12 @@ public final class Utilities {
    * @return a list of path names corresponding to should-be-created empty buckets.
    */
   public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
-      DynamicPartitionCtx dpCtx, FileSinkDesc conf, Configuration hconf, Set<Path> filesKept) throws IOException {
+      DynamicPartitionCtx dpCtx, FileSinkDesc conf, Configuration hconf, Set<Path> filesKept)
+          throws IOException {
     int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
-        numBuckets = (conf != null && conf.getTable() != null)
-          ? conf.getTable().getNumBuckets() : 0;
-    return removeTempOrDuplicateFiles(fs, fileStats, dpLevels, numBuckets, hconf, null, 0, false);
+        numBuckets = (conf != null && conf.getTable() != null) ? conf.getTable().getNumBuckets() : 0;
+    return removeTempOrDuplicateFiles(
+        fs, fileStats, dpLevels, numBuckets, hconf, null, 0, false, filesKept);
   }
   
   private static boolean removeEmptyDpDirectory(FileSystem fs, Path path) throws IOException {
@@ -1598,7 +1597,8 @@ public final class Utilities {
   }
 
   public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
-      int dpLevels, int numBuckets, Configuration hconf, Long txnId, int stmtId, boolean isMmTable) throws IOException {
+      int dpLevels, int numBuckets, Configuration hconf, Long txnId, int stmtId, boolean isMmTable,
+      Set<Path> filesKept) throws IOException {
     if (fileStats == null) {
       return null;
     }
@@ -1625,6 +1625,9 @@ public final class Utilities {
           Utilities.LOG14535.info("removeTempOrDuplicateFiles processing files in MM directory " + mmDir);
         }
         taskIDToFile = removeTempOrDuplicateFilesNonMm(items, fs);
+        if (filesKept != null && taskIDToFile != null) {
+          addFilesToPathSet(taskIDToFile.values(), filesKept);
+        }
 
         // TODO: not clear why two if conditions are different. Preserve the existing logic for now.
         addBucketFileToResults(taskIDToFile, numBuckets, hconf, result);
@@ -1636,6 +1639,9 @@ public final class Utilities {
       }
       if (!isMmTable) {
         taskIDToFile = removeTempOrDuplicateFilesNonMm(items, fs);
+        if (filesKept != null && taskIDToFile != null) {
+          addFilesToPathSet(taskIDToFile.values(), filesKept);
+        }
       } else {
         if (items.length > 1) {
           throw new IOException("Unexpected directories for non-DP MM: " + Arrays.toString(items));
@@ -1647,6 +1653,9 @@ public final class Utilities {
         Utilities.LOG14535.info(
             "removeTempOrDuplicateFiles processing files in MM directory "  + mmDir);
         taskIDToFile = removeTempOrDuplicateFilesNonMm(fs.listStatus(mmDir), fs);
+        if (filesKept != null && taskIDToFile != null) {
+          addFilesToPathSet(taskIDToFile.values(), filesKept);
+        }
       }
       // TODO: not clear why two if conditions are different. Preserve the existing logic for now.
       addBucketFileToResults2(taskIDToFile, numBuckets, hconf, result);
@@ -4194,7 +4203,6 @@ public final class Utilities {
     }
 
     Utilities.LOG14535.info("Looking for manifests in: " + manifestDir + " (" + txnId + ")");
-    // TODO# may be wrong if there are no splits (empty insert/CTAS)
     List<Path> manifests = new ArrayList<>();
     if (fs.exists(manifestDir)) {
       FileStatus[] manifestFiles = fs.listStatus(manifestDir);
@@ -4275,8 +4283,8 @@ public final class Utilities {
     for (int i = 0; i < mmDirectories.size(); ++i) {
       finalResults[i] = new PathOnlyFileStatus(mmDirectories.get(i));
     }
-    List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
-        fs, finalResults, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, txnId, stmtId, isMmTable);
+    List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(fs, finalResults, dpLevels,
+        mbc == null ? 0 : mbc.numBuckets, hconf, txnId, stmtId, isMmTable, null);
     // create empty buckets if necessary
     if (emptyBuckets.size() > 0) {
       assert mbc != null;

@@ -1977,7 +1977,6 @@ public class MetaStoreUtils {
    * @param params table properties
    * @return true if table is an INSERT_ONLY table, false otherwise
    */
-  // TODO# also check that transactional is true
   public static boolean isInsertOnlyTable(Map<String, String> params) {
     return isInsertOnlyTable(params, false);
   }
@@ -1998,7 +1997,7 @@ public class MetaStoreUtils {
 
    /** The method for altering table props; may set the table to MM, non-MM, or not affect MM. */
   public static Boolean isToInsertOnlyTable(Map<String, String> props) {
-    // TODO# Setting these separately is a very hairy issue in certain combinations, since we
+    // TODO: Setting these separately is a very hairy issue in certain combinations, since we
     //       cannot decide what type of table this becomes without taking both into account, and
     //       in many cases the conversion might be illegal.
     //       The only thing we allow is tx = true w/o tx-props, for backward compat.

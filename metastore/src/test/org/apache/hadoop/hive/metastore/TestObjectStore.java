@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore;
 
 
 import com.codahale.metrics.Counter;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
@@ -57,8 +58,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableList;
 import javax.jdo.Query;
 import java.util.Arrays;
 import java.util.HashMap;

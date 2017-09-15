@@ -342,12 +342,6 @@ public class StatsOptimizer extends Transform {
           return null;  // todo we can collapse this part of tree into single TS
         }
 
-        /* TODO# seems to be removed in master?
-        Table tbl = tsOp.getConf().getTableMetadata();
-        if (AcidUtils.isFullAcidTable(tbl)) {
-          Logger.info("Table " + tbl.getTableName() + " is ACID table. Skip StatsOptimizer.");
-          return null;
-        }*/
         List<Object> oneRow = new ArrayList<Object>();
 
         Hive hive = Hive.get(pctx.getConf());

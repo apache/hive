@@ -1911,7 +1911,7 @@ public class Hive {
 private void walkDirTree(FileStatus fSta, FileSystem fSys,
     Map<List<String>, String> skewedColValueLocationMaps, Path newPartPath, SkewedInfo skewedInfo)
     throws IOException {
-  // TODO# HERE broken
+  // TODO: may be broken? no LB bugs for now but if any are found.
 
   /* Base Case. It's leaf. */
   if (!fSta.isDir()) {

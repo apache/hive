@@ -61,7 +61,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     FileSystem dstFs = null;
     Path toPath = null;
     try {
-      // TODO# merge with real CopyTask logic
+      // TODO: merge with real CopyTask logic?
       Path fromPath = work.getFromPaths()[0];
       toPath = work.getToPaths()[0];
 

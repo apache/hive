@@ -1371,7 +1371,7 @@ public final class GenMapRedUtils {
       dummyMv = new MoveWork(null, null, null,
          new LoadFileDesc(inputDirName, finalName, true, null, null, false), false);
     } else {
-      // TODO# create the noop MoveWork to avoid q file changes for now. Should be removed.
+      // TODO# create the noop MoveWork to avoid q file changes for now. Should be removed w/the flag just before merge
       dummyMv = new MoveWork(null, null, null,
           new LoadFileDesc(inputDirName, finalName, true, null, null, false), false);
       dummyMv.setNoop(true);
@@ -1380,13 +1380,11 @@ public final class GenMapRedUtils {
     // MM directory, the original MoveTask still commits based on the parent. Note that this path
     // can only be triggered for a merge that's part of insert for now; MM tables do not support
     // concatenate. Keeping the old logic for non-MM tables with temp directories and stuff.
-    // TODO# is this correct?
     Path fsopPath = srcMmWriteId != null ? fsInputDesc.getFinalDirName() : finalName;
     Utilities.LOG14535.info("Looking for MoveTask to make it dependant on the conditional tasks");
 
     Task<MoveWork> mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(
         mvTasks, fsopPath, fsInputDesc.isMmTable());
-    // TODO# questionable master merge here
     ConditionalTask cndTsk = GenMapRedUtils.createCondTask(conf, currTask, dummyMv, work,
         fsInputDesc.getMergeInputDirName(), finalName, mvTask, dependencyTask);
 
@@ -1847,7 +1845,7 @@ public final class GenMapRedUtils {
           srcDir = srcDir.getParent();
         }
       } else if (mvWork.getLoadTableWork() != null) {
-        srcDir = mvWork.getLoadTableWork().getSourcePath(); // TODO# THIS
+        srcDir = mvWork.getLoadTableWork().getSourcePath();
       }
       Utilities.LOG14535.info("Observing MoveWork " + System.identityHashCode(mvWork)
           + " with " + srcDir + "(from " + (isLfd ? "LFD" : "LTD") + ") while looking for "
@@ -1970,7 +1968,6 @@ public final class GenMapRedUtils {
     Task<MoveWork> mvTask = null;
 
     if (!chDir) {
-      // TODO# is it correct to always use MM dir in MM case here? Where does MoveTask point?
       Utilities.LOG14535.info("Looking for MoveTask from createMoveTask");
       mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(
           mvTasks, fsOp.getConf().getFinalDirName(), fsOp.getConf().isMmTable());

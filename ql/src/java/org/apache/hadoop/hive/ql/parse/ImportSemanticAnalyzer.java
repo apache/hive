@@ -314,9 +314,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Long txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
     int stmtId = 0;
-    //todo due to the master merge, tblDesc is no longer CreateTableDesc, but ImportTableDesc
+    // TODO: due to the master merge, tblDesc is no longer CreateTableDesc, but ImportTableDesc
     /*
-    if (txnId != null) {
+    if (isAcid(txnId)) {
       tblDesc.setInitialMmWriteId(txnId);
     }
     */
@@ -374,10 +374,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Task<?> copyTask = null;
     if (replicationSpec.isInReplicationScope()) {
-      if (isSourceMm || txnId != null) {
+      if (isSourceMm || isAcid(txnId)) {
         // TODO: ReplCopyTask is completely screwed. Need to support when it's not as screwed.
-        throw new RuntimeException(
-            "Not supported right now because Replication is completely screwed");
+        throw new RuntimeException("Replicating MM and ACID tables is not supported");
       }
       copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, destPath, x.getConf());
     } else {
@@ -395,6 +394,10 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     copyTask.addDependentTask(loadTableTask);
     x.getTasks().add(copyTask);
     return loadTableTask;
+  }
+
+  private static boolean isAcid(Long txnId) {
+    return (txnId != null) && (txnId != 0);
   }
 
   private static Task<?> createTableTask(ImportTableDesc tableDesc, EximUtil.SemanticAnalyzerWrapperContext x){
@@ -458,10 +461,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Task<?> copyTask = null;
       if (replicationSpec.isInReplicationScope()) {
-        if (isSourceMm || txnId != null) {
+        if (isSourceMm || isAcid(txnId)) {
           // TODO: ReplCopyTask is completely screwed. Need to support when it's not as screwed.
-          throw new RuntimeException(
-              "Not supported right now because Replication is completely screwed");
+          throw new RuntimeException("Replicating MM and ACID tables is not supported");
         }
         copyTask = ReplCopyTask.getLoadCopyTask(
             replicationSpec, new Path(srcLocation), destPath, x.getConf());
@@ -480,7 +482,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       loadTableWork.setInheritTableSpecs(false);
       // Do not commit the write ID from each task; need to commit once.
       // TODO: we should just change the import to use a single MoveTask, like dynparts.
-      loadTableWork.setIntermediateInMmWrite(txnId != null);
+      loadTableWork.setIntermediateInMmWrite(isAcid(txnId));
       Task<?> loadPartTask = TaskFactory.get(new MoveWork(
           x.getInputs(), x.getOutputs(), loadTableWork, null, false), x.getConf());
       copyTask.addDependentTask(loadPartTask);

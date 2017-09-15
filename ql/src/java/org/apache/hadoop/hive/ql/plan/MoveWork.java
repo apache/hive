@@ -153,7 +153,6 @@ public class MoveWork implements Serializable {
     this.srcLocal = srcLocal;
   }
 
-  // TODO# temporary test flag
   public void setNoop(boolean b) {
     this.isNoop = true;
   }
