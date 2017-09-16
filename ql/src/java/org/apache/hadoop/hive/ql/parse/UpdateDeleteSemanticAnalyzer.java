@@ -32,18 +32,15 @@ import org.antlr.runtime.TokenRewriteStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -284,22 +281,25 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
   }
   /**
-   * Parse the newly generated SQL statment to get a new AST
+   * Parse the newly generated SQL statement to get a new AST
    */
   private ReparseResult parseRewrittenQuery(StringBuilder rewrittenQueryStr, String originalQuery) throws SemanticException {
+    // Set dynamic partitioning to nonstrict so that queries do not need any partition
+    // references.
+    // todo: this may be a perf issue as it prevents the optimizer.. or not
+    HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     // Parse the rewritten query string
     Context rewrittenCtx;
     try {
-      // Set dynamic partitioning to nonstrict so that queries do not need any partition
-      // references.
-      // todo: this may be a perf issue as it prevents the optimizer.. or not
-      HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
       rewrittenCtx = new Context(conf);
-      rewrittenCtx.setExplainConfig(ctx.getExplainConfig());
-      rewrittenCtx.setIsUpdateDeleteMerge(true);
+      // We keep track of all the contexts that are created by this query
+      // so we can clear them when we finish execution
+      ctx.addRewrittenStatementContext(rewrittenCtx);
     } catch (IOException e) {
       throw new SemanticException(ErrorMsg.UPDATEDELETE_IO_ERROR.getMsg());
     }
+    rewrittenCtx.setExplainConfig(ctx.getExplainConfig());
+    rewrittenCtx.setIsUpdateDeleteMerge(true);
     rewrittenCtx.setCmd(rewrittenQueryStr.toString());
 
     ASTNode rewrittenTree;

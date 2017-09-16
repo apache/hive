@@ -47,7 +47,7 @@ class MaskHashTransformer extends AbstractTransformer {
 
   @Override
   String transform(final String value) {
-    return DigestUtils.md5Hex(value);
+    return DigestUtils.sha256Hex(value);
   }
 
   @Override
