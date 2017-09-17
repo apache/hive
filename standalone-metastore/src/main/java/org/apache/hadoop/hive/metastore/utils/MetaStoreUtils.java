@@ -38,4 +38,19 @@ public class MetaStoreUtils {
     throw new MetaException(exInfo);
   }
 
+  public static String encodeTableName(String name) {
+    // The encoding method is simple, e.g., replace
+    // all the special characters with the corresponding number in ASCII.
+    // Note that unicode is not supported in table names. And we have explicit
+    // checks for it.
+    StringBuilder sb = new StringBuilder();
+    for (char ch : name.toCharArray()) {
+      if (Character.isLetterOrDigit(ch) || ch == '_') {
+        sb.append(ch);
+      } else {
+        sb.append('-').append((int) ch).append('-');
+      }
+    }
+    return sb.toString();
+  }
 }

@@ -22,7 +22,6 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -350,7 +349,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       throws MetaException {
 
     // prefix is of the form dbName.tblName
-    String prefix = table.getDbName() + "." + MetaStoreUtils.encodeTableName(table.getTableName());
+    String prefix = table.getDbName() + "." + org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(table.getTableName());
     if (partition != null) {
       return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
     }

@@ -26,10 +26,9 @@ import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
@@ -44,7 +43,6 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-import org.apache.hadoop.util.Shell;
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.HCatRecord;
@@ -67,7 +65,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -333,7 +330,7 @@ public class TestHCatLoaderEncryption {
     job.setInputFormatClass(HCatInputFormat.class);
     job.setOutputFormatClass(TextOutputFormat.class);
 
-    HCatInputFormat.setInput(job, MetaStoreUtils.DEFAULT_DATABASE_NAME, ENCRYPTED_TABLE, null);
+    HCatInputFormat.setInput(job, Warehouse.DEFAULT_DATABASE_NAME, ENCRYPTED_TABLE, null);
 
     job.setMapOutputKeyClass(BytesWritable.class);
     job.setMapOutputValueClass(Text.class);

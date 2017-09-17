@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.isIndexTable;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DATABASE_WAREHOUSE_SUFFIX;
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.AbstractList;
@@ -33,7 +30,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.HdfsUtils;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -42,10 +44,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.HiveStatsUtils;
-import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -59,6 +57,11 @@ import org.apache.hadoop.util.ReflectionUtils;
  * This class represents a warehouse where data of Hive tables is stored
  */
 public class Warehouse {
+  public static final String DEFAULT_DATABASE_NAME = "default";
+  public static final String DEFAULT_DATABASE_COMMENT = "Default Hive database";
+  public static final String DEFAULT_SERIALIZATION_FORMAT = "1";
+  public static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
+
   private Path whRoot;
   private final Configuration conf;
   private final String whRootString;
@@ -71,21 +74,19 @@ public class Warehouse {
 
   public Warehouse(Configuration conf) throws MetaException {
     this.conf = conf;
-    whRootString = HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE);
+    whRootString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
     if (StringUtils.isBlank(whRootString)) {
-      throw new MetaException(HiveConf.ConfVars.METASTOREWAREHOUSE.varname
+      throw new MetaException(ConfVars.WAREHOUSE.varname
           + " is not set in the config or blank");
     }
     fsHandler = getMetaStoreFsHandler(conf);
-    cm = ReplChangeManager.getInstance((HiveConf)conf);
-    storageAuthCheck = HiveConf.getBoolVar(conf,
-        HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS);
+    cm = ReplChangeManager.getInstance(conf);
+    storageAuthCheck = MetastoreConf.getBoolVar(conf, ConfVars.AUTHORIZATION_STORAGE_AUTH_CHECKS);
   }
 
   private MetaStoreFS getMetaStoreFsHandler(Configuration conf)
       throws MetaException {
-    String handlerClassStr = HiveConf.getVar(conf,
-        HiveConf.ConfVars.HIVE_METASTORE_FS_HANDLER_CLS);
+    String handlerClassStr = MetastoreConf.getVar(conf, ConfVars.FS_HANDLER_CLS);
     try {
       Class<? extends MetaStoreFS> handlerClass = (Class<? extends MetaStoreFS>) Class
           .forName(handlerClassStr, true, JavaUtils.getClassLoader());
@@ -187,10 +188,10 @@ public class Warehouse {
   }
 
   public boolean mkdirs(Path f) throws MetaException {
-    FileSystem fs = null;
+    FileSystem fs;
     try {
       fs = getFs(f);
-      return FileUtils.mkdir(fs, f, conf);
+      return FileUtils.mkdir(fs, f);
     } catch (IOException e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
@@ -205,7 +206,7 @@ public class Warehouse {
         cm.recycle(sourcePath, RecycleType.COPY, true);
       }
       FileSystem fs = getFs(sourcePath);
-      return FileUtils.rename(fs, sourcePath, destPath, conf);
+      return FileUtils.rename(fs, sourcePath, destPath);
     } catch (Exception ex) {
       MetaStoreUtils.logAndThrowMetaException(ex);
     }
@@ -267,38 +268,11 @@ public class Warehouse {
     }
   }
 
-  /*
-  // NOTE: This is for generating the internal path name for partitions. Users
-  // should always use the MetaStore API to get the path name for a partition.
-  // Users should not directly take partition values and turn it into a path
-  // name by themselves, because the logic below may change in the future.
-  //
-  // In the future, it's OK to add new chars to the escape list, and old data
-  // won't be corrupt, because the full path name in metastore is stored.
-  // In that case, Hive will continue to read the old data, but when it creates
-  // new partitions, it will use new names.
-  static BitSet charToEscape = new BitSet(128);
-  static {
-    for (char c = 0; c < ' '; c++) {
-      charToEscape.set(c);
-    }
-    char[] clist = new char[] { '"', '#', '%', '\'', '*', '/', ':', '=', '?',
-        '\\', '\u00FF' };
-    for (char c : clist) {
-      charToEscape.set(c);
-    }
-  }
-
-  static boolean needsEscaping(char c) {
-    return c >= 0 && c < charToEscape.size() && charToEscape.get(c);
-  }
-  */
-
-  static String escapePathName(String path) {
+  private static String escapePathName(String path) {
     return FileUtils.escapePathName(path);
   }
 
-  static String unescapePathName(String path) {
+  private static String unescapePathName(String path) {
     return FileUtils.unescapePathName(path);
   }
 
@@ -402,13 +376,13 @@ public class Warehouse {
     if (name == null || name.isEmpty()) {
       throw new MetaException("Partition name is invalid. " + name);
     }
-    LinkedHashMap<String, String> partSpec = new LinkedHashMap<String, String>();
+    LinkedHashMap<String, String> partSpec = new LinkedHashMap<>();
     makeSpecFromName(partSpec, new Path(name));
     return partSpec;
   }
 
   public static void makeSpecFromName(Map<String, String> partSpec, Path currPath) {
-    List<String[]> kvs = new ArrayList<String[]>();
+    List<String[]> kvs = new ArrayList<>();
     do {
       String component = currPath.getName();
       Matcher m = pat.matcher(component);
@@ -434,11 +408,11 @@ public class Warehouse {
     if (name == null || name.isEmpty()) {
       throw new MetaException("Partition name is invalid. " + name);
     }
-    LinkedHashMap<String, String> partSpec = new LinkedHashMap<String, String>();
+    LinkedHashMap<String, String> partSpec = new LinkedHashMap<>();
 
     Path currPath = new Path(name);
 
-    List<String[]> kvs = new ArrayList<String[]>();
+    List<String[]> kvs = new ArrayList<>();
     do {
       String component = currPath.getName();
       Matcher m = pat.matcher(component);
@@ -523,7 +497,7 @@ public class Warehouse {
   }
 
   public boolean isDir(Path f) throws MetaException {
-    FileSystem fs = null;
+    FileSystem fs;
     try {
       fs = getFs(f);
       FileStatus fstatus = fs.getFileStatus(f);
@@ -563,7 +537,7 @@ public class Warehouse {
     try {
       Path path = new Path(location);
       FileSystem fileSys = path.getFileSystem(conf);
-      return HiveStatsUtils.getFileStatusRecurse(path, -1, fileSys);
+      return FileUtils.getFileStatusRecurse(path, -1, fileSys);
     } catch (IOException ioe) {
       MetaStoreUtils.logAndThrowMetaException(ioe);
     }
@@ -571,7 +545,8 @@ public class Warehouse {
   }
 
   /**
-   * @param table
+   * @param db database
+   * @param table table
    * @return array of FileStatus objects corresponding to the files making up the passed
    * unpartitioned table
    */
@@ -580,7 +555,7 @@ public class Warehouse {
     Path tablePath = getDnsPath(new Path(table.getSd().getLocation()));
     try {
       FileSystem fileSys = tablePath.getFileSystem(conf);
-      return HiveStatsUtils.getFileStatusRecurse(tablePath, -1, fileSys);
+      return FileUtils.getFileStatusRecurse(tablePath, -1, fileSys);
     } catch (IOException ioe) {
       MetaStoreUtils.logAndThrowMetaException(ioe);
     }
@@ -609,7 +584,7 @@ public class Warehouse {
       }
       throw new MetaException(errorStr + "]");
     }
-    List<String> colNames = new ArrayList<String>();
+    List<String> colNames = new ArrayList<>();
     for (FieldSchema col: partCols) {
       colNames.add(col.getName());
     }
@@ -619,14 +594,14 @@ public class Warehouse {
   public static List<String> getPartValuesFromPartName(String partName)
       throws MetaException {
     LinkedHashMap<String, String> partSpec = Warehouse.makeSpecFromName(partName);
-    List<String> values = new ArrayList<String>();
+    List<String> values = new ArrayList<>();
     values.addAll(partSpec.values());
     return values;
   }
 
   public static Map<String, String> makeSpecFromValues(List<FieldSchema> partCols,
       List<String> values) {
-    Map<String, String> spec = new LinkedHashMap<String, String>();
+    Map<String, String> spec = new LinkedHashMap<>();
     for (int i = 0; i < values.size(); i++) {
       spec.put(partCols.get(i).getName(), values.get(i));
     }
