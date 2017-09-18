@@ -35,6 +35,8 @@ import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 /**
  * The abstract class HCatClient containing APIs for HCatalog DDL commands.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class HCatClient {
 
   public enum DropDBMode {RESTRICT, CASCADE}

@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 /** The OutputFormat to use to write data to HCatalog. The key value is ignored and
  *  should be given as null. The value is the HCatRecord to write.*/
 @InterfaceAudience.Public
-@InterfaceStability.Evolving
+@InterfaceStability.Stable
 public class HCatOutputFormat extends HCatBaseOutputFormat {
 
   static final private Logger LOG = LoggerFactory.getLogger(HCatOutputFormat.class);

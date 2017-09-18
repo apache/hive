@@ -19,12 +19,16 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hive.hcatalog.messaging.json.JSONCreateFunctionMessage;
 import org.apache.hive.hcatalog.messaging.json.JSONDropFunctionMessage;
 
 /**
  * Interface for converting HCat events from String-form back to HCatEventMessage instances.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class MessageDeserializer {
 
   /**

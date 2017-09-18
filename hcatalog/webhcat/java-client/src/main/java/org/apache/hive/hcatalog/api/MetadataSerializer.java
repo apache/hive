@@ -28,6 +28,8 @@ import java.util.List;
 /**
  * Interface to serialize HCat API elements.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 abstract class MetadataSerializer {
 
   // Prevent construction outside the get() method.

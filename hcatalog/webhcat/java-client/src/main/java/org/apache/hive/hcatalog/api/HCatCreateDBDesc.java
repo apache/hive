@@ -20,12 +20,16 @@ package org.apache.hive.hcatalog.api;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hive.hcatalog.common.HCatException;
 
 /**
  * The Class HCatCreateDBDesc for defining database attributes.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class HCatCreateDBDesc {
 
   private String dbName;

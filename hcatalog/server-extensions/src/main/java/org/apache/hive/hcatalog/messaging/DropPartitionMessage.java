@@ -19,12 +19,17 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 import java.util.List;
 import java.util.Map;
 
 /**
  * HCat message sent when a partition is dropped in HCatalog.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class DropPartitionMessage extends HCatEventMessage {
 
   protected DropPartitionMessage() {

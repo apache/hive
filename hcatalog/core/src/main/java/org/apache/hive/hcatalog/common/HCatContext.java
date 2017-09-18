@@ -45,7 +45,7 @@ import java.util.Map;
  * functionality must provide a sensible default.</p>
  */
 @InterfaceAudience.Public
-@InterfaceStability.Evolving
+@InterfaceStability.Stable
 public enum HCatContext {
   INSTANCE;
 

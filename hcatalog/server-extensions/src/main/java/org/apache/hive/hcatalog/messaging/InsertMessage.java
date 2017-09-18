@@ -19,12 +19,17 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 import java.util.List;
 import java.util.Map;
 
 /**
  * HCat message sent when an insert is done to a table or partition.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class InsertMessage extends HCatEventMessage {
 
   protected InsertMessage() {
