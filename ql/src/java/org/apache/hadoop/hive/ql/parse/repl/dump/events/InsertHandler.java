@@ -43,6 +43,11 @@ class InsertHandler extends AbstractEventHandler {
   public void handle(Context withinContext) throws Exception {
     InsertMessage insertMsg = deserializer.getInsertMessage(event.getMessage());
     org.apache.hadoop.hive.ql.metadata.Table qlMdTable = tableObject(insertMsg);
+
+    if (!EximUtil.shouldExportTable(withinContext.replicationSpec, qlMdTable)) {
+      return;
+    }
+
     List<Partition> qlPtns = null;
     if (qlMdTable.isPartitioned() && (null != insertMsg.getPtnObj())) {
       qlPtns = Collections.singletonList(partitionObject(qlMdTable, insertMsg));
