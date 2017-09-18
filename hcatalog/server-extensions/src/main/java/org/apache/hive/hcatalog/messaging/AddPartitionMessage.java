@@ -19,12 +19,17 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 import java.util.List;
 import java.util.Map;
 
 /**
  * The HCat message sent when partition(s) are added to a table.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class AddPartitionMessage extends HCatEventMessage {
 
   protected AddPartitionMessage() {

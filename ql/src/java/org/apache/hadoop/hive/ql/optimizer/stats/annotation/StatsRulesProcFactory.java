@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -52,6 +53,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
+import org.apache.hadoop.hive.ql.parse.JoinType;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
@@ -1844,9 +1846,37 @@ public class StatsRulesProcFactory {
 
       // No need for overflow checks, assume selectivity is always <= 1.0
       float selMultiParent = 1.0f;
-      for(Operator<? extends OperatorDesc> parent : multiParentOp.getParentOperators()) {
-        // In the above example, TS-1 -> RS-1 and TS-2 -> RS-2 are simple trees
-        selMultiParent *= getSelectivitySimpleTree(parent);
+
+      boolean isSelComputed = false;
+
+      // if it is two way left outer or right outer join take selectivity only for
+      // corresponding branch since only that branch will factor is the reduction
+      if(multiParentOp instanceof JoinOperator) {
+        JoinOperator jop = ((JoinOperator)multiParentOp);
+        isSelComputed = true;
+        // check for two way join
+        if(jop.getConf().getConds().length == 1) {
+          switch(jop.getConf().getCondsList().get(0).getType()) {
+            case JoinDesc.LEFT_OUTER_JOIN:
+              selMultiParent *= getSelectivitySimpleTree(multiParentOp.getParentOperators().get(0));
+              break;
+            case JoinDesc.RIGHT_OUTER_JOIN:
+              selMultiParent *= getSelectivitySimpleTree(multiParentOp.getParentOperators().get(1));
+              break;
+            default:
+              // for rest of the join type we will take min of the reduction.
+              float selMultiParentLeft = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(0));
+              float selMultiParentRight = getSelectivitySimpleTree(multiParentOp.getParentOperators().get(1));
+              selMultiParent = Math.min(selMultiParentLeft, selMultiParentRight);
+          }
+        }
+      }
+
+      if(!isSelComputed) {
+        for (Operator<? extends OperatorDesc> parent : multiParentOp.getParentOperators()) {
+          // In the above example, TS-1 -> RS-1 and TS-2 -> RS-2 are simple trees
+          selMultiParent *= getSelectivitySimpleTree(parent);
+        }
       }
 
       float selCurrOp = ((float) currentOp.getStatistics().getNumRows() /

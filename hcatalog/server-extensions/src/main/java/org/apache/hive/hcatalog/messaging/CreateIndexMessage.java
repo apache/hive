@@ -19,9 +19,14 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  * HCat message sent when a Index is created in HCatalog.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class CreateIndexMessage extends HCatEventMessage {
 
   protected CreateIndexMessage() {

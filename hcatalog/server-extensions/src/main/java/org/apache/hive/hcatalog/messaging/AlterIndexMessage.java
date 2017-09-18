@@ -19,9 +19,14 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  * HCat message sent when a Index is altered in HCatalog.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class AlterIndexMessage extends HCatEventMessage {
 
   protected AlterIndexMessage() {

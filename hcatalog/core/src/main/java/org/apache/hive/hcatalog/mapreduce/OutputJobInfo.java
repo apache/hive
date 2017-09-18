@@ -26,10 +26,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 
 /** The class used to serialize and store the output related information  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class OutputJobInfo implements Serializable {
 
   /** The db and table names. */

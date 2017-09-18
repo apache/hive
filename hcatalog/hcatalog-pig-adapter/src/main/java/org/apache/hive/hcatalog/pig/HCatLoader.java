@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
  * Pig {@link org.apache.pig.LoadFunc} to read data from HCat
  */
 @InterfaceAudience.Public
-@InterfaceStability.Evolving
+@InterfaceStability.Stable
 public class HCatLoader extends HCatBaseLoader {
   private static final Logger LOG = LoggerFactory.getLogger(HCatLoader.class);
 

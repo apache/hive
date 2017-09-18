@@ -59,7 +59,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 @InterfaceAudience.Public
-@InterfaceStability.Evolving
+@InterfaceStability.Stable
 public class HCatStorer extends HCatBaseStorer {
   private static final Logger LOG = LoggerFactory.getLogger(HCatStorer.class);
 

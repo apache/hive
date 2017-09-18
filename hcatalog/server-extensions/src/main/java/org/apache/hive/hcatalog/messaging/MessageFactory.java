@@ -20,6 +20,8 @@
 package org.apache.hive.hcatalog.messaging;
 
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -36,6 +38,8 @@ import java.util.Map;
 /**
  * Abstract Factory for the construction of HCatalog message instances.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class MessageFactory {
 
   private static MessageFactory instance = null;

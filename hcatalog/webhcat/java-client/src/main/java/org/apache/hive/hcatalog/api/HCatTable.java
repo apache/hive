@@ -27,6 +27,8 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -57,6 +59,8 @@ import org.slf4j.LoggerFactory;
 /**
  * The HCatTable is a wrapper around org.apache.hadoop.hive.metastore.api.Table.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class HCatTable {
   private static final Logger LOG = LoggerFactory.getLogger(HCatTable.class);
 

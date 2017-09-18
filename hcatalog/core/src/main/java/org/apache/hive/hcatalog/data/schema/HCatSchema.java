@@ -33,7 +33,7 @@ import org.apache.hive.hcatalog.common.HCatException;
  * HCatSchema. This class is NOT thread-safe.
  */
 @InterfaceAudience.Public
-@InterfaceStability.Evolving
+@InterfaceStability.Stable
 public class HCatSchema implements Serializable {
 
   private static final long serialVersionUID = 1L;

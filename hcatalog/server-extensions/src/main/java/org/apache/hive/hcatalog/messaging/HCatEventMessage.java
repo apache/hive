@@ -19,12 +19,16 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hive.hcatalog.common.HCatConstants;
 
 /**
  * Class representing messages emitted when Metastore operations are done.
  * (E.g. Creation and deletion of databases, tables and partitions.)
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class HCatEventMessage {
 
   /**

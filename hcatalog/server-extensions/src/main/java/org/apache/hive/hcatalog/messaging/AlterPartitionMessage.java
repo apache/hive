@@ -18,11 +18,16 @@
  */
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 import java.util.Map;
 
 /**
  * HCat message sent when a table is Altered.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class AlterPartitionMessage extends HCatEventMessage {
 
   protected AlterPartitionMessage() {

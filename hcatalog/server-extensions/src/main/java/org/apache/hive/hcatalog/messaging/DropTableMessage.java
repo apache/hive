@@ -19,9 +19,14 @@
 
 package org.apache.hive.hcatalog.messaging;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  * HCat message sent when a Table is dropped in HCatalog.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class DropTableMessage extends HCatEventMessage {
 
   protected DropTableMessage() {

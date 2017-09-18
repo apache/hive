@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -41,6 +43,8 @@ import org.slf4j.LoggerFactory;
 /**
  * The HCatPartition is a wrapper around org.apache.hadoop.hive.metastore.api.Partition.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class HCatPartition {
 
   private static final Logger LOG = LoggerFactory.getLogger(HCatPartition.class);
