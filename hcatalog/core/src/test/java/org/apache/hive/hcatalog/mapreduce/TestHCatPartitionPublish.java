@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -222,7 +223,7 @@ public class TestHCatPartitionPublish {
   }
 
   private void createTable(String dbName, String tableName) throws Exception {
-    String databaseName = (dbName == null) ? MetaStoreUtils.DEFAULT_DATABASE_NAME
+    String databaseName = (dbName == null) ? Warehouse.DEFAULT_DATABASE_NAME
         : dbName;
     try {
       msc.dropTable(databaseName, tableName);

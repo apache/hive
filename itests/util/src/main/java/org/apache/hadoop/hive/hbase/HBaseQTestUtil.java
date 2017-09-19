@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.hbase;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.QTestUtil;
 
 import java.util.List;
@@ -109,7 +109,7 @@ public class HBaseQTestUtil extends QTestUtil {
     super.cleanUp(tname);
 
     // drop in case leftover from unsuccessful run
-    db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, HBASE_SRC_NAME);
+    db.dropTable(Warehouse.DEFAULT_DATABASE_NAME, HBASE_SRC_NAME);
 
     HBaseAdmin admin = null;
     try {

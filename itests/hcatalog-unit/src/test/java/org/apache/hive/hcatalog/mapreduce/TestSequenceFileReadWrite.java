@@ -31,7 +31,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.LongWritable;
@@ -179,7 +179,7 @@ public class TestSequenceFileReadWrite {
     TextInputFormat.setInputPaths(job, inputFileName);
 
     HCatOutputFormat.setOutput(job, OutputJobInfo.create(
-        MetaStoreUtils.DEFAULT_DATABASE_NAME, "demo_table_2", null));
+        Warehouse.DEFAULT_DATABASE_NAME, "demo_table_2", null));
     job.setOutputFormatClass(HCatOutputFormat.class);
     HCatOutputFormat.setSchema(job, getSchema());
     job.setNumReduceTasks(0);
@@ -226,7 +226,7 @@ public class TestSequenceFileReadWrite {
     TextInputFormat.setInputPaths(job, inputFileName);
 
     HCatOutputFormat.setOutput(job, OutputJobInfo.create(
-        MetaStoreUtils.DEFAULT_DATABASE_NAME, "demo_table_3", null));
+        Warehouse.DEFAULT_DATABASE_NAME, "demo_table_3", null));
     job.setOutputFormatClass(HCatOutputFormat.class);
     HCatOutputFormat.setSchema(job, getSchema());
     assertTrue(job.waitForCompletion(true));

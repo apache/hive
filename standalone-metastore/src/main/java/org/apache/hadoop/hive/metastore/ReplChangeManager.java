@@ -33,10 +33,10 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
-import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
@@ -49,7 +49,7 @@ public class ReplChangeManager {
   private static boolean inited = false;
   private static boolean enabled = false;
   private static Path cmroot;
-  private static HiveConf hiveConf;
+  private static Configuration conf;
   private String msUser;
   private String msGroup;
   private FileSystem fs;
@@ -63,22 +63,22 @@ public class ReplChangeManager {
     COPY
   }
 
-  public static ReplChangeManager getInstance(HiveConf hiveConf) throws MetaException {
+  public static ReplChangeManager getInstance(Configuration conf) throws MetaException {
     if (instance == null) {
-      instance = new ReplChangeManager(hiveConf);
+      instance = new ReplChangeManager(conf);
     }
     return instance;
   }
 
-  private ReplChangeManager(HiveConf hiveConf) throws MetaException {
+  private ReplChangeManager(Configuration conf) throws MetaException {
     try {
       if (!inited) {
-        if (hiveConf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
+        if (MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED)) {
           ReplChangeManager.enabled = true;
-          ReplChangeManager.cmroot = new Path(hiveConf.get(HiveConf.ConfVars.REPLCMDIR.varname));
-          ReplChangeManager.hiveConf = hiveConf;
+          ReplChangeManager.cmroot = new Path(MetastoreConf.getVar(conf, ConfVars.REPLCMDIR));
+          ReplChangeManager.conf = conf;
 
-          fs = cmroot.getFileSystem(hiveConf);
+          fs = cmroot.getFileSystem(conf);
           // Create cmroot with permission 700 if not exist
           if (!fs.exists(cmroot)) {
             fs.mkdirs(cmroot);
@@ -132,7 +132,7 @@ public class ReplChangeManager {
         }
       } else {
         String fileCheckSum = checksumFor(path, fs);
-        Path cmPath = getCMPath(hiveConf, path.getName(), fileCheckSum);
+        Path cmPath = getCMPath(conf, path.getName(), fileCheckSum);
 
         // set timestamp before moving to cmroot, so we can
         // avoid race condition CM remove the file before setting
@@ -164,7 +164,7 @@ public class ReplChangeManager {
               // It is possible to have a file with same checksum in cmPath but the content is
               // partially copied or corrupted. In this case, just overwrite the existing file with
               // new one.
-              success = FileUtils.copy(fs, path, fs, cmPath, false, true, hiveConf);
+              success = FileUtils.copy(fs, path, fs, cmPath, false, true, conf);
               break;
             }
             default:
@@ -258,26 +258,26 @@ public class ReplChangeManager {
    * matches, return the file; otherwise, use chksumString to retrieve it from cmroot
    * @param src Original file location
    * @param checksumString Checksum of the original file
-   * @param hiveConf
+   * @param conf
    * @return Corresponding FileStatus object
    */
   static public FileStatus getFileStatus(Path src, String checksumString,
-      HiveConf hiveConf) throws MetaException {
+      Configuration conf) throws MetaException {
     try {
-      FileSystem srcFs = src.getFileSystem(hiveConf);
+      FileSystem srcFs = src.getFileSystem(conf);
       if (checksumString == null) {
         return srcFs.getFileStatus(src);
       }
 
       if (!srcFs.exists(src)) {
-        return srcFs.getFileStatus(getCMPath(hiveConf, src.getName(), checksumString));
+        return srcFs.getFileStatus(getCMPath(conf, src.getName(), checksumString));
       }
 
       String currentChecksumString = checksumFor(src, srcFs);
       if (currentChecksumString == null || checksumString.equals(currentChecksumString)) {
         return srcFs.getFileStatus(src);
       } else {
-        return srcFs.getFileStatus(getCMPath(hiveConf, src.getName(), checksumString));
+        return srcFs.getFileStatus(getCMPath(conf, src.getName(), checksumString));
       }
     } catch (IOException e) {
       throw new MetaException(StringUtils.stringifyException(e));
@@ -326,12 +326,12 @@ public class ReplChangeManager {
   static class CMClearer implements Runnable {
     private Path cmroot;
     private long secRetain;
-    private HiveConf hiveConf;
+    private Configuration conf;
 
-    CMClearer(String cmrootString, long secRetain, HiveConf hiveConf) {
+    CMClearer(String cmrootString, long secRetain, Configuration conf) {
       this.cmroot = new Path(cmrootString);
       this.secRetain = secRetain;
-      this.hiveConf = hiveConf;
+      this.conf = conf;
     }
 
     @Override
@@ -340,7 +340,7 @@ public class ReplChangeManager {
         LOG.info("CMClearer started");
 
         long now = System.currentTimeMillis();
-        FileSystem fs = cmroot.getFileSystem(hiveConf);
+        FileSystem fs = cmroot.getFileSystem(conf);
         FileStatus[] files = fs.listStatus(cmroot);
 
         for (FileStatus file : files) {
@@ -348,7 +348,7 @@ public class ReplChangeManager {
           if (now - modifiedTime > secRetain*1000) {
             try {
               if (fs.getXAttrs(file.getPath()).containsKey(REMAIN_IN_TRASH_TAG)) {
-                boolean succ = Trash.moveToAppropriateTrash(fs, file.getPath(), hiveConf);
+                boolean succ = Trash.moveToAppropriateTrash(fs, file.getPath(), conf);
                 if (succ) {
                   if (LOG.isDebugEnabled()) {
                     LOG.debug("Move " + file.toString() + " to trash");
@@ -378,16 +378,16 @@ public class ReplChangeManager {
   }
 
   // Schedule CMClearer thread. Will be invoked by metastore
-  static void scheduleCMClearer(HiveConf hiveConf) {
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.REPLCMENABLED)) {
+  static void scheduleCMClearer(Configuration conf) {
+    if (MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED)) {
       ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
           new BasicThreadFactory.Builder()
           .namingPattern("cmclearer-%d")
           .daemon(true)
           .build());
-      executor.scheduleAtFixedRate(new CMClearer(hiveConf.get(HiveConf.ConfVars.REPLCMDIR.varname),
-          hiveConf.getTimeVar(ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), hiveConf),
-          0, hiveConf.getTimeVar(ConfVars.REPLCMINTERVAL, TimeUnit.SECONDS), TimeUnit.SECONDS);
+      executor.scheduleAtFixedRate(new CMClearer(MetastoreConf.getVar(conf, ConfVars.REPLCMDIR),
+          MetastoreConf.getTimeVar(conf, ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), conf),
+          0, MetastoreConf.getTimeVar(conf, ConfVars.REPLCMINTERVAL, TimeUnit.SECONDS), TimeUnit.SECONDS);
     }
   }
 }

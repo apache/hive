@@ -534,6 +534,14 @@ public class MetastoreConf {
         "Inteval for cmroot cleanup thread."),
     REPLCMENABLED("metastore.repl.cm.enabled", "hive.repl.cm.enabled", false,
         "Turn on ChangeManager, so delete files will go to cmrootdir."),
+    REPL_COPYFILE_MAXNUMFILES("metastore.repl.copyfile.maxnumfiles",
+        "hive.exec.copyfile.maxnumfiles", 1L,
+        "Maximum number of files Hive uses to do sequential HDFS copies between directories." +
+            "Distributed copies (distcp) will be used instead for larger numbers of files so that copies can be done faster."),
+    REPL_COPYFILE_MAXSIZE("metastore.repl.copyfile.maxsize",
+        "hive.exec.copyfile.maxsize", 32L * 1024 * 1024 /*32M*/,
+        "Maximum file size (in bytes) that Hive uses to do single HDFS copies between directories." +
+            "Distributed copies (distcp) will be used instead for bigger files so that copies can be done faster."),
     SCHEMA_INFO_CLASS("metastore.schema.info.class", "hive.metastore.schema.info.class",
         "org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo",
         "Fully qualified class name for the metastore schema information class \n"
