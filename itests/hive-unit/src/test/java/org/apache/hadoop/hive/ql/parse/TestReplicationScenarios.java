@@ -3102,6 +3102,31 @@ public class TestReplicationScenarios {
     }
   }
 
+  @Test
+  public void testCMConflict() throws IOException {
+    String testName = "cmConflict";
+    String dbName = createDB(testName, driver);
+
+    // Create table and insert two file of the same content
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('ten')", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('ten')", driver);
+
+    // Bootstrap test
+    advanceDumpDir();
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0,driver);
+    String replDumpId = getResult(0, 1, true, driver);
+
+    // Drop two files so they are moved to CM
+    run("TRUNCATE TABLE " + dbName + ".unptned", driver);
+
+    LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
+
+    verifyRun("SELECT count(*) from " + dbName + "_dupe.unptned", new String[]{"2"}, driverMirror);
+  }
+
   private static String createDB(String name, Driver myDriver) {
     LOG.info("Testing " + name);
     String dbName = name + "_" + tid;
