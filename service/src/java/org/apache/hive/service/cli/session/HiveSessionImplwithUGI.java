@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -113,7 +112,7 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
     if (hmsDelegationTokenStr != null) {
       getHiveConf().setVar(HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE, HS2TOKEN);
       try {
-        Utils.setTokenStr(sessionUgi, hmsDelegationTokenStr, HS2TOKEN);
+        SessionUtils.setTokenStr(sessionUgi, hmsDelegationTokenStr, HS2TOKEN);
       } catch (IOException e) {
         throw new HiveSQLException("Couldn't setup delegation token in the ugi: " + e, e);
       }

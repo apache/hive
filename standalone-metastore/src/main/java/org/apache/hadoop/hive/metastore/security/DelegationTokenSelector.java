@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.thrift;
+package org.apache.hadoop.hive.metastore.security;
 
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSelector;
 

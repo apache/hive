@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -33,14 +34,30 @@ import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.util.ReflectionUtils;
 
 public class MetastoreDelegationTokenManager {
-
+  public static final String DELEGATION_TOKEN_STORE_ZK_CONNECT_STR =
+      "hive.cluster.delegation.token.store.zookeeper.connectString";
   protected DelegationTokenSecretManager secretManager;
+  // Alternate connect string specification configuration
+  public static final String DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE =
+      "hive.zookeeper.quorum";
+
+  public static final String DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS =
+      "hive.cluster.delegation.token.store.zookeeper.connectTimeoutMillis";
+  public static final String DELEGATION_TOKEN_STORE_ZK_ZNODE =
+      "hive.cluster.delegation.token.store.zookeeper.znode";
+  public static final String DELEGATION_TOKEN_STORE_ZK_ACL =
+      "hive.cluster.delegation.token.store.zookeeper.acl";
+  public static final String DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT = "/hivedelegation";
 
   public MetastoreDelegationTokenManager() {
   }
 
   public DelegationTokenSecretManager getSecretManager() {
     return secretManager;
+  }
+
+  public void startDelegationTokenSecretManager(Configuration conf, Object hms) throws IOException {
+    startDelegationTokenSecretManager(conf, hms, HadoopThriftAuthBridge.Server.ServerMode.METASTORE);
   }
 
   public void startDelegationTokenSecretManager(Configuration conf, Object hms, HadoopThriftAuthBridge.Server.ServerMode smode)
@@ -121,17 +138,7 @@ public class MetastoreDelegationTokenManager {
   }
 
   private DelegationTokenStore getTokenStore(Configuration conf) throws IOException {
-    String tokenStoreClassName =
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DELEGATION_TOKEN_STORE_CLS, "");
-    // The second half of this if is to catch cases where users are passing in a HiveConf for
-    // configuration.  It will have set the default value of
-    // "hive.cluster.delegation.token.store .class" to
-    // "org.apache.hadoop.hive.thrift.MemoryTokenStore" as part of its construction.  But this is
-    // the hive-shims version of the memory store.  We want to convert this to our default value.
-    if (StringUtils.isBlank(tokenStoreClassName) ||
-        "org.apache.hadoop.hive.thrift.MemoryTokenStore".equals(tokenStoreClassName)) {
-      return new MemoryTokenStore();
-    }
+    String tokenStoreClassName = SecurityUtils.getTokenStoreClassName(conf);
     try {
       Class<? extends DelegationTokenStore> storeClass =
           Class.forName(tokenStoreClassName).asSubclass(DelegationTokenStore.class);

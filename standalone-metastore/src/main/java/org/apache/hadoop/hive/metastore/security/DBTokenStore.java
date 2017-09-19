@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.thrift;
+package org.apache.hadoop.hive.metastore.security;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -26,9 +26,9 @@ import java.util.List;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
-import org.apache.hadoop.security.token.delegation.HiveDelegationTokenSupport;
+import org.apache.hadoop.security.token.delegation.MetastoreDelegationTokenSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +71,7 @@ public class DBTokenStore implements DelegationTokenStore {
     try {
       String identifier = TokenStoreDelegationTokenSecretManager.encodeWritable(tokenIdentifier);
       String tokenStr = Base64.encodeBase64URLSafeString(
-        HiveDelegationTokenSupport.encodeDelegationTokenInformation(token));
+        MetastoreDelegationTokenSupport.encodeDelegationTokenInformation(token));
       boolean result = (Boolean)invokeOnTokenStore("addToken", new Object[] {identifier, tokenStr},
         String.class, String.class);
       if (LOG.isTraceEnabled()) {
@@ -91,7 +91,7 @@ public class DBTokenStore implements DelegationTokenStore {
           TokenStoreDelegationTokenSecretManager.encodeWritable(tokenIdentifier)}, String.class);
       DelegationTokenInformation result = null;
       if (StringUtils.isNotEmpty(tokenStr)) {
-        result = HiveDelegationTokenSupport.decodeDelegationTokenInformation(Base64.decodeBase64(tokenStr));
+        result = MetastoreDelegationTokenSupport.decodeDelegationTokenInformation(Base64.decodeBase64(tokenStr));
       }
       if (LOG.isTraceEnabled()) {
         LOG.trace("getToken: tokenIdentifier = " + tokenIdentifier + ", result = " + result);
@@ -135,30 +135,30 @@ public class DBTokenStore implements DelegationTokenStore {
   }
 
   private Object handler;
-  private ServerMode smode;
+  private ServerMode serverMode;
 
   @Override
-  public void init(Object handler, ServerMode smode) throws TokenStoreException {
+  public void init(Object handler, HadoopThriftAuthBridge.Server.ServerMode serverMode) throws TokenStoreException {
     this.handler = handler;
-    this.smode = smode;
+    this.serverMode = serverMode;
   }
 
   private Object invokeOnTokenStore(String methName, Object[] params, Class<?> ... paramTypes)
       throws TokenStoreException{
     Object tokenStore;
     try {
-      switch (smode) {
-        case METASTORE :
-          tokenStore = handler.getClass().getMethod("getMS").invoke(handler);
-          break;
-        case HIVESERVER2 :
-          Object hiveObject = ((Class<?>)handler)
+      switch (serverMode) {
+      case METASTORE:
+        tokenStore = handler.getClass().getMethod("getMS").invoke(handler);
+        break;
+      case HIVESERVER2:
+        Object hiveObject = ((Class<?>) handler)
             .getMethod("get", org.apache.hadoop.conf.Configuration.class, java.lang.Class.class)
             .invoke(handler, conf, DBTokenStore.class);
-          tokenStore = ((Class<?>)handler).getMethod("getMSC").invoke(hiveObject);
-          break;
-       default:
-         throw new TokenStoreException(new Exception("unknown server mode"));
+        tokenStore = ((Class<?>) handler).getMethod("getMSC").invoke(hiveObject);
+        break;
+      default:
+        throw new IllegalArgumentException("Unexpected value of Server mode " + serverMode);
       }
       return tokenStore.getClass().getMethod(methName, paramTypes).invoke(tokenStore, params);
     } catch (IllegalArgumentException e) {

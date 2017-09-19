@@ -59,7 +59,7 @@ public class TestHiveAuthFactory {
 
     HiveAuthFactory authFactory = new HiveAuthFactory(hiveConf);
     Assert.assertNotNull(authFactory);
-    Assert.assertEquals("org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge$Server$TUGIAssumingTransportFactory",
+    Assert.assertEquals("org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge$Server$TUGIAssumingTransportFactory",
         authFactory.getAuthTransFactory().getClass().getName());
   }
 
@@ -79,11 +79,11 @@ public class TestHiveAuthFactory {
     Assert.assertNotNull(keyTabFile);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB, keyTabFile);
 
-    hiveConf.setVar(ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.thrift.DBTokenStore");
+    hiveConf.setVar(ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.metastore.security.DBTokenStore");
 
     HiveAuthFactory authFactory = new HiveAuthFactory(hiveConf);
     Assert.assertNotNull(authFactory);
-    Assert.assertEquals("org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge$Server$TUGIAssumingTransportFactory",
+    Assert.assertEquals("org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge$Server$TUGIAssumingTransportFactory",
         authFactory.getAuthTransFactory().getClass().getName());
   }
 }

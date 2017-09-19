@@ -161,8 +161,8 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     if(!secureMetastoreAccess) {
       return null;
     }
-    Token<org.apache.hadoop.hive.thrift.DelegationTokenIdentifier> hiveToken =
-            new Token<org.apache.hadoop.hive.thrift.DelegationTokenIdentifier>();
+    Token<org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier> hiveToken =
+            new Token<org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier>();
     String metastoreTokenStrForm = buildHcatDelegationToken(user);
     hiveToken.decodeFromUrlString(metastoreTokenStrForm);
     job.getCredentials().addToken(new

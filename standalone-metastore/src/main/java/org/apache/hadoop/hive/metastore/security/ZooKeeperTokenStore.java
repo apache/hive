@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.thrift;
+package org.apache.hadoop.hive.metastore.security;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,12 +32,10 @@ import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
-import org.apache.hadoop.security.token.delegation.HiveDelegationTokenSupport;
+import org.apache.hadoop.security.token.delegation.MetastoreDelegationTokenSupport;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs;
@@ -83,12 +81,12 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   };
 
 
-  private ServerMode serverMode;
-
   private final String WHEN_ZK_DSTORE_MSG = "when zookeeper based delegation token storage is enabled"
       + "(hive.cluster.delegation.token.store.class=" + ZooKeeperTokenStore.class.getName() + ")";
 
   private Configuration conf;
+
+  private HadoopThriftAuthBridge.Server.ServerMode serverMode;
 
   /**
    * Default constructor for dynamic instantiation w/ Configurable
@@ -135,7 +133,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
     default:
       throw new AssertionError("Unexpected server mode " + serverMode);
     }
-    Utils.setZookeeperClientKerberosJaasConfig(principal, keytab);
+    SecurityUtils.setZookeeperClientKerberosJaasConfig(principal, keytab);
   }
 
   private String getNonEmptyConfVar(Configuration conf, String param) throws IOException {
@@ -371,7 +369,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   @Override
   public boolean addToken(DelegationTokenIdentifier tokenIdentifier,
       DelegationTokenInformation token) {
-    byte[] tokenBytes = HiveDelegationTokenSupport.encodeDelegationTokenInformation(token);
+    byte[] tokenBytes = MetastoreDelegationTokenSupport.encodeDelegationTokenInformation(token);
     String tokenPath = getTokenPath(tokenIdentifier);
     CuratorFramework zk = getSession();
     String newNode;
@@ -401,7 +399,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
       return null;
     }
     try {
-      return HiveDelegationTokenSupport.decodeDelegationTokenInformation(tokenBytes);
+      return MetastoreDelegationTokenSupport.decodeDelegationTokenInformation(tokenBytes);
     } catch (Exception ex) {
       throw new TokenStoreException("Failed to decode token", ex);
     }
@@ -433,35 +431,35 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   }
 
   @Override
-  public void init(Object hmsHandler, ServerMode smode) {
-    this.serverMode = smode;
+  public void init(Object hmsHandler, HadoopThriftAuthBridge.Server.ServerMode sMode) {
+    this.serverMode = sMode;
     zkConnectString =
-        conf.get(HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR, null);
+        conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR, null);
     if (zkConnectString == null || zkConnectString.trim().isEmpty()) {
       // try alternate config param
       zkConnectString =
           conf.get(
-              HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE,
+              MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE,
               null);
       if (zkConnectString == null || zkConnectString.trim().isEmpty()) {
         throw new IllegalArgumentException("Zookeeper connect string has to be specifed through "
-            + "either " + HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR
+            + "either " + MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR
             + " or "
-            + HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE
+            + MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR_ALTERNATE
             + WHEN_ZK_DSTORE_MSG);
       }
     }
     connectTimeoutMillis =
         conf.getInt(
-            HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS,
+            MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS,
             CuratorFrameworkFactory.builder().getConnectionTimeoutMs());
-    String aclStr = conf.get(HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ACL, null);
+    String aclStr = conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ACL, null);
     if (StringUtils.isNotBlank(aclStr)) {
       this.newNodeAcl = parseACLs(aclStr);
     }
     rootNode =
-        conf.get(HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ZNODE,
-            HiveDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT) + serverMode;
+        conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ZNODE,
+            MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT) + serverMode;
 
     try {
       // Install the JAAS Configuration for the runtime

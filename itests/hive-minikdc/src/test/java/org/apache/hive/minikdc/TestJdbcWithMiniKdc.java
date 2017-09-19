@@ -36,6 +36,7 @@ import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.HiveSessionHook;
 import org.apache.hive.service.cli.session.HiveSessionHookContext;
+import org.apache.hive.service.cli.session.SessionUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -279,7 +280,7 @@ public class TestJdbcWithMiniKdc {
   // Store the given token in the UGI
   protected void storeToken(String tokenStr, UserGroupInformation ugi)
       throws Exception {
-    Utils.setTokenStr(ugi,
+    SessionUtils.setTokenStr(ugi,
         tokenStr, HiveAuthConstants.HS2_CLIENT_TOKEN);
   }
 

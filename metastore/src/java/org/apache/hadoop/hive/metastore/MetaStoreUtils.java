@@ -63,7 +63,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -1638,7 +1638,7 @@ public class MetaStoreUtils {
               + hadoopRpcProtectionVal + " to " + hadoopRpcProtectionAuth + " because SSL is enabled");
       conf.set(CommonConfigurationKeysPublic.HADOOP_RPC_PROTECTION, hadoopRpcProtectionAuth);
     }
-    return ShimLoader.getHadoopThriftAuthBridge().getHadoopSaslProperties(conf);
+    return HadoopThriftAuthBridge.getBridge().getHadoopSaslProperties(conf);
   }
 
 

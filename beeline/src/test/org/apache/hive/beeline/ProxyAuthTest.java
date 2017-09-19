@@ -30,6 +30,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.service.auth.HiveAuthConstants;
+import org.apache.hive.service.cli.session.SessionUtils;
 import org.apache.hive.beeline.BeeLine;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
@@ -202,7 +203,7 @@ public class ProxyAuthTest {
   }
 
   private static void storeTokenInJobConf(String tokenStr) throws Exception {
-    Utils.setTokenStr(Utils.getUGI(),
+    SessionUtils.setTokenStr(Utils.getUGI(),
           tokenStr, HiveAuthConstants.HS2_CLIENT_TOKEN);
     System.out.println("Stored token " + tokenStr);
   }

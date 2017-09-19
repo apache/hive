@@ -37,6 +37,7 @@ public class TestJdbcWithDBTokenStore extends TestJdbcWithMiniKdc{
         SessionHookTest.class.getName());
 
     HiveConf hiveConf = new HiveConf();
+    //using old config value tests backwards compatibility
     hiveConf.setVar(ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.thrift.DBTokenStore");
     miniHiveKdc = MiniHiveKdc.getMiniHiveKdc(hiveConf);
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerbWithRemoteHMS(miniHiveKdc, hiveConf);

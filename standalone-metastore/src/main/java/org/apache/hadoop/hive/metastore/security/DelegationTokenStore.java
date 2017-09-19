@@ -21,7 +21,6 @@ import java.io.Closeable;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configurable;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
 
 /**
@@ -30,7 +29,6 @@ import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecret
  * Internal, store specific errors are translated into {@link TokenStoreException}.
  */
 public interface DelegationTokenStore extends Configurable, Closeable {
-
   /**
    * Exception for internal token store errors that typically cannot be handled by the caller.
    */
@@ -111,8 +109,8 @@ public interface DelegationTokenStore extends Configurable, Closeable {
 
   /**
    * @param hmsHandler ObjectStore used by DBTokenStore
-   * @param smode Indicate whether this is a metastore or hiveserver2 token store
+   * @param serverMode indicate if this tokenstore is for Metastore and HiveServer2
    */
-  void init(Object hmsHandler, ServerMode smode);
+  void init(Object hmsHandler, HadoopThriftAuthBridge.Server.ServerMode serverMode);
 
 }
