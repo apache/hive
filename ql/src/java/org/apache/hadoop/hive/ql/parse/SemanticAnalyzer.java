@@ -131,6 +131,7 @@ import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
+import org.apache.hadoop.hive.ql.optimizer.QueryPlanPostProcessor;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
@@ -7129,6 +7130,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         viewDesc.setSchema(new ArrayList<FieldSchema>(field_schemas));
       }
 
+      destTableIsAcid = tblDesc != null && AcidUtils.isAcidTable(tblDesc);
+
       boolean isDestTempFile = true;
       if (!ctx.isMRTmpFileURI(dest_path.toUri().toString())) {
         idToTableNameMap.put(String.valueOf(destTableId), dest_path.toUri().toString());
@@ -7139,8 +7142,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       boolean isDfsDir = (dest_type.intValue() == QBMetaData.DEST_DFS_FILE);
       loadFileWork.add(new LoadFileDesc(tblDesc, viewDesc, queryTmpdir, dest_path, isDfsDir, cols,
-          colTypes));
-
+          colTypes, destTableIsAcid ? Operation.INSERT : Operation.NOT_ACID));
       if (tblDesc == null) {
         if (viewDesc != null) {
           table_desc = PlanUtils.getTableDesc(viewDesc, cols, colTypes);
@@ -7248,10 +7250,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           (deleting(dest) ? AcidUtils.Operation.DELETE : AcidUtils.Operation.INSERT);
       fileSinkDesc.setWriteType(wt);
 
-      String destTableFullName = dest_tab.getCompleteName().replace('@', '.');
-      Map<String, ASTNode> iowMap = qb.getParseInfo().getInsertOverwriteTables();
-      if (iowMap.containsKey(destTableFullName)) {
-        fileSinkDesc.setInsertOverwrite(true);
+      switch (dest_type) {
+        case QBMetaData.DEST_PARTITION:
+          //fall through
+        case QBMetaData.DEST_TABLE:
+          //INSERT [OVERWRITE] path
+          String destTableFullName = dest_tab.getCompleteName().replace('@', '.');
+          Map<String, ASTNode> iowMap = qb.getParseInfo().getInsertOverwriteTables();
+          if (iowMap.containsKey(destTableFullName)) {
+            fileSinkDesc.setInsertOverwrite(true);
+          }
+          break;
+        case QBMetaData.DEST_DFS_FILE:
+          //CTAS path
+          break;
+        default:
+          throw new IllegalStateException("Unexpected dest_type=" + dest_tab);
       }
       acidFileSinks.add(fileSinkDesc);
     }
@@ -11497,6 +11511,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       compiler.compile(pCtx, rootTasks, inputs, outputs);
       fetchTask = pCtx.getFetchTask();
     }
+    //find all Acid FileSinkOperatorS
+    QueryPlanPostProcessor qp = new QueryPlanPostProcessor(rootTasks, acidFileSinks, ctx.getExecutionId());
     LOG.info("Completed plan generation");
 
     // 10. put accessed columns to readEntity

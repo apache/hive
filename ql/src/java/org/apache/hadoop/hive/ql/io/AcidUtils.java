@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -1140,6 +1142,16 @@ public class AcidUtils {
       tableIsTransactional = table.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
     }
 
+    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
+  }
+  public static boolean isAcidTable(CreateTableDesc table) {
+    if (table == null || table.getTblProps() == null) {
+      return false;
+    }
+    String tableIsTransactional = table.getTblProps().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    if (tableIsTransactional == null) {
+      tableIsTransactional = table.getTblProps().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
+    }
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
 

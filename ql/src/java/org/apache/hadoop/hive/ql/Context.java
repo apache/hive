@@ -1001,4 +1001,7 @@ public class Context {
   public void setIsUpdateDeleteMerge(boolean isUpdate) {
     this.isUpdateDeleteMerge = isUpdate;
   }
+  public String getExecutionId() {
+    return executionId;
+  }
 }

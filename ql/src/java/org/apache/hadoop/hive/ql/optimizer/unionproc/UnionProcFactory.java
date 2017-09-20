@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -219,7 +220,7 @@ public final class UnionProcFactory {
 
         for (Operator<? extends OperatorDesc> parent : parents) {
           FileSinkDesc fileSinkDesc = (FileSinkDesc) fileSinkOp.getConf().clone();
-          fileSinkDesc.setDirName(new Path(parentDirName, parent.getIdentifier()));
+          fileSinkDesc.setDirName(new Path(parentDirName, AbstractFileMergeOperator.UNION_SUDBIR_PREFIX + parent.getIdentifier()));
           fileSinkDesc.setLinkedFileSink(true);
           fileSinkDesc.setParentDir(parentDirName);
           parent.setChildOperators(null);

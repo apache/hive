@@ -136,6 +136,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acid_dtt
+          Write Type: INSERT
 
   Stage: Stage-3
     Stats-Aggr Operator

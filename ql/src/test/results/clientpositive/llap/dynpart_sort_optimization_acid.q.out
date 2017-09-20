@@ -138,6 +138,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acid_part
+          Write Type: UPDATE
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -232,6 +233,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acid_part
+          Write Type: UPDATE
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -418,6 +420,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acid_part_sdpo
+          Write Type: UPDATE
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -512,6 +515,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acid_part_sdpo
+          Write Type: UPDATE
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -708,6 +712,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acid_2l_part
+          Write Type: UPDATE
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -803,6 +808,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acid_2l_part
+          Write Type: UPDATE
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -927,6 +933,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acid_2l_part
+          Write Type: DELETE
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -1120,6 +1127,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acid_2l_part_sdpo
+          Write Type: UPDATE
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -1215,6 +1223,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acid_2l_part_sdpo
+          Write Type: UPDATE
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -1339,6 +1348,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acid_2l_part_sdpo
+          Write Type: DELETE
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -1534,6 +1544,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acid_2l_part_sdpo_no_cp
+          Write Type: UPDATE
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -1630,6 +1641,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acid_2l_part_sdpo_no_cp
+          Write Type: UPDATE
 
   Stage: Stage-3
     Stats-Aggr Operator

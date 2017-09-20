@@ -130,6 +130,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionTask;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
@@ -3469,12 +3470,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  private static void moveAcidFiles(FileSystem fs, FileStatus[] stats, Path dst,
+  public static void moveAcidFiles(FileSystem fs, FileStatus[] stats, Path dst,
                                     List<Path> newFiles) throws HiveException {
     // The layout for ACID files is table|partname/base|delta|delete_delta/bucket
-    // We will always only be writing delta files.  In the buckets created by FileSinkOperator
-    // it will look like bucket/delta|delete_delta/bucket.  So we need to move that into
-    // the above structure. For the first mover there will be no delta directory,
+    // We will always only be writing delta files ( except IOW which writes base_X/ ).
+    // In the buckets created by FileSinkOperator
+    // it will look like original_bucket/delta|delete_delta/bucket
+    // (e.g. .../-ext-10004/000000_0/delta_0000014_0000014_0000/bucket_00000).  So we need to
+    // move that into the above structure. For the first mover there will be no delta directory,
     // so we can move the whole directory.
     // For everyone else we will need to just move the buckets under the existing delta
     // directory.
@@ -3489,6 +3492,36 @@ private void constructOneLBLocationMap(FileStatus fSta,
       FileStatus[] origBucketStats = null;
       try {
         origBucketStats = fs.listStatus(srcPath, AcidUtils.originalBucketFilter);
+        if(origBucketStats == null || origBucketStats.length == 0) {
+          /**
+           check if we are dealing with data with non-standard layout. For example a write
+           produced by a (optimized) Union All query
+           which looks like
+          └── -ext-10000
+            ├── HIVE_UNION_SUBDIR_1
+            │   └── 000000_0
+            │       ├── _orc_acid_version
+            │       └── delta_0000019_0000019_0001
+            │           └── bucket_00000
+            ├── HIVE_UNION_SUBDIR_2
+            │   └── 000000_0
+            │       ├── _orc_acid_version
+            │       └── delta_0000019_0000019_0002
+            │           └── bucket_00000
+           The assumption is that we either have all data in subdirs or root of srcPath
+           but not both.
+           For Union case, we expect delta dirs to have unique names which is assured by
+           {@link org.apache.hadoop.hive.ql.optimizer.QueryPlanPostProcessor}
+          */
+          FileStatus[] unionSubdirs = fs.globStatus(new Path(srcPath,
+            AbstractFileMergeOperator.UNION_SUDBIR_PREFIX + "[0-9]*"));
+          List<FileStatus> buckets = new ArrayList<>();
+          for(FileStatus unionSubdir : unionSubdirs) {
+            Collections.addAll(buckets,
+              fs.listStatus(unionSubdir.getPath(), AcidUtils.originalBucketFilter));
+          }
+          origBucketStats = buckets.toArray(new FileStatus[buckets.size()]);
+        }
       } catch (IOException e) {
         String msg = "Unable to look for bucket files in src path " + srcPath.toUri().toString();
         LOG.error(msg);
@@ -3502,7 +3535,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                 fs, dst, origBucketPath, createdDeltaDirs, newFiles);
         moveAcidFiles(AcidUtils.DELETE_DELTA_PREFIX, AcidUtils.deleteEventDeltaDirFilter,
                 fs, dst,origBucketPath, createdDeltaDirs, newFiles);
-        moveAcidFiles(AcidUtils.BASE_PREFIX, AcidUtils.baseFileFilter,
+        moveAcidFiles(AcidUtils.BASE_PREFIX, AcidUtils.baseFileFilter,//for Insert Overwrite
                 fs, dst, origBucketPath, createdDeltaDirs, newFiles);
       }
     }
