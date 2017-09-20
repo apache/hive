@@ -2081,11 +2081,28 @@ public class Driver implements CommandProcessor {
 
   private void setQueryDisplays(List<Task<? extends Serializable>> tasks) {
     if (tasks != null) {
-      for (Task<? extends Serializable> task : tasks) {
-        task.setQueryDisplay(queryDisplay);
-        setQueryDisplays(task.getDependentTasks());
+      Set<Task<? extends Serializable>> visited = new HashSet<Task<? extends Serializable>>();
+      while (!tasks.isEmpty()) {
+        tasks = setQueryDisplays(tasks, visited);
       }
     }
+  }
+
+  private List<Task<? extends Serializable>> setQueryDisplays(
+          List<Task<? extends Serializable>> tasks,
+          Set<Task<? extends Serializable>> visited) {
+    List<Task<? extends Serializable>> childTasks = new ArrayList<>();
+    for (Task<? extends Serializable> task : tasks) {
+      if (visited.contains(task)) {
+        continue;
+      }
+      task.setQueryDisplay(queryDisplay);
+      if (task.getDependentTasks() != null) {
+        childTasks.addAll(task.getDependentTasks());
+      }
+      visited.add(task);
+    }
+    return childTasks;
   }
 
   private void logMrWarning(int mrJobs) {
