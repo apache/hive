@@ -5150,16 +5150,18 @@ PREHOOK: query: explain select explode(array('a', 'b'))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select explode(array('a', 'b'))
 POSTHOOK: type: QUERY
-Plan not optimized by CBO.
+Plan optimized by CBO.
 
 Stage-0
   Fetch Operator
     limit:-1
-    UDTF Operator [UDTF_2]
-      function name:explode
-      Select Operator [SEL_1]
-        Output:["_col0"]
-        TableScan [TS_0]
+    Select Operator [SEL_3]
+      Output:["_col0"]
+      UDTF Operator [UDTF_2]
+        function name:explode
+        Select Operator [SEL_1]
+          Output:["_col0"]
+          TableScan [TS_0]
 
 PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE

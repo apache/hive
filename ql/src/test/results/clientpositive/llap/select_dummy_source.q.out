@@ -82,7 +82,10 @@ STAGE PLANS:
             outputColumnNames: _col0
             UDTF Operator
               function name: explode
-              ListSink
+              Select Operator
+                expressions: col (type: string)
+                outputColumnNames: _col0
+                ListSink
 
 PREHOOK: query: select explode(array('a', 'b'))
 PREHOOK: type: QUERY
@@ -178,7 +181,10 @@ STAGE PLANS:
             outputColumnNames: _col0
             UDTF Operator
               function name: explode
-              ListSink
+              Select Operator
+                expressions: col (type: string)
+                outputColumnNames: _col0
+                ListSink
 
 PREHOOK: query: select explode(array('a', 'b'))
 PREHOOK: type: QUERY
