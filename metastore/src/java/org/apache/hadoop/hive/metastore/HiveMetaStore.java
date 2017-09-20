@@ -136,6 +136,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
@@ -7640,6 +7641,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean useCompactProtocol = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_COMPACT_PROTOCOL);
       boolean useSSL = conf.getBoolVar(ConfVars.HIVE_METASTORE_USE_SSL);
       useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
+
+      if (useSasl) {
+        // we are in secure mode. Login using keytab
+        String kerberosName = SecurityUtil
+            .getServerPrincipal(conf.getVar(ConfVars.METASTORE_KERBEROS_PRINCIPAL), "0.0.0.0");
+        String keyTabFile = conf.getVar(ConfVars.METASTORE_KERBEROS_KEYTAB_FILE);
+        UserGroupInformation.loginUserFromKeytab(kerberosName, keyTabFile);
+      }
 
       TProcessor processor;
       TTransportFactory transFactory;
