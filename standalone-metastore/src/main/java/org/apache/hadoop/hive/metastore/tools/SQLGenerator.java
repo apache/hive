@@ -18,9 +18,11 @@
 package org.apache.hadoop.hive.metastore.tools;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,9 +38,9 @@ import java.util.List;
 public final class SQLGenerator {
   static final private Logger LOG = LoggerFactory.getLogger(SQLGenerator.class.getName());
   private final DatabaseProduct dbProduct;
-  private final HiveConf conf;
+  private final Configuration conf;
 
-  public SQLGenerator(DatabaseProduct dbProduct, HiveConf conf) {
+  public SQLGenerator(DatabaseProduct dbProduct, Configuration conf) {
     this.dbProduct = dbProduct;
     this.conf = conf;
   }
@@ -62,8 +64,7 @@ public final class SQLGenerator {
         //http://www.oratable.com/oracle-insert-all/
         //https://livesql.oracle.com/apex/livesql/file/content_BM1LJQ87M5CNIOKPOWPV6ZGR3.html
         for (int numRows = 0; numRows < rows.size(); numRows++) {
-          if (numRows % conf
-              .getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE) == 0) {
+          if (numRows % MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE) == 0) {
             if (numRows > 0) {
               sb.append(" select * from dual");
               insertStmts.add(sb.toString());
@@ -84,8 +85,7 @@ public final class SQLGenerator {
     case POSTGRES:
     case SQLSERVER:
       for (int numRows = 0; numRows < rows.size(); numRows++) {
-        if (numRows % conf
-            .getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE) == 0) {
+        if (numRows % MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE) == 0) {
           if (numRows > 0) {
             insertStmts.add(sb.substring(0, sb.length() - 1));//exclude trailing comma
           }
