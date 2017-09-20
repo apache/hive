@@ -10564,7 +10564,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // db_name.table_name + partitionSec
       // as the prefix for easy of read during explain and debugging.
       // Currently, partition spec can only be static partition.
-      String k = MetaStoreUtils.encodeTableName(tblName) + Path.SEPARATOR;
+      String k = org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(tblName) + Path.SEPARATOR;
       tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
 
       // set up WriteEntity for replication

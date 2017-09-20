@@ -27,7 +27,6 @@ import java.util.Map;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -51,7 +50,7 @@ public class HCatPartition {
 
   private HCatTable hcatTable;
   private String tableName;
-  private String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+  private String dbName = Warehouse.DEFAULT_DATABASE_NAME;
   private List<String> values;
   private int createTime;
   private int lastAccessTime;

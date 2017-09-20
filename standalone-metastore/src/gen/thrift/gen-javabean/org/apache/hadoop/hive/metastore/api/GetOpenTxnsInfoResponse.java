@@ -447,14 +447,14 @@ public class GetOpenTxnsInfoResponse implements org.apache.thrift.TBase<GetOpenT
           case 2: // OPEN_TXNS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list492 = iprot.readListBegin();
-                struct.open_txns = new ArrayList<TxnInfo>(_list492.size);
-                TxnInfo _elem493;
-                for (int _i494 = 0; _i494 < _list492.size; ++_i494)
+                org.apache.thrift.protocol.TList _list524 = iprot.readListBegin();
+                struct.open_txns = new ArrayList<TxnInfo>(_list524.size);
+                TxnInfo _elem525;
+                for (int _i526 = 0; _i526 < _list524.size; ++_i526)
                 {
-                  _elem493 = new TxnInfo();
-                  _elem493.read(iprot);
-                  struct.open_txns.add(_elem493);
+                  _elem525 = new TxnInfo();
+                  _elem525.read(iprot);
+                  struct.open_txns.add(_elem525);
                 }
                 iprot.readListEnd();
               }
@@ -483,9 +483,9 @@ public class GetOpenTxnsInfoResponse implements org.apache.thrift.TBase<GetOpenT
         oprot.writeFieldBegin(OPEN_TXNS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.open_txns.size()));
-          for (TxnInfo _iter495 : struct.open_txns)
+          for (TxnInfo _iter527 : struct.open_txns)
           {
-            _iter495.write(oprot);
+            _iter527.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -511,9 +511,9 @@ public class GetOpenTxnsInfoResponse implements org.apache.thrift.TBase<GetOpenT
       oprot.writeI64(struct.txn_high_water_mark);
       {
         oprot.writeI32(struct.open_txns.size());
-        for (TxnInfo _iter496 : struct.open_txns)
+        for (TxnInfo _iter528 : struct.open_txns)
         {
-          _iter496.write(oprot);
+          _iter528.write(oprot);
         }
       }
     }
@@ -524,14 +524,14 @@ public class GetOpenTxnsInfoResponse implements org.apache.thrift.TBase<GetOpenT
       struct.txn_high_water_mark = iprot.readI64();
       struct.setTxn_high_water_markIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list497 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.open_txns = new ArrayList<TxnInfo>(_list497.size);
-        TxnInfo _elem498;
-        for (int _i499 = 0; _i499 < _list497.size; ++_i499)
+        org.apache.thrift.protocol.TList _list529 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.open_txns = new ArrayList<TxnInfo>(_list529.size);
+        TxnInfo _elem530;
+        for (int _i531 = 0; _i531 < _list529.size; ++_i531)
         {
-          _elem498 = new TxnInfo();
-          _elem498.read(iprot);
-          struct.open_txns.add(_elem498);
+          _elem530 = new TxnInfo();
+          _elem530.read(iprot);
+          struct.open_txns.add(_elem530);
         }
       }
       struct.setOpen_txnsIsSet(true);

@@ -44,6 +44,10 @@ public class PathInfo {
     stagingDir = HiveConf.getVar(hiveConf, HiveConf.ConfVars.STAGINGDIR);
   }
 
+  public Map<String, Path> getFsScratchDirs() {
+    return fsScratchDirs;
+  }
+
   Path computeStagingDir(Path inputPath) {
     final URI inputPathUri = inputPath.toUri();
     final String inputPathName = inputPathUri.getPath();

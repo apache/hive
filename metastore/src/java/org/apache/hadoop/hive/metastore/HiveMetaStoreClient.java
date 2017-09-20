@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.isIndexTable;
 
 import java.io.IOException;
@@ -1368,6 +1368,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       List<String> part_names) throws NoSuchObjectException, MetaException, TException {
     List<Partition> parts = client.get_partitions_by_names(db_name, tbl_name, part_names);
     return fastpath ? parts : deepCopyPartitions(filterHook.filterPartitions(parts));
+  }
+
+  @Override
+  public PartitionValuesResponse listPartitionValues(PartitionValuesRequest request)
+      throws MetaException, TException, NoSuchObjectException {
+    return client.get_partition_values(request);
   }
 
   @Override

@@ -86,6 +86,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('   get_partitions_with_auth(string db_name, string tbl_name, i16 max_parts, string user_name,  group_names)')
   print('   get_partitions_pspec(string db_name, string tbl_name, i32 max_parts)')
   print('   get_partition_names(string db_name, string tbl_name, i16 max_parts)')
+  print('  PartitionValuesResponse get_partition_values(PartitionValuesRequest request)')
   print('   get_partitions_ps(string db_name, string tbl_name,  part_vals, i16 max_parts)')
   print('   get_partitions_ps_with_auth(string db_name, string tbl_name,  part_vals, i16 max_parts, string user_name,  group_names)')
   print('   get_partition_names_ps(string db_name, string tbl_name,  part_vals, i16 max_parts)')
@@ -625,6 +626,12 @@ elif cmd == 'get_partition_names':
     print('get_partition_names requires 3 args')
     sys.exit(1)
   pp.pprint(client.get_partition_names(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'get_partition_values':
+  if len(args) != 1:
+    print('get_partition_values requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_partition_values(eval(args[0]),))
 
 elif cmd == 'get_partitions_ps':
   if len(args) != 4:

@@ -34,8 +34,8 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -891,7 +891,7 @@ public class HCatClientHMSImpl extends HCatClient {
 
   private String checkDB(String name) {
     if (StringUtils.isEmpty(name)) {
-      return MetaStoreUtils.DEFAULT_DATABASE_NAME;
+      return Warehouse.DEFAULT_DATABASE_NAME;
     } else {
       return name;
     }

@@ -87,9 +87,13 @@ class AlterPartitionHandler extends AbstractEventHandler {
   public void handle(Context withinContext) throws Exception {
     LOG.info("Processing#{} ALTER_PARTITION message : {}", fromEventId(), event.getMessage());
 
+    Table qlMdTable = new Table(tableObject);
+    if (!EximUtil.shouldExportTable(withinContext.replicationSpec, qlMdTable)) {
+      return;
+    }
+
     if (Scenario.ALTER == scenario) {
       withinContext.replicationSpec.setIsMetadataOnly(true);
-      Table qlMdTable = new Table(tableObject);
       List<Partition> partitions = new ArrayList<>();
       partitions.add(new Partition(qlMdTable, after));
       Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);

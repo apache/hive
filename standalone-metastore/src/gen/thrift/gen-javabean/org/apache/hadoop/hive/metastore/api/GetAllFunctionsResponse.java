@@ -346,14 +346,14 @@ public class GetAllFunctionsResponse implements org.apache.thrift.TBase<GetAllFu
           case 1: // FUNCTIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list674 = iprot.readListBegin();
-                struct.functions = new ArrayList<Function>(_list674.size);
-                Function _elem675;
-                for (int _i676 = 0; _i676 < _list674.size; ++_i676)
+                org.apache.thrift.protocol.TList _list706 = iprot.readListBegin();
+                struct.functions = new ArrayList<Function>(_list706.size);
+                Function _elem707;
+                for (int _i708 = 0; _i708 < _list706.size; ++_i708)
                 {
-                  _elem675 = new Function();
-                  _elem675.read(iprot);
-                  struct.functions.add(_elem675);
+                  _elem707 = new Function();
+                  _elem707.read(iprot);
+                  struct.functions.add(_elem707);
                 }
                 iprot.readListEnd();
               }
@@ -380,9 +380,9 @@ public class GetAllFunctionsResponse implements org.apache.thrift.TBase<GetAllFu
           oprot.writeFieldBegin(FUNCTIONS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.functions.size()));
-            for (Function _iter677 : struct.functions)
+            for (Function _iter709 : struct.functions)
             {
-              _iter677.write(oprot);
+              _iter709.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -414,9 +414,9 @@ public class GetAllFunctionsResponse implements org.apache.thrift.TBase<GetAllFu
       if (struct.isSetFunctions()) {
         {
           oprot.writeI32(struct.functions.size());
-          for (Function _iter678 : struct.functions)
+          for (Function _iter710 : struct.functions)
           {
-            _iter678.write(oprot);
+            _iter710.write(oprot);
           }
         }
       }
@@ -428,14 +428,14 @@ public class GetAllFunctionsResponse implements org.apache.thrift.TBase<GetAllFu
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list679 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.functions = new ArrayList<Function>(_list679.size);
-          Function _elem680;
-          for (int _i681 = 0; _i681 < _list679.size; ++_i681)
+          org.apache.thrift.protocol.TList _list711 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.functions = new ArrayList<Function>(_list711.size);
+          Function _elem712;
+          for (int _i713 = 0; _i713 < _list711.size; ++_i713)
           {
-            _elem680 = new Function();
-            _elem680.read(iprot);
-            struct.functions.add(_elem680);
+            _elem712 = new Function();
+            _elem712.read(iprot);
+            struct.functions.add(_elem712);
           }
         }
         struct.setFunctionsIsSet(true);

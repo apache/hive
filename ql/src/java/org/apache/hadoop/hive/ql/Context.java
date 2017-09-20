@@ -284,6 +284,9 @@ public class Context {
     opContext = new CompilationOpContext();
   }
 
+  public Map<String, Path> getFsScratchDirs() {
+    return fsScratchDirs;
+  }
 
   public Map<LoadTableDesc, WriteEntity> getLoadTableOutputMap() {
     return loadTableOutputMap;

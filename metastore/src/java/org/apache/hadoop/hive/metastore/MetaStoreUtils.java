@@ -120,12 +120,6 @@ public class MetaStoreUtils {
 
   protected static final Logger LOG = LoggerFactory.getLogger("hive.log");
 
-  public static final String DEFAULT_DATABASE_NAME = "default";
-  public static final String DEFAULT_DATABASE_COMMENT = "Default Hive database";
-  public static final String DEFAULT_SERIALIZATION_FORMAT = "1";
-
-  public static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
-
   // Right now we only support one special character '/'.
   // More special characters can be added accordingly in the future.
   // NOTE:
@@ -151,7 +145,7 @@ public class MetaStoreUtils {
     serdeInfo.setSerializationLib(LazySimpleSerDe.class.getName());
     serdeInfo.setParameters(new HashMap<String, String>());
     serdeInfo.getParameters().put(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT,
-        DEFAULT_SERIALIZATION_FORMAT);
+        Warehouse.DEFAULT_SERIALIZATION_FORMAT);
 
     List<FieldSchema> fields = new ArrayList<FieldSchema>(columns.size());
     sd.setCols(fields);
@@ -1888,22 +1882,6 @@ public class MetaStoreUtils {
     }
 
     return new URLClassLoader(curPath.toArray(new URL[0]), loader);
-  }
-
-  public static String encodeTableName(String name) {
-    // The encoding method is simple, e.g., replace
-    // all the special characters with the corresponding number in ASCII.
-    // Note that unicode is not supported in table names. And we have explicit
-    // checks for it.
-    StringBuilder sb = new StringBuilder();
-    for (char ch : name.toCharArray()) {
-      if (Character.isLetterOrDigit(ch) || ch == '_') {
-        sb.append(ch);
-      } else {
-        sb.append('-').append((int) ch).append('-');
-      }
-    }
-    return sb.toString();
   }
 
   // this function will merge csOld into csNew.

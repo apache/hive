@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
-import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -923,7 +922,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         tblDesc.setLocation(
             wh.getDnsPath(new Path(
                 wh.getDefaultDatabasePath(tblDesc.getDatabaseName()),
-                MetaStoreUtils.encodeTableName(tblDesc.getTableName().toLowerCase())
+                org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(tblDesc.getTableName().toLowerCase())
             )
         ).toString());
 

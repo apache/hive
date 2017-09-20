@@ -18,8 +18,8 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_COMMENT;
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMENT;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
 
 import java.io.IOException;
@@ -4093,6 +4093,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_partition_names", ret != null, ex, tbl_name);
       }
       return ret;
+    }
+
+    @Override
+    public PartitionValuesResponse get_partition_values(PartitionValuesRequest request) throws MetaException {
+      String dbName = request.getDbName();
+      String tblName = request.getTblName();
+      List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+      partCols.add(request.getPartitionKeys().get(0));
+      return getMS().listPartitionValues(dbName, tblName, request.getPartitionKeys(),
+          request.isApplyDistinct(), request.getFilter(), request.isAscending(),
+          request.getPartitionOrder(), request.getMaxParts());
     }
 
     @Override

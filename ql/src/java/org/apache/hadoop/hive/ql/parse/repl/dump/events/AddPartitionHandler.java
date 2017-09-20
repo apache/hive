@@ -44,13 +44,9 @@ class AddPartitionHandler extends AbstractEventHandler {
 
   @Override
   public void handle(Context withinContext) throws Exception {
-    AddPartitionMessage apm = deserializer.getAddPartitionMessage(event.getMessage());
     LOG.info("Processing#{} ADD_PARTITION message : {}", fromEventId(), event.getMessage());
-    Iterable<org.apache.hadoop.hive.metastore.api.Partition> ptns = apm.getPartitionObjs();
-    if ((ptns == null) || (!ptns.iterator().hasNext())) {
-      LOG.debug("Event#{} was an ADD_PTN_EVENT with no partitions");
-      return;
-    }
+
+    AddPartitionMessage apm = deserializer.getAddPartitionMessage(event.getMessage());
     org.apache.hadoop.hive.metastore.api.Table tobj = apm.getTableObj();
     if (tobj == null) {
       LOG.debug("Event#{} was a ADD_PTN_EVENT with no table listed");
@@ -58,6 +54,16 @@ class AddPartitionHandler extends AbstractEventHandler {
     }
 
     final Table qlMdTable = new Table(tobj);
+    if (!EximUtil.shouldExportTable(withinContext.replicationSpec, qlMdTable)) {
+      return;
+    }
+
+    Iterable<org.apache.hadoop.hive.metastore.api.Partition> ptns = apm.getPartitionObjs();
+    if ((ptns == null) || (!ptns.iterator().hasNext())) {
+      LOG.debug("Event#{} was an ADD_PTN_EVENT with no partitions");
+      return;
+    }
+
     Iterable<Partition> qlPtns = Iterables.transform(
         ptns,
         new Function<org.apache.hadoop.hive.metastore.api.Partition, Partition>() {

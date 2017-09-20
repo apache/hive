@@ -1251,8 +1251,8 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     final Object union = unionOI.create();
     final int tag = deserializeRead.currentInt;
-    unionOI.addField(union, new StandardUnion((byte) tag,
-        convertComplexFieldRowColumn(unionColumnVector.fields[tag], batchIndex, fields[tag])));
+    unionOI.setFieldAndTag(union, new StandardUnion((byte) tag,
+        convertComplexFieldRowColumn(unionColumnVector.fields[tag], batchIndex, fields[tag])), (byte) tag);
     deserializeRead.finishComplexVariableFieldsType();
     return union;
   }

@@ -18,8 +18,10 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -3019,10 +3021,9 @@ public class TestReplicationScenarios {
     run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
     verifyIfTableNotExist(dbName + "_dupe", "acid_table", metaStoreClientMirror);
 
-    // // Create another table for incremental repl verification
-    run("CREATE TABLE " + dbName + ".acid_table_incremental (key int, value int) PARTITIONED BY (load_date date) " +
-        "CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
-    verifyIfTableExist(dbName, "acid_table_incremental", metaStoreClient);
+    // Test alter table
+    run("ALTER TABLE " + dbName + ".acid_table RENAME TO " + dbName + ".acid_table_rename", driver);
+    verifyIfTableExist(dbName, "acid_table_rename", metaStoreClient);
 
     // Perform REPL-DUMP/LOAD
     advanceDumpDir();
@@ -3033,7 +3034,97 @@ public class TestReplicationScenarios {
     run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
     printOutput(driverMirror);
     run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'", driverMirror);
+    verifyIfTableNotExist(dbName + "_dupe", "acid_table_rename", metaStoreClientMirror);
+
+    // Create another table for incremental repl verification
+    run("CREATE TABLE " + dbName + ".acid_table_incremental (key int, value int) PARTITIONED BY (load_date date) " +
+        "CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+    verifyIfTableExist(dbName, "acid_table_incremental", metaStoreClient);
+
+    // Perform REPL-DUMP/LOAD
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0,0,driver);
+    incrementalDumpId = getResult(0,1,true,driver);
+    LOG.info("Incremental-dump: Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'", driverMirror);
     verifyIfTableNotExist(dbName + "_dupe", "acid_table_incremental", metaStoreClientMirror);
+  }
+
+  @Test
+  public void testDeleteStagingDir() throws IOException {
+	String testName = "deleteStagingDir";
+	String dbName = createDB(testName, driver);
+	String tableName = "unptned";
+    run("CREATE TABLE " + dbName + "." + tableName + "(a string) STORED AS TEXTFILE", driver);
+
+    String[] unptn_data = new String[] {"one", "two"};
+    String unptn_locn = new Path(TEST_PATH , testName + "_unptn").toUri().getPath();
+    createTestDataFile(unptn_locn, unptn_data);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+
+    // Perform repl
+    advanceDumpDir();
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0,0,driver);
+    // Reset the driver
+    driverMirror.close();
+    driverMirror.init();
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
+    // Calling close() explicitly to clean up the staging dirs
+    driverMirror.close();
+    // Check result
+    Path warehouse = new Path(System.getProperty("test.warehouse.dir", "/tmp"));
+    FileSystem fs = FileSystem.get(warehouse.toUri(), hconf);
+    try {
+      Path path = new Path(warehouse, dbName + "_dupe.db" + Path.SEPARATOR + tableName);
+      // First check if the table dir exists (could have been deleted for some reason in pre-commit tests)
+      if (!fs.exists(path))
+      {
+        return;
+      }
+      PathFilter filter = new PathFilter()
+      {
+        @Override
+        public boolean accept(Path path)
+        {
+          return path.getName().startsWith(HiveConf.getVar(hconf, HiveConf.ConfVars.STAGINGDIR));
+        }
+      };
+      FileStatus[] statuses = fs.listStatus(path, filter);
+      assertEquals(0, statuses.length);
+    } catch (IOException e) {
+      LOG.error("Failed to list files in: " + warehouse, e);
+      assert(false);
+    }
+  }
+
+  @Test
+  public void testCMConflict() throws IOException {
+    String testName = "cmConflict";
+    String dbName = createDB(testName, driver);
+
+    // Create table and insert two file of the same content
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('ten')", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('ten')", driver);
+
+    // Bootstrap test
+    advanceDumpDir();
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0,driver);
+    String replDumpId = getResult(0, 1, true, driver);
+
+    // Drop two files so they are moved to CM
+    run("TRUNCATE TABLE " + dbName + ".unptned", driver);
+
+    LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
+
+    verifyRun("SELECT count(*) from " + dbName + "_dupe.unptned", new String[]{"2"}, driverMirror);
   }
 
   private static String createDB(String name, Driver myDriver) {
@@ -3279,6 +3370,15 @@ public class TestReplicationScenarios {
       Partition ptn = myClient.getPartition(dbName, tableName, partValues);
       assertNotNull(ptn);
     } catch (TException te) {
+      assert(false);
+    }
+  }
+
+  private void verifyIfDirNotExist(FileSystem fs, Path path, PathFilter filter){
+    try {
+      FileStatus[] statuses = fs.listStatus(path, filter);
+      assertEquals(0, statuses.length);
+    } catch (IOException e) {
       assert(false);
     }
   }
