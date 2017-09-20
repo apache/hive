@@ -135,7 +135,13 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
+      <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-distcp</artifactId>
+          <version>${hadoop.version}</version>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-cli</artifactId>
       <version>${project.version}</version>

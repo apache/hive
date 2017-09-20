@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.login.LoginException;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -54,7 +55,7 @@ public class FileOperations {
     exportFileSystem = exportRootDataDir.getFileSystem(hiveConf);
   }
 
-  public void export(ReplicationSpec forReplicationSpec) throws IOException, SemanticException {
+  public void export(ReplicationSpec forReplicationSpec) throws Exception {
     if (forReplicationSpec.isLazy()) {
       exportFilesAsList();
     } else {
@@ -65,7 +66,7 @@ public class FileOperations {
   /**
    * This writes the actual data in the exportRootDataDir from the source.
    */
-  private void copyFiles() throws IOException {
+  private void copyFiles() throws IOException, LoginException {
     FileStatus[] fileStatuses =
         LoadSemanticAnalyzer.matchFilesOrDir(dataFileSystem, dataFileListPath);
     List<Path> srcPaths = new ArrayList<>();

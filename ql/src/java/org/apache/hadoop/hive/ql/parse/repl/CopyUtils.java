@@ -25,9 +25,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,9 +55,13 @@ public class CopyUtils {
     this.copyAsUser = distCpDoAsUser;
   }
 
-  public void doCopy(Path destination, List<Path> srcPaths) throws IOException {
+  public void doCopy(Path destination, List<Path> srcPaths) throws IOException, LoginException {
     Map<FileSystem, List<Path>> map = fsToFileMap(srcPaths);
     FileSystem destinationFs = destination.getFileSystem(hiveConf);
+
+    UserGroupInformation ugi = Utils.getUGI();
+    String currentUser = ugi.getShortUserName();
+    boolean usePrivilegedDistCp = copyAsUser != null && !currentUser.equals(copyAsUser);
 
     for (Map.Entry<FileSystem, List<Path>> entry : map.entrySet()) {
       if (regularCopy(destinationFs, entry)) {
@@ -66,7 +73,7 @@ public class CopyUtils {
             entry.getValue(), // list of source paths
             destination,
             false,
-            copyAsUser,
+            usePrivilegedDistCp ? copyAsUser : null,
             hiveConf,
             ShimLoader.getHadoopShims()
         );

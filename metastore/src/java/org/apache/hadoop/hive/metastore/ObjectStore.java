@@ -8569,7 +8569,8 @@ public class ObjectStore implements RawStore, Configurable {
           if (currentRetries >= maxRetries) {
             String message =
                 "Couldn't acquire the DB log notification lock because we reached the maximum"
-                    + " # of retries: {} retries. If this happens too often, then is recommended to "
+                    + " # of retries: " + maxRetries
+                    + " retries. If this happens too often, then is recommended to "
                     + "increase the maximum number of retries on the"
                     + " hive.notification.sequence.lock.max.retries configuration";
             LOG.error(message, e);
