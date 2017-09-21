@@ -19,12 +19,6 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-
-import javax.security.auth.login.LoginException;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -40,6 +34,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.security.auth.login.LoginException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -132,6 +128,10 @@ import org.apache.tez.runtime.library.conf.OrderedPartitionedKVEdgeConfig;
 import org.apache.tez.runtime.library.conf.UnorderedKVEdgeConfig;
 import org.apache.tez.runtime.library.conf.UnorderedPartitionedKVEdgeConfig;
 import org.apache.tez.runtime.library.input.ConcatenatedMergedKeyValueInput;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 
 /**
  * DagUtils. DagUtils is a collection of helper methods to convert
@@ -841,10 +841,45 @@ public class DagUtils {
   public List<LocalResource> localizeTempFilesFromConf(
       String hdfsDirPathStr, Configuration conf) throws IOException, LoginException {
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
-
-    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, getTempFilesFromConf(conf));
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEADDFILESUSEHDFSLOCATION)) {
+      // reference HDFS based resource directly, to use distribute cache efficiently.
+      addHdfsResource(conf, tmpResources, LocalResourceType.FILE, getHdfsTempFilesFromConf(conf));
+      // local resources are session based.
+      addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, getLocalTempFilesFromConf(conf));
+    } else {
+      // all resources including HDFS are session based.
+      addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, getTempFilesFromConf(conf));
+    }
     addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.ARCHIVE, getTempArchivesFromConf(conf));
     return tmpResources;
+  }
+
+  private void addHdfsResource(Configuration conf, List<LocalResource> tmpResources,
+      LocalResourceType type, String[] files) throws IOException {
+    for (String file: files) {
+      if (StringUtils.isNotBlank(file)) {
+        Path dest = new Path(file);
+        FileSystem destFS = dest.getFileSystem(conf);
+        LocalResource localResource = createLocalResource(destFS, dest, type,
+            LocalResourceVisibility.PRIVATE);
+        tmpResources.add(localResource);
+      }
+    }
+  }
+
+  private static String[] getHdfsTempFilesFromConf(Configuration conf) {
+    String addedFiles = Utilities.getHdfsResourceFiles(conf, SessionState.ResourceType.FILE);
+    String addedJars = Utilities.getHdfsResourceFiles(conf, SessionState.ResourceType.JAR);
+    String allFiles = addedJars + "," + addedFiles;
+    return allFiles.split(",");
+  }
+
+  private static String[] getLocalTempFilesFromConf(Configuration conf) {
+    String addedFiles = Utilities.getLocalResourceFiles(conf, SessionState.ResourceType.FILE);
+    String addedJars = Utilities.getLocalResourceFiles(conf, SessionState.ResourceType.JAR);
+    String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
+    String allFiles = auxJars + "," + addedJars + "," + addedFiles;
+    return allFiles.split(",");
   }
 
   private static String[] getTempFilesFromConf(Configuration conf) {
