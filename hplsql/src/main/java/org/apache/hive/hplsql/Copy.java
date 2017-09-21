@@ -28,6 +28,8 @@ import java.util.List;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -167,7 +169,9 @@ public class Copy {
     exec.setRowCount(rows);
     long elapsed = timer.stop();
     if (info) {
-      info(ctx, "COPY completed: " + rows + " row(s), " + timer.format() + ", " + rows/(elapsed/1000) + " rows/sec");
+      DecimalFormat df = new DecimalFormat("#,##0.00");
+      df.setRoundingMode(RoundingMode.HALF_UP);
+      info(ctx, "COPY completed: " + rows + " row(s), " + timer.format() + ", " + df.format(rows/(elapsed/1000.0)) + " rows/sec");
     }
   }
   
