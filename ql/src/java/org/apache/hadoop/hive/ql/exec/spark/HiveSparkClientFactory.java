@@ -95,21 +95,21 @@ public class HiveSparkClientFactory {
       inputStream = HiveSparkClientFactory.class.getClassLoader()
         .getResourceAsStream(SPARK_DEFAULT_CONF_FILE);
       if (inputStream != null) {
-        LOG.info("loading spark properties from:" + SPARK_DEFAULT_CONF_FILE);
+        LOG.info("loading spark properties from: " + SPARK_DEFAULT_CONF_FILE);
         Properties properties = new Properties();
         properties.load(new InputStreamReader(inputStream, CharsetNames.UTF_8));
         for (String propertyName : properties.stringPropertyNames()) {
           if (propertyName.startsWith("spark")) {
             String value = properties.getProperty(propertyName);
             sparkConf.put(propertyName, properties.getProperty(propertyName));
-            LOG.info(String.format(
+            LOG.debug(String.format(
               "load spark property from %s (%s -> %s).",
               SPARK_DEFAULT_CONF_FILE, propertyName, LogUtils.maskIfPassword(propertyName,value)));
           }
         }
       }
     } catch (IOException e) {
-      LOG.info("Failed to open spark configuration file:"
+      LOG.info("Failed to open spark configuration file: "
         + SPARK_DEFAULT_CONF_FILE, e);
     } finally {
       if (inputStream != null) {
@@ -156,7 +156,7 @@ public class HiveSparkClientFactory {
       if (propertyName.startsWith("spark")) {
         String value = hiveConf.get(propertyName);
         sparkConf.put(propertyName, value);
-        LOG.info(String.format(
+        LOG.debug(String.format(
           "load spark property from hive configuration (%s -> %s).",
           propertyName, LogUtils.maskIfPassword(propertyName,value)));
       } else if (propertyName.startsWith("yarn") &&
@@ -166,7 +166,7 @@ public class HiveSparkClientFactory {
         // started with spark prefix, Spark would remove spark.hadoop prefix lately and add
         // it to its hadoop configuration.
         sparkConf.put("spark.hadoop." + propertyName, value);
-        LOG.info(String.format(
+        LOG.debug(String.format(
           "load yarn property from hive configuration in %s mode (%s -> %s).",
           sparkMaster, propertyName, LogUtils.maskIfPassword(propertyName,value)));
       } else if (propertyName.equals(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY)) {
@@ -180,19 +180,19 @@ public class HiveSparkClientFactory {
         // Spark problem.
         String value = hiveConf.get(propertyName);
         sparkConf.put("spark.hadoop." + propertyName, value);
-        LOG.info(String.format(
+        LOG.debug(String.format(
           "load HBase configuration (%s -> %s).", propertyName, LogUtils.maskIfPassword(propertyName,value)));
       } else if (propertyName.startsWith("oozie")) {
         String value = hiveConf.get(propertyName);
         sparkConf.put("spark." + propertyName, value);
-        LOG.info(String.format(
+        LOG.debug(String.format(
           "Pass Oozie configuration (%s -> %s).", propertyName, LogUtils.maskIfPassword(propertyName,value)));
       }
 
       if (RpcConfiguration.HIVE_SPARK_RSC_CONFIGS.contains(propertyName)) {
         String value = RpcConfiguration.getValue(hiveConf, propertyName);
         sparkConf.put(propertyName, value);
-        LOG.info(String.format(
+        LOG.debug(String.format(
           "load RPC property from hive configuration (%s -> %s).",
           propertyName, LogUtils.maskIfPassword(propertyName,value)));
       }
