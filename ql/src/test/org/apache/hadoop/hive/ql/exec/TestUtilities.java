@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -909,4 +910,25 @@ public class TestUtilities {
 
   }
 
+  private static Task<MapredWork> getMapredWork() {
+    return TaskFactory.get(MapredWork.class, new HiveConf());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void testGetTasksRecursion() {
+
+    Task<MapredWork> rootTask = getMapredWork();
+    Task<MapredWork> child1 = getMapredWork();
+    Task<MapredWork> child2 = getMapredWork();
+    Task<MapredWork> child11 = getMapredWork();
+
+    rootTask.addDependentTask(child1);
+    rootTask.addDependentTask(child2);
+    child1.addDependentTask(child11);
+
+    assertEquals(Lists.newArrayList(rootTask, child1, child2, child11),
+        Utilities.getMRTasks(getTestDiamondTaskGraph(rootTask)));
+
+  }
 }
