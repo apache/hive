@@ -29,7 +29,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -84,7 +84,7 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
 
     super.setUp();
 
-    int port = MetaStoreUtils.findFreePort();
+    int port = MetaStoreTestUtils.findFreePort();
 
     // Turn on metastore-side authorization
     System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
@@ -99,7 +99,7 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     System.setProperty(HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS.varname, "");
 
 
-    MetaStoreUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
+    MetaStoreTestUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
 
     clientHiveConf = createHiveConf();
 

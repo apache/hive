@@ -24,9 +24,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
@@ -65,7 +62,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +74,6 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -118,7 +113,7 @@ import javax.annotation.Nullable;
 
 public class MetaStoreUtils {
 
-  protected static final Logger LOG = LoggerFactory.getLogger("hive.log");
+  private static final Logger LOG = LoggerFactory.getLogger("hive.log");
 
   // Right now we only support one special character '/'.
   // More special characters can be added accordingly in the future.
@@ -704,7 +699,9 @@ public class MetaStoreUtils {
    * @return
    */
   static public String validateColumnType(String type) {
-    if (type.equals(TYPE_FROM_DESERIALIZER)) return null;
+    if (type.equals(TYPE_FROM_DESERIALIZER)) {
+      return null;
+    }
     int last = 0;
     boolean lastAlphaDigit = isValidTypeChar(type.charAt(last));
     for (int i = 1; i <= type.length(); i++) {
@@ -1248,134 +1245,6 @@ public class MetaStoreUtils {
       }
     } catch (IOException e) {
       throw new MetaException("Unable to : " + path);
-    }
-  }
-
-  public static int startMetaStore() throws Exception {
-    return startMetaStore(HadoopThriftAuthBridge.getBridge(), null);
-  }
-
-  public static int startMetaStore(final HadoopThriftAuthBridge bridge, HiveConf conf) throws Exception {
-    int port = findFreePort();
-    startMetaStore(port, bridge, conf);
-    return port;
-  }
-
-  public static int startMetaStore(HiveConf conf) throws Exception {
-    return startMetaStore(HadoopThriftAuthBridge.getBridge(), conf);
-  }
-
-  public static void startMetaStore(final int port, final HadoopThriftAuthBridge bridge) throws Exception {
-    startMetaStore(port, bridge, null);
-  }
-
-  public static void startMetaStore(final int port,
-      final HadoopThriftAuthBridge bridge, HiveConf hiveConf)
-      throws Exception{
-    if (hiveConf == null) {
-      hiveConf = new HiveConf(HMSHandler.class);
-    }
-    final HiveConf finalHiveConf = hiveConf;
-    Thread thread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          HiveMetaStore.startMetaStore(port, bridge, finalHiveConf);
-        } catch (Throwable e) {
-          LOG.error("Metastore Thrift Server threw an exception...",e);
-        }
-      }
-    });
-    thread.setDaemon(true);
-    thread.start();
-    loopUntilHMSReady(port);
-  }
-
-  /**
-   * A simple connect test to make sure that the metastore is up
-   * @throws Exception
-   */
-  private static void loopUntilHMSReady(int port) throws Exception {
-    int retries = 0;
-    Exception exc = null;
-    while (true) {
-      try {
-        Socket socket = new Socket();
-        socket.connect(new InetSocketAddress(port), 5000);
-        socket.close();
-        return;
-      } catch (Exception e) {
-        if (retries++ > 60) { //give up
-          exc = e;
-          break;
-        }
-        Thread.sleep(1000);
-      }
-    }
-    // something is preventing metastore from starting
-    // print the stack from all threads for debugging purposes
-    LOG.error("Unable to connect to metastore server: " + exc.getMessage());
-    LOG.info("Printing all thread stack traces for debugging before throwing exception.");
-    LOG.info(getAllThreadStacksAsString());
-    throw exc;
-  }
-
-  private static String getAllThreadStacksAsString() {
-    Map<Thread, StackTraceElement[]> threadStacks = Thread.getAllStackTraces();
-    StringBuilder sb = new StringBuilder();
-    for (Map.Entry<Thread, StackTraceElement[]> entry : threadStacks.entrySet()) {
-      Thread t = entry.getKey();
-      sb.append(System.lineSeparator());
-      sb.append("Name: ").append(t.getName()).append(" State: ").append(t.getState());
-      addStackString(entry.getValue(), sb);
-    }
-    return sb.toString();
-  }
-
-  private static void addStackString(StackTraceElement[] stackElems, StringBuilder sb) {
-    sb.append(System.lineSeparator());
-    for (StackTraceElement stackElem : stackElems) {
-      sb.append(stackElem).append(System.lineSeparator());
-    }
-  }
-
-  /**
-   * Finds a free port on the machine.
-   *
-   * @return
-   * @throws IOException
-   */
-  public static int findFreePort() throws IOException {
-    ServerSocket socket= new ServerSocket(0);
-    int port = socket.getLocalPort();
-    socket.close();
-    return port;
-  }
-
-  /**
-   * Finds a free port on the machine, but allow the
-   * ability to specify a port number to not use, no matter what.
-   */
-  public static int findFreePortExcepting(int portToExclude) throws IOException {
-    ServerSocket socket1 = null;
-    ServerSocket socket2 = null;
-    try {
-      socket1 = new ServerSocket(0);
-      socket2 = new ServerSocket(0);
-      if (socket1.getLocalPort() != portToExclude) {
-        return socket1.getLocalPort();
-      }
-      // If we're here, then socket1.getLocalPort was the port to exclude
-      // Since both sockets were open together at a point in time, we're
-      // guaranteed that socket2.getLocalPort() is not the same.
-      return socket2.getLocalPort();
-    } finally {
-      if (socket1 != null){
-        socket1.close();
-      }
-      if (socket2 != null){
-        socket2.close();
-      }
     }
   }
 
@@ -2026,7 +1895,9 @@ public class MetaStoreUtils {
     for (FieldSchema fs : sd.getCols()) {
       md.update(fs.getName().getBytes(ENCODING));
       md.update(fs.getType().getBytes(ENCODING));
-      if (fs.getComment() != null) md.update(fs.getComment().getBytes(ENCODING));
+      if (fs.getComment() != null) {
+        md.update(fs.getComment().getBytes(ENCODING));
+      }
     }
     if (sd.getInputFormat() != null) {
       md.update(sd.getInputFormat().getBytes(ENCODING));
@@ -2054,7 +1925,9 @@ public class MetaStoreUtils {
     }
     if (sd.getBucketCols() != null) {
       List<String> bucketCols = new ArrayList<>(sd.getBucketCols());
-      for (String bucket : bucketCols) md.update(bucket.getBytes(ENCODING));
+      for (String bucket : bucketCols) {
+        md.update(bucket.getBytes(ENCODING));
+      }
     }
     if (sd.getSortCols() != null) {
       SortedSet<Order> orders = new TreeSet<>(sd.getSortCols());
@@ -2067,7 +1940,9 @@ public class MetaStoreUtils {
       SkewedInfo skewed = sd.getSkewedInfo();
       if (skewed.getSkewedColNames() != null) {
         SortedSet<String> colnames = new TreeSet<>(skewed.getSkewedColNames());
-        for (String colname : colnames) md.update(colname.getBytes(ENCODING));
+        for (String colname : colnames) {
+          md.update(colname.getBytes(ENCODING));
+        }
       }
       if (skewed.getSkewedColValues() != null) {
         SortedSet<String> sortedOuterList = new TreeSet<>();
@@ -2075,7 +1950,9 @@ public class MetaStoreUtils {
           SortedSet<String> sortedInnerList = new TreeSet<>(innerList);
           sortedOuterList.add(StringUtils.join(sortedInnerList, "."));
         }
-        for (String colval : sortedOuterList) md.update(colval.getBytes(ENCODING));
+        for (String colval : sortedOuterList) {
+          md.update(colval.getBytes(ENCODING));
+        }
       }
       if (skewed.getSkewedColValueLocationMaps() != null) {
         SortedMap<String, String> sortedMap = new TreeMap<>();

@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -43,7 +43,7 @@ public class TestHiveRemote extends TestHive {
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + MetaStoreUtils.startMetaStore());
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + MetaStoreTestUtils.startMetaStore());
 
     try {
       hm = Hive.get(hiveConf);

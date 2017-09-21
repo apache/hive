@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
@@ -198,9 +198,9 @@ public class MiniHS2 extends AbstractHiveService {
     super(
         hiveConf,
         "localhost",
-        (usePortsFromConf ? hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT) : MetaStoreUtils
+        (usePortsFromConf ? hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT) : MetaStoreTestUtils
             .findFreePort()),
-        (usePortsFromConf ? hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT) : MetaStoreUtils
+        (usePortsFromConf ? hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT) : MetaStoreTestUtils
             .findFreePort()));
     hiveConf.setLongVar(ConfVars.HIVE_SERVER2_MAX_START_ATTEMPTS, 3l);
     hiveConf.setTimeVar(ConfVars.HIVE_SERVER2_SLEEP_INTERVAL_BETWEEN_START_ATTEMPTS, 10,
@@ -277,7 +277,7 @@ public class MiniHS2 extends AbstractHiveService {
     hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY, metaStoreURL);
     if (!usePortsFromConf) {
       // reassign a new port, just in case if one of the MR services grabbed the last one
-      setBinaryPort(MetaStoreUtils.findFreePort());
+      setBinaryPort(MetaStoreTestUtils.findFreePort());
     }
     hiveConf.setVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, getHost());
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT, getBinaryPort());
@@ -310,9 +310,9 @@ public class MiniHS2 extends AbstractHiveService {
 
   public void start(Map<String, String> confOverlay) throws Exception {
     if (isMetastoreRemote) {
-      int metaStorePort = MetaStoreUtils.findFreePort();
+      int metaStorePort = MetaStoreTestUtils.findFreePort();
       getHiveConf().setVar(ConfVars.METASTOREURIS, "thrift://localhost:" + metaStorePort);
-      MetaStoreUtils.startMetaStore(metaStorePort, HadoopThriftAuthBridge.getBridge(), getHiveConf());
+      MetaStoreTestUtils.startMetaStore(metaStorePort, HadoopThriftAuthBridge.getBridge(), getHiveConf());
     }
 
     hiveServer2 = new HiveServer2();

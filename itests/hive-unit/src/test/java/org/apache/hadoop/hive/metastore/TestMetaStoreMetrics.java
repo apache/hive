@@ -40,7 +40,7 @@ public class TestMetaStoreMetrics {
 
   @BeforeClass
   public static void before() throws Exception {
-    int port = MetaStoreUtils.findFreePort();
+    int port = MetaStoreTestUtils.findFreePort();
 
     hiveConf = new HiveConf(TestMetaStoreMetrics.class);
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
@@ -52,7 +52,7 @@ public class TestMetaStoreMetrics {
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
 
     //Increments one HMS connection
-    MetaStoreUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), hiveConf);
+    MetaStoreTestUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), hiveConf);
 
     //Increments one HMS connection (Hive.get())
     SessionState.start(new CliSessionState(hiveConf));

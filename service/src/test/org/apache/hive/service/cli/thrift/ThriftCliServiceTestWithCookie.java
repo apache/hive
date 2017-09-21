@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hive.service.Service;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.HiveAuthConstants.AuthTypes;
@@ -63,7 +63,7 @@ public class ThriftCliServiceTestWithCookie {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     // Find a free port
-    port = MetaStoreUtils.findFreePort();
+    port = MetaStoreTestUtils.findFreePort();
     hiveServer2 = new HiveServer2();
     hiveConf = new HiveConf();
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_AUTH_ENABLED, true);

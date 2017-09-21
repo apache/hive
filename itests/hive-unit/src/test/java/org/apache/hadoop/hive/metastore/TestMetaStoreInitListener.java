@@ -41,8 +41,8 @@ public class TestMetaStoreInitListener extends TestCase {
     super.setUp();
     System.setProperty("hive.metastore.init.hooks",
         DummyMetaStoreInitListener.class.getName());
-    int port = MetaStoreUtils.findFreePort();
-    MetaStoreUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
+    int port = MetaStoreTestUtils.findFreePort();
+    MetaStoreTestUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
     hiveConf = new HiveConf(this.getClass());
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);

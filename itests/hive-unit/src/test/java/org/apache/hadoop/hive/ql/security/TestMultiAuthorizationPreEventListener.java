@@ -25,7 +25,7 @@ import java.util.List;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.Driver;
@@ -49,7 +49,7 @@ public class TestMultiAuthorizationPreEventListener {
   public static void setUp() throws Exception {
 
 
-    int port = MetaStoreUtils.findFreePort();
+    int port = MetaStoreTestUtils.findFreePort();
 
     System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
         AuthorizationPreEventListener.class.getName());
@@ -62,7 +62,7 @@ public class TestMultiAuthorizationPreEventListener {
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHENTICATOR_MANAGER.varname,
         HadoopDefaultMetastoreAuthenticator.class.getName());
 
-    MetaStoreUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
+    MetaStoreTestUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
 
     clientHiveConf = new HiveConf();
 

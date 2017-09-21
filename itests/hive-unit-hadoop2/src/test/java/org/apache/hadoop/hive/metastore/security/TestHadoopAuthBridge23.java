@@ -24,7 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.io.Text;
@@ -150,7 +150,7 @@ public class TestHadoopAuthBridge23 {
     System.setProperty(HiveConf.ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS.varname,
         MyTokenStore.class.getName());
     conf = new HiveConf(TestHadoopAuthBridge23.class);
-    MetaStoreUtils.startMetaStore(port, new MyHadoopThriftAuthBridge23());
+    MetaStoreTestUtils.startMetaStore(port, new MyHadoopThriftAuthBridge23());
   }
 
   /**

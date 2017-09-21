@@ -79,7 +79,7 @@ public class TestHiveMetaStoreGetMetaConf {
     metastoreConf.setClass(HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS.varname,
       MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);
     metastoreConf.setBoolVar(HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL, false);
-    int msPort = MetaStoreUtils.startMetaStore(metastoreConf);
+    int msPort = MetaStoreTestUtils.startMetaStore(metastoreConf);
     hiveConf = new HiveConf(TestHiveMetaStoreGetMetaConf.class);
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
         + msPort);
