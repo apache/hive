@@ -209,11 +209,9 @@ drop table multi0_2_mm;
 create table multi0_1_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only");
 create table multi0_2_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only");
 
---from intermediate
---insert overwrite table multi0_1_mm select key, p
---insert overwrite table multi0_2_mm select p, key;
-insert into table multi0_1_mm select key, p from intermediate;
-insert into table multi0_2_mm select p, key from intermediate;
+from intermediate
+insert overwrite table multi0_1_mm select key, p
+insert overwrite table multi0_2_mm select p, key;
 
 select * from multi0_1_mm order by key, key2;
 select * from multi0_2_mm order by key, key2;
@@ -222,11 +220,10 @@ set hive.merge.mapredfiles=true;
 set hive.merge.sparkfiles=true;
 set hive.merge.tezfiles=true;
 
---from intermediate
---insert into table multi0_1_mm select p, key
---insert overwrite table multi0_2_mm select key, p;
-insert into table multi0_1_mm select p, key from intermediate;
-insert into table multi0_2_mm select key, p from intermediate;
+from intermediate
+insert into table multi0_1_mm select p, key
+insert overwrite table multi0_2_mm select key, p;
+
 select * from multi0_1_mm order by key, key2;
 select * from multi0_2_mm order by key, key2;
 
@@ -243,23 +240,27 @@ create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties(
 from intermediate
 insert into table multi1_mm partition(p=1) select p, key
 insert into table multi1_mm partition(p=2) select key, p;
+
 select * from multi1_mm order by key, key2, p;
---from intermediate
---insert into table multi1_mm partition(p=2) select p, key
---insert overwrite table multi1_mm partition(p=1) select key, p;
-insert into table multi1_mm partition(p=2) select p, key from intermediate;
-insert into table multi1_mm partition(p=1) select key, p from intermediate;
+
+from intermediate
+insert into table multi1_mm partition(p=2) select p, key
+insert overwrite table multi1_mm partition(p=1) select key, p;
+
 select * from multi1_mm order by key, key2, p;
 
 from intermediate
 insert into table multi1_mm partition(p) select p, key, p
 insert into table multi1_mm partition(p=1) select key, p;
+
 select key, key2, p from multi1_mm order by key, key2, p;
 
 from intermediate
 insert into table multi1_mm partition(p) select p, key, 1
 insert into table multi1_mm partition(p=1) select key, p;
+
 select key, key2, p from multi1_mm order by key, key2, p;
+
 drop table multi1_mm;
 
 

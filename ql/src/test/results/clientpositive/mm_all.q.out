@@ -1342,36 +1342,28 @@ POSTHOOK: query: create table multi0_2_mm (key int, key2 int)  tblproperties("tr
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multi0_2_mm
-PREHOOK: query: insert into table multi0_1_mm select key, p from intermediate
+PREHOOK: query: from intermediate
+insert overwrite table multi0_1_mm select key, p
+insert overwrite table multi0_2_mm select p, key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
 PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@multi0_1_mm
-POSTHOOK: query: insert into table multi0_1_mm select key, p from intermediate
+PREHOOK: Output: default@multi0_2_mm
+POSTHOOK: query: from intermediate
+insert overwrite table multi0_1_mm select key, p
+insert overwrite table multi0_2_mm select p, key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
 POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@multi0_1_mm
+POSTHOOK: Output: default@multi0_2_mm
 POSTHOOK: Lineage: multi0_1_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi0_1_mm.key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
-PREHOOK: query: insert into table multi0_2_mm select p, key from intermediate
-PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
-PREHOOK: Output: default@multi0_2_mm
-POSTHOOK: query: insert into table multi0_2_mm select p, key from intermediate
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
-POSTHOOK: Output: default@multi0_2_mm
 POSTHOOK: Lineage: multi0_2_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 POSTHOOK: Lineage: multi0_2_mm.key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from multi0_1_mm order by key, key2
@@ -1396,42 +1388,28 @@ POSTHOOK: query: select * from multi0_2_mm order by key, key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multi0_2_mm
 #### A masked pattern was here ####
-455	97
-455	98
-456	0
-456	10
-457	100
-457	103
-PREHOOK: query: insert into table multi0_1_mm select p, key from intermediate
+PREHOOK: query: from intermediate
+insert into table multi0_1_mm select p, key
+insert overwrite table multi0_2_mm select key, p
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
 PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@multi0_1_mm
-POSTHOOK: query: insert into table multi0_1_mm select p, key from intermediate
+PREHOOK: Output: default@multi0_2_mm
+POSTHOOK: query: from intermediate
+insert into table multi0_1_mm select p, key
+insert overwrite table multi0_2_mm select key, p
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
 POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@multi0_1_mm
+POSTHOOK: Output: default@multi0_2_mm
 POSTHOOK: Lineage: multi0_1_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 POSTHOOK: Lineage: multi0_1_mm.key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: insert into table multi0_2_mm select key, p from intermediate
-PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
-PREHOOK: Output: default@multi0_2_mm
-POSTHOOK: query: insert into table multi0_2_mm select key, p from intermediate
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
-POSTHOOK: Output: default@multi0_2_mm
 POSTHOOK: Lineage: multi0_2_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi0_2_mm.key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 PREHOOK: query: select * from multi0_1_mm order by key, key2
@@ -1462,18 +1440,6 @@ POSTHOOK: query: select * from multi0_2_mm order by key, key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multi0_2_mm
 #### A masked pattern was here ####
-0	456
-10	456
-97	455
-98	455
-100	457
-103	457
-455	97
-455	98
-456	0
-456	10
-457	100
-457	103
 PREHOOK: query: drop table multi0_1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multi0_1_mm
@@ -1550,38 +1516,30 @@ POSTHOOK: Input: default@multi1_mm@p=2
 456	10	1
 457	100	1
 457	103	1
-PREHOOK: query: insert into table multi1_mm partition(p=2) select p, key from intermediate
-PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
-PREHOOK: Output: default@multi1_mm@p=2
-POSTHOOK: query: insert into table multi1_mm partition(p=2) select p, key from intermediate
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
-POSTHOOK: Output: default@multi1_mm@p=2
-POSTHOOK: Lineage: multi1_mm PARTITION(p=2).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
-POSTHOOK: Lineage: multi1_mm PARTITION(p=2).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: insert into table multi1_mm partition(p=1) select key, p from intermediate
+PREHOOK: query: from intermediate
+insert into table multi1_mm partition(p=2) select p, key
+insert overwrite table multi1_mm partition(p=1) select key, p
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
 PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@multi1_mm@p=1
-POSTHOOK: query: insert into table multi1_mm partition(p=1) select key, p from intermediate
+PREHOOK: Output: default@multi1_mm@p=2
+POSTHOOK: query: from intermediate
+insert into table multi1_mm partition(p=2) select p, key
+insert overwrite table multi1_mm partition(p=1) select key, p
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
 POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@multi1_mm@p=1
+POSTHOOK: Output: default@multi1_mm@p=2
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=2).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=2).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from multi1_mm order by key, key2, p
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multi1_mm
