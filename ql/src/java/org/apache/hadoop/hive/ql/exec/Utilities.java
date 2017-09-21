@@ -1763,9 +1763,27 @@ public final class Utilities {
   }
 
   public static String getResourceFiles(Configuration conf, SessionState.ResourceType t) {
-    // fill in local files to be added to the task environment
+    // fill in local files (includes copy of HDFS files) to be added to the task environment
     SessionState ss = SessionState.get();
     Set<String> files = (ss == null) ? null : ss.list_resource(t, null);
+    return validateFiles(conf, files);
+  }
+
+  public static String getHdfsResourceFiles(Configuration conf, SessionState.ResourceType type) {
+    // fill in HDFS files to be added to the task environment
+    SessionState ss = SessionState.get();
+    Set<String> files = (ss == null) ? null : ss.list_hdfs_resource(type);
+    return validateFiles(conf, files);
+  }
+
+  public static String getLocalResourceFiles(Configuration conf, SessionState.ResourceType type) {
+    // fill in local only files (excludes copy of HDFS files) to be added to the task environment
+    SessionState ss = SessionState.get();
+    Set<String> files = (ss == null) ? null : ss.list_local_resource(type);
+    return validateFiles(conf, files);
+  }
+
+  private static String validateFiles(Configuration conf, Set<String> files){
     if (files != null) {
       List<String> realFiles = new ArrayList<String>(files.size());
       for (String one : files) {
