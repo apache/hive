@@ -128,10 +128,10 @@ public class OperatorUtils {
       for (Operator<?> parent : start.getParentOperators()) {
         if (onlyIncludeIndex >= 0) {
           if (onlyIncludeIndex == i) {
-            findOperatorsUpstream(parent, clazz, found);
+            findOperatorsUpstreamJoinAccounted(parent, clazz, found);
           }
         } else {
-          findOperatorsUpstream(parent, clazz, found);
+          findOperatorsUpstreamJoinAccounted(parent, clazz, found);
         }
         i++;
       }
