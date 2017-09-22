@@ -58,6 +58,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   boolean ifExists;
   boolean ifPurge;
   ReplicationSpec replicationSpec;
+  boolean validationRequired;
   
 
   public DropTableDesc() {
@@ -70,16 +71,28 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   public DropTableDesc(
       String tableName, TableType expectedType, boolean ifExists,
       boolean ifPurge, ReplicationSpec replicationSpec) {
+	  this(tableName, expectedType, ifExists, ifPurge, replicationSpec, true);
+  }
+
+  public DropTableDesc(
+      String tableName, TableType expectedType, boolean ifExists,
+      boolean ifPurge, ReplicationSpec replicationSpec, boolean validationRequired) {
     this.tableName = tableName;
     this.partSpecs = null;
     this.expectedType = expectedType;
     this.ifExists = ifExists;
     this.ifPurge = ifPurge;
     this.replicationSpec = replicationSpec;
+    this.validationRequired = validationRequired;
   }
 
   public DropTableDesc(String tableName, Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs,
       TableType expectedType, boolean ifPurge, ReplicationSpec replicationSpec) {
+    this(tableName, partSpecs, expectedType, ifPurge, replicationSpec, true);
+  }
+
+  public DropTableDesc(String tableName, Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs,
+      TableType expectedType, boolean ifPurge, ReplicationSpec replicationSpec,  boolean validationRequired) {
     this.tableName = tableName;
     this.partSpecs = new ArrayList<PartSpec>(partSpecs.size());
     for (Map.Entry<Integer, List<ExprNodeGenericFuncDesc>> partSpec : partSpecs.entrySet()) {
@@ -91,6 +104,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
     this.expectedType = expectedType;
     this.ifPurge = ifPurge;
     this.replicationSpec = replicationSpec;
+    this.validationRequired = validationRequired;
   }
 
   /**
@@ -114,13 +128,6 @@ public class DropTableDesc extends DDLDesc implements Serializable {
    */
   public ArrayList<PartSpec> getPartSpecs() {
     return partSpecs;
-  }
-
-  /**
-   * @return the expectedType
-   */
-  public TableType getExpectedType() {
-    return expectedType;
   }
 
   /**
@@ -176,5 +183,12 @@ public class DropTableDesc extends DDLDesc implements Serializable {
       this.replicationSpec = new ReplicationSpec();
     }
     return this.replicationSpec;
+  }
+
+  /**
+   * @return whether the table type validation is needed (false in repl case)
+   */
+  public boolean getValidationRequired(){
+    return this.validationRequired;
   }
 }

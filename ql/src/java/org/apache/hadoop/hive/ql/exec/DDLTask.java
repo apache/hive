@@ -4198,7 +4198,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private void dropTable(Hive db, Table tbl, DropTableDesc dropTbl) throws HiveException {
     // This is a true DROP TABLE
-    if (tbl != null && dropTbl.getExpectedType() != null) {
+    if (tbl != null && dropTbl.getValidationRequired()) {
       if (tbl.isView()) {
         if (!dropTbl.getExpectView()) {
           if (dropTbl.getIfExists()) {
