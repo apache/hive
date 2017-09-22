@@ -4437,10 +4437,29 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 envContext, this);
         success = true;
         if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-                                                EventType.ALTER_TABLE,
-                                                new AlterTableEvent(oldt, newTable, false, true, this),
-                                                envContext);
+          if (oldt.getDbName().equalsIgnoreCase(newTable.getDbName())) {
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.ALTER_TABLE,
+                    new AlterTableEvent(oldt, newTable, false, true, this),
+                    envContext);
+          } else {
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.DROP_TABLE,
+                    new DropTableEvent(oldt, true, false, this),
+                    envContext);
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.CREATE_TABLE,
+                    new CreateTableEvent(newTable, true, this),
+                    envContext);
+            if (newTable.getPartitionKeysSize() != 0) {
+              List<Partition> partitions
+                      = getMS().getPartitions(newTable.getDbName(), newTable.getTableName(), -1);
+              MetaStoreListenerNotifier.notifyEvent(listeners,
+                      EventType.ADD_PARTITION,
+                      new AddPartitionEvent(newTable, partitions, true, this),
+                      envContext);
+            }
+          }
         }
       } catch (NoSuchObjectException e) {
         // thrown when the table to be altered does not exist
