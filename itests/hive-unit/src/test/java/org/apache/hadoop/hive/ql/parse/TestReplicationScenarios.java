@@ -2975,8 +2975,8 @@ public class TestReplicationScenarios {
     // Perform REPL-DUMP/LOAD
     advanceDumpDir();
     run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
-    String incrementalDumpLocn = getResult(0,0,driver);
-    String incrementalDumpId = getResult(0,1,true,driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-dump: Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
     run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'", driverMirror);
     verifyIfTableNotExist(dbName + "_dupe", "acid_table_rename", metaStoreClientMirror);
@@ -2988,9 +2988,29 @@ public class TestReplicationScenarios {
 
     // Perform REPL-DUMP/LOAD
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
-    incrementalDumpLocn = getResult(0,0,driver);
-    incrementalDumpId = getResult(0,1,true,driver);
+    run("REPL DUMP " + dbName + " FROM " + incrementalDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
+    LOG.info("Incremental-dump: Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'", driverMirror);
+    verifyIfTableNotExist(dbName + "_dupe", "acid_table_incremental", metaStoreClientMirror);
+
+    // Test adding a constraint
+    run("ALTER TABLE " + dbName + ".acid_table_incremental ADD CONSTRAINT key_pk PRIMARY KEY (key) DISABLE NOVALIDATE", driver);
+    try {
+      List<SQLPrimaryKey> pks = metaStoreClient.getPrimaryKeys(new PrimaryKeysRequest(dbName, "acid_table_incremental"));
+      assertEquals(pks.size(), 1);
+    } catch (TException te) {
+      assertNull(te);
+    }
+
+    // Perform REPL-DUMP/LOAD
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + incrementalDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-dump: Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
     run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
     printOutput(driverMirror);

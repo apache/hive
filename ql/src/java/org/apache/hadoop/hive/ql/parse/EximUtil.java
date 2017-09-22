@@ -430,4 +430,19 @@ public class EximUtil {
 
     return true;
   }
+
+  /**
+   * Verify if a table should be exported or not by talking to metastore to fetch table info.
+   * Return true when running into errors with metastore call. 
+   */
+  public static Boolean tryValidateShouldExportTable(Hive db, String dbName, String tableName, ReplicationSpec replicationSpec) {
+    try {
+      Table table = db.getTable(dbName, tableName);
+      return EximUtil.shouldExportTable(replicationSpec, table);
+    } catch (Exception e) {
+      // Swallow the exception
+      LOG.error("Failed to validate if the table should be exported or not", e);
+    }
+    return true;
+  }
 }
