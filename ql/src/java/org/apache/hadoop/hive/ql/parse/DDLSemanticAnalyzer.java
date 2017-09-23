@@ -592,7 +592,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tbl.getDbName() + "." + tbl.getTableName(),
         Arrays.asList(colName), Arrays.asList(colType), partSpec == null);
     ColumnStatsUpdateTask cStatsUpdateTask = (ColumnStatsUpdateTask) TaskFactory
-        .get(new ColumnStatsUpdateWork(cStatsDesc, partName, mapProp), conf);
+        .get(new ColumnStatsUpdateWork(cStatsDesc, partName, mapProp, SessionState.get().getCurrentDatabase()), conf);
     rootTasks.add(cStatsUpdateTask);
   }
 
@@ -1083,9 +1083,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
         truncateTblDesc.setOutputDir(queryTmpdir);
         LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
-            partSpec == null ? new HashMap<String, String>() : partSpec);
+            partSpec == null ? new HashMap<>() : partSpec);
         ltd.setLbCtx(lbCtx);
-        Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
+        Task<MoveWork> moveTsk = TaskFactory
+            .get(new MoveWork(null, null, ltd, null, false, SessionState.get().getLineageState()),
             conf);
         truncateTask.addDependentTask(moveTsk);
 
@@ -1719,7 +1720,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
           partSpec == null ? new HashMap<>() : partSpec);
       ltd.setLbCtx(lbCtx);
-      Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
+      Task<MoveWork> moveTsk = TaskFactory
+          .get(new MoveWork(null, null, ltd, null, false, SessionState.get().getLineageState()),
           conf);
       mergeTask.addDependentTask(moveTsk);
 

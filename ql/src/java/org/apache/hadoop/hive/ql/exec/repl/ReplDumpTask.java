@@ -356,4 +356,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   public StageType getType() {
     return StageType.REPL_DUMP;
   }
+
+  @Override
+  public boolean canExecuteInParallel() {
+    return false;
+  }
 }

@@ -21,11 +21,11 @@ package org.apache.hadoop.hive.ql.session;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
  * lineage information for the post execution hooks.
  *
  */
-public class LineageState {
+public class LineageState implements Serializable {
 
   /**
    * Mapping from the directory name to FileSinkOperator (may not be FileSinkOperator for views). This
@@ -44,7 +44,7 @@ public class LineageState {
    * time and is then later used to created the mapping from
    * movetask to the set of filesink operators.
    */
-  private final Map<Path, Operator> dirToFop;
+  private final Map<String, Operator> dirToFop;
 
   /**
    * The lineage context index for this query.
@@ -60,8 +60,8 @@ public class LineageState {
   /**
    * Constructor.
    */
-  public LineageState() {
-    dirToFop = new HashMap<Path, Operator>();
+  LineageState() {
+    dirToFop = new HashMap<>();
     linfo = new LineageInfo();
     index = new Index();
   }
@@ -72,8 +72,8 @@ public class LineageState {
    * @param dir The directory name.
    * @param fop The sink operator.
    */
-  public void mapDirToOp(Path dir, Operator fop) {
-    dirToFop.put(dir, fop);
+  public synchronized void mapDirToOp(Path dir, Operator fop) {
+    dirToFop.put(dir.toUri().toString(), fop);
   }
 
   /**
@@ -83,10 +83,10 @@ public class LineageState {
    * @param newPath conditional input path
    * @param oldPath path of the old linked MoveWork
    */
-  public void updateDirToOpMap(Path newPath, Path oldPath) {
-    Operator op = dirToFop.get(oldPath);
+  public synchronized void updateDirToOpMap(Path newPath, Path oldPath) {
+    Operator op = dirToFop.get(oldPath.toUri().toString());
     if (op != null) {
-      dirToFop.put(newPath, op);
+      dirToFop.put(newPath.toUri().toString(), op);
     }
   }
 
@@ -97,10 +97,10 @@ public class LineageState {
    * @param dc The associated data container.
    * @param cols The list of columns.
    */
-  public void setLineage(Path dir, DataContainer dc,
+  public synchronized void setLineage(Path dir, DataContainer dc,
       List<FieldSchema> cols) {
     // First lookup the file sink operator from the load work.
-    Operator<?> op = dirToFop.get(dir);
+    Operator<?> op = dirToFop.get(dir.toUri().toString());
 
     // Go over the associated fields and look up the dependencies
     // by position in the row schema of the filesink operator.
@@ -136,7 +136,7 @@ public class LineageState {
   /**
    * Clear all lineage states
    */
-  public void clear() {
+  public synchronized void clear() {
     dirToFop.clear();
     linfo.clear();
     index.clear();

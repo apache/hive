@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
+import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * LoadTableDesc.
@@ -37,6 +37,10 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   private ListBucketingCtx lbCtx;
   private boolean inheritTableSpecs = true; //For partitions, flag controlling whether the current
                                             //table specs are to be used
+  /*
+  if the writeType above is NOT_ACID then the currentTransactionId will be null
+   */
+  private final Long currentTransactionId;
 
   // TODO: the below seems like they should just be combined into partitionDesc
   private org.apache.hadoop.hive.ql.plan.TableDesc table;
@@ -49,16 +53,18 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     this.dpCtx = o.dpCtx;
     this.lbCtx = o.lbCtx;
     this.inheritTableSpecs = o.inheritTableSpecs;
+    this.currentTransactionId = o.currentTransactionId;
     this.table = o.table;
     this.partitionSpec = o.partitionSpec;
   }
 
   public LoadTableDesc(final Path sourcePath,
-      final org.apache.hadoop.hive.ql.plan.TableDesc table,
+      final TableDesc table,
       final Map<String, String> partitionSpec,
       final boolean replace,
-      final AcidUtils.Operation writeType) {
+      final AcidUtils.Operation writeType, Long currentTransactionId) {
     super(sourcePath, writeType);
+    this.currentTransactionId = currentTransactionId;
     init(table, partitionSpec, replace);
   }
 
@@ -70,17 +76,18 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
    * @param replace
    */
   public LoadTableDesc(final Path sourcePath,
-                       final TableDesc table,
-                       final Map<String, String> partitionSpec,
-                       final boolean replace) {
-    this(sourcePath, table, partitionSpec, replace, AcidUtils.Operation.NOT_ACID);
+      final TableDesc table,
+      final Map<String, String> partitionSpec,
+      final boolean replace) {
+    this(sourcePath, table, partitionSpec, replace, AcidUtils.Operation.NOT_ACID,
+        null);
   }
 
   public LoadTableDesc(final Path sourcePath,
-      final org.apache.hadoop.hive.ql.plan.TableDesc table,
+      final TableDesc table,
       final Map<String, String> partitionSpec,
-      final AcidUtils.Operation writeType) {
-    this(sourcePath, table, partitionSpec, true, writeType);
+      final AcidUtils.Operation writeType, Long currentTransactionId) {
+    this(sourcePath, table, partitionSpec, true, writeType, currentTransactionId);
   }
 
   /**
@@ -90,21 +97,22 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
    * @param partitionSpec
    */
   public LoadTableDesc(final Path sourcePath,
-                       final org.apache.hadoop.hive.ql.plan.TableDesc table,
-                       final Map<String, String> partitionSpec) {
-    this(sourcePath, table, partitionSpec, true, AcidUtils.Operation.NOT_ACID);
+      final TableDesc table,
+      final Map<String, String> partitionSpec) {
+    this(sourcePath, table, partitionSpec, true, AcidUtils.Operation.NOT_ACID, null);
   }
 
   public LoadTableDesc(final Path sourcePath,
-      final org.apache.hadoop.hive.ql.plan.TableDesc table,
+      final TableDesc table,
       final DynamicPartitionCtx dpCtx,
-      final AcidUtils.Operation writeType) {
+      final AcidUtils.Operation writeType, Long currentTransactionId) {
     super(sourcePath, writeType);
     this.dpCtx = dpCtx;
+    this.currentTransactionId = currentTransactionId;
     if (dpCtx != null && dpCtx.getPartSpec() != null && partitionSpec == null) {
       init(table, dpCtx.getPartSpec(), true);
     } else {
-      init(table, new LinkedHashMap<String, String>(), true);
+      init(table, new LinkedHashMap<>(), true);
     }
   }
 
@@ -174,4 +182,7 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     this.lbCtx = lbCtx;
   }
 
+  public long getCurrentTransactionId() {
+    return writeType == AcidUtils.Operation.NOT_ACID ? 0L : currentTransactionId;
+  }
 }
