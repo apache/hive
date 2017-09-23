@@ -3062,8 +3062,6 @@ public class TestReplicationScenarios {
     incrementalDumpLocn = getResult(0, 0, driver);
     incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-dump: Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
-    printOutput(driverMirror);
     run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'", driverMirror);
     verifyIfTableNotExist(dbName + "_dupe", "acid_table_incremental", metaStoreClientMirror);
 
