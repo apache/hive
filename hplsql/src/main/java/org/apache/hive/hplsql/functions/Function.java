@@ -143,6 +143,9 @@ public class Function {
     ArrayList<Var> actualParams = getActualCallParameters(ctx);
     exec.enterScope(Scope.Type.ROUTINE);
     setCallParameters(ctx, actualParams, userCtx.create_routine_params(), null);
+    if (userCtx.declare_block_inplace() != null) {
+      visit(userCtx.declare_block_inplace());
+    }
     visit(userCtx.single_block_stmt());
     exec.leaveScope(); 
     return true;

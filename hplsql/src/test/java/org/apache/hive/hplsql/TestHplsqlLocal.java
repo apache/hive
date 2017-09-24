@@ -107,6 +107,11 @@ public class TestHplsqlLocal {
   public void testCreateFunction4() throws Exception {
     run("create_function4");
   }
+  
+  @Test
+  public void testCreateFunction5() throws Exception {
+    run("create_function5");
+  }
 
   @Test
   public void testCreatePackage() throws Exception {
@@ -136,6 +141,11 @@ public class TestHplsqlLocal {
   @Test
   public void testCreateProcedure3() throws Exception {
     run("create_procedure3");
+  }
+  
+  @Test
+  public void testCreateProcedure4() throws Exception {
+    run("create_procedure4");
   }
   
   @Test
