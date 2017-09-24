@@ -707,7 +707,7 @@ public class Hive {
         location = Utilities.getQualifiedPath(conf, new Path(location));
         newPart.setLocation(location);
       }
-      getMSC().alter_partition(dbName, tblName, newPart.getTPartition(), environmentContext);
+      getSynchronizedMSC().alter_partition(dbName, tblName, newPart.getTPartition(), environmentContext);
 
     } catch (MetaException e) {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
@@ -1767,7 +1767,7 @@ public class Hive {
         MetaStoreUtils.populateQuickStats(HiveStatsUtils.getFileStatusRecurse(newPartPath, -1, newPartPath.getFileSystem(conf)), newTPart.getParameters());
         try {
           LOG.debug("Adding new partition " + newTPart.getSpec());
-          getSychronizedMSC().add_partition(newTPart.getTPartition());
+          getSynchronizedMSC().add_partition(newTPart.getTPartition());
         } catch (AlreadyExistsException aee) {
           // With multiple users concurrently issuing insert statements on the same partition has
           // a side effect that some queries may not see a partition at the time when they're issued,
@@ -1819,7 +1819,7 @@ public class Hive {
       environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
     }
     LOG.debug("Altering existing partition " + newTPart.getSpec());
-    getSychronizedMSC().alter_partition(tbl.getDbName(), tbl.getTableName(),
+    getSynchronizedMSC().alter_partition(tbl.getDbName(), tbl.getTableName(),
       newTPart.getTPartition(), environmentContext);
   }
 
@@ -1990,7 +1990,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       // for each dynamically created DP directory, construct a full partition spec
       // and load the partition based on that
-      final Map<Long, RawStore> rawStoreMap = new HashMap<Long, RawStore>();
+      final Map<Long, RawStore> rawStoreMap = Collections.synchronizedMap(new HashMap<Long, RawStore>());
       for(final Path partPath : validPartitions) {
         // generate a full partition specification
         final LinkedHashMap<String, String> fullPartSpec = Maps.newLinkedHashMap(partSpec);
@@ -2332,7 +2332,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     org.apache.hadoop.hive.metastore.api.Partition tpart = null;
     try {
-      tpart = getMSC().getPartitionWithAuthInfo(tbl.getDbName(),
+      tpart = getSynchronizedMSC().getPartitionWithAuthInfo(tbl.getDbName(),
           tbl.getTableName(), pvals, getUserName(), getGroupNames());
     } catch (NoSuchObjectException nsoe) {
       // this means no partition exists for the given partition
@@ -2349,10 +2349,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
           LOG.debug("creating partition for table " + tbl.getTableName()
                     + " with partition spec : " + partSpec);
           try {
-            tpart = getMSC().appendPartition(tbl.getDbName(), tbl.getTableName(), pvals);
+            tpart = getSynchronizedMSC().appendPartition(tbl.getDbName(), tbl.getTableName(), pvals);
           } catch (AlreadyExistsException aee) {
             LOG.debug("Caught already exists exception, trying to alter partition instead");
-            tpart = getMSC().getPartitionWithAuthInfo(tbl.getDbName(),
+            tpart = getSynchronizedMSC().getPartitionWithAuthInfo(tbl.getDbName(),
               tbl.getTableName(), pvals, getUserName(), getGroupNames());
             alterPartitionSpec(tbl, partSpec, tpart, inheritTableSpecs, partPath);
           } catch (Exception e) {
@@ -2361,7 +2361,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               // have to be used here. This helps avoid adding jdo dependency for
               // hcatalog client uses
               LOG.debug("Caught JDO exception, trying to alter partition instead");
-              tpart = getMSC().getPartitionWithAuthInfo(tbl.getDbName(),
+              tpart = getSynchronizedMSC().getPartitionWithAuthInfo(tbl.getDbName(),
                 tbl.getTableName(), pvals, getUserName(), getGroupNames());
               if (tpart == null) {
                 // This means the exception was caused by something other than a race condition
@@ -2467,7 +2467,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           }
           rqst.setPartitionVals(partVals);
         }
-        getMSC().fireListenerEvent(rqst);
+        getSynchronizedMSC().fireListenerEvent(rqst);
       } catch (IOException | TException e) {
         throw new HiveException(e);
       }
@@ -3842,7 +3842,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   @LimitedPrivate(value = {"Hive"})
   @Unstable
-  public synchronized SynchronizedMetaStoreClient getSychronizedMSC() throws MetaException {
+  public synchronized SynchronizedMetaStoreClient getSynchronizedMSC() throws MetaException {
     if (syncMetaStoreClient == null) {
       syncMetaStoreClient = new SynchronizedMetaStoreClient(getMSC(true, false));
     }

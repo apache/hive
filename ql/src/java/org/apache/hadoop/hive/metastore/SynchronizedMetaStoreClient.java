@@ -18,13 +18,22 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.List;
+
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.FireEventRequest;
+import org.apache.hadoop.hive.metastore.api.FireEventResponse;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
+import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.thrift.TException;
 
 
@@ -82,6 +91,21 @@ public final class SynchronizedMetaStoreClient {
 
   public synchronized ShowLocksResponse showLocks(ShowLocksRequest showLocksRequest) throws TException {
     return client.showLocks(showLocksRequest);
+  }
+
+  public synchronized Partition getPartitionWithAuthInfo(String dbName, String tableName,
+      List<String> pvals, String userName, List<String> groupNames)
+      throws MetaException, UnknownTableException, NoSuchObjectException, TException {
+    return client.getPartitionWithAuthInfo(dbName, tableName, pvals, userName, groupNames);
+  }
+
+  public synchronized Partition appendPartition(String db_name, String table_name, List<String> part_vals)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
+	return client.appendPartition(db_name, table_name, part_vals);
+  }
+
+  public synchronized FireEventResponse fireListenerEvent(FireEventRequest rqst) throws TException {
+    return client.fireListenerEvent(rqst);
   }
 
   public synchronized void close() {
