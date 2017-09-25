@@ -88,6 +88,7 @@ public class PhysicalFsWriter implements PhysicalWriter {
     this.defaultStripeSize = this.adjustedStripeSize = opts.getStripeSize();
     this.addBlockPadding = opts.getBlockPadding();
     if (opts.isEnforceBufferSize()) {
+      OutStream.assertBufferSizeValid(opts.getBufferSize());
       this.bufferSize = opts.getBufferSize();
     } else {
       this.bufferSize = getEstimatedBufferSize(defaultStripeSize, numColumns, opts.getBufferSize());
@@ -253,15 +254,15 @@ public class PhysicalFsWriter implements PhysicalWriter {
     final int kb256 = 256 * 1024;
     if (estBufferSize <= kb4) {
       return kb4;
-    } else if (estBufferSize > kb4 && estBufferSize <= kb8) {
+    } else if (estBufferSize <= kb8) {
       return kb8;
-    } else if (estBufferSize > kb8 && estBufferSize <= kb16) {
+    } else if (estBufferSize <= kb16) {
       return kb16;
-    } else if (estBufferSize > kb16 && estBufferSize <= kb32) {
+    } else if (estBufferSize <= kb32) {
       return kb32;
-    } else if (estBufferSize > kb32 && estBufferSize <= kb64) {
+    } else if (estBufferSize <= kb64) {
       return kb64;
-    } else if (estBufferSize > kb64 && estBufferSize <= kb128) {
+    } else if (estBufferSize <= kb128) {
       return kb128;
     } else {
       return kb256;

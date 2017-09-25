@@ -25,6 +25,7 @@ import org.mockito.Mockito;
 import java.nio.ByteBuffer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class TestOutStream {
 
@@ -39,5 +40,18 @@ public class TestOutStream {
     stream.flush();
     Mockito.verify(receiver).output(Mockito.any(ByteBuffer.class));
     assertEquals(0L, stream.getBufferSize());
+  }
+
+  @Test
+  public void testAssertBufferSizeValid() throws Exception {
+    try {
+      OutStream.assertBufferSizeValid(1 + (1<<23));
+      fail("Invalid buffer-size " + (1 + (1<<23)) + " should have been blocked.");
+    }
+    catch (IllegalArgumentException expected) {
+      // Pass.
+    }
+
+    OutStream.assertBufferSizeValid((1<<23) -  1);
   }
 }

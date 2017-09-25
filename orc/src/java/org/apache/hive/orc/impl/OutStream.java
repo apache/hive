@@ -113,6 +113,20 @@ public class OutStream extends PositionedOutputStream {
   }
 
   /**
+   * Throws exception if the bufferSize argument equals or exceeds 2^(3*8 - 1).
+   * See {@link OutStream#writeHeader(ByteBuffer, int, int, boolean)}.
+   * The bufferSize needs to be expressible in 3 bytes, and uses the least significant byte
+   * to indicate original/compressed bytes.
+   * @param bufferSize The ORC compression buffer size being checked.
+   * @throws IllegalArgumentException If bufferSize value exceeds threshold.
+   */
+  static void assertBufferSizeValid(int bufferSize) throws IllegalArgumentException {
+    if (bufferSize >= (1 << 23)) {
+      throw new IllegalArgumentException("Illegal value of ORC compression buffer size: " + bufferSize);
+    }
+  }
+
+  /**
    * Allocate a new output buffer if we are compressing.
    */
   private ByteBuffer getNewOutputBuffer() throws IOException {

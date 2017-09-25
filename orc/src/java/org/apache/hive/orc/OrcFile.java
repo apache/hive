@@ -276,6 +276,7 @@ public class OrcFile {
       compressValue =
           CompressionKind.valueOf(OrcConf.COMPRESS.getString(tableProperties,
               conf).toUpperCase());
+      enforceBufferSize = OrcConf.ENFORCE_COMPRESSION_BUFFER_SIZE.getBoolean(tableProperties, conf);
       String versionName = OrcConf.WRITE_FORMAT.getString(tableProperties,
           conf);
       versionValue = Version.byName(versionName);

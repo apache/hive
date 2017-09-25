@@ -51,6 +51,8 @@ public enum OrcConf {
       "Define the version of the file to write. Possible values are 0.11 and\n"+
           " 0.12. If this parameter is not defined, ORC will use the run\n" +
           " length encoding (RLE) introduced in Hive 0.12."),
+  ENFORCE_COMPRESSION_BUFFER_SIZE("orc.buffer.size.enforce", "hive.exec.orc.buffer.size.enforce", false,
+      "Defines whether to enforce ORC compression buffer size."),
   ENCODING_STRATEGY("orc.encoding.strategy", "hive.exec.orc.encoding.strategy",
       "SPEED",
       "Define the encoding strategy to use while writing data. Changing this\n"+
