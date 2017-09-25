@@ -320,7 +320,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over10k
-            Statistics: Num rows: 127193 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -330,7 +330,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: FilterLongColLessLongScalar(col 0, val 5) -> boolean
               predicate: (t < 5) (type: boolean)
-              Statistics: Num rows: 42397 Data size: 339176 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: t (type: tinyint), f (type: float)
                 sort order: ++
@@ -340,7 +340,7 @@ STAGE PLANS:
                     native: false
                     nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, No PTF TopN IS false
-                Statistics: Num rows: 42397 Data size: 339176 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.8
       Execution mode: vectorized
       Map Vectorization:
@@ -364,7 +364,7 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: tinyint), KEY.reducesinkkey1 (type: float)
           outputColumnNames: _col0, _col4
-          Statistics: Num rows: 42397 Data size: 339176 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -385,17 +385,17 @@ STAGE PLANS:
                         window function: GenericUDAFRankEvaluator
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
-            Statistics: Num rows: 42397 Data size: 339176 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (rank_window_0 < 6) (type: boolean)
-              Statistics: Num rows: 14132 Data size: 113056 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: _col0 (type: tinyint), _col4 (type: float), rank_window_0 (type: int)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 14132 Data size: 113056 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 14132 Data size: 113056 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -54,11 +54,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: uservisits_web_text_none
-            Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
-              Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
@@ -105,12 +105,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: uservisits_web_text_none
-            Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
-              Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
@@ -236,11 +236,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: uservisits_web_text_none
-            Statistics: Num rows: 9 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sourceip (type: string), desturl (type: string), visitdate (type: string), adrevenue (type: float), useragent (type: string), ccode (type: string), lcode (type: string), skeyword (type: string), avgtimeonsite (type: int)
               outputColumnNames: sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite
-              Statistics: Num rows: 9 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(desturl, 'hll'), compute_stats(visitdate, 'hll'), compute_stats(adrevenue, 'hll'), compute_stats(useragent, 'hll'), compute_stats(ccode, 'hll'), compute_stats(lcode, 'hll'), compute_stats(skeyword, 'hll'), compute_stats(avgtimeonsite, 'hll')
                 mode: hash
@@ -476,11 +476,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: uservisits_in_dummy_db
-            Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
-              Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
@@ -527,12 +527,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: uservisits_in_dummy_db
-            Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
-              Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
@@ -658,11 +658,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: uservisits_in_dummy_db
-            Statistics: Num rows: 9 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sourceip (type: string), desturl (type: string), visitdate (type: string), adrevenue (type: float), useragent (type: string), ccode (type: string), lcode (type: string), skeyword (type: string), avgtimeonsite (type: int)
               outputColumnNames: sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite
-              Statistics: Num rows: 9 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(desturl, 'hll'), compute_stats(visitdate, 'hll'), compute_stats(adrevenue, 'hll'), compute_stats(useragent, 'hll'), compute_stats(ccode, 'hll'), compute_stats(lcode, 'hll'), compute_stats(skeyword, 'hll'), compute_stats(avgtimeonsite, 'hll')
                 mode: hash

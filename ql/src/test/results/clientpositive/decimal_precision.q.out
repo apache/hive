@@ -536,11 +536,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_precision
-            Statistics: Num rows: 23 Data size: 2661 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 2661 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: dec (type: decimal(20,10))
               outputColumnNames: dec
-              Statistics: Num rows: 23 Data size: 2661 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 2661 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: avg(dec), sum(dec)
                 mode: hash

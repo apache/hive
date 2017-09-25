@@ -303,7 +303,8 @@ public class StatsUtils {
     long nr = getNumRows(table);
     // number of rows -1 means that statistics from metastore is not reliable
     // and 0 means statistics gathering is disabled
-    if (nr <= 0) {
+    // estimate only if num rows is -1 since 0 could be actual number of rows
+    if (nr < 0) {
       int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
       if (avgRowSize > 0) {
         if (LOG.isDebugEnabled()) {
@@ -312,7 +313,10 @@ public class StatsUtils {
         nr = ds / avgRowSize;
       }
     }
-    return nr == 0 ? 1 : nr;
+    if(nr == 0 || nr == -1) {
+      return 1;
+    }
+    return nr;
   }
 
   public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
@@ -1775,13 +1779,13 @@ public class StatsUtils {
    */
   public static long getBasicStatForTable(Table table, String statType) {
     Map<String, String> params = table.getParameters();
-    long result = 0;
+    long result = -1;
 
     if (params != null) {
       try {
         result = Long.parseLong(params.get(statType));
       } catch (NumberFormatException e) {
-        result = 0;
+        result = -1;
       }
     }
     return result;
