@@ -44,23 +44,23 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: f
-                  Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  alias: g
+                  Statistics: Num rows: 25 Data size: 4600 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (value <> '') (type: boolean)
+                    Statistics: Num rows: 25 Data size: 4600 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: int)
+                      expressions: value (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 25 Data size: 4600 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int)
+                        key expressions: _col0 (type: string)
                         null sort order: a
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 25 Data size: 4600 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         auto parallelism: true
             Execution mode: llap
@@ -116,7 +116,7 @@ STAGE PLANS:
                     name: default.filter_join_breaktask
                   name: default.filter_join_breaktask
             Truncated Path -> Alias:
-              /filter_join_breaktask/ds=2008-04-08 [f]
+              /filter_join_breaktask/ds=2008-04-08 [g]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -132,13 +132,13 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 24 Data size: 4512 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int)
+                        key expressions: _col1 (type: string)
                         null sort order: a
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                        Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 24 Data size: 4512 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
-                        value expressions: _col1 (type: string)
+                        value expressions: _col0 (type: int)
                         auto parallelism: true
             Execution mode: llap
             LLAP IO: no inputs
@@ -197,23 +197,23 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: g
-                  Statistics: Num rows: 25 Data size: 4600 Basic stats: COMPLETE Column stats: NONE
+                  alias: f
+                  Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (value <> '') (type: boolean)
-                    Statistics: Num rows: 25 Data size: 4600 Basic stats: COMPLETE Column stats: NONE
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: value (type: string)
+                      expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 25 Data size: 4600 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: string)
+                        key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 25 Data size: 4600 Basic stats: COMPLETE Column stats: NONE
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 24 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: true
             Execution mode: llap
@@ -269,7 +269,7 @@ STAGE PLANS:
                     name: default.filter_join_breaktask
                   name: default.filter_join_breaktask
             Truncated Path -> Alias:
-              /filter_join_breaktask/ds=2008-04-08 [g]
+              /filter_join_breaktask/ds=2008-04-08 [f]
         Reducer 2 
             Execution mode: llap
             Needs Tagging: false
@@ -278,19 +278,19 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col0 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col0, _col3
-                Position of Big Table: 1
-                Statistics: Num rows: 26 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                  0 _col0 (type: string)
+                  1 _col1 (type: string)
+                outputColumnNames: _col0, _col2
+                Position of Big Table: 0
+                Statistics: Num rows: 27 Data size: 5060 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col3 (type: string)
+                  key expressions: _col2 (type: int)
                   null sort order: a
                   sort order: +
-                  Map-reduce partition columns: _col3 (type: string)
-                  Statistics: Num rows: 26 Data size: 105 Basic stats: COMPLETE Column stats: NONE
+                  Map-reduce partition columns: _col2 (type: int)
+                  Statistics: Num rows: 27 Data size: 5060 Basic stats: COMPLETE Column stats: NONE
                   tag: 0
-                  value expressions: _col0 (type: int)
+                  value expressions: _col0 (type: string)
                   auto parallelism: true
         Reducer 3 
             Execution mode: llap
@@ -300,21 +300,21 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col3 (type: string)
-                  1 _col0 (type: string)
+                  0 _col2 (type: int)
+                  1 _col0 (type: int)
                 outputColumnNames: _col0, _col5
                 Position of Big Table: 0
-                Statistics: Num rows: 28 Data size: 115 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 29 Data size: 5566 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: int), _col5 (type: string)
+                  expressions: _col5 (type: int), _col0 (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 28 Data size: 115 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 29 Data size: 5566 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 28 Data size: 115 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 29 Data size: 5566 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
