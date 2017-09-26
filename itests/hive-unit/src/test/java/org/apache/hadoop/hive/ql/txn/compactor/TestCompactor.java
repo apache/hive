@@ -118,8 +118,8 @@ public class TestCompactor {
     //"org.apache.hadoop.hive.ql.io.HiveInputFormat"
 
     TxnDbUtil.setConfValues(hiveConf);
-    TxnDbUtil.cleanDb();
-    TxnDbUtil.prepDb();
+    TxnDbUtil.cleanDb(hiveConf);
+    TxnDbUtil.prepDb(hiveConf);
 
     conf = hiveConf;
     msClient = new HiveMetaStoreClient(conf);

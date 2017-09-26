@@ -259,12 +259,12 @@ public class TestHiveMetaStoreTxns {
 
   @Before
   public void setUp() throws Exception {
-    TxnDbUtil.prepDb();
+    TxnDbUtil.prepDb(conf);
     client = new HiveMetaStoreClient(conf);
   }
 
   @After
   public void tearDown() throws Exception {
-    TxnDbUtil.cleanDb();
+    TxnDbUtil.cleanDb(conf);
   }
 }

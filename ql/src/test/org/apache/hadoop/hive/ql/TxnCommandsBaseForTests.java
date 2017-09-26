@@ -53,7 +53,6 @@ public abstract class TxnCommandsBaseForTests {
     setUpInternal();
   }
   void setUpInternal() throws Exception {
-    tearDown();
     hiveConf = new HiveConf(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
@@ -65,7 +64,7 @@ public abstract class TxnCommandsBaseForTests {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
     TxnDbUtil.setConfValues(hiveConf);
-    TxnDbUtil.prepDb();
+    TxnDbUtil.prepDb(hiveConf);
     File f = new File(getWarehouseDir());
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -99,7 +98,7 @@ public abstract class TxnCommandsBaseForTests {
         d = null;
       }
     } finally {
-      TxnDbUtil.cleanDb();
+      TxnDbUtil.cleanDb(hiveConf);
       FileUtils.deleteDirectory(new File(getTestDataDir()));
     }
   }

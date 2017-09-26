@@ -62,7 +62,7 @@ public final class TxnDbUtil {
     MetastoreConf.setBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
   }
 
-  public static void prepDb() throws Exception {
+  public static void prepDb(Configuration conf) throws Exception {
     // This is a bogus hack because it copies the contents of the SQL file
     // intended for creating derby databases, and thus will inexorably get
     // out of date with it.  I'm open to any suggestions on how to make this
@@ -71,7 +71,7 @@ public final class TxnDbUtil {
     Connection conn = null;
     Statement stmt = null;
     try {
-      conn = getConnection();
+      conn = getConnection(conf);
       stmt = conn.createStatement();
       stmt.execute("CREATE TABLE TXNS (" +
           "  TXN_ID bigint PRIMARY KEY," +
@@ -175,7 +175,7 @@ public final class TxnDbUtil {
       // This might be a deadlock, if so, let's retry
       if (e instanceof SQLTransactionRollbackException && deadlockCnt++ < 5) {
         LOG.warn("Caught deadlock, retrying db creation");
-        prepDb();
+        prepDb(conf);
       } else {
         throw e;
       }
@@ -185,14 +185,14 @@ public final class TxnDbUtil {
     }
   }
 
-  public static void cleanDb() throws Exception {
+  public static void cleanDb(Configuration conf) throws Exception {
     int retryCount = 0;
     while(++retryCount <= 3) {
       boolean success = true;
       Connection conn = null;
       Statement stmt = null;
       try {
-        conn = getConnection();
+        conn = getConnection(conf);
         stmt = conn.createStatement();
 
         // We want to try these, whether they succeed or fail.
@@ -261,12 +261,12 @@ public final class TxnDbUtil {
    *
    * @return number of components, or 0 if there is no lock
    */
-  public static int countLockComponents(long lockId) throws Exception {
+  public static int countLockComponents(Configuration conf, long lockId) throws Exception {
     Connection conn = null;
     PreparedStatement stmt = null;
     ResultSet rs = null;
     try {
-      conn = getConnection();
+      conn = getConnection(conf);
       stmt = conn.prepareStatement("SELECT count(*) FROM hive_locks WHERE hl_lock_ext_id = ?");
       stmt.setLong(1, lockId);
       rs = stmt.executeQuery();
@@ -285,12 +285,12 @@ public final class TxnDbUtil {
    * @return count countQuery result
    * @throws Exception
    */
-  public static int countQueryAgent(String countQuery) throws Exception {
+  public static int countQueryAgent(Configuration conf, String countQuery) throws Exception {
     Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;
     try {
-      conn = getConnection();
+      conn = getConnection(conf);
       stmt = conn.createStatement();
       rs = stmt.executeQuery(countQuery);
       if (!rs.next()) {
@@ -302,16 +302,17 @@ public final class TxnDbUtil {
     }
   }
   @VisibleForTesting
-  public static String queryToString(String query) throws Exception {
-    return queryToString(query, true);
+  public static String queryToString(Configuration conf, String query) throws Exception {
+    return queryToString(conf, query, true);
   }
-  public static String queryToString(String query, boolean includeHeader) throws Exception {
+  public static String queryToString(Configuration conf, String query, boolean includeHeader)
+      throws Exception {
     Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;
     StringBuilder sb = new StringBuilder();
     try {
-      conn = getConnection();
+      conn = getConnection(conf);
       stmt = conn.createStatement();
       rs = stmt.executeQuery(query);
       ResultSetMetaData rsmd = rs.getMetaData();
@@ -333,8 +334,7 @@ public final class TxnDbUtil {
     return sb.toString();
   }
 
-  static Connection getConnection() throws Exception {
-    Configuration conf = MetastoreConf.newMetastoreConf();
+  static Connection getConnection(Configuration conf) throws Exception {
     String jdbcDriver = MetastoreConf.getVar(conf, ConfVars.CONNECTION_DRIVER);
     Driver driver = (Driver) Class.forName(jdbcDriver).newInstance();
     Properties prop = new Properties();

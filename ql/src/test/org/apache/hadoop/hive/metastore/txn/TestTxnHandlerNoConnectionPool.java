@@ -50,18 +50,18 @@ public class TestTxnHandlerNoConnectionPool {
     conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE, "None");
     TxnDbUtil.setConfValues(conf);
     try {
-      TxnDbUtil.prepDb();
+      TxnDbUtil.prepDb(conf);
     } catch (SQLException e) {
       // Usually this means we've already created the tables, so clean them and then try again
       tearDown();
-      TxnDbUtil.prepDb();
+      TxnDbUtil.prepDb(conf);
     }
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 
   @After
   public void tearDown() throws Exception {
-    TxnDbUtil.cleanDb();
+    TxnDbUtil.cleanDb(conf);
   }
 
   @Test
