@@ -1230,6 +1230,14 @@ struct TProgressUpdateResp {
   6: required i64 startTime
 }
 
+struct TGetQueryIdReq {
+  1: required TOperationHandle operationHandle
+}
+
+struct TGetQueryIdResp {
+  1: required string queryId
+}
+
 service TCLIService {
 
   TOpenSessionResp OpenSession(1:TOpenSessionReq req);
@@ -1273,4 +1281,6 @@ service TCLIService {
   TCancelDelegationTokenResp CancelDelegationToken(1:TCancelDelegationTokenReq req);
 
   TRenewDelegationTokenResp RenewDelegationToken(1:TRenewDelegationTokenReq req);
+
+  TGetQueryIdResp GetQueryId(1:TGetQueryIdReq req);
 }
