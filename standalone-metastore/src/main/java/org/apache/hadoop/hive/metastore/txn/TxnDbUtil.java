@@ -225,15 +225,18 @@ public final class TxnDbUtil {
         return;
       }
     }
+    throw new RuntimeException("Failed to clean up txn tables");
   }
 
   private static boolean dropTable(Statement stmt, String name, int retryCount) throws SQLException {
     for (int i = 0; i < 3; i++) {
       try {
         stmt.execute("DROP TABLE " + name);
+        LOG.debug("Successfully dropped table " + name);
         return true;
       } catch (SQLException e) {
         if ("42Y55".equals(e.getSQLState()) && 30000 == e.getErrorCode()) {
+          LOG.debug("Not dropping " + name + " because it doesn't exist");
           //failed because object doesn't exist
           return true;
         }
@@ -246,6 +249,7 @@ public final class TxnDbUtil {
             " State=" + e.getSQLState() + " code=" + e.getErrorCode() + " retryCount=" + retryCount);
       }
     }
+    LOG.error("Failed to drop table, don't know why");
     return false;
   }
 

@@ -71,25 +71,6 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     return TEST_DATA_DIR;
   }
 
-  private void dropTables() throws Exception {
-    for(Table t : Table.values()) {
-      runStatementOnDriver("drop table if exists " + t);
-    }
-  }
-  @After
-  public void tearDown() throws Exception {
-    try {
-      if (d != null) {
-        dropTables();
-        d.destroy();
-        d.close();
-        d = null;
-      }
-    } finally {
-      TxnDbUtil.cleanDb();
-      FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
-    }
-  }
   @Test//todo: what is this for?
   public void testInsertOverwrite() throws Exception {
     runStatementOnDriver("insert overwrite table " + Table.NONACIDORCTBL + " select a,b from " + Table.NONACIDORCTBL2);

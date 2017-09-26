@@ -244,7 +244,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   /**
    * This is logically part of c'tor and must be called prior to any other method.
-   * Not physically part of c'tor due to use of relfection
+   * Not physically part of c'tor due to use of reflection
    */
   public void setConf(Configuration conf) {
     this.conf = conf;
@@ -449,19 +449,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.Idempotent
   public OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException {
-    // We have to do this here rather than in setConf, because
-    // AcidOpenTxnsCounterService's constructor eventually ends up calling back into setConf.
-    if (!startedOpenTxnCounter.getAndSet(true)) {
-      // Initialize the thread pool, because in the non-server based case it won't have been
-      // done yet.  If it has already been done, there will be no harm.
-      ThreadPool.initialize(conf);
-      RunnableConfigurable thread = new AcidOpenTxnsCounterService();
-      thread.setConf(conf);
-      ThreadPool.getPool().scheduleAtFixedRate(thread, 100, MetastoreConf.getTimeVar(conf,
-          ConfVars.COUNT_OPEN_TXNS_INTERVAL, TimeUnit.MILLISECONDS),
-          TimeUnit.MILLISECONDS);
-    }
-
     if (!tooManyOpenTxns && numOpenTxns.get() >= maxOpenTxns) {
       tooManyOpenTxns = true;
     }
