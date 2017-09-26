@@ -686,7 +686,7 @@ class MetaStoreDirectSql {
     }
 
     queryText = "select \"PART_ID\", \"PART_KEY_VAL\" from " + PARTITION_KEY_VALS + ""
-        + " where \"PART_ID\" in (" + partIds + ") and \"INTEGER_IDX\" >= 0"
+        + " where \"PART_ID\" in (" + partIds + ")"
         + " order by \"PART_ID\" asc, \"INTEGER_IDX\" asc";
     loopJoinOrderedResult(partitions, queryText, 0, new ApplyFunc<Partition>() {
       @Override
@@ -720,7 +720,7 @@ class MetaStoreDirectSql {
 
     queryText = "select \"SD_ID\", \"COLUMN_NAME\", " + SORT_COLS + ".\"ORDER\""
         + " from " + SORT_COLS + ""
-        + " where \"SD_ID\" in (" + sdIds + ") and \"INTEGER_IDX\" >= 0"
+        + " where \"SD_ID\" in (" + sdIds + ")"
         + " order by \"SD_ID\" asc, \"INTEGER_IDX\" asc";
     loopJoinOrderedResult(sds, queryText, 0, new ApplyFunc<StorageDescriptor>() {
       @Override
@@ -730,7 +730,7 @@ class MetaStoreDirectSql {
       }});
 
     queryText = "select \"SD_ID\", \"BUCKET_COL_NAME\" from " + BUCKETING_COLS + ""
-        + " where \"SD_ID\" in (" + sdIds + ") and \"INTEGER_IDX\" >= 0"
+        + " where \"SD_ID\" in (" + sdIds + ")"
         + " order by \"SD_ID\" asc, \"INTEGER_IDX\" asc";
     loopJoinOrderedResult(sds, queryText, 0, new ApplyFunc<StorageDescriptor>() {
       @Override
@@ -740,7 +740,7 @@ class MetaStoreDirectSql {
 
     // Skewed columns stuff.
     queryText = "select \"SD_ID\", \"SKEWED_COL_NAME\" from " + SKEWED_COL_NAMES + ""
-        + " where \"SD_ID\" in (" + sdIds + ") and \"INTEGER_IDX\" >= 0"
+        + " where \"SD_ID\" in (" + sdIds + ")"
         + " order by \"SD_ID\" asc, \"INTEGER_IDX\" asc";
     boolean hasSkewedColumns =
       loopJoinOrderedResult(sds, queryText, 0, new ApplyFunc<StorageDescriptor>() {
@@ -837,7 +837,7 @@ class MetaStoreDirectSql {
     if (!colss.isEmpty()) {
       // We are skipping the CDS table here, as it seems to be totally useless.
       queryText = "select \"CD_ID\", \"COMMENT\", \"COLUMN_NAME\", \"TYPE_NAME\""
-          + " from " + COLUMNS_V2 + " where \"CD_ID\" in (" + colIds + ") and \"INTEGER_IDX\" >= 0"
+          + " from " + COLUMNS_V2 + " where \"CD_ID\" in (" + colIds + ")"
           + " order by \"CD_ID\" asc, \"INTEGER_IDX\" asc";
       loopJoinOrderedResult(colss, queryText, 0, new ApplyFunc<List<FieldSchema>>() {
         @Override
