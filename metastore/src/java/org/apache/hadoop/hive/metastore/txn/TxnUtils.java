@@ -81,6 +81,7 @@ public class TxnUtils {
    * @return a valid txn list.
    */
   public static ValidTxnList createValidCompactTxnList(GetOpenTxnsInfoResponse txns) {
+    //highWater is the last txn id that has been allocated
     long highWater = txns.getTxn_high_water_mark();
     long minOpenTxn = Long.MAX_VALUE;
     long[] exceptions = new long[txns.getOpen_txnsSize()];
@@ -100,7 +101,12 @@ public class TxnUtils {
     highWater = minOpenTxn == Long.MAX_VALUE ? highWater : minOpenTxn - 1;
     BitSet bitSet = new BitSet(exceptions.length);
     bitSet.set(0, exceptions.length); // for ValidCompactorTxnList, everything in exceptions are aborted
-    return new ValidCompactorTxnList(exceptions, bitSet, highWater);
+    if(minOpenTxn == Long.MAX_VALUE) {
+      return new ValidCompactorTxnList(exceptions, bitSet, highWater);
+    }
+    else {
+      return new ValidCompactorTxnList(exceptions, bitSet, highWater, minOpenTxn);
+    }
   }
 
   /**
