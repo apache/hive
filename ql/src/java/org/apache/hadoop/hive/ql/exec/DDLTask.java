@@ -2926,6 +2926,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     DataOutputStream os = getOutputStream(desc.getResFile());
     try {
       // Write a header
+      os.writeBytes("CompactionId");
+      os.write(separator);
       os.writeBytes("Database");
       os.write(separator);
       os.writeBytes("Table");
@@ -2947,6 +2949,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       if (rsp.getCompacts() != null) {
         for (ShowCompactResponseElement e : rsp.getCompacts()) {
+          os.writeBytes(Long.toString(e.getId()));
+          os.write(separator);
           os.writeBytes(e.getDbname());
           os.write(separator);
           os.writeBytes(e.getTablename());
