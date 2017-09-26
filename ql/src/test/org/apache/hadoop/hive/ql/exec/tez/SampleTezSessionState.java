@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 
+import java.util.Collection;
+import org.apache.hadoop.fs.Path;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -35,7 +38,7 @@ import org.apache.tez.dag.api.TezException;
  * use case from hive server 2, we need a session simulation.
  *
  */
-public class SampleTezSessionState extends TezSessionPoolSession {
+public class SampleTezSessionState extends WmTezSession {
 
   private boolean open;
   private final String sessionId;
@@ -43,8 +46,10 @@ public class SampleTezSessionState extends TezSessionPoolSession {
   private String user;
   private boolean doAsEnabled;
 
-  public SampleTezSessionState(String sessionId, TezSessionPoolManager parent, HiveConf conf) {
-    super(sessionId, parent, parent.getExpirationTracker(), conf);
+  public SampleTezSessionState(
+      String sessionId, TezSessionPoolSession.Manager parent, HiveConf conf) {
+    super(sessionId, parent, (parent instanceof TezSessionPoolManager)
+        ? ((TezSessionPoolManager)parent).getExpirationTracker() : null, conf);
     this.sessionId = sessionId;
     this.hiveConf = conf;
   }
@@ -59,8 +64,7 @@ public class SampleTezSessionState extends TezSessionPoolSession {
   }
 
   @Override
-  public void open() throws IOException, LoginException, URISyntaxException,
-      TezException {
+  public void open() throws LoginException, IOException {
     UserGroupInformation ugi = Utils.getUGI();
     user = ugi.getShortUserName();
     this.doAsEnabled = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
@@ -68,7 +72,18 @@ public class SampleTezSessionState extends TezSessionPoolSession {
   }
 
   @Override
-  public void close(boolean keepTmpDir) throws TezException, IOException {
+  public void open(Collection<String> additionalFiles, Path scratchDir)
+      throws LoginException, IOException {
+    open();
+  }
+
+  @Override
+  public void open(String[] additionalFiles) throws IOException, LoginException {
+    open();
+  }
+
+  @Override
+  void close(boolean keepTmpDir) throws TezException, IOException {
     open = keepTmpDir;
   }
 

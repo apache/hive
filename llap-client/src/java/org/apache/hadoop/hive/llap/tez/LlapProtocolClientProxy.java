@@ -46,11 +46,13 @@ public class LlapProtocolClientProxy
 
   public LlapProtocolClientProxy(
       int numThreads, Configuration conf, Token<LlapTokenIdentifier> llapToken) {
+    // We could pass in the number of nodes that we expect instead of -1.
+    // Also, a single concurrent request per node is currently hardcoded.
     super(LlapProtocolClientProxy.class.getSimpleName(), numThreads, conf, llapToken,
         HiveConf.getTimeVar(conf, ConfVars.LLAP_TASK_COMMUNICATOR_CONNECTION_TIMEOUT_MS,
             TimeUnit.MILLISECONDS),
         HiveConf.getTimeVar(conf, ConfVars.LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MS,
-            TimeUnit.MILLISECONDS), -1);
+            TimeUnit.MILLISECONDS), -1, 1);
   }
 
   public void sendSubmitWork(SubmitWorkRequestProto request, String host, int port,
@@ -71,13 +73,6 @@ public class LlapProtocolClientProxy
     queueRequest(new SendQueryCompleteCallable(nodeId, request, callback));
   }
 
-
-  public void sendUpdateFragment(final UpdateFragmentRequestProto request, final String host,
-      final int port, final ExecuteRequestCallback<UpdateFragmentResponseProto> callback) {
-    LlapNodeId nodeId = LlapNodeId.getInstance(host, port);
-    queueRequest(new SendUpdateFragmentCallable(nodeId, request, callback));
-  }
-
   public void sendTerminateFragment(final TerminateFragmentRequestProto request, final String host,
                                     final int port,
                                     final ExecuteRequestCallback<TerminateFragmentResponseProto> callback) {
@@ -85,7 +80,13 @@ public class LlapProtocolClientProxy
     queueRequest(new SendTerminateFragmentCallable(nodeId, request, callback));
   }
 
-  private class SubmitWorkCallable extends CallableRequest<SubmitWorkRequestProto, SubmitWorkResponseProto> {
+  public void sendUpdateFragment(final UpdateFragmentRequestProto request, final String host,
+      final int port, final ExecuteRequestCallback<UpdateFragmentResponseProto> callback) {
+    LlapNodeId nodeId = LlapNodeId.getInstance(host, port);
+    queueRequest(new SendUpdateFragmentCallable(nodeId, request, callback));
+  }
+
+  private class SubmitWorkCallable extends NodeCallableRequest<SubmitWorkRequestProto, SubmitWorkResponseProto> {
 
     protected SubmitWorkCallable(LlapNodeId nodeId,
                           SubmitWorkRequestProto submitWorkRequestProto,
@@ -95,12 +96,12 @@ public class LlapProtocolClientProxy
 
     @Override
     public SubmitWorkResponseProto call() throws Exception {
-      return getProxy(nodeId).submitWork(null, request);
+      return getProxy(nodeId, null).submitWork(null, request);
     }
   }
 
   private class SendSourceStateUpdateCallable
-      extends CallableRequest<SourceStateUpdatedRequestProto, SourceStateUpdatedResponseProto> {
+      extends NodeCallableRequest<SourceStateUpdatedRequestProto, SourceStateUpdatedResponseProto> {
 
     public SendSourceStateUpdateCallable(LlapNodeId nodeId,
                                          SourceStateUpdatedRequestProto request,
@@ -110,12 +111,12 @@ public class LlapProtocolClientProxy
 
     @Override
     public SourceStateUpdatedResponseProto call() throws Exception {
-      return getProxy(nodeId).sourceStateUpdated(null, request);
+      return getProxy(nodeId, null).sourceStateUpdated(null, request);
     }
   }
 
   private class SendQueryCompleteCallable
-      extends CallableRequest<QueryCompleteRequestProto, QueryCompleteResponseProto> {
+      extends NodeCallableRequest<QueryCompleteRequestProto, QueryCompleteResponseProto> {
 
     protected SendQueryCompleteCallable(LlapNodeId nodeId,
                                         QueryCompleteRequestProto queryCompleteRequestProto,
@@ -125,12 +126,12 @@ public class LlapProtocolClientProxy
 
     @Override
     public QueryCompleteResponseProto call() throws Exception {
-      return getProxy(nodeId).queryComplete(null, request);
+      return getProxy(nodeId, null).queryComplete(null, request);
     }
   }
 
   private class SendTerminateFragmentCallable
-      extends CallableRequest<TerminateFragmentRequestProto, TerminateFragmentResponseProto> {
+      extends NodeCallableRequest<TerminateFragmentRequestProto, TerminateFragmentResponseProto> {
 
     protected SendTerminateFragmentCallable(LlapNodeId nodeId,
                                             TerminateFragmentRequestProto terminateFragmentRequestProto,
@@ -140,12 +141,12 @@ public class LlapProtocolClientProxy
 
     @Override
     public TerminateFragmentResponseProto call() throws Exception {
-      return getProxy(nodeId).terminateFragment(null, request);
+      return getProxy(nodeId, null).terminateFragment(null, request);
     }
   }
 
   private class SendUpdateFragmentCallable
-      extends CallableRequest<UpdateFragmentRequestProto, UpdateFragmentResponseProto> {
+      extends NodeCallableRequest<UpdateFragmentRequestProto, UpdateFragmentResponseProto> {
 
     protected SendUpdateFragmentCallable(LlapNodeId nodeId,
         UpdateFragmentRequestProto terminateFragmentRequestProto,
@@ -155,7 +156,7 @@ public class LlapProtocolClientProxy
 
     @Override
     public UpdateFragmentResponseProto call() throws Exception {
-      return getProxy(nodeId).updateFragment(null, request);
+      return getProxy(nodeId, null).updateFragment(null, request);
     }
   }
 

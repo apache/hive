@@ -16,18 +16,15 @@
  * limitations under the License.
  */
 
-option java_package = "org.apache.hadoop.hive.llap.plugin.rpc";
-option java_outer_classname = "LlapPluginProtocolProtos";
-option java_generic_services = true;
-option java_generate_equals_and_hash = true;
+package org.apache.hadoop.hive.ql.exec.tez;
 
-message UpdateQueryRequestProto {
-  optional int32 guaranteed_task_count = 1;
-}
+import org.apache.hadoop.hive.llap.AsyncPbRpcProxy.ExecuteRequestCallback;
+import org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto;
+import org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto;
+import org.apache.hadoop.security.token.Token;
+import org.apache.tez.common.security.JobTokenIdentifier;
 
-message UpdateQueryResponseProto {
-}
-
-service LlapPluginProtocol {
-  rpc updateQuery(UpdateQueryRequestProto) returns (UpdateQueryResponseProto);
+public interface LlapPluginEndpointClient {
+  void sendUpdateQuery(UpdateQueryRequestProto request, AmPluginNode node,
+      ExecuteRequestCallback<UpdateQueryResponseProto> callback);
 }

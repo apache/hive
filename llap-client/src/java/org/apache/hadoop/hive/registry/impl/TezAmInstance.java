@@ -54,7 +54,7 @@ public class TezAmInstance extends ServiceInstanceBase {
     return getProperties().get(TezAmRegistryImpl.AM_SESSION_ID);
   }
 
-  public String getJobIdForPluginToken() {
+  public String getPluginTokenJobId() {
     return getProperties().get(TezAmRegistryImpl.AM_PLUGIN_JOBID);
   }
 
@@ -73,4 +73,11 @@ public class TezAmInstance extends ServiceInstanceBase {
     this.token = token;
     return token;
   }
+
+  @Override
+  public String toString() {
+    return "TezAmInstance [" + getSessionId() + ", host=" + host + ", rpcPort=" + rpcPort +
+        ", pluginPort=" + pluginPort + ", token=" + token + "]";
+  }
+
 }

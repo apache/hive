@@ -18,6 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.hive.registry.impl.TezAmInstance;
+
+import org.apache.hadoop.security.token.Token;
+import org.apache.tez.common.security.JobTokenIdentifier;
+
+import org.apache.hadoop.conf.Configuration;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -45,21 +52,26 @@ import com.google.common.annotations.VisibleForTesting;
 class TezSessionPoolSession extends TezSessionState {
   private static final int STATE_NONE = 0, STATE_IN_USE = 1, STATE_EXPIRED = 2;
 
-  interface OpenSessionTracker {
+  interface Manager {
     void registerOpenSession(TezSessionPoolSession session);
     void unregisterOpenSession(TezSessionPoolSession session);
+    void returnAfterUse(TezSessionPoolSession session) throws Exception;
+    TezSessionState reopen(TezSessionPoolSession session, Configuration conf,
+        String[] inputOutputJars) throws Exception;
+    void destroy(TezSessionPoolSession session) throws Exception;
   }
 
   private final AtomicInteger sessionState = new AtomicInteger(STATE_NONE);
   private Long expirationNs;
-  private final OpenSessionTracker parent;
+  private final Manager parent;
   private final SessionExpirationTracker expirationTracker;
 
-  public TezSessionPoolSession(String sessionId, OpenSessionTracker parent,
-      SessionExpirationTracker expirationTracker, HiveConf conf) {
+
+  public TezSessionPoolSession(String sessionId, Manager parent,
+      SessionExpirationTracker tracker, HiveConf conf) {
     super(sessionId, conf);
     this.parent = parent;
-    this.expirationTracker = expirationTracker;
+    this.expirationTracker = tracker;
   }
 
   void setExpirationNs(long expirationNs) {
@@ -71,7 +83,7 @@ class TezSessionPoolSession extends TezSessionState {
   }
 
   @Override
-  public void close(boolean keepTmpDir) throws Exception {
+  void close(boolean keepTmpDir) throws Exception {
     try {
       super.close(keepTmpDir);
     } finally {
@@ -119,12 +131,7 @@ class TezSessionPoolSession extends TezSessionState {
     }
   }
 
-  /**
-   * Notifies the session that it's no longer in use. If the session has expired while in use,
-   * this method will take care of the expiration.
-   * @return True if the session was returned, false if it was restarted.
-   */
-  public boolean returnAfterUse() throws Exception {
+  boolean stopUsing() throws Exception {
     int finalState = shouldExpire() ? STATE_EXPIRED : STATE_NONE;
     if (!sessionState.compareAndSet(STATE_IN_USE, finalState)) {
       throw new AssertionError("Unexpected state change; currently " + sessionState.get());
@@ -154,5 +161,29 @@ class TezSessionPoolSession extends TezSessionState {
 
   private boolean shouldExpire() {
     return expirationNs != null && (System.nanoTime() - expirationNs) >= 0;
+  }
+
+  @Override
+  public void returnToSessionManager() throws Exception {
+    parent.returnAfterUse(this);
+  }
+
+  @Override
+  public TezSessionState reopen(
+      Configuration conf, String[] inputOutputJars) throws Exception {
+    return parent.reopen(this, conf, inputOutputJars);
+  }
+
+  @Override
+  public void destroy() throws Exception {
+    parent.destroy(this);
+  }
+
+  boolean isOwnedBy(Manager parent) {
+    return this.parent == parent;
+  }
+
+  void updateFromRegistry(TezAmInstance si) {
+    // Nothing to do.
   }
 }

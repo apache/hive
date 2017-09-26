@@ -15,19 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.exec.tez;
 
-option java_package = "org.apache.hadoop.hive.llap.plugin.rpc";
-option java_outer_classname = "LlapPluginProtocolProtos";
-option java_generic_services = true;
-option java_generate_equals_and_hash = true;
+import java.util.List;
 
-message UpdateQueryRequestProto {
-  optional int32 guaranteed_task_count = 1;
-}
-
-message UpdateQueryResponseProto {
-}
-
-service LlapPluginProtocol {
-  rpc updateQuery(UpdateQueryRequestProto) returns (UpdateQueryResponseProto);
+interface QueryAllocationManager {
+  void start();
+  void stop();
+  /**
+   * Updates the session allocations asynchoronously.
+   * @param totalMaxAlloc The total maximum fraction of the cluster to allocate. Used to
+   *                      avoid various artifacts, esp. with small numbers and double weirdness.
+   * @param sessions Sessions to update based on their allocation fraction.
+   */
+  void updateSessionsAsync(double totalMaxAlloc, List<WmTezSession> sessions);
 }

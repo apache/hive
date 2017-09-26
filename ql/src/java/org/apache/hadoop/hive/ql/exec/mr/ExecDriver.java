@@ -399,10 +399,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       Utilities.createTmpDirs(job, rWork);
 
       SessionState ss = SessionState.get();
-      if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
-          && ss != null) {
-        TezSessionState session = ss.getTezSession();
-        TezSessionPoolManager.getInstance().closeIfNotDefault(session, true);
+      // TODO: why is there a TezSession in MR ExecDriver?
+      if (ss != null && HiveConf.getVar(job, ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+        TezSessionPoolManager.closeIfNotDefault(ss.getTezSession(), true);
       }
 
       HiveConfUtil.updateJobCredentialProviders(job);

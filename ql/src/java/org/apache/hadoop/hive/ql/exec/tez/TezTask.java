@@ -143,12 +143,20 @@ public class TezTask extends Task<TezWork> {
 
       // Need to remove this static hack. But this is the way currently to get a session.
       SessionState ss = SessionState.get();
+      // Note: given that we return pool sessions to the pool in the finally block below, and that
+      //       we need to set the global to null to do that, this "reuse" may be pointless.
       session = ss.getTezSession();
       if (session != null && !session.isOpen()) {
         LOG.warn("The session: " + session + " has not been opened");
       }
-      session = TezSessionPoolManager.getInstance().getSession(
-          session, conf, false, getWork().getLlapMode());
+      if (WorkloadManager.isInUse(ss.getConf())) {
+        // TODO: in future, we may also pass getUserIpAddress.
+        // Note: for now this will just block to wait for a session based on parallelism.
+        session = WorkloadManager.getInstance().getSession(session, ss.getUserName(), conf);
+      } else {
+        session = TezSessionPoolManager.getInstance().getSession(
+            session, conf, false, getWork().getLlapMode());
+      }
       ss.setTezSession(session);
       try {
         // jobConf will hold all the configuration for hadoop, tez, and hive
@@ -230,8 +238,7 @@ public class TezTask extends Task<TezWork> {
       } finally {
         // We return this to the pool even if it's unusable; reopen is supposed to handle this.
         try {
-          TezSessionPoolManager.getInstance()
-              .returnSession(session, getWork().getLlapMode());
+          session.returnToSessionManager();
         } catch (Exception e) {
           LOG.error("Failed to return session: {} to pool", session, e);
           throw e;
@@ -547,7 +554,9 @@ public class TezTask extends Task<TezWork> {
       } catch (SessionNotRunning nr) {
         console.printInfo("Tez session was closed. Reopening...");
 
-        TezSessionPoolManager.getInstance().reopenSession(sessionState, conf);
+        // close the old one, but keep the tmp files around
+        // conf is passed in only for the case when session conf is null (tests and legacy paths?)
+        sessionState = sessionState.reopen(conf, inputOutputJars);
         console.printInfo("Session re-established.");
 
         dagClient = sessionState.getSession().submitDAG(dag);
@@ -557,11 +566,11 @@ public class TezTask extends Task<TezWork> {
       try {
         console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
             + Arrays.toString(e.getStackTrace()) + " retrying...");
-        TezSessionPoolManager.getInstance().reopenSession(sessionState, conf);
+        sessionState = sessionState.reopen(conf, inputOutputJars);
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (Exception retryException) {
         // we failed to submit after retrying. Destroy session and bail.
-        TezSessionPoolManager.getInstance().destroySession(sessionState);
+        sessionState.destroy();
         throw retryException;
       }
     }

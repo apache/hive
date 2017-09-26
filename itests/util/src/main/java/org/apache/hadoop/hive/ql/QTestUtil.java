@@ -655,7 +655,7 @@ public class QTestUtil {
     }
 
     if (clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
-      SessionState.get().getTezSession().close(false);
+      SessionState.get().getTezSession().destroy();
     }
     setup.tearDown();
     if (sparkSession != null) {
