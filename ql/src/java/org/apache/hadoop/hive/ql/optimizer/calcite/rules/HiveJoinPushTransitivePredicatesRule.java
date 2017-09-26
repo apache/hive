@@ -28,7 +28,6 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.RelFactories.FilterFactory;
-import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
@@ -37,6 +36,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
@@ -180,6 +180,25 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
         }
       }
       return super.visitCall(call);
+    }
+
+    @Override
+    public Void visitInputRef(RexInputRef inputRef) {
+      if (!areTypesCompatible(inputRef.getType(), types.get(inputRef.getIndex()).getType())) {
+        throw new Util.FoundOne(inputRef);
+      }
+      return super.visitInputRef(inputRef);
+    }
+
+    private boolean areTypesCompatible(RelDataType type1, RelDataType type2) {
+      if (type1.equals(type2)) {
+        return true;
+      }
+      SqlTypeName sqlType1 = type1.getSqlTypeName();
+      if (sqlType1 != null) {
+        return sqlType1.equals(type2.getSqlTypeName());
+      }
+      return false;
     }
   }
 }
