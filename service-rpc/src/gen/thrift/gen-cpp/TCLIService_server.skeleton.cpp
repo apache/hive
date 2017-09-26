@@ -127,6 +127,11 @@ class TCLIServiceHandler : virtual public TCLIServiceIf {
     printf("RenewDelegationToken\n");
   }
 
+  void GetQueryId(TGetQueryIdResp& _return, const TGetQueryIdReq& req) {
+    // Your implementation goes here
+    printf("GetQueryId\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

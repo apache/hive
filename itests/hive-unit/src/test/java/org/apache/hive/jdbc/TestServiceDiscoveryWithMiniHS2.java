@@ -131,4 +131,26 @@ public class TestServiceDiscoveryWithMiniHS2 {
     res.close();
     stmt.close();
   }
+
+  @Test
+  public void testGetAllUrlsZk() throws Exception {
+    Map<String, String> confOverlay = new HashMap<String, String>();
+    confOverlay.put("hive.server2.zookeeper.publish.configs", "true");
+    miniHS2.start(confOverlay);
+    String directUrl = HiveConnection.getAllUrls(miniHS2.getJdbcURL()).get(0).getJdbcUriString();
+    String jdbcUrl = "jdbc:hive2://" + miniHS2.getHost() + ":" + miniHS2.getBinaryPort() +
+        "/default;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hs2test;";
+    assertEquals(jdbcUrl, directUrl);
+  }
+
+  @Test
+  public void testGetAllUrlsDirect() throws Exception {
+    Map<String, String> confOverlay = new HashMap<String, String>();
+    confOverlay.put("hive.server2.zookeeper.publish.configs", "false");
+    miniHS2.start(confOverlay);
+    String directUrl = HiveConnection.getAllUrls(miniHS2.getJdbcURL()).get(0).getJdbcUriString();
+    String jdbcUrl = "jdbc:hive2://" + miniHS2.getHost() + ":" + miniHS2.getBinaryPort() +
+        "/default;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hs2test;";
+    assertEquals(jdbcUrl, directUrl);
+  }
 }

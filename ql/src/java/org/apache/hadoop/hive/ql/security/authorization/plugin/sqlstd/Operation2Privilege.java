@@ -310,6 +310,7 @@ public class Operation2Privilege {
         SEL_NOGRANT_AR, null));
     adminPrivOps.add(HiveOperationType.REPLDUMP);
     adminPrivOps.add(HiveOperationType.REPLLOAD);
+    adminPrivOps.add(HiveOperationType.KILL_QUERY);
 
     // operations require select priv
     op2Priv.put(HiveOperationType.SHOWCOLUMNS, PrivRequirement.newIOPrivRequirement
@@ -465,6 +466,7 @@ public class Operation2Privilege {
             arr(SQLPrivTypeGrant.SELECT_NOGRANT, SQLPrivTypeGrant.DELETE_NOGRANT), INS_NOGRANT_AR));
     op2Priv.put(HiveOperationType.ABORT_TRANSACTIONS, PrivRequirement.newIOPrivRequirement
       (null, null));
+    op2Priv.put(HiveOperationType.KILL_QUERY, PrivRequirement.newIOPrivRequirement(null, null));
   }
 
   /**

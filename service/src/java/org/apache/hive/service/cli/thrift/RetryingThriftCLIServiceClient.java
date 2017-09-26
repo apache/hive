@@ -47,6 +47,7 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.rpc.thrift.TCLIService;
+import org.apache.hive.service.rpc.thrift.TOperationHandle;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -192,6 +193,11 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
     @Override
     public OperationStatus getOperationStatus(OperationHandle opHandle, boolean getProgressUpdate) throws HiveSQLException {
       return cliService.getOperationStatus(opHandle, getProgressUpdate);
+    }
+
+    @Override
+    public String getQueryId(TOperationHandle operationHandle) throws HiveSQLException {
+      return cliService.getQueryId(operationHandle);
     }
 
     @Override
