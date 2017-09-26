@@ -2899,16 +2899,16 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_6]
-        Group By Operator [GBY_4] (rows=2 width=16)
+        Group By Operator [GBY_4] (rows=1 width=16)
           Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT KEY._col1:0._col0)","count(DISTINCT KEY._col1:1._col0)","sum(VALUE._col2)"],keys:KEY._col0
         <-Map 1 [GROUP PARTITION-LEVEL SORT]
           GROUP PARTITION-LEVEL SORT [RS_3]
             PartitionCols:_col0
-            Group By Operator [GBY_2] (rows=4 width=16)
+            Group By Operator [GBY_2] (rows=1 width=16)
               Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["count(DISTINCT b)","count(DISTINCT c)","sum(d)"],keys:a, b, c
-              Select Operator [SEL_1] (rows=4 width=16)
+              Select Operator [SEL_1] (rows=1 width=16)
                 Output:["a","b","c","d"]
-                TableScan [TS_0] (rows=4 width=16)
+                TableScan [TS_0] (rows=1 width=16)
                   default@abcd,abcd,Tbl:COMPLETE,Col:NONE,Output:["a","b","c","d"]
 
 PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
@@ -2926,14 +2926,14 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_5]
-        Group By Operator [GBY_3] (rows=2 width=16)
+        Group By Operator [GBY_3] (rows=1 width=16)
           Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT KEY._col1:0._col0)","count(DISTINCT KEY._col1:1._col0)","sum(VALUE._col0)"],keys:KEY._col0
         <-Map 1 [GROUP PARTITION-LEVEL SORT]
           GROUP PARTITION-LEVEL SORT [RS_2]
             PartitionCols:a
-            Select Operator [SEL_1] (rows=4 width=16)
+            Select Operator [SEL_1] (rows=1 width=16)
               Output:["a","b","c","d"]
-              TableScan [TS_0] (rows=4 width=16)
+              TableScan [TS_0] (rows=1 width=16)
                 default@abcd,abcd,Tbl:COMPLETE,Col:NONE,Output:["a","b","c","d"]
 
 PREHOOK: query: explain create table src_rc_merge_test(key int, value string) stored as rcfile
@@ -3390,19 +3390,19 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=3 width=8)
+        Select Operator [SEL_5] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3"]
-          Join Operator [JOIN_4] (rows=3 width=8)
+          Join Operator [JOIN_4] (rows=1 width=8)
             Output:["_col0","_col1","_col5","_col6"],condition map:[{"":"{\"type\":\"Inner\",\"left\":0,\"right\":1}"}],keys:{"0":"key","1":"value"}
           <-Map 1 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_2]
               PartitionCols:key
-              TableScan [TS_0] (rows=3 width=8)
+              TableScan [TS_0] (rows=1 width=8)
                 default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_3]
               PartitionCols:value
-              TableScan [TS_1] (rows=3 width=8)
+              TableScan [TS_1] (rows=1 width=8)
                 default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
@@ -3420,30 +3420,30 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_11]
-        Select Operator [SEL_10] (rows=6 width=8)
+        Select Operator [SEL_10] (rows=2 width=8)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Join Operator [JOIN_9] (rows=6 width=8)
+          Join Operator [JOIN_9] (rows=2 width=8)
             Output:["_col0","_col1","_col5","_col6","_col10","_col11"],condition map:[{"":"{\"type\":\"Inner\",\"left\":0,\"right\":1}"},{"":"{\"type\":\"Inner\",\"left\":0,\"right\":2}"}],keys:{"0":"key","1":"value","2":"key"}
           <-Map 1 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_4]
               PartitionCols:key
-              Filter Operator [FIL_12] (rows=3 width=8)
+              Filter Operator [FIL_12] (rows=1 width=8)
                 predicate:key is not null
-                TableScan [TS_0] (rows=3 width=8)
+                TableScan [TS_0] (rows=1 width=8)
                   default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_6]
               PartitionCols:value
-              Filter Operator [FIL_13] (rows=3 width=8)
+              Filter Operator [FIL_13] (rows=1 width=8)
                 predicate:value is not null
-                TableScan [TS_1] (rows=3 width=8)
+                TableScan [TS_1] (rows=1 width=8)
                   default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 4 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_8]
               PartitionCols:key
-              Filter Operator [FIL_14] (rows=3 width=8)
+              Filter Operator [FIL_14] (rows=1 width=8)
                 predicate:key is not null
-                TableScan [TS_2] (rows=3 width=8)
+                TableScan [TS_2] (rows=1 width=8)
                   default@myinput1,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
@@ -3461,24 +3461,24 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_8]
-        Select Operator [SEL_7] (rows=6 width=8)
+        Select Operator [SEL_7] (rows=2 width=8)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Join Operator [JOIN_6] (rows=6 width=8)
+          Join Operator [JOIN_6] (rows=2 width=8)
             Output:["_col0","_col1","_col5","_col6","_col10","_col11"],condition map:[{"":"{\"type\":\"Inner\",\"left\":0,\"right\":1}"},{"":"{\"type\":\"Inner\",\"left\":0,\"right\":2}"}],keys:{"0":"key","1":"value","2":"key"}
           <-Map 1 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_3]
               PartitionCols:key
-              TableScan [TS_0] (rows=3 width=8)
+              TableScan [TS_0] (rows=1 width=8)
                 default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_4]
               PartitionCols:value
-              TableScan [TS_1] (rows=3 width=8)
+              TableScan [TS_1] (rows=1 width=8)
                 default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 4 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_5]
               PartitionCols:key
-              TableScan [TS_2] (rows=3 width=8)
+              TableScan [TS_2] (rows=1 width=8)
                 default@myinput1,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
@@ -3496,30 +3496,30 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_11]
-        Select Operator [SEL_10] (rows=6 width=8)
+        Select Operator [SEL_10] (rows=2 width=8)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Join Operator [JOIN_9] (rows=6 width=8)
+          Join Operator [JOIN_9] (rows=2 width=8)
             Output:["_col0","_col1","_col5","_col6","_col10","_col11"],condition map:[{"":"{\"type\":\"Inner\",\"left\":0,\"right\":1}"},{"":"{\"type\":\"Inner\",\"left\":0,\"right\":2}"}],keys:{"0":"key, value","1":"value, key","2":"key, value"}
           <-Map 1 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_4]
               PartitionCols:key, value
-              Filter Operator [FIL_12] (rows=3 width=8)
+              Filter Operator [FIL_12] (rows=1 width=8)
                 predicate:value is not null
-                TableScan [TS_0] (rows=3 width=8)
+                TableScan [TS_0] (rows=1 width=8)
                   default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_6]
               PartitionCols:value, key
-              Filter Operator [FIL_13] (rows=3 width=8)
+              Filter Operator [FIL_13] (rows=1 width=8)
                 predicate:key is not null
-                TableScan [TS_1] (rows=3 width=8)
+                TableScan [TS_1] (rows=1 width=8)
                   default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 4 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_8]
               PartitionCols:key, value
-              Filter Operator [FIL_14] (rows=3 width=8)
+              Filter Operator [FIL_14] (rows=1 width=8)
                 predicate:value is not null
-                TableScan [TS_2] (rows=3 width=8)
+                TableScan [TS_2] (rows=1 width=8)
                   default@myinput1,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
@@ -3537,24 +3537,24 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_8]
-        Select Operator [SEL_7] (rows=6 width=8)
+        Select Operator [SEL_7] (rows=2 width=8)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Join Operator [JOIN_6] (rows=6 width=8)
+          Join Operator [JOIN_6] (rows=2 width=8)
             Output:["_col0","_col1","_col5","_col6","_col10","_col11"],condition map:[{"":"{\"type\":\"Inner\",\"left\":0,\"right\":1}"},{"":"{\"type\":\"Inner\",\"left\":0,\"right\":2}"}],keys:{"0":"key, value","1":"value, key","2":"key, value"}
           <-Map 1 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_3]
               PartitionCols:key, value
-              TableScan [TS_0] (rows=3 width=8)
+              TableScan [TS_0] (rows=1 width=8)
                 default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_4]
               PartitionCols:value, key
-              TableScan [TS_1] (rows=3 width=8)
+              TableScan [TS_1] (rows=1 width=8)
                 default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 4 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_5]
               PartitionCols:key, value
-              TableScan [TS_2] (rows=3 width=8)
+              TableScan [TS_2] (rows=1 width=8)
                 default@myinput1,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain select * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
@@ -3572,19 +3572,19 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=3 width=8)
+        Select Operator [SEL_5] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3"]
-          Join Operator [JOIN_4] (rows=3 width=8)
+          Join Operator [JOIN_4] (rows=1 width=8)
             Output:["_col0","_col1","_col5","_col6"],condition map:[{"":"{\"type\":\"Left Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"key","1":"value"}
           <-Map 1 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_2]
               PartitionCols:key
-              TableScan [TS_0] (rows=3 width=8)
+              TableScan [TS_0] (rows=1 width=8)
                 default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_3]
               PartitionCols:value
-              TableScan [TS_1] (rows=3 width=8)
+              TableScan [TS_1] (rows=1 width=8)
                 default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain select * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value
@@ -3602,19 +3602,19 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=3 width=8)
+        Select Operator [SEL_5] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3"]
-          Join Operator [JOIN_4] (rows=3 width=8)
+          Join Operator [JOIN_4] (rows=1 width=8)
             Output:["_col0","_col1","_col5","_col6"],condition map:[{"":"{\"type\":\"Right Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"key","1":"value"}
           <-Map 1 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_2]
               PartitionCols:key
-              TableScan [TS_0] (rows=3 width=8)
+              TableScan [TS_0] (rows=1 width=8)
                 default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_3]
               PartitionCols:value
-              TableScan [TS_1] (rows=3 width=8)
+              TableScan [TS_1] (rows=1 width=8)
                 default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain select * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key<=>b.value
@@ -3632,19 +3632,19 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=3 width=8)
+        Select Operator [SEL_5] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3"]
-          Join Operator [JOIN_4] (rows=3 width=8)
+          Join Operator [JOIN_4] (rows=1 width=8)
             Output:["_col0","_col1","_col5","_col6"],condition map:[{"":"{\"type\":\"Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"key","1":"value"}
           <-Map 1 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_2]
               PartitionCols:key
-              TableScan [TS_0] (rows=3 width=8)
+              TableScan [TS_0] (rows=1 width=8)
                 default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_3]
               PartitionCols:value
-              TableScan [TS_1] (rows=3 width=8)
+              TableScan [TS_1] (rows=1 width=8)
                 default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
@@ -3659,18 +3659,18 @@ Stage-0
     Stage-1
       Map 1
       File Output Operator [FS_6]
-        Select Operator [SEL_8] (rows=3 width=8)
+        Select Operator [SEL_8] (rows=1 width=8)
           Output:["_col0","_col1","_col2","_col3"]
-          Map Join Operator [MAPJOIN_7] (rows=3 width=8)
+          Map Join Operator [MAPJOIN_7] (rows=1 width=8)
             Conds:TS_0.key=TS_0.value(Inner),Output:["_col0","_col1","_col5","_col6"]
-          <-TableScan [TS_0] (rows=3 width=8)
+          <-TableScan [TS_0] (rows=1 width=8)
               default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
       Map Reduce Local Work
         Stage-2
           Map 2
           keys: [HASHTABLESINK_10]
             0key,1value
-            TableScan [TS_1] (rows=3 width=8)
+            TableScan [TS_1] (rows=1 width=8)
               default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           Map Reduce Local Work
 

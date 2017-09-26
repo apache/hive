@@ -73,7 +73,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over10k
-            Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -86,7 +86,7 @@ STAGE PLANS:
                   native: false
                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-              Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
@@ -109,7 +109,7 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey2 (type: bigint), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col2, _col3, _col7
-          Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -129,17 +129,17 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumLong
                         window frame: ROWS PRECEDING(MAX)~CURRENT
-            Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col2 (type: int), _col7 (type: string), _col3 (type: bigint), sum_window_0 (type: bigint)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 10
-                Statistics: Num rows: 10 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 10 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -191,7 +191,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over10k
-            Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -204,7 +204,7 @@ STAGE PLANS:
                   native: false
                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-              Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
@@ -227,7 +227,7 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey2 (type: float), KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col4, _col5, _col7
-          Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -247,17 +247,17 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: ROWS PRECEDING(MAX)~CURRENT
-            Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col5 (type: double), _col7 (type: string), _col4 (type: float), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 10
-                Statistics: Num rows: 10 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 10 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -309,7 +309,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over10k
-            Statistics: Num rows: 7069 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -322,7 +322,7 @@ STAGE PLANS:
                   native: false
                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-              Statistics: Num rows: 7069 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
               value expressions: s (type: string)
       Execution mode: vectorized
       Map Vectorization:
@@ -346,7 +346,7 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey1 (type: float), VALUE._col6 (type: string), KEY.reducesinkkey0 (type: timestamp)
           outputColumnNames: _col4, _col7, _col8
-          Statistics: Num rows: 7069 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -366,17 +366,17 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: RANGE CURRENT~FOLLOWING(MAX)
-            Statistics: Num rows: 7069 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col8 (type: timestamp), _col7 (type: string), _col4 (type: float), sum_window_0 (type: double)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 7069 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 10
-                Statistics: Num rows: 10 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 10 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -428,7 +428,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over10k
-            Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -441,7 +441,7 @@ STAGE PLANS:
                   native: false
                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-              Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
@@ -464,7 +464,7 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: tinyint), KEY.reducesinkkey2 (type: double), KEY.reducesinkkey1 (type: string)
           outputColumnNames: _col0, _col5, _col7
-          Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -484,17 +484,17 @@ STAGE PLANS:
                         name: avg
                         window function: GenericUDAFAverageEvaluatorDouble
                         window frame: ROWS PRECEDING(5)~FOLLOWING(5)
-            Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: tinyint), _col7 (type: string), _col5 (type: double), avg_window_0 (type: double)
               outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 10
-                Statistics: Num rows: 10 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 10 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -546,7 +546,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over10k
-            Statistics: Num rows: 7069 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -559,7 +559,7 @@ STAGE PLANS:
                   native: false
                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-              Statistics: Num rows: 7069 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
               value expressions: i (type: int)
       Execution mode: vectorized
       Map Vectorization:
@@ -583,7 +583,7 @@ STAGE PLANS:
         Select Operator
           expressions: VALUE._col2 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: timestamp)
           outputColumnNames: _col2, _col7, _col8
-          Statistics: Num rows: 7069 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -603,18 +603,18 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumLong
                         window frame: RANGE PRECEDING(MAX)~CURRENT
-            Statistics: Num rows: 7069 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col8 (type: timestamp), _col7 (type: string), sum_window_0 (type: bigint)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 7069 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 10
                 Offset of rows: 3
-                Statistics: Num rows: 10 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 10 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -666,7 +666,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over10k
-            Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -679,7 +679,7 @@ STAGE PLANS:
                   native: false
                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-              Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
               value expressions: d (type: double)
       Execution mode: vectorized
       Map Vectorization:
@@ -703,7 +703,7 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey1 (type: int), VALUE._col4 (type: double), KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col2, _col5, _col7
-          Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -723,17 +723,17 @@ STAGE PLANS:
                         name: sum
                         window function: GenericUDAFSumDouble
                         window frame: RANGE PRECEDING(MAX)~CURRENT
-            Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col7 (type: string), _col2 (type: int), round(sum_window_0, 3) (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 5
-                Statistics: Num rows: 5 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 5 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -780,7 +780,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over10k
-            Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -793,7 +793,7 @@ STAGE PLANS:
                   native: false
                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-              Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
               value expressions: d (type: double)
       Execution mode: vectorized
       Map Vectorization:
@@ -817,7 +817,7 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey1 (type: int), VALUE._col4 (type: double), KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col2, _col5, _col7
-          Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -837,17 +837,17 @@ STAGE PLANS:
                         name: avg
                         window function: GenericUDAFAverageEvaluatorDouble
                         window frame: RANGE PRECEDING(MAX)~CURRENT
-            Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col7 (type: string), _col2 (type: int), round((avg_window_0 / 10.0), 3) (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 5
-                Statistics: Num rows: 5 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 5 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -894,7 +894,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over10k
-            Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -907,7 +907,7 @@ STAGE PLANS:
                   native: false
                   nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-              Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
               value expressions: d (type: double)
       Execution mode: vectorized
       Map Vectorization:
@@ -931,7 +931,7 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey1 (type: int), VALUE._col4 (type: double), KEY.reducesinkkey0 (type: string)
           outputColumnNames: _col2, _col5, _col7
-          Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -951,17 +951,17 @@ STAGE PLANS:
                         name: avg
                         window function: GenericUDAFAverageEvaluatorDouble
                         window frame: RANGE PRECEDING(MAX)~CURRENT
-            Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col7 (type: string), _col2 (type: int), round(((avg_window_0 + 10.0) - (avg_window_0 - 10.0)), 3) (type: double)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 9088 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 5
-                Statistics: Num rows: 5 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 5 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 1017948 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
