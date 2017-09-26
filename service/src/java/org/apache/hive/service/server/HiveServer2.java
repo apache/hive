@@ -481,7 +481,7 @@ public class HiveServer2 extends CompositeService {
         + thriftCLIService.getPortNumber();
   }
 
-  public String getServerHost() throws Exception {
+  private String getServerHost() throws Exception {
     if ((thriftCLIService == null) || (thriftCLIService.getServerIPAddress() == null)) {
       throw new Exception("Unable to get the server address; it hasn't been initialized yet.");
     }

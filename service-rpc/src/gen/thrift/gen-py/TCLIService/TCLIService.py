@@ -166,13 +166,6 @@ class Iface:
     """
     pass
 
-  def GetQueryId(self, req):
-    """
-    Parameters:
-     - req
-    """
-    pass
-
 
 class Client(Iface):
   def __init__(self, iprot, oprot=None):
@@ -832,37 +825,6 @@ class Client(Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "RenewDelegationToken failed: unknown result")
 
-  def GetQueryId(self, req):
-    """
-    Parameters:
-     - req
-    """
-    self.send_GetQueryId(req)
-    return self.recv_GetQueryId()
-
-  def send_GetQueryId(self, req):
-    self._oprot.writeMessageBegin('GetQueryId', TMessageType.CALL, self._seqid)
-    args = GetQueryId_args()
-    args.req = req
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_GetQueryId(self):
-    iprot = self._iprot
-    (fname, mtype, rseqid) = iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      raise x
-    result = GetQueryId_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "GetQueryId failed: unknown result")
-
 
 class Processor(Iface, TProcessor):
   def __init__(self, handler):
@@ -889,7 +851,6 @@ class Processor(Iface, TProcessor):
     self._processMap["GetDelegationToken"] = Processor.process_GetDelegationToken
     self._processMap["CancelDelegationToken"] = Processor.process_CancelDelegationToken
     self._processMap["RenewDelegationToken"] = Processor.process_RenewDelegationToken
-    self._processMap["GetQueryId"] = Processor.process_GetQueryId
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -1301,25 +1262,6 @@ class Processor(Iface, TProcessor):
       logging.exception(ex)
       result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
     oprot.writeMessageBegin("RenewDelegationToken", msg_type, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_GetQueryId(self, seqid, iprot, oprot):
-    args = GetQueryId_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = GetQueryId_result()
-    try:
-      result.success = self._handler.GetQueryId(args.req)
-      msg_type = TMessageType.REPLY
-    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
-      raise
-    except Exception as ex:
-      msg_type = TMessageType.EXCEPTION
-      logging.exception(ex)
-      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-    oprot.writeMessageBegin("GetQueryId", msg_type, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -4051,137 +3993,6 @@ class RenewDelegationToken_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('RenewDelegationToken_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.STRUCT, 0)
-      self.success.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.success)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class GetQueryId_args:
-  """
-  Attributes:
-   - req
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'req', (TGetQueryIdReq, TGetQueryIdReq.thrift_spec), None, ), # 1
-  )
-
-  def __init__(self, req=None,):
-    self.req = req
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.req = TGetQueryIdReq()
-          self.req.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('GetQueryId_args')
-    if self.req is not None:
-      oprot.writeFieldBegin('req', TType.STRUCT, 1)
-      self.req.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.req)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class GetQueryId_result:
-  """
-  Attributes:
-   - success
-  """
-
-  thrift_spec = (
-    (0, TType.STRUCT, 'success', (TGetQueryIdResp, TGetQueryIdResp.thrift_spec), None, ), # 0
-  )
-
-  def __init__(self, success=None,):
-    self.success = success
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRUCT:
-          self.success = TGetQueryIdResp()
-          self.success.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('GetQueryId_result')
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)

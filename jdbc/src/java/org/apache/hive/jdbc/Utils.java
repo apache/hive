@@ -154,21 +154,6 @@ public class Utils {
 
     public JdbcConnectionParams() {
     }
-    
-    public JdbcConnectionParams(JdbcConnectionParams params) {
-      this.host = params.host;
-      this.port = params.port;
-      this.jdbcUriString = params.jdbcUriString;
-      this.dbName = params.dbName;
-      this.hiveConfs.putAll(params.hiveConfs);
-      this.hiveVars.putAll(params.hiveVars);
-      this.sessionVars.putAll(params.sessionVars);
-      this.isEmbeddedMode = params.isEmbeddedMode;
-      this.authorityList = params.authorityList;
-      this.zooKeeperEnsemble = params.zooKeeperEnsemble;
-      this.currentHostZnodePath = params.currentHostZnodePath;
-      this.rejectedHostZnodePaths.addAll(rejectedHostZnodePaths);
-    }
 
     public String getHost() {
       return host;

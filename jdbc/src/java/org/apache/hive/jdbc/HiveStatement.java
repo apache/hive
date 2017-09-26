@@ -18,7 +18,6 @@
 
 package org.apache.hive.jdbc;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 import org.apache.hive.service.cli.RowSet;
@@ -35,7 +34,6 @@ import org.apache.hive.service.rpc.thrift.TFetchResultsReq;
 import org.apache.hive.service.rpc.thrift.TFetchResultsResp;
 import org.apache.hive.service.rpc.thrift.TGetOperationStatusReq;
 import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
-import org.apache.hive.service.rpc.thrift.TGetQueryIdReq;
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
 import org.apache.thrift.TException;
@@ -987,14 +985,5 @@ public class HiveStatement implements java.sql.Statement {
    */
   public void setInPlaceUpdateStream(InPlaceUpdateStream stream) {
     this.inPlaceUpdateStream = stream;
-  }
-
-  @VisibleForTesting
-  public String getQueryId() throws SQLException {
-    try {
-      return client.GetQueryId(new TGetQueryIdReq(stmtHandle)).getQueryId();
-    } catch (TException e) {
-      throw new SQLException(e);
-    }
   }
 }

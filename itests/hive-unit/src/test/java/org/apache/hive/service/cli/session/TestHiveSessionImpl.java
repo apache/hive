@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import static org.mockito.Matchers.*;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,7 +86,7 @@ public class TestHiveSessionImpl {
 
     } catch (HiveSQLException e) {
       if (!"Fail for clean up test".equals(e.getMessage())) {
-        Assert.fail("unexpected exception:" + Arrays.toString(e.getStackTrace()));
+        Assert.fail("unexpected exception:" + e.getMessage());
       }
       //operationManager.closeOperation() is expected to be invoked once
       Mockito.verify(operationManager, Mockito.times(1)).closeOperation(opHandle);

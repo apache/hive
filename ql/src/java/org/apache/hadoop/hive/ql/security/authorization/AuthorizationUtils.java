@@ -99,8 +99,6 @@ public class AuthorizationUtils {
       return HivePrivilegeObjectType.PARTITION;
     case FUNCTION:
       return HivePrivilegeObjectType.FUNCTION;
-    case SERVICE_NAME:
-      return HivePrivilegeObjectType.SERVICE_NAME;
     default:
       return null;
     }

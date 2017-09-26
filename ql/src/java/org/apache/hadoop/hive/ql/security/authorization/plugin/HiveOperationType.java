@@ -131,7 +131,6 @@ public enum HiveOperationType {
   SHOW_COMPACTIONS,
   SHOW_TRANSACTIONS,
   ABORT_TRANSACTIONS,
-  KILL_QUERY,
   // ==== Hive command operation types starts here ==== //
   SET,
   RESET,

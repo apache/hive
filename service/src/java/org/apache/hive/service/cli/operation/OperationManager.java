@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.log.LogDivertAppender;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.hive.ql.session.OperationLog;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -50,12 +49,6 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
-import org.apache.hive.service.server.KillQueryImpl;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,8 +60,6 @@ public class OperationManager extends AbstractService {
   private final Logger LOG = LoggerFactory.getLogger(OperationManager.class.getName());
   private final ConcurrentHashMap<OperationHandle, Operation> handleToOperation =
       new ConcurrentHashMap<OperationHandle, Operation>();
-  private final ConcurrentHashMap<String, Operation> queryIdOperation =
-      new ConcurrentHashMap<String, Operation>();
 
   //Following fields for displaying queries on WebUI
   private Object webuiLock = new Object();
@@ -192,13 +183,8 @@ public class OperationManager extends AbstractService {
     return handleToOperation.get(operationHandle);
   }
 
-  private String getQueryId(Operation operation) {
-    return operation.getParentSession().getHiveConf().getVar(ConfVars.HIVEQUERYID);
-  }
-
   private void addOperation(Operation operation) {
     LOG.info("Adding operation: " + operation.getHandle());
-    queryIdOperation.put(getQueryId(operation), operation);
     handleToOperation.put(operation.getHandle(), operation);
     if (operation instanceof SQLOperation) {
       synchronized (webuiLock) {
@@ -210,7 +196,6 @@ public class OperationManager extends AbstractService {
 
   private Operation removeOperation(OperationHandle opHandle) {
     Operation operation = handleToOperation.remove(opHandle);
-    queryIdOperation.remove(getQueryId(operation));
     if (operation instanceof SQLOperation) {
       removeSafeQueryInfo(opHandle);
     }
@@ -230,7 +215,11 @@ public class OperationManager extends AbstractService {
         }
       }
 
-      return removeOperation(operationHandle);
+      handleToOperation.remove(operationHandle, operation);
+      if (operation instanceof SQLOperation) {
+        removeSafeQueryInfo(operationHandle);
+      }
+      return operation;
     }
     return null;
   }
@@ -410,9 +399,5 @@ public class OperationManager extends AbstractService {
       }
       return historicalQueryInfos.get(handle);
     }
-  }
-
-  public Operation getOperationByQueryId(String queryId) {
-    return queryIdOperation.get(queryId);
   }
 }

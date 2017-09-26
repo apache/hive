@@ -1163,17 +1163,4 @@ public class TestSQL11ReservedKeyWordsNegative {
     }
   }
 
-	@Test
-	public void testSQL11ReservedKeyWords_KILL() {
-		try {
-			parse("CREATE TABLE KILL QUERY (col STRING)");
-			Assert.fail("Expected ParseException");
-		} catch (ParseException ex) {
-			Assert.assertEquals(
-					"Failure didn't match.",
-					"line 1:18 cannot recognize input near 'QUERY' '(' 'col' in create table statement",
-					ex.getMessage());
-		}
-	}
-
 }

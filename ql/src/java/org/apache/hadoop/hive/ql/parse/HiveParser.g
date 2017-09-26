@@ -400,7 +400,6 @@ TOK_OPERATOR;
 TOK_EXPRESSION;
 TOK_DETAIL;
 TOK_BLOCKING;
-TOK_KILL_QUERY;
 }
 
 
@@ -571,8 +570,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_COMPACTIONS", "COMPACTIONS");
     xlateMap.put("KW_COMPACT", "COMPACT");
     xlateMap.put("KW_WAIT", "WAIT");
-    xlateMap.put("KW_KILL", "KILL");
-    xlateMap.put("KW_QUERY", "QUERY");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -895,7 +892,6 @@ ddlStatement
     | setRole
     | showCurrentRole
     | abortTransactionStatement
-    | killQueryStatement
     ;
 
 ifExists
@@ -1900,7 +1896,7 @@ createMaterializedViewStatement
     : KW_CREATE KW_MATERIALIZED KW_VIEW (ifNotExists)? name=tableName
         rewriteEnabled? tableComment? tableRowFormat? tableFileFormat? tableLocation?
         tablePropertiesPrefixed? KW_AS selectStatementWithCTE
-    -> ^(TOK_CREATE_MATERIALIZED_VIEW $name
+    -> ^(TOK_CREATE_MATERIALIZED_VIEW $name 
          ifNotExists?
          rewriteEnabled?
          tableComment?
@@ -2925,10 +2921,3 @@ updateOrDelete
 /*
 END SQL Merge statement
 */
-
-killQueryStatement
-@init { pushMsg("kill query statement", state); }
-@after { popMsg(state); }
-  :
-  KW_KILL KW_QUERY ( StringLiteral )+ -> ^(TOK_KILL_QUERY ( StringLiteral )+)
-  ;

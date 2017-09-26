@@ -189,10 +189,6 @@ public class SessionState {
   private HiveAuthorizer authorizerV2;
   private volatile ProgressMonitor progressMonitor;
 
-  private String hiveServer2HostName;
-
-  private KillQuery killQuery;
-
   public enum AuthorizationMode{V1, V2};
 
   private HiveAuthenticationProvider authenticator;
@@ -400,7 +396,6 @@ public class SessionState {
     this.sessionConf.setClassLoader(currentLoader);
     resourceDownloader = new ResourceDownloader(conf,
         HiveConf.getVar(conf, ConfVars.DOWNLOADED_RESOURCES_DIR));
-    killQuery = new NullKillQuery();
   }
 
   public Map<String, String> getHiveVariables() {
@@ -1912,21 +1907,6 @@ public class SessionState {
     return progressMonitor;
   }
 
-  public void setHiveServer2Host(String hiveServer2HostName) {
-    this.hiveServer2HostName = hiveServer2HostName;
-  }
-
-  public String getHiveServer2Host() {
-    return hiveServer2HostName;
-  }
-
-  public void setKillQuery(KillQuery killQuery) {
-    this.killQuery = killQuery;
-  }
-
-  public KillQuery getKillQuery() {
-    return killQuery;
-  }
 }
 
 class ResourceMaps {
