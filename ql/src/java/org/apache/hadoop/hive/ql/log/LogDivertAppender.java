@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.log;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.common.LogUtils;
@@ -25,12 +28,14 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.RandomAccessFileAppender;
 import org.apache.logging.log4j.core.appender.routing.Route;
 import org.apache.logging.log4j.core.appender.routing.Routes;
 import org.apache.logging.log4j.core.appender.routing.RoutingAppender;
+import org.apache.logging.log4j.core.config.AppenderControl;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.config.Node;
@@ -109,7 +114,7 @@ public class LogDivertAppender {
     public Result filter(LogEvent event) {
       boolean excludeMatches = (loggingMode == OperationLog.LoggingLevel.VERBOSE);
 
-      String logLevel = event.getContextData().getValue(LogUtils.OPERATIONLOG_LEVEL_KEY);
+      String logLevel = event.getContextMap().get(LogUtils.OPERATIONLOG_LEVEL_KEY);
       logLevel = logLevel == null ? "" : logLevel;
       OperationLog.LoggingLevel currentLoggingMode = OperationLog.getLoggingLevel(logLevel);
       // If logging is disabled, deny everything.
@@ -231,20 +236,18 @@ public class LogDivertAppender {
     childNode.getChildren().add(layoutNode);
 
     Route mdcRoute = Route.createRoute(null, null, node);
-    Routes routes = Routes.newBuilder()
-            .withPattern("${ctx:queryId}")
-            .withRoutes(new Route[]{defaultRoute, mdcRoute})
-            .build();
+    Routes routes = Routes.createRoutes("${ctx:queryId}", defaultRoute, mdcRoute);
 
     LoggerContext context = (LoggerContext) LogManager.getContext(false);
     Configuration configuration = context.getConfiguration();
 
-    RoutingAppender routingAppender = RoutingAppender.newBuilder()
-            .withName(QUERY_ROUTING_APPENDER)
-            .withIgnoreExceptions(true)
-            .withRoutes(routes)
-            .setConfiguration(configuration)
-            .build();
+    RoutingAppender routingAppender = RoutingAppender.createAppender(QUERY_ROUTING_APPENDER,
+        "true",
+        routes,
+        configuration,
+        null,
+        null,
+        null);
 
     LoggerConfig loggerConfig = configuration.getRootLogger();
     loggerConfig.addAppender(routingAppender, null, null);
