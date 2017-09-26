@@ -432,11 +432,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
               transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
 
               if(tokenStrForm != null) {
+                LOG.info("HMSC::open(): Found delegation token. Creating DIGEST-based thrift connection.");
                 // authenticate using delegation tokens via the "DIGEST" mechanism
                 transport = authBridge.createClientTransport(null, store.getHost(),
                     "DIGEST", tokenStrForm, transport,
                         MetaStoreUtils.getMetaStoreSaslProperties(conf));
               } else {
+                LOG.info("HMSC::open(): Could not find delegation token. Creating KERBEROS-based thrift connection.");
                 String principalConfig =
                     conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL);
                 transport = authBridge.createClientTransport(
