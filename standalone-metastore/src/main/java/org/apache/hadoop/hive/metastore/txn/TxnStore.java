@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,10 +18,10 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.*;
 
 import java.sql.SQLException;
@@ -32,21 +32,10 @@ import java.util.Set;
 /**
  * A handler to answer transaction related calls that come into the metastore
  * server.
- *
- * Note on log messages:  Please include txnid:X and lockid info using
- * {@link org.apache.hadoop.hive.common.JavaUtils#txnIdToString(long)}
- * and {@link org.apache.hadoop.hive.common.JavaUtils#lockIdToString(long)} in all messages.
- * The txnid:X and lockid:Y matches how Thrift object toString() methods are generated,
- * so keeping the format consistent makes grep'ing the logs much easier.
- *
- * Note on HIVE_LOCKS.hl_last_heartbeat.
- * For locks that are part of transaction, we set this 0 (would rather set it to NULL but
- * Currently the DB schema has this NOT NULL) and only update/read heartbeat from corresponding
- * transaction in TXNS.
  */
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
-public interface TxnStore {
+public interface TxnStore extends Configurable {
 
   enum MUTEX_KEY {Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
     WriteSetCleaner, CompactionScheduler}
@@ -58,9 +47,7 @@ public interface TxnStore {
   String SUCCEEDED_RESPONSE = "succeeded";
   String ATTEMPTED_RESPONSE = "attempted";
 
-  public static final int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 50000;
-
-  public void setConf(HiveConf conf);
+  int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 50000;
 
   /**
    * Get information about open transactions.  This gives extensive information about the
@@ -70,7 +57,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  public GetOpenTxnsInfoResponse getOpenTxnsInfo() throws MetaException;
+  GetOpenTxnsInfoResponse getOpenTxnsInfo() throws MetaException;
 
   /**
    * Get list of valid transactions.  This gives just the list of transactions that are open.
@@ -78,14 +65,14 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  public GetOpenTxnsResponse getOpenTxns() throws MetaException;
+  GetOpenTxnsResponse getOpenTxns() throws MetaException;
 
   /**
    * Get the count for open transactions.
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  public void countOpenTxns() throws MetaException;
+  void countOpenTxns() throws MetaException;
 
   /**
    * Open a set of transactions
@@ -94,7 +81,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  public OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException;
+  OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException;
 
   /**
    * Abort (rollback) a transaction.
@@ -103,7 +90,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException, TxnAbortedException;
+  void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException, TxnAbortedException;
 
   /**
    * Abort (rollback) a list of transactions in one request.
@@ -112,7 +99,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  public void abortTxns(AbortTxnsRequest rqst) throws NoSuchTxnException, MetaException;
+  void abortTxns(AbortTxnsRequest rqst) throws NoSuchTxnException, MetaException;
 
   /**
    * Commit a transaction
@@ -122,7 +109,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  public void commitTxn(CommitTxnRequest rqst)
+  void commitTxn(CommitTxnRequest rqst)
     throws NoSuchTxnException, TxnAbortedException,  MetaException;
 
   /**
@@ -135,7 +122,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.CannotRetry
-  public LockResponse lock(LockRequest rqst)
+  LockResponse lock(LockRequest rqst)
     throws NoSuchTxnException, TxnAbortedException, MetaException;
 
   /**
@@ -149,7 +136,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.SafeToRetry
-  public LockResponse checkLock(CheckLockRequest rqst)
+  LockResponse checkLock(CheckLockRequest rqst)
     throws NoSuchTxnException, NoSuchLockException, TxnAbortedException, MetaException;
 
   /**
@@ -162,7 +149,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  public void unlock(UnlockRequest rqst)
+  void unlock(UnlockRequest rqst)
     throws NoSuchLockException, TxnOpenException, MetaException;
 
   /**
@@ -172,7 +159,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  public ShowLocksResponse showLocks(ShowLocksRequest rqst) throws MetaException;
+  ShowLocksResponse showLocks(ShowLocksRequest rqst) throws MetaException;
 
   /**
    * Send a heartbeat for a lock or a transaction
@@ -183,7 +170,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.SafeToRetry
-  public void heartbeat(HeartbeatRequest ids)
+  void heartbeat(HeartbeatRequest ids)
     throws NoSuchTxnException,  NoSuchLockException, TxnAbortedException, MetaException;
 
   /**
@@ -193,7 +180,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.SafeToRetry
-  public HeartbeatTxnRangeResponse heartbeatTxnRange(HeartbeatTxnRangeRequest rqst)
+  HeartbeatTxnRangeResponse heartbeatTxnRange(HeartbeatTxnRangeRequest rqst)
     throws MetaException;
 
   /**
@@ -204,7 +191,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  public CompactionResponse compact(CompactionRequest rqst) throws MetaException;
+  CompactionResponse compact(CompactionRequest rqst) throws MetaException;
 
   /**
    * Show list of current compactions
@@ -213,7 +200,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  public ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException;
+  ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException;
 
   /**
    * Add information on a set of dynamic partitions that participated in a transaction.
@@ -223,7 +210,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.SafeToRetry
-  public void addDynamicPartitions(AddDynamicPartitions rqst)
+  void addDynamicPartitions(AddDynamicPartitions rqst)
       throws NoSuchTxnException,  TxnAbortedException, MetaException;
 
   /**
@@ -235,14 +222,14 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  public void cleanupRecords(HiveObjectType type, Database db, Table table,
+  void cleanupRecords(HiveObjectType type, Database db, Table table,
                              Iterator<Partition> partitionIterator) throws MetaException;
 
   /**
    * Timeout transactions and/or locks.  This should only be called by the compactor.
    */
   @RetrySemantics.Idempotent
-  public void performTimeOuts();
+  void performTimeOuts();
 
   /**
    * This will look through the completed_txn_components table and look for partitions or tables
@@ -254,7 +241,7 @@ public interface TxnStore {
    * or runAs set since these are only potential compactions not actual ones.
    */
   @RetrySemantics.ReadOnly
-  public Set<CompactionInfo> findPotentialCompactions(int maxAborted) throws MetaException;
+  Set<CompactionInfo> findPotentialCompactions(int maxAborted) throws MetaException;
 
   /**
    * Sets the user to run as.  This is for the case
@@ -263,7 +250,7 @@ public interface TxnStore {
    * @param user user to run the jobs as
    */
   @RetrySemantics.Idempotent
-  public void setRunAs(long cq_id, String user) throws MetaException;
+  void setRunAs(long cq_id, String user) throws MetaException;
 
   /**
    * This will grab the next compaction request off of
@@ -272,7 +259,7 @@ public interface TxnStore {
    * @return an info element for this compaction request, or null if there is no work to do now.
    */
   @RetrySemantics.ReadOnly
-  public CompactionInfo findNextToCompact(String workerId) throws MetaException;
+  CompactionInfo findNextToCompact(String workerId) throws MetaException;
 
   /**
    * This will mark an entry in the queue as compacted
@@ -280,7 +267,7 @@ public interface TxnStore {
    * @param info info on the compaction entry to mark as compacted.
    */
   @RetrySemantics.SafeToRetry
-  public void markCompacted(CompactionInfo info) throws MetaException;
+  void markCompacted(CompactionInfo info) throws MetaException;
 
   /**
    * Find entries in the queue that are ready to
@@ -288,7 +275,7 @@ public interface TxnStore {
    * @return information on the entry in the queue.
    */
   @RetrySemantics.ReadOnly
-  public List<CompactionInfo> findReadyToClean() throws MetaException;
+  List<CompactionInfo> findReadyToClean() throws MetaException;
 
   /**
    * This will remove an entry from the queue after
@@ -297,7 +284,7 @@ public interface TxnStore {
    * @param info info on the compaction entry to remove
    */
   @RetrySemantics.CannotRetry
-  public void markCleaned(CompactionInfo info) throws MetaException;
+  void markCleaned(CompactionInfo info) throws MetaException;
 
   /**
    * Mark a compaction entry as failed.  This will move it to the compaction history queue with a
@@ -307,7 +294,7 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.CannotRetry
-  public void markFailed(CompactionInfo info) throws MetaException;
+  void markFailed(CompactionInfo info) throws MetaException;
 
   /**
    * Clean up aborted transactions from txns that have no components in txn_components.  The reson such
@@ -315,7 +302,7 @@ public interface TxnStore {
    * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called.
    */
   @RetrySemantics.SafeToRetry
-  public void cleanEmptyAbortedTxns() throws MetaException;
+  void cleanEmptyAbortedTxns() throws MetaException;
 
   /**
    * This will take all entries assigned to workers
@@ -327,7 +314,7 @@ public interface TxnStore {
    *                 so that like hostname% will match the worker id.
    */
   @RetrySemantics.Idempotent
-  public void revokeFromLocalWorkers(String hostname) throws MetaException;
+  void revokeFromLocalWorkers(String hostname) throws MetaException;
 
   /**
    * This call will return all compaction queue
@@ -339,7 +326,7 @@ public interface TxnStore {
    *                declared dead.
    */
   @RetrySemantics.Idempotent
-  public void revokeTimedoutWorkers(long timeout) throws MetaException;
+  void revokeTimedoutWorkers(long timeout) throws MetaException;
 
   /**
    * Queries metastore DB directly to find columns in the table which have statistics information.
@@ -348,13 +335,13 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  public List<String> findColumnsWithStats(CompactionInfo ci) throws MetaException;
+  List<String> findColumnsWithStats(CompactionInfo ci) throws MetaException;
 
   /**
    * Record the highest txn id that the {@code ci} compaction job will pay attention to.
    */
   @RetrySemantics.Idempotent
-  public void setCompactionHighestTxnId(CompactionInfo ci, long highestTxnId) throws MetaException;
+  void setCompactionHighestTxnId(CompactionInfo ci, long highestTxnId) throws MetaException;
 
   /**
    * For any given compactable entity (partition, table if not partitioned) the history of compactions
@@ -365,14 +352,14 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.SafeToRetry
-  public void purgeCompactionHistory() throws MetaException;
+  void purgeCompactionHistory() throws MetaException;
 
   /**
    * WriteSet tracking is used to ensure proper transaction isolation.  This method deletes the 
    * transaction metadata once it becomes unnecessary.  
    */
   @RetrySemantics.SafeToRetry
-  public void performWriteSetGC();
+  void performWriteSetGC();
 
   /**
    * Determine if there are enough consecutive failures compacting a table or partition that no
@@ -383,16 +370,16 @@ public interface TxnStore {
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  public boolean checkFailedCompactions(CompactionInfo ci) throws MetaException;
+  boolean checkFailedCompactions(CompactionInfo ci) throws MetaException;
 
   @VisibleForTesting
-  public int numLocksInLockTable() throws SQLException, MetaException;
+  int numLocksInLockTable() throws SQLException, MetaException;
 
   @VisibleForTesting
   long setTimeout(long milliseconds);
 
   @RetrySemantics.Idempotent
-  public MutexAPI getMutexAPI();
+  MutexAPI getMutexAPI();
 
   /**
    * This is primarily designed to provide coarse grained mutex support to operations running
@@ -401,12 +388,12 @@ public interface TxnStore {
    * 
    * In RDMBS world each {@code LockHandle} uses a java.sql.Connection so use it sparingly.
    */
-  public static interface MutexAPI {
+  interface MutexAPI {
     /**
      * The {@code key} is name of the lock. Will acquire and exclusive lock or block.  It retuns
      * a handle which must be used to release the lock.  Each invocation returns a new handle.
      */
-    public LockHandle acquireLock(String key) throws MetaException;
+    LockHandle acquireLock(String key) throws MetaException;
 
     /**
      * Same as {@link #acquireLock(String)} but takes an already existing handle as input.  This 
@@ -414,12 +401,12 @@ public interface TxnStore {
      * the same handle will be released together.
      * @param handle not NULL
      */
-    public void acquireLock(String key, LockHandle handle) throws MetaException;
-    public static interface LockHandle {
+    void acquireLock(String key, LockHandle handle) throws MetaException;
+    interface LockHandle {
       /**
        * Releases all locks associated with this handle.
        */
-      public void releaseLocks();
+      void releaseLocks();
     }
   }
 
@@ -429,5 +416,5 @@ public interface TxnStore {
    * @param id {@link CompactionInfo#id}
    */
   @RetrySemantics.Idempotent
-  public void setHadoopJobId(String hadoopJobId, long id);
+  void setHadoopJobId(String hadoopJobId, long id);
 }

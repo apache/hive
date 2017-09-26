@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,10 +28,11 @@ import java.sql.Statement;
 import java.util.Properties;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * Utility methods for creating and destroying txn database/schema, plus methods for
@@ -56,9 +57,9 @@ public final class TxnDbUtil {
    *
    * @param conf HiveConf to add these values to
    */
-  public static void setConfValues(HiveConf conf) {
-    conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, TXN_MANAGER);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
+  public static void setConfValues(Configuration conf) {
+    MetastoreConf.setVar(conf, ConfVars.HIVE_TXN_MANAGER, TXN_MANAGER);
+    MetastoreConf.setBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
   }
 
   public static void prepDb() throws Exception {
@@ -227,16 +228,23 @@ public final class TxnDbUtil {
   }
 
   private static boolean dropTable(Statement stmt, String name, int retryCount) throws SQLException {
-    try {
-      stmt.execute("DROP TABLE " + name);
-      return true;
-    } catch (SQLException e) {
-      if("42Y55".equals(e.getSQLState()) && 30000 == e.getErrorCode()) {
-        //failed because object doesn't exist
+    for (int i = 0; i < 3; i++) {
+      try {
+        stmt.execute("DROP TABLE " + name);
         return true;
+      } catch (SQLException e) {
+        if ("42Y55".equals(e.getSQLState()) && 30000 == e.getErrorCode()) {
+          //failed because object doesn't exist
+          return true;
+        }
+        if ("X0Y25".equals(e.getSQLState()) && 30000 == e.getErrorCode()) {
+          // Intermittent failure
+          LOG.warn("Intermittent drop failure, retrying, try number " + i);
+          continue;
+        }
+        LOG.error("Unable to drop table " + name + ": " + e.getMessage() +
+            " State=" + e.getSQLState() + " code=" + e.getErrorCode() + " retryCount=" + retryCount);
       }
-      LOG.error("Unable to drop table " + name + ": " + e.getMessage() +
-        " State=" + e.getSQLState() + " code=" + e.getErrorCode() + " retryCount=" + retryCount);
     }
     return false;
   }
@@ -322,12 +330,12 @@ public final class TxnDbUtil {
   }
 
   static Connection getConnection() throws Exception {
-    HiveConf conf = new HiveConf();
-    String jdbcDriver = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER);
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    String jdbcDriver = MetastoreConf.getVar(conf, ConfVars.CONNECTION_DRIVER);
     Driver driver = (Driver) Class.forName(jdbcDriver).newInstance();
     Properties prop = new Properties();
-    String driverUrl = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
-    String user = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
+    String driverUrl = MetastoreConf.getVar(conf, ConfVars.CONNECTURLKEY);
+    String user = MetastoreConf.getVar(conf, ConfVars.CONNECTION_USER_NAME);
     String passwd = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
     prop.setProperty("user", user);
     prop.setProperty("password", passwd);

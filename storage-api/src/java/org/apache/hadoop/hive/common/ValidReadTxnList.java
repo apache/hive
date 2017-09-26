@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,8 +17,6 @@
  */
 
 package org.apache.hadoop.hive.common;
-
-import com.google.common.annotations.VisibleForTesting;
 
 import java.util.Arrays;
 import java.util.BitSet;

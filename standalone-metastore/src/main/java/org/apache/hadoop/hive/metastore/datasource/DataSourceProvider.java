@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -61,7 +61,7 @@ public interface DataSourceProvider {
   }
 
   static String getMetastoreJdbcUser(Configuration conf) {
-    return conf.get(MetastoreConf.ConfVars.CONNECTION_USER_NAME.varname);
+    return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECTION_USER_NAME);
   }
 
   static String getMetastoreJdbcPasswd(Configuration conf) throws SQLException {
@@ -73,7 +73,7 @@ public interface DataSourceProvider {
   }
 
   static String getMetastoreJdbcDriverUrl(Configuration conf) throws SQLException {
-    return conf.get(MetastoreConf.ConfVars.CONNECTURLKEY.varname);
+    return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECTURLKEY);
   }
 
 }
