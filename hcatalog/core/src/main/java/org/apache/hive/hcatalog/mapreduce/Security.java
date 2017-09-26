@@ -117,6 +117,8 @@ final class Security {
       //set to empty "Text" if hive.metastore.token.signature property is set to null
       Token<? extends TokenIdentifier> hiveToken = hiveTokenSelector.selectToken(
         new Text(), ugi.getTokens());
+      LOG.info("Security::handleSecurity(): Checking for pre-existing metastore token... "
+          + (hiveToken == null? "Not found. Creating a new one." : "Found. Using existing token."));
       if (hiveToken == null) {
         // we did not get token set up by oozie, let's get them ourselves here.
         // we essentially get a token per unique Output HCatTableInfo - this is
@@ -157,6 +159,7 @@ final class Security {
         // this will be used by the outputcommitter to pass on to the metastore client
         // which in turn will pass on to the TokenSelector so that it can select
         // the right token.
+        LOG.info("Security::handleSecurity(): Setting signature of token to: " + tokenSignature);
         conf.set(HCatConstants.HCAT_KEY_TOKEN_SIGNATURE, tokenSignature);
       }
     }
