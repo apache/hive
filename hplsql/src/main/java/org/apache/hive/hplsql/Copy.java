@@ -268,7 +268,9 @@ public class Copy {
     }
     long elapsed = timer.stop();
     if (info) {
-      info(ctx, "COPY completed: " + rows + " row(s), " + Utils.formatSizeInBytes(bytes) + ", " + timer.format() + ", " + rows/elapsed/1000 + " rows/sec");
+      DecimalFormat df = new DecimalFormat("#,##0.00");
+      df.setRoundingMode(RoundingMode.HALF_UP);
+      info(ctx, "COPY completed: " + rows + " row(s), " + Utils.formatSizeInBytes(bytes) + ", " + timer.format() + ", " + df.format(rows/(elapsed/1000.0)) + " rows/sec");
     }
   }
   
