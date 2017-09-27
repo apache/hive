@@ -319,6 +319,79 @@ public class TestTxnCommands2 {
     resultData = new int[][] {{3,8}, {5,6}, {9,20}};
     Assert.assertEquals(stringifyValues(resultData), rs);
   }
+
+  @Test
+  public void testBICompactedNoStripes() throws Exception {
+    hiveConf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "BI");
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(1,2)");
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] resultData = new int[][] {{1,2}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+    runStatementOnDriver("delete from " + Table.ACIDTBL);
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    Assert.assertEquals(0, rs.size());
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    resultData = new int[][] {{3,4}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+    runStatementOnDriver("delete from " + Table.ACIDTBL);
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    Assert.assertEquals(0, rs.size());
+
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
+    Assert.assertTrue(resp.getCompacts().get(0).getHadoopJobId().startsWith("job_local"));
+
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    resultData = new int[][] {{3,4}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+    runStatementOnDriver("delete from " + Table.ACIDTBL);
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    Assert.assertEquals(0, rs.size());
+    hiveConf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "HYBRID");
+  }
+
+  @Test
+  public void testETLCompactedNoStripes() throws Exception {
+    hiveConf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "ETL");
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(1,2)");
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] resultData = new int[][] {{1,2}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+    runStatementOnDriver("delete from " + Table.ACIDTBL);
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    Assert.assertEquals(0, rs.size());
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    resultData = new int[][] {{3,4}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+    runStatementOnDriver("delete from " + Table.ACIDTBL);
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    Assert.assertEquals(0, rs.size());
+
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
+    Assert.assertTrue(resp.getCompacts().get(0).getHadoopJobId().startsWith("job_local"));
+
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    resultData = new int[][] {{3,4}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+    runStatementOnDriver("delete from " + Table.ACIDTBL);
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    Assert.assertEquals(0, rs.size());
+    hiveConf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "HYBRID");
+  }
+
   /**
    * see HIVE-16177
    * See also {@link TestTxnCommands#testNonAcidToAcidConversion01()}

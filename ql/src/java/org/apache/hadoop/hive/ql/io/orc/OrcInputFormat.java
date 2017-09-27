@@ -1226,7 +1226,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final boolean hasBase;
     private OrcFile.WriterVersion writerVersion;
     private long projColsUncompressedSize;
-    private final List<OrcSplit> deltaSplits;
+    private List<OrcSplit> deltaSplits;
+    private final SplitInfo splitInfo;
     private final ByteBuffer ppdResult;
     private final UserGroupInformation ugi;
     private final boolean allowSyntheticFileIds;
@@ -1249,6 +1250,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       this.hasBase = splitInfo.hasBase;
       this.projColsUncompressedSize = -1;
       this.deltaSplits = splitInfo.getSplits();
+      this.splitInfo = splitInfo;
       this.allowSyntheticFileIds = allowSyntheticFileIds;
       this.ppdResult = splitInfo.ppdResult;
     }
@@ -1423,6 +1425,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                 stripeStats, stripes.size(), file.getPath(), evolution);
           }
         }
+
         return generateSplitsFromStripes(includeStripe);
       }
     }
@@ -1455,31 +1458,44 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     private List<OrcSplit> generateSplitsFromStripes(boolean[] includeStripe) throws IOException {
       List<OrcSplit> splits = new ArrayList<>(stripes.size());
-      // if we didn't have predicate pushdown, read everything
-      if (includeStripe == null) {
-        includeStripe = new boolean[stripes.size()];
-        Arrays.fill(includeStripe, true);
-      }
 
-      OffsetAndLength current = new OffsetAndLength();
-      int idx = -1;
-      for (StripeInformation stripe : stripes) {
-        idx++;
-
-        if (!includeStripe[idx]) {
-          // create split for the previous unfinished stripe
-          if (current.offset != -1) {
-            splits.add(createSplit(current.offset, current.length, orcTail));
-            current.offset = -1;
-          }
-          continue;
+      // after major compaction, base files may become empty base files. Following sequence is an example
+      // 1) insert some rows
+      // 2) delete all rows
+      // 3) major compaction
+      // 4) insert some rows
+      // In such cases, consider base files without any stripes as uncovered delta
+      if (stripes == null || stripes.isEmpty()) {
+        AcidOutputFormat.Options options = AcidUtils.parseBaseOrDeltaBucketFilename(file.getPath(), context.conf);
+        int bucket = options.getBucket();
+        splitInfo.covered[bucket] = false;
+        deltaSplits = splitInfo.getSplits();
+      } else {
+        // if we didn't have predicate pushdown, read everything
+        if (includeStripe == null) {
+          includeStripe = new boolean[stripes.size()];
+          Arrays.fill(includeStripe, true);
         }
 
-        current = generateOrUpdateSplit(
-            splits, current, stripe.getOffset(), stripe.getLength(), orcTail);
-      }
-      generateLastSplit(splits, current, orcTail);
+        OffsetAndLength current = new OffsetAndLength();
+        int idx = -1;
+        for (StripeInformation stripe : stripes) {
+          idx++;
 
+          if (!includeStripe[idx]) {
+            // create split for the previous unfinished stripe
+            if (current.offset != -1) {
+              splits.add(createSplit(current.offset, current.length, orcTail));
+              current.offset = -1;
+            }
+            continue;
+          }
+
+          current = generateOrUpdateSplit(
+            splits, current, stripe.getOffset(), stripe.getLength(), orcTail);
+        }
+        generateLastSplit(splits, current, orcTail);
+      }
       // Add uncovered ACID delta splits.
       splits.addAll(deltaSplits);
       return splits;
