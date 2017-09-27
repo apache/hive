@@ -33,7 +33,17 @@ import java.util.Collection;
  *
  */
 public interface TransactionBatch  {
-  public enum TxnState {INACTIVE, OPEN, COMMITTED, ABORTED }
+  enum TxnState {
+    INACTIVE("I"), OPEN("O"), COMMITTED("C"), ABORTED("A");
+
+    private final String code;
+    TxnState(String code) {
+      this.code = code;
+    };
+    public String toString() {
+      return code;
+    }
+  }
 
   /**
    * Activate the next available transaction in the current transaction batch
