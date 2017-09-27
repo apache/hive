@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.security.auth.login.LoginException;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -75,8 +77,6 @@ import org.apache.hive.hcatalog.mapreduce.StorerInfo;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.security.auth.login.LoginException;
 
 public class HCatUtil {
 
@@ -642,13 +642,31 @@ public class HCatUtil {
     return jobConf;
   }
 
+  public static Map<String,String> getHCatKeyHiveConf(JobConf conf) {
+    Map<String,String> hiveProperties = new HashMap<String,String>();
+    if (conf.get(HCatConstants.HCAT_KEY_HIVE_CONF) != null) {
+      try {
+        Properties properties = (Properties) HCatUtil.deserialize(
+          conf.get(HCatConstants.HCAT_KEY_HIVE_CONF));
+        for (Map.Entry<Object, Object> prop : properties.entrySet()) {
+          if (conf.get((String)prop.getKey()) == null) {
+            hiveProperties.put(prop.getKey().toString(), prop.getValue().toString());
+          }
+        }
+      } catch (IOException e) {
+        throw new IllegalStateException(
+            "Failed to deserialize hive conf", e);
+      }
+    }
+    return hiveProperties;
+  }
+
   public static void copyJobPropertiesToJobConf(
     Map<String, String> jobProperties, JobConf jobConf) {
     for (Map.Entry<String, String> entry : jobProperties.entrySet()) {
       jobConf.set(entry.getKey(), entry.getValue());
     }
   }
-
 
   public static boolean isHadoop23() {
     String version = org.apache.hadoop.util.VersionInfo.getVersion();
