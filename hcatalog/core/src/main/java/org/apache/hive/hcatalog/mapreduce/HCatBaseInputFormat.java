@@ -126,16 +126,20 @@ public abstract class HCatBaseInputFormat
     }
 
     HiveStorageHandler storageHandler;
-    JobConf jobConf;
+    Map<String,String> hiveProps = null;
     //For each matching partition, call getSplits on the underlying InputFormat
     for (PartInfo partitionInfo : partitionInfoList) {
-      jobConf = HCatUtil.getJobConfFromContext(jobContext);
+      JobConf jobConf = HCatUtil.getJobConfFromContext(jobContext);
+      if (hiveProps == null) {
+        hiveProps = HCatUtil.getHCatKeyHiveConf(jobConf);
+      }
       List<String> setInputPath = setInputPath(jobConf, partitionInfo.getLocation());
       if (setInputPath.isEmpty()) {
         continue;
       }
       Map<String, String> jobProperties = partitionInfo.getJobProperties();
 
+      HCatUtil.copyJobPropertiesToJobConf(hiveProps, jobConf);
       HCatUtil.copyJobPropertiesToJobConf(jobProperties, jobConf);
 
       storageHandler = HCatUtil.getStorageHandler(
