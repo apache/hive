@@ -98,10 +98,10 @@ public class LazyBinarySerDe extends AbstractSerDe {
   // The object for storing row data
   LazyBinaryStruct cachedLazyBinaryStruct;
 
-  private int serializedSize;
-  private SerDeStats stats;
-  private boolean lastOperationSerialize;
-  private boolean lastOperationDeserialize;
+  int serializedSize;
+  SerDeStats stats;
+  boolean lastOperationSerialize;
+  boolean lastOperationDeserialize;
 
   /**
    * Initialize the SerDe with configuration and table information.
@@ -297,7 +297,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
     serialize(byteStream, uoi.getField(obj), uoi.getObjectInspectors().get(tag), false, warnedOnceNullMapKey);
   }
 
-  private static void serializeText(
+  protected static void serializeText(
       RandomAccessOutput byteStream, Text t, boolean skipLengthPrefix) {
     /* write byte size of the string which is a vint */
     int length = t.getLength();
@@ -317,7 +317,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
     public boolean value;
   }
 
-  private static void writeDateToByteStream(RandomAccessOutput byteStream,
+  public static void writeDateToByteStream(RandomAccessOutput byteStream,
                                             DateWritable date) {
     LazyBinaryUtils.writeVInt(byteStream, date.getDays());
   }
@@ -692,7 +692,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
     }
   }
 
-  private static void writeSizeAtOffset(
+  protected static void writeSizeAtOffset(
       RandomAccessOutput byteStream, int byteSizeStart, int size) {
     byteStream.writeInt(byteSizeStart, size);
   }

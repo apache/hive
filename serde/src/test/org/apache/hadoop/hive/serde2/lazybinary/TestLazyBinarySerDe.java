@@ -93,7 +93,7 @@ public class TestLazyBinarySerDe extends TestCase {
    * @return the initialized LazyBinarySerDe
    * @throws Throwable
    */
-  protected static AbstractSerDe getSerDe(String fieldNames, String fieldTypes) throws Throwable {
+  protected AbstractSerDe getSerDe(String fieldNames, String fieldTypes) throws Throwable {
     Properties schema = new Properties();
     schema.setProperty(serdeConstants.LIST_COLUMNS, fieldNames);
     schema.setProperty(serdeConstants.LIST_COLUMN_TYPES, fieldTypes);
