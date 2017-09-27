@@ -50,7 +50,9 @@ public class FSStatsAggregator implements StatsAggregator {
     List<String> statsDirs = scc.getStatsTmpDirs();
     assert statsDirs.size() == 1 : "Found multiple stats dirs: " + statsDirs;
     Path statsDir = new Path(statsDirs.get(0));
-    Utilities.LOG14535.info("About to read stats from : " + statsDir);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("About to read stats from : " + statsDir);
+    }
     statsMap  = new HashMap<String, Map<String,String>>();
 
     try {
@@ -70,13 +72,12 @@ public class FSStatsAggregator implements StatsAggregator {
         } finally {
           SerializationUtilities.releaseKryo(kryo);
         }
-        Utilities.LOG14535.info("Read stats : " +statsMap);
         statsList.add(statsMap);
         in.close();
       }
       return true;
     } catch (IOException e) {
-      Utilities.LOG14535.error("Failed to read stats from filesystem ", e);
+      Utilities.FILE_OP_LOGGER.error("Failed to read stats from filesystem ", e);
       return false;
     }
   }

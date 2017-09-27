@@ -96,7 +96,7 @@ public class OrcFileMergeOperator extends
 
       filePath = k.getInputPath().toUri().getPath();
 
-      Utilities.LOG14535.info("OrcFileMergeOperator processing " + filePath);
+      Utilities.FILE_OP_LOGGER.info("OrcFileMergeOperator processing " + filePath);
 
 
       fixTmpPath(k.getInputPath().getParent());

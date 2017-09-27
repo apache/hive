@@ -73,7 +73,9 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
       final boolean isDfsDir, final String columns,
       final String columnTypes, AcidUtils.Operation writeType, boolean isMmCtas) {
     super(sourcePath, writeType);
-    Utilities.LOG14535.info("creating LFD from " + sourcePath + " to " + targetDir);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("creating LFD from " + sourcePath + " to " + targetDir);
+    }
     this.targetDir = targetDir;
     this.isDfsDir = isDfsDir;
     this.columns = columns;

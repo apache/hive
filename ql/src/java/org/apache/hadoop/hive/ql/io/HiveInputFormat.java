@@ -520,7 +520,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   private static void processForWriteIds(Path dir, JobConf conf,
       ValidTxnList validTxnList, List<Path> finalPaths) throws IOException {
     FileSystem fs = dir.getFileSystem(conf);
-    Utilities.LOG14535.warn("Checking " + dir + " (root) for inputs");
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Checking " + dir + " (root) for inputs");
+    }
     // Ignore nullscan-optimized paths.
     if (fs instanceof NullScanFileSystem) {
       finalPaths.add(dir);
@@ -537,20 +539,20 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       boolean hadAcidState = false;   // whether getAcidState has been called for currDir
       for (FileStatus file : files) {
         Path path = file.getPath();
-        Utilities.LOG14535.warn("Checking " + path + " for inputs");
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("Checking " + path + " for inputs");
+        }
         if (!file.isDirectory()) {
-          Utilities.LOG14535.warn("Ignoring a file not in MM directory " + path);
+          Utilities.FILE_OP_LOGGER.warn("Ignoring a file not in MM directory " + path);
         } else if (JavaUtils.extractTxnId(path) == null) {
           subdirs.add(path);
-        } else {
-          if (!hadAcidState) {
-            AcidUtils.Directory dirInfo = AcidUtils.getAcidState(currDir, conf, validTxnList, Ref.from(false), true, null);
-            hadAcidState = true;
-            // todo for IOW, we also need to count in base dir, if any
-            for (AcidUtils.ParsedDelta delta : dirInfo.getCurrentDirectories()) {
-              Utilities.LOG14535.info("Adding input " + delta.getPath());
-              finalPaths.add(delta.getPath());
-            }
+        } else if (!hadAcidState) {
+          AcidUtils.Directory dirInfo = AcidUtils.getAcidState(currDir, conf, validTxnList, Ref.from(false), true, null);
+          hadAcidState = true;
+          // TODO: for IOW, we also need to count in base dir, if any
+          for (AcidUtils.ParsedDelta delta : dirInfo.getCurrentDirectories()) {
+            Utilities.FILE_OP_LOGGER.debug("Adding input " + delta.getPath());
+            finalPaths.add(delta.getPath());
           }
         }
       }

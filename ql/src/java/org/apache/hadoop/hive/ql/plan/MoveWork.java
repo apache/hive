@@ -80,8 +80,10 @@ public class MoveWork implements Serializable {
       final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
       boolean checkFileFormat, boolean srcLocal, LineageState lineageState) {
     this(inputs, outputs, lineageState);
-    Utilities.LOG14535.info("Creating MoveWork " + System.identityHashCode(this)
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Creating MoveWork " + System.identityHashCode(this)
         + " with " + loadTableWork + "; " + loadFileWork);
+    }
     this.loadTableWork = loadTableWork;
     this.loadFileWork = loadFileWork;
     this.checkFileFormat = checkFileFormat;

@@ -171,7 +171,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           if(lbLevel == 0) {
             // static partition without list bucketing
             long totalSz = getMergeSize(inpFs, dirPath, avgConditionSize);
-            Utilities.LOG14535.info("merge resolve simple case - totalSz " + totalSz + " from " + dirPath);
+            Utilities.FILE_OP_LOGGER.debug("merge resolve simple case - totalSz " + totalSz + " from " + dirPath);
 
             if (totalSz >= 0) { // add the merge job
               setupMapRedWork(conf, work, trgtSize, totalSz);
@@ -186,7 +186,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           }
         }
       } else {
-        Utilities.LOG14535.info("Resolver returning movetask for " + dirPath);
+        Utilities.FILE_OP_LOGGER.info("Resolver returning movetask for " + dirPath);
         resTsks.add(mvTask);
       }
     } catch (IOException e) {
@@ -229,7 +229,6 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       Task<? extends Serializable> mrTask, Task<? extends Serializable> mrAndMvTask, Path dirPath,
       FileSystem inpFs, ConditionalResolverMergeFilesCtx ctx, MapWork work, int dpLbLevel)
       throws IOException {
-    Utilities.LOG14535.info("generateActualTasks for " + dirPath);
     DynamicPartitionCtx dpCtx = ctx.getDPCtx();
     // get list of dynamic partitions
     FileStatus[] status = HiveStatsUtils.getFileStatusRecurse(dirPath, dpLbLevel, inpFs);
@@ -240,7 +239,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     Path path = ptpi.keySet().iterator().next();
     PartitionDesc partDesc = ptpi.get(path);
     TableDesc tblDesc = partDesc.getTableDesc();
-    Utilities.LOG14535.info("merge resolver removing " + path);
+    Utilities.FILE_OP_LOGGER.debug("merge resolver removing " + path);
     work.removePathToPartitionInfo(path); // the root path is not useful anymore
 
     // cleanup pathToAliases
@@ -263,14 +262,14 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
         PartitionDesc pDesc = (dpCtx != null) ? generateDPFullPartSpec(dpCtx, status, tblDesc, i)
             : partDesc;
         if (pDesc == null) {
-          Utilities.LOG14535.warn("merger ignoring invalid DP path " + status[i].getPath());
+          Utilities.FILE_OP_LOGGER.warn("merger ignoring invalid DP path " + status[i].getPath());
           continue;
         }
-        Utilities.LOG14535.info("merge resolver will merge " + status[i].getPath());
+        Utilities.FILE_OP_LOGGER.debug("merge resolver will merge " + status[i].getPath());
         work.resolveDynamicPartitionStoredAsSubDirsMerge(conf, status[i].getPath(), tblDesc,
             aliases, pDesc);
       } else {
-        Utilities.LOG14535.info("merge resolver will move " + status[i].getPath());
+        Utilities.FILE_OP_LOGGER.debug("merge resolver will move " + status[i].getPath());
 
         toMove.add(status[i].getPath());
       }
@@ -375,7 +374,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       long totalSz = 0;
       int numFiles = 0;
       for (FileStatus fStat : fStats) {
-        Utilities.LOG14535.info("Resolver looking at " + fStat.getPath());
+        Utilities.FILE_OP_LOGGER.debug("Resolver looking at " + fStat.getPath());
         if (fStat.isDir()) {
           AverageSize avgSzDir = getAverageSize(inpFs, fStat.getPath());
           if (avgSzDir.getTotalSize() < 0) {

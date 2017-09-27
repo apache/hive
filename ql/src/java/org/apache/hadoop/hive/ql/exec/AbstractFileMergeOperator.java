@@ -123,8 +123,10 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
       finalPath = new Path(tp, taskId);
       outPath = new Path(ttp, Utilities.toTempPath(taskId));
     }
-    Utilities.LOG14535.info("Paths for merge " + taskId + ": tmp " + tmpPath + ", task "
-        + taskTmpPath + ", final " + finalPath + ", out " + outPath);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Paths for merge " + taskId + ": tmp " + tmpPath + ", task "
+          + taskTmpPath + ", final " + finalPath + ", out " + outPath);
+    }
   }
 
   /**
@@ -173,7 +175,9 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
 
     Path newTmpPath = new Path(tmpPath, newPath);
     if (!fs.exists(newTmpPath)) {
-      Utilities.LOG14535.info("Creating " + newTmpPath);
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("Creating " + newTmpPath);
+      }
       fs.mkdirs(newTmpPath);
     }
 
@@ -199,7 +203,9 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
   }
 
   protected void fixTmpPath(Path path) throws IOException {
-    Utilities.LOG14535.info("Calling fixTmpPath with " + path);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Calling fixTmpPath with " + path);
+    }
     // Fix temp path for alter table ... concatenate
     if (isListBucketingAlterTableConcatenate) {
       if (this.tmpPathFixedConcatenate) {

@@ -269,7 +269,6 @@ public class FetchOperator implements Serializable {
     while (iterPath.hasNext()) {
       currPath = iterPath.next();
       currDesc = iterPartDesc.next();
-      Utilities.LOG14535.debug("Considering " + currPath);
       if (isNonNativeTable) {
         return true;
       }
@@ -286,7 +285,6 @@ public class FetchOperator implements Serializable {
         }
       }
     }
-    Utilities.LOG14535.debug("Done with all the paths");
     return false;
   }
 
@@ -381,7 +379,9 @@ public class FetchOperator implements Serializable {
       Utilities.copyTableJobPropertiesToConf(currDesc.getTableDesc(), job);
       InputFormat inputFormat = getInputFormatFromCache(formatter, job);
       String inputs = processCurrPathForMmWriteIds(inputFormat);
-      Utilities.LOG14535.info("Setting fetch inputs to " + inputs);
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("Setting fetch inputs to " + inputs);
+      }
       if (inputs == null) return null;
       job.set("mapred.input.dir", inputs);
 
@@ -414,7 +414,7 @@ public class FetchOperator implements Serializable {
       validTxnList = null;  // non-MM case
     }
     if (validTxnList != null) {
-      Utilities.LOG14535.info("Observing " + currDesc.getTableName() + ": " + validTxnList);
+      Utilities.FILE_OP_LOGGER.info("Processing " + currDesc.getTableName() + " for MM paths");
     }
 
     Path[] dirs = HiveInputFormat.processPathsForMmRead(Lists.newArrayList(currPath), job, validTxnList);

@@ -342,9 +342,14 @@ public abstract class TaskCompiler {
       dataSinkForCtas.setDirName(location);
       location = new Path(location, AcidUtils.deltaSubdir(txnIdForCtas, txnIdForCtas, stmtId));
       lfd.setSourcePath(location);
-      Utilities.LOG14535.info("Setting MM CTAS to  " + location);
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("Setting MM CTAS to " + location);
+      }
     }
-    Utilities.LOG14535.info("Location for LFD is being set to " + location + "; moving from " + lfd.getSourcePath());
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Location for LFD is being set to "
+        + location + "; moving from " + lfd.getSourcePath());
+    }
     lfd.setTargetDir(location);
   }
 

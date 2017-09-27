@@ -1266,9 +1266,11 @@ public final class GenMapRedUtils {
     // 1. create the operator tree
     //
     FileSinkDesc fsInputDesc = fsInput.getConf();
-    Utilities.LOG14535.info("Creating merge work from " + System.identityHashCode(fsInput)
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Creating merge work from " + System.identityHashCode(fsInput)
         + " with write ID " + (fsInputDesc.isMmTable() ? fsInputDesc.getTransactionId() : null)
         + " into " + finalName);
+    }
 
     boolean isBlockMerge = (conf.getBoolVar(ConfVars.HIVEMERGERCFILEBLOCKLEVEL) &&
         fsInputDesc.getTableInfo().getInputFileFormatClass().equals(RCFileInputFormat.class)) ||
@@ -1367,12 +1369,11 @@ public final class GenMapRedUtils {
     MoveWork dummyMv = null;
     if (srcMmWriteId == null) {
       // Only create the movework for non-MM table. No action needed for a MM table.
-      Utilities.LOG14535.info("creating dummy movetask for merge (with lfd)");
       dummyMv = new MoveWork(null, null, null,
           new LoadFileDesc(inputDirName, finalName, true, null, null, false), false,
           SessionState.get().getLineageState());
     } else {
-      // TODO# create the noop MoveWork to avoid q file changes for now. Should be removed w/the flag just before merge
+      // TODO# noop MoveWork to avoid q file changes in HIVE-14990. Remove (w/the flag) after merge.
       dummyMv = new MoveWork(null, null, null,
           new LoadFileDesc(inputDirName, finalName, true, null, null, false), false,
           SessionState.get().getLineageState());
@@ -1383,7 +1384,6 @@ public final class GenMapRedUtils {
     // can only be triggered for a merge that's part of insert for now; MM tables do not support
     // concatenate. Keeping the old logic for non-MM tables with temp directories and stuff.
     Path fsopPath = srcMmWriteId != null ? fsInputDesc.getFinalDirName() : finalName;
-    Utilities.LOG14535.info("Looking for MoveTask to make it dependant on the conditional tasks");
 
     Task<MoveWork> mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(
         mvTasks, fsopPath, fsInputDesc.isMmTable());
@@ -1565,7 +1565,6 @@ public final class GenMapRedUtils {
     TableDesc tblDesc = fsDesc.getTableInfo();
     aliases.add(inputDirStr); // dummy alias: just use the input path
 
-    Utilities.LOG14535.info("createMRWorkForMergingFiles for " + inputDir);
     // constructing the default MapredWork
     MapredWork cMrPlan = GenMapRedUtils.getMapRedWorkFromConf(conf);
     MapWork cplan = cMrPlan.getMapWork();
@@ -1616,7 +1615,9 @@ public final class GenMapRedUtils {
           + " format other than RCFile or ORCFile");
     }
 
-    Utilities.LOG14535.info("creating mergefilework from " + inputDirs + " to " + finalName);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("creating mergefilework from " + inputDirs + " to " + finalName);
+    }
     // create the merge file work
     MergeFileWork work = new MergeFileWork(inputDirs, finalName,
         hasDynamicPartitions, tblDesc.getInputFileFormatClass().getName(), tblDesc);
@@ -1749,7 +1750,9 @@ public final class GenMapRedUtils {
       Task<? extends Serializable> currTask, MoveWork mvWork, Serializable mergeWork,
       Path condInputPath, Path condOutputPath, Task<MoveWork> moveTaskToLink,
       DependencyCollectionTask dependencyTask) {
-    Utilities.LOG14535.info("Creating conditional merge task for " + condInputPath);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Creating conditional merge task for " + condInputPath);
+    }
     // Create a dummy task if no move is needed.
     Serializable moveWork = mvWork != null ? mvWork : new DependencyCollectionWork();
 
@@ -1849,9 +1852,11 @@ public final class GenMapRedUtils {
       } else if (mvWork.getLoadTableWork() != null) {
         srcDir = mvWork.getLoadTableWork().getSourcePath();
       }
-      Utilities.LOG14535.info("Observing MoveWork " + System.identityHashCode(mvWork)
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("Observing MoveWork " + System.identityHashCode(mvWork)
           + " with " + srcDir + "(from " + (isLfd ? "LFD" : "LTD") + ") while looking for "
           + fsopFinalDir + "(mm = " + isMmFsop + ")");
+      }
 
       if ((srcDir != null) && srcDir.equals(fsopFinalDir)) {
         return mvTsk;
@@ -1958,11 +1963,17 @@ public final class GenMapRedUtils {
         if (fileSinkDesc.isLinkedFileSink()) {
           for (FileSinkDesc fsConf : fileSinkDesc.getLinkedFileSinkDesc()) {
             fsConf.setDirName(new Path(tmpDir, fsConf.getDirName().getName()));
-            Utilities.LOG14535.info("createMoveTask setting tmpDir for LinkedFileSink chDir " + fsConf.getDirName() + "; dest was " + fileSinkDesc.getDestPath());
+            if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+              Utilities.FILE_OP_LOGGER.trace("createMoveTask setting tmpDir for LinkedFileSink chDir "
+                + fsConf.getDirName() + "; dest was " + fileSinkDesc.getDestPath());
+            }
           }
         } else {
           fileSinkDesc.setDirName(tmpDir);
-          Utilities.LOG14535.info("createMoveTask setting tmpDir  chDir " + tmpDir + "; dest was " + fileSinkDesc.getDestPath());
+          if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+            Utilities.FILE_OP_LOGGER.trace("createMoveTask setting tmpDir chDir "
+              + tmpDir + "; dest was " + fileSinkDesc.getDestPath());
+          }
         }
       }
     }
@@ -1970,7 +1981,6 @@ public final class GenMapRedUtils {
     Task<MoveWork> mvTask = null;
 
     if (!chDir) {
-      Utilities.LOG14535.info("Looking for MoveTask from createMoveTask");
       mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(
           mvTasks, fsOp.getConf().getFinalDirName(), fsOp.getConf().isMmTable());
     }

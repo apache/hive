@@ -45,7 +45,6 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   // TODO: the below seems like they should just be combined into partitionDesc
   private org.apache.hadoop.hive.ql.plan.TableDesc table;
   private Map<String, String> partitionSpec; // NOTE: this partitionSpec has to be ordered map
-  private boolean commitMmWriteId = true;
 
   public LoadTableDesc(final LoadTableDesc o) {
     super(o.getSourcePath(), o.getWriteType());
@@ -65,8 +64,10 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
       final boolean replace,
       final AcidUtils.Operation writeType, Long currentTransactionId) {
     super(sourcePath, writeType);
-    Utilities.LOG14535.info("creating part LTD from " + sourcePath + " to "
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("creating part LTD from " + sourcePath + " to "
         + ((table.getProperties() == null) ? "null" : table.getTableName()));
+    }
     init(table, partitionSpec, replace, currentTransactionId);
   }
 
@@ -110,7 +111,9 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
       final AcidUtils.Operation writeType,
       boolean isReplace, Long txnId) {
     super(sourcePath, writeType);
-    Utilities.LOG14535.info("creating LTD from " + sourcePath + " to " + table.getTableName()/*, new Exception()*/);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("creating LTD from " + sourcePath + " to " + table.getTableName());
+    }
     this.dpCtx = dpCtx;
     if (dpCtx != null && dpCtx.getPartSpec() != null && partitionSpec == null) {
       init(table, dpCtx.getPartSpec(), isReplace, txnId);
@@ -210,13 +213,5 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
 
   public void setStmtId(int stmtId) {
     this.stmtId = stmtId;
-  }
-
-  public void setIntermediateInMmWrite(boolean b) {
-    this.commitMmWriteId = !b;
-  }
-
-  public boolean isCommitMmWrite() {
-    return commitMmWriteId;
   }
 }

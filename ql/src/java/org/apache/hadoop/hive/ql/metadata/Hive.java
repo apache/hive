@@ -1724,12 +1724,17 @@ public class Hive {
       // TODO: this assumes both paths are qualified; which they are, currently.
       if (isMmTableWrite && loadPath.equals(newPartPath)) {
         // MM insert query, move itself is a no-op.
-        Utilities.LOG14535.info("not moving " + loadPath + " to " + newPartPath + " (MM)");
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("not moving " + loadPath + " to " + newPartPath + " (MM)");
+        }
         assert !isAcid;
         if (areEventsForDmlNeeded(tbl, oldPart)) {
           newFiles = listFilesCreatedByQuery(loadPath, txnId, stmtId);
         }
-        Utilities.LOG14535.info("maybe deleting stuff from " + oldPartPath + " (new " + newPartPath + ") for replace");
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("maybe deleting stuff from " + oldPartPath
+              + " (new " + newPartPath + ") for replace");
+        }
         if (replace && oldPartPath != null) {
           boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
           deleteOldPathForReplace(newPartPath, oldPartPath, getConf(), isAutoPurge,
@@ -1745,7 +1750,9 @@ public class Hive {
           destPath = new Path(destPath, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
           filter = replace ? new JavaUtils.IdPathFilter(txnId, stmtId, false, true) : filter;
         }
-        Utilities.LOG14535.info("moving " + loadPath + " to " + destPath);
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("moving " + loadPath + " to " + destPath);
+        }
         if (replace || (oldPart == null && !isAcid)) {
           boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(),
@@ -1916,7 +1923,9 @@ private void walkDirTree(FileStatus fSta, FileSystem fSys,
 
   /* Base Case. It's leaf. */
   if (!fSta.isDir()) {
-    Utilities.LOG14535.info("Processing LB leaf " + fSta.getPath());
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Processing LB leaf " + fSta.getPath());
+    }
     /* construct one location map if not exists. */
     constructOneLBLocationMap(fSta, skewedColValueLocationMaps, newPartPath, skewedInfo);
     return;
@@ -1925,7 +1934,9 @@ private void walkDirTree(FileStatus fSta, FileSystem fSys,
   /* dfs. */
   FileStatus[] children = fSys.listStatus(fSta.getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
   if (children != null) {
-    Utilities.LOG14535.info("Processing LB dir " + fSta.getPath());
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Processing LB dir " + fSta.getPath());
+    }
     for (FileStatus child : children) {
       walkDirTree(child, fSys, skewedColValueLocationMaps, newPartPath, skewedInfo);
     }
@@ -1974,8 +1985,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
   for (int i = 0; i < (dirNames.length - dirsToTake); ++i) {
     lbdPath = lbdPath.getParent();
   }
-  Utilities.LOG14535.info("Saving LB location " + lbdPath + " based on "
+  if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+    Utilities.FILE_OP_LOGGER.trace("Saving LB location " + lbdPath + " based on "
       + colCount + " keys and " + fSta.getPath());
+  }
   if ((skewedValue.size() > 0) && (skewedValue.size() == colCount)
       && !skewedColValueLocationMaps.containsKey(skewedValue)) {
     skewedColValueLocationMaps.put(skewedValue, lbdPath.toString());
@@ -1993,7 +2006,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   private Map<List<String>, String> constructListBucketingLocationMap(Path newPartPath,
       SkewedInfo skewedInfo) throws IOException, FileNotFoundException {
-    Utilities.LOG14535.info("Constructing list bucketing map for " + newPartPath);
     Map<List<String>, String> skewedColValueLocationMaps = new HashMap<List<String>, String>();
     FileSystem fSys = newPartPath.getFileSystem(conf);
     walkDirTree(fSys.getFileStatus(newPartPath),
@@ -2021,7 +2033,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
             throw new HiveException("partition " + s.getPath() + " is not a directory!");
           }
           Path dpPath = s.getPath();
-          Utilities.LOG14535.info("Found DP " + dpPath);
           validPartitions.add(dpPath);
         }
       } else {
@@ -2034,7 +2045,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
           for (int i = 0; i < numLB; ++i) {
             dpPath = dpPath.getParent(); // Now skip the LB directories, if any...
           }
-          Utilities.LOG14535.info("Found DP " + dpPath);
+          if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+            Utilities.FILE_OP_LOGGER.trace("Found DP " + dpPath);
+          }
           validPartitions.add(dpPath);
         }
       }
@@ -2111,7 +2124,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         final LinkedHashMap<String, String> fullPartSpec = Maps.newLinkedHashMap(partSpec);
         if (!Warehouse.makeSpecFromName(
             fullPartSpec, partPath, new HashSet<String>(partSpec.keySet()))) {
-          Utilities.LOG14535.warn("Ignoring invalid DP directory " + partPath);
+          Utilities.FILE_OP_LOGGER.warn("Ignoring invalid DP directory " + partPath);
           continue;
         }
         futures.add(pool.submit(new Callable<Void>() {
@@ -2123,7 +2136,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
               LOG.info("New loading path = " + partPath + " with partSpec " + fullPartSpec);
 
               // load the partition
-              Utilities.LOG14535.info("loadPartition called for DPP from " + partPath + " to " + tbl.getTableName());
               Partition newPartition = loadPartition(partPath, tbl, fullPartSpec,
                   replace, true, numLB > 0,
                   false, isAcid, hasFollowingStatsTask, txnId, stmtId);
@@ -2227,7 +2239,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     // TODO: this assumes both paths are qualified; which they are, currently.
     if (isMmTable && loadPath.equals(tbl.getPath())) {
-      Utilities.LOG14535.info("not moving " + loadPath + " to " + tbl.getPath());
+      Utilities.FILE_OP_LOGGER.debug("not moving " + loadPath + " to " + tbl.getPath());
       if (replace) {
         Path tableDest = tbl.getPath();
         boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
@@ -2245,7 +2257,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         destPath = new Path(destPath, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
         filter = replace ? new JavaUtils.IdPathFilter(txnId, stmtId, false, true) : filter;
       }
-      Utilities.LOG14535.info("moving " + loadPath + " to " + tblPath + " (replace = " + replace + ")");
+      Utilities.FILE_OP_LOGGER.debug("moving " + loadPath + " to " + tblPath + " (replace = " + replace + ")");
       if (replace) {
         boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
         replaceFiles(tblPath, loadPath, destPath, tblPath,
@@ -3431,7 +3443,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
                 Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
                 new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build()) : null;
             if (destIsSubDirOfSrc && !destFs.exists(destf)) {
-              Utilities.LOG14535.info("Creating " + destf);
+              if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+                Utilities.FILE_OP_LOGGER.trace("Creating " + destf);
+              }
               destFs.mkdirs(destf);
             }
             /* Move files one by one because source is a subdirectory of destination */
@@ -3831,7 +3845,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   private void deleteOldPathForReplace(Path destPath, Path oldPath, HiveConf conf, boolean purge,
       PathFilter pathFilter, boolean isMmTable, int lbLevels) throws HiveException {
-    Utilities.LOG14535.info("Deleting old paths for replace in " + destPath + " and old path " + oldPath);
+    Utilities.FILE_OP_LOGGER.debug("Deleting old paths for replace in " + destPath
+        + " and old path " + oldPath);
     boolean isOldPathUnderDestf = false;
     try {
       FileSystem oldFs = oldPath.getFileSystem(conf);
@@ -3860,7 +3875,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             if (!lbDir.isDirectory()) {
               throw new HiveException("Unexpected path during overwrite: " + lbPath);
             }
-            Utilities.LOG14535.info("Cleaning up LB directory " + lbPath);
+            Utilities.FILE_OP_LOGGER.info("Cleaning up LB directory " + lbPath);
             cleanUpOneDirectoryForReplace(lbPath, oldFs, pathFilter, conf, purge);
           }
         }
@@ -3882,11 +3897,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       PathFilter pathFilter, HiveConf conf, boolean purge) throws IOException, HiveException {
     FileStatus[] statuses = fs.listStatus(path, pathFilter);
     if (statuses == null || statuses.length == 0) return;
-    String s = "Deleting files under " + path + " for replace: ";
-    for (FileStatus file : statuses) {
-      s += file.getPath().getName() + ", ";
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      String s = "Deleting files under " + path + " for replace: ";
+      for (FileStatus file : statuses) {
+        s += file.getPath().getName() + ", ";
+      }
+      Utilities.FILE_OP_LOGGER.trace(s);
     }
-    Utilities.LOG14535.info(s);
     if (!trashFiles(fs, statuses, conf, purge)) {
       throw new HiveException("Old path " + path + " has not been cleaned up.");
     }

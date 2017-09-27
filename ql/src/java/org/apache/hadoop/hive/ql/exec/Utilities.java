@@ -220,9 +220,12 @@ import java.util.concurrent.Executors;
  */
 @SuppressWarnings({ "nls", "deprecation" })
 public final class Utilities {
-
-  // TODO# remove when merging; convert some statements to local loggers, remove others
-  public static final Logger LOG14535 = LoggerFactory.getLogger("Log14535");
+  /**
+   * A logger mostly used to trace-log the details of Hive table file operations. Filtering the
+   * logs for FileOperations (with trace logs present) allows one to debug what Hive has done with
+   * various files and directories while committing writes, as well as reading.
+   */
+  public static final Logger FILE_OP_LOGGER = LoggerFactory.getLogger("FileOperations");
 
   /**
    * The object in the reducer are composed of these top level fields.
@@ -1475,7 +1478,9 @@ public final class Utilities {
           perfLogger.PerfLogEnd("FileSinkOperator", "CreateEmptyBuckets");
         }
         // move to the file destination
-        Utilities.LOG14535.info("Moving tmp dir: " + tmpPath + " to: " + specPath);
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("Moving tmp dir: " + tmpPath + " to: " + specPath);
+        }
         perfLogger.PerfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
         if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_EXEC_MOVE_FILES_FROM_SOURCE_DIR)) {
           // HIVE-17113 - avoid copying files that may have been written to the temp dir by runaway tasks,
@@ -1487,10 +1492,14 @@ public final class Utilities {
         perfLogger.PerfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
       }
     } else {
-      Utilities.LOG14535.info("deleting tmpPath " + tmpPath);
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("deleting tmpPath " + tmpPath);
+      }
       fs.delete(tmpPath, true);
     }
-    Utilities.LOG14535.info("deleting taskTmpPath " + taskTmpPath);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("deleting taskTmpPath " + taskTmpPath);
+    }
     fs.delete(taskTmpPath, true);
   }
 
@@ -1533,7 +1542,9 @@ public final class Utilities {
     }
 
     for (Path path : paths) {
-      Utilities.LOG14535.info("creating empty bucket for " + path);
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("creating empty bucket for " + path);
+      }
       RecordWriter writer = HiveFileFormatUtils.getRecordWriter(
           jc, hiveOutputFormat, outputClass, isCompressed,
           tableInfo.getProperties(), path, reporter);
@@ -1610,7 +1621,6 @@ public final class Utilities {
         assert parts[i].isDirectory() : "dynamic partition " + parts[i].getPath()
             + " is not a directory";
         Path path = parts[i].getPath();
-        Utilities.LOG14535.info("removeTempOrDuplicateFiles looking at DP " + path);
         if (removeEmptyDpDirectory(fs, path)) {
           parts[i] = null;
           continue;
@@ -1622,7 +1632,10 @@ public final class Utilities {
           if (!mmDir.getName().equals(AcidUtils.deltaSubdir(txnId, txnId, stmtId))) {
             throw new IOException("Unexpected non-MM directory name " + mmDir);
           }
-          Utilities.LOG14535.info("removeTempOrDuplicateFiles processing files in MM directory " + mmDir);
+          if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+            Utilities.FILE_OP_LOGGER.trace(
+                "removeTempOrDuplicateFiles processing files in MM directory " + mmDir);
+          }
         }
         taskIDToFile = removeTempOrDuplicateFilesNonMm(items, fs);
         if (filesKept != null && taskIDToFile != null) {
@@ -1650,8 +1663,10 @@ public final class Utilities {
         if (!mmDir.getName().equals(AcidUtils.deltaSubdir(txnId, txnId, stmtId))) {
           throw new IOException("Unexpected non-MM directory " + mmDir);
         }
-        Utilities.LOG14535.info(
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace(
             "removeTempOrDuplicateFiles processing files in MM directory "  + mmDir);
+        }
         taskIDToFile = removeTempOrDuplicateFilesNonMm(fs.listStatus(mmDir), fs);
         if (filesKept != null && taskIDToFile != null) {
           addFilesToPathSet(taskIDToFile.values(), filesKept);
@@ -1687,7 +1702,6 @@ public final class Utilities {
       HashMap<String, FileStatus> taskIDToFile, int numBuckets, List<Path> result) {
     String taskID1 = taskIDToFile.keySet().iterator().next();
     Path bucketPath = taskIDToFile.values().iterator().next().getPath();
-    Utilities.LOG14535.info("Bucket path " + bucketPath);
     for (int j = 0; j < numBuckets; ++j) {
       addBucketFileIfMissing(result, taskIDToFile, taskID1, bucketPath, j);
     }
@@ -1700,7 +1714,9 @@ public final class Utilities {
       // create empty bucket, file name should be derived from taskID2
       URI bucketUri = bucketPath.toUri();
       String path2 = replaceTaskIdFromFilename(bucketUri.getPath().toString(), j);
-      Utilities.LOG14535.info("Creating an empty bucket file " + path2);
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("Creating an empty bucket file " + path2);
+      }
       result.add(new Path(bucketUri.getScheme(), bucketUri.getAuthority(), path2));
     }
   }
@@ -1714,7 +1730,9 @@ public final class Utilities {
 
     for (FileStatus one : files) {
       if (isTempPath(one)) {
-        Utilities.LOG14535.info("removeTempOrDuplicateFiles deleting " + one.getPath()/*, new Exception()*/);
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("removeTempOrDuplicateFiles deleting " + one.getPath());
+        }
         if (!fs.delete(one.getPath(), true)) {
           throw new IOException("Unable to delete tmp file: " + one.getPath());
         }
@@ -1729,7 +1747,10 @@ public final class Utilities {
   private static void ponderRemovingTempOrDuplicateFile(FileSystem fs,
       FileStatus file, HashMap<String, FileStatus> taskIdToFile) throws IOException {
     String taskId = getPrefixedTaskIdFromFilename(file.getPath().getName());
-    Utilities.LOG14535.info("removeTempOrDuplicateFiles pondering " + file.getPath() + ", taskId " + taskId);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("removeTempOrDuplicateFiles looking at "
+          + file.getPath() + ", taskId " + taskId);
+    }
 
     FileStatus otherFile = taskIdToFile.get(taskId);
     taskIdToFile.put(taskId, (otherFile == null) ? file :
@@ -2601,10 +2622,13 @@ public final class Utilities {
         // generate a full partition specification
         LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>(partSpec);
         if (!Warehouse.makeSpecFromName(fullPartSpec, partPath, new HashSet<String>(partSpec.keySet()))) {
-          Utilities.LOG14535.warn("Ignoring invalid DP directory " + partPath);
+          Utilities.FILE_OP_LOGGER.warn("Ignoring invalid DP directory " + partPath);
           continue;
         }
-        Utilities.LOG14535.info("Adding partition spec from " + partPath + ": " + fullPartSpec);
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("Adding partition spec from "
+              + partPath + ": " + fullPartSpec);
+        }
         fullPartSpecs.add(fullPartSpec);
       }
       return fullPartSpecs;
@@ -4037,14 +4061,16 @@ public final class Utilities {
             + " (when shortened to " + dir + ")");
       }
       String subDir = dir.substring(relRoot.length());
-      Utilities.LOG14535.info("Looking at " + subDir + " from " + lfs.getPath());
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("Looking at " + subDir + " from " + lfs.getPath());
+      }
       // If sorted, we'll skip a bunch of files.
       if (lastRelDir != null && subDir.startsWith(lastRelDir)) continue;
       int startIx = skipLevels > 0 ? -1 : 0;
       for (int i = 0; i < skipLevels; ++i) {
         startIx = subDir.indexOf(Path.SEPARATOR_CHAR, startIx + 1);
         if (startIx == -1) {
-          Utilities.LOG14535.info("Expected level of nesting (" + skipLevels + ") is not "
+          Utilities.FILE_OP_LOGGER.info("Expected level of nesting (" + skipLevels + ") is not "
               + " present in " + subDir + " (from " + lfs.getPath() + ")");
           break;
         }
@@ -4052,13 +4078,12 @@ public final class Utilities {
       if (startIx == -1) continue;
       int endIx = subDir.indexOf(Path.SEPARATOR_CHAR, startIx + 1);
       if (endIx == -1) {
-        Utilities.LOG14535.info("Expected level of nesting (" + (skipLevels + 1) + ") is not "
+        Utilities.FILE_OP_LOGGER.info("Expected level of nesting (" + (skipLevels + 1) + ") is not "
             + " present in " + subDir + " (from " + lfs.getPath() + ")");
         continue;
       }
       lastRelDir = subDir = subDir.substring(0, endIx);
       Path candidate = new Path(relRoot, subDir);
-      Utilities.LOG14535.info("Considering MM directory candidate " + candidate);
       if (!filter.accept(candidate)) continue;
       results.add(fs.makeQualified(candidate));
     }
@@ -4073,7 +4098,6 @@ public final class Utilities {
     }
     sb.append(Path.SEPARATOR).append(AcidUtils.deltaSubdir(txnId, txnId, stmtId));
     Path pathPattern = new Path(path, sb.toString());
-    Utilities.LOG14535.info("Looking for files via: " + pathPattern);
     return statusToPath(fs.globStatus(pathPattern, filter));
   }
 
@@ -4084,11 +4108,11 @@ public final class Utilities {
         fs, specPath, dpLevels, lbLevels, filter, txnId, stmtId, conf);
     if (files != null) {
       for (Path path : files) {
-        Utilities.LOG14535.info("Deleting " + path + " on failure");
+        Utilities.FILE_OP_LOGGER.info("Deleting " + path + " on failure");
         tryDelete(fs, path);
       }
     }
-    Utilities.LOG14535.info("Deleting " + manifestDir + " on failure");
+    Utilities.FILE_OP_LOGGER.info("Deleting " + manifestDir + " on failure");
     fs.delete(manifestDir, true);
   }
 
@@ -4099,7 +4123,7 @@ public final class Utilities {
     // We assume one FSOP per task (per specPath), so we create it in specPath.
     Path manifestPath = getManifestDir(specPath, txnId, stmtId, unionSuffix);
     manifestPath = new Path(manifestPath, taskId + MANIFEST_EXTENSION);
-    Utilities.LOG14535.info("Writing manifest to " + manifestPath + " with " + commitPaths);
+    Utilities.FILE_OP_LOGGER.info("Writing manifest to " + manifestPath + " with " + commitPaths);
     try {
       // Don't overwrite the manifest... should fail if we have collisions.
       try (FSDataOutputStream out = fs.create(manifestPath, false)) {
@@ -4144,7 +4168,7 @@ public final class Utilities {
       return;
     }
 
-    Utilities.LOG14535.info("Looking for manifests in: " + manifestDir + " (" + txnId + ")");
+    Utilities.FILE_OP_LOGGER.debug("Looking for manifests in: " + manifestDir + " (" + txnId + ")");
     List<Path> manifests = new ArrayList<>();
     if (fs.exists(manifestDir)) {
       FileStatus[] manifestFiles = fs.listStatus(manifestDir);
@@ -4152,21 +4176,21 @@ public final class Utilities {
         for (FileStatus status : manifestFiles) {
           Path path = status.getPath();
           if (path.getName().endsWith(MANIFEST_EXTENSION)) {
-            Utilities.LOG14535.info("Reading manifest " + path);
+            Utilities.FILE_OP_LOGGER.info("Reading manifest " + path);
             manifests.add(path);
           }
         }
       }
     } else {
-      Utilities.LOG14535.info("No manifests found - query produced no output");
+      Utilities.FILE_OP_LOGGER.info("No manifests found - query produced no output");
       manifestDir = null;
     }
 
-    Utilities.LOG14535.info("Looking for files in: " + specPath);
+    Utilities.FILE_OP_LOGGER.debug("Looking for files in: " + specPath);
     JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(txnId, stmtId, true);
     if (isMmCtas && !fs.exists(specPath)) {
       // TODO: do we also need to do this when creating an empty partition from select?
-      Utilities.LOG14535.info("Creating table directory for CTAS with no output at " + specPath);
+      Utilities.FILE_OP_LOGGER.info("Creating table directory for CTAS with no output at " + specPath);
       FileUtils.mkdir(fs, specPath, hconf);
     }
     Path[] files = getMmDirectoryCandidates(
@@ -4174,7 +4198,9 @@ public final class Utilities {
     ArrayList<Path> mmDirectories = new ArrayList<>();
     if (files != null) {
       for (Path path : files) {
-        Utilities.LOG14535.info("Looking at path: " + path);
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("Looking at path: " + path);
+        }
         mmDirectories.add(path);
       }
     }
@@ -4193,14 +4219,14 @@ public final class Utilities {
     }
 
     if (manifestDir != null) {
-      Utilities.LOG14535.info("Deleting manifest directory " + manifestDir);
+      Utilities.FILE_OP_LOGGER.info("Deleting manifest directory " + manifestDir);
       tryDelete(fs, manifestDir);
       if (unionSuffix != null) {
         // Also delete the parent directory if we are the last union FSOP to execute.
         manifestDir = manifestDir.getParent();
         FileStatus[] remainingFiles = fs.listStatus(manifestDir);
         if (remainingFiles == null || remainingFiles.length == 0) {
-          Utilities.LOG14535.info("Deleting manifest directory " + manifestDir);
+          Utilities.FILE_OP_LOGGER.info("Deleting manifest directory " + manifestDir);
           tryDelete(fs, manifestDir);
         }
       }
@@ -4257,15 +4283,17 @@ public final class Utilities {
         // Found the right union directory; treat it as "our" MM directory.
         cleanMmDirectory(childPath, fs, null, committed);
       } else {
-        Utilities.LOG14535.info("FSOP for " + unionSuffix
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("FSOP for " + unionSuffix
             + " is ignoring the other side of the union " + childPath.getName());
+        }
       }
     }
   }
 
   private static void deleteUncommitedFile(Path childPath, FileSystem fs)
       throws IOException, HiveException {
-    Utilities.LOG14535.info("Deleting " + childPath + " that was not committed");
+    Utilities.FILE_OP_LOGGER.info("Deleting " + childPath + " that was not committed");
     // We should actually succeed here - if we fail, don't commit the query.
     if (!fs.delete(childPath, true)) {
       throw new HiveException("Failed to delete an uncommitted path " + childPath);
@@ -4278,7 +4306,9 @@ public final class Utilities {
    */
   public static List<Path> getValidMmDirectoriesFromTableOrPart(Path path, Configuration conf,
       ValidTxnList validTxnList, int lbLevels) throws IOException {
-    Utilities.LOG14535.info("Looking for valid MM paths under " + path);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Looking for valid MM paths under " + path);
+    }
     // NULL means this directory is entirely valid.
     List<Path> result = null;
     FileSystem fs = path.getFileSystem(conf);
@@ -4289,7 +4319,7 @@ public final class Utilities {
       Path childPath = file.getPath();
       Long txnId = JavaUtils.extractTxnId(childPath);
       if (!file.isDirectory() || txnId == null || !validTxnList.isTxnValid(txnId)) {
-        Utilities.LOG14535.info("Skipping path " + childPath);
+        Utilities.FILE_OP_LOGGER.debug("Skipping path " + childPath);
         if (result == null) {
           result = new ArrayList<>(children.length - 1);
           for (int j = 0; j < i; ++j) {

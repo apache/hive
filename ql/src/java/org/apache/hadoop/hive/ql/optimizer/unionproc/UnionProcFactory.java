@@ -223,7 +223,10 @@ public final class UnionProcFactory {
           FileSinkDesc fileSinkDesc = (FileSinkDesc) fileSinkOp.getConf().clone();
           fileSinkDesc.setDirName(new Path(parentDirName, AbstractFileMergeOperator.UNION_SUDBIR_PREFIX + parent.getIdentifier()));
           fileSinkDesc.setLinkedFileSink(true);
-          Utilities.LOG14535.info("Created LinkedFileSink for union " + fileSinkDesc.getDirName() + "; parent " + parentDirName);
+          if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+            Utilities.FILE_OP_LOGGER.trace("Created LinkedFileSink for union " + fileSinkDesc.getDirName()
+                + "; parent " + parentDirName);
+          }
           parent.setChildOperators(null);
           Operator<? extends OperatorDesc> tmpFileSinkOp =
             OperatorFactory.getAndMakeChild(fileSinkDesc, parent.getSchema(), parent);

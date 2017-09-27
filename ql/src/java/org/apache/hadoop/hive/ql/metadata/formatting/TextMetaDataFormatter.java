@@ -407,7 +407,6 @@ class TextMetaDataFormatter implements MetaDataFormatter {
   }
 
   private void processDir(FileStatus status, FileSystem fs, FileData fd) throws IOException {
-    Utilities.LOG14535.info("Processing dir for status: " + status.getPath());
     long accessTime = status.getAccessTime();
     long updateTime = status.getModificationTime();
     if (accessTime > fd.lastAccessTime) {

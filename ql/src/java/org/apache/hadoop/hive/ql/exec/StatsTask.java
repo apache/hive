@@ -217,7 +217,10 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
           console.printInfo("Table " + tableFullName + " stats: [" + toString(parameters) + ']');
         }
-        Utilities.LOG14535.info("Table " + tableFullName + " stats: [" + toString(parameters) + ']');
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace(
+              "Table " + tableFullName + " stats: [" + toString(parameters) + ']');
+        }
       } else {
         // Partitioned table:
         // Need to get the old stats of the partition

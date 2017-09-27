@@ -367,9 +367,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
     Path destPath = !MetaStoreUtils.isInsertOnlyTable(table.getParameters()) ? x.getCtx().getExternalTmpPath(tgtPath)
         : new Path(tgtPath, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
-    Utilities.LOG14535.info("adding import work for table with source location: "
-        + dataPath + "; table: " + tgtPath + "; copy destination " + destPath + "; mm "
-        + txnId + " (src " + isSourceMm + ") for " + (table == null ? "a new table" : table.getTableName()));
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("adding import work for table with source location: " +
+        dataPath + "; table: " + tgtPath + "; copy destination " + destPath + "; mm " + txnId +
+        " (src " + isSourceMm + ") for " + (table == null ? "a new table" : table.getTableName()));
+    }
 
     Task<?> copyTask = null;
     if (replicationSpec.isInReplicationScope()) {
@@ -458,9 +460,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       Path destPath = !MetaStoreUtils.isInsertOnlyTable(table.getParameters()) ? x.getCtx().getExternalTmpPath(tgtLocation)
           : new Path(tgtLocation, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
       Path moveTaskSrc =  !MetaStoreUtils.isInsertOnlyTable(table.getParameters()) ? destPath : tgtLocation;
-      Utilities.LOG14535.info("adding import work for partition with source location: "
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("adding import work for partition with source location: "
           + srcLocation + "; target: " + tgtLocation + "; copy dest " + destPath + "; mm "
           + txnId + " (src " + isSourceMm + ") for " + partSpecToString(partSpec.getPartSpec()));
+      }
 
 
       Task<?> copyTask = null;
@@ -484,9 +488,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       loadTableWork.setTxnId(txnId);
       loadTableWork.setStmtId(stmtId);
       loadTableWork.setInheritTableSpecs(false);
-      // Do not commit the write ID from each task; need to commit once.
-      // TODO: we should just change the import to use a single MoveTask, like dynparts.
-      loadTableWork.setIntermediateInMmWrite(isAcid(txnId));
       Task<?> loadPartTask = TaskFactory.get(new MoveWork(
           x.getInputs(), x.getOutputs(), loadTableWork, null, false, SessionState.get().getLineageState()), x.getConf());
       copyTask.addDependentTask(loadPartTask);

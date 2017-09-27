@@ -267,9 +267,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   @Override
   public int execute(DriverContext driverContext) {
     if (work.isNoop()) return 0;
-    Utilities.LOG14535.info("Executing MoveWork " + System.identityHashCode(work)
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Executing MoveWork " + System.identityHashCode(work)
         + " with " + work.getLoadFileWork() + "; " + work.getLoadTableWork() + "; "
         + work.getLoadMultiFilesWork());
+    }
 
     try {
       if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
@@ -284,9 +286,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         Path targetPath = lfd.getTargetDir();
         Path sourcePath = lfd.getSourcePath();
         if (targetPath.equals(sourcePath)) {
-          Utilities.LOG14535.info("MoveTask not moving LFD " + sourcePath);
+          Utilities.FILE_OP_LOGGER.debug("MoveTask not moving " + sourcePath);
         } else {
-          Utilities.LOG14535.info("MoveTask moving LFD " + sourcePath + " to " + targetPath);
+          Utilities.FILE_OP_LOGGER.debug("MoveTask moving " + sourcePath + " to " + targetPath);
           if(lfd.getWriteType() == AcidUtils.Operation.INSERT) {
             //'targetPath' is table root of un-partitioned table/partition
             //'sourcePath' result of 'select ...' part of CTAS statement
@@ -316,7 +318,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             if (!destFs.exists(destPath.getParent())) {
               destFs.mkdirs(destPath.getParent());
             }
-            Utilities.LOG14535.info("MoveTask moving LMFD " + srcPath + " to " + destPath);
+            Utilities.FILE_OP_LOGGER.debug("MoveTask moving (multi-file) " + srcPath + " to " + destPath);
             moveFile(srcPath, destPath, isDfsDir);
           } else {
             if (!destFs.exists(destPath)) {
@@ -328,11 +330,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               for (FileStatus child : children) {
                 Path childSrc = child.getPath();
                 Path childDest = new Path(destPath, filePrefix + childSrc.getName());
-                Utilities.LOG14535.info("MoveTask moving LMFD " + childSrc + " to " + childDest);
+                Utilities.FILE_OP_LOGGER.debug("MoveTask moving (multi-file) " + childSrc + " to " + childDest);
                 moveFile(childSrc, childDest, isDfsDir);
               }
             } else {
-              Utilities.LOG14535.info("MoveTask skipping empty directory LMFD " + srcPath);
+              Utilities.FILE_OP_LOGGER.debug("MoveTask skipping empty directory (multi-file) " + srcPath);
             }
             if (!srcFs.delete(srcPath, false)) {
               throw new IOException("Couldn't delete " + srcPath + " after moving all the files");
@@ -356,7 +358,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           mesg.append(')');
         }
         String mesg_detail = " from " + tbd.getSourcePath();
-        Utilities.LOG14535.info("" + mesg.toString() + " " + mesg_detail);
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace(mesg.toString() + " " + mesg_detail);
+        }
         console.printInfo(mesg.toString(), mesg_detail);
         Table table = db.getTable(tbd.getTable().getTableName());
 
@@ -369,10 +373,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         DataContainer dc = null;
         if (tbd.getPartitionSpec().size() == 0) {
           dc = new DataContainer(table.getTTable());
-          Utilities.LOG14535.info("loadTable called from " + tbd.getSourcePath() + " into " + tbd.getTable().getTableName());
-          if (tbd.isMmTable() && !tbd.isCommitMmWrite()) {
-            throw new HiveException(
-                "Only single-partition LoadTableDesc can skip commiting write ID");
+          if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+            Utilities.FILE_OP_LOGGER.trace("loadTable called from " + tbd.getSourcePath()
+              + " into " + tbd.getTable().getTableName());
           }
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getReplace(),
               work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp, hasFollowingStatsTask(),
@@ -448,8 +451,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       TaskInformation ti) throws HiveException, IOException, InvalidOperationException {
     List<String> partVals = MetaStoreUtils.getPvals(table.getPartCols(),  tbd.getPartitionSpec());
     db.validatePartitionNameCharacters(partVals);
-    Utilities.LOG14535.info("loadPartition called from " + tbd.getSourcePath()
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("loadPartition called from " + tbd.getSourcePath()
         + " into " + tbd.getTable().getTableName());
+    }
     db.loadPartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
         tbd.getPartitionSpec(), tbd.getReplace(),
         tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
@@ -488,9 +493,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     // iterate over it and call loadPartition() here.
     // The reason we don't do inside HIVE-1361 is the latter is large and we
     // want to isolate any potential issue it may introduce.
-    if (tbd.isMmTable() && !tbd.isCommitMmWrite()) {
-      throw new HiveException("Only single-partition LoadTableDesc can skip commiting write ID");
-    }
     Map<Map<String, String>, Partition> dp =
       db.loadDynamicPartitions(
         tbd.getSourcePath(),

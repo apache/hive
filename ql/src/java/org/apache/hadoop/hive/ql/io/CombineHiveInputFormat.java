@@ -121,14 +121,12 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
           isMmNonMerge = !isMerge && MetaStoreUtils.isInsertOnlyTable(tbl.getProperties());
         } else {
           // This would be the case for obscure tasks like truncate column (unsupported for MM).
-          Utilities.LOG14535.warn("Assuming not insert-only; no table in partition spec " + part);
+          Utilities.FILE_OP_LOGGER.warn("Assuming not insert-only; no table in partition spec " + part);
         }
 
         if (isAvoidSplitCombine || isMmNonMerge) {
-          //if (LOG.isDebugEnabled()) {
-            Utilities.LOG14535.info("The path [" + paths[i + start] +
-                "] is being parked for HiveInputFormat.getSplits");
-          //}
+          Utilities.FILE_OP_LOGGER.info("The path [" + paths[i + start] +
+              "] is being parked for HiveInputFormat.getSplits");
           nonCombinablePathIndices.add(i + start);
         }
       }

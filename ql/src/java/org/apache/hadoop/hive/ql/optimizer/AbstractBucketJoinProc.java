@@ -265,7 +265,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
 
       Table tbl = tso.getConf().getTableMetadata();
       if (MetaStoreUtils.isInsertOnlyTable(tbl.getParameters())) {
-        Utilities.LOG14535.debug("No bucketed join on MM table " + tbl.getTableName());
+        Utilities.FILE_OP_LOGGER.debug("No bucketed join on MM table " + tbl.getTableName());
         return false;
       }
       if (tbl.isPartitioned()) {

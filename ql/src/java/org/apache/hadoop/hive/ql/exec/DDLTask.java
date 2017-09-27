@@ -4162,7 +4162,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Path src = allMmDirs.get(i);
       Path tgt = src.getParent();
       String prefix = src.getName().substring(prefixLen + 1) + "_";
-      Utilities.LOG14535.info("Will move " + src + " to " + tgt + " (prefix " + prefix + ")");
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("Will move " + src + " to " + tgt + " (prefix " + prefix + ")");
+      }
       targetPaths.add(tgt);
       targetPrefix.add(prefix);
     }
@@ -4214,7 +4216,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private static void ensureDelete(FileSystem fs, Path path, String what) throws IOException {
-    Utilities.LOG14535.info("Deleting " + what + " " + path);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Deleting " + what + " " + path);
+    }
     try {
       if (!fs.delete(path, true)) throw new IOException("delete returned false");
     } catch (Exception ex) {
@@ -4255,14 +4259,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         Path src = part.getDataLocation(), tgt = new Path(src, mmDir);
         srcs.add(src);
         tgts.add(tgt);
-        Utilities.LOG14535.info("Will move " + src + " to " + tgt);
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("Will move " + src + " to " + tgt);
+        }
       }
     } else {
       checkMmLb(tbl);
       Path src = tbl.getDataLocation(), tgt = new Path(src, mmDir);
       srcs.add(src);
       tgts.add(tgt);
-      Utilities.LOG14535.info("Will move " + src + " to " + tgt);
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("Will move " + src + " to " + tgt);
+      }
     }
     // Don't set inputs and outputs - the locks have already been taken so it's pointless.
     MoveWork mw = new MoveWork(null, null, null, null, false, SessionState.get().getLineageState());

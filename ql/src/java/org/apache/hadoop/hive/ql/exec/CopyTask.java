@@ -113,7 +113,9 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
     if (mmDirs == null || mmDirs.length == 0) return null;
     List<FileStatus> allFiles = new ArrayList<FileStatus>();
     for (FileStatus mmDir : mmDirs) {
-      Utilities.LOG14535.info("Found source MM directory " + mmDir.getPath());
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("Found source MM directory " + mmDir.getPath());
+      }
       matchFilesOneDir(fs, mmDir.getPath(), allFiles);
     }
     return allFiles.toArray(new FileStatus[allFiles.size()]);
