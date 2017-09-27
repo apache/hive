@@ -289,10 +289,19 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           Utilities.LOG14535.info("MoveTask not moving LFD " + sourcePath);
         } else {
           Utilities.LOG14535.info("MoveTask moving LFD " + sourcePath + " to " + targetPath);
-          moveFile(sourcePath, targetPath, lfd.getIsDfsDir());
+          if(lfd.getWriteType() == AcidUtils.Operation.INSERT) {
+            //'targetPath' is table root of un-partitioned table/partition
+            //'sourcePath' result of 'select ...' part of CTAS statement
+            assert lfd.getIsDfsDir();
+            FileSystem srcFs = sourcePath.getFileSystem(conf);
+            List<Path> newFiles = new ArrayList<>();
+            Hive.moveAcidFiles(srcFs, srcFs.globStatus(sourcePath), targetPath, newFiles);
+          }
+          else {
+            moveFile(sourcePath, targetPath, lfd.getIsDfsDir());
+          }
         }
       }
-
       // Multi-file load is for dynamic partitions when some partitions do not
       // need to merge and they can simply be moved to the target directory.
       // This is also used for MM table conversion.

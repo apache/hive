@@ -1198,7 +1198,11 @@ public class Driver implements CommandProcessor {
       }
       // Set the transaction id in all of the acid file sinks
       if (haveAcidWrite()) {
-        for (FileSinkDesc desc : plan.getAcidSinks()) {
+        List<FileSinkDesc> acidSinks = new ArrayList<>(plan.getAcidSinks());
+        //sorting makes tests easier to write since file names and ROW__IDs depend on statementId
+        //so this makes (file name -> data) mapping stable
+        acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) -> fsd1.getDirName().compareTo(fsd2.getDirName()));
+        for (FileSinkDesc desc : acidSinks) {
           desc.setTransactionId(txnMgr.getCurrentTxnId());
           //it's possible to have > 1 FileSink writing to the same table/partition
           //e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes

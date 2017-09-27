@@ -226,6 +226,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acidtbl
+          Write Type: DELETE
 
   Stage: Stage-6
     Stats-Aggr Operator
@@ -239,6 +240,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acidtbl
+          Write Type: UPDATE
 
   Stage: Stage-7
     Stats-Aggr Operator
@@ -265,6 +267,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acidtbl
+          Write Type: INSERT
 
   Stage: Stage-9
     Stats-Aggr Operator
@@ -367,6 +370,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.acidtbl
+          Write Type: INSERT
 
   Stage: Stage-3
     Stats-Aggr Operator

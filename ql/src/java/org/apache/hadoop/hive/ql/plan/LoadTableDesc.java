@@ -32,17 +32,13 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * LoadTableDesc.
  *
  */
-public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
-    implements Serializable {
+public class LoadTableDesc extends LoadDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private boolean replace;
   private DynamicPartitionCtx dpCtx;
   private ListBucketingCtx lbCtx;
   private boolean inheritTableSpecs = true; //For partitions, flag controlling whether the current
                                             //table specs are to be used
-  // Need to remember whether this is an acid compliant operation, and if so whether it is an
-  // insert, update, or delete.
-  private AcidUtils.Operation writeType;
   private Long txnId;
   private int stmtId;
 
@@ -52,13 +48,12 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
   private boolean commitMmWriteId = true;
 
   public LoadTableDesc(final LoadTableDesc o) {
-    super(o.getSourcePath());
+    super(o.getSourcePath(), o.getWriteType());
 
     this.replace = o.replace;
     this.dpCtx = o.dpCtx;
     this.lbCtx = o.lbCtx;
     this.inheritTableSpecs = o.inheritTableSpecs;
-    this.writeType = o.writeType;
     this.table = o.table;
     this.partitionSpec = o.partitionSpec;
   }
@@ -67,11 +62,12 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec,
       final boolean replace,
-      final AcidUtils.Operation writeType, Long txnId) {
-    super(sourcePath);
+      final AcidUtils.Operation writeType,
+      Long txnId) {
+    super(sourcePath, writeType);
     Utilities.LOG14535.info("creating part LTD from " + sourcePath + " to "
         + ((table.getProperties() == null) ? "null" : table.getTableName()));
-    init(table, partitionSpec, replace, writeType, txnId);
+    init(table, partitionSpec, replace, txnId);
   }
 
   /**
@@ -113,13 +109,13 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
       final DynamicPartitionCtx dpCtx,
       final AcidUtils.Operation writeType,
       boolean isReplace, Long txnId) {
-    super(sourcePath);
+    super(sourcePath, writeType);
     Utilities.LOG14535.info("creating LTD from " + sourcePath + " to " + table.getTableName()/*, new Exception()*/);
     this.dpCtx = dpCtx;
     if (dpCtx != null && dpCtx.getPartSpec() != null && partitionSpec == null) {
-      init(table, dpCtx.getPartSpec(), isReplace, writeType, txnId);
+      init(table, dpCtx.getPartSpec(), isReplace, txnId);
     } else {
-      init(table, new LinkedHashMap<String, String>(), isReplace, writeType, txnId);
+      init(table, new LinkedHashMap<String, String>(), isReplace, txnId);
     }
   }
 
@@ -127,11 +123,10 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec,
       final boolean replace,
-      AcidUtils.Operation writeType, Long txnId) {
+      Long txnId) {
     this.table = table;
     this.partitionSpec = partitionSpec;
     this.replace = replace;
-    this.writeType = writeType;
     this.txnId = txnId;
   }
 
@@ -199,10 +194,6 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
    */
   public void setLbCtx(ListBucketingCtx lbCtx) {
     this.lbCtx = lbCtx;
-  }
-
-  public AcidUtils.Operation getWriteType() {
-    return writeType;
   }
 
   public Long getTxnId() {

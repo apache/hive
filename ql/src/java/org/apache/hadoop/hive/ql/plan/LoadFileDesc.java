@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 
 /**
  * LoadFileDesc.
@@ -38,11 +38,8 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   private String destinationCreateTable;
   private boolean isMmCtas;
 
-  public LoadFileDesc() {
-  }
-
   public LoadFileDesc(final LoadFileDesc o) {
-    super(o.getSourcePath());
+    super(o.getSourcePath(), o.getWriteType());
 
     this.targetDir = o.targetDir;
     this.isDfsDir = o.isDfsDir;
@@ -54,8 +51,8 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
 
   public LoadFileDesc(final CreateTableDesc createTableDesc, final CreateViewDesc  createViewDesc,
                       final Path sourcePath, final Path targetDir, final boolean isDfsDir,
-                      final String columns, final String columnTypes, boolean isMmCtas) {
-    this(sourcePath, targetDir, isDfsDir, columns, columnTypes, isMmCtas);
+                      final String columns, final String columnTypes, AcidUtils.Operation writeType, boolean isMmCtas) {
+   this(sourcePath, targetDir, isDfsDir, columns, columnTypes, writeType, isMmCtas);
     if (createTableDesc != null && createTableDesc.getDatabaseName() != null
         && createTableDesc.getTableName() != null) {
       destinationCreateTable = (createTableDesc.getTableName().contains(".") ? "" : createTableDesc
@@ -68,9 +65,14 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     }
   }
 
-  public LoadFileDesc(final Path sourcePath, final Path targetDir, final boolean isDfsDir,
-      final String columns, final String columnTypes, boolean isMmCtas) {
-    super(sourcePath);
+  public LoadFileDesc(final Path sourcePath, final Path targetDir,
+                      final boolean isDfsDir, final String columns, final String columnTypes, boolean isMmCtas) {
+    this(sourcePath, targetDir, isDfsDir, columns, columnTypes, AcidUtils.Operation.NOT_ACID, isMmCtas);
+  }
+  private LoadFileDesc(final Path sourcePath, final Path targetDir,
+      final boolean isDfsDir, final String columns,
+      final String columnTypes, AcidUtils.Operation writeType, boolean isMmCtas) {
+    super(sourcePath, writeType);
     Utilities.LOG14535.info("creating LFD from " + sourcePath + " to " + targetDir);
     this.targetDir = targetDir;
     this.isDfsDir = isDfsDir;
