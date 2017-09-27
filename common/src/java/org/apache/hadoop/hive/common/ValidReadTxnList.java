@@ -193,9 +193,10 @@ public class ValidReadTxnList implements ValidTxnList {
   public long[] getInvalidTransactions() {
     return exceptions;
   }
-  @VisibleForTesting
-  public long getMinOpenTxn() {
-    return minOpenTxn;
+
+  @Override
+  public Long getMinOpenTxn() {
+    return minOpenTxn == Long.MAX_VALUE ? null : minOpenTxn;
   }
 
   @Override

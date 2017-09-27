@@ -229,7 +229,8 @@ public class LoadTable {
         SessionState.get().getTxnMgr().getCurrentTxnId()
     );
     MoveWork moveWork =
-        new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false);
+        new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false,
+            context.sessionStateLineageState);
     Task<?> loadTableTask = TaskFactory.get(moveWork, context.hiveConf);
     copyTask.addDependentTask(loadTableTask);
     return copyTask;

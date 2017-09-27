@@ -28,7 +28,7 @@ import java.net.URL;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -56,7 +56,7 @@ public class TestHS2HttpServer {
 
   @BeforeClass
   public static void beforeTests() throws Exception {
-    webUIPort = MetaStoreUtils.findFreePortExcepting(
+    webUIPort = MetaStoreTestUtils.findFreePortExcepting(
         Integer.valueOf(ConfVars.HIVE_SERVER2_WEBUI_PORT.getDefaultValue()));
     hiveConf = new HiveConf();
     hiveConf.set(ConfVars.METASTOREPWD.varname, metastorePasswd);

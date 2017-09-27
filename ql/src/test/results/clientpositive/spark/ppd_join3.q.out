@@ -39,7 +39,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key <> '13') and (key <> '11') and (key < '400') and (key <> '12') and (key <> '1') and (key > '0') and (key <> '4')) (type: boolean)
+                    predicate: ((key < '400') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and (key <> '4') and (key > '0')) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
@@ -56,7 +56,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key <> '11') and (key < '400') and (key <> '12') and (key <> '13') and (key > '0') and ((value <> 'val_500') or (key > '1')) and (key <> '4') and (key <> '1')) (type: boolean)
+                    predicate: (((value <> 'val_500') or (key > '1')) and (key < '400') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and (key <> '4') and (key > '0')) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
@@ -73,7 +73,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key <> '12') and (key <> '11') and (key < '400') and (key <> '13') and (key <> '4') and (key > '0') and (key <> '1')) (type: boolean)
+                    predicate: ((key < '400') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and (key <> '4') and (key > '0')) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -98,7 +98,7 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col3
                 Statistics: Num rows: 121 Data size: 1284 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col2 > '10') or (_col1 <> '10')) (type: boolean)
+                  predicate: ((_col1 <> '10') or (_col2 > '10')) (type: boolean)
                   Statistics: Num rows: 121 Data size: 1284 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col3 (type: string)
@@ -1760,7 +1760,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key <> '13') and (key <> '11') and (key < '400') and (key <> '12') and (key <> '1') and (key > '0') and (key <> '4')) (type: boolean)
+                    predicate: ((key < '400') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and (key <> '4') and (key > '0')) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
@@ -1777,7 +1777,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key <> '11') and (key < '400') and (key <> '12') and (key <> '13') and (key > '0') and ((value <> 'val_500') or (key > '1')) and (key <> '4') and (key <> '1')) (type: boolean)
+                    predicate: (((value <> 'val_500') or (key > '1')) and (key < '400') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and (key <> '4') and (key > '0')) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
@@ -1794,7 +1794,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key <> '12') and (key <> '11') and (key < '400') and (key <> '13') and (key <> '4') and (key > '0') and (key <> '1')) (type: boolean)
+                    predicate: ((key < '400') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and (key <> '4') and (key > '0')) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1819,7 +1819,7 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2, _col3
                 Statistics: Num rows: 121 Data size: 1284 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: ((_col2 > '10') or (_col1 <> '10')) (type: boolean)
+                  predicate: ((_col1 <> '10') or (_col2 > '10')) (type: boolean)
                   Statistics: Num rows: 121 Data size: 1284 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col1 (type: string), _col3 (type: string)

@@ -1917,3 +1917,37 @@ class TProgressUpdateResp
   ::Thrift::Struct.generate_accessors self
 end
 
+class TGetQueryIdReq
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  OPERATIONHANDLE = 1
+
+  FIELDS = {
+    OPERATIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'operationHandle', :class => ::TOperationHandle}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field operationHandle is unset!') unless @operationHandle
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TGetQueryIdResp
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  QUERYID = 1
+
+  FIELDS = {
+    QUERYID => {:type => ::Thrift::Types::STRING, :name => 'queryId'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field queryId is unset!') unless @queryId
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+

@@ -16,7 +16,7 @@ package org.apache.hadoop.hive.llap.daemon.services.impl;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -34,7 +34,7 @@ public class TestLlapWebServices {
 
   @BeforeClass
   public static void beforeTests() throws Exception {
-    llapWSPort = MetaStoreUtils.findFreePortExcepting(
+    llapWSPort = MetaStoreTestUtils.findFreePortExcepting(
         Integer.valueOf(HiveConf.ConfVars.LLAP_DAEMON_WEB_PORT.getDefaultValue()));
     llapWS = new LlapWebServices(llapWSPort, null, null);
     llapWS.init(new HiveConf());

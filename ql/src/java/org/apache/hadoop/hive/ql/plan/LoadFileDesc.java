@@ -52,7 +52,7 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   public LoadFileDesc(final CreateTableDesc createTableDesc, final CreateViewDesc  createViewDesc,
                       final Path sourcePath, final Path targetDir, final boolean isDfsDir,
                       final String columns, final String columnTypes, AcidUtils.Operation writeType, boolean isMmCtas) {
-   this(sourcePath, targetDir, isDfsDir, columns, columnTypes, writeType, isMmCtas);
+    this(sourcePath, targetDir, isDfsDir, columns, columnTypes, writeType, isMmCtas);
     if (createTableDesc != null && createTableDesc.getDatabaseName() != null
         && createTableDesc.getTableName() != null) {
       destinationCreateTable = (createTableDesc.getTableName().contains(".") ? "" : createTableDesc

@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -122,8 +121,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
         LOG.warn("Druid query is empty; creating Select query");
       }
       String dataSource = conf.get(Constants.DRUID_DATA_SOURCE);
-      if (dataSource == null) {
-        throw new IOException("Druid data source cannot be empty");
+      if (dataSource == null || dataSource.isEmpty()) {
+        throw new IOException("Druid data source cannot be empty or null");
       }
       druidQuery = createSelectStarQuery(dataSource);
       druidQueryType = Query.SELECT;
@@ -166,7 +165,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     // Create Select query
     SelectQueryBuilder builder = new Druids.SelectQueryBuilder();
     builder.dataSource(dataSource);
-    final List<Interval> intervals = Arrays.asList();
+    final List<Interval> intervals = Arrays.asList(DruidStorageHandlerUtils.DEFAULT_INTERVAL);
     builder.intervals(intervals);
     builder.pagingSpec(PagingSpec.newSpec(1));
     Map<String, Object> context = new HashMap<>();

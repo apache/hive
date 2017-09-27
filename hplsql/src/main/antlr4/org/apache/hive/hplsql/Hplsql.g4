@@ -91,6 +91,7 @@ stmt :
      | rollback_stmt
      | select_stmt
      | signal_stmt
+     | summary_stmt
      | update_stmt
      | use_stmt
      | truncate_stmt
@@ -732,6 +733,10 @@ set_teradata_session_option :
      
 signal_stmt :          // SIGNAL statement
        T_SIGNAL ident
+     ;
+
+summary_stmt :         // SUMMARY statement
+       T_SUMMARY (T_TOP expr)? T_FOR (select_stmt | table_name where_clause? (T_LIMIT expr)?)
      ;
      
 truncate_stmt :
@@ -1506,6 +1511,7 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_SUBDIR	 
      | T_SUBSTRING
      | T_SUM
+     | T_SUMMARY
      | T_SYSDATE 
      | T_SYS_REFCURSOR     
      | T_TABLE
@@ -1825,6 +1831,7 @@ T_STRING          : S T R I N G ;
 T_SUBDIR          : S U B D I R ; 
 T_SUBSTRING       : S U B S T R I N G ; 
 T_SUM             : S U M ;
+T_SUMMARY         : S U M M A R Y ;
 T_SYS_REFCURSOR   : S Y S '_' R E F C U R S O R ; 
 T_TABLE           : T A B L E ;
 T_TABLESPACE      : T A B L E S P A C E ; 

@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -1223,7 +1224,6 @@ public final class GenMapRedUtils {
 
   /**
    * @param fsInput The FileSink operator.
-   * @param ctx The MR processing context.
    * @param finalName the final destination path the merge job should output.
    * @param dependencyTask
    * @param mvTasks
@@ -1369,11 +1369,13 @@ public final class GenMapRedUtils {
       // Only create the movework for non-MM table. No action needed for a MM table.
       Utilities.LOG14535.info("creating dummy movetask for merge (with lfd)");
       dummyMv = new MoveWork(null, null, null,
-         new LoadFileDesc(inputDirName, finalName, true, null, null, false), false);
+          new LoadFileDesc(inputDirName, finalName, true, null, null, false), false,
+          SessionState.get().getLineageState());
     } else {
       // TODO# create the noop MoveWork to avoid q file changes for now. Should be removed w/the flag just before merge
       dummyMv = new MoveWork(null, null, null,
-          new LoadFileDesc(inputDirName, finalName, true, null, null, false), false);
+          new LoadFileDesc(inputDirName, finalName, true, null, null, false), false,
+          SessionState.get().getLineageState());
       dummyMv.setNoop(true);
     }
     // Use the original fsOp path here in case of MM - while the new FSOP merges files inside the

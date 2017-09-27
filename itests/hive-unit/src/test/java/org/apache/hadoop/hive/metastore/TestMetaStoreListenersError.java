@@ -33,7 +33,7 @@ public class TestMetaStoreListenersError extends TestCase {
   public void testInitListenerException() throws Throwable {
 
     System.setProperty("hive.metastore.init.hooks", ErrorInitListener.class.getName());
-    int port = MetaStoreUtils.findFreePort();
+    int port = MetaStoreTestUtils.findFreePort();
     try {
       HiveMetaStore.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
     } catch (Throwable throwable) {
@@ -50,7 +50,7 @@ public class TestMetaStoreListenersError extends TestCase {
 
     System.setProperty("hive.metastore.init.hooks", "");
     System.setProperty("hive.metastore.event.listeners", ErrorEventListener.class.getName());
-    int port = MetaStoreUtils.findFreePort();
+    int port = MetaStoreTestUtils.findFreePort();
     try {
       HiveMetaStore.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
     } catch (Throwable throwable) {

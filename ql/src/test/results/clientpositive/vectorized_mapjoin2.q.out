@@ -54,14 +54,14 @@ STAGE PLANS:
         $hdt$_0:x 
           TableScan
             alias: x
-            Statistics: Num rows: 45 Data size: 181 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: a is not null (type: boolean)
-              Statistics: Num rows: 45 Data size: 181 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: a (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 45 Data size: 181 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: int)
@@ -72,7 +72,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: y
-            Statistics: Num rows: 45 Data size: 181 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 projectedOutputColumns: [0]
@@ -82,7 +82,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: SelectColumnIsNotNull(col 0) -> boolean
               predicate: b is not null (type: boolean)
-              Statistics: Num rows: 45 Data size: 181 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: b (type: int)
                 outputColumnNames: _col0
@@ -90,7 +90,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0]
-                Statistics: Num rows: 45 Data size: 181 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -102,7 +102,7 @@ STAGE PLANS:
                       native: false
                       nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Fast Hash Table and No Hybrid Hash Join IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                  Statistics: Num rows: 49 Data size: 199 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 199 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     Group By Vectorization:

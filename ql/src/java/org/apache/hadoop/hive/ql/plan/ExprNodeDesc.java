@@ -81,6 +81,10 @@ public abstract class ExprNodeDesc implements Serializable, Node {
     return null;
   }
 
+  public String getExprString(boolean sortChildren) {
+    return getExprString();
+  }
+
   public ObjectInspector getWritableObjectInspector() {
     return TypeInfoUtils
       .getStandardWritableObjectInspectorFromTypeInfo(typeInfo);
@@ -151,4 +155,5 @@ public abstract class ExprNodeDesc implements Serializable, Node {
       return wrapped;
     }
   }
+
 }

@@ -165,12 +165,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1

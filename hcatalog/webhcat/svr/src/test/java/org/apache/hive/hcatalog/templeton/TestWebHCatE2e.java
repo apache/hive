@@ -25,7 +25,7 @@ import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -74,7 +74,7 @@ public class TestWebHCatE2e {
     int webhcatPort = 50111;
     try {
       //in case concurrent tests are running on the same machine
-      webhcatPort = MetaStoreUtils.findFreePort();
+      webhcatPort = MetaStoreTestUtils.findFreePort();
     }
     catch (IOException ex) {
       LOG.warn("Unable to find free port; using default: " + webhcatPort);

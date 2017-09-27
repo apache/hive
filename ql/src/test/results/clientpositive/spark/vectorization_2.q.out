@@ -72,7 +72,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterTimestampColLessTimestampColumn(col 8, col 9) -> boolean, FilterStringColLikeStringScalar(col 7, pattern b%) -> boolean, FilterDoubleColLessEqualDoubleScalar(col 4, val -5638.14990234375) -> boolean) -> boolean, FilterExprAndExpr(children: FilterDoubleColLessDoubleColumn(col 5, col 12)(children: CastLongToDouble(col 0) -> 12:double) -> boolean, FilterExprOrExpr(children: FilterDoubleScalarNotEqualDoubleColumn(val -10669.0, col 12)(children: CastTimestampToDouble(col 9) -> 12:double) -> boolean, FilterLongScalarGreaterLongColumn(val 359, col 2) -> boolean) -> boolean) -> boolean) -> boolean
-                    predicate: (((ctimestamp1 < ctimestamp2) and (cstring2 like 'b%') and (cfloat <= -5638.15)) or ((cdouble < UDFToDouble(ctinyint)) and ((-10669.0 <> UDFToDouble(ctimestamp2)) or (359 > cint)))) (type: boolean)
+                    predicate: (((cdouble < UDFToDouble(ctinyint)) and ((-10669.0 <> UDFToDouble(ctimestamp2)) or (359 > cint))) or ((ctimestamp1 < ctimestamp2) and (cstring2 like 'b%') and (cfloat <= -5638.15))) (type: boolean)
                     Statistics: Num rows: 4778 Data size: 1027287 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cbigint (type: bigint), cfloat (type: float), cdouble (type: double)

@@ -35,7 +35,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -111,7 +111,7 @@ public class TestHCatClient {
 
     System.setProperty(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS.varname,
         DbNotificationListener.class.getName()); // turn on db notification listener on metastore
-    msPort = MetaStoreUtils.startMetaStore();
+    msPort = MetaStoreTestUtils.startMetaStore();
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());
     hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
@@ -798,7 +798,7 @@ public class TestHCatClient {
       HiveConf conf = new HiveConf();
       conf.set("javax.jdo.option.ConnectionURL", hcatConf.get("javax.jdo.option.ConnectionURL")
         .replace("metastore", "target_metastore"));
-      replicationTargetHCatPort = MetaStoreUtils.startMetaStore(conf);
+      replicationTargetHCatPort = MetaStoreTestUtils.startMetaStore(conf);
       replicationTargetHCatConf = new HiveConf(hcatConf);
       replicationTargetHCatConf.setVar(HiveConf.ConfVars.METASTOREURIS,
                                        "thrift://localhost:" + replicationTargetHCatPort);

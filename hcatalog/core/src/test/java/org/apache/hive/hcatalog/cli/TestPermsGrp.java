@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -80,8 +81,8 @@ public class TestPermsGrp extends TestCase {
     }
 
 
-    msPort = MetaStoreUtils.findFreePort();
-    MetaStoreUtils.startMetaStore(msPort, HadoopThriftAuthBridge.getBridge());
+    msPort = MetaStoreTestUtils.findFreePort();
+    MetaStoreTestUtils.startMetaStore(msPort, HadoopThriftAuthBridge.getBridge());
 
     isServerRunning = true;
 

@@ -56,7 +56,7 @@ STAGE PLANS:
             alias: test_tbl
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((name = 'c') and (id = 'a')) (type: boolean)
+              predicate: ((id = 'a') and (name = 'c')) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE

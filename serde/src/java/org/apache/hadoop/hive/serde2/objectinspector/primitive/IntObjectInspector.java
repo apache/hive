@@ -17,11 +17,15 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
 /**
  * A IntObjectInspector inspects an Object representing an Integer.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface IntObjectInspector extends PrimitiveObjectInspector {
 
   /**

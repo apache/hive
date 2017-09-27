@@ -430,7 +430,7 @@ public class LineageInfo implements Serializable {
   /**
    * This class tracks the predicate information for an operator.
    */
-  public static class Predicate {
+  public static class Predicate implements Serializable {
 
     /**
      * Expression string for the predicate.

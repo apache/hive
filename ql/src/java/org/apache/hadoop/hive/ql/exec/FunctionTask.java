@@ -357,4 +357,12 @@ public class FunctionTask extends Task<FunctionWork> {
   public String getName() {
     return "FUNCTION";
   }
+
+  /**
+   * this needs access to session state resource downloads which in turn uses references to Registry objects.
+   */
+  @Override
+  public boolean canExecuteInParallel() {
+    return false;
+  }
 }

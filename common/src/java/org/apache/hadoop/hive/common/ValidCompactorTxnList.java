@@ -39,14 +39,18 @@ public class ValidCompactorTxnList extends ValidReadTxnList {
   public ValidCompactorTxnList() {
     super();
   }
+  public ValidCompactorTxnList(long[] abortedTxnList, BitSet abortedBits, long highWatermark) {
+    this(abortedTxnList, abortedBits, highWatermark, Long.MAX_VALUE);
+  }
   /**
    * @param abortedTxnList list of all aborted transactions
    * @param abortedBits bitset marking whether the corresponding transaction is aborted
    * @param highWatermark highest committed transaction to be considered for compaction,
    *                      equivalently (lowest_open_txn - 1).
    */
-  public ValidCompactorTxnList(long[] abortedTxnList, BitSet abortedBits, long highWatermark) {
-    super(abortedTxnList, abortedBits, highWatermark); // abortedBits should be all true as everything in exceptions are aborted txns
+  public ValidCompactorTxnList(long[] abortedTxnList, BitSet abortedBits, long highWatermark, long minOpenTxnId) {
+    // abortedBits should be all true as everything in exceptions are aborted txns
+    super(abortedTxnList, abortedBits, highWatermark, minOpenTxnId);
     if(this.exceptions.length <= 0) {
       return;
     }

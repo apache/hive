@@ -251,7 +251,7 @@ STAGE PLANS:
             alias: store_sales
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (ss_store_sk is not null and ss_sold_date_sk is not null) (type: boolean)
+              predicate: (ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: ss_sold_date_sk (type: int), ss_store_sk (type: int)

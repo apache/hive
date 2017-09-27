@@ -17,56 +17,55 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService;
-
-import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
-import org.apache.hadoop.hive.registry.impl.TezAmInstance;
-import org.apache.hadoop.hive.registry.impl.TezAmRegistryImpl;
-
+import com.google.common.base.Preconditions;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicReference;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
+import org.apache.hadoop.hive.registry.impl.TezAmInstance;
+import org.apache.hadoop.hive.registry.impl.TezAmRegistryImpl;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
-
 /**
  * Distinct from TezSessionPool manager in that it implements a session pool, and nothing else.
  */
-class TezSessionPool {
+class TezSessionPool<SessionType extends TezSessionPoolSession> {
   private static final Logger LOG = LoggerFactory.getLogger(TezSessionPool.class);
 
   /** A queue for initial sessions that have not been started yet. */
-  private final Queue<TezSessionPoolSession> initialSessions =
-      new ConcurrentLinkedQueue<TezSessionPoolSession>();
+  private final Queue<SessionType> initialSessions =
+      new ConcurrentLinkedQueue<SessionType>();
 
   private final HiveConf initConf;
-  private final BlockingDeque<TezSessionPoolSession> defaultQueuePool;
+
+  // TODO: eventually, this will need to support resize. That would probably require replacement
+  //       with a RW lock, a semaphore and linked list.
+  private BlockingDeque<SessionType> defaultQueuePool;
 
   private final String amRegistryName;
   private final TezAmRegistryImpl amRegistry;
 
-  private final ConcurrentHashMap<String, TezSessionPoolSession> bySessionId =
+  private final ConcurrentHashMap<String, SessionType> bySessionId =
       new ConcurrentHashMap<>();
 
 
   TezSessionPool(HiveConf initConf, int numSessionsTotal, boolean useAmRegistryIfPresent) {
     this.initConf = initConf;
     assert numSessionsTotal > 0;
-    defaultQueuePool = new LinkedBlockingDeque<TezSessionPoolSession>(numSessionsTotal);
+    defaultQueuePool = new LinkedBlockingDeque<>(numSessionsTotal);
     this.amRegistry = useAmRegistryIfPresent ? TezAmRegistryImpl.create(initConf, true) : null;
     this.amRegistryName = amRegistry == null ? null : amRegistry.getRegistryName();
   }
@@ -86,7 +85,7 @@ class TezSessionPool {
     Preconditions.checkArgument(threadCount > 0);
     if (threadCount == 1) {
       while (true) {
-        TezSessionPoolSession session = initialSessions.poll();
+        SessionType session = initialSessions.poll();
         if (session == null) break;
         startInitialSession(session);
       }
@@ -100,7 +99,7 @@ class TezSessionPool {
             SessionState.setCurrentSessionState(parentSessionState);
           }
           while (true) {
-            TezSessionPoolSession session = initialSessions.poll();
+            SessionType session = initialSessions.poll();
             if (session == null) break;
             if (firstError.get() != null) break; // Best-effort.
             try {
@@ -130,38 +129,46 @@ class TezSessionPool {
     }
   }
 
-  void addInitialSession(TezSessionPoolSession session) {
+  void addInitialSession(SessionType session) {
     initialSessions.add(session);
   }
 
-  TezSessionState getSession() throws Exception {
+  SessionType getSession() throws Exception {
     while (true) {
-      TezSessionPoolSession result = defaultQueuePool.take();
+      SessionType result = defaultQueuePool.take();
       if (result.tryUse()) return result;
       LOG.info("Couldn't use a session [" + result + "]; attempting another one");
     }
   }
 
-  void returnSession(TezSessionPoolSession session) throws Exception {
-    // TODO: should this be in pool, or pool manager? Probably common to all the use cases.
+  void returnSession(SessionType session) throws Exception {
+    // Make sure that if the session is returned to the pool, it doesn't live in the global.
     SessionState sessionState = SessionState.get();
     if (sessionState != null) {
       sessionState.setTezSession(null);
     }
-    if (session.returnAfterUse()) {
+    if (session.stopUsing()) {
       defaultQueuePool.putFirst(session);
     }
   }
 
-  void replaceSession(
-      TezSessionPoolSession oldSession, TezSessionPoolSession newSession) throws Exception {
+  void replaceSession(SessionType oldSession, SessionType newSession,
+      boolean keepTmpDir, String[] additionalFilesArray, HiveConf conf) throws Exception {
     // Retain the stuff from the old session.
     // Re-setting the queue config is an old hack that we may remove in future.
     Path scratchDir = oldSession.getTezScratchDir();
-    Set<String> additionalFiles = oldSession.getAdditionalFilesNotFromConf();
     String queueName = oldSession.getQueueName();
+    Set<String> additionalFiles = null;
+    if (additionalFilesArray != null) {
+      additionalFiles = new HashSet<>();
+      for (String file : additionalFilesArray) {
+        additionalFiles.add(file);
+      }
+    } else {
+      additionalFiles = oldSession.getAdditionalFilesNotFromConf();
+    }
     try {
-      oldSession.close(false);
+      oldSession.close(keepTmpDir);
       boolean wasRemoved = defaultQueuePool.remove(oldSession);
       if (!wasRemoved) {
         LOG.error("Old session was closed but it was not in the pool", oldSession);
@@ -179,18 +186,18 @@ class TezSessionPool {
     }
   }
 
-  private void startInitialSession(TezSessionPoolSession session) throws Exception {
+  private void startInitialSession(SessionType session) throws Exception {
     boolean isUsable = session.tryUse();
     if (!isUsable) throw new IOException(session + " is not usable at pool startup");
     session.getConf().set(TezConfiguration.TEZ_QUEUE_NAME, session.getQueueName());
     configureAmRegistry(session);
     session.open();
-    if (session.returnAfterUse()) {
+    if (session.stopUsing()) {
       defaultQueuePool.put(session);
     }
   }
 
-  private void configureAmRegistry(TezSessionPoolSession session) {
+  private void configureAmRegistry(SessionType session) {
     if (amRegistryName != null) {
       bySessionId.put(session.getSessionId(), session);
       HiveConf conf = session.getConf();
@@ -206,12 +213,16 @@ class TezSessionPool {
     implements ServiceInstanceStateChangeListener<TezAmInstance> {
 
     @Override
-    public void onCreate(TezAmInstance serviceInstance) {
-      String sessionId = serviceInstance.getSessionId();
-      TezSessionPoolSession session = bySessionId.get(sessionId);
-      LOG.warn("AM for " + sessionId + " has registered; updating [" + session
-          + "] with an endpoint at " + serviceInstance.getPluginPort());
-      // TODO: actually update the session once WM is committed
+    public void onCreate(TezAmInstance si) {
+      String sessionId = si.getSessionId();
+      SessionType session = bySessionId.get(sessionId);
+      if (session != null) {
+        LOG.info("AM for " + sessionId + " has registered; updating [" + session
+            + "] with an endpoint at " + si.getPluginPort());
+        session.updateFromRegistry(si);
+      } else {
+        LOG.warn("AM for an unknown " + sessionId + " has registered; ignoring");
+      }
     }
 
     @Override

@@ -293,7 +293,7 @@ STAGE PLANS:
             alias: z
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((ds = '2008-04-08') and (UDFToDouble(hr) = 14.0) and value is not null) (type: boolean)
+              predicate: ((UDFToDouble(hr) = 14.0) and (ds = '2008-04-08') and value is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: value (type: string)

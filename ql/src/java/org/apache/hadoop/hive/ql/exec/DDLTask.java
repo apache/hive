@@ -182,6 +182,7 @@ import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.GrantDesc;
 import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
 import org.apache.hadoop.hive.ql.plan.InsertTableDesc;
+import org.apache.hadoop.hive.ql.plan.KillQueryDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
@@ -597,6 +598,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       PreInsertTableDesc preInsertTableDesc = work.getPreInsertTableDesc();
       if (preInsertTableDesc != null) {
         return preInsertWork(db, preInsertTableDesc);
+      }
+
+      KillQueryDesc killQueryDesc = work.getKillQueryDesc();
+      if (killQueryDesc != null) {
+        return killQuery(db, killQueryDesc);
       }
     } catch (Throwable e) {
       failed(e);
@@ -2933,6 +2939,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     DataOutputStream os = getOutputStream(desc.getResFile());
     try {
       // Write a header
+      os.writeBytes("CompactionId");
+      os.write(separator);
       os.writeBytes("Database");
       os.write(separator);
       os.writeBytes("Table");
@@ -2954,6 +2962,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       if (rsp.getCompacts() != null) {
         for (ShowCompactResponseElement e : rsp.getCompacts()) {
+          os.writeBytes(Long.toString(e.getId()));
+          os.write(separator);
           os.writeBytes(e.getDbname());
           os.write(separator);
           os.writeBytes(e.getTablename());
@@ -3031,6 +3041,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int abortTxns(Hive db, AbortTxnsDesc desc) throws HiveException {
     db.abortTransactions(desc.getTxnids());
+    return 0;
+  }
+
+  private int killQuery(Hive db, KillQueryDesc desc) throws HiveException {
+    SessionState sessionState = SessionState.get();
+    for (String queryId : desc.getQueryIds()) {
+      sessionState.getKillQuery().killQuery(queryId);
+    }
+    LOG.info("kill query called (" + desc.getQueryIds().toString() + ")");
     return 0;
   }
 
@@ -4148,7 +4167,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       targetPrefix.add(prefix);
     }
     // Don't set inputs and outputs - the locks have already been taken so it's pointless.
-    MoveWork mw = new MoveWork(null, null, null, null, false);
+    MoveWork mw = new MoveWork(null, null, null, null, false, SessionState.get().getLineageState());
     mw.setMultiFilesDesc(new LoadMultiFilesDesc(
         allMmDirs, targetPaths, targetPrefix, true, null, null));
     return Lists.<Task<?>>newArrayList(TaskFactory.get(mw, conf));
@@ -4246,7 +4265,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Utilities.LOG14535.info("Will move " + src + " to " + tgt);
     }
     // Don't set inputs and outputs - the locks have already been taken so it's pointless.
-    MoveWork mw = new MoveWork(null, null, null, null, false);
+    MoveWork mw = new MoveWork(null, null, null, null, false, SessionState.get().getLineageState());
     mw.setMultiFilesDesc(new LoadMultiFilesDesc(srcs, tgts, true, null, null));
     ImportCommitWork icw = new ImportCommitWork(tbl.getDbName(), tbl.getTableName(), mmWriteId, stmtId);
     Task<?> mv = TaskFactory.get(mw, conf), ic = TaskFactory.get(icw, conf);
@@ -4403,7 +4422,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private void dropTable(Hive db, Table tbl, DropTableDesc dropTbl) throws HiveException {
     // This is a true DROP TABLE
-    if (tbl != null && dropTbl.getExpectedType() != null) {
+    if (tbl != null && dropTbl.getValidationRequired()) {
       if (tbl.isView()) {
         if (!dropTbl.getExpectView()) {
           if (dropTbl.getIfExists()) {
@@ -5149,5 +5168,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
               && !sh.equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID);
     }
     return retval;
+  }
+
+  /*
+  uses the authorizer from SessionState will need some more work to get this to run in parallel,
+  however this should not be a bottle neck so might not need to parallelize this.
+   */
+  @Override
+  public boolean canExecuteInParallel() {
+    return false;
   }
 }

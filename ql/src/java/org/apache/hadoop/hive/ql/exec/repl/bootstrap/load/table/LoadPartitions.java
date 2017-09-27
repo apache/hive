@@ -243,7 +243,8 @@ public class LoadPartitions {
         event.replicationSpec().isReplace(), SessionState.get().getTxnMgr().getCurrentTxnId()
     );
     loadTableWork.setInheritTableSpecs(false);
-    MoveWork work = new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false);
+    MoveWork work = new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false,
+        context.sessionStateLineageState);
     return TaskFactory.get(work, context.hiveConf);
   }
 

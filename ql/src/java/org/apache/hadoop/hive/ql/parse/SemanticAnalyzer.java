@@ -2017,6 +2017,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (tab == null) {
+        if(tabName.equals(DUMMY_DATABASE + "." + DUMMY_TABLE)) {
+          continue;
+        }
         ASTNode src = qb.getParseInfo().getSrcForAlias(alias);
         if (null != src) {
           throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(src));
@@ -6863,6 +6866,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         if (isMmTable) {
           txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
+        } else {
+          txnId = acidOp == Operation.NOT_ACID ? null :
+            SessionState.get().getTxnMgr().getCurrentTxnId();
         }
         boolean isReplace = !qb.getParseInfo().isInsertIntoTable(
             dest_tab.getDbName(), dest_tab.getTableName());
@@ -6931,6 +6937,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       if (isMmTable) {
         txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
+      } else {
+        txnId = (acidOp == Operation.NOT_ACID) ? null :
+          SessionState.get().getTxnMgr().getCurrentTxnId();
       }
       ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp, txnId);
       // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
@@ -7017,7 +7026,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean isDfsDir = (dest_type.intValue() == QBMetaData.DEST_DFS_FILE);
       // Create LFD even for MM CTAS - it's a no-op move, but it still seems to be used for stats.
       loadFileWork.add(new LoadFileDesc(tblDesc, viewDesc, queryTmpdir, dest_path, isDfsDir, cols,
-        colTypes, destTableIsAcid ? Operation.INSERT : Operation.NOT_ACID, isMmCtas));
+          colTypes, destTableIsAcid ? Operation.INSERT : Operation.NOT_ACID, isMmCtas));
       if (tblDesc == null) {
         if (viewDesc != null) {
           table_desc = PlanUtils.getTableDesc(viewDesc, cols, colTypes);
@@ -10670,6 +10679,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Recurse over all the source tables
     for (String alias : qb.getTabAliases()) {
+      if(alias.equals(DUMMY_TABLE)) {
+        continue;
+      }
       Operator op = genTablePlan(alias, qb);
       aliasToOpInfo.put(alias, op);
     }
@@ -10797,7 +10809,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opParseCtx.get(operator).setRowResolver(newRR);
   }
 
-  private Table getDummyTable() throws SemanticException {
+  protected Table getDummyTable() throws SemanticException {
     Path dummyPath = createDummyFile();
     Table desc = new Table(DUMMY_DATABASE, DUMMY_TABLE);
     desc.getTTable().getSd().setLocation(dummyPath.toString());

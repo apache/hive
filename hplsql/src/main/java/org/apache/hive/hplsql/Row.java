@@ -86,6 +86,13 @@ public class Row {
   }
   
   /**
+   * Get column by index
+   */
+  Column getColumn(int i) {
+    return columns.get(i);
+  }
+  
+  /**
    * Get the number of columns
    */
   int size() {

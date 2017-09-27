@@ -3184,7 +3184,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((ds > '2000-04-08') or ((ds <= '2000-04-09') and (key = 2))) (type: boolean)
+              predicate: (((ds <= '2000-04-09') and (key = 2)) or (ds > '2000-04-08')) (type: boolean)
               Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string), ds (type: string)

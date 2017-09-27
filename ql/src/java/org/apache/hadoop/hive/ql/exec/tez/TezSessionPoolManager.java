@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.registry.impl.TezAmInstance;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.util.HashSet;
 
 import java.util.concurrent.Semaphore;
 import java.util.ArrayList;
@@ -32,12 +32,15 @@ import java.util.Set;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolSession.OpenSessionTracker;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolSession.Manager;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * This class is for managing multiple tez sessions particularly when
@@ -47,7 +50,7 @@ import org.apache.hadoop.security.UserGroupInformation;
  * on that queue and assigned to the session state.
  */
 public class TezSessionPoolManager
-  implements SessionExpirationTracker.RestartImpl, OpenSessionTracker {
+  implements SessionExpirationTracker.RestartImpl, Manager {
 
   private enum CustomQueueAllowed {
     TRUE,
@@ -64,7 +67,7 @@ public class TezSessionPoolManager
   private int numConcurrentLlapQueries = -1;
   private CustomQueueAllowed customQueueAllowed = CustomQueueAllowed.TRUE;
 
-  private TezSessionPool defaultSessionPool;
+  private TezSessionPool<TezSessionPoolSession> defaultSessionPool;
   private SessionExpirationTracker expirationTracker;
   private RestrictedConfigChecker restrictedConfig;
 
@@ -114,9 +117,8 @@ public class TezSessionPoolManager
     int numSessions = conf.getIntVar(ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE);
     int numSessionsTotal = numSessions * (defaultQueueList.length - emptyNames);
     if (numSessionsTotal > 0) {
-      // TODO: this can be enabled to test. Will only be used in WM case for now.
       boolean enableAmRegistry = false;
-      defaultSessionPool = new TezSessionPool(initConf, numSessionsTotal, enableAmRegistry);
+      defaultSessionPool = new TezSessionPool<>(initConf, numSessionsTotal, enableAmRegistry);
     }
 
     numConcurrentLlapQueries = conf.getIntVar(ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES);
@@ -249,12 +251,16 @@ public class TezSessionPoolManager
     return retTezSessionState;
   }
 
-  public void returnSession(TezSessionState tezSessionState, boolean llap)
-      throws Exception {
+  @Override
+  public void returnAfterUse(TezSessionPoolSession session) throws Exception {
+    returnSession(session);
+  }
+
+  void returnSession(TezSessionState tezSessionState) throws Exception {
     // Ignore the interrupt status while returning the session, but set it back
     // on the thread in case anything else needs to deal with it.
     boolean isInterrupted = Thread.interrupted();
-
+    boolean llap = tezSessionState.getLegacyLlapMode();
     try {
       if (isInterrupted) {
         LOG.info("returnSession invoked with interrupt status set");
@@ -262,6 +268,7 @@ public class TezSessionPoolManager
       if (llap && (this.numConcurrentLlapQueries > 0)) {
         llapQueue.release();
       }
+      tezSessionState.setLegacyLlapMode(false);
       if (tezSessionState.isDefault() &&
           tezSessionState instanceof TezSessionPoolSession) {
         LOG.info("The session " + tezSessionState.getSessionId()
@@ -377,6 +384,7 @@ public class TezSessionPoolManager
     }
 
     if (canWorkWithSameSession(session, conf)) {
+      session.setLegacyLlapMode(llap);
       return session;
     }
 
@@ -384,23 +392,33 @@ public class TezSessionPoolManager
       closeIfNotDefault(session, false);
     }
 
-    return getSession(conf, doOpen);
+    session = getSession(conf, doOpen);
+    session.setLegacyLlapMode(llap);
+    return session;
   }
 
   /** Reopens the session that was found to not be running. */
-  public void reopenSession(TezSessionState sessionState, Configuration conf) throws Exception {
+  public TezSessionState reopenSession(TezSessionState sessionState,
+      Configuration conf, String[] additionalFiles) throws Exception {
     HiveConf sessionConf = sessionState.getConf();
     if (sessionState.getQueueName() != null
         && sessionConf.get(TezConfiguration.TEZ_QUEUE_NAME) == null) {
       sessionConf.set(TezConfiguration.TEZ_QUEUE_NAME, sessionState.getQueueName());
     }
     Set<String> oldAdditionalFiles = sessionState.getAdditionalFilesNotFromConf();
+    if ((oldAdditionalFiles == null || oldAdditionalFiles.isEmpty())
+        && (additionalFiles != null)) {
+      oldAdditionalFiles = new HashSet<>();
+      for (String file : additionalFiles) {
+        oldAdditionalFiles.add(file);
+      }
+    }
     // TODO: close basically resets the object to a bunch of nulls.
     //       We should ideally not reuse the object because it's pointless and error-prone.
-    // Close the old one, but keep the tmp files around.
     sessionState.close(true);
     // TODO: should we reuse scratchDir too?
     sessionState.open(oldAdditionalFiles, null);
+    return sessionState;
   }
 
   public void closeNonDefaultSessions(boolean keepTmpDir) throws Exception {
@@ -422,8 +440,8 @@ public class TezSessionPoolManager
       LOG.warn("Pool session has a null queue: " + oldSession);
     }
     TezSessionPoolSession newSession = createAndInitSession(
-        queueName, oldSession.isDefault(), oldSession.getConf());
-    defaultSessionPool.replaceSession(oldSession, newSession);
+      queueName, oldSession.isDefault(), oldSession.getConf());
+    defaultSessionPool.replaceSession(oldSession, newSession, false, null, null);
   }
 
   /** Called by TezSessionPoolSession when opened. */
@@ -448,5 +466,16 @@ public class TezSessionPoolManager
   @VisibleForTesting
   public SessionExpirationTracker getExpirationTracker() {
     return expirationTracker;
+  }
+
+  @Override
+  public TezSessionPoolSession reopen(
+      TezSessionPoolSession session, Configuration conf, String[] inputOutputJars) {
+    return reopen(session, conf, inputOutputJars);
+  }
+
+  @Override
+  public void destroy(TezSessionPoolSession session) throws Exception {
+    destroySession(session);
   }
 }

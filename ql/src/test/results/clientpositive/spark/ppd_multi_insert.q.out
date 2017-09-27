@@ -114,7 +114,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.mi1
                 Filter Operator
-                  predicate: ((_col0 >= 100) and (_col0 < 200)) (type: boolean)
+                  predicate: ((_col0 < 200) and (_col0 >= 100)) (type: boolean)
                   Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
@@ -129,7 +129,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.mi2
                 Filter Operator
-                  predicate: ((_col0 >= 200) and (_col0 < 300)) (type: boolean)
+                  predicate: ((_col0 < 300) and (_col0 >= 200)) (type: boolean)
                   Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: UDFToInteger(_col0) (type: int)
@@ -1387,7 +1387,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.mi1
                 Filter Operator
-                  predicate: ((_col0 >= 100) and (_col0 < 200)) (type: boolean)
+                  predicate: ((_col0 < 200) and (_col0 >= 100)) (type: boolean)
                   Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
@@ -1402,7 +1402,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.mi2
                 Filter Operator
-                  predicate: ((_col0 >= 200) and (_col0 < 300)) (type: boolean)
+                  predicate: ((_col0 < 300) and (_col0 >= 200)) (type: boolean)
                   Statistics: Num rows: 61 Data size: 648 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: UDFToInteger(_col0) (type: int)

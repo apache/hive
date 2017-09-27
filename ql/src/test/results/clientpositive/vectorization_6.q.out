@@ -63,7 +63,7 @@ STAGE PLANS:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0, val 0) -> boolean, FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongColLessEqualLongScalar(col 10, val 0) -> boolean, FilterLongColGreaterEqualLongColumn(col 11, col 10) -> boolean) -> boolean, FilterExprAndExpr(children: SelectColumnIsNotNull(col 3) -> boolean, FilterExprOrExpr(children: FilterStringColLikeStringScalar(col 7, pattern %a) -> boolean, FilterDoubleColLessEqualDoubleScalar(col 4, val -257.0) -> boolean) -> boolean) -> boolean) -> boolean) -> boolean
-              predicate: ((ctinyint <> 0) and (((cboolean1 <= 0) and (cboolean2 >= cboolean1)) or (cbigint is not null and ((cstring2 like '%a') or (cfloat <= -257))))) (type: boolean)
+              predicate: ((((cboolean1 <= 0) and (cboolean2 >= cboolean1)) or (cbigint is not null and ((cstring2 like '%a') or (cfloat <= -257)))) and (ctinyint <> 0)) (type: boolean)
               Statistics: Num rows: 11605 Data size: 2495116 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cboolean1 (type: boolean), cfloat (type: float), cstring1 (type: string), (988888 * UDFToInteger(csmallint)) (type: int), (- csmallint) (type: smallint), (- cfloat) (type: float), (-26.28 / UDFToDouble(cfloat)) (type: double), (cfloat * 359.0) (type: float), (cint % UDFToInteger(ctinyint)) (type: int), (- cdouble) (type: double), (UDFToInteger(ctinyint) - -75) (type: int), (762 * (cint % UDFToInteger(ctinyint))) (type: int)

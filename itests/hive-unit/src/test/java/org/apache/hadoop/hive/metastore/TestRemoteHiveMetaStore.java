@@ -42,9 +42,9 @@ public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
       return;
     }
 
-    port = MetaStoreUtils.findFreePort();
+    port = MetaStoreTestUtils.findFreePort();
     System.out.println("Starting MetaStore Server on port " + port);
-    MetaStoreUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), hiveConf);
+    MetaStoreTestUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), hiveConf);
     isServerStarted = true;
 
     // This is default case with setugi off for both client and server

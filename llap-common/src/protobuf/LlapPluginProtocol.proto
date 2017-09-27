@@ -21,11 +21,8 @@ option java_outer_classname = "LlapPluginProtocolProtos";
 option java_generic_services = true;
 option java_generate_equals_and_hash = true;
 
-import "LlapDaemonProtocol.proto";
-
 message UpdateQueryRequestProto {
-  optional QueryIdentifierProto query_id = 1;
-  optional int32 guaranteed_task_count = 2;
+  optional int32 guaranteed_task_count = 1;
 }
 
 message UpdateQueryResponseProto {

@@ -33,7 +33,7 @@ import org.junit.Test;
 public class TestAsyncPbRpcProxy {
 
   @Test (timeout = 5000)
-  public void testMultipleNodes() {
+  public void testMultipleNodes() throws Exception {
     RequestManagerForTest requestManager = new RequestManagerForTest(1);
 
     LlapNodeId nodeId1 = LlapNodeId.getInstance("host1", 1025);
@@ -62,7 +62,7 @@ public class TestAsyncPbRpcProxy {
   }
 
   @Test(timeout = 5000)
-  public void testSingleInvocationPerNode() {
+  public void testSingleInvocationPerNode() throws Exception {
     RequestManagerForTest requestManager = new RequestManagerForTest(1);
 
     LlapNodeId nodeId1 = LlapNodeId.getInstance("host1", 1025);
@@ -109,7 +109,7 @@ public class TestAsyncPbRpcProxy {
     private Map<LlapNodeId, MutableInt> numInvocationsPerNode = new HashMap<>();
 
     public RequestManagerForTest(int numThreads) {
-      super(numThreads);
+      super(numThreads, 1);
     }
 
     protected void submitToExecutor(LlapProtocolClientProxy.CallableRequest request, LlapNodeId nodeId) {
@@ -129,7 +129,7 @@ public class TestAsyncPbRpcProxy {
 
   }
 
-  static class CallableRequestForTest extends LlapProtocolClientProxy.CallableRequest<Message, Message> {
+  static class CallableRequestForTest extends LlapProtocolClientProxy.NodeCallableRequest<Message, Message> {
 
     protected CallableRequestForTest(LlapNodeId nodeId, Message message,
                                      LlapProtocolClientProxy.ExecuteRequestCallback<Message> callback) {

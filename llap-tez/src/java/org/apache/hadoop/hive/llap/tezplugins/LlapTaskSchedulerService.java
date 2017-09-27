@@ -253,6 +253,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
 
   // The fields that HS2 uses to give AM information about plugin endpoint.
+  // Some of these will be removed when AM registry is implemented, as AM will generate and publish them.
   /** Whether to enable the endpoint. */
   public static final String LLAP_PLUGIN_ENDPOINT_ENABLED = "llap.plugin.endpoint.enabled";
 
@@ -287,8 +288,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         serializedToken = jobIdForToken = null;
       }
       pluginEndpoint = new LlapPluginServerImpl(sm,
-          HiveConf.getIntVar(conf, ConfVars.LLAP_PLUGIN_RPC_NUM_HANDLERS),
-          HiveConf.getIntVar(conf, ConfVars.LLAP_PLUGIN_RPC_PORT), this);
+          HiveConf.getIntVar(conf, ConfVars.LLAP_PLUGIN_RPC_NUM_HANDLERS), this);
     } else {
       serializedToken = jobIdForToken = null;
       pluginEndpoint = null;

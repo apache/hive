@@ -20,15 +20,8 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.never;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -180,6 +173,8 @@ public class TestTezTask {
     session = mock(TezClient.class);
     sessionState = mock(TezSessionState.class);
     when(sessionState.getSession()).thenReturn(session);
+    when(sessionState.reopen(any(Configuration.class), any(String[].class)))
+      .thenReturn(sessionState);
     when(session.submitDAG(any(DAG.class)))
       .thenThrow(new SessionNotRunning(""))
       .thenReturn(mock(DAGClient.class));
@@ -227,8 +222,7 @@ public class TestTezTask {
     task.submit(conf, dag, path, appLr, sessionState, Collections.<LocalResource> emptyList(),
         new String[0], Collections.<String,LocalResource> emptyMap());
     // validate close/reopen
-    verify(sessionState, times(1)).open(any(Collection.class), any(Path.class));
-    verify(sessionState, times(1)).close(eq(true)); // now uses pool after HIVE-7043
+    verify(sessionState, times(1)).reopen(any(Configuration.class), any(String[].class));
     verify(session, times(2)).submitDAG(any(DAG.class));
   }
 

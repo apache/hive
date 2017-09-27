@@ -53,3 +53,23 @@ explain select * from loc_orc where locid IN (5,2,3);
 explain select * from loc_orc where locid IN (1,6,9);
 -- always false
 explain select * from loc_orc where locid IN (40,30);
+
+
+
+create table t ( s string);
+insert into t values (null),(null);
+analyze table t compute statistics for columns s;
+
+-- true
+explain select * from t where s is null;
+explain select * from loc_orc where locid is not null;
+-- false
+explain select * from t where s is not null;
+explain select * from loc_orc where locid is null;
+
+insert into t values ('val1');
+analyze table t compute statistics for columns s;
+
+-- untouched
+explain select * from t where s is not null;
+explain select * from t where s is null;

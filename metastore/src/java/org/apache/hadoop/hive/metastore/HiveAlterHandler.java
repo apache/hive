@@ -21,8 +21,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
+import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -301,10 +304,28 @@ public class HiveAlterHandler implements AlterHandler {
       }
 
       if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                                              EventMessage.EventType.ALTER_TABLE,
-                                              new AlterTableEvent(oldt, newt, false, true, handler),
-                                              environmentContext);
+        if (oldt.getDbName().equalsIgnoreCase(newt.getDbName())) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventMessage.EventType.ALTER_TABLE,
+                  new AlterTableEvent(oldt, newt, false, true, handler),
+                  environmentContext);
+        } else {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventMessage.EventType.DROP_TABLE,
+                  new DropTableEvent(oldt, true, false, handler),
+                  environmentContext);
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventMessage.EventType.CREATE_TABLE,
+                  new CreateTableEvent(newt, true, handler),
+                  environmentContext);
+          if (isPartitionedTable) {
+            parts = msdb.getPartitions(newt.getDbName(), newt.getTableName(), -1);
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventMessage.EventType.ADD_PARTITION,
+                    new AddPartitionEvent(newt, parts, true, handler),
+                    environmentContext);
+          }
+        }
       }
       // commit the changes
       success = msdb.commitTransaction();
@@ -591,7 +612,7 @@ public class HiveAlterHandler implements AlterHandler {
     return alterPartitions(msdb, wh, dbname, name, new_parts, environmentContext, null);
   }
 
-    @Override
+  @Override
   public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String dbname,
     final String name, final List<Partition> new_parts, EnvironmentContext environmentContext,
     HMSHandler handler)

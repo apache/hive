@@ -67,8 +67,8 @@ PREHOOK: query: show compactions
 PREHOOK: type: SHOW COMPACTIONS
 POSTHOOK: query: show compactions
 POSTHOOK: type: SHOW COMPACTIONS
-Database	Table	Partition	Type	State	Worker	Start Time	Duration(ms)	HadoopJobId
-default	partitioned_acid_table	p=abc	MINOR	initiated	 --- 	 --- 	 --- 	 --- 
+CompactionId	Database	Table	Partition	Type	State	Worker	Start Time	Duration(ms)	HadoopJobId
+1	default	partitioned_acid_table	p=abc	MINOR	initiated	 --- 	 --- 	 --- 	 --- 
 PREHOOK: query: drop table partitioned_acid_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partitioned_acid_table

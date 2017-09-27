@@ -709,7 +709,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     boolean isSupportedRoot = root == HiveParser.TOK_QUERY || root == HiveParser.TOK_EXPLAIN
         || qb.isCTAS() || qb.isMaterializedView();
     // Queries without a source table currently are not supported by CBO
-    boolean isSupportedType = (qb.getIsQuery() && !qb.containsQueryWithoutSourceTable())
+    boolean isSupportedType = (qb.getIsQuery())
         || qb.isCTAS() || qb.isMaterializedView() || cboCtx.type == PreCboCtx.Type.INSERT
         || cboCtx.type == PreCboCtx.Type.MULTI_INSERT;
     boolean noBadTokens = HiveCalciteUtil.validateASTForUnsupportedTokens(ast);
@@ -4164,18 +4164,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       if (aliasToRel.isEmpty()) {
         // // This may happen for queries like select 1; (no source table)
-        // We can do following which is same, as what Hive does.
-        // With this, we will be able to generate Calcite plan.
-        // qb.getMetaData().setSrcForAlias(DUMMY_TABLE, getDummyTable());
-        // RelNode op = genTableLogicalPlan(DUMMY_TABLE, qb);
-        // qb.addAlias(DUMMY_TABLE);
-        // qb.setTabAlias(DUMMY_TABLE, DUMMY_TABLE);
-        // aliasToRel.put(DUMMY_TABLE, op);
-        // However, Hive trips later while trying to get Metadata for this dummy
-        // table
-        // So, for now lets just disable this. Anyway there is nothing much to
-        // optimize in such cases.
-        throw new CalciteSemanticException("Unsupported", UnsupportedFeature.Others);
+        qb.getMetaData().setSrcForAlias(DUMMY_TABLE, getDummyTable());
+        qb.addAlias(DUMMY_TABLE);
+        qb.setTabAlias(DUMMY_TABLE, DUMMY_TABLE);
+        RelNode op = genTableLogicalPlan(DUMMY_TABLE, qb);
+        aliasToRel.put(DUMMY_TABLE, op);
 
       }
 

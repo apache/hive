@@ -1,0 +1,34 @@
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: explain authorization kill query 'dummyqueryid'
+PREHOOK: type: KILL QUERY
+POSTHOOK: query: explain authorization kill query 'dummyqueryid'
+POSTHOOK: type: KILL QUERY
+INPUTS: 
+OUTPUTS: 
+  dummyHostnameForTest
+CURRENT_USER: 
+  hive_admin_user
+OPERATION: 
+  KILL_QUERY
+PREHOOK: query: kill query 'dummyqueryid'
+PREHOOK: type: KILL QUERY
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: kill query 'dummyqueryid'
+POSTHOOK: type: KILL QUERY
+PREHOOK: query: explain authorization kill query 'dummyqueryid'
+PREHOOK: type: KILL QUERY
+POSTHOOK: query: explain authorization kill query 'dummyqueryid'
+POSTHOOK: type: KILL QUERY
+INPUTS: 
+OUTPUTS: 
+  dummyHostnameForTest
+CURRENT_USER: 
+  ruser1
+OPERATION: 
+  KILL_QUERY
+AUTHORIZATION_FAILURES: 
+  Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation KILL_QUERY [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]
+FAILED: HiveAccessControlException Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation KILL_QUERY [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]

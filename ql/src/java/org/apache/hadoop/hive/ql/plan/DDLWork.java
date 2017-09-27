@@ -76,6 +76,7 @@ public class DDLWork implements Serializable {
   private AlterTableAlterPartDesc alterTableAlterPartDesc;
   private TruncateTableDesc truncateTblDesc;
   private AlterTableExchangePartition alterTableExchangePartition;
+  private KillQueryDesc killQueryDesc;
 
   private RoleDDLDesc roleDDLDesc;
   private GrantDesc grantDesc;
@@ -540,6 +541,12 @@ public class DDLWork implements Serializable {
     this.preInsertTableDesc = preInsertTableDesc;
   }
 
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+                 KillQueryDesc killQueryDesc) {
+    this(inputs, outputs);
+    this.killQueryDesc = killQueryDesc;
+  }
+
   /**
    * @return Create Database descriptor
    */
@@ -814,6 +821,11 @@ public class DDLWork implements Serializable {
     return descFunctionDesc;
   }
 
+  @Explain(displayName = "Kill Query Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public KillQueryDesc getKillQueryDesc() {
+    return killQueryDesc;
+  }
+
   /**
    * @param showFuncsDesc
    *          the showFuncsDesc to set
@@ -840,6 +852,10 @@ public class DDLWork implements Serializable {
 
   public void setAbortTxnsDesc(AbortTxnsDesc abortTxnsDesc) {
     this.abortTxnsDesc = abortTxnsDesc;
+  }
+
+  public void setKillQueryDesc(KillQueryDesc killQueryDesc) {
+    this.killQueryDesc = killQueryDesc;
   }
 
   /**

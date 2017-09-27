@@ -53,6 +53,7 @@ POSTHOOK: Input: default@tbl
 #### A masked pattern was here ####
 false	false	true	true
 true	true	false	false
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: select a.key, a.a_one, b.b_one, a.a_zero, b.b_zero from ( SELECT 11 key, 0 confuse_you, 1 a_one, 0 a_zero ) a join ( SELECT 11 key, 0 confuse_you, 1 b_one, 0 b_zero ) b on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -62,6 +63,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 11	1	1	0	0
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: select a.key, a.a_one, b.b_one, a.a_zero, b.b_zero from ( SELECT 11 key, 0 confuse_you, 1 a_one, 0 a_zero ) a left outer join ( SELECT 11 key, 0 confuse_you, 1 b_one, 0 b_zero ) b on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -71,6 +73,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 11	1	1	0	0
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: select a.key, a.a_one, b.b_one, a.a_zero, b.b_zero from ( SELECT 11 key, 0 confuse_you, 1 a_one, 0 a_zero ) a right outer join ( SELECT 11 key, 0 confuse_you, 1 b_one, 0 b_zero ) b on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -80,6 +83,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 11	1	1	0	0
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select a.key, a.a_one, b.b_one, a.a_zero, b.b_zero from ( SELECT 11 key, 0 confuse_you, 1 a_one, 0 a_zero ) a full outer join ( SELECT 11 key, 0 confuse_you, 1 b_one, 0 b_zero ) b on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

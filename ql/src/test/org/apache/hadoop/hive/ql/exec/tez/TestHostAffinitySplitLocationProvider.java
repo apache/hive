@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.math.stat.descriptive.SummaryStatistics;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.mapred.FileSplit;
@@ -125,7 +125,9 @@ public class TestHostAffinitySplitLocationProvider {
         }
         lastLocations[splitIx] = splitLocation;
       }
-      if (locs == MIN_LOC_COUNT) continue;
+      if (locs == MIN_LOC_COUNT) {
+        continue;
+      }
       String msgTail = " when going to " + locs + " locations";
       String movedMsg = moved + " splits moved",
           newMsg = newLoc + " splits went to the new node";
@@ -223,7 +225,7 @@ public class TestHostAffinitySplitLocationProvider {
     }
     // All of this is completely bogus and mostly captures the following function:
     // f(output) = I-eyeballed-the(output) == they-look-ok.
-    // It's pretty much a golden file... 
+    // It's pretty much a golden file...
     // The fact that stdev doesn't increase with increasing missCount is captured outside.
     double avg = ss.getSum()/ss.getN(), stdev = ss.getStandardDeviation(), cv = stdev/avg;
     double allowedMin = avg - 2.5 * stdev, allowedMax = avg + 2.5 * stdev;

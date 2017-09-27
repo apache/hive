@@ -139,6 +139,11 @@ public class WriteEntity extends Entity implements Serializable {
     this.writeType = WriteType.PATH_WRITE;
   }
 
+  public WriteEntity(String name, Type t) {
+    super(name, t);
+    this.writeType = WriteType.DDL_NO_LOCK;
+  }
+
   /**
    * Determine which type of write this is.  This is needed by the lock
    * manager so it can understand what kind of lock to acquire.

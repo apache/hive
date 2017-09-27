@@ -187,7 +187,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 500 Data size: 6312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (value2 is not null and (key < 10)) (type: boolean)
+              predicate: ((key < 10) and value2 is not null) (type: boolean)
               Statistics: Num rows: 166 Data size: 2095 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
@@ -201,7 +201,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 500 Data size: 10218 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (value2 is not null and (key < 10)) (type: boolean)
+              predicate: ((key < 10) and value2 is not null) (type: boolean)
               Statistics: Num rows: 166 Data size: 3392 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:

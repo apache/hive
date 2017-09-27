@@ -91,7 +91,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNull(col 8) -> boolean, FilterExprOrExpr(children: FilterLongColGreaterEqualLongColumn(col 10, col 11) -> boolean, FilterLongColNotEqualLongColumn(col 0, col 1)(children: col 0) -> boolean) -> boolean, FilterExprOrExpr(children: FilterStringColLikeStringScalar(col 6, pattern %a) -> boolean, FilterExprAndExpr(children: FilterLongColLessEqualLongScalar(col 11, val 1) -> boolean, FilterLongColGreaterEqualLongColumn(col 3, col 1)(children: col 1) -> boolean) -> boolean) -> boolean) -> boolean
-                    predicate: (ctimestamp1 is null and ((cboolean1 >= cboolean2) or (UDFToShort(ctinyint) <> csmallint)) and ((cstring1 like '%a') or ((cboolean2 <= 1) and (cbigint >= UDFToLong(csmallint))))) (type: boolean)
+                    predicate: (((cboolean1 >= cboolean2) or (UDFToShort(ctinyint) <> csmallint)) and ((cstring1 like '%a') or ((cboolean2 <= 1) and (cbigint >= UDFToLong(csmallint)))) and ctimestamp1 is null) (type: boolean)
                     Statistics: Num rows: 3754 Data size: 807123 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cbigint (type: bigint), cdouble (type: double), cstring1 (type: string), cboolean1 (type: boolean)

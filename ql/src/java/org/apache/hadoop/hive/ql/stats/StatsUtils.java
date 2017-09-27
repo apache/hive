@@ -35,6 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.Sets;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -277,11 +278,33 @@ public class StatsUtils {
     }
   }
 
-  private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, List<String> neededColumns, Table table, long ds) {
+  private static void estimateStatsForMissingCols(List<String> neededColumns, List<ColStatistics> columnStats,
+                                           Table table, HiveConf conf, long nr, List<ColumnInfo> schema) {
+
+    Set<String> neededCols = new HashSet<>(neededColumns);
+    Set<String> colsWithStats = new HashSet<>();
+
+    for (ColStatistics cstats : columnStats) {
+      colsWithStats.add(cstats.getColumnName());
+    }
+
+    List<String> missingColStats = new ArrayList<String>(Sets.difference(neededCols, colsWithStats));
+
+    if(missingColStats.size() > 0) {
+      List<ColStatistics> estimatedColStats = estimateStats(table, schema, missingColStats, conf, nr);
+      for (ColStatistics estColStats : estimatedColStats) {
+        columnStats.add(estColStats);
+      }
+    }
+  }
+
+  private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, List<String> neededColumns,
+                                 Table table, long ds) {
     long nr = getNumRows(table);
     // number of rows -1 means that statistics from metastore is not reliable
     // and 0 means statistics gathering is disabled
-    if (nr <= 0) {
+    // estimate only if num rows is -1 since 0 could be actual number of rows
+    if (nr < 0) {
       int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
       if (avgRowSize > 0) {
         if (LOG.isDebugEnabled()) {
@@ -290,7 +313,10 @@ public class StatsUtils {
         nr = ds / avgRowSize;
       }
     }
-    return nr == 0 ? 1 : nr;
+    if(nr == 0 || nr == -1) {
+      return 1;
+    }
+    return nr;
   }
 
   public static Statistics collectStatistics(HiveConf conf, PrunedPartitionList partList,
@@ -322,9 +348,13 @@ public class StatsUtils {
       List<ColStatistics> colStats = Lists.newArrayList();
       if (fetchColStats) {
         colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache);
-        if(colStats == null || colStats.size() < 1) {
-          colStats = estimateStats(table,schema,neededColumns, conf, nr);
+        if(colStats == null) {
+          colStats = Lists.newArrayList();
         }
+        estimateStatsForMissingCols(neededColumns, colStats, table, conf, nr, schema);
+
+        // we should have stats for all columns (estimated or actual)
+        assert(neededColumns.size() == colStats.size());
         long betterDS = getDataSizeFromColumnStats(nr, colStats);
         ds = (betterDS < 1 || colStats.isEmpty()) ? ds : betterDS;
       }
@@ -457,14 +487,10 @@ public class StatsUtils {
             aggrStats.getColStats() != null && aggrStats.getColStatsSize() != 0;
         if (neededColumns.size() == 0 ||
             (neededColsToRetrieve.size() > 0 && !statsRetrieved)) {
+          estimateStatsForMissingCols(neededColsToRetrieve, columnStats, table, conf, nr, schema);
           // There are some partitions with no state (or we didn't fetch any state).
           // Update the stats with empty list to reflect that in the
           // state/initialize structures.
-
-          if(columnStats.isEmpty()) {
-            // estimate stats
-            columnStats = estimateStats(table, schema, neededColumns, conf, nr);
-          }
 
           // add partition column stats
           addPartitionColumnStats(conf, partitionColsToRetrieve, schema, table, partList, columnStats);
@@ -1753,13 +1779,13 @@ public class StatsUtils {
    */
   public static long getBasicStatForTable(Table table, String statType) {
     Map<String, String> params = table.getParameters();
-    long result = 0;
+    long result = -1;
 
     if (params != null) {
       try {
         result = Long.parseLong(params.get(statType));
       } catch (NumberFormatException e) {
-        result = 0;
+        result = -1;
       }
     }
     return result;

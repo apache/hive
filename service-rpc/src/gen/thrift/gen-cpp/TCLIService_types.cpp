@@ -10312,4 +10312,176 @@ void TProgressUpdateResp::printTo(std::ostream& out) const {
   out << ")";
 }
 
+
+TGetQueryIdReq::~TGetQueryIdReq() throw() {
+}
+
+
+void TGetQueryIdReq::__set_operationHandle(const TOperationHandle& val) {
+  this->operationHandle = val;
+}
+
+uint32_t TGetQueryIdReq::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_operationHandle = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->operationHandle.read(iprot);
+          isset_operationHandle = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_operationHandle)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t TGetQueryIdReq::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("TGetQueryIdReq");
+
+  xfer += oprot->writeFieldBegin("operationHandle", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->operationHandle.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(TGetQueryIdReq &a, TGetQueryIdReq &b) {
+  using ::std::swap;
+  swap(a.operationHandle, b.operationHandle);
+}
+
+TGetQueryIdReq::TGetQueryIdReq(const TGetQueryIdReq& other323) {
+  operationHandle = other323.operationHandle;
+}
+TGetQueryIdReq& TGetQueryIdReq::operator=(const TGetQueryIdReq& other324) {
+  operationHandle = other324.operationHandle;
+  return *this;
+}
+void TGetQueryIdReq::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "TGetQueryIdReq(";
+  out << "operationHandle=" << to_string(operationHandle);
+  out << ")";
+}
+
+
+TGetQueryIdResp::~TGetQueryIdResp() throw() {
+}
+
+
+void TGetQueryIdResp::__set_queryId(const std::string& val) {
+  this->queryId = val;
+}
+
+uint32_t TGetQueryIdResp::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_queryId = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->queryId);
+          isset_queryId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_queryId)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t TGetQueryIdResp::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("TGetQueryIdResp");
+
+  xfer += oprot->writeFieldBegin("queryId", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->queryId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(TGetQueryIdResp &a, TGetQueryIdResp &b) {
+  using ::std::swap;
+  swap(a.queryId, b.queryId);
+}
+
+TGetQueryIdResp::TGetQueryIdResp(const TGetQueryIdResp& other325) {
+  queryId = other325.queryId;
+}
+TGetQueryIdResp& TGetQueryIdResp::operator=(const TGetQueryIdResp& other326) {
+  queryId = other326.queryId;
+  return *this;
+}
+void TGetQueryIdResp::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "TGetQueryIdResp(";
+  out << "queryId=" << to_string(queryId);
+  out << ")";
+}
+
 }}}}} // namespace

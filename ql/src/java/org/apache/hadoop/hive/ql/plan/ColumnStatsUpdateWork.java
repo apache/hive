@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -38,12 +37,14 @@ public class ColumnStatsUpdateWork implements Serializable {
   private ColumnStatsDesc colStats;
   private String partName;
   private Map<String, String> mapProp;
+  private String currentDatabaseName;
 
   public ColumnStatsUpdateWork(ColumnStatsDesc colStats, String partName,
-      Map<String, String> mapProp) {
+      Map<String, String> mapProp, String currentDatabaseName) {
     this.partName = partName;
     this.colStats = colStats;
     this.mapProp = mapProp;
+    this.currentDatabaseName = currentDatabaseName;
   }
 
   @Override
@@ -64,4 +65,11 @@ public class ColumnStatsUpdateWork implements Serializable {
     return mapProp;
   }
 
+  public String getCurrentDatabaseName() {
+    return currentDatabaseName;
+  }
+
+  public void setCurrentDatabaseName(String currentDatabaseName) {
+    this.currentDatabaseName = currentDatabaseName;
+  }
 }

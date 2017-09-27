@@ -149,7 +149,7 @@ Stage-0
                                                         Select Operator [SEL_17] (rows=1704 width=1910)
                                                           Output:["_col0","_col1"]
                                                           Filter Operator [FIL_84] (rows=1704 width=1910)
-                                                            predicate:(s_store_sk is not null and s_state is not null)
+                                                            predicate:(s_state is not null and s_store_sk is not null)
                                                             TableScan [TS_15] (rows=1704 width=1910)
                                                               default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_state"]
                                                     <-Reducer 8 [SIMPLE_EDGE]
@@ -172,7 +172,7 @@ Stage-0
                                                             Select Operator [SEL_5] (rows=8116 width=1119)
                                                               Output:["_col0"]
                                                               Filter Operator [FIL_79] (rows=8116 width=1119)
-                                                                predicate:(d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null)
+                                                                predicate:(d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223)
                                                                 TableScan [TS_3] (rows=73049 width=1119)
                                                                   default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
                                 <-Reducer 3 [SIMPLE_EDGE]

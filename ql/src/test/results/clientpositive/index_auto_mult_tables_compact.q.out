@@ -14,7 +14,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 90.0)) (type: boolean)
+              predicate: ((UDFToDouble(key) < 90.0) and (UDFToDouble(key) > 80.0)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -219,7 +219,7 @@ STAGE PLANS:
             alias: default__src_src_index_compact__
             filterExpr: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 90.0)) (type: boolean)
             Filter Operator
-              predicate: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 90.0)) (type: boolean)
+              predicate: ((UDFToDouble(key) < 90.0) and (UDFToDouble(key) > 80.0)) (type: boolean)
               Select Operator
                 expressions: _bucketname (type: string), _offsets (type: array<bigint>)
                 outputColumnNames: _col0, _col1
@@ -253,7 +253,7 @@ STAGE PLANS:
             filterExpr: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 90.0)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) > 80.0) and (UDFToDouble(key) < 90.0)) (type: boolean)
+              predicate: ((UDFToDouble(key) < 90.0) and (UDFToDouble(key) > 80.0)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

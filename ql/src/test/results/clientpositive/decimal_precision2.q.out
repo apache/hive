@@ -37,9 +37,9 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 100 (type: decimal(3,0))
+            expressions: 100 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select 0.000BD
@@ -59,9 +59,9 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 0 (type: decimal(1,0))
+            expressions: 0 (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: explain select 0.100BD
@@ -147,7 +147,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 69.0212249755859375 (type: decimal(27,20))
+            expressions: 69.0212249755859375 (type: decimal(18,16))
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink

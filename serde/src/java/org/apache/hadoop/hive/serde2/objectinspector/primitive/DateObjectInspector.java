@@ -19,12 +19,16 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import java.sql.Date;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
 /**
  * A DateObjectInspector inspects an Object representing a Date.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface DateObjectInspector extends PrimitiveObjectInspector {
 
   DateWritable getPrimitiveWritableObject(Object o);

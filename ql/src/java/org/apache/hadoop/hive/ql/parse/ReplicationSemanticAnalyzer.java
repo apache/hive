@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import io.netty.util.internal.StringUtil;
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
@@ -46,6 +45,7 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.io.FileNotFoundException;
 import java.io.Serializable;
@@ -287,7 +287,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if ((!evDump) && (tblNameOrPattern != null) && !(tblNameOrPattern.isEmpty())) {
         ReplLoadWork replLoadWork =
-            new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern, tblNameOrPattern);
+            new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern, tblNameOrPattern,
+                SessionState.get().getLineageState(), SessionState.get().getTxnMgr().getCurrentTxnId());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
         return;
       }
@@ -317,7 +318,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                   + " does not correspond to REPL LOAD expecting to load to a singular destination point.");
         }
 
-        ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern);
+        ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
+            SessionState.get().getLineageState(), SessionState.get().getTxnMgr().getCurrentTxnId());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
         //
         //        for (FileStatus dir : dirsInLoadPath) {
@@ -373,7 +375,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
               LOG.debug("Added {}:{} as a precursor of barrier task {}:{}",
                   t.getClass(), t.getId(), barrierTask.getClass(), barrierTask.getId());
             }
-            LOG.debug("Updated taskChainTail from {}{} to {}{}",
+            LOG.debug("Updated taskChainTail from {}:{} to {}:{}",
                 taskChainTail.getClass(), taskChainTail.getId(), barrierTask.getClass(), barrierTask.getId());
             taskChainTail = barrierTask;
           }

@@ -510,11 +510,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: bucket
-            Statistics: Num rows: 726 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: CASE WHEN ((key < 100.0)) THEN (NaN) ELSE (key) END (type: double)
               outputColumnNames: $f0
-              Statistics: Num rows: 726 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: percentile_approx($f0, 0.5)
                 mode: hash
@@ -569,11 +569,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: bucket
-            Statistics: Num rows: 726 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: double)
               outputColumnNames: $f0
-              Statistics: Num rows: 726 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: percentile_approx($f0, 0.5)
                 mode: hash

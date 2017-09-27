@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
+import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
@@ -91,7 +92,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
 
 /**
  * HiveServer2.
@@ -107,6 +107,7 @@ public class HiveServer2 extends CompositeService {
   private CuratorFramework zooKeeperClient;
   private boolean deregisteredWithZooKeeper = false; // Set to true only when deregistration happens
   private HttpServer webServer; // Web UI
+  private WorkloadManager wm;
 
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
@@ -159,6 +160,14 @@ public class HiveServer2 extends CompositeService {
     String llapHosts = HiveConf.getVar(hiveConf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
     if (llapHosts != null && !llapHosts.isEmpty()) {
       LlapRegistryService.getClient(hiveConf);
+    }
+
+    // Initialize workload management.
+    String wmQueue = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE);
+    if (wmQueue != null && !wmQueue.isEmpty()) {
+      wm = WorkloadManager.create(wmQueue, hiveConf);
+    } else {
+      wm = null;
     }
 
     // Create views registry
@@ -481,7 +490,7 @@ public class HiveServer2 extends CompositeService {
         + thriftCLIService.getPortNumber();
   }
 
-  private String getServerHost() throws Exception {
+  public String getServerHost() throws Exception {
     if ((thriftCLIService == null) || (thriftCLIService.getServerIPAddress() == null)) {
       throw new Exception("Unable to get the server address; it hasn't been initialized yet.");
     }
@@ -553,6 +562,14 @@ public class HiveServer2 extends CompositeService {
             + "Shutting down HiveServer2 anyway.", e);
       }
     }
+    if (wm != null) {
+      try {
+        wm.stop();
+      } catch (Exception e) {
+        LOG.error("Workload manager stop had an error during stop of HiveServer2. "
+            + "Shutting down HiveServer2 anyway.", e);
+      }
+    }
 
     if (hiveConf != null && hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
       try {
@@ -617,6 +634,9 @@ public class HiveServer2 extends CompositeService {
 
         if (sessionPool != null) {
           sessionPool.startPool();
+        }
+        if (server.wm != null) {
+          server.wm.start();
         }
 
         if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {

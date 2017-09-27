@@ -444,7 +444,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key > 0) and (key < 10) and ((key % 2) = 0)) (type: boolean)
+              predicate: (((key % 2) = 0) and (key < 10) and (key > 0)) (type: boolean)
               Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), upper(value) (type: string)

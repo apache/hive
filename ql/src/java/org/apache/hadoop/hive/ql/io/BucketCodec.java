@@ -86,11 +86,28 @@ public enum BucketCodec {
     }
     @Override
     public int encode(AcidOutputFormat.Options options) {
-      return this.version << 29 | options.getBucketId() << 16 |
-        (options.getStatementId() >= 0 ? options.getStatementId() : 0);
+      int statementId = options.getStatementId() >= 0 ? options.getStatementId() : 0;
+
+      assert this.version >=0 && this.version <= MAX_VERSION
+        : "Version out of range: " + version;
+      if(!(options.getBucketId() >= 0 && options.getBucketId() <= MAX_BUCKET_ID)) {
+        throw new IllegalArgumentException("bucketId out of range: " + options.getBucketId());
+      }
+      if(!(statementId >= 0 && statementId <= MAX_STATEMENT_ID)) {
+        throw new IllegalArgumentException("statementId out of range: " + statementId);
+      }
+      return this.version << (1 + NUM_BUCKET_ID_BITS + 4 + NUM_STATEMENT_ID_BITS) |
+        options.getBucketId() << (4 + NUM_STATEMENT_ID_BITS) | statementId;
     }
   };
-  private static int TOP3BITS_MASK = 0b1110_0000_0000_0000_0000_0000_0000_0000;
+  private static final int TOP3BITS_MASK = 0b1110_0000_0000_0000_0000_0000_0000_0000;
+  private static final int NUM_VERSION_BITS = 3;
+  private static final int NUM_BUCKET_ID_BITS = 12;
+  private static final int NUM_STATEMENT_ID_BITS = 12;
+  private static final int MAX_VERSION = (1 << NUM_VERSION_BITS) - 1;
+  private static final int MAX_BUCKET_ID = (1 << NUM_BUCKET_ID_BITS) - 1;
+  private static final int MAX_STATEMENT_ID = (1 << NUM_STATEMENT_ID_BITS) - 1;
+
   public static BucketCodec determineVersion(int bucket) {
     assert 7 << 29 == BucketCodec.TOP3BITS_MASK;
     //look at top 3 bits and return appropriate enum

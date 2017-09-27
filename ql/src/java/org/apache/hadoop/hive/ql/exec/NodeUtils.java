@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.lib.Node;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,7 +34,7 @@ import java.util.Set;
 public class NodeUtils {
 
 
-  public static <T> void iterateTask(Collection<Task<?>> tasks, Class<T> clazz, Function<T> function) {
+  public static <T> void iterateTask(Collection<Task<? extends Serializable>> tasks, Class<T> clazz, Function<T> function) {
     // Does a breadth first traversal of the tasks
     Set<Task> visited = new HashSet<Task>();
     while (!tasks.isEmpty()) {
@@ -42,7 +43,7 @@ public class NodeUtils {
     return;
   }
 
-  private static <T> Collection<Task<?>> iterateTask(Collection<Task<?>> tasks,
+  private static <T> Collection<Task<? extends Serializable>> iterateTask(Collection<Task<?>> tasks,
                                                      Class<T> clazz,
                                                      Function<T> function,
                                                      Set<Task> visited) {
@@ -92,7 +93,7 @@ public class NodeUtils {
     return childListNodes;
   }
 
-  public static interface Function<T> {
+  public interface Function<T> {
     void apply(T argument);
   }
 }

@@ -18,22 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -68,10 +58,18 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * MoveTask implementation.
@@ -397,7 +395,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             dc = handleStaticParts(db, table, tbd, ti);
           }
         }
-        if (SessionState.get() != null && dc != null) {
+        if (work.getLineagState() != null && dc != null) {
           // If we are doing an update or a delete the number of columns in the table will not
           // match the number of columns in the file sink.  For update there will be one too many
           // (because of the ROW__ID), and in the case of the delete there will be just the
@@ -408,14 +406,14 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             case UPDATE:
               // Pass an empty list as no columns will be written to the file.
               // TODO I should be able to make this work for update
-              tableCols = new ArrayList<FieldSchema>();
+              tableCols = new ArrayList<>();
               break;
 
             default:
               tableCols = table.getCols();
               break;
           }
-          SessionState.get().getLineageState().setLineage(tbd.getSourcePath(), dc, tableCols);
+          work.getLineagState().setLineage(tbd.getSourcePath(), dc, tableCols);
         }
         releaseLocks(tbd);
       }
@@ -503,7 +501,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         (tbd.getLbCtx() == null) ? 0 : tbd.getLbCtx().calculateListBucketingLevel(),
         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
             !tbd.isMmTable(),
-        SessionState.get().getTxnMgr().getCurrentTxnId(), tbd.getStmtId(), hasFollowingStatsTask(),
+        work.getLoadTableWork().getTxnId(), tbd.getStmtId(), hasFollowingStatsTask(),
         work.getLoadTableWork().getWriteType());
 
     // publish DP columns to its subscribers
@@ -552,10 +550,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       dc = new DataContainer(table.getTTable(), partn.getTPartition());
 
       // Don't set lineage on delete as we don't have all the columns
-      if (SessionState.get() != null &&
+      if (work.getLineagState() != null &&
           work.getLoadTableWork().getWriteType() != AcidUtils.Operation.DELETE &&
           work.getLoadTableWork().getWriteType() != AcidUtils.Operation.UPDATE) {
-        SessionState.get().getLineageState().setLineage(tbd.getSourcePath(), dc,
+        work.getLineagState().setLineage(tbd.getSourcePath(), dc,
             table.getCols());
       }
       LOG.info("\tLoading partition " + entry.getKey());

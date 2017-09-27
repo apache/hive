@@ -105,4 +105,8 @@ public interface ValidTxnList {
    */
   public RangeResponse isTxnRangeAborted(long minTxnId, long maxTxnId);
 
+  /**
+   * Returns smallest Open transaction in this set, {@code null} if there is none.
+   */
+  Long getMinOpenTxn();
 }

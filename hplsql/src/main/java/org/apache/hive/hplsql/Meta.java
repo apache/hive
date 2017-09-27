@@ -88,6 +88,66 @@ public class Meta {
   }
   
   /**
+   * Get data types for all columns of the SELECT statement
+   */
+  Row getRowDataTypeForSelect(ParserRuleContext ctx, String conn, String select) {
+    Row row = null;
+    Conn.Type connType = exec.getConnectionType(conn); 
+    // Hive does not support ResultSetMetaData on PreparedStatement, and Hive DESCRIBE
+    // does not support queries, so we have to execute the query with LIMIT 1
+    if (connType == Conn.Type.HIVE) {
+      String sql = "SELECT * FROM (" + select + ") t LIMIT 1";
+      Query query = new Query(sql);
+      exec.executeQuery(ctx, query, conn); 
+      if (!query.error()) {
+        ResultSet rs = query.getResultSet();
+        try {
+          ResultSetMetaData rm = rs.getMetaData();
+          int cols = rm.getColumnCount();
+          row = new Row();
+          for (int i = 1; i <= cols; i++) {
+            String name = rm.getColumnName(i);
+            if (name.startsWith("t.")) {
+              name = name.substring(2);
+            }
+            row.addColumn(name, rm.getColumnTypeName(i));
+          }
+        } 
+        catch (Exception e) {
+          exec.signal(e);
+        }
+      }
+      else {
+        exec.signal(query.getException());
+      }
+      exec.closeQuery(query, conn);
+    }
+    else {
+      Query query = exec.prepareQuery(ctx, select, conn); 
+      if (!query.error()) {
+        try {
+          PreparedStatement stmt = query.getPreparedStatement();
+          ResultSetMetaData rm = stmt.getMetaData();
+          int cols = rm.getColumnCount();
+          for (int i = 1; i <= cols; i++) {
+            String col = rm.getColumnName(i);
+            String typ = rm.getColumnTypeName(i);
+            if (row == null) {
+              row = new Row();
+            }
+            row.addColumn(col.toUpperCase(), typ);
+          }
+        }
+        catch (Exception e) {
+          exec.signal(e);
+        }
+      }
+      exec.closeQuery(query, conn);
+    }
+    return row;
+  }
+  
+  /**
    * Read the column data from the database and cache it
    */
   Row readColumns(ParserRuleContext ctx, String conn, String table, HashMap<String, Row> map) {
@@ -106,11 +166,20 @@ public class Meta {
             if (row == null) {
               row = new Row();
             }
+            // Hive DESCRIBE outputs "empty_string NULL" row before partition information
+            if (typ == null) {
+              break;
+            }
             row.addColumn(col.toUpperCase(), typ);
           } 
           map.put(table, row);
         } 
-        catch (Exception e) {}
+        catch (Exception e) {
+          exec.signal(e);
+        }
+      }
+      else {
+        exec.signal(query.getException());
       }
       exec.closeQuery(query, conn);
     }

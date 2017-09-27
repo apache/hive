@@ -61,7 +61,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1) -> boolean, FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 1, left 0, right 0) -> boolean, VectorInBloomFilterColDynamicValue -> boolean) -> boolean) -> boolean
-                    predicate: (key_int is not null and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
+                    predicate: ((key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) and key_int is not null) (type: boolean)
                     Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_int (type: int)
@@ -306,7 +306,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0) -> boolean, FilterExprAndExpr(children: FilterStringColumnBetweenDynamicValue(col 0, left NULL, right NULL) -> boolean, VectorInBloomFilterColDynamicValue -> boolean) -> boolean) -> boolean
-                    predicate: (key_str is not null and (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter)))) (type: boolean)
+                    predicate: ((key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter))) and key_str is not null) (type: boolean)
                     Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_str (type: string)
@@ -551,7 +551,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0) -> boolean, FilterExprAndExpr(children: FilterStringColumnBetweenDynamicValue(col 0, left NULL, right NULL) -> boolean, VectorInBloomFilterColDynamicValue -> boolean) -> boolean) -> boolean
-                    predicate: (key_str is not null and (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter)))) (type: boolean)
+                    predicate: ((key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter))) and key_str is not null) (type: boolean)
                     Statistics: Num rows: 475 Data size: 83204 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_str (type: string)
@@ -797,7 +797,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1) -> boolean, FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 1, left 0, right 0) -> boolean, VectorInBloomFilterColDynamicValue -> boolean) -> boolean, FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 1, left 0, right 0) -> boolean, VectorInBloomFilterColDynamicValue -> boolean) -> boolean) -> boolean
-                    predicate: (key_int is not null and (key_int BETWEEN DynamicValue(RS_10_b_key_int_min) AND DynamicValue(RS_10_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_10_b_key_int_bloom_filter))) and (key_int BETWEEN DynamicValue(RS_11_c_key_int_min) AND DynamicValue(RS_11_c_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_11_c_key_int_bloom_filter)))) (type: boolean)
+                    predicate: ((key_int BETWEEN DynamicValue(RS_10_b_key_int_min) AND DynamicValue(RS_10_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_10_b_key_int_bloom_filter))) and (key_int BETWEEN DynamicValue(RS_11_c_key_int_min) AND DynamicValue(RS_11_c_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_11_c_key_int_bloom_filter))) and key_int is not null) (type: boolean)
                     Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_int (type: int)
@@ -1148,7 +1148,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0) -> boolean, SelectColumnIsNotNull(col 1) -> boolean, FilterExprAndExpr(children: FilterStringColumnBetweenDynamicValue(col 0, left NULL, right NULL) -> boolean, VectorInBloomFilterColDynamicValue -> boolean) -> boolean, FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 1, left 0, right 0) -> boolean, VectorInBloomFilterColDynamicValue -> boolean) -> boolean) -> boolean
-                    predicate: (key_str is not null and key_int is not null and (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter))) and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
+                    predicate: ((key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) and (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter))) and key_int is not null and key_str is not null) (type: boolean)
                     Statistics: Num rows: 450 Data size: 80539 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_str (type: string), key_int (type: int)
@@ -1191,7 +1191,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0) -> boolean, SelectColumnIsNotNull(col 1) -> boolean) -> boolean
-                    predicate: (key_str is not null and key_int is not null) (type: boolean)
+                    predicate: (key_int is not null and key_str is not null) (type: boolean)
                     Statistics: Num rows: 53 Data size: 9789 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_str (type: string), key_int (type: int)
@@ -1453,7 +1453,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1) -> boolean, FilterExprAndExpr(children: FilterLongColumnBetweenDynamicValue(col 1, left 0, right 0) -> boolean, VectorInBloomFilterColDynamicValue -> boolean) -> boolean) -> boolean
-                    predicate: (key_int is not null and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
+                    predicate: ((key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) and key_int is not null) (type: boolean)
                     Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_int (type: int)
@@ -1705,7 +1705,7 @@ STAGE PLANS:
                   filterExpr: (key_int is not null and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key_int is not null and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
+                    predicate: ((key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) and key_int is not null) (type: boolean)
                     Statistics: Num rows: 475 Data size: 1808 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_int (type: int)

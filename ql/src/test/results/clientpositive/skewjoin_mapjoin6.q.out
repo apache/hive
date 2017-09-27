@@ -63,7 +63,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and (key = '8')) (type: boolean)
+              predicate: ((key = '8') and key is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
@@ -74,7 +74,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and (not (key = '8'))) (type: boolean)
+              predicate: ((not (key = '8')) and key is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
@@ -88,7 +88,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and (key = '8')) (type: boolean)
+              predicate: ((key = '8') and key is not null) (type: boolean)
               Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
@@ -141,7 +141,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and (not (key = '8'))) (type: boolean)
+              predicate: ((not (key = '8')) and key is not null) (type: boolean)
               Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:

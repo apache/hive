@@ -58,7 +58,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                   Filter Operator
-                    predicate: ((key > 10) and (key < 20)) (type: boolean)
+                    predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -199,7 +199,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                   Filter Operator
-                    predicate: ((key > 10) and (key < 20)) (type: boolean)
+                    predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -340,7 +340,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                   Filter Operator
-                    predicate: ((key > 10) and (key < 20)) (type: boolean)
+                    predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -481,7 +481,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                   Filter Operator
-                    predicate: ((key > 10) and (key < 20)) (type: boolean)
+                    predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -637,7 +637,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.src_multi1
                 Filter Operator
-                  predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
+                  predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -787,7 +787,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.src_multi1
                 Filter Operator
-                  predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
+                  predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -937,7 +937,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.src_multi1
                 Filter Operator
-                  predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
+                  predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -1087,7 +1087,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.src_multi1
                 Filter Operator
-                  predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
+                  predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -1222,7 +1222,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                     Filter Operator
-                      predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -1253,7 +1253,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                     Filter Operator
-                      predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -1409,7 +1409,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                     Filter Operator
-                      predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -1440,7 +1440,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                     Filter Operator
-                      predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -1596,7 +1596,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                     Filter Operator
-                      predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -1627,7 +1627,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                     Filter Operator
-                      predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -1783,7 +1783,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                     Filter Operator
-                      predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -1814,7 +1814,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                     Filter Operator
-                      predicate: ((_col0 > 10) and (_col0 < 20)) (type: boolean)
+                      predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -2386,7 +2386,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
-                  predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
+                  predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -2495,7 +2495,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
-                  predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
+                  predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -2604,7 +2604,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
-                  predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
+                  predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -2713,7 +2713,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
-                  predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
+                  predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -2818,7 +2818,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                   Filter Operator
-                    predicate: ((key > 10) and (key < 20)) (type: boolean)
+                    predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -2860,7 +2860,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
-                  predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
+                  predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -3038,7 +3038,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                   Filter Operator
-                    predicate: ((key > 10) and (key < 20)) (type: boolean)
+                    predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -3080,7 +3080,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
-                  predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
+                  predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -3258,7 +3258,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                   Filter Operator
-                    predicate: ((key > 10) and (key < 20)) (type: boolean)
+                    predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -3300,7 +3300,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
-                  predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
+                  predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -3478,7 +3478,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.src_multi1
                   Filter Operator
-                    predicate: ((key > 10) and (key < 20)) (type: boolean)
+                    predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -3520,7 +3520,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Filter Operator
-                  predicate: ((KEY._col0 > 10) and (KEY._col0 < 20)) (type: boolean)
+                  predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: KEY._col0 (type: string), KEY._col1 (type: string)

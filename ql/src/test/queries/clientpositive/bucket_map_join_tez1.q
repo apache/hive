@@ -28,86 +28,185 @@ CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (
 insert overwrite table tab partition (ds='2008-04-08')
 select key,value from srcbucket_mapjoin;
 
+analyze table srcbucket_mapjoin compute statistics for columns;
+analyze table srcbucket_mapjoin_part compute statistics for columns;
+analyze table tab compute statistics for columns;
+analyze table tab_part compute statistics for columns;
+
+set hive.convert.join.bucket.mapjoin.tez = false;
+explain
+select a.key, a.value, b.value
+from tab a join tab_part b on a.key = b.key order by a.key, a.value, b.value;
+select a.key, a.value, b.value
+from tab a join tab_part b on a.key = b.key order by a.key, a.value, b.value;
+
 set hive.convert.join.bucket.mapjoin.tez = true;
 explain
 select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key;
+from tab a join tab_part b on a.key = b.key order by a.key, a.value, b.value;
+select a.key, a.value, b.value
+from tab a join tab_part b on a.key = b.key order by a.key, a.value, b.value;
 
+
+set hive.auto.convert.join.noconditionaltask.size=900;
+set hive.convert.join.bucket.mapjoin.tez = false;
 explain
 select count(*)
 from 
-(select distinct key, value from tab_part) a join tab b on a.key = b.key;
-
+(select distinct key from tab_part) a join tab b on a.key = b.key;
 select count(*)
 from 
-(select distinct key, value from tab_part) a join tab b on a.key = b.key;
+(select distinct key from tab_part) a join tab b on a.key = b.key;
 
+set hive.convert.join.bucket.mapjoin.tez = true;
+explain
+select count(*)
+from
+(select distinct key from tab_part) a join tab b on a.key = b.key;
+select count(*)
+from
+(select distinct key from tab_part) a join tab b on a.key = b.key;
+
+
+set hive.convert.join.bucket.mapjoin.tez = false;
 explain
 select count(*)
 from
 (select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c
 join
 tab_part d on c.key = d.key;
-
 select count(*)
 from
 (select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c
 join
 tab_part d on c.key = d.key;
 
+set hive.convert.join.bucket.mapjoin.tez = true;
+explain
+select count(*)
+from
+(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c
+join
+tab_part d on c.key = d.key;
+select count(*)
+from
+(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c
+join
+tab_part d on c.key = d.key;
+
+set hive.convert.join.bucket.mapjoin.tez = false;
 explain
 select count(*)
 from
 tab_part d
 join
 (select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c on c.key = d.key;
-
 select count(*)
 from
 tab_part d
 join
 (select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c on c.key = d.key;
 
+set hive.convert.join.bucket.mapjoin.tez = true;
+explain
+select count(*)
+from
+tab_part d
+join
+(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c on c.key = d.key;
+select count(*)
+from
+tab_part d
+join
+(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c on c.key = d.key;
 
 -- one side is really bucketed. srcbucket_mapjoin is not really a bucketed table.
 -- In this case the sub-query is chosen as the big table.
+set hive.convert.join.bucket.mapjoin.tez = false;
+set hive.auto.convert.join.noconditionaltask.size=1000;
 explain
 select a.k1, a.v1, b.value
 from (select sum(substr(srcbucket_mapjoin.value,5)) as v1, key as k1 from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
 join tab b on a.k1 = b.key;
+set hive.convert.join.bucket.mapjoin.tez = true;
+explain
+select a.k1, a.v1, b.value
+from (select sum(substr(srcbucket_mapjoin.value,5)) as v1, key as k1 from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
+     join tab b on a.k1 = b.key;
 
+set hive.convert.join.bucket.mapjoin.tez = false;
 explain
 select a.k1, a.v1, b.value
 from (select sum(substr(tab.value,5)) as v1, key as k1 from tab_part join tab on tab_part.key = tab.key GROUP BY tab.key) a
 join tab b on a.k1 = b.key;
+set hive.convert.join.bucket.mapjoin.tez = true;
+explain
+select a.k1, a.v1, b.value
+from (select sum(substr(tab.value,5)) as v1, key as k1 from tab_part join tab on tab_part.key = tab.key GROUP BY tab.key) a
+     join tab b on a.k1 = b.key;
 
+set hive.convert.join.bucket.mapjoin.tez = false;
 explain
 select a.k1, a.v1, b.value
 from (select sum(substr(x.value,5)) as v1, x.key as k1 from tab x join tab y on x.key = y.key GROUP BY x.key) a
 join tab_part b on a.k1 = b.key;
+set hive.convert.join.bucket.mapjoin.tez = true;
+explain
+select a.k1, a.v1, b.value
+from (select sum(substr(x.value,5)) as v1, x.key as k1 from tab x join tab y on x.key = y.key GROUP BY x.key) a
+     join tab_part b on a.k1 = b.key;
 
 -- multi-way join
+set hive.convert.join.bucket.mapjoin.tez = false;
+set hive.auto.convert.join.noconditionaltask.size=20000;
+explain
+select a.key, a.value, b.value
+from tab_part a join tab b on a.key = b.key join tab c on a.key = c.key;
+set hive.convert.join.bucket.mapjoin.tez = true;
 explain
 select a.key, a.value, b.value
 from tab_part a join tab b on a.key = b.key join tab c on a.key = c.key;
 
+set hive.convert.join.bucket.mapjoin.tez = false;
+explain
+select a.key, a.value, c.value
+from (select x.key, x.value from tab_part x join tab y on x.key = y.key) a join tab c on a.key = c.key;
+set hive.convert.join.bucket.mapjoin.tez = true;
 explain
 select a.key, a.value, c.value
 from (select x.key, x.value from tab_part x join tab y on x.key = y.key) a join tab c on a.key = c.key;
 
 -- in this case sub-query is the small table
+set hive.convert.join.bucket.mapjoin.tez = false;
+set hive.auto.convert.join.noconditionaltask.size=900;
 explain
 select a.key, a.value, b.value
 from (select key, sum(substr(srcbucket_mapjoin.value,5)) as value from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
 join tab_part b on a.key = b.key;
+set hive.convert.join.bucket.mapjoin.tez = true;
+explain
+select a.key, a.value, b.value
+from (select key, sum(substr(srcbucket_mapjoin.value,5)) as value from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
+     join tab_part b on a.key = b.key;
 
+set hive.convert.join.bucket.mapjoin.tez = false;
 set hive.map.aggr=false;
 explain
 select a.key, a.value, b.value
 from (select key, sum(substr(srcbucket_mapjoin.value,5)) as value from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
 join tab_part b on a.key = b.key;
+set hive.convert.join.bucket.mapjoin.tez = true;
+explain
+select a.key, a.value, b.value
+from (select key, sum(substr(srcbucket_mapjoin.value,5)) as value from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
+     join tab_part b on a.key = b.key;
 
--- join on non-bucketed column results in broadcast join.
+-- join on non-bucketed column results in shuffle join.
+set hive.convert.join.bucket.mapjoin.tez = false;
+explain
+select a.key, a.value, b.value
+from tab a join tab_part b on a.value = b.value;
+set hive.convert.join.bucket.mapjoin.tez = true;
 explain
 select a.key, a.value, b.value
 from tab a join tab_part b on a.value = b.value;
@@ -116,36 +215,30 @@ CREATE TABLE tab1(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORE
 insert overwrite table tab1
 select key,value from srcbucket_mapjoin;
 
+set hive.auto.convert.join.noconditionaltask.size=20000;
+set hive.convert.join.bucket.mapjoin.tez = false;
+explain
+select a.key, a.value, b.value
+from tab1 a join tab_part b on a.key = b.key;
+set hive.convert.join.bucket.mapjoin.tez = true;
 explain
 select a.key, a.value, b.value
 from tab1 a join tab_part b on a.key = b.key;
 
+-- No map joins should be created.
+set hive.convert.join.bucket.mapjoin.tez = false;
+set hive.auto.convert.join.noconditionaltask.size=1500;
+explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value;
+set hive.convert.join.bucket.mapjoin.tez = true;
 explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value;
 
-set hive.auto.convert.join.noconditionaltask.size=50000;
+set hive.convert.join.bucket.mapjoin.tez = false;
+-- This wont have any effect as the column ds is partition column which is not bucketed.
+explain
+select a.key, a.value, b.value
+from tab a join tab_part b on a.key = b.key and a.ds = b.ds;
+set hive.convert.join.bucket.mapjoin.tez = true;
 explain
 select a.key, a.value, b.value
 from tab a join tab_part b on a.key = b.key and a.ds = b.ds;
 
-set hive.auto.convert.join.noconditionaltask.size=10000;
-set hive.mapjoin.hybridgrace.hashtable = false;
-insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin where key = 411;
-
-explain
-select count(*)
-from tab_part a join tab b on a.key = b.key;
-
-select count(*)
-from tab_part a join tab b on a.key = b.key;
-
-set hive.mapjoin.hybridgrace.hashtable = false;
-insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin where key = 411;
-
-explain
-select count(*)
-from tab_part a join tab b on a.key = b.key;
-
-select count(*)
-from tab_part a join tab b on a.key = b.key;

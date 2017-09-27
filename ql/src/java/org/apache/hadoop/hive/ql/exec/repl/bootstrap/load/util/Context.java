@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.session.LineageState;
 
 public class Context {
   public final HiveConf hiveConf;
@@ -28,10 +29,22 @@ public class Context {
   public final Warehouse warehouse;
   public final PathInfo pathInfo;
 
-  public Context(HiveConf hiveConf, Hive hiveDb) throws MetaException {
+  /*
+  these are sessionState objects that are copied over to work to allow for parallel execution.
+  based on the current use case the methods are selectively synchronized, which might need to be
+  taken care when using other methods.
+ */
+  public final LineageState sessionStateLineageState;
+  public final long currentTransactionId;
+
+
+  public Context(HiveConf hiveConf, Hive hiveDb,
+      LineageState lineageState, long currentTransactionId) throws MetaException {
     this.hiveConf = hiveConf;
     this.hiveDb = hiveDb;
     this.warehouse = new Warehouse(hiveConf);
     this.pathInfo = new PathInfo(hiveConf);
+    sessionStateLineageState = lineageState;
+    this.currentTransactionId = currentTransactionId;
   }
 }

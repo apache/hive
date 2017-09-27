@@ -1846,6 +1846,14 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitSignal_stmt(HplsqlParser.Signal_stmtContext ctx) { 
     return exec.stmt.signal(ctx); 
+  }
+  
+  /**
+   * SUMMARY statement
+   */
+  @Override 
+  public Integer visitSummary_stmt(HplsqlParser.Summary_stmtContext ctx) { 
+    return exec.stmt.summary(ctx); 
   }  
   
   /**

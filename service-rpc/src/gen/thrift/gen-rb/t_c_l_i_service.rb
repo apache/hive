@@ -326,6 +326,21 @@ module TCLIService
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'RenewDelegationToken failed: unknown result')
     end
 
+    def GetQueryId(req)
+      send_GetQueryId(req)
+      return recv_GetQueryId()
+    end
+
+    def send_GetQueryId(req)
+      send_message('GetQueryId', GetQueryId_args, :req => req)
+    end
+
+    def recv_GetQueryId()
+      result = receive_message(GetQueryId_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'GetQueryId failed: unknown result')
+    end
+
   end
 
   class Processor
@@ -476,6 +491,13 @@ module TCLIService
       result = RenewDelegationToken_result.new()
       result.success = @handler.RenewDelegationToken(args.req)
       write_result(result, oprot, 'RenewDelegationToken', seqid)
+    end
+
+    def process_GetQueryId(seqid, iprot, oprot)
+      args = read_args(iprot, GetQueryId_args)
+      result = GetQueryId_result.new()
+      result.success = @handler.GetQueryId(args.req)
+      write_result(result, oprot, 'GetQueryId', seqid)
     end
 
   end
@@ -1144,6 +1166,38 @@ module TCLIService
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::TRenewDelegationTokenResp}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetQueryId_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::TGetQueryIdReq}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetQueryId_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::TGetQueryIdResp}
     }
 
     def struct_fields; FIELDS; end

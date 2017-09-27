@@ -202,4 +202,9 @@ public class ExplainSQRewriteTask extends Task<ExplainSQRewriteWork> implements 
     colList.add(tmpFieldSchema);
     return colList;
   }
+
+  @Override
+  public boolean canExecuteInParallel() {
+    return false;
+  }
 }

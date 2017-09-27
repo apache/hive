@@ -132,7 +132,7 @@ Stage-0
                                       Select Operator [SEL_14] (rows=930900 width=385)
                                         Output:["_col0","_col1","_col2"]
                                         Filter Operator [FIL_74] (rows=930900 width=385)
-                                          predicate:(((cd_education_status = 'Unknown') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'W')) and (((cd_marital_status = 'M') and (cd_education_status = 'Unknown')) or ((cd_marital_status = 'W') and (cd_education_status = 'Advanced Degree'))) and cd_demo_sk is not null)
+                                          predicate:((((cd_marital_status = 'M') and (cd_education_status = 'Unknown')) or ((cd_marital_status = 'W') and (cd_education_status = 'Advanced Degree'))) and ((cd_education_status = 'Unknown') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'W')) and cd_demo_sk is not null)
                                           TableScan [TS_12] (rows=1861800 width=385)
                                             default@customer_demographics,customer_demographics,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk","cd_marital_status","cd_education_status"]
                                   <-Map 9 [SIMPLE_EDGE]
@@ -141,7 +141,7 @@ Stage-0
                                       Select Operator [SEL_11] (rows=80000000 width=860)
                                         Output:["_col0","_col1","_col2","_col3"]
                                         Filter Operator [FIL_73] (rows=80000000 width=860)
-                                          predicate:(c_customer_sk is not null and c_current_addr_sk is not null and c_current_cdemo_sk is not null and c_current_hdemo_sk is not null)
+                                          predicate:(c_current_addr_sk is not null and c_current_cdemo_sk is not null and c_current_hdemo_sk is not null and c_customer_sk is not null)
                                           TableScan [TS_9] (rows=80000000 width=860)
                                             default@customer,customer,Tbl:COMPLETE,Col:NONE,Output:["c_customer_sk","c_current_cdemo_sk","c_current_hdemo_sk","c_current_addr_sk"]
                     <-Reducer 3 [SIMPLE_EDGE]
@@ -178,7 +178,7 @@ Stage-0
                                 Select Operator [SEL_5] (rows=18262 width=1119)
                                   Output:["_col0"]
                                   Filter Operator [FIL_71] (rows=18262 width=1119)
-                                    predicate:((d_year = 1999) and (d_moy = 11) and d_date_sk is not null)
+                                    predicate:((d_moy = 11) and (d_year = 1999) and d_date_sk is not null)
                                     TableScan [TS_3] (rows=73049 width=1119)
                                       default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
 

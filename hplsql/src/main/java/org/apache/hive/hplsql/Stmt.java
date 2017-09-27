@@ -21,6 +21,7 @@ package org.apache.hive.hplsql;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Stack;
 import java.util.UUID;
 
@@ -1242,7 +1243,287 @@ public class Stmt {
     exec.signal(signal);
     return 0; 
   }  
+
+  /**
+   * SUMMARY statement
+   */
+  public Integer summary(HplsqlParser.Summary_stmtContext ctx) {
+    trace(ctx, "SUMMARY");
+    String table = null;
+    String select = null;
+    String conn = null;
+    Row row = null;
+    if (ctx.table_name() != null) {
+      table = evalPop(ctx.table_name()).toString();
+      conn = exec.getObjectConnection(table);
+      row = meta.getRowDataType(ctx, conn, table);      
+    }
+    else {
+      select = evalPop(ctx.select_stmt()).toString();
+      conn = exec.getStatementConnection();
+      row = meta.getRowDataTypeForSelect(ctx, conn, select);    
+    }
+    if (row == null) {
+      return 1;
+    }
+    Conn.Type connType = exec.getConnectionType(conn); 
+    if (ctx.T_TOP() == null) {
+      return summaryStat(ctx, table, select, row, conn, connType);
+    }    
+    else {
+      return summaryTop(ctx, table, select, row, conn, connType);
+    } 
+  }  
   
+  // Summary for column statistics
+  public Integer summaryStat(HplsqlParser.Summary_stmtContext ctx, String table, String select,
+      Row row, String conn, Conn.Type connType) {
+    StringBuilder sql = new StringBuilder("SELECT COUNT(*)");
+    int maxColName = 11;
+    // Define summary metrics for each column
+    for(Column c : row.getColumns()) {
+      String col = c.getName();
+      if (connType == Conn.Type.HIVE) {
+        col = '`' + col + '`';
+      }
+      sql.append(",COUNT(" + col + "),");
+      sql.append("COUNT(DISTINCT " + col + "),");
+      sql.append("AVG(" + col + "),");
+      sql.append("MIN(" + col + "),");
+      sql.append("MAX(" + col + "),");
+      sql.append("STDDEV_SAMP(" + col + "),");
+      sql.append("PERCENTILE_APPROX(CAST(" + col + " AS DOUBLE),0.05),");
+      sql.append("PERCENTILE_APPROX(CAST(" + col + " AS DOUBLE),0.25),");
+      sql.append("PERCENTILE_APPROX(CAST(" + col + " AS DOUBLE),0.5),");
+      sql.append("PERCENTILE_APPROX(CAST(" + col + " AS DOUBLE),0.75),");
+      sql.append("PERCENTILE_APPROX(CAST(" + col + " AS DOUBLE),0.95)");
+      if (col.length() > maxColName) {
+        maxColName = col.length();
+      }
+    }
+    if (table != null) {
+      sql.append(" FROM (SELECT * FROM " + table); 
+      if (ctx.where_clause() != null) {
+        sql.append(" " + evalPop(ctx.where_clause()).toString());
+      }
+      if (ctx.T_LIMIT() != null) {
+        sql.append(" LIMIT ");
+        int limExp = 0;
+        if (ctx.T_TOP() != null) {
+          limExp = 1;
+        }
+        sql.append(evalPop(ctx.expr(limExp)).toString());
+      }
+      sql.append(") t");
+    }
+    else {
+      sql.append(" FROM (" + select + ") t");
+    }
+    Query query = exec.executeQuery(ctx, sql.toString(), conn);
+    if (query.error()) { 
+      exec.signal(query);
+      return 1;
+    }    
+    exec.setSqlSuccess();
+    try {
+      ResultSet rs = query.getResultSet();
+      if (rs != null) {
+        System.out.print("\n");
+        // The summary query returns only one row        
+        if (rs.next()) {
+          int i = 0, cc = 11;
+          String cntRows = rs.getString(1);
+          // Pad output
+          String fmt = String.format("%%-%ds\t%%-11s\t%%-11s\t%%-11s\t%%-11s\t%%-11s\t%%-11s\t%%-11s\t%%-11s" +
+              "\t%%-11s\t%%-11s\t%%-11s\t%%-11s\t%%-11s\n", maxColName + 1);
+          System.out.print(String.format(fmt, "Column", "Type", "Rows", "NonNull", "Unique", "Avg", 
+              "Min", "Max", "StdDev", "p05", "p25", "p50", "p75", "p95"));          
+          for(Column c : row.getColumns()) {
+            String avg = String.format("%.2f", rs.getDouble(4 + i*cc));
+            if (rs.wasNull())
+              avg = "null";
+            String stddev = String.format("%.2f", rs.getDouble(7 + i*cc));
+            if (rs.wasNull())
+              stddev = "null";
+            String p05 = String.format("%.2f", rs.getDouble(8 + i*cc));
+            if (rs.wasNull())
+              p05 = "null";
+            String p25 = String.format("%.2f", rs.getDouble(9 + i*cc));
+            if (rs.wasNull())
+              p25 = "null";
+            String p50 = String.format("%.2f", rs.getDouble(10 + i*cc));
+            if (rs.wasNull())
+              p50 = "null";
+            String p75 = String.format("%.2f", rs.getDouble(11 + i*cc));
+            if (rs.wasNull())
+              p75 = "null";
+            String p95 = String.format("%.2f", rs.getDouble(12 + i*cc));
+            if (rs.wasNull())
+              p95 = "null";
+            System.out.print(String.format(fmt, c.getName(), c.getType(), cntRows, rs.getString(2 + i*cc),
+                rs.getString(3 + i*cc), avg, rs.getString(5 + i*cc), rs.getString(6 + i*cc),
+                stddev, p05, p25, p50, p75, p95));
+            i++;
+          }
+        }
+      }
+    }
+    catch (SQLException e) {
+      exec.signal(e);
+      exec.closeQuery(query, conn);
+      return 1;
+    }
+    exec.closeQuery(query, conn);
+    return 0; 
+  }
+  
+  // Summary for top column values
+  public Integer summaryTop(HplsqlParser.Summary_stmtContext ctx, String table, String select,
+     Row row, String conn, Conn.Type connType) {
+    StringBuilder sql = new StringBuilder("SELECT id, col, cnt FROM (" +
+      "SELECT id, col, cnt, ROW_NUMBER() OVER (PARTITION BY id ORDER BY cnt DESC) rn " +
+      "FROM (SELECT CAST(GROUPING__ID AS DECIMAL) id, COALESCE(");   // CAST AS INT does not work as expected (ID is still considered as STRING in ORDER BY for some reason)
+    int topNum = evalPop(ctx.expr(0)).intValue();
+    StringBuilder colsList = new StringBuilder();
+    StringBuilder colsGrList = new StringBuilder();
+    int i = 0;
+    for(Column c : row.getColumns()) {
+      String col = c.getName();
+      if (connType == Conn.Type.HIVE) {
+        col = '`' + col + '`';
+      }
+      if (i != 0) {
+        colsList.append(",");
+        colsGrList.append(",");
+      }
+      colsList.append(col);
+      colsGrList.append("(" + col + ")");
+      i++;
+    }
+    sql.append(colsList);
+    sql.append(") col, COUNT(*) cnt");
+    if (table != null) {
+      sql.append(" FROM (SELECT * FROM " + table); 
+      if (ctx.where_clause() != null) {
+        sql.append(" " + evalPop(ctx.where_clause()).toString());
+      }
+      if (ctx.T_LIMIT() != null) {
+        sql.append(" LIMIT " + evalPop(ctx.expr(1)).toString());
+      }
+      sql.append(") t");
+    }
+    else {
+      sql.append(" FROM (" + select + ") t");
+    }
+    sql.append(" GROUP BY ");
+    sql.append(colsList);
+    sql.append(" GROUPING SETS (");
+    sql.append(colsGrList);
+    sql.append(")) t) t WHERE rn <= " + topNum + " ORDER BY id, cnt DESC");
+    // Add LIMIT as Order by-s without limit can disabled for safety reasons
+    sql.append(" LIMIT " + topNum * row.size());
+    Query query = exec.executeQuery(ctx, sql.toString(), conn);
+    if (query.error()) { 
+      exec.signal(query);
+      return 1;
+    }    
+    exec.setSqlSuccess();
+    try {
+      ResultSet rs = query.getResultSet();
+      if (rs != null) {
+        int prevId = -1;
+        int grRow = 0;
+        int colNum = 0;
+        int maxLen = row.getColumn(colNum).getName().length();
+        ArrayList<String> outCols = new ArrayList<String>();
+        ArrayList<Integer> outCnts = new ArrayList<Integer>();
+        ArrayList<Integer> outLens = new ArrayList<Integer>(); 
+        while (rs.next()) {         
+          int id = rs.getInt(1);
+          String value = rs.getString(2);
+          int cnt = rs.getInt(3);
+          if (prevId == -1) {
+            prevId = id;
+          }
+          // Still the same column
+          if (id == prevId) {
+            outCols.add(value);
+            outCnts.add(cnt);
+            if (value != null && value.length() > maxLen) {
+              maxLen = value.length() < 300 ? value.length() : 300;
+            }
+            grRow++;
+          }
+          // First value for next column
+          else {
+            // Pad with empty rows if the number of values in group is less than TOP num
+            for (int j = grRow; j < topNum; j++) {
+              outCols.add("");
+              outCnts.add(0);
+              grRow++;
+            }
+            outCols.add(value);
+            outCnts.add(cnt);
+            outLens.add(maxLen);
+            colNum++;
+            maxLen = row.getColumn(colNum).getName().length();
+            if (value != null && value.length() > maxLen) {
+              maxLen = value.length() < 300 ? value.length() : 300;
+            }
+            grRow = 1;            
+            prevId = id;
+          }
+        }
+        for (int j = grRow; j < topNum; j++) {
+          outCols.add("");
+          outCnts.add(0);
+          grRow++;
+        }
+        if (maxLen != 0) {
+          outLens.add(maxLen);
+        }        
+        System.out.print("\n");
+        // Output header
+        i = 0;
+        for(Column c : row.getColumns()) {
+          if (i != 0) {
+            System.out.print("\t");
+          }
+          String fmt = String.format("%%-%ds", outLens.get(i) + 11 + 3);
+          System.out.print(String.format(fmt, c.getName()));
+          i++;
+        }
+        System.out.print("\n");
+        // Output top values
+        for (int j = 0; j < topNum; j++) {
+          for(int k = 0; k < row.size(); k++) {
+            if (k != 0) {
+              System.out.print("\t");
+            }
+            int cnt = outCnts.get(j + k * topNum);
+            if (cnt != 0) { // skip padded values
+              String fmt = String.format("%%-%ds", outLens.get(k));
+              System.out.print(String.format(fmt, outCols.get(j + k * topNum)));
+              System.out.print(String.format("   %-11d", cnt));
+            }
+            else {
+              String fmt = String.format("%%-%ds", outLens.get(k) + 11 + 3);
+              System.out.print(String.format(fmt, ""));
+            }
+          }
+          System.out.print("\n");
+        }
+      }
+    }
+    catch (SQLException e) {
+      exec.signal(e);
+      exec.closeQuery(query, conn);
+      return 1;
+    }
+    exec.closeQuery(query, conn);
+    return 0; 
+  }
+ 
   /**
    * RESIGNAL statement
    */

@@ -11,27 +11,13 @@ public final class LlapPluginProtocolProtos {
   public interface UpdateQueryRequestProtoOrBuilder
       extends com.google.protobuf.MessageOrBuilder {
 
-    // optional .QueryIdentifierProto query_id = 1;
+    // optional int32 guaranteed_task_count = 1;
     /**
-     * <code>optional .QueryIdentifierProto query_id = 1;</code>
-     */
-    boolean hasQueryId();
-    /**
-     * <code>optional .QueryIdentifierProto query_id = 1;</code>
-     */
-    org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto getQueryId();
-    /**
-     * <code>optional .QueryIdentifierProto query_id = 1;</code>
-     */
-    org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProtoOrBuilder getQueryIdOrBuilder();
-
-    // optional int32 guaranteed_task_count = 2;
-    /**
-     * <code>optional int32 guaranteed_task_count = 2;</code>
+     * <code>optional int32 guaranteed_task_count = 1;</code>
      */
     boolean hasGuaranteedTaskCount();
     /**
-     * <code>optional int32 guaranteed_task_count = 2;</code>
+     * <code>optional int32 guaranteed_task_count = 1;</code>
      */
     int getGuaranteedTaskCount();
   }
@@ -86,21 +72,8 @@ public final class LlapPluginProtocolProtos {
               }
               break;
             }
-            case 10: {
-              org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000001) == 0x00000001)) {
-                subBuilder = queryId_.toBuilder();
-              }
-              queryId_ = input.readMessage(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto.PARSER, extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(queryId_);
-                queryId_ = subBuilder.buildPartial();
-              }
+            case 8: {
               bitField0_ |= 0x00000001;
-              break;
-            }
-            case 16: {
-              bitField0_ |= 0x00000002;
               guaranteedTaskCount_ = input.readInt32();
               break;
             }
@@ -144,46 +117,23 @@ public final class LlapPluginProtocolProtos {
     }
 
     private int bitField0_;
-    // optional .QueryIdentifierProto query_id = 1;
-    public static final int QUERY_ID_FIELD_NUMBER = 1;
-    private org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto queryId_;
+    // optional int32 guaranteed_task_count = 1;
+    public static final int GUARANTEED_TASK_COUNT_FIELD_NUMBER = 1;
+    private int guaranteedTaskCount_;
     /**
-     * <code>optional .QueryIdentifierProto query_id = 1;</code>
+     * <code>optional int32 guaranteed_task_count = 1;</code>
      */
-    public boolean hasQueryId() {
+    public boolean hasGuaranteedTaskCount() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional .QueryIdentifierProto query_id = 1;</code>
-     */
-    public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto getQueryId() {
-      return queryId_;
-    }
-    /**
-     * <code>optional .QueryIdentifierProto query_id = 1;</code>
-     */
-    public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProtoOrBuilder getQueryIdOrBuilder() {
-      return queryId_;
-    }
-
-    // optional int32 guaranteed_task_count = 2;
-    public static final int GUARANTEED_TASK_COUNT_FIELD_NUMBER = 2;
-    private int guaranteedTaskCount_;
-    /**
-     * <code>optional int32 guaranteed_task_count = 2;</code>
-     */
-    public boolean hasGuaranteedTaskCount() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>optional int32 guaranteed_task_count = 2;</code>
+     * <code>optional int32 guaranteed_task_count = 1;</code>
      */
     public int getGuaranteedTaskCount() {
       return guaranteedTaskCount_;
     }
 
     private void initFields() {
-      queryId_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto.getDefaultInstance();
       guaranteedTaskCount_ = 0;
     }
     private byte memoizedIsInitialized = -1;
@@ -199,10 +149,7 @@ public final class LlapPluginProtocolProtos {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeMessage(1, queryId_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeInt32(2, guaranteedTaskCount_);
+        output.writeInt32(1, guaranteedTaskCount_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -215,11 +162,7 @@ public final class LlapPluginProtocolProtos {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, queryId_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(2, guaranteedTaskCount_);
+          .computeInt32Size(1, guaranteedTaskCount_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -244,11 +187,6 @@ public final class LlapPluginProtocolProtos {
       org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto other = (org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto) obj;
 
       boolean result = true;
-      result = result && (hasQueryId() == other.hasQueryId());
-      if (hasQueryId()) {
-        result = result && getQueryId()
-            .equals(other.getQueryId());
-      }
       result = result && (hasGuaranteedTaskCount() == other.hasGuaranteedTaskCount());
       if (hasGuaranteedTaskCount()) {
         result = result && (getGuaranteedTaskCount()
@@ -267,10 +205,6 @@ public final class LlapPluginProtocolProtos {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (hasQueryId()) {
-        hash = (37 * hash) + QUERY_ID_FIELD_NUMBER;
-        hash = (53 * hash) + getQueryId().hashCode();
-      }
       if (hasGuaranteedTaskCount()) {
         hash = (37 * hash) + GUARANTEED_TASK_COUNT_FIELD_NUMBER;
         hash = (53 * hash) + getGuaranteedTaskCount();
@@ -376,7 +310,6 @@ public final class LlapPluginProtocolProtos {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
-          getQueryIdFieldBuilder();
         }
       }
       private static Builder create() {
@@ -385,14 +318,8 @@ public final class LlapPluginProtocolProtos {
 
       public Builder clear() {
         super.clear();
-        if (queryIdBuilder_ == null) {
-          queryId_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto.getDefaultInstance();
-        } else {
-          queryIdBuilder_.clear();
-        }
-        bitField0_ = (bitField0_ & ~0x00000001);
         guaranteedTaskCount_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
@@ -424,14 +351,6 @@ public final class LlapPluginProtocolProtos {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        if (queryIdBuilder_ == null) {
-          result.queryId_ = queryId_;
-        } else {
-          result.queryId_ = queryIdBuilder_.build();
-        }
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
-        }
         result.guaranteedTaskCount_ = guaranteedTaskCount_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -449,9 +368,6 @@ public final class LlapPluginProtocolProtos {
 
       public Builder mergeFrom(org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto other) {
         if (other == org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto.getDefaultInstance()) return this;
-        if (other.hasQueryId()) {
-          mergeQueryId(other.getQueryId());
-        }
         if (other.hasGuaranteedTaskCount()) {
           setGuaranteedTaskCount(other.getGuaranteedTaskCount());
         }
@@ -482,151 +398,34 @@ public final class LlapPluginProtocolProtos {
       }
       private int bitField0_;
 
-      // optional .QueryIdentifierProto query_id = 1;
-      private org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto queryId_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto.Builder, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProtoOrBuilder> queryIdBuilder_;
+      // optional int32 guaranteed_task_count = 1;
+      private int guaranteedTaskCount_ ;
       /**
-       * <code>optional .QueryIdentifierProto query_id = 1;</code>
+       * <code>optional int32 guaranteed_task_count = 1;</code>
        */
-      public boolean hasQueryId() {
+      public boolean hasGuaranteedTaskCount() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional .QueryIdentifierProto query_id = 1;</code>
-       */
-      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto getQueryId() {
-        if (queryIdBuilder_ == null) {
-          return queryId_;
-        } else {
-          return queryIdBuilder_.getMessage();
-        }
-      }
-      /**
-       * <code>optional .QueryIdentifierProto query_id = 1;</code>
-       */
-      public Builder setQueryId(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto value) {
-        if (queryIdBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          queryId_ = value;
-          onChanged();
-        } else {
-          queryIdBuilder_.setMessage(value);
-        }
-        bitField0_ |= 0x00000001;
-        return this;
-      }
-      /**
-       * <code>optional .QueryIdentifierProto query_id = 1;</code>
-       */
-      public Builder setQueryId(
-          org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto.Builder builderForValue) {
-        if (queryIdBuilder_ == null) {
-          queryId_ = builderForValue.build();
-          onChanged();
-        } else {
-          queryIdBuilder_.setMessage(builderForValue.build());
-        }
-        bitField0_ |= 0x00000001;
-        return this;
-      }
-      /**
-       * <code>optional .QueryIdentifierProto query_id = 1;</code>
-       */
-      public Builder mergeQueryId(org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto value) {
-        if (queryIdBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001) &&
-              queryId_ != org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto.getDefaultInstance()) {
-            queryId_ =
-              org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto.newBuilder(queryId_).mergeFrom(value).buildPartial();
-          } else {
-            queryId_ = value;
-          }
-          onChanged();
-        } else {
-          queryIdBuilder_.mergeFrom(value);
-        }
-        bitField0_ |= 0x00000001;
-        return this;
-      }
-      /**
-       * <code>optional .QueryIdentifierProto query_id = 1;</code>
-       */
-      public Builder clearQueryId() {
-        if (queryIdBuilder_ == null) {
-          queryId_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto.getDefaultInstance();
-          onChanged();
-        } else {
-          queryIdBuilder_.clear();
-        }
-        bitField0_ = (bitField0_ & ~0x00000001);
-        return this;
-      }
-      /**
-       * <code>optional .QueryIdentifierProto query_id = 1;</code>
-       */
-      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto.Builder getQueryIdBuilder() {
-        bitField0_ |= 0x00000001;
-        onChanged();
-        return getQueryIdFieldBuilder().getBuilder();
-      }
-      /**
-       * <code>optional .QueryIdentifierProto query_id = 1;</code>
-       */
-      public org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProtoOrBuilder getQueryIdOrBuilder() {
-        if (queryIdBuilder_ != null) {
-          return queryIdBuilder_.getMessageOrBuilder();
-        } else {
-          return queryId_;
-        }
-      }
-      /**
-       * <code>optional .QueryIdentifierProto query_id = 1;</code>
-       */
-      private com.google.protobuf.SingleFieldBuilder<
-          org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto.Builder, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProtoOrBuilder> 
-          getQueryIdFieldBuilder() {
-        if (queryIdBuilder_ == null) {
-          queryIdBuilder_ = new com.google.protobuf.SingleFieldBuilder<
-              org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto.Builder, org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProtoOrBuilder>(
-                  queryId_,
-                  getParentForChildren(),
-                  isClean());
-          queryId_ = null;
-        }
-        return queryIdBuilder_;
-      }
-
-      // optional int32 guaranteed_task_count = 2;
-      private int guaranteedTaskCount_ ;
-      /**
-       * <code>optional int32 guaranteed_task_count = 2;</code>
-       */
-      public boolean hasGuaranteedTaskCount() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional int32 guaranteed_task_count = 2;</code>
+       * <code>optional int32 guaranteed_task_count = 1;</code>
        */
       public int getGuaranteedTaskCount() {
         return guaranteedTaskCount_;
       }
       /**
-       * <code>optional int32 guaranteed_task_count = 2;</code>
+       * <code>optional int32 guaranteed_task_count = 1;</code>
        */
       public Builder setGuaranteedTaskCount(int value) {
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000001;
         guaranteedTaskCount_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 guaranteed_task_count = 2;</code>
+       * <code>optional int32 guaranteed_task_count = 1;</code>
        */
       public Builder clearGuaranteedTaskCount() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000001);
         guaranteedTaskCount_ = 0;
         onChanged();
         return this;
@@ -1232,15 +1031,13 @@ public final class LlapPluginProtocolProtos {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\030LlapPluginProtocol.proto\032\030LlapDaemonPr" +
-      "otocol.proto\"a\n\027UpdateQueryRequestProto\022" +
-      "\'\n\010query_id\030\001 \001(\0132\025.QueryIdentifierProto" +
-      "\022\035\n\025guaranteed_task_count\030\002 \001(\005\"\032\n\030Updat" +
-      "eQueryResponseProto2X\n\022LlapPluginProtoco" +
-      "l\022B\n\013updateQuery\022\030.UpdateQueryRequestPro" +
-      "to\032\031.UpdateQueryResponseProtoBH\n&org.apa" +
-      "che.hadoop.hive.llap.plugin.rpcB\030LlapPlu" +
-      "ginProtocolProtos\210\001\001\240\001\001"
+      "\n\030LlapPluginProtocol.proto\"8\n\027UpdateQuer" +
+      "yRequestProto\022\035\n\025guaranteed_task_count\030\001" +
+      " \001(\005\"\032\n\030UpdateQueryResponseProto2X\n\022Llap" +
+      "PluginProtocol\022B\n\013updateQuery\022\030.UpdateQu" +
+      "eryRequestProto\032\031.UpdateQueryResponsePro" +
+      "toBH\n&org.apache.hadoop.hive.llap.plugin" +
+      ".rpcB\030LlapPluginProtocolProtos\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -1252,7 +1049,7 @@ public final class LlapPluginProtocolProtos {
           internal_static_UpdateQueryRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_UpdateQueryRequestProto_descriptor,
-              new java.lang.String[] { "QueryId", "GuaranteedTaskCount", });
+              new java.lang.String[] { "GuaranteedTaskCount", });
           internal_static_UpdateQueryResponseProto_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_UpdateQueryResponseProto_fieldAccessorTable = new
@@ -1265,7 +1062,6 @@ public final class LlapPluginProtocolProtos {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.getDescriptor(),
         }, assigner);
   }
 

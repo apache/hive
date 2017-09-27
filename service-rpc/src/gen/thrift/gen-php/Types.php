@@ -10029,6 +10029,161 @@ class TProgressUpdateResp {
 
 }
 
+class TGetQueryIdReq {
+  static $_TSPEC;
+
+  /**
+   * @var \TOperationHandle
+   */
+  public $operationHandle = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'operationHandle',
+          'type' => TType::STRUCT,
+          'class' => '\TOperationHandle',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['operationHandle'])) {
+        $this->operationHandle = $vals['operationHandle'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'TGetQueryIdReq';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->operationHandle = new \TOperationHandle();
+            $xfer += $this->operationHandle->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('TGetQueryIdReq');
+    if ($this->operationHandle !== null) {
+      if (!is_object($this->operationHandle)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('operationHandle', TType::STRUCT, 1);
+      $xfer += $this->operationHandle->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class TGetQueryIdResp {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $queryId = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'queryId',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['queryId'])) {
+        $this->queryId = $vals['queryId'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'TGetQueryIdResp';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->queryId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('TGetQueryIdResp');
+    if ($this->queryId !== null) {
+      $xfer += $output->writeFieldBegin('queryId', TType::STRING, 1);
+      $xfer += $output->writeString($this->queryId);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 final class Constant extends \Thrift\Type\TConstant {
   static protected $PRIMITIVE_TYPES;
   static protected $COMPLEX_TYPES;
