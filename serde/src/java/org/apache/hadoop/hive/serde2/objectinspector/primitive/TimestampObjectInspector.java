@@ -19,9 +19,13 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface TimestampObjectInspector extends PrimitiveObjectInspector {
 
   TimestampWritable getPrimitiveWritableObject(Object o);

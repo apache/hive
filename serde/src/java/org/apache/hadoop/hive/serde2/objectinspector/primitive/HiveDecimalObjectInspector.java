@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -25,6 +27,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 /**
  * A DecimalObjectInspector inspects an Object representing a HiveDecimal.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface HiveDecimalObjectInspector extends PrimitiveObjectInspector {
 
   HiveDecimalWritable getPrimitiveWritableObject(Object o);

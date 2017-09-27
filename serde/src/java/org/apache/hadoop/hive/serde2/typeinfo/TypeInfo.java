@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.serde2.typeinfo;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 /**
@@ -36,6 +38,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
  * 7. Char objects
  * 8. Varchar objects
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class TypeInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;

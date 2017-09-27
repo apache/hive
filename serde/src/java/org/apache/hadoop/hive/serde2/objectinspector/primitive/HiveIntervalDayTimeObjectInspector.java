@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -24,6 +26,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 /**
  * A HiveIntervalObjectInspector inspects an Object representing an Interval.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface HiveIntervalDayTimeObjectInspector extends PrimitiveObjectInspector {
 
   HiveIntervalDayTimeWritable getPrimitiveWritableObject(Object o);

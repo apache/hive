@@ -17,12 +17,17 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 import java.util.List;
 
 /**
  * StructObjectInspector.
  *
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class StructObjectInspector implements ObjectInspector {
 
   // ** Methods that does not need a data object **
