@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JavaType;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
 import org.apache.hadoop.io.NullWritable;
 
@@ -36,26 +37,19 @@ import io.druid.query.timeseries.TimeseriesResultValue;
 public class DruidTimeseriesQueryRecordReader
         extends DruidQueryRecordReader<TimeseriesQuery, Result<TimeseriesResultValue>> {
 
+  private static final TypeReference TYPE_REFERENCE = new TypeReference<Result<TimeseriesResultValue>>() {
+  };
   private Result<TimeseriesResultValue> current;
 
   @Override
-  protected TimeseriesQuery createQuery(String content) throws IOException {
-    return DruidStorageHandlerUtils.JSON_MAPPER.readValue(content, TimeseriesQuery.class);
-  }
-
-  @Override
-  protected List<Result<TimeseriesResultValue>> createResultsList(InputStream content)
-          throws IOException {
-    return DruidStorageHandlerUtils.SMILE_MAPPER.readValue(content,
-            new TypeReference<List<Result<TimeseriesResultValue>>>() {
-            }
-    );
+  protected JavaType getResultTypeDef() {
+    return DruidStorageHandlerUtils.JSON_MAPPER.getTypeFactory().constructType(TYPE_REFERENCE);
   }
 
   @Override
   public boolean nextKeyValue() {
-    if (results.hasNext()) {
-      current = results.next();
+    if (queryResultsIterator.hasNext()) {
+      current = queryResultsIterator.next();
       return true;
     }
     return false;
@@ -89,7 +83,7 @@ public class DruidTimeseriesQueryRecordReader
 
   @Override
   public float getProgress() throws IOException {
-    return results.hasNext() ? 0 : 1;
+    return queryResultsIterator.hasNext() ? 0 : 1;
   }
 
 }

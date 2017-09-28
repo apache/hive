@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JavaType;
+import io.druid.query.select.SelectQueryQueryToolChest;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
 import org.apache.hadoop.io.NullWritable;
 
@@ -39,22 +41,18 @@ import io.druid.query.select.SelectResultValue;
 public class DruidSelectQueryRecordReader
         extends DruidQueryRecordReader<SelectQuery, Result<SelectResultValue>> {
 
+  private static final TypeReference<Result<SelectResultValue>> TYPE_REFERENCE =
+          new TypeReference<Result<SelectResultValue>>()
+          {
+          };
+
   private Result<SelectResultValue> current;
 
   private Iterator<EventHolder> values = Iterators.emptyIterator();
 
   @Override
-  protected SelectQuery createQuery(String content) throws IOException {
-    return DruidStorageHandlerUtils.JSON_MAPPER.readValue(content, SelectQuery.class);
-  }
-
-  @Override
-  protected List<Result<SelectResultValue>> createResultsList(InputStream content)
-          throws IOException {
-    return DruidStorageHandlerUtils.SMILE_MAPPER.readValue(content,
-            new TypeReference<List<Result<SelectResultValue>>>() {
-            }
-    );
+  protected JavaType getResultTypeDef() {
+    return DruidStorageHandlerUtils.JSON_MAPPER.getTypeFactory().constructType(TYPE_REFERENCE);
   }
 
   @Override
@@ -62,8 +60,8 @@ public class DruidSelectQueryRecordReader
     if (values.hasNext()) {
       return true;
     }
-    if (results.hasNext()) {
-      current = results.next();
+    if (queryResultsIterator.hasNext()) {
+      current = queryResultsIterator.next();
       values = current.getValue().getEvents().iterator();
       return nextKeyValue();
     }
@@ -100,7 +98,7 @@ public class DruidSelectQueryRecordReader
 
   @Override
   public float getProgress() {
-    return results.hasNext() || values.hasNext() ? 0 : 1;
+    return queryResultsIterator.hasNext() || values.hasNext() ? 0 : 1;
   }
 
 }

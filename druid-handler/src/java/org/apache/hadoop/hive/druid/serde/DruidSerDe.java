@@ -132,21 +132,11 @@ public class DruidSerDe extends AbstractSerDe {
                   properties.getProperty(serdeConstants.LIST_COLUMNS));
         }
         columnTypes.addAll(Lists.transform(Utilities.getColumnTypes(properties),
-                new Function<String, PrimitiveTypeInfo>() {
-                  @Override
-                  public PrimitiveTypeInfo apply(String type) {
-                    return TypeInfoFactory.getPrimitiveTypeInfo(type);
-                  }
-                }
+                type -> TypeInfoFactory.getPrimitiveTypeInfo(type)
         ));
         inspectors.addAll(Lists.transform(columnTypes,
-                new Function<PrimitiveTypeInfo, ObjectInspector>() {
-                  @Override
-                  public ObjectInspector apply(PrimitiveTypeInfo type) {
-                    return PrimitiveObjectInspectorFactory
-                            .getPrimitiveWritableObjectInspector(type);
-                  }
-                }
+                (Function<PrimitiveTypeInfo, ObjectInspector>) type -> PrimitiveObjectInspectorFactory
+                        .getPrimitiveWritableObjectInspector(type)
         ));
         columns = columnNames.toArray(new String[columnNames.size()]);
         types = columnTypes.toArray(new PrimitiveTypeInfo[columnTypes.size()]);
@@ -273,7 +263,7 @@ public class DruidSerDe extends AbstractSerDe {
     InputStream response;
     try {
       response = DruidStorageHandlerUtils.submitRequest(DruidStorageHandler.getHttpClient(),
-              DruidStorageHandlerUtils.createRequest(address, query)
+              DruidStorageHandlerUtils.createSmileRequest(address, query)
       );
     } catch (Exception e) {
       throw new SerDeException(StringUtils.stringifyException(e));

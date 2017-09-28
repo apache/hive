@@ -17,6 +17,18 @@
  */
 package org.apache.hadoop.hive.druid;
 
+import com.fasterxml.jackson.databind.InjectableValues;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
+import com.metamx.emitter.EmittingLogger;
+import com.metamx.emitter.core.NoopEmitter;
+import com.metamx.emitter.service.ServiceEmitter;
+import com.metamx.http.client.HttpClient;
+import com.metamx.http.client.response.InputStreamResponseHandler;
 import io.druid.common.utils.JodaUtils;
 import io.druid.jackson.DefaultObjectMapper;
 import io.druid.math.expr.ExprMacroTable;
@@ -109,6 +121,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 
@@ -191,7 +204,7 @@ public final class DruidStorageHandlerUtils {
   public static final Interner<DataSegment> DATA_SEGMENT_INTERNER = Interners.newWeakInterner();
 
   /**
-   * Method that creates a request for Druid JSON query (using SMILE).
+   * Method that creates a request for Druid query using SMILE format.
    *
    * @param address
    * @param query
@@ -200,7 +213,7 @@ public final class DruidStorageHandlerUtils {
    *
    * @throws IOException
    */
-  public static Request createRequest(String address, BaseQuery<?> query)
+  public static Request createSmileRequest(String address, io.druid.query.Query query)
           throws IOException {
     return new Request(HttpMethod.POST, new URL(String.format("%s/druid/v2/", "http://" + address)))
             .setContent(SMILE_MAPPER.writeValueAsBytes(query))
