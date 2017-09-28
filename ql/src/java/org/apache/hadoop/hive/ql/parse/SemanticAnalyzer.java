@@ -11723,10 +11723,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     createVwDesc.setSchema(derivedSchema);
-    if (!createVwDesc.isMaterialized()) {
-      // materialized views don't store the expanded text as they won't be rewritten at query time.
-      createVwDesc.setViewExpandedText(expandedText);
-    }
+    createVwDesc.setViewExpandedText(expandedText);
   }
 
   static List<FieldSchema> convertRowSchemaToViewSchema(RowResolver rr) throws SemanticException {

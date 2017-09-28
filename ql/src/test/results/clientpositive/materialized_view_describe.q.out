@@ -82,7 +82,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 View Original Text: 	select a, c from cmv_basetable	 
-View Expanded Text: 	null                	 
+View Expanded Text: 	select `cmv_basetable`.`a`, `cmv_basetable`.`c` from `default`.`cmv_basetable`	 
 View Rewrite Enabled:	No                  	 
 PREHOOK: query: show tblproperties cmv_mat_view
 PREHOOK: type: SHOW_TBLPROPERTIES
@@ -157,7 +157,7 @@ Table Parameters:
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
 InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
 Compressed:         	No                  	 
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
@@ -165,7 +165,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 View Original Text: 	select a from cmv_basetable	 
-View Expanded Text: 	null                	 
+View Expanded Text: 	select `cmv_basetable`.`a` from `default`.`cmv_basetable`	 
 View Rewrite Enabled:	No                  	 
 PREHOOK: query: select a from cmv_mat_view2
 PREHOOK: type: QUERY
@@ -241,7 +241,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 View Original Text: 	select * from cmv_basetable	 
-View Expanded Text: 	null                	 
+View Expanded Text: 	select `cmv_basetable`.`a`, `cmv_basetable`.`b`, `cmv_basetable`.`c` from `default`.`cmv_basetable`	 
 View Rewrite Enabled:	No                  	 
 PREHOOK: query: select a, b, c from cmv_mat_view3
 PREHOOK: type: QUERY
@@ -320,7 +320,7 @@ Table Parameters:
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
 InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
 Compressed:         	No                  	 
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
@@ -328,7 +328,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 View Original Text: 	select a from cmv_basetable	 
-View Expanded Text: 	null                	 
+View Expanded Text: 	select `cmv_basetable`.`a` from `default`.`cmv_basetable`	 
 View Rewrite Enabled:	No                  	 
 PREHOOK: query: select a from cmv_mat_view4
 PREHOOK: type: QUERY

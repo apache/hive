@@ -51,6 +51,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import javax.jdo.JDODataStoreException;
 
@@ -62,13 +63,13 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
+import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HdfsUtils;
@@ -138,7 +139,6 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
@@ -158,12 +158,12 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.common.base.Splitter;
 
 /**
  * This class has functions that implement meta data/DDL operations using calls
@@ -4291,8 +4291,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveException
    */
   public PrimaryKeyInfo getPrimaryKeys(String dbName, String tblName) throws HiveException {
+    return getPrimaryKeys(dbName, tblName, false);
+  }
+
+  /**
+   * Get primary key columns associated with the table that are available for optimization.
+   *
+   * @param dbName Database Name
+   * @param tblName Table Name
+   * @return Primary Key associated with the table.
+   * @throws HiveException
+   */
+  public PrimaryKeyInfo getReliablePrimaryKeys(String dbName, String tblName) throws HiveException {
+    return getPrimaryKeys(dbName, tblName, true);
+  }
+
+  private PrimaryKeyInfo getPrimaryKeys(String dbName, String tblName, boolean onlyReliable)
+      throws HiveException {
     try {
       List<SQLPrimaryKey> primaryKeys = getMSC().getPrimaryKeys(new PrimaryKeysRequest(dbName, tblName));
+      if (onlyReliable && primaryKeys != null && !primaryKeys.isEmpty()) {
+        primaryKeys = primaryKeys.stream()
+          .filter(pk -> pk.isRely_cstr())
+          .collect(Collectors.toList());
+      }
       return new PrimaryKeyInfo(primaryKeys, tblName, dbName);
     } catch (Exception e) {
       throw new HiveException(e);
@@ -4308,8 +4330,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveException
    */
   public ForeignKeyInfo getForeignKeys(String dbName, String tblName) throws HiveException {
+    return getForeignKeys(dbName, tblName, false);
+  }
+
+  /**
+   * Get foreign keys associated with the table that are available for optimization.
+   *
+   * @param dbName Database Name
+   * @param tblName Table Name
+   * @return Foreign keys associated with the table.
+   * @throws HiveException
+   */
+  public ForeignKeyInfo getReliableForeignKeys(String dbName, String tblName) throws HiveException {
+    return getForeignKeys(dbName, tblName, true);
+  }
+
+  private ForeignKeyInfo getForeignKeys(String dbName, String tblName, boolean onlyReliable)
+      throws HiveException {
     try {
       List<SQLForeignKey> foreignKeys = getMSC().getForeignKeys(new ForeignKeysRequest(null, null, dbName, tblName));
+      if (onlyReliable && foreignKeys != null && !foreignKeys.isEmpty()) {
+        foreignKeys = foreignKeys.stream()
+          .filter(fk -> fk.isRely_cstr())
+          .collect(Collectors.toList());
+      }
       return new ForeignKeyInfo(foreignKeys, tblName, dbName);
     } catch (Exception e) {
       throw new HiveException(e);
@@ -4325,9 +4369,31 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveException
    */
   public UniqueConstraint getUniqueConstraints(String dbName, String tblName) throws HiveException {
+    return getUniqueConstraints(dbName, tblName, false);
+  }
+
+  /**
+   * Get unique constraints associated with the table that are available for optimization.
+   *
+   * @param dbName Database Name
+   * @param tblName Table Name
+   * @return Unique constraints associated with the table.
+   * @throws HiveException
+   */
+  public UniqueConstraint getReliableUniqueConstraints(String dbName, String tblName) throws HiveException {
+    return getUniqueConstraints(dbName, tblName, true);
+  }
+
+  private UniqueConstraint getUniqueConstraints(String dbName, String tblName, boolean onlyReliable)
+      throws HiveException {
     try {
       List<SQLUniqueConstraint> uniqueConstraints = getMSC().getUniqueConstraints(
               new UniqueConstraintsRequest(dbName, tblName));
+      if (onlyReliable && uniqueConstraints != null && !uniqueConstraints.isEmpty()) {
+        uniqueConstraints = uniqueConstraints.stream()
+          .filter(uk -> uk.isRely_cstr())
+          .collect(Collectors.toList());
+      }
       return new UniqueConstraint(uniqueConstraints, tblName, dbName);
     } catch (Exception e) {
       throw new HiveException(e);
@@ -4343,9 +4409,31 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveException
    */
   public NotNullConstraint getNotNullConstraints(String dbName, String tblName) throws HiveException {
+    return getNotNullConstraints(dbName, tblName, false);
+  }
+
+  /**
+   * Get not null constraints associated with the table that are available for optimization.
+   *
+   * @param dbName Database Name
+   * @param tblName Table Name
+   * @return Not null constraints associated with the table.
+   * @throws HiveException
+   */
+  public NotNullConstraint getReliableNotNullConstraints(String dbName, String tblName) throws HiveException {
+    return getNotNullConstraints(dbName, tblName, true);
+  }
+
+  private NotNullConstraint getNotNullConstraints(String dbName, String tblName, boolean onlyReliable)
+      throws HiveException {
     try {
       List<SQLNotNullConstraint> notNullConstraints = getMSC().getNotNullConstraints(
               new NotNullConstraintsRequest(dbName, tblName));
+      if (onlyReliable && notNullConstraints != null && !notNullConstraints.isEmpty()) {
+        notNullConstraints = notNullConstraints.stream()
+          .filter(nnc -> nnc.isRely_cstr())
+          .collect(Collectors.toList());
+      }
       return new NotNullConstraint(notNullConstraints, tblName, dbName);
     } catch (Exception e) {
       throw new HiveException(e);

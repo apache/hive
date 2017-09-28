@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -134,10 +133,17 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       if (table != null) {
         // case the statement is an INSERT
         segmentGranularity = table.getParameters().get(Constants.DRUID_SEGMENT_GRANULARITY);
-      } else {
-        // case the statement is a CREATE TABLE AS
-       segmentGranularity = parseCtx.getCreateTable().getTblProps()
+      } else if (parseCtx.getCreateViewDesc() != null) {
+        // case the statement is a CREATE MATERIALIZED VIEW AS
+        segmentGranularity = parseCtx.getCreateViewDesc().getTblProps()
                 .get(Constants.DRUID_SEGMENT_GRANULARITY);
+      } else if (parseCtx.getCreateTable() != null) {
+        // case the statement is a CREATE TABLE AS
+        segmentGranularity = parseCtx.getCreateTable().getTblProps()
+                .get(Constants.DRUID_SEGMENT_GRANULARITY);
+      } else {
+        throw new SemanticException("Druid storage handler used but not an INSERT, "
+                + "CMVAS or CTAS statement");
       }
       segmentGranularity = !Strings.isNullOrEmpty(segmentGranularity)
               ? segmentGranularity
