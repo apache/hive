@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -376,7 +377,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         DataContainer dc = null;
         if (tbd.getPartitionSpec().size() == 0) {
           dc = new DataContainer(table.getTTable());
-          db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getReplace(),
+          db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getLoadFileType(),
               work.isSrcLocal(), isSkewedStoredAsDirs(tbd),
               work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
               hasFollowingStatsTask());
@@ -452,7 +453,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 tbd.getSourcePath(),
                 tbd.getTable().getTableName(),
                 tbd.getPartitionSpec(),
-                tbd.getReplace(),
+                tbd.getLoadFileType(),
                 dpCtx.getNumDPCols(),
                 isSkewedStoredAsDirs(tbd),
                 work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID,
@@ -520,7 +521,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 tbd.getPartitionSpec());
             db.validatePartitionNameCharacters(partVals);
             db.loadPartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
-                tbd.getPartitionSpec(), tbd.getReplace(),
+                tbd.getPartitionSpec(), tbd.getLoadFileType(),
                 tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
                 work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID, hasFollowingStatsTask());
             Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
@@ -592,7 +593,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
    * has done it's job before the query ran.
    */
   WriteEntity.WriteType getWriteType(LoadTableDesc tbd, AcidUtils.Operation operation) {
-    if(tbd.getReplace()) {
+    if (tbd.getLoadFileType() == LoadFileType.REPLACE_ALL) {
       return WriteEntity.WriteType.INSERT_OVERWRITE;
     }
     switch (operation) {

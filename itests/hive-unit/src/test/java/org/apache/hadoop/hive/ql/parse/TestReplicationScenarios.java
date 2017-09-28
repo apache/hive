@@ -1406,7 +1406,7 @@ public class TestReplicationScenarios {
 
             // Skip all the events belong to other DBs/tables.
             if (event.getDbName().equalsIgnoreCase(dbName)) {
-              if (event.getEventType() == "INSERT") {
+              if (event.getEventType().equalsIgnoreCase("INSERT")) {
                 // If an insert event is found, then return null hence no event is dumped.
                 LOG.error("Encountered INSERT event when it was not expected to");
                 return null;
@@ -1425,7 +1425,66 @@ public class TestReplicationScenarios {
     eventTypeValidator.assertInjectionsPerformed(true,false);
     InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
 
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1)", ptn_data, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1)", ptn_data, driverMirror);
+  }
+
+  @Test
+  public void testIdempotentMoveTaskForInsertFiles() throws IOException {
+    String name = testName.getMethodName();
+    final String dbName = createDB(name, driver);
+    String replDbName = dbName + "_dupe";
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    Tuple bootstrap = bootstrapLoadAndVerify(dbName, replDbName);
+
+    String[] unptn_data = new String[]{ "ten"};
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
+
+    // Inject a behaviour where it repeats the INSERT event twice with different event IDs
+    BehaviourInjection<NotificationEventResponse,NotificationEventResponse> insertEventRepeater
+            = new BehaviourInjection<NotificationEventResponse,NotificationEventResponse>(){
+
+      @Nullable
+      @Override
+      public NotificationEventResponse apply(@Nullable NotificationEventResponse eventsList) {
+        if (null != eventsList) {
+          List<NotificationEvent> events = eventsList.getEvents();
+          List<NotificationEvent> outEvents = new ArrayList<>();
+          long insertEventId = -1;
+
+          for (int i = 0; i < events.size(); i++) {
+            NotificationEvent event = events.get(i);
+
+            // Skip all the events belong to other DBs/tables.
+            if (event.getDbName().equalsIgnoreCase(dbName)) {
+              if (event.getEventType().equalsIgnoreCase("INSERT")) {
+                // Add insert event twice with different event ID to allow apply of both events.
+                NotificationEvent newEvent = new NotificationEvent(event);
+                outEvents.add(newEvent);
+                insertEventId = newEvent.getEventId();
+              }
+            }
+
+            NotificationEvent newEvent = new NotificationEvent(event);
+            if (insertEventId != -1) {
+              insertEventId++;
+              newEvent.setEventId(insertEventId);
+            }
+            outEvents.add(newEvent);
+          }
+          eventsList.setEvents(outEvents);
+          injectionPathCalled = true;
+        }
+        return eventsList;
+      }
+    };
+    InjectableBehaviourObjectStore.setGetNextNotificationBehaviour(insertEventRepeater);
+
+    incrementalLoadAndVerify(dbName, bootstrap.lastReplId, replDbName);
+
+    insertEventRepeater.assertInjectionsPerformed(true,false);
+    InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+
+    verifyRun("SELECT a from " + replDbName + ".unptned", unptn_data, driverMirror);
   }
 
   @Test
