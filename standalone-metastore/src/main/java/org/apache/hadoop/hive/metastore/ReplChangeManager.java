@@ -63,6 +63,54 @@ public class ReplChangeManager {
     COPY
   }
 
+  public static class FileInfo {
+    FileSystem srcFs;
+    Path sourcePath;
+    Path cmPath;
+    String checkSum;
+    boolean useSourcePath;
+
+    public FileInfo(FileSystem srcFs, Path sourcePath) {
+      this.srcFs = srcFs;
+      this.sourcePath = sourcePath;
+      this.cmPath = null;
+      this.checkSum = null;
+      this.useSourcePath = true;
+    }
+    public FileInfo(FileSystem srcFs, Path sourcePath, Path cmPath, String checkSum, boolean useSourcePath) {
+      this.srcFs = srcFs;
+      this.sourcePath = sourcePath;
+      this.cmPath = cmPath;
+      this.checkSum = checkSum;
+      this.useSourcePath = useSourcePath;
+    }
+    public FileSystem getSrcFs() {
+      return srcFs;
+    }
+    public Path getSourcePath() {
+      return sourcePath;
+    }
+    public Path getCmPath() {
+      return cmPath;
+    }
+    public String getCheckSum() {
+      return checkSum;
+    }
+    public boolean isUseSourcePath() {
+      return useSourcePath;
+    }
+    public void setIsUseSourcePath(boolean useSourcePath) {
+      this.useSourcePath = useSourcePath;
+    }
+    public Path getEffectivePath() {
+      if (useSourcePath) {
+        return sourcePath;
+      } else {
+        return cmPath;
+      }
+    }
+  }
+
   public static ReplChangeManager getInstance(Configuration conf) throws MetaException {
     if (instance == null) {
       instance = new ReplChangeManager(conf);
@@ -259,25 +307,32 @@ public class ReplChangeManager {
    * @param src Original file location
    * @param checksumString Checksum of the original file
    * @param conf
-   * @return Corresponding FileStatus object
+   * @return Corresponding FileInfo object
    */
-  static public FileStatus getFileStatus(Path src, String checksumString,
-      Configuration conf) throws MetaException {
+  public static FileInfo getFileInfo(Path src, String checksumString, Configuration conf)
+          throws MetaException {
     try {
       FileSystem srcFs = src.getFileSystem(conf);
       if (checksumString == null) {
-        return srcFs.getFileStatus(src);
+        return new FileInfo(srcFs, src);
       }
 
+      Path cmPath = getCMPath(conf, src.getName(), checksumString);
       if (!srcFs.exists(src)) {
-        return srcFs.getFileStatus(getCMPath(conf, src.getName(), checksumString));
+        return new FileInfo(srcFs, src, cmPath, checksumString, false);
       }
 
-      String currentChecksumString = checksumFor(src, srcFs);
-      if (currentChecksumString == null || checksumString.equals(currentChecksumString)) {
-        return srcFs.getFileStatus(src);
+      String currentChecksumString;
+      try {
+        currentChecksumString = checksumFor(src, srcFs);
+      } catch (IOException ex) {
+        // If the file is missing or getting modified, then refer CM path
+        return new FileInfo(srcFs, src, cmPath, checksumString, false);
+      }
+      if ((currentChecksumString == null) || checksumString.equals(currentChecksumString)) {
+        return new FileInfo(srcFs, src, cmPath, checksumString, true);
       } else {
-        return srcFs.getFileStatus(getCMPath(conf, src.getName(), checksumString));
+        return new FileInfo(srcFs, src, cmPath, checksumString, false);
       }
     } catch (IOException e) {
       throw new MetaException(StringUtils.stringifyException(e));
