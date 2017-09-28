@@ -7055,12 +7055,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public NotificationEventResponse get_next_notification(NotificationEventRequest rqst)
         throws TException {
+      try {
+        authorizeProxyPrivilege();
+      } catch (Exception ex) {
+        LOG.error("Not authorized to make the get_next_notification call. You can try to disable " +
+            HiveConf.ConfVars.METASTORE_EVENT_DB_NOTIFICATION_API_AUTH.varname, ex);
+        throw new TException(ex);
+      }
+
       RawStore ms = getMS();
       return ms.getNextNotification(rqst);
     }
 
     @Override
     public CurrentNotificationEventId get_current_notificationEventId() throws TException {
+      try {
+        authorizeProxyPrivilege();
+      } catch (Exception ex) {
+        LOG.error("Not authorized to make the get_current_notificationEventId call. You can try to disable " +
+            HiveConf.ConfVars.METASTORE_EVENT_DB_NOTIFICATION_API_AUTH.varname, ex);
+        throw new TException(ex);
+      }
+
       RawStore ms = getMS();
       return ms.getCurrentNotificationEventId();
     }
@@ -7068,8 +7084,33 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
             throws TException {
+      try {
+        authorizeProxyPrivilege();
+      } catch (Exception ex) {
+        LOG.error("Not authorized to make the get_notification_events_count call. You can try to disable " +
+            HiveConf.ConfVars.METASTORE_EVENT_DB_NOTIFICATION_API_AUTH.varname, ex);
+        throw new TException(ex);
+      }
+
       RawStore ms = getMS();
       return ms.getNotificationEventsCount(rqst);
+    }
+
+    private void authorizeProxyPrivilege() throws Exception {
+      // Skip the auth in embedded mode or if the auth is disabled
+      if (!isMetaStoreRemote() || !hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_EVENT_DB_NOTIFICATION_API_AUTH)) {
+        return;
+      }
+      String user = null;
+      try {
+        user = Utils.getUGI().getShortUserName();
+      } catch (Exception ex) {
+        LOG.error("Cannot obtain username", ex);
+        throw ex;
+      }
+      if (!MetaStoreUtils.checkUserHasHostProxyPrivileges(user, hiveConf, getIPAddress())) {
+        throw new MetaException("User " + user + " is not allowed to perform this API call");
+      }
     }
 
     @Override

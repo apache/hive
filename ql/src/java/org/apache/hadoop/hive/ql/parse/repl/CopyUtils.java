@@ -46,6 +46,7 @@ public class CopyUtils {
   private final long maxNumberOfFiles;
   private final boolean hiveInTest;
   private final String copyAsUser;
+  private final int MAX_COPY_RETRY = 3;
 
   public CopyUtils(String distCpDoAsUser, HiveConf hiveConf) {
     this.hiveConf = hiveConf;
@@ -88,12 +89,11 @@ public class CopyUtils {
       3. aggregate fileSize of all source Paths(can be directory /  file) is less than configured size.
       4. number of files of all source Paths(can be directory /  file) is less than configured size.
   */
-  private boolean regularCopy(FileSystem destinationFs, Map.Entry<FileSystem, List<Path>> entry)
+  private boolean regularCopy(FileSystem destinationFs, FileSystem sourceFs, List<ReplChangeManager.FileInfo> fileList)
       throws IOException {
     if (hiveInTest) {
       return true;
     }
-    FileSystem sourceFs = entry.getKey();
     if (isLocal(sourceFs) || isLocal(destinationFs)) {
       return true;
     }
@@ -104,8 +104,17 @@ public class CopyUtils {
     long size = 0;
     long numberOfFiles = 0;
 
-    for (Path path : entry.getValue()) {
-      ContentSummary contentSummary = sourceFs.getContentSummary(path);
+    for (ReplChangeManager.FileInfo fileInfo : fileList) {
+      ContentSummary contentSummary = null;
+      try {
+        contentSummary = sourceFs.getContentSummary(fileInfo.getEffectivePath());
+      } catch (FileNotFoundException e) {
+        // in replication, if source file does not exist, try cmroot
+        if (fileInfo.isUseSourcePath() && fileInfo.getCmPath() != null) {
+          contentSummary = sourceFs.getContentSummary(fileInfo.getCmPath());
+          fileInfo.setIsUseSourcePath(false);
+        }
+      }
       size += contentSummary.getLength();
       numberOfFiles += contentSummary.getFileCount();
       if (limitReachedForLocalCopy(size, numberOfFiles)) {
@@ -129,14 +138,27 @@ public class CopyUtils {
     return fs.getScheme().equals("file");
   }
 
-  private Map<FileSystem, List<Path>> fsToFileMap(List<Path> srcPaths) throws IOException {
+  private Map<FileSystem, List<Path>> fsToPathMap(List<Path> srcPaths) throws IOException {
     Map<FileSystem, List<Path>> result = new HashMap<>();
     for (Path path : srcPaths) {
       FileSystem fileSystem = path.getFileSystem(hiveConf);
       if (!result.containsKey(fileSystem)) {
-        result.put(fileSystem, new ArrayList<>());
+        result.put(fileSystem, new ArrayList<Path>());
       }
       result.get(fileSystem).add(path);
+    }
+    return result;
+  }
+
+  private Map<FileSystem, List<ReplChangeManager.FileInfo>> fsToFileMap(
+      List<ReplChangeManager.FileInfo> srcFiles) throws IOException {
+    Map<FileSystem, List<ReplChangeManager.FileInfo>> result = new HashMap<>();
+    for (ReplChangeManager.FileInfo file : srcFiles) {
+      FileSystem fileSystem = file.getFs();
+      if (!result.containsKey(fileSystem)) {
+        result.put(fileSystem, new ArrayList<ReplChangeManager.FileInfo>());
+      }
+      result.get(fileSystem).add(file);
     }
     return result;
   }
