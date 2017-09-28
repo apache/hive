@@ -81,12 +81,12 @@ public class TestCopyUtils {
     Configuration conf = new Configuration();
     conf.set("dfs.client.use.datanode.hostname", "true");
 
-    UserGroupInformation ugi = Utils.getUGI();
-    final String currentUser = ugi.getShortUserName();
-    conf.set("hadoop.proxyuser." + currentUser + ".hosts", "*");
-
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+
+    UserGroupInformation ugi = Utils.getUGI();
+    String currentUser = ugi.getShortUserName();
+
     HashMap<String, String> overridesForHiveConf = new HashMap<String, String>() {{
       put(ConfVars.HIVE_IN_TEST.varname, "false");
       put(ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname, "1");

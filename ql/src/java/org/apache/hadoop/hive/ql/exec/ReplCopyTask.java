@@ -35,7 +35,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.calcite.util.Pair;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -77,10 +76,11 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       // be a CM uri in the from path.
       if (ReplChangeManager.isCMFileUri(fromPath, srcFs)) {
         String[] result = ReplChangeManager.getFileWithChksumFromURI(fromPath.toString());
-        ReplChangeManager.FileInfo sourceInfo = ReplChangeManager
-            .getFileInfo(new Path(result[0]), result[1], conf);
+        Path sourcePath = ReplChangeManager
+            .getFileStatus(new Path(result[0]), result[1], conf)
+            .getPath();
         if (FileUtils.copy(
-            sourceInfo.getFs(), sourceInfo.getSourcePath(),
+            sourcePath.getFileSystem(conf), sourcePath,
             dstFs, toPath, false, false, conf)) {
           return 0;
         } else {
@@ -90,13 +90,13 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         }
       }
 
-      List<ReplChangeManager.FileInfo> srcFiles = new ArrayList<>();
+      List<Path> srcPaths = new ArrayList<>();
       if (rwork.readSrcAsFilesList()) {
         // This flow is usually taken for REPL LOAD
         // Our input is the result of a _files listing, we should expand out _files.
-        srcFiles = filesInFileListing(srcFs, fromPath);
-        LOG.debug("ReplCopyTask _files contains:" + (srcFiles == null ? "null" : srcFiles.size()));
-        if ((srcFiles == null) || (srcFiles.isEmpty())) {
+        srcPaths = filesInFileListing(srcFs, fromPath);
+        LOG.debug("ReplCopyTask _files contains:" + (srcPaths == null ? "null" : srcPaths.size()));
+        if ((srcPaths == null) || (srcPaths.isEmpty())) {
           if (work.isErrorOnSrcEmpty()) {
             console.printError("No _files entry found on source: " + fromPath.toString());
             return 5;
@@ -120,18 +120,17 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         for (FileStatus oneSrc : srcs) {
           console.printInfo("Copying file: " + oneSrc.getPath().toString());
           LOG.debug("ReplCopyTask :cp:{}=>{}", oneSrc.getPath(), toPath);
-          srcFiles.add(new ReplChangeManager.FileInfo(oneSrc.getPath().getFileSystem(conf),
-              oneSrc.getPath(), null, null, true));
+          srcPaths.add(oneSrc.getPath());
         }
       }
 
-      LOG.debug("ReplCopyTask numFiles: {}", srcFiles.size());
+      LOG.debug("ReplCopyTask numFiles: {}", srcPaths.size());
       if (!FileUtils.mkdir(dstFs, toPath, conf)) {
         console.printError("Cannot make target directory: " + toPath.toString());
         return 2;
       }
       // Copy the files from different source file systems to one destination directory
-      new CopyUtils(rwork.distCpDoAsUser(), conf).copyAndVerify(toPath, srcFiles);
+      new CopyUtils(rwork.distCpDoAsUser(), conf).doCopy(toPath, srcPaths);
 
       return 0;
     } catch (Exception e) {
@@ -141,7 +140,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     }
   }
 
-  private List<ReplChangeManager.FileInfo> filesInFileListing(FileSystem fs, Path dataPath)
+  private List<Path> filesInFileListing(FileSystem fs, Path dataPath)
       throws IOException {
     Path fileListing = new Path(dataPath, EximUtil.FILES_NAME);
     LOG.debug("ReplCopyTask filesInFileListing() reading " + fileListing.toUri());
@@ -151,7 +150,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       // On success, but with nothing to return, we can return an empty list.
     }
 
-    List<ReplChangeManager.FileInfo> filePaths = new ArrayList<>();
+    List<Path> filePaths = new ArrayList<>();
     BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(fileListing)));
     // TODO : verify if skipping charset here is okay
 
@@ -161,8 +160,9 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
 
       String[] fileWithChksum = ReplChangeManager.getFileWithChksumFromURI(line);
       try {
-        ReplChangeManager.FileInfo f = ReplChangeManager
-                .getFileInfo(new Path(fileWithChksum[0]), fileWithChksum[1], conf);
+        Path f = ReplChangeManager
+                .getFileStatus(new Path(fileWithChksum[0]), fileWithChksum[1], conf)
+                .getPath();
         filePaths.add(f);
       } catch (MetaException e) {
         // issue warning for missing file and throw exception

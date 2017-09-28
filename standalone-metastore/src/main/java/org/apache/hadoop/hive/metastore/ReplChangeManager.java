@@ -63,46 +63,6 @@ public class ReplChangeManager {
     COPY
   }
 
-  public static class FileInfo {
-    FileSystem fs;
-    Path sourcePath;
-    Path cmPath;
-    String checkSum;
-    boolean useSourcePath;
-    public FileInfo(FileSystem fs, Path sourcePath, Path cmPath, String checkSum, boolean useSourcePath) {
-      this.fs = fs;
-      this.sourcePath = sourcePath;
-      this.cmPath = cmPath;
-      this.checkSum = checkSum;
-      this.useSourcePath = useSourcePath;
-    }
-    public FileSystem getFs() {
-      return fs;
-    }
-    public Path getSourcePath() {
-      return sourcePath;
-    }
-    public Path getCmPath() {
-      return cmPath;
-    }
-    public String getCheckSum() {
-      return checkSum;
-    }
-    public boolean isUseSourcePath() {
-      return useSourcePath;
-    }
-    public void setIsUseSourcePath(boolean useSourcePath) {
-      this.useSourcePath = useSourcePath;
-    }
-    public Path getEffectivePath() {
-      if (useSourcePath) {
-        return sourcePath;
-      } else {
-        return cmPath;
-      }
-    }
-  }
-
   public static ReplChangeManager getInstance(Configuration conf) throws MetaException {
     if (instance == null) {
       instance = new ReplChangeManager(conf);
@@ -299,25 +259,25 @@ public class ReplChangeManager {
    * @param src Original file location
    * @param checksumString Checksum of the original file
    * @param conf
-   * @return Corresponding FileInfo object
+   * @return Corresponding FileStatus object
    */
-  static public FileInfo getFileInfo(Path src, String checksumString,
+  static public FileStatus getFileStatus(Path src, String checksumString,
       Configuration conf) throws MetaException {
     try {
       FileSystem srcFs = src.getFileSystem(conf);
       if (checksumString == null) {
-        return new FileInfo(srcFs, src, null, null, true);
+        return srcFs.getFileStatus(src);
       }
 
       if (!srcFs.exists(src)) {
-        return new FileInfo(srcFs, src, getCMPath(conf, src.getName(), checksumString), checksumString, false);
+        return srcFs.getFileStatus(getCMPath(conf, src.getName(), checksumString));
       }
 
       String currentChecksumString = checksumFor(src, srcFs);
       if (currentChecksumString == null || checksumString.equals(currentChecksumString)) {
-        return new FileInfo(srcFs, src, getCMPath(conf, src.getName(), checksumString), checksumString, true);
+        return srcFs.getFileStatus(src);
       } else {
-        return new FileInfo(srcFs, src, getCMPath(conf, src.getName(), checksumString), checksumString, false);
+        return srcFs.getFileStatus(getCMPath(conf, src.getName(), checksumString));
       }
     } catch (IOException e) {
       throw new MetaException(StringUtils.stringifyException(e));

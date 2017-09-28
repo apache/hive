@@ -49,9 +49,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
-import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hive.hcatalog.api.repl.Command;
 import org.apache.hive.hcatalog.api.repl.ReplicationTask;
 import org.apache.hive.hcatalog.api.repl.ReplicationUtils;
@@ -110,11 +108,6 @@ public class TestHCatClient {
       useExternalMS = true;
       return;
     }
-
-    // Set proxy user privilege and initialize the global state of ProxyUsers
-    Configuration conf = new Configuration();
-    conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
-    ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
 
     System.setProperty(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS.varname,
         DbNotificationListener.class.getName()); // turn on db notification listener on metastore
