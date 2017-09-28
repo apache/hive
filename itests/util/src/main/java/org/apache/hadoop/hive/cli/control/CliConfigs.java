@@ -236,8 +236,8 @@ public class CliConfigs {
     }
   }
 
-  public static class PerfCliConfig extends AbstractCliConfig {
-    public PerfCliConfig() {
+  public static class TezPerfCliConfig extends AbstractCliConfig {
+    public TezPerfCliConfig() {
       super(CorePerfCliDriver.class);
       try {
         setQueryDir("ql/src/test/queries/clientpositive/perf");
@@ -246,14 +246,36 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "minitez.query.files");
         excludesFrom(testConfigProps, "encrypted.query.files");
 
-        setResultsDir("ql/src/test/results/clientpositive/perf/");
-        setLogDir("itests/qtest/target/qfile-results/clientpositive/");
+        setResultsDir("ql/src/test/results/clientpositive/perf/tez");
+        setLogDir("itests/qtest/target/qfile-results/clientpositive/tez");
 
         setInitScript("q_perf_test_init.sql");
         setCleanupScript("q_perf_test_cleanup.sql");
 
-        setHiveConfDir("data/conf/perf-reg/");
+        setHiveConfDir("data/conf/perf-reg/tez");
         setClusterType(MiniClusterType.tez);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class SparkPerfCliConfig extends AbstractCliConfig {
+    public SparkPerfCliConfig() {
+      super(CorePerfCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive/perf");
+
+        excludesFrom(testConfigProps, "spark.perf.disabled.query.files");
+
+        setResultsDir("ql/src/test/results/clientpositive/perf/spark");
+        setLogDir("itests/qtest/target/qfile-results/clientpositive/spark");
+
+        setInitScript("q_perf_test_init.sql");
+        setCleanupScript("q_perf_test_cleanup.sql");
+
+        setHiveConfDir("data/conf/perf-reg/spark");
+        setClusterType(MiniClusterType.spark);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }

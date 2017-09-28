@@ -1,0 +1,517 @@
+Warning: Map Join MAPJOIN[94][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: explain
+select  *
+from (select avg(ss_list_price) B1_LP
+            ,count(ss_list_price) B1_CNT
+            ,count(distinct ss_list_price) B1_CNTD
+      from store_sales
+      where ss_quantity between 0 and 5
+        and (ss_list_price between 11 and 11+10 
+             or ss_coupon_amt between 460 and 460+1000
+             or ss_wholesale_cost between 14 and 14+20)) B1,
+     (select avg(ss_list_price) B2_LP
+            ,count(ss_list_price) B2_CNT
+            ,count(distinct ss_list_price) B2_CNTD
+      from store_sales
+      where ss_quantity between 6 and 10
+        and (ss_list_price between 91 and 91+10
+          or ss_coupon_amt between 1430 and 1430+1000
+          or ss_wholesale_cost between 32 and 32+20)) B2,
+     (select avg(ss_list_price) B3_LP
+            ,count(ss_list_price) B3_CNT
+            ,count(distinct ss_list_price) B3_CNTD
+      from store_sales
+      where ss_quantity between 11 and 15
+        and (ss_list_price between 66 and 66+10
+          or ss_coupon_amt between 920 and 920+1000
+          or ss_wholesale_cost between 4 and 4+20)) B3,
+     (select avg(ss_list_price) B4_LP
+            ,count(ss_list_price) B4_CNT
+            ,count(distinct ss_list_price) B4_CNTD
+      from store_sales
+      where ss_quantity between 16 and 20
+        and (ss_list_price between 142 and 142+10
+          or ss_coupon_amt between 3054 and 3054+1000
+          or ss_wholesale_cost between 80 and 80+20)) B4,
+     (select avg(ss_list_price) B5_LP
+            ,count(ss_list_price) B5_CNT
+            ,count(distinct ss_list_price) B5_CNTD
+      from store_sales
+      where ss_quantity between 21 and 25
+        and (ss_list_price between 135 and 135+10
+          or ss_coupon_amt between 14180 and 14180+1000
+          or ss_wholesale_cost between 38 and 38+20)) B5,
+     (select avg(ss_list_price) B6_LP
+            ,count(ss_list_price) B6_CNT
+            ,count(distinct ss_list_price) B6_CNTD
+      from store_sales
+      where ss_quantity between 26 and 30
+        and (ss_list_price between 28 and 28+10
+          or ss_coupon_amt between 2513 and 2513+1000
+          or ss_wholesale_cost between 42 and 42+20)) B6
+limit 100
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select  *
+from (select avg(ss_list_price) B1_LP
+            ,count(ss_list_price) B1_CNT
+            ,count(distinct ss_list_price) B1_CNTD
+      from store_sales
+      where ss_quantity between 0 and 5
+        and (ss_list_price between 11 and 11+10 
+             or ss_coupon_amt between 460 and 460+1000
+             or ss_wholesale_cost between 14 and 14+20)) B1,
+     (select avg(ss_list_price) B2_LP
+            ,count(ss_list_price) B2_CNT
+            ,count(distinct ss_list_price) B2_CNTD
+      from store_sales
+      where ss_quantity between 6 and 10
+        and (ss_list_price between 91 and 91+10
+          or ss_coupon_amt between 1430 and 1430+1000
+          or ss_wholesale_cost between 32 and 32+20)) B2,
+     (select avg(ss_list_price) B3_LP
+            ,count(ss_list_price) B3_CNT
+            ,count(distinct ss_list_price) B3_CNTD
+      from store_sales
+      where ss_quantity between 11 and 15
+        and (ss_list_price between 66 and 66+10
+          or ss_coupon_amt between 920 and 920+1000
+          or ss_wholesale_cost between 4 and 4+20)) B3,
+     (select avg(ss_list_price) B4_LP
+            ,count(ss_list_price) B4_CNT
+            ,count(distinct ss_list_price) B4_CNTD
+      from store_sales
+      where ss_quantity between 16 and 20
+        and (ss_list_price between 142 and 142+10
+          or ss_coupon_amt between 3054 and 3054+1000
+          or ss_wholesale_cost between 80 and 80+20)) B4,
+     (select avg(ss_list_price) B5_LP
+            ,count(ss_list_price) B5_CNT
+            ,count(distinct ss_list_price) B5_CNTD
+      from store_sales
+      where ss_quantity between 21 and 25
+        and (ss_list_price between 135 and 135+10
+          or ss_coupon_amt between 14180 and 14180+1000
+          or ss_wholesale_cost between 38 and 38+20)) B5,
+     (select avg(ss_list_price) B6_LP
+            ,count(ss_list_price) B6_CNT
+            ,count(distinct ss_list_price) B6_CNTD
+      from store_sales
+      where ss_quantity between 26 and 30
+        and (ss_list_price between 28 and 28+10
+          or ss_coupon_amt between 2513 and 2513+1000
+          or ss_wholesale_cost between 42 and 42+20)) B6
+limit 100
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 11 <- Map 10 (GROUP, 15)
+        Reducer 12 <- Reducer 11 (GROUP, 1)
+        Reducer 14 <- Map 13 (GROUP, 15)
+        Reducer 15 <- Reducer 14 (GROUP, 1)
+        Reducer 17 <- Map 16 (GROUP, 15)
+        Reducer 18 <- Reducer 17 (GROUP, 1)
+        Reducer 5 <- Map 4 (GROUP, 15)
+        Reducer 6 <- Reducer 5 (GROUP, 1)
+        Reducer 8 <- Map 7 (GROUP, 15)
+        Reducer 9 <- Reducer 8 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((ss_list_price BETWEEN 142 AND 152 or ss_coupon_amt BETWEEN 3054 AND 4054 or ss_wholesale_cost BETWEEN 80 AND 100) and ss_quantity BETWEEN 16 AND 20) (type: boolean)
+                    Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_list_price (type: decimal(7,2))
+                      outputColumnNames: ss_list_price
+                      Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: avg(ss_list_price), count(ss_list_price)
+                        keys: ss_list_price (type: decimal(7,2))
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: decimal(7,2))
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: decimal(7,2))
+                          Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: struct<count:bigint,sum:decimal(17,2),input:decimal(7,2)>), _col2 (type: bigint)
+        Map 13 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((ss_list_price BETWEEN 66 AND 76 or ss_coupon_amt BETWEEN 920 AND 1920 or ss_wholesale_cost BETWEEN 4 AND 24) and ss_quantity BETWEEN 11 AND 15) (type: boolean)
+                    Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_list_price (type: decimal(7,2))
+                      outputColumnNames: ss_list_price
+                      Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: avg(ss_list_price), count(ss_list_price)
+                        keys: ss_list_price (type: decimal(7,2))
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: decimal(7,2))
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: decimal(7,2))
+                          Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: struct<count:bigint,sum:decimal(17,2),input:decimal(7,2)>), _col2 (type: bigint)
+        Map 16 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((ss_list_price BETWEEN 91 AND 101 or ss_coupon_amt BETWEEN 1430 AND 2430 or ss_wholesale_cost BETWEEN 32 AND 52) and ss_quantity BETWEEN 6 AND 10) (type: boolean)
+                    Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_list_price (type: decimal(7,2))
+                      outputColumnNames: ss_list_price
+                      Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: avg(ss_list_price), count(ss_list_price)
+                        keys: ss_list_price (type: decimal(7,2))
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: decimal(7,2))
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: decimal(7,2))
+                          Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: struct<count:bigint,sum:decimal(17,2),input:decimal(7,2)>), _col2 (type: bigint)
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((ss_list_price BETWEEN 28 AND 38 or ss_coupon_amt BETWEEN 2513 AND 3513 or ss_wholesale_cost BETWEEN 42 AND 62) and ss_quantity BETWEEN 26 AND 30) (type: boolean)
+                    Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_list_price (type: decimal(7,2))
+                      outputColumnNames: ss_list_price
+                      Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: avg(ss_list_price), count(ss_list_price)
+                        keys: ss_list_price (type: decimal(7,2))
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: decimal(7,2))
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: decimal(7,2))
+                          Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: struct<count:bigint,sum:decimal(17,2),input:decimal(7,2)>), _col2 (type: bigint)
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((ss_list_price BETWEEN 135 AND 145 or ss_coupon_amt BETWEEN 14180 AND 15180 or ss_wholesale_cost BETWEEN 38 AND 58) and ss_quantity BETWEEN 21 AND 25) (type: boolean)
+                    Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_list_price (type: decimal(7,2))
+                      outputColumnNames: ss_list_price
+                      Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: avg(ss_list_price), count(ss_list_price)
+                        keys: ss_list_price (type: decimal(7,2))
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: decimal(7,2))
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: decimal(7,2))
+                          Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: struct<count:bigint,sum:decimal(17,2),input:decimal(7,2)>), _col2 (type: bigint)
+        Reducer 11 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: decimal(7,2))
+                mode: partial2
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: avg(_col1), count(_col2), count(_col0)
+                  mode: partial2
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: struct<count:bigint,sum:decimal(17,2),input:decimal(7,2)>), _col1 (type: bigint), _col2 (type: bigint)
+        Reducer 12 
+            Local Work:
+              Map Reduce Local Work
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0), count(VALUE._col1), count(VALUE._col2)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                Spark HashTable Sink Operator
+                  keys:
+                    0 
+                    1 
+                    2 
+                    3 
+                    4 
+                    5 
+        Reducer 14 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: decimal(7,2))
+                mode: partial2
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: avg(_col1), count(_col2), count(_col0)
+                  mode: partial2
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: struct<count:bigint,sum:decimal(17,2),input:decimal(7,2)>), _col1 (type: bigint), _col2 (type: bigint)
+        Reducer 15 
+            Local Work:
+              Map Reduce Local Work
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0), count(VALUE._col1), count(VALUE._col2)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                Spark HashTable Sink Operator
+                  keys:
+                    0 
+                    1 
+                    2 
+                    3 
+                    4 
+                    5 
+        Reducer 17 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: decimal(7,2))
+                mode: partial2
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: avg(_col1), count(_col2), count(_col0)
+                  mode: partial2
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: struct<count:bigint,sum:decimal(17,2),input:decimal(7,2)>), _col1 (type: bigint), _col2 (type: bigint)
+        Reducer 18 
+            Local Work:
+              Map Reduce Local Work
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0), count(VALUE._col1), count(VALUE._col2)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                Spark HashTable Sink Operator
+                  keys:
+                    0 
+                    1 
+                    2 
+                    3 
+                    4 
+                    5 
+        Reducer 5 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: decimal(7,2))
+                mode: partial2
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: avg(_col1), count(_col2), count(_col0)
+                  mode: partial2
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: struct<count:bigint,sum:decimal(17,2),input:decimal(7,2)>), _col1 (type: bigint), _col2 (type: bigint)
+        Reducer 6 
+            Local Work:
+              Map Reduce Local Work
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0), count(VALUE._col1), count(VALUE._col2)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                Spark HashTable Sink Operator
+                  keys:
+                    0 
+                    1 
+                    2 
+                    3 
+                    4 
+                    5 
+        Reducer 8 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: decimal(7,2))
+                mode: partial2
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: avg(_col1), count(_col2), count(_col0)
+                  mode: partial2
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: struct<count:bigint,sum:decimal(17,2),input:decimal(7,2)>), _col1 (type: bigint), _col2 (type: bigint)
+        Reducer 9 
+            Local Work:
+              Map Reduce Local Work
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0), count(VALUE._col1), count(VALUE._col2)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                Spark HashTable Sink Operator
+                  keys:
+                    0 
+                    1 
+                    2 
+                    3 
+                    4 
+                    5 
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 15)
+        Reducer 3 <- Reducer 2 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((ss_list_price BETWEEN 11 AND 21 or ss_coupon_amt BETWEEN 460 AND 1460 or ss_wholesale_cost BETWEEN 14 AND 34) and ss_quantity BETWEEN 0 AND 5) (type: boolean)
+                    Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_list_price (type: decimal(7,2))
+                      outputColumnNames: ss_list_price
+                      Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: avg(ss_list_price), count(ss_list_price)
+                        keys: ss_list_price (type: decimal(7,2))
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: decimal(7,2))
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: decimal(7,2))
+                          Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: struct<count:bigint,sum:decimal(17,2),input:decimal(7,2)>), _col2 (type: bigint)
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: decimal(7,2))
+                mode: partial2
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: avg(_col1), count(_col2), count(_col0)
+                  mode: partial2
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: struct<count:bigint,sum:decimal(17,2),input:decimal(7,2)>), _col1 (type: bigint), _col2 (type: bigint)
+        Reducer 3 
+            Local Work:
+              Map Reduce Local Work
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: avg(VALUE._col0), count(VALUE._col1), count(VALUE._col2)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                       Inner Join 0 to 2
+                       Inner Join 0 to 3
+                       Inner Join 0 to 4
+                       Inner Join 0 to 5
+                  keys:
+                    0 
+                    1 
+                    2 
+                    3 
+                    4 
+                    5 
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                  input vertices:
+                    1 Reducer 6
+                    2 Reducer 9
+                    3 Reducer 12
+                    4 Reducer 15
+                    5 Reducer 18
+                  Statistics: Num rows: 1 Data size: 3505 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: decimal(11,6)), _col1 (type: bigint), _col2 (type: bigint), _col15 (type: decimal(11,6)), _col16 (type: bigint), _col17 (type: bigint), _col12 (type: decimal(11,6)), _col13 (type: bigint), _col14 (type: bigint), _col9 (type: decimal(11,6)), _col10 (type: bigint), _col11 (type: bigint), _col6 (type: decimal(11,6)), _col7 (type: bigint), _col8 (type: bigint), _col3 (type: decimal(11,6)), _col4 (type: bigint), _col5 (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                    Statistics: Num rows: 1 Data size: 3505 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 100
+                      Statistics: Num rows: 1 Data size: 3505 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 3505 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 100
+      Processor Tree:
+        ListSink
+

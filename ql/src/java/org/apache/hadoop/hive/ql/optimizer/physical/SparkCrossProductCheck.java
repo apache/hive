@@ -104,7 +104,7 @@ public class SparkCrossProductCheck implements PhysicalPlanResolver, Dispatcher 
 
   private void checkMapJoin(SparkTask sparkTask) throws SemanticException {
     SparkWork sparkWork = sparkTask.getWork();
-    for (BaseWork baseWork : sparkWork.getAllWorkUnsorted()) {
+    for (BaseWork baseWork : sparkWork.getAllWork()) {
       List<String> warnings =
           new CrossProductCheck.MapJoinCheck(sparkTask.toString()).analyze(baseWork);
       for (String w : warnings) {

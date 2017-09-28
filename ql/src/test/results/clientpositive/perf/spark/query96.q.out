@@ -1,0 +1,193 @@
+PREHOOK: query: explain
+select  count(*) 
+from store_sales
+    ,household_demographics 
+    ,time_dim, store
+where ss_sold_time_sk = time_dim.t_time_sk   
+    and ss_hdemo_sk = household_demographics.hd_demo_sk 
+    and ss_store_sk = s_store_sk
+    and time_dim.t_hour = 8
+    and time_dim.t_minute >= 30
+    and household_demographics.hd_dep_count = 5
+    and store.s_store_name = 'ese'
+order by count(*)
+limit 100
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select  count(*) 
+from store_sales
+    ,household_demographics 
+    ,time_dim, store
+where ss_sold_time_sk = time_dim.t_time_sk   
+    and ss_hdemo_sk = household_demographics.hd_demo_sk 
+    and ss_store_sk = s_store_sk
+    and time_dim.t_hour = 8
+    and time_dim.t_minute >= 30
+    and household_demographics.hd_dep_count = 5
+    and store.s_store_name = 'ese'
+order by count(*)
+limit 100
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: time_dim
+                  Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((t_hour = 8) and (t_minute >= 30) and t_time_sk is not null) (type: boolean)
+                    Statistics: Num rows: 14400 Data size: 6782400 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: t_time_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 14400 Data size: 6782400 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: household_demographics
+                  Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((hd_dep_count = 5) and hd_demo_sk is not null) (type: boolean)
+                    Statistics: Num rows: 3600 Data size: 385200 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: hd_demo_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3600 Data size: 385200 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col1 (type: int)
+                          1 _col0 (type: int)
+            Local Work:
+              Map Reduce Local Work
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: store
+                  Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
+                    Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: s_store_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col2 (type: int)
+                          1 _col0 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 3 <- Reducer 2 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
+                    Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_sold_time_sk (type: int), ss_hdemo_sk (type: int), ss_store_sk (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col1, _col2
+                        input vertices:
+                          1 Map 4
+                        Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col1 (type: int)
+                            1 _col0 (type: int)
+                          outputColumnNames: _col2
+                          input vertices:
+                            1 Map 5
+                          Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
+                          Map Join Operator
+                            condition map:
+                                 Inner Join 0 to 1
+                            keys:
+                              0 _col2 (type: int)
+                              1 _col0 (type: int)
+                            input vertices:
+                              1 Map 6
+                            Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
+                            Group By Operator
+                              aggregations: count()
+                              mode: hash
+                              outputColumnNames: _col0
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                              Reduce Output Operator
+                                sort order: 
+                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                                value expressions: _col0 (type: bigint)
+            Local Work:
+              Map Reduce Local Work
+        Reducer 2 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: bigint)
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: bigint)
+                    sort order: +
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    TopN Hash Memory Usage: 0.1
+        Reducer 3 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: bigint)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 100
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
