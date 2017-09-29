@@ -69,6 +69,9 @@ public class LlapOptionsProcessor {
   public static final String OPTION_SLIDER_DEFAULT_KEYTAB = "slider-default-keytab";
   public static final String OPTION_OUTPUT_DIR = "output";
   public static final String OPTION_START = "startImmediately";
+  public static final String OPTION_HEALTH_PERCENT = "health-percent";
+  public static final String OPTION_HEALTH_TIME_WINDOW_SECS = "health-time-window-secs";
+  public static final String OPTION_HEALTH_INIT_DELAY_SECS = "health-init-delay-secs";
 
   public static class LlapOptions {
     private final int instances;
@@ -232,6 +235,19 @@ public class LlapOptionsProcessor {
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_PLACEMENT).withLongOpt(OPTION_SLIDER_PLACEMENT)
         .withDescription("Slider placement policy; see slider documentation at https://slider.incubator.apache.org/docs/placement.html."
           + " 4 means anti-affinity (the default; unnecessary if LLAP is going to take more than half of the YARN capacity of a node), 0 is normal.").create());
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_HEALTH_PERCENT).withLongOpt(OPTION_HEALTH_PERCENT)
+      .withDescription("Percentage of running containers after which LLAP application is considered healthy" +
+        " (Default: 80)").create());
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_HEALTH_INIT_DELAY_SECS)
+      .withLongOpt(OPTION_HEALTH_INIT_DELAY_SECS)
+      .withDescription("Delay in seconds after which health percentage is monitored (Default: 400)").create());
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_HEALTH_TIME_WINDOW_SECS)
+      .withLongOpt(OPTION_HEALTH_TIME_WINDOW_SECS)
+      .withDescription("Time window in seconds (after initial delay) for which LLAP application is allowed to be in " +
+        "unhealthy state before being killed (Default: 300)").create());
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_EXECUTORS).withLongOpt(OPTION_EXECUTORS)
         .withDescription("executor per instance").create('e'));
