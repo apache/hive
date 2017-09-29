@@ -379,8 +379,9 @@ class LlapRecordReader
   @Override
   public void setError(Throwable t) {
     counters.incrCounter(LlapIOCounters.NUM_ERRORS);
-    LlapIoImpl.LOG.info("setError called; closed {}, done {}, err {}, pending {}",
+    LlapIoImpl.LOG.debug("setError called; current state closed {}, done {}, err {}, pending {}",
         isClosed, isDone, pendingError, pendingData.size());
+    LlapIoImpl.LOG.warn("setError called with an error", t);
     assert t != null;
     synchronized (pendingData) {
       pendingError = t;

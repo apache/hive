@@ -808,7 +808,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       tbl.getTTable().getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
     }
 
-    if (!Utilities.isDefaultNameNode(conf) && DDLTask.doesTableNeedLocation(tbl)) {
+    if (DDLTask.doesTableNeedLocation(tbl)) {
       // If location is specified - ensure that it is a full qualified name
       DDLTask.makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tableName, conf);
     }

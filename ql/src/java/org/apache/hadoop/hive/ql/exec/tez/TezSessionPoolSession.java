@@ -56,9 +56,9 @@ class TezSessionPoolSession extends TezSessionState {
     void registerOpenSession(TezSessionPoolSession session);
     void unregisterOpenSession(TezSessionPoolSession session);
     void returnAfterUse(TezSessionPoolSession session) throws Exception;
-    TezSessionState reopen(TezSessionPoolSession session, Configuration conf,
+    TezSessionState reopen(TezSessionState session, Configuration conf,
         String[] inputOutputJars) throws Exception;
-    void destroy(TezSessionPoolSession session) throws Exception;
+    void destroy(TezSessionState session) throws Exception;
   }
 
   private final AtomicInteger sessionState = new AtomicInteger(STATE_NONE);

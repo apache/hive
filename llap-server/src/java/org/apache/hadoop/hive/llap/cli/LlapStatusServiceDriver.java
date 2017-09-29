@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.llap.cli;
 
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,8 +34,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
@@ -44,6 +43,7 @@ import org.apache.hadoop.hive.llap.cli.LlapStatusOptionsProcessor.LlapStatusOpti
 import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers;
 import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers.AppStatusBuilder;
 import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers.LlapInstance;
+import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers.State;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
@@ -71,6 +71,10 @@ import org.slf4j.LoggerFactory;
 
 public class LlapStatusServiceDriver {
 
+  private static final EnumSet<State> NO_SLIDER_INFO_STATES = EnumSet.of(
+      State.APP_NOT_FOUND, State.COMPLETE, State.LAUNCHING);
+  private static final EnumSet<State> LAUNCHING_STATES = EnumSet.of(
+      State.LAUNCHING, State.RUNNING_PARTIAL, State.RUNNING_ALL);
   private static final Logger LOG = LoggerFactory.getLogger(LlapStatusServiceDriver.class);
   private static final Logger CONSOLE_LOGGER = LoggerFactory.getLogger("LlapStatusServiceDriverConsole");
 
@@ -252,8 +256,7 @@ public class LlapStatusServiceDriver {
 
       if (ret != ExitCode.SUCCESS) {
         return ret.getInt();
-      } else if (EnumSet.of(LlapStatusHelpers.State.APP_NOT_FOUND, LlapStatusHelpers.State.COMPLETE, LlapStatusHelpers.State.LAUNCHING)
-        .contains(appStatusBuilder.getState())) {
+      } else if (NO_SLIDER_INFO_STATES.contains(appStatusBuilder.getState())) {
         return ExitCode.SUCCESS.getInt();
       } else {
         // Get information from slider.
@@ -375,7 +378,7 @@ public class LlapStatusServiceDriver {
                                AppStatusBuilder appStatusBuilder) throws
       LlapStatusCliException {
     if (appReport == null) {
-      appStatusBuilder.setState(LlapStatusHelpers.State.APP_NOT_FOUND);
+      appStatusBuilder.setState(State.APP_NOT_FOUND);
       LOG.info("No Application Found");
       return ExitCode.SUCCESS;
     }
@@ -388,11 +391,11 @@ public class LlapStatusServiceDriver {
       case NEW:
       case NEW_SAVING:
       case SUBMITTED:
-        appStatusBuilder.setState(LlapStatusHelpers.State.LAUNCHING);
+        appStatusBuilder.setState(State.LAUNCHING);
         return ExitCode.SUCCESS;
       case ACCEPTED:
         appStatusBuilder.maybeCreateAndGetAmInfo().setAppId(appReport.getApplicationId().toString());
-        appStatusBuilder.setState(LlapStatusHelpers.State.LAUNCHING);
+        appStatusBuilder.setState(State.LAUNCHING);
         return ExitCode.SUCCESS;
       case RUNNING:
         appStatusBuilder.maybeCreateAndGetAmInfo().setAppId(appReport.getApplicationId().toString());
@@ -403,8 +406,10 @@ public class LlapStatusServiceDriver {
       case KILLED:
         appStatusBuilder.maybeCreateAndGetAmInfo().setAppId(appReport.getApplicationId().toString());
         appStatusBuilder.setAppFinishTime(appReport.getFinishTime());
-        appStatusBuilder.setState(LlapStatusHelpers.State.COMPLETE);
-        ApplicationDiagnostics appDiagnostics = LlapSliderUtils.getApplicationDiagnosticsFromYarnDiagnostics(appReport, LOG);
+        appStatusBuilder.setState(State.COMPLETE);
+        ApplicationDiagnostics appDiagnostics =
+            LlapSliderUtils.getApplicationDiagnosticsFromYarnDiagnostics(
+                appReport, appStatusBuilder, LOG);
         if (appDiagnostics == null) {
           LOG.warn("AppDiagnostics not available for YARN application report");
         } else {
@@ -575,7 +580,7 @@ public class LlapStatusServiceDriver {
         LOG.debug("No information found in the LLAP registry");
       }
       appStatusBuilder.setLiveInstances(0);
-      appStatusBuilder.setState(LlapStatusHelpers.State.LAUNCHING);
+      appStatusBuilder.setState(State.LAUNCHING);
       appStatusBuilder.clearRunningLlapInstances();
       return ExitCode.SUCCESS;
     } else {
@@ -608,15 +613,15 @@ public class LlapStatusServiceDriver {
       appStatusBuilder.setLiveInstances(validatedInstances.size());
       appStatusBuilder.setLaunchingInstances(llapExtraInstances.size());
       if (validatedInstances.size() >= appStatusBuilder.getDesiredInstances()) {
-        appStatusBuilder.setState(LlapStatusHelpers.State.RUNNING_ALL);
+        appStatusBuilder.setState(State.RUNNING_ALL);
         if (validatedInstances.size() > appStatusBuilder.getDesiredInstances()) {
           LOG.warn("Found more entries in LLAP registry, as compared to desired entries");
         }
       } else {
         if (validatedInstances.size() > 0) {
-          appStatusBuilder.setState(LlapStatusHelpers.State.RUNNING_PARTIAL);
+          appStatusBuilder.setState(State.RUNNING_PARTIAL);
         } else {
-          appStatusBuilder.setState(LlapStatusHelpers.State.LAUNCHING);
+          appStatusBuilder.setState(State.LAUNCHING);
         }
       }
 
@@ -886,116 +891,113 @@ public class LlapStatusServiceDriver {
         TimeUnit.SECONDS.convert(watchTimeout, TimeUnit.MILLISECONDS),
         numAttempts, watchMode, new DecimalFormat("#.###").format(runningNodesThreshold));
       while (numAttempts > 0) {
-        try {
-          if (!firstAttempt) {
-            if (watchMode) {
-              try {
-                Thread.sleep(refreshInterval);
-              } catch (InterruptedException e) {
-                // ignore
-              }
-            } else {
-              // reported once, so break
-              break;
+        if (!firstAttempt) {
+          if (watchMode) {
+            try {
+              Thread.sleep(refreshInterval);
+            } catch (InterruptedException e) {
+              // ignore
             }
           } else {
-            firstAttempt = false;
+            // reported once, so break
+            break;
           }
-          ret = statusServiceDriver.run(options, watchMode ? watchTimeout : 0);
-          currentState = statusServiceDriver.appStatusBuilder.getState();
-          try {
-            lastSummaryLogTime = LlapStatusServiceDriver
-                .maybeLogSummary(clock, lastSummaryLogTime, statusServiceDriver,
-                    watchMode, watchTimeout, launchingState);
-          } catch (Exception e) {
-            LOG.warn("Failed to log summary", e);
-          }
+        } else {
+          firstAttempt = false;
+        }
+        ret = statusServiceDriver.run(options, watchMode ? watchTimeout : 0);
+        currentState = statusServiceDriver.appStatusBuilder.getState();
+        try {
+          lastSummaryLogTime = LlapStatusServiceDriver
+              .maybeLogSummary(clock, lastSummaryLogTime, statusServiceDriver,
+                  watchMode, watchTimeout, launchingState);
+        } catch (Exception e) {
+          LOG.warn("Failed to log summary", e);
+        }
 
-          if (ret == ExitCode.SUCCESS.getInt()) {
-            if (watchMode) {
+        if (ret == ExitCode.SUCCESS.getInt()) {
+          if (watchMode) {
 
-              // slider has started llap application, now if for some reason state changes to COMPLETE then fail fast
-              if (launchingState == null &&
-                  (EnumSet.of(LlapStatusHelpers.State.LAUNCHING,
-                      LlapStatusHelpers.State.RUNNING_PARTIAL,
-                      LlapStatusHelpers.State.RUNNING_ALL)
-                      .contains(currentState))) {
-                launchingState = currentState;
-              }
+            // slider has started llap application, now if for some reason state changes to COMPLETE then fail fast
+            if (launchingState == null && LAUNCHING_STATES.contains(currentState)) {
+              launchingState = currentState;
+            }
 
-              if (launchingState != null && currentState.equals(
-                  LlapStatusHelpers.State.COMPLETE)) {
-                LOG.warn("Application stopped while launching. COMPLETE state reached while waiting for RUNNING state."
-                  + " Failing " + "fast..");
+            if (currentState.equals(State.COMPLETE)) {
+              if (launchingState != null || options.isLaunched()) {
+                LOG.warn("COMPLETE state reached while waiting for RUNNING state. Failing.");
+                System.err.println("Final diagnostics: " +
+                    statusServiceDriver.appStatusBuilder.getDiagnostics());
                 break;
+              } else {
+                LOG.info("Found a stopped application; assuming it was a previous attempt "
+                    + "and waiting for the next one. Omit the -l flag to avoid this.");
               }
+            }
 
-              if (!(currentState.equals(LlapStatusHelpers.State.RUNNING_PARTIAL) || currentState.equals(
-                  LlapStatusHelpers.State.RUNNING_ALL))) {
+            if (!(currentState.equals(State.RUNNING_PARTIAL) || currentState.equals(
+                State.RUNNING_ALL))) {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "Current state: {}. Desired state: {}. {}/{} instances.",
+                    currentState,
+                    runningNodesThreshold == 1.0f ?
+                        State.RUNNING_ALL :
+                        State.RUNNING_PARTIAL,
+                    statusServiceDriver.appStatusBuilder.getLiveInstances(),
+                    statusServiceDriver.appStatusBuilder
+                        .getDesiredInstances());
+              }
+              numAttempts--;
+              continue;
+            }
+
+            // we have reached RUNNING state, now check if running nodes threshold is met
+            final int liveInstances = statusServiceDriver.appStatusBuilder.getLiveInstances();
+            final int desiredInstances = statusServiceDriver.appStatusBuilder.getDesiredInstances();
+            if (desiredInstances > 0) {
+              final float ratio = (float) liveInstances / (float) desiredInstances;
+              if (ratio < runningNodesThreshold) {
                 if (LOG.isDebugEnabled()) {
                   LOG.debug(
-                      "Current state: {}. Desired state: {}. {}/{} instances.",
-                      currentState,
-                      runningNodesThreshold == 1.0f ?
-                          LlapStatusHelpers.State.RUNNING_ALL :
-                          LlapStatusHelpers.State.RUNNING_PARTIAL,
+                      "Waiting until running nodes threshold is reached. Current: {} Desired: {}." +
+                          " {}/{} instances.",
+                      new DecimalFormat("#.###").format(ratio),
+                      new DecimalFormat("#.###")
+                          .format(runningNodesThreshold),
                       statusServiceDriver.appStatusBuilder.getLiveInstances(),
                       statusServiceDriver.appStatusBuilder
                           .getDesiredInstances());
                 }
                 numAttempts--;
                 continue;
-              }
-
-              // we have reached RUNNING state, now check if running nodes threshold is met
-              final int liveInstances = statusServiceDriver.appStatusBuilder.getLiveInstances();
-              final int desiredInstances = statusServiceDriver.appStatusBuilder.getDesiredInstances();
-              if (desiredInstances > 0) {
-                final float ratio = (float) liveInstances / (float) desiredInstances;
-                if (ratio < runningNodesThreshold) {
-                  if (LOG.isDebugEnabled()) {
-                    LOG.debug(
-                        "Waiting until running nodes threshold is reached. Current: {} Desired: {}." +
-                            " {}/{} instances.",
-                        new DecimalFormat("#.###").format(ratio),
-                        new DecimalFormat("#.###")
-                            .format(runningNodesThreshold),
-                        statusServiceDriver.appStatusBuilder.getLiveInstances(),
-                        statusServiceDriver.appStatusBuilder
-                            .getDesiredInstances());
-                  }
-                  numAttempts--;
-                  continue;
-                } else {
-                  desiredStateAttained = true;
-                  statusServiceDriver.appStatusBuilder.setRunningThresholdAchieved(true);
-                }
               } else {
-                numAttempts--;
-                continue;
+                desiredStateAttained = true;
+                statusServiceDriver.appStatusBuilder.setRunningThresholdAchieved(true);
               }
+            } else {
+              numAttempts--;
+              continue;
             }
-          } else if (ret == ExitCode.YARN_ERROR.getInt() && watchMode) {
-            LOG.warn("Watch mode enabled and got YARN error. Retrying..");
-            numAttempts--;
-            continue;
-          } else if (ret == ExitCode.SLIDER_CLIENT_ERROR_CREATE_FAILED.getInt() && watchMode) {
-            LOG.warn("Watch mode enabled and slider client creation failed. Retrying..");
-            numAttempts--;
-            continue;
-          } else if (ret == ExitCode.SLIDER_CLIENT_ERROR_OTHER.getInt() && watchMode) {
-            LOG.warn("Watch mode enabled and got slider client error. Retrying..");
-            numAttempts--;
-            continue;
-          } else if (ret == ExitCode.LLAP_REGISTRY_ERROR.getInt() && watchMode) {
-            LOG.warn("Watch mode enabled and got LLAP registry error. Retrying..");
-            numAttempts--;
-            continue;
           }
-          break;
-        } finally {
-          // TODO Remove this before commit.
+        } else if (ret == ExitCode.YARN_ERROR.getInt() && watchMode) {
+          LOG.warn("Watch mode enabled and got YARN error. Retrying..");
+          numAttempts--;
+          continue;
+        } else if (ret == ExitCode.SLIDER_CLIENT_ERROR_CREATE_FAILED.getInt() && watchMode) {
+          LOG.warn("Watch mode enabled and slider client creation failed. Retrying..");
+          numAttempts--;
+          continue;
+        } else if (ret == ExitCode.SLIDER_CLIENT_ERROR_OTHER.getInt() && watchMode) {
+          LOG.warn("Watch mode enabled and got slider client error. Retrying..");
+          numAttempts--;
+          continue;
+        } else if (ret == ExitCode.LLAP_REGISTRY_ERROR.getInt() && watchMode) {
+          LOG.warn("Watch mode enabled and got LLAP registry error. Retrying..");
+          numAttempts--;
+          continue;
         }
+        break;
       }
       // Log final state to CONSOLE_LOGGER
       LlapStatusServiceDriver
@@ -1036,7 +1038,7 @@ public class LlapStatusServiceDriver {
     if (lastSummaryLogTime < currentTime - LOG_SUMMARY_INTERVAL) {
       String diagString = null;
       if (launchingState == null && statusServiceDriver.appStatusBuilder.getState() ==
-          LlapStatusHelpers.State.COMPLETE && watchMode) {
+          State.COMPLETE && watchMode) {
         // First known state was COMPLETED. Wait for the app launch to start.
         diagString = "Awaiting LLAP launch";
         // Clear completed instances in this case. Don't want to provide information from the previous run.

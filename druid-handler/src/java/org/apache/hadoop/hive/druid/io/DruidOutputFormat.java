@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.druid.serde.DruidWritable;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -127,9 +128,10 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
     final List<DimensionSchema> dimensions = new ArrayList<>();
     ImmutableList.Builder<AggregatorFactory> aggregatorFactoryBuilder = ImmutableList.builder();
     for (int i = 0; i < columnTypes.size(); i++) {
-      PrimitiveTypeInfo f = (PrimitiveTypeInfo) columnTypes.get(i);
+      final PrimitiveObjectInspector.PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) columnTypes
+              .get(i)).getPrimitiveCategory();
       AggregatorFactory af;
-      switch (f.getPrimitiveCategory()) {
+      switch (primitiveCategory) {
         case BYTE:
         case SHORT:
         case INT:
@@ -146,16 +148,17 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
           if (!tColumnName.equals(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN) && !tColumnName
                   .equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME)) {
             throw new IOException("Dimension " + tColumnName + " does not have STRING type: " +
-                    f.getPrimitiveCategory());
+                    primitiveCategory);
           }
           continue;
         default:
           // Dimension
           String dColumnName = columnNames.get(i);
-          if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(f.getPrimitiveCategory()) !=
-                  PrimitiveGrouping.STRING_GROUP) {
+          if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(primitiveCategory) !=
+                  PrimitiveGrouping.STRING_GROUP
+                  && primitiveCategory != PrimitiveObjectInspector.PrimitiveCategory.BOOLEAN) {
             throw new IOException("Dimension " + dColumnName + " does not have STRING type: " +
-                    f.getPrimitiveCategory());
+                    primitiveCategory);
           }
           dimensions.add(new StringDimensionSchema(dColumnName));
           continue;

@@ -1065,8 +1065,7 @@ public class StatsUtils {
       // epoch, days since epoch
       cs.setRange(0, 25201);
     } else {
-      // Columns statistics for complex datatypes are not supported yet
-      return null;
+      cs.setAvgColLen(getSizeOfComplexTypes(conf, cinfo.getObjectInspector()));
     }
     return cs;
   }

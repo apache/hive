@@ -21,15 +21,12 @@ import java.util.concurrent.TimeoutException;
 
 import java.util.concurrent.TimeUnit;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -308,8 +305,8 @@ public class WorkloadManager
     sessions.replaceSession(ensureOwnedSession(oldSession), createSession(), false, null, null);
   }
 
-  private WmTezSession ensureOwnedSession(TezSessionPoolSession oldSession) {
-    if (!(oldSession instanceof WmTezSession) || !oldSession.isOwnedBy(this)) {
+  private WmTezSession ensureOwnedSession(TezSessionState oldSession) {
+    if (!(oldSession instanceof WmTezSession) || !((WmTezSession)oldSession).isOwnedBy(this)) {
       throw new AssertionError("Not a WM session " + oldSession);
     }
     WmTezSession session = (WmTezSession) oldSession;
@@ -338,7 +335,7 @@ public class WorkloadManager
   }
 
   @Override
-  public TezSessionState reopen(TezSessionPoolSession session, Configuration conf,
+  public TezSessionState reopen(TezSessionState session, Configuration conf,
       String[] additionalFiles) throws Exception {
     WmTezSession oldSession = ensureOwnedSession(session), newSession = createSession();
     newSession.setPoolName(oldSession.getPoolName());
@@ -358,7 +355,7 @@ public class WorkloadManager
   }
 
   @Override
-  public void destroy(TezSessionPoolSession session) throws Exception {
+  public void destroy(TezSessionState session) throws Exception {
     LOG.warn("Closing a pool session because of retry failure.");
     // We never want to lose pool sessions. Replace it instead; al trigger duck redistribution.
     WmTezSession wmSession = ensureOwnedSession(session);

@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -211,29 +212,21 @@ class MetaStoreDirectSql {
       tx.begin();
       doCommit = true;
     }
-    Query dbQuery = null, tblColumnQuery = null, partColumnQuery = null;
-
+    LinkedList<Query> initQueries = new LinkedList<>();
+  
     try {
       // Force the underlying db to initialize.
-      dbQuery = pm.newQuery(MDatabase.class, "name == ''");
-      dbQuery.execute();
-
-      tblColumnQuery = pm.newQuery(MTableColumnStatistics.class, "dbName == ''");
-      tblColumnQuery.execute();
-
-      partColumnQuery = pm.newQuery(MPartitionColumnStatistics.class, "dbName == ''");
-      partColumnQuery.execute();
-
-      /*
-        these queries for the notification related tables have to be executed so
-        that the tables are created. This was not required earlier because we were
-        interacting with these tables via DataNucleus so it would create them if
-        they did not exist (mostly used in test, schematool should be used for production).
-        however this has been changed and we used direct SQL
-        queries via DataNucleus to interact with them now.
-       */
-      pm.newQuery(MNotificationLog.class, "dbName == ''").execute();
-      pm.newQuery(MNotificationNextId.class, "nextEventId < -1").execute();
+      initQueries.add(pm.newQuery(MDatabase.class, "name == ''"));
+      initQueries.add(pm.newQuery(MTableColumnStatistics.class, "dbName == ''"));
+      initQueries.add(pm.newQuery(MPartitionColumnStatistics.class, "dbName == ''"));
+      initQueries.add(pm.newQuery(MConstraint.class, "childIntegerIndex < 0"));
+      initQueries.add(pm.newQuery(MNotificationLog.class, "dbName == ''"));
+      initQueries.add(pm.newQuery(MNotificationNextId.class, "nextEventId < -1"));
+      Query q;
+      while ((q = initQueries.peekFirst()) != null) {
+        q.execute();
+        initQueries.pollFirst();
+      }
 
       return true;
     } catch (Exception ex) {
@@ -245,14 +238,11 @@ class MetaStoreDirectSql {
       if (doCommit) {
         tx.commit();
       }
-      if (dbQuery != null) {
-        dbQuery.closeAll();
-      }
-      if (tblColumnQuery != null) {
-        tblColumnQuery.closeAll();
-      }
-      if (partColumnQuery != null) {
-        partColumnQuery.closeAll();
+      for (Query q : initQueries) {
+        try {
+          q.closeAll();
+        } catch (Throwable t) {
+        }
       }
     }
   }

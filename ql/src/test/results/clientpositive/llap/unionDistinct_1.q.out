@@ -5705,11 +5705,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_thrift
-                  Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 11 Data size: 21120 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: lstring[0] (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 11 Data size: 21120 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: _col0 (type: string)
                       mode: hash
