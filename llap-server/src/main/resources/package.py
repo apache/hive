@@ -93,6 +93,9 @@ def main(args):
 	parser.add_argument("--slider-principal", default="")
 	parser.add_argument("--slider-default-keytab", dest='slider_default_keytab', action='store_true')
 	parser.add_argument("--slider-placement", type=int, default=4)
+	parser.add_argument("--health-percent", type=int, default=80)
+	parser.add_argument("--health-time-window-secs", type=int, default=300)
+	parser.add_argument("--health-init-delay-secs", type=int, default=400)
 	parser.set_defaults(slider_default_keytab=False)
 	parser.add_argument("--startImmediately", dest='start_immediately', action='store_true')
 	parser.add_argument("--javaChild", dest='java_child', action='store_true')
@@ -162,7 +165,10 @@ def main(args):
 		"slider_keytab_dir" : slider_keytab_dir,
 		"slider_keytab" : slider_keytab,
 		"slider_principal" : slider_principal,
-		"placement" : args.slider_placement
+		"placement" : args.slider_placement,
+                "health_percent": args.health_percent,
+                "health_time_window": args.health_time_window_secs,
+                "health_init_delay": args.health_init_delay_secs
 	}
 	
 	if not exists(output):
