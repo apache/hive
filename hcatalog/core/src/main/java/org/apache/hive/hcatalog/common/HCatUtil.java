@@ -35,7 +35,9 @@ import java.util.Properties;
 
 import javax.security.auth.login.LoginException;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -81,7 +83,16 @@ import org.slf4j.LoggerFactory;
 public class HCatUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(HCatUtil.class);
+  private static final HashMap<String, String> hiveConfCodeDefaults;
   private static volatile HiveClientCache hiveClientCache;
+
+  static {
+    // Load all of the default config values from HiveConf.
+    hiveConfCodeDefaults = Maps.newHashMapWithExpectedSize(HiveConf.ConfVars.values().length);
+    for (HiveConf.ConfVars var : HiveConf.ConfVars.values()) {
+      hiveConfCodeDefaults.put(var.toString(), var.getDefaultValue());
+    }
+  }
 
   public static boolean checkJobContextIfRunningFromBackend(JobContext j) {
     if (j.getConfiguration().get("pig.job.converted.fetch", "").equals("") &&
@@ -588,6 +599,47 @@ public class HCatUtil {
     }
   }
 
+  private static Configuration getHiveSiteContentsFromClasspath() {
+    Configuration configuration = new Configuration(false); // Don't load defaults.
+    configuration.addResource("hive-site.xml"); // NOTE: hive-site.xml is only available on client, not AM.
+    return configuration;
+  }
+
+  private static Properties getHiveSiteOverrides(Configuration jobConf) {
+    return getHiveSiteOverrides(getHiveSiteContentsFromClasspath(), jobConf);
+  }
+
+  /**
+   * Returns the hive-site.xml config settings which do not appear in <code>jobConf<code> or
+   * the hive-site.xml config settings which appear in <code>jobConf<code>, but have a
+   * different value than HiveConf code defaults.
+   * @param hiveSite the config settings as found in the hive-site.xml only.
+   * @param jobConf the config settings used to launch the job.
+   * @return the set difference between hiveSite and jobConf.
+   */
+  private static Properties getHiveSiteOverrides(Configuration hiveSite, Configuration jobConf) {
+    // return (hiveSite - jobConf);
+    Properties difference = new Properties();
+    for (Map.Entry<String,String> keyValue : hiveSite) {
+      String key = keyValue.getKey();
+      String hiveSiteValue = keyValue.getValue();
+      String jobConfValue = jobConf.getRaw(key);
+
+      if (jobConfValue == null) {
+        difference.put(key, hiveSiteValue);
+      } else if (hiveConfCodeDefaults.containsKey(key)) {
+        // Necessary to compare against HiveConf defaults as hive-site.xml is not available on task nodes (like AM).
+        if (! jobConfValue.equals(hiveConfCodeDefaults.get(key))) {
+          difference.put(key, jobConfValue);
+        }
+      }
+    }
+
+    LOG.info("Configuration differences=" + difference);
+
+    return difference;
+  }
+
   public static HiveConf getHiveConf(Configuration conf)
     throws IOException {
 
@@ -595,30 +647,23 @@ public class HCatUtil {
 
     //copy the hive conf into the job conf and restore it
     //in the backend context
-    if (conf.get(HCatConstants.HCAT_KEY_HIVE_CONF) == null) {
-      conf.set(HCatConstants.HCAT_KEY_HIVE_CONF,
-        HCatUtil.serialize(hiveConf.getAllProperties()));
-    } else {
-      //Copy configuration properties into the hive conf
-      Properties properties = (Properties) HCatUtil.deserialize(
-        conf.get(HCatConstants.HCAT_KEY_HIVE_CONF));
+    if (StringUtils.isBlank(conf.get(HCatConstants.HCAT_KEY_HIVE_CONF))) {
+      // Called once on the client.
+      LOG.info(HCatConstants.HCAT_KEY_HIVE_CONF + " not set. Generating configuration differences.");
 
-      for (Map.Entry<Object, Object> prop : properties.entrySet()) {
-        if (prop.getValue() instanceof String) {
-          hiveConf.set((String) prop.getKey(), (String) prop.getValue());
-        } else if (prop.getValue() instanceof Integer) {
-          hiveConf.setInt((String) prop.getKey(),
-            (Integer) prop.getValue());
-        } else if (prop.getValue() instanceof Boolean) {
-          hiveConf.setBoolean((String) prop.getKey(),
-            (Boolean) prop.getValue());
-        } else if (prop.getValue() instanceof Long) {
-          hiveConf.setLong((String) prop.getKey(), (Long) prop.getValue());
-        } else if (prop.getValue() instanceof Float) {
-          hiveConf.setFloat((String) prop.getKey(),
-            (Float) prop.getValue());
-        }
-      }
+      Properties differences = getHiveSiteOverrides(conf);
+
+      // Must set this key even if differences is empty otherwise client and AM will attempt
+      // to set this multiple times.
+      conf.set(HCatConstants.HCAT_KEY_HIVE_CONF, HCatUtil.serialize(differences));
+    } else {
+      // Called one or more times on the client and AM.
+      LOG.info(HCatConstants.HCAT_KEY_HIVE_CONF + " is set. Applying configuration differences.");
+
+      Properties properties = (Properties) HCatUtil.deserialize(
+          conf.get(HCatConstants.HCAT_KEY_HIVE_CONF));
+
+      storePropertiesToHiveConf(properties, hiveConf);
     }
 
     if (conf.get(HCatConstants.HCAT_KEY_TOKEN_SIGNATURE) != null) {
@@ -629,6 +674,25 @@ public class HCatUtil {
     return hiveConf;
   }
 
+  public static HiveConf storePropertiesToHiveConf(Properties properties, HiveConf hiveConf)
+      throws IOException {
+    for (Map.Entry<Object, Object> prop : properties.entrySet()) {
+      if (prop.getValue() instanceof String) {
+        hiveConf.set((String) prop.getKey(), (String) prop.getValue());
+      } else if (prop.getValue() instanceof Integer) {
+        hiveConf.setInt((String) prop.getKey(), (Integer) prop.getValue());
+      } else if (prop.getValue() instanceof Boolean) {
+        hiveConf.setBoolean((String) prop.getKey(), (Boolean) prop.getValue());
+      } else if (prop.getValue() instanceof Long) {
+        hiveConf.setLong((String) prop.getKey(), (Long) prop.getValue());
+      } else if (prop.getValue() instanceof Float) {
+        hiveConf.setFloat((String) prop.getKey(), (Float) prop.getValue());
+      } else {
+        LOG.warn("Unsupported type: key=" + prop.getKey() + " value=" + prop.getValue());
+      }
+    }
+    return hiveConf;
+  }
 
   public static JobConf getJobConfFromContext(JobContext jobContext) {
     JobConf jobConf;
@@ -642,23 +706,28 @@ public class HCatUtil {
     return jobConf;
   }
 
+  // Retrieve settings in HiveConf that aren't also set in the JobConf.
   public static Map<String,String> getHCatKeyHiveConf(JobConf conf) {
-    Map<String,String> hiveProperties = new HashMap<String,String>();
-    if (conf.get(HCatConstants.HCAT_KEY_HIVE_CONF) != null) {
-      try {
-        Properties properties = (Properties) HCatUtil.deserialize(
-          conf.get(HCatConstants.HCAT_KEY_HIVE_CONF));
-        for (Map.Entry<Object, Object> prop : properties.entrySet()) {
-          if (conf.get((String)prop.getKey()) == null) {
-            hiveProperties.put(prop.getKey().toString(), prop.getValue().toString());
-          }
-        }
-      } catch (IOException e) {
-        throw new IllegalStateException(
-            "Failed to deserialize hive conf", e);
+    try {
+      Properties properties = null;
+
+      if (! StringUtils.isBlank(conf.get(HCatConstants.HCAT_KEY_HIVE_CONF))) {
+        properties = (Properties) HCatUtil.deserialize(
+            conf.get(HCatConstants.HCAT_KEY_HIVE_CONF));
+
+        LOG.info(HCatConstants.HCAT_KEY_HIVE_CONF + " is set. Using differences=" + properties);
+      } else {
+        LOG.info(HCatConstants.HCAT_KEY_HIVE_CONF + " not set. Generating configuration differences.");
+
+        properties = getHiveSiteOverrides(conf);
       }
+
+      // This method may not be safe as it can throw an NPE if a key or value is null.
+      return Maps.fromProperties(properties);
     }
-    return hiveProperties;
+    catch (IOException e) {
+      throw new IllegalStateException("Failed to deserialize hive conf", e);
+    }
   }
 
   public static void copyJobPropertiesToJobConf(
