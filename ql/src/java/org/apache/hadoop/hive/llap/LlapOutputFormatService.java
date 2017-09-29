@@ -106,7 +106,8 @@ public class LlapOutputFormatService {
     int portFromConf = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT);
     int sendBufferSize = HiveConf.getIntVar(conf,
         HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_SEND_BUFFER_SIZE);
-    eventLoopGroup = new NioEventLoopGroup(1);
+    // Netty defaults to no of processors * 2. Can be changed via -Dio.netty.eventLoopThreads
+    eventLoopGroup = new NioEventLoopGroup();
     serverBootstrap = new ServerBootstrap();
     serverBootstrap.group(eventLoopGroup);
     serverBootstrap.channel(NioServerSocketChannel.class);
