@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hadoop.hive.registry.impl.TezAmInstance;
-
 import java.util.HashSet;
 
 import java.util.concurrent.Semaphore;
@@ -321,7 +319,8 @@ public class TezSessionPoolManager
    *          the session to be closed
    * @throws Exception
    */
-  public void destroySession(TezSessionState tezSessionState) throws Exception {
+  @Override
+  public void destroy(TezSessionState tezSessionState) throws Exception {
     LOG.warn("We are closing a " + (tezSessionState.isDefault() ? "default" : "non-default")
         + " session because of retry failure.");
     tezSessionState.close(false);
@@ -398,7 +397,8 @@ public class TezSessionPoolManager
   }
 
   /** Reopens the session that was found to not be running. */
-  public TezSessionState reopenSession(TezSessionState sessionState,
+  @Override
+  public TezSessionState reopen(TezSessionState sessionState,
       Configuration conf, String[] additionalFiles) throws Exception {
     HiveConf sessionConf = sessionState.getConf();
     if (sessionState.getQueueName() != null
@@ -466,16 +466,5 @@ public class TezSessionPoolManager
   @VisibleForTesting
   public SessionExpirationTracker getExpirationTracker() {
     return expirationTracker;
-  }
-
-  @Override
-  public TezSessionPoolSession reopen(
-      TezSessionPoolSession session, Configuration conf, String[] inputOutputJars) {
-    return reopen(session, conf, inputOutputJars);
-  }
-
-  @Override
-  public void destroy(TezSessionPoolSession session) throws Exception {
-    destroySession(session);
   }
 }

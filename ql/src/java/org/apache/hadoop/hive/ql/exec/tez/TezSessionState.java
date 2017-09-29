@@ -744,11 +744,11 @@ public class TezSessionState {
   public TezSessionState reopen(
       Configuration conf, String[] inputOutputJars) throws Exception {
     // By default, TezSessionPoolManager handles this for both pool and non-pool session.
-    return TezSessionPoolManager.getInstance().reopenSession(this, conf, inputOutputJars);
+    return TezSessionPoolManager.getInstance().reopen(this, conf, inputOutputJars);
   }
 
   public void destroy() throws Exception {
     // By default, TezSessionPoolManager handles this for both pool and non-pool session.
-    TezSessionPoolManager.getInstance().destroySession(this);
+    TezSessionPoolManager.getInstance().destroy(this);
   }
 }

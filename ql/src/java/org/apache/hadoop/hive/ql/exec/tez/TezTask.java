@@ -236,6 +236,9 @@ public class TezTask extends Task<TezWork> {
           counters = null;
         }
       } finally {
+        // Note: due to TEZ-3846, the session may actually be invalid in case of some errors.
+        //       Currently, reopen on an attempted reuse will take care of that; we cannot tell
+        //       if the session is usable until we try.
         // We return this to the pool even if it's unusable; reopen is supposed to handle this.
         try {
           session.returnToSessionManager();
