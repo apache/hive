@@ -39,6 +39,7 @@ public class LlapStatusOptionsProcessor {
   private static final long DEFAULT_WATCH_MODE_TIMEOUT_MS = 5 * 60 * 1000l; // 5 minutes timeout for watch mode
   private static final float DEFAULT_RUNNING_NODES_THRESHOLD = 1.0f;
 
+  // TODO: why doesn't this use one of the existing options implementations?!
   enum OptionConstants {
 
     NAME("name", 'n', "LLAP cluster name", true),
@@ -48,6 +49,10 @@ public class LlapStatusOptionsProcessor {
     OUTPUT_FILE("outputFile", 'o', "File to which output should be written (Default stdout)", true),
     WATCH_MODE("watch", 'w', "Watch mode waits until all LLAP daemons are running or subset of the nodes are " +
       "running (threshold can be specified via -r option) (Default wait until all nodes are running)", false),
+    // This is a negative because we want the positive to be the default when nothing is specified.
+    NOT_LAUNCHED("notlaunched", 'l', "In watch mode, do not assume that the application was "
+        + "already launched if there's doubt (e.g. if the last application instance has failed).",
+        false),
     RUNNING_NODES_THRESHOLD("runningNodesThreshold", 'r', "When watch mode is enabled (-w), wait until the " +
       "specified threshold of nodes are running (Default 1.0 which means 100% nodes are running)", true),
     STATUS_REFRESH_INTERVAL("refreshInterval", 'i', "Amount of time in seconds to wait until subsequent status checks" +
@@ -108,16 +113,17 @@ public class LlapStatusOptionsProcessor {
     private final boolean watchMode;
     private final long watchTimeout;
     private final float runningNodesThreshold;
+    private final boolean isLaunched;
 
     public LlapStatusOptions(final String name) {
       this(name, new Properties(), FIND_YARN_APP_TIMEOUT_MS, null, DEFAULT_STATUS_REFRESH_INTERVAL_MS, false,
-        DEFAULT_WATCH_MODE_TIMEOUT_MS, DEFAULT_RUNNING_NODES_THRESHOLD);
+        DEFAULT_WATCH_MODE_TIMEOUT_MS, DEFAULT_RUNNING_NODES_THRESHOLD, true);
     }
 
     public LlapStatusOptions(String name, Properties hiveProperties, long findAppTimeoutMs,
                               String outputFile, long refreshIntervalMs,
                               final boolean watchMode, final long watchTimeoutMs,
-                              final float runningNodesThreshold) {
+                              final float runningNodesThreshold, final boolean isLaunched) {
       this.name = name;
       this.conf = hiveProperties;
       this.findAppTimeoutMs = findAppTimeoutMs;
@@ -126,6 +132,7 @@ public class LlapStatusOptionsProcessor {
       this.watchMode = watchMode;
       this.watchTimeout = watchTimeoutMs;
       this.runningNodesThreshold = runningNodesThreshold;
+      this.isLaunched = isLaunched;
     }
 
     public String getName() {
@@ -150,6 +157,10 @@ public class LlapStatusOptionsProcessor {
 
     public boolean isWatchMode() {
       return watchMode;
+    }
+
+    public boolean isLaunched() {
+      return isLaunched;
     }
 
     public long getWatchTimeoutMs() {
@@ -217,26 +228,30 @@ public class LlapStatusOptionsProcessor {
       refreshIntervalMs = TimeUnit.MILLISECONDS.convert(refreshIntervalSec, TimeUnit.SECONDS);
     }
 
-    boolean watchMode = commandLine.hasOption(OptionConstants.WATCH_MODE.getLongOpt()) ? true : false;
+    boolean watchMode = commandLine.hasOption(OptionConstants.WATCH_MODE.getLongOpt());
     long watchTimeoutMs = DEFAULT_WATCH_MODE_TIMEOUT_MS;
     if (commandLine.hasOption(OptionConstants.WATCH_MODE_TIMEOUT.getLongOpt())) {
-      long watchTimeoutSec = Long.parseLong(commandLine.getOptionValue(OptionConstants.WATCH_MODE_TIMEOUT.getLongOpt()));
+      long watchTimeoutSec = Long.parseLong(commandLine.getOptionValue(
+          OptionConstants.WATCH_MODE_TIMEOUT.getLongOpt()));
       if (watchTimeoutSec <= 0) {
         throw new IllegalArgumentException("Watch timeout should be >0");
       }
       watchTimeoutMs = TimeUnit.MILLISECONDS.convert(watchTimeoutSec, TimeUnit.SECONDS);
     }
+ 
+    boolean isLaunched = !commandLine.hasOption(OptionConstants.NOT_LAUNCHED.getLongOpt());
 
     float runningNodesThreshold = DEFAULT_RUNNING_NODES_THRESHOLD;
     if (commandLine.hasOption(OptionConstants.RUNNING_NODES_THRESHOLD.getLongOpt())) {
-      runningNodesThreshold = Float.parseFloat(commandLine.getOptionValue(OptionConstants.RUNNING_NODES_THRESHOLD
-        .getLongOpt()));
+      runningNodesThreshold = Float.parseFloat(commandLine.getOptionValue(
+          OptionConstants.RUNNING_NODES_THRESHOLD.getLongOpt()));
       if (runningNodesThreshold < 0.0f || runningNodesThreshold > 1.0f) {
-        throw new IllegalArgumentException("Running nodes threshold value should be between 0.0 and 1.0 (inclusive)");
+        throw new IllegalArgumentException(
+            "Running nodes threshold value should be between 0.0 and 1.0 (inclusive)");
       }
     }
-    return new LlapStatusOptions(name, hiveConf, findAppTimeoutMs, outputFile, refreshIntervalMs, watchMode,
-      watchTimeoutMs, runningNodesThreshold);
+    return new LlapStatusOptions(name, hiveConf, findAppTimeoutMs, outputFile, refreshIntervalMs,
+        watchMode,  watchTimeoutMs, runningNodesThreshold, isLaunched);
   }
 
 

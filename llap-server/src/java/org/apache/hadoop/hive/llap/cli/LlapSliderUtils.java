@@ -18,12 +18,13 @@
 
 package org.apache.hadoop.hive.llap.cli;
 
+import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers.AppStatusBuilder;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.util.Clock;
@@ -38,8 +39,6 @@ import org.apache.slider.common.tools.SliderUtils;
 import org.apache.slider.core.exceptions.UnknownApplicationInstanceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.io.Files;
 
 public class LlapSliderUtils {
   private static final String SLIDER_GZ = "slider-agent.tar.gz";
@@ -96,7 +95,7 @@ public class LlapSliderUtils {
   }
 
   public static ApplicationDiagnostics getApplicationDiagnosticsFromYarnDiagnostics(
-      ApplicationReport appReport, Logger LOG) {
+      ApplicationReport appReport, AppStatusBuilder appStatusBuilder, Logger LOG) {
     if (appReport == null) {
       return null;
     }
@@ -105,13 +104,11 @@ public class LlapSliderUtils {
       return null;
     }
     try {
-      ApplicationDiagnostics appDiagnostics =
-          ApplicationDiagnostics.fromJson(diagnostics);
-      return appDiagnostics;
+      return ApplicationDiagnostics.fromJson(diagnostics);
     } catch (IOException e) {
-      LOG.warn(
-          "Failed to parse application diagnostics from Yarn Diagnostics - {}",
-          diagnostics);
+      LOG.warn("Failed to parse application diagnostics from Yarn Diagnostics - {}", diagnostics);
+      // Set the raw YARN diagnostics here - the caller won't know if they even exist.
+      appStatusBuilder.setDiagnostics(diagnostics);
       return null;
     }
   }
