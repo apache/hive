@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.druid.serde;
 
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
@@ -37,6 +36,7 @@ public final class DruidSerDeUtils {
   protected static final String ISO_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
   protected static final String FLOAT_TYPE = "FLOAT";
+  protected static final String DOUBLE_TYPE = "DOUBLE";
   protected static final String LONG_TYPE = "LONG";
   protected static final String STRING_TYPE = "STRING";
 
@@ -47,6 +47,8 @@ public final class DruidSerDeUtils {
     switch (typeName) {
       case FLOAT_TYPE:
         return TypeInfoFactory.floatTypeInfo;
+      case DOUBLE_TYPE:
+        return TypeInfoFactory.doubleTypeInfo;
       case LONG_TYPE:
         return TypeInfoFactory.longTypeInfo;
       case STRING_TYPE:
@@ -60,29 +62,6 @@ public final class DruidSerDeUtils {
         // as String.
         LOG.warn("Transformation to STRING for unknown type " + typeName);
         return TypeInfoFactory.stringTypeInfo;
-    }
-  }
-
-  /* This method converts from the String representation of Druid type
-   * to the String representation of the corresponding Hive type */
-  public static String convertDruidToHiveTypeString(String typeName) {
-    typeName = typeName.toUpperCase();
-    switch (typeName) {
-      case FLOAT_TYPE:
-        return serdeConstants.FLOAT_TYPE_NAME;
-      case LONG_TYPE:
-        return serdeConstants.BIGINT_TYPE_NAME;
-      case STRING_TYPE:
-        return serdeConstants.STRING_TYPE_NAME;
-      default:
-        // This is a guard for special Druid types e.g. hyperUnique
-        // (http://druid.io/docs/0.9.1.1/querying/aggregations.html#hyperunique-aggregator).
-        // Currently, we do not support doing anything special with them in Hive.
-        // However, those columns are there, and they can be actually read as normal
-        // dimensions e.g. with a select query. Thus, we print the warning and just read them
-        // as String.
-        LOG.warn("Transformation to STRING for unknown type " + typeName);
-        return serdeConstants.STRING_TYPE_NAME;
     }
   }
 

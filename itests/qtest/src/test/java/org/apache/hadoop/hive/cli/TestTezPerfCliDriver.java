@@ -31,9 +31,9 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class TestPerfCliDriver {
+public class TestTezPerfCliDriver {
 
-  static CliAdapter adapter = new CliConfigs.PerfCliConfig().getCliAdapter();
+  static CliAdapter adapter = new CliConfigs.TezPerfCliConfig().getCliAdapter();
 
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {
@@ -49,7 +49,7 @@ public class TestPerfCliDriver {
   private String name;
   private File qfile;
 
-  public TestPerfCliDriver(String name, File qfile) {
+  public TestTezPerfCliDriver(String name, File qfile) {
     this.name = name;
     this.qfile = qfile;
   }

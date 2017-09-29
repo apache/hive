@@ -219,10 +219,9 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
   static void setRowFromStruct(Row row, Object structVal, StructObjectInspector soi) {
     Schema structSchema = row.getSchema();
     // Add struct field data to the Row
-    List<FieldDesc> fieldDescs = structSchema.getColumns();
-    for (int idx = 0; idx < fieldDescs.size(); ++idx) {
-      FieldDesc fieldDesc = fieldDescs.get(idx);
-      StructField structField = soi.getStructFieldRef(fieldDesc.getName());
+    List<? extends StructField> structFields = soi.getAllStructFieldRefs();
+    for (int idx = 0; idx < structFields.size(); ++idx) {
+      StructField structField = structFields.get(idx);
 
       Object convertedFieldValue = convertValue(
           soi.getStructFieldData(structVal, structField),

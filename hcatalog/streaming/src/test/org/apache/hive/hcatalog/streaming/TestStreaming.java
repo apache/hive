@@ -44,6 +44,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.Validator;
@@ -1974,7 +1975,12 @@ public class TestStreaming {
     txnBatch.write("name4,2,more Streaming unlimited".getBytes());
     txnBatch.write("name5,2,even more Streaming unlimited".getBytes());
     txnBatch.commit();
-    
+
+    //test toString()
+    String s = txnBatch.toString();
+    Assert.assertTrue("Actual: " + s, s.contains("LastUsed " + JavaUtils.txnIdToString(txnBatch.getCurrentTxnId())));
+    Assert.assertTrue("Actual: " + s, s.contains("TxnStatus[CO]"));
+
     expectedEx = null;
     txnBatch.beginNextTransaction();
     writer.enableErrors();
@@ -1997,6 +2003,11 @@ public class TestStreaming {
     }
     Assert.assertTrue("commit() should have failed",
       expectedEx != null && expectedEx.getMessage().contains("has been closed()"));
+
+    //test toString()
+    s = txnBatch.toString();
+    Assert.assertTrue("Actual: " + s, s.contains("LastUsed " + JavaUtils.txnIdToString(txnBatch.getCurrentTxnId())));
+    Assert.assertTrue("Actual: " + s, s.contains("TxnStatus[CA]"));
 
     r = msClient.showTxns();
     Assert.assertEquals("HWM didn't match", 19, r.getTxn_high_water_mark());

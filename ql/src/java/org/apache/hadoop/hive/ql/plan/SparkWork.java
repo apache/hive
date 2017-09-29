@@ -56,9 +56,9 @@ public class SparkWork extends AbstractOperatorDesc {
   private final Set<BaseWork> leaves = new LinkedHashSet<>();
 
   protected final Map<BaseWork, List<BaseWork>> workGraph =
-      new HashMap<BaseWork, List<BaseWork>>();
+      new LinkedHashMap<BaseWork, List<BaseWork>>();
   protected final Map<BaseWork, List<BaseWork>> invertedWorkGraph =
-      new HashMap<BaseWork, List<BaseWork>>();
+      new LinkedHashMap<BaseWork, List<BaseWork>>();
   protected final Map<Pair<BaseWork, BaseWork>, SparkEdgeProperty> edgeProperties =
       new HashMap<Pair<BaseWork, BaseWork>, SparkEdgeProperty>();
 

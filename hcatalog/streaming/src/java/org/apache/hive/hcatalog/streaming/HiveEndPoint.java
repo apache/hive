@@ -19,9 +19,9 @@
 package org.apache.hive.hcatalog.streaming;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -577,6 +577,14 @@ public class HiveEndPoint {
      */
     private volatile boolean isClosed = false;
     private final String agentInfo;
+    /**
+     * Tracks the state of each transaction
+     */
+    private final TxnState[] txnStatus;
+    /**
+     * ID of the last txn used by {@link #beginNextTransactionImpl()}
+     */
+    private long lastTxnUsed;
 
     /**
      * Represents a batch of transactions acquired from MetaStore
@@ -606,6 +614,10 @@ public class HiveEndPoint {
         this.agentInfo = agentInfo;
 
         txnIds = openTxnImpl(msClient, user, numTxns, ugi);
+        txnStatus = new TxnState[numTxns];
+        for(int i = 0; i < txnStatus.length; i++) {
+          txnStatus[i] = TxnState.OPEN;//Open matches Metastore state
+        }
 
         this.state = TxnState.INACTIVE;
         recordWriter.newBatch(txnIds.get(0), txnIds.get(txnIds.size()-1));
@@ -639,8 +651,14 @@ public class HiveEndPoint {
       if (txnIds==null || txnIds.isEmpty()) {
         return "{}";
       }
+      StringBuilder sb = new StringBuilder(" TxnStatus[");
+      for(TxnState state : txnStatus) {
+        //'state' should not be null - future proofing
+        sb.append(state == null ? "N" : state);
+      }
+      sb.append("] LastUsed ").append(JavaUtils.txnIdToString(lastTxnUsed));
       return "TxnIds=[" + txnIds.get(0) + "..." + txnIds.get(txnIds.size()-1)
-              + "] on endPoint = " + endPt;
+              + "] on endPoint = " + endPt + "; " + sb;
     }
 
     /**
@@ -678,6 +696,7 @@ public class HiveEndPoint {
                 " current batch for end point : " + endPt);
       ++currentTxnIndex;
       state = TxnState.OPEN;
+      lastTxnUsed = getCurrentTxnId();
       lockRequest = createLockRequest(endPt, partNameForLock, username, getCurrentTxnId(), agentInfo);
       try {
         LockResponse res = msClient.lock(lockRequest);
@@ -862,6 +881,7 @@ public class HiveEndPoint {
         recordWriter.flush();
         msClient.commitTxn(txnIds.get(currentTxnIndex));
         state = TxnState.COMMITTED;
+        txnStatus[currentTxnIndex] = TxnState.COMMITTED;
       } catch (NoSuchTxnException e) {
         throw new TransactionError("Invalid transaction id : "
                 + getCurrentTxnId(), e);
@@ -924,12 +944,14 @@ public class HiveEndPoint {
           for(currentTxnIndex = minOpenTxnIndex;
               currentTxnIndex < txnIds.size(); currentTxnIndex++) {
             msClient.rollbackTxn(txnIds.get(currentTxnIndex));
+            txnStatus[currentTxnIndex] = TxnState.ABORTED;
           }
           currentTxnIndex--;//since the loop left it == txnId.size()
         }
         else {
           if (getCurrentTxnId() > 0) {
             msClient.rollbackTxn(getCurrentTxnId());
+            txnStatus[currentTxnIndex] = TxnState.ABORTED;
           }
         }
         state = TxnState.ABORTED;
