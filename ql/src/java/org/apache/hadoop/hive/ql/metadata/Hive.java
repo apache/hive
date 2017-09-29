@@ -63,6 +63,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
@@ -3895,6 +3896,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   private void cleanUpOneDirectoryForReplace(Path path, FileSystem fs,
       PathFilter pathFilter, HiveConf conf, boolean purge) throws IOException, HiveException {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
+      recycleDirToCmPath(path, purge);
+    }
     FileStatus[] statuses = fs.listStatus(path, pathFilter);
     if (statuses == null || statuses.length == 0) return;
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
@@ -3904,6 +3908,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       Utilities.FILE_OP_LOGGER.trace(s);
     }
+
     if (!trashFiles(fs, statuses, conf, purge)) {
       throw new HiveException("Old path " + path + " has not been cleaned up.");
     }
