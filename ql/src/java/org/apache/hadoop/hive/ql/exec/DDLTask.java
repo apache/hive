@@ -1016,10 +1016,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     String indexTableName = crtIndex.getIndexTableName();
-    if (!Utilities.isDefaultNameNode(conf)) {
-      // If location is specified - ensure that it is a full qualified name
-      makeLocationQualified(crtIndex, indexTableName);
-    }
+    // If location is specified - ensure that it is a full qualified name
+    makeLocationQualified(crtIndex, indexTableName);
 
     db
     .createIndex(
@@ -4363,9 +4361,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     database.setOwnerName(SessionState.getUserFromAuthenticator());
     database.setOwnerType(PrincipalType.USER);
     try {
-      if (!Utilities.isDefaultNameNode(conf)) {
-        makeLocationQualified(database);
-      }
+      makeLocationQualified(database);
       db.createDatabase(database, crtDb.getIfNotExists());
     }
     catch (AlreadyExistsException ex) {
@@ -4631,8 +4627,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
 
-    if (!Utilities.isDefaultNameNode(conf)) {
-      // If location is specified - ensure that it is a full qualified name
+    // If location is specified - ensure that it is a full qualified name
+    if (DDLTask.doesTableNeedLocation(tbl)) {
       makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tbl.getTableName(), conf);
     }
 
@@ -4954,9 +4950,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // this method could be moved to the HiveStorageHandler interface.
     boolean retval = true;
     if (tbl.getStorageHandler() != null) {
+      // TODO: why doesn't this check class name rather than toString?
       String sh = tbl.getStorageHandler().toString();
       retval = !sh.equals("org.apache.hadoop.hive.hbase.HBaseStorageHandler")
-              && !sh.equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID);
+              && !sh.equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID)
+              && !sh.equals("org.apache.hadoop.hive.accumulo.AccumuloStorageHandler");
     }
     return retval;
   }

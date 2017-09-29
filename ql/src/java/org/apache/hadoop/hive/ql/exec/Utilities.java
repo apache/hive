@@ -3666,16 +3666,6 @@ public final class Utilities {
   }
 
   /**
-   * Checks if current hive script was executed with non-default namenode
-   *
-   * @return True/False
-   */
-  public static boolean isDefaultNameNode(HiveConf conf) {
-    return !conf.getChangedProperties().containsKey(
-        CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY);
-  }
-
-  /**
    * Checks if the current HiveServer2 logging operation level is >= PERFORMANCE.
    * @param conf Hive configuration.
    * @return true if current HiveServer2 logging operation level is >= PERFORMANCE.

@@ -703,7 +703,7 @@ public class Hive {
     try {
       validatePartition(newPart);
       String location = newPart.getLocation();
-      if (location != null && !Utilities.isDefaultNameNode(conf)) {
+      if (location != null) {
         location = Utilities.getQualifiedPath(conf, new Path(location));
         newPart.setLocation(location);
       }
@@ -747,7 +747,7 @@ public class Hive {
           tmpPart.getParameters().remove(hive_metastoreConstants.DDL_TIME);
         }
         String location = tmpPart.getLocation();
-        if (location != null && !Utilities.isDefaultNameNode(conf)) {
+        if (location != null) {
           location = Utilities.getQualifiedPath(conf, new Path(location));
           tmpPart.setLocation(location);
         }
@@ -2235,7 +2235,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Table tbl, AddPartitionDesc.OnePartitionDesc addSpec) throws HiveException {
     Path location = addSpec.getLocation() != null
         ? new Path(tbl.getPath(), addSpec.getLocation()) : null;
-    if (location !=null && !Utilities.isDefaultNameNode(conf)) {
+    if (location != null) {
       // Ensure that it is a full qualified path (in most cases it will be since tbl.getPath() is full qualified)
       location = new Path(Utilities.getQualifiedPath(conf, location));
     }
