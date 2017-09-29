@@ -18,16 +18,9 @@
 package org.apache.hadoop.hive.metastore.metrics;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Histogram;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,65 +29,38 @@ import org.junit.Test;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 public class TestMetrics {
+  private static final long REPORT_INTERVAL = 1;
+
+  @Before
+  public void shutdownMetrics() {
+    Metrics.shutdown();
+  }
 
   @Test
   public void jsonReporter() throws Exception {
-    String jsonFile = System.getProperty("java.io.tmpdir") + System.getProperty("file.separator") +
-        "TestMetricsOutput.json";
+    File jsonReportFile = File.createTempFile("TestMetrics", ".json");
+    String jsonFile = jsonReportFile.getAbsolutePath();
+
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METRICS_REPORTERS, "json");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METRICS_JSON_FILE_LOCATION, jsonFile);
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.METRICS_JSON_FILE_INTERVAL, 1,
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.METRICS_JSON_FILE_INTERVAL, REPORT_INTERVAL,
         TimeUnit.SECONDS);
 
     Metrics.initialize(conf);
-
-    final List<String> words = Arrays.asList("mary", "had", "a", "little", "lamb");
-    MetricRegistry registry = Metrics.getRegistry();
-    registry.register("my-gauge", new Gauge<Integer>() {
-
-      @Override
-      public Integer getValue() {
-        return words.size();
-      }
-    });
-
     Counter counter = Metrics.getOrCreateCounter("my-counter");
-    counter.inc();
-    counter.inc();
 
-    Meter meter = registry.meter("my-meter");
-    meter.mark();
-    Thread.sleep(10);
-    meter.mark();
-
-    Timer timer = Metrics.getOrCreateTimer("my-timer");
-    timer.time(new Callable<Long>() {
-      @Override
-      public Long call() throws Exception {
-        Thread.sleep(100);
-        return 1L;
-      }
-    });
-
-    // Make sure it has a chance to dump it.
-    Thread.sleep(2000);
-
-    FileSystem fs = FileSystem.get(conf);
-    Path path = new Path(jsonFile);
-    Assert.assertTrue(fs.exists(path));
-
-    String json = new String(MetricsTestUtils.getFileData(jsonFile, 200, 10));
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "my-counter", 2);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.METER, "my-meter", 2);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER, "my-timer", 1);
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "my-gauge", 5);
+    for (int i = 0; i < 5; i++) {
+      counter.inc();
+      // Make sure it has a chance to dump it.
+      Thread.sleep(REPORT_INTERVAL * 1000 + REPORT_INTERVAL * 1000 / 2);
+      String json = new String(MetricsTestUtils.getFileData(jsonFile, 200, 10));
+      MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, "my-counter",
+          i + 1);
+    }
   }
 
   @Test
@@ -150,11 +116,6 @@ public class TestMetrics {
     Metrics.initialize(conf);
 
     Assert.assertEquals(2, Metrics.getReporters().size());
-  }
-
-  @Before
-  public void shutdownMetrics() {
-    Metrics.shutdown();
   }
 
   // Stolen from Hive's MetricsTestUtils.  Probably should break it out into it's own class.
