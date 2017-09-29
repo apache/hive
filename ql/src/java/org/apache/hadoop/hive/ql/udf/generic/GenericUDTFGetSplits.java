@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
@@ -69,6 +70,8 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.tez.HiveSplitGenerator;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -184,12 +187,21 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     String query = stringOI.getPrimitiveJavaObject(arguments[0]);
     int num = intOI.get(arguments[1]);
 
-    PlanFragment fragment = createPlanFragment(query, num);
+    // Generate applicationId for the LLAP splits
+    LlapCoordinator coordinator = LlapCoordinator.getInstance();
+    if (coordinator == null) {
+      throw new HiveException("LLAP coordinator is not initialized; must be running in HS2 with "
+          + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
+    }
+    ApplicationId applicationId = coordinator.createExtClientAppId();
+    LOG.info("Generated appID {} for LLAP splits", applicationId.toString());
+
+    PlanFragment fragment = createPlanFragment(query, num, applicationId);
     TezWork tezWork = fragment.work;
     Schema schema = fragment.schema;
 
     try {
-      for (InputSplit s : getSplits(jc, num, tezWork, schema)) {
+      for (InputSplit s : getSplits(jc, num, tezWork, schema, applicationId)) {
         Object[] os = new Object[1];
         bos.reset();
         s.write(dos);
@@ -202,7 +214,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     }
   }
 
-  public PlanFragment createPlanFragment(String query, int num)
+  public PlanFragment createPlanFragment(String query, int num, ApplicationId splitsAppId)
       throws HiveException {
 
     HiveConf conf = new HiveConf(SessionState.get().getConf());
@@ -224,7 +236,17 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       throw new HiveException(e);
     }
 
-    Driver driver = new Driver(conf);
+    // Instantiate Driver to compile the query passed in.
+    // This UDF is running as part of an existing query, which may already be using the
+    // SessionState TxnManager. If this new Driver also tries to use the same TxnManager
+    // then this may mess up the existing state of the TxnManager.
+    // So initialize the new Driver with a new TxnManager so that it does not use the
+    // Session TxnManager that is already in use.
+    HiveTxnManager txnManager = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    Driver driver = new Driver(conf, txnManager);
+    driver.init();
+    DriverCleanup driverCleanup = new DriverCleanup(driver, txnManager, splitsAppId.toString());
+    boolean needsCleanup = true;
     try {
       CommandProcessorResponse cpr = driver.compileAndRespond(query);
       if (cpr.getResponseCode() != 0) {
@@ -276,16 +298,38 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         }
 
         tezWork = ((TezTask)roots.get(0)).getWork();
+      } else {
+        // Table will be queried directly by LLAP
+        // Acquire locks if necessary - they will be released during session cleanup.
+        // The read will have READ_COMMITTED level semantics.
+        cpr = driver.lockAndRespond();
+        if (cpr.getResponseCode() != 0) {
+          throw new HiveException("Failed to acquire locks: " + cpr.getException());
+        }
+
+        // Attach the resources to the session cleanup.
+        SessionState.get().addCleanupItem(driverCleanup);
+        needsCleanup = false;
       }
 
       return new PlanFragment(tezWork, schema, jc);
     } finally {
-      driver.close();
-      driver.destroy();
+      if (needsCleanup) {
+        if (driverCleanup != null) {
+          try {
+            driverCleanup.close();
+          } catch (IOException err) {
+            throw new HiveException(err);
+          }
+        } else if (driver != null) {
+          driver.close();
+          driver.destroy();
+        }
+      }
     }
   }
 
-  public InputSplit[] getSplits(JobConf job, int numSplits, TezWork work, Schema schema)
+  public InputSplit[] getSplits(JobConf job, int numSplits, TezWork work, Schema schema, ApplicationId applicationId)
     throws IOException {
 
     DAG dag = DAG.create(work.getName());
@@ -311,7 +355,6 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
       // Update the queryId to use the generated applicationId. See comment below about
       // why this is done.
-      ApplicationId applicationId = coordinator.createExtClientAppId();
       HiveConf.setVar(wxConf, HiveConf.ConfVars.HIVEQUERYID, applicationId.toString());
       Vertex wx = utils.createVertex(wxConf, mapWork, scratchDir, appJarLr,
           new ArrayList<LocalResource>(), fs, ctx, false, work,
@@ -409,6 +452,37 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       return result;
     } catch (Exception e) {
       throw new IOException(e);
+    }
+  }
+
+  private static class DriverCleanup implements Closeable {
+    private final Driver driver;
+    private final HiveTxnManager txnManager;
+    private final String applicationId;
+
+    public DriverCleanup(Driver driver, HiveTxnManager txnManager, String applicationId) {
+      this.driver = driver;
+      this.txnManager = txnManager;
+      this.applicationId = applicationId;
+    }
+
+    @Override
+    public void close() throws IOException {
+      try {
+        LOG.info("DriverCleanup for LLAP splits: {}", applicationId);
+        driver.releaseLocksAndCommitOrRollback(true);
+        driver.close();
+        driver.destroy();
+        txnManager.closeTxnManager();
+      } catch (Exception err) {
+        LOG.error("Error closing driver resources", err);
+        throw new IOException(err);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "DriverCleanup for LLAP splits: " + applicationId;
     }
   }
 

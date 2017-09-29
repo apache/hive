@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 
 /**
@@ -37,6 +38,11 @@ public class QueryState {
    * type of the command.
    */
   private HiveOperation commandType;
+
+  /**
+   * transaction manager used in the query.
+   */
+  private HiveTxnManager txnManager;
 
   /**
    * Private constructor, use QueryState.Builder instead
@@ -71,6 +77,14 @@ public class QueryState {
 
   public HiveConf getConf() {
     return queryConf;
+  }
+
+  public HiveTxnManager getTxnManager() {
+    return txnManager;
+  }
+
+  public void setTxnManager(HiveTxnManager txnManager) {
+    this.txnManager = txnManager;
   }
 
   /**

@@ -70,7 +70,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       super.analyzeInternal(tree);
     } else {
 
-      if (!SessionState.get().getTxnMgr().supportsAcid()) {
+      if (!getTxnMgr().supportsAcid()) {
         throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getMsg());
       }
       switch (tree.getToken().getType()) {

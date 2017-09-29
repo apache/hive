@@ -175,6 +175,19 @@ public class Driver implements CommandProcessor {
   private QueryLifeTimeHookRunner queryLifeTimeHookRunner;
   private final HooksLoader hooksLoader;
 
+  // Transaction manager the Driver has been initialized with (can be null).
+  // If this is set then this Transaction manager will be used during query
+  // compilation/execution rather than using the current session's transaction manager.
+  // This might be needed in a situation where a Driver is nested within an already
+  // running Driver/query - the nested Driver requires a separate transaction manager
+  // so as not to conflict with the outer Driver/query which is using the session
+  // transaction manager.
+  private final HiveTxnManager initTxnMgr;
+
+  // Transaction manager used for the query. This will be set at compile time based on
+  // either initTxnMgr or from the SessionState, in that order.
+  private HiveTxnManager queryTxnMgr;
+
   public enum DriverState {
     INITIALIZED,
     COMPILING,
@@ -352,8 +365,12 @@ public class Driver implements CommandProcessor {
     this(getNewQueryState(conf), null);
   }
 
+  public Driver(HiveConf conf, HiveTxnManager txnMgr) {
+    this(getNewQueryState(conf), null, null, txnMgr);
+  }
+
   public Driver(HiveConf conf, Context ctx) {
-    this(getNewQueryState(conf), null);
+    this(getNewQueryState(conf), null, null);
     this.ctx = ctx;
   }
 
@@ -362,18 +379,22 @@ public class Driver implements CommandProcessor {
   }
 
   public Driver(QueryState queryState, String userName) {
-    this(queryState, userName, new HooksLoader(queryState.getConf()), null);
+    this(queryState, userName, new HooksLoader(queryState.getConf()), null, null);
   }
 
   public Driver(HiveConf conf, HooksLoader hooksLoader) {
-    this(getNewQueryState(conf), null, hooksLoader, null);
+    this(getNewQueryState(conf), null, hooksLoader, null, null);
   }
 
   public Driver(QueryState queryState, String userName, QueryInfo queryInfo) {
-     this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo);
+     this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo, null);
   }
 
-  public Driver(QueryState queryState, String userName, HooksLoader hooksLoader, QueryInfo queryInfo) {
+  public Driver(QueryState queryState, String userName, QueryInfo queryInfo, HiveTxnManager txnMgr) {
+    this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo, txnMgr);
+  }
+
+  public Driver(QueryState queryState, String userName, HooksLoader hooksLoader, QueryInfo queryInfo, HiveTxnManager txnMgr) {
     this.queryState = queryState;
     this.conf = queryState.getConf();
     isParallelEnabled = (conf != null)
@@ -382,6 +403,7 @@ public class Driver implements CommandProcessor {
     this.hooksLoader = hooksLoader;
     this.queryLifeTimeHookRunner = new QueryLifeTimeHookRunner(conf, hooksLoader, console);
     this.queryInfo = queryInfo;
+    this.initTxnMgr = txnMgr;
   }
 
   /**
@@ -477,16 +499,22 @@ public class Driver implements CommandProcessor {
     try {
 
       // Initialize the transaction manager.  This must be done before analyze is called.
-      final HiveTxnManager txnManager = SessionState.get().initTxnMgr(conf);
-      // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
+      if (initTxnMgr != null) {
+        queryTxnMgr = initTxnMgr;
+      } else {
+        queryTxnMgr = SessionState.get().initTxnMgr(conf);
+      }
+      queryState.setTxnManager(queryTxnMgr);
 
+      // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
       // if compile is being called multiple times, clear the old shutdownhook
       ShutdownHookManager.removeShutdownHook(shutdownRunner);
+      final HiveTxnManager txnMgr = queryTxnMgr;
       shutdownRunner = new Runnable() {
         @Override
         public void run() {
           try {
-            releaseLocksAndCommitOrRollback(false, txnManager);
+            releaseLocksAndCommitOrRollback(false, txnMgr);
           } catch (LockException e) {
             LOG.warn("Exception when releasing locks in ShutdownHook for Driver: " +
                 e.getMessage());
@@ -535,13 +563,13 @@ public class Driver implements CommandProcessor {
       // because at that point we need access to the objects.
       Hive.get().getMSC().flushCache();
 
-      if(checkConcurrency() && startImplicitTxn(txnManager)) {
+      if(checkConcurrency() && startImplicitTxn(queryTxnMgr)) {
         String userFromUGI = getUserFromUGI();
-        if (!txnManager.isTxnOpen()) {
+        if (!queryTxnMgr.isTxnOpen()) {
           if(userFromUGI == null) {
             return 10;
           }
-          long txnid = txnManager.openTxn(ctx, userFromUGI);
+          long txnid = queryTxnMgr.openTxn(ctx, userFromUGI);
         }
       }
       // Do semantic analysis and plan generation
@@ -1133,13 +1161,12 @@ public class Driver implements CommandProcessor {
 
   // Write the current set of valid transactions into the conf file so that it can be read by
   // the input format.
-  private void recordValidTxns() throws LockException {
+  private void recordValidTxns(HiveTxnManager txnMgr) throws LockException {
     ValidTxnList oldList = null;
     String s = conf.get(ValidTxnList.VALID_TXNS_KEY);
     if(s != null && s.length() > 0) {
       oldList = new ValidReadTxnList(s);
     }
-    HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
     ValidTxnList txns = txnMgr.getValidTxns();
     if(oldList != null) {
       throw new IllegalStateException("calling recordValidTxn() more than once in the same " +
@@ -1172,6 +1199,7 @@ public class Driver implements CommandProcessor {
     }
     return null;
   }
+
   /**
    * Acquire read and write locks needed by the statement. The list of objects to be locked are
    * obtained from the inputs and outputs populated by the compiler.  Locking strategy depends on
@@ -1184,9 +1212,7 @@ public class Driver implements CommandProcessor {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
-    SessionState ss = SessionState.get();
-    HiveTxnManager txnMgr = ss.getTxnMgr();
-    if(!txnMgr.isTxnOpen() && txnMgr.supportsAcid()) {
+    if(!queryTxnMgr.isTxnOpen() && queryTxnMgr.supportsAcid()) {
       /*non acid txn managers don't support txns but fwd lock requests to lock managers
         acid txn manager requires all locks to be associated with a txn so if we
         end up here w/o an open txn it's because we are processing something like "use <database>
@@ -1205,17 +1231,17 @@ public class Driver implements CommandProcessor {
         //so this makes (file name -> data) mapping stable
         acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) -> fsd1.getDirName().compareTo(fsd2.getDirName()));
         for (FileSinkDesc desc : acidSinks) {
-          desc.setTransactionId(txnMgr.getCurrentTxnId());
+          desc.setTransactionId(queryTxnMgr.getCurrentTxnId());
           //it's possible to have > 1 FileSink writing to the same table/partition
           //e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
-          desc.setStatementId(txnMgr.getWriteIdAndIncrement());
+          desc.setStatementId(queryTxnMgr.getWriteIdAndIncrement());
         }
       }
       /*It's imperative that {@code acquireLocks()} is called for all commands so that 
       HiveTxnManager can transition its state machine correctly*/
-      txnMgr.acquireLocks(plan, ctx, userFromUGI, lDrvState);
-      if(txnMgr.recordSnapshot(plan)) {
-        recordValidTxns();
+      queryTxnMgr.acquireLocks(plan, ctx, userFromUGI, lDrvState);
+      if(queryTxnMgr.recordSnapshot(plan)) {
+        recordValidTxns(queryTxnMgr);
       }
       return 0;
     } catch (Exception e) {
@@ -1233,6 +1259,11 @@ public class Driver implements CommandProcessor {
   private boolean haveAcidWrite() {
     return !plan.getAcidSinks().isEmpty();
   }
+
+  public void releaseLocksAndCommitOrRollback(boolean commit) throws LockException {
+    releaseLocksAndCommitOrRollback(commit, queryTxnMgr);
+  }
+
   /**
    * @param commit if there is an open transaction and if true, commit,
    *               if false rollback.  If there is no open transaction this parameter is ignored.
@@ -1246,8 +1277,8 @@ public class Driver implements CommandProcessor {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
     HiveTxnManager txnMgr;
     if (txnManager == null) {
-      SessionState ss = SessionState.get();
-      txnMgr = ss.getTxnMgr();
+      // Default to driver's txn manager if no txn manager specified
+      txnMgr = queryTxnMgr;
     } else {
       txnMgr = txnManager;
     }
@@ -1366,6 +1397,23 @@ public class Driver implements CommandProcessor {
     return createProcessorResponse(compileInternal(command, false));
   }
 
+  public CommandProcessorResponse lockAndRespond() {
+    // Assumes the query has already been compiled
+    if (plan == null) {
+      throw new IllegalStateException(
+          "No previously compiled query for driver - queryId=" + queryState.getQueryId());
+    }
+
+    int ret = 0;
+    if (requiresLock()) {
+      ret = acquireLocks();
+    }
+    if (ret != 0) {
+      return rollback(createProcessorResponse(ret));
+    }
+    return createProcessorResponse(ret);
+  }
+
   private static final ReentrantLock globalCompileLock = new ReentrantLock();
   private int compileInternal(String command, boolean deferClose) {
     int ret;
@@ -1396,7 +1444,7 @@ public class Driver implements CommandProcessor {
 
     if (ret != 0) {
       try {
-        releaseLocksAndCommitOrRollback(false, null);
+        releaseLocksAndCommitOrRollback(false);
       } catch (LockException e) {
         LOG.warn("Exception in releasing locks. "
             + org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -1536,8 +1584,7 @@ public class Driver implements CommandProcessor {
       // the reason that we set the txn manager for the cxt here is because each
       // query has its own ctx object. The txn mgr is shared across the
       // same instance of Driver, which can run multiple queries.
-      HiveTxnManager txnManager = SessionState.get().getTxnMgr();
-      ctx.setHiveTxnManager(txnManager);
+      ctx.setHiveTxnManager(queryTxnMgr);
 
       if (requiresLock()) {
         // a checkpoint to see if the thread is interrupted or not before an expensive operation
@@ -1559,11 +1606,11 @@ public class Driver implements CommandProcessor {
       //if needRequireLock is false, the release here will do nothing because there is no lock
       try {
         //since set autocommit starts an implicit txn, close it
-        if(txnManager.isImplicitTransactionOpen() || plan.getOperation() == HiveOperation.COMMIT) {
-          releaseLocksAndCommitOrRollback(true, null);
+        if(queryTxnMgr.isImplicitTransactionOpen() || plan.getOperation() == HiveOperation.COMMIT) {
+          releaseLocksAndCommitOrRollback(true);
         }
         else if(plan.getOperation() == HiveOperation.ROLLBACK) {
-          releaseLocksAndCommitOrRollback(false, null);
+          releaseLocksAndCommitOrRollback(false);
         }
         else {
           //txn (if there is one started) is not finished
@@ -1614,7 +1661,7 @@ public class Driver implements CommandProcessor {
   private CommandProcessorResponse rollback(CommandProcessorResponse cpr) {
     //console.printError(cpr.toString());
     try {
-      releaseLocksAndCommitOrRollback(false, null);
+      releaseLocksAndCommitOrRollback(false);
     }
     catch (LockException e) {
       LOG.error("rollback() FAILED: " + cpr);//make sure not to loose
@@ -2373,7 +2420,7 @@ public class Driver implements CommandProcessor {
     if(destroyed) {
       if (!hiveLocks.isEmpty()) {
         try {
-          releaseLocksAndCommitOrRollback(false, null);
+          releaseLocksAndCommitOrRollback(false);
         } catch (LockException e) {
           LOG.warn("Exception when releasing locking in destroy: " +
               e.getMessage());
@@ -2428,7 +2475,7 @@ public class Driver implements CommandProcessor {
     }
     if (!hiveLocks.isEmpty()) {
       try {
-        releaseLocksAndCommitOrRollback(false, null);
+        releaseLocksAndCommitOrRollback(false);
       } catch (LockException e) {
         LOG.warn("Exception when releasing locking in destroy: " +
             e.getMessage());
