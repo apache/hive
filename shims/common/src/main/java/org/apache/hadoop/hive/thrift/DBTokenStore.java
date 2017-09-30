@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
@@ -89,7 +90,7 @@ public class DBTokenStore implements DelegationTokenStore {
       String tokenStr = (String)invokeOnTokenStore("getToken", new Object[] {
           TokenStoreDelegationTokenSecretManager.encodeWritable(tokenIdentifier)}, String.class);
       DelegationTokenInformation result = null;
-      if (tokenStr != null) {
+      if (StringUtils.isNotEmpty(tokenStr)) {
         result = HiveDelegationTokenSupport.decodeDelegationTokenInformation(Base64.decodeBase64(tokenStr));
       }
       if (LOG.isTraceEnabled()) {
