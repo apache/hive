@@ -173,6 +173,31 @@ public class TestJdbcWithMiniKdc {
     verifyProperty(SESSION_USER_NAME, MiniHiveKdc.HIVE_TEST_USER_1);
   }
 
+  @Test
+  public void testCancelRenewTokenFlow() throws Exception {
+    miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_SUPER_USER);
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL());
+
+    // retrieve token and store in the cache
+    String token = ((HiveConnection) hs2Conn)
+        .getDelegationToken(MiniHiveKdc.HIVE_TEST_USER_1, MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
+    assertTrue(token != null && !token.isEmpty());
+
+    Exception ex = null;
+    ((HiveConnection) hs2Conn).cancelDelegationToken(token);
+    try {
+      ((HiveConnection) hs2Conn).renewDelegationToken(token);
+    } catch (Exception SQLException) {
+      ex = SQLException;
+    }
+    assertTrue(ex != null && ex instanceof HiveSQLException);
+    // retrieve token and store in the cache
+    token = ((HiveConnection) hs2Conn)
+        .getDelegationToken(MiniHiveKdc.HIVE_TEST_USER_1, MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
+    assertTrue(token != null && !token.isEmpty());
+
+    hs2Conn.close();
+  }
   /***
    * Negative test for token based authentication
    * Verify that a user can't retrieve a token for user that
@@ -193,7 +218,7 @@ public class TestJdbcWithMiniKdc {
           MiniHiveKdc.HIVE_TEST_USER_2);
     } catch (SQLException e) {
       // Expected error
-      assertTrue(e.getMessage().contains("Error retrieving delegation token for user"));
+      assertEquals("Unexpected type of exception class thrown", HiveSQLException.class, e.getClass());
       assertTrue(e.getCause().getCause().getMessage().contains("is not allowed to impersonate"));
     } finally {
       hs2Conn.close();

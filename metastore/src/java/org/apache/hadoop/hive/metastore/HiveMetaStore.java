@@ -5930,7 +5930,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         endFunction("get_token", ret != null, ex);
       }
-      return ret;
+      //Thrift cannot return null result
+      return ret == null ? "" : ret;
     }
 
     @Override
