@@ -46,6 +46,7 @@ import java.util.regex.PatternSyntaxException;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
+import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeVisitor;
 import org.antlr.runtime.tree.TreeVisitorAction;
@@ -2457,11 +2458,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tab.getViewExpandedText(), alias, qb.getParseInfo().getSrcForAlias(
             alias));
     try {
-      String viewText = tab.getViewExpandedText();
       // Reparse text, passing null for context to avoid clobbering
       // the top-level token stream.
-      ASTNode tree = ParseUtils.parse(viewText, ctx, false);
-      viewTree = tree;
+      String viewFullyQualifiedName = tab.getCompleteName();
+      String viewText = tab.getViewExpandedText();
+      TableMask viewMask = new TableMask(this, conf, false);
+      viewTree = ParseUtils.parse(viewText, ctx, tab.getCompleteName());
+      if (!unparseTranslator.isEnabled() &&
+          (viewMask.isEnabled() && analyzeRewrite == null)) {
+        viewTree = rewriteASTWithMaskAndFilter(viewMask, viewTree,
+            ctx.getViewTokenRewriteStream(viewFullyQualifiedName),
+            ctx, db, tabNameToTabObject, ignoredTokens);
+      }
       Dispatcher nodeOriginDispatcher = new Dispatcher() {
         @Override
         public Object dispatch(Node nd, java.util.Stack<Node> stack,
@@ -11027,7 +11035,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return getTableObjectByName(tableName, true);
   }
 
-  private void walkASTMarkTABREF(ASTNode ast, Set<String> cteAlias)
+  private static void walkASTMarkTABREF(TableMask tableMask, ASTNode ast, Set<String> cteAlias,
+      Context ctx, Hive db, Map<String, Table> tabNameToTabObject, Set<Integer> ignoredTokens)
       throws SemanticException {
     Queue<Node> queue = new LinkedList<>();
     queue.add(ast);
@@ -11072,10 +11081,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         String replacementText = null;
         Table table = null;
         try {
-          table = getTableObjectByName(tabIdName);
+          if (!tabNameToTabObject.containsKey(tabIdName)) {
+            table = db.getTable(tabIdName, true);
+            tabNameToTabObject.put(tabIdName, table);
+          } else {
+            table = tabNameToTabObject.get(tabIdName);
+          }
         } catch (HiveException e) {
           // Table may not be found when materialization of CTE is on.
-          LOG.info("Table " + tabIdName + " is not found in walkASTMarkTABREF.");
+          STATIC_LOG.debug("Table " + tabIdName + " is not found in walkASTMarkTABREF.");
           continue;
         }
 
@@ -11121,7 +11135,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // the table needs to be masked or filtered.
   // For the replacement, we leverage the methods that are used for
   // unparseTranslator.
-  public ASTNode rewriteASTWithMaskAndFilter(ASTNode ast) throws SemanticException {
+  protected static ASTNode rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
+          Context ctx, Hive db, Map<String, Table> tabNameToTabObject, Set<Integer> ignoredTokens)
+                  throws SemanticException {
     // 1. collect information about CTE if there is any.
     // The base table of CTE should be masked.
     // The CTE itself should not be masked in the references in the following main query.
@@ -11144,23 +11160,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException("Duplicate definition of " + alias);
         } else {
           cteAlias.add(alias);
-          walkASTMarkTABREF(subq, cteAlias);
+          walkASTMarkTABREF(tableMask, subq, cteAlias,
+                  ctx, db, tabNameToTabObject, ignoredTokens);
         }
       }
       // walk the other part of ast
       for (int index = 1; index < ast.getChildCount(); index++) {
-        walkASTMarkTABREF((ASTNode) ast.getChild(index), cteAlias);
+        walkASTMarkTABREF(tableMask, (ASTNode) ast.getChild(index), cteAlias,
+                ctx, db, tabNameToTabObject, ignoredTokens);
       }
     }
     // there is no CTE, walk the whole AST
     else {
-      walkASTMarkTABREF(ast, cteAlias);
+      walkASTMarkTABREF(tableMask, ast, cteAlias,
+              ctx, db, tabNameToTabObject, ignoredTokens);
     }
     // 2. rewrite the AST, replace TABREF with masking/filtering
     if (tableMask.needsRewrite()) {
-      tableMask.applyTranslations(ctx.getTokenRewriteStream());
-      String rewrittenQuery = ctx.getTokenRewriteStream().toString(ast.getTokenStartIndex(),
-          ast.getTokenStopIndex());
+      tableMask.applyTranslations(tokenRewriteStream);
+      String rewrittenQuery = tokenRewriteStream.toString(
+          ast.getTokenStartIndex(), ast.getTokenStopIndex());
       ASTNode rewrittenTree;
       // Parse the rewritten query string
       // check if we need to ctx.setCmd(rewrittenQuery);
@@ -11235,7 +11254,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // masking and filtering should be created here
     // the basic idea is similar to unparseTranslator.
-    tableMask = new TableMask(this, conf, ctx);
+    tableMask = new TableMask(this, conf, ctx.isSkipTableMasking());
 
     // 4. continue analyzing from the child ASTNode.
     Phase1Ctx ctx_1 = initPhase1Ctx();
@@ -11396,7 +11415,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!unparseTranslator.isEnabled() &&
             (tableMask.isEnabled() && analyzeRewrite == null)) {
       // Here we rewrite the * and also the masking table
-      ASTNode tree = rewriteASTWithMaskAndFilter(ast);
+      ASTNode tree = rewriteASTWithMaskAndFilter(tableMask, ast, ctx.getTokenRewriteStream(),
+              ctx, db, tabNameToTabObject, ignoredTokens);
       if (tree != ast) {
         plannerCtx = pcf.create();
         ctx.setSkipTableMasking(true);

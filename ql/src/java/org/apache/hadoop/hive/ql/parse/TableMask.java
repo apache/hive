@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
@@ -48,7 +47,8 @@ public class TableMask {
   private HiveAuthzContext queryContext;
   private HiveConf conf;
 
-  public TableMask(SemanticAnalyzer analyzer, HiveConf conf, Context ctx) throws SemanticException {
+  public TableMask(SemanticAnalyzer analyzer, HiveConf conf, boolean skipTableMasking)
+          throws SemanticException {
     try {
       authorizer = SessionState.get().getAuthorizerV2();
       this.conf = conf;
@@ -59,7 +59,7 @@ public class TableMask {
       ctxBuilder.setUserIpAddress(ss.getUserIpAddress());
       ctxBuilder.setForwardedAddresses(ss.getForwardedAddresses());
       queryContext = ctxBuilder.build();
-      if (authorizer != null && needTransform() && !ctx.isSkipTableMasking()) {
+      if (authorizer != null && needTransform() && !skipTableMasking) {
         enable = true;
         translator = new UnparseTranslator(conf);
         translator.enable();
