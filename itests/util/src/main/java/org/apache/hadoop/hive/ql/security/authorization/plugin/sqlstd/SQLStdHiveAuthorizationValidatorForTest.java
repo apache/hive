@@ -131,6 +131,18 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
         }
         privObj.setCellValueTransformers(cellValueTransformers);
         needRewritePrivObjs.add(privObj);
+      } else if (privObj.getObjectName().equals("masking_test_view")) {
+        privObj.setRowFilterExpression("key > 6");
+        List<String> cellValueTransformers = new ArrayList<>();
+        for (String columnName : privObj.getColumns()) {
+          if (columnName.equals("key")) {
+            cellValueTransformers.add("key / 2");
+          } else {
+            cellValueTransformers.add(columnName);
+          }
+        }
+        privObj.setCellValueTransformers(cellValueTransformers);
+        needRewritePrivObjs.add(privObj);
       } else if (privObj.getObjectName().equals("masking_test_subq")) {
         privObj
             .setRowFilterExpression("key in (select key from src where src.key = masking_test_subq.key)");

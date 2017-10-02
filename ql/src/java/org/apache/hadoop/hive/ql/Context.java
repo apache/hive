@@ -95,6 +95,10 @@ public class Context {
   // number of previous attempts
   protected int tryCount = 0;
   private TokenRewriteStream tokenRewriteStream;
+  // Holds the qualified name to tokenRewriteStream for the views
+  // referenced by the query. This is used to rewrite the view AST
+  // with column masking and row filtering policies.
+  private final Map<String, TokenRewriteStream> viewsTokenRewriteStreams;
 
   private String executionId;
 
@@ -146,6 +150,8 @@ public class Context {
     scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
     stagingDir = HiveConf.getVar(conf, HiveConf.ConfVars.STAGINGDIR);
     opContext = new CompilationOpContext();
+
+    viewsTokenRewriteStreams = new HashMap<>();
   }
 
 
@@ -616,6 +622,15 @@ public class Context {
    */
   public TokenRewriteStream getTokenRewriteStream() {
     return tokenRewriteStream;
+  }
+
+  public void addViewTokenRewriteStream(String viewFullyQualifiedName,
+      TokenRewriteStream tokenRewriteStream) {
+    viewsTokenRewriteStreams.put(viewFullyQualifiedName, tokenRewriteStream);
+  }
+
+  public TokenRewriteStream getViewTokenRewriteStream(String viewFullyQualifiedName) {
+    return viewsTokenRewriteStreams.get(viewFullyQualifiedName);
   }
 
   /**
