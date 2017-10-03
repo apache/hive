@@ -1371,6 +1371,9 @@ public class HiveConf extends Configuration {
         "references for the cached object. Setting this to true can help avoid out of memory\n" +
         "issues under memory pressure (in some cases) at the cost of slight unpredictability in\n" +
         "overall query performance."),
+    HIVE_IO_SARG_CACHE_MAX_WEIGHT_MB("hive.io.sarg.cache.max.weight.mb", 10,
+        "The max weight allowed for the SearchArgument Cache. By default, the cache allows a max-weight of 10MB, " +
+            "after which entries will be evicted."),
     HIVE_ORC_SKIP_CORRUPT_DATA("hive.exec.orc.skip.corrupt.data", false,
         "If ORC reader encounters corrupt data, this value will be used to determine\n" +
         "whether to skip the corrupt data or throw exception. The default behavior is to throw exception."),
