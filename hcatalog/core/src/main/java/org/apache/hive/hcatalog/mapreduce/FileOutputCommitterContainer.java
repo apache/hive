@@ -1010,10 +1010,17 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       // In the latter case the HCAT_KEY_TOKEN_SIGNATURE property in
       // the conf will not be set
       String tokenStrForm = client.getTokenStrForm();
+      String hCatKeyTokenSignature = context.getConfiguration().get(
+          HCatConstants.HCAT_KEY_TOKEN_SIGNATURE);
       if (tokenStrForm != null
-          && context.getConfiguration().get(
-              HCatConstants.HCAT_KEY_TOKEN_SIGNATURE) != null) {
+          && hCatKeyTokenSignature != null) {
+        LOG.info("FileOutputCommitterContainer::cancelDelegationTokens(): " +
+            "Cancelling token fetched for HCAT_KEY_TOKEN_SIGNATURE == (" + hCatKeyTokenSignature + ").");
         client.cancelDelegationToken(tokenStrForm);
+      }
+      else {
+        LOG.info("FileOutputCommitterContainer::cancelDelegationTokens(): " +
+            "Could not find tokenStrForm, or HCAT_KEY_TOKEN_SIGNATURE. Skipping token cancellation.");
       }
     } catch (MetaException e) {
       LOG.warn("MetaException while cancelling delegation token.", e);
