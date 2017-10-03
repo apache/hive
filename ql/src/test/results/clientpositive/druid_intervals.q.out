@@ -17,7 +17,7 @@ POSTHOOK: query: DESCRIBE FORMATTED druid_table_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@druid_table_1
 # col_name            	data_type           	comment             
-__time              	timestamp           	from deserializer   
+__time              	timestamp with local time zone	from deserializer   
 robot               	string              	from deserializer   
 namespace           	string              	from deserializer   
 anonymous           	string              	from deserializer   
@@ -82,7 +82,7 @@ STAGE PLANS:
             druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: __time (type: timestamp)
+            expressions: __time (type: timestamp with local time zone)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
@@ -108,11 +108,11 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000/2012-03-01T00:00:00.000"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000/2012-03-01T08:00:00.000"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
             druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: __time (type: timestamp)
+            expressions: __time (type: timestamp with local time zone)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
@@ -138,11 +138,11 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["2010-01-01T00:00:00.000/2012-03-01T00:00:00.001"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["2010-01-01T08:00:00.000/2012-03-01T08:00:00.001"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
             druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: __time (type: timestamp)
+            expressions: __time (type: timestamp with local time zone)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
@@ -170,11 +170,11 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["2010-01-01T00:00:00.000/2011-01-01T00:00:00.000"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["2010-01-01T08:00:00.000/2011-01-01T08:00:00.000"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
             druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: __time (type: timestamp)
+            expressions: __time (type: timestamp with local time zone)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
@@ -200,11 +200,11 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["2010-01-01T00:00:00.000/2011-01-01T00:00:00.001"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["2010-01-01T08:00:00.000/2011-01-01T08:00:00.001"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
             druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: __time (type: timestamp)
+            expressions: __time (type: timestamp with local time zone)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
@@ -232,11 +232,11 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["2010-01-01T00:00:00.000/2011-01-01T00:00:00.001","2012-01-01T00:00:00.000/2013-01-01T00:00:00.001"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["2010-01-01T08:00:00.000/2011-01-01T08:00:00.001","2012-01-01T08:00:00.000/2013-01-01T08:00:00.001"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
             druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: __time (type: timestamp)
+            expressions: __time (type: timestamp with local time zone)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
@@ -264,11 +264,11 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["2010-01-01T00:00:00.000/2012-01-01T00:00:00.001"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["2010-01-01T08:00:00.000/2012-01-01T08:00:00.001"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
             druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: __time (type: timestamp)
+            expressions: __time (type: timestamp with local time zone)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
@@ -294,11 +294,11 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["2010-01-01T00:00:00.000/2010-01-01T00:00:00.001","2011-01-01T00:00:00.000/2011-01-01T00:00:00.001"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["2010-01-01T08:00:00.000/2010-01-01T08:00:00.001","2011-01-01T08:00:00.000/2011-01-01T08:00:00.001"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
             druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: __time (type: timestamp)
+            expressions: __time (type: timestamp with local time zone)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
@@ -324,11 +324,11 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["2010-01-01T00:00:00.000/2010-01-01T00:00:00.001","2011-01-01T00:00:00.000/2011-01-01T00:00:00.001"],"filter":{"type":"selector","dimension":"robot","value":"user1"},"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["2010-01-01T08:00:00.000/2010-01-01T08:00:00.001","2011-01-01T08:00:00.000/2011-01-01T08:00:00.001"],"filter":{"type":"selector","dimension":"robot","value":"user1"},"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
             druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: __time (type: timestamp), 'user1' (type: string)
+            expressions: __time (type: timestamp with local time zone), 'user1' (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
@@ -353,16 +353,16 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: druid_table_1
-            filterExpr: ((__time) IN (2010-01-01 00:00:00.0, 2011-01-01 00:00:00.0) or (robot = 'user1')) (type: boolean)
+            filterExpr: ((__time) IN (2010-01-01 00:00:00.0 US/Pacific, 2011-01-01 00:00:00.0 US/Pacific) or (robot = 'user1')) (type: boolean)
             properties:
               druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"],"dimensions":["robot"],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
               druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((__time) IN (2010-01-01 00:00:00.0, 2011-01-01 00:00:00.0) or (robot = 'user1')) (type: boolean)
+              predicate: ((__time) IN (2010-01-01 00:00:00.0 US/Pacific, 2011-01-01 00:00:00.0 US/Pacific) or (robot = 'user1')) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
-                expressions: __time (type: timestamp), robot (type: string)
+                expressions: __time (type: timestamp with local time zone), robot (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator

@@ -182,6 +182,7 @@ public class ASTBuilder {
     case DATE:
     case TIME:
     case TIMESTAMP:
+    case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
     case INTERVAL_DAY:
     case INTERVAL_DAY_HOUR:
     case INTERVAL_DAY_MINUTE:
@@ -279,6 +280,12 @@ public class ASTBuilder {
     case TIMESTAMP:
       val = "'" + literal.getValueAs(TimestampString.class).toString() + "'";
       type = HiveParser.TOK_TIMESTAMPLITERAL;
+      break;
+    case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+      // Calcite stores timestamp with local time-zone in UTC internally, thus
+      // when we bring it back, we need to add the UTC suffix.
+      val = "'" + literal.getValueAs(TimestampString.class).toString() + " UTC'";
+      type = HiveParser.TOK_TIMESTAMPLOCALTZLITERAL;
       break;
     case INTERVAL_YEAR:
     case INTERVAL_MONTH:

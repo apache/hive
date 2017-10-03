@@ -62,6 +62,8 @@ import org.apache.hadoop.hive.ql.udf.UDFDateFloorSecond;
 import org.apache.hadoop.hive.ql.udf.UDFDateFloorWeek;
 import org.apache.hadoop.hive.ql.udf.UDFDateFloorYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEpochMilli;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -158,9 +160,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       fsParent.getChildOperators().clear();
 
       // Create SelectOp with granularity column
-      Operator<? extends OperatorDesc> granularitySelOp = getGranularitySelOp(fsParent,
-              segmentGranularity
-      );
+      Operator<? extends OperatorDesc> granularitySelOp = getGranularitySelOp(fsParent, segmentGranularity);
 
       // Create ReduceSinkOp operator
       ArrayList<ColumnInfo> parentCols = Lists.newArrayList(granularitySelOp.getSchema().getSignature());
@@ -230,17 +230,17 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
         descs.add(columnDesc);
         colNames.add(columnDesc.getExprString());
         if (columnDesc.getTypeInfo().getCategory() == ObjectInspector.Category.PRIMITIVE
-                && ((PrimitiveTypeInfo) columnDesc.getTypeInfo()).getPrimitiveCategory() == PrimitiveCategory.TIMESTAMP) {
+                && ((PrimitiveTypeInfo) columnDesc.getTypeInfo()).getPrimitiveCategory() == PrimitiveCategory.TIMESTAMPLOCALTZ) {
           if (timestampPos != -1) {
-            throw new SemanticException("Multiple columns with timestamp type on query result; "
-                    + "could not resolve which one is the timestamp column");
+            throw new SemanticException("Multiple columns with timestamp with local time-zone type on query result; "
+                    + "could not resolve which one is the timestamp with local time-zone column");
           }
           timestampPos = i;
         }
       }
       if (timestampPos == -1) {
-        throw new SemanticException("No column with timestamp type on query result; "
-                + "one column should be of timestamp type");
+        throw new SemanticException("No column with timestamp with local time-zone type on query result; "
+                + "one column should be of timestamp with local time-zone type");
       }
       RowSchema selRS = new RowSchema(fsParent.getSchema());
       // Granularity (partition) column
@@ -279,11 +279,33 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
         default:
           throw new SemanticException("Granularity for Druid segment not recognized");
       }
+
+      // Timestamp column type in Druid is timestamp with local time-zone, as it represents
+      // a specific instant in time. Thus, we have this value and we need to extract the
+      // granularity to split the data when we are storing it in Druid. However, Druid stores
+      // the data in UTC. Thus, we need to apply the following logic on the data to extract
+      // the granularity correctly:
+      // 1) Read the timestamp with local time-zone value.
+      // 2) Extract UTC epoch (millis) from timestamp with local time-zone.
+      // 3) Cast the long to a timestamp.
+      // 4) Apply the granularity function on the timestamp value.
+      // That way, '2010-01-01 00:00:00 UTC' and '2009-12-31 16:00:00 PST' (same instant)
+      // will end up in the same Druid segment.
+
+      // #1 - Read the column value
       ExprNodeDesc expr = new ExprNodeColumnDesc(parentCols.get(timestampPos));
-      descs.add(new ExprNodeGenericFuncDesc(
-              TypeInfoFactory.timestampTypeInfo,
-              new GenericUDFBridge(udfName, false, udfClass.getName()),
-              Lists.newArrayList(expr)));
+      // #2 - UTC epoch for instant
+      ExprNodeGenericFuncDesc f1 = new ExprNodeGenericFuncDesc(
+          TypeInfoFactory.longTypeInfo, new GenericUDFEpochMilli(), Lists.newArrayList(expr));
+      // #3 - Cast to timestamp
+      ExprNodeGenericFuncDesc f2 = new ExprNodeGenericFuncDesc(
+          TypeInfoFactory.timestampTypeInfo, new GenericUDFTimestamp(), Lists.newArrayList(f1));
+      // #4 - We apply the granularity function
+      ExprNodeGenericFuncDesc f3 = new ExprNodeGenericFuncDesc(
+          TypeInfoFactory.timestampTypeInfo,
+          new GenericUDFBridge(udfName, false, udfClass.getName()),
+          Lists.newArrayList(f2));
+      descs.add(f3);
       colNames.add(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME);
       // Add granularity to the row schema
       ColumnInfo ci = new ColumnInfo(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME, TypeInfoFactory.timestampTypeInfo,

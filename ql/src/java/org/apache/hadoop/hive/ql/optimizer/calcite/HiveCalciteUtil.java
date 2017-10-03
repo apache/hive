@@ -964,7 +964,7 @@ public class HiveCalciteUtil {
         aggArgRelDTBldr.build(), aggFnRetType);
     List<Integer> argList = new ArrayList<Integer>();
     argList.add(pos);
-    return new AggregateCall(aggFunction, false, argList, aggFnRetType, null);
+    return AggregateCall.create(aggFunction, false, argList, -1, aggFnRetType, null);
   }
 
   public static HiveTableFunctionScan createUDTFForSetOp(RelOptCluster cluster, RelNode input)

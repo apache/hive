@@ -34,8 +34,8 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
+import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 
 import com.google.common.collect.Sets;
 
@@ -45,18 +45,22 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
 
 
   public HiveAggregate(RelOptCluster cluster, RelTraitSet traitSet, RelNode child,
-      boolean indicator, ImmutableBitSet groupSet, List<ImmutableBitSet> groupSets,
+      ImmutableBitSet groupSet, List<ImmutableBitSet> groupSets,
       List<AggregateCall> aggCalls) {
-    super(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, indicator, groupSet,
-            groupSets, aggCalls);
+    super(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, false,
+            groupSet, groupSets, aggCalls);
   }
 
   @Override
   public Aggregate copy(RelTraitSet traitSet, RelNode input,
           boolean indicator, ImmutableBitSet groupSet,
           List<ImmutableBitSet> groupSets, List<AggregateCall> aggCalls) {
-      return new HiveAggregate(getCluster(), traitSet, input, indicator, groupSet,
-              groupSets, aggCalls);
+      if (indicator) {
+        throw new IllegalStateException("Hive does not support indicator columns but tried "
+                + "to create an Aggregate operator containing them");
+      }
+      return new HiveAggregate(getCluster(), traitSet, input,
+              groupSet, groupSets, aggCalls);
   }
 
   @Override

@@ -63,8 +63,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
@@ -134,22 +132,23 @@ public class ASTConverter {
     if (groupBy != null) {
       ASTBuilder b;
       boolean groupingSetsExpression = false;
-      if (groupBy.indicator) {
-        Group aggregateType = Aggregate.Group.induce(groupBy.getGroupSet(),
-                groupBy.getGroupSets());
-        if (aggregateType == Group.ROLLUP) {
+      Group aggregateType = groupBy.getGroupType();
+      switch (aggregateType) {
+        case SIMPLE:
+          b = ASTBuilder.construct(HiveParser.TOK_GROUPBY, "TOK_GROUPBY");
+          break;
+        case ROLLUP:
           b = ASTBuilder.construct(HiveParser.TOK_ROLLUP_GROUPBY, "TOK_ROLLUP_GROUPBY");
-        }
-        else if (aggregateType == Group.CUBE) {
+          break;
+        case CUBE:
           b = ASTBuilder.construct(HiveParser.TOK_CUBE_GROUPBY, "TOK_CUBE_GROUPBY");
-        }
-        else {
+          break;
+        case OTHER:
           b = ASTBuilder.construct(HiveParser.TOK_GROUPING_SETS, "TOK_GROUPING_SETS");
           groupingSetsExpression = true;
-        }
-      }
-      else {
-        b = ASTBuilder.construct(HiveParser.TOK_GROUPBY, "TOK_GROUPBY");
+          break;
+        default:
+          throw new CalciteSemanticException("Group type not recognized");
       }
 
       HiveAggregate hiveAgg = (HiveAggregate) groupBy;
@@ -201,14 +200,15 @@ public class ASTConverter {
     ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
 
     if (select instanceof Project) {
-      if (select.getChildExps().isEmpty()) {
+      List<RexNode> childExps = ((Project) select).getChildExps();
+      if (childExps.isEmpty()) {
         RexLiteral r = select.getCluster().getRexBuilder().makeExactLiteral(new BigDecimal(1));
         ASTNode selectExpr = ASTBuilder.selectExpr(ASTBuilder.literal(r), "1");
         b.add(selectExpr);
       } else {
         int i = 0;
 
-        for (RexNode r : select.getChildExps()) {
+        for (RexNode r : childExps) {
           ASTNode expr = r.accept(new RexVisitor(schema, r instanceof RexLiteral,
               select.getCluster().getRexBuilder()));
           String alias = select.getRowType().getFieldNames().get(i++);
@@ -769,15 +769,6 @@ public class ASTConverter {
       for (int i : gBy.getGroupSet()) {
         ColumnInfo cI = src.get(i);
         add(cI);
-      }
-      // If we are using grouping sets, we add the
-      // fields again, these correspond to the boolean
-      // grouping in Calcite. They are not used by Hive.
-      if(gBy.indicator) {
-        for (int i : gBy.getGroupSet()) {
-          ColumnInfo cI = src.get(i);
-          add(cI);
-        }
       }
       List<AggregateCall> aggs = gBy.getAggCallList();
       for (AggregateCall agg : aggs) {

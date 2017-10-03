@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
@@ -181,7 +182,7 @@ public class SqlFunctionConverter {
         castUDF = FunctionRegistry.getFunctionInfo("double");
       } else if (castType.equals(TypeInfoFactory.timestampTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("timestamp");
-      } else if (castType.equals(TypeInfoFactory.timestampLocalTZTypeInfo)) {
+      } else if (castType instanceof TimestampLocalTZTypeInfo) {
         castUDF = handleCastForParameterizedType(castType,
             FunctionRegistry.getFunctionInfo(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME));
       } else if (castType.equals(TypeInfoFactory.dateTypeInfo)) {
@@ -335,7 +336,7 @@ public class SqlFunctionConverter {
       registerFunction("-", SqlStdOperatorTable.MINUS, hToken(HiveParser.MINUS, "-"));
       registerFunction("*", SqlStdOperatorTable.MULTIPLY, hToken(HiveParser.STAR, "*"));
       registerFunction("/", SqlStdOperatorTable.DIVIDE, hToken(HiveParser.DIVIDE, "/"));
-      registerFunction("%", SqlStdOperatorTable.MOD, hToken(HiveParser.Identifier, "%"));
+      registerFunction("%", SqlStdOperatorTable.MOD, hToken(HiveParser.MOD, "%"));
       registerFunction("and", SqlStdOperatorTable.AND, hToken(HiveParser.KW_AND, "and"));
       registerFunction("or", SqlStdOperatorTable.OR, hToken(HiveParser.KW_OR, "or"));
       registerFunction("=", SqlStdOperatorTable.EQUALS, hToken(HiveParser.EQUAL, "="));

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -207,7 +209,8 @@ public class TypeCheckProcFactory {
     opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|"
         + HiveParser.KW_FALSE + "%"), tf.getBoolExprProcessor());
     opRules.put(new RuleRegExp("R5", HiveParser.TOK_DATELITERAL + "%|"
-        + HiveParser.TOK_TIMESTAMPLITERAL + "%"), tf.getDateTimeExprProcessor());
+        + HiveParser.TOK_TIMESTAMPLITERAL + "%|"
+        + HiveParser.TOK_TIMESTAMPLOCALTZLITERAL + "%"), tf.getDateTimeExprProcessor());
     opRules.put(new RuleRegExp("R6", HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL + "%|"
         + HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL + "%|"
         + HiveParser.TOK_INTERVAL_YEAR_LITERAL + "%|"
@@ -509,6 +512,16 @@ public class TypeCheckProcFactory {
         if (expr.getType() == HiveParser.TOK_TIMESTAMPLITERAL) {
           return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
               Timestamp.valueOf(timeString));
+        }
+        if (expr.getType() == HiveParser.TOK_TIMESTAMPLOCALTZLITERAL) {
+          HiveConf conf;
+          try {
+            conf = Hive.get().getConf();
+          } catch (HiveException e) {
+            throw new SemanticException(e);
+          }
+          return new ExprNodeConstantDesc(TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone()),
+              TimestampTZUtil.parse(timeString));
         }
         throw new IllegalArgumentException("Invalid time literal type " + expr.getType());
       } catch (Exception err) {

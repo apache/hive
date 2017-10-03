@@ -68,8 +68,8 @@ EXPLAIN
 SELECT robot, floor_hour(`__time`), max(added) as m, sum(variation)
 FROM druid_table_1
 WHERE floor_hour(`__time`)
-    BETWEEN CAST('2010-01-01 00:00:00' AS TIMESTAMP)
-        AND CAST('2014-01-01 00:00:00' AS TIMESTAMP)
+    BETWEEN CAST('2010-01-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
+        AND CAST('2014-01-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
 GROUP BY robot, floor_hour(`__time`)
 ORDER BY m
 LIMIT 100;

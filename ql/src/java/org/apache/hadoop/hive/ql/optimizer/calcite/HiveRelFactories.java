@@ -44,10 +44,10 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
@@ -193,7 +193,11 @@ public class HiveRelFactories {
     public RelNode createAggregate(RelNode child, boolean indicator,
             ImmutableBitSet groupSet, ImmutableList<ImmutableBitSet> groupSets,
             List<AggregateCall> aggCalls) {
-        return new HiveAggregate(child.getCluster(), child.getTraitSet(), child, indicator,
+        if (indicator) {
+          throw new IllegalStateException("Hive does not support indicator columns but Calcite "
+                  + "created an Aggregate operator containing them");
+        }
+        return new HiveAggregate(child.getCluster(), child.getTraitSet(), child,
                 groupSet, groupSets, aggCalls);
     }
   }

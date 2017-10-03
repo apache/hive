@@ -268,7 +268,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
       aggregateCalls.add(aggregateCall);
     }
     Aggregate aggregate = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), gbInputRel,
-        false, ImmutableBitSet.of(), null, aggregateCalls);
+        ImmutableBitSet.of(), null, aggregateCalls);
 
     // create the project after GB. For those repeated values, e.g., select
     // count(distinct x, y), count(distinct y, x), we find the correct mapping.
@@ -330,7 +330,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
             .createSqlType(SqlTypeName.INTEGER), HiveGroupingID.INSTANCE.getName());
     aggregateCalls.add(aggCall);
     return new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-        aggregate.getInput(), true, groupSet, origGroupSets, aggregateCalls);
+        aggregate.getInput(), groupSet, origGroupSets, aggregateCalls);
   }
 
   /**

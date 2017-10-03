@@ -17,11 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.udf;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.joda.time.Chronology;
 import org.joda.time.DateTime;
@@ -40,11 +46,13 @@ import com.google.common.collect.ImmutableMap;
 public abstract class UDFDateFloor extends UDF {
 
   private final QueryGranularity granularity;
-  private final TimestampWritable result;
+  private final TimestampWritable resultTS;
+  private final TimestampLocalTZWritable resultTSLTZ;
 
   public UDFDateFloor(String granularity) {
     this.granularity = QueryGranularity.fromString(granularity);
-    this.result = new TimestampWritable();
+    this.resultTS = new TimestampWritable();
+    this.resultTSLTZ = new TimestampLocalTZWritable();
   }
 
   public TimestampWritable evaluate(TimestampWritable t) {
@@ -57,8 +65,23 @@ public abstract class UDFDateFloor extends UDF {
     final long newTimestampUTC = granularity.truncate(originalTimestampUTC); // utc
     final long newTimestamp = new DateTime(newTimestampUTC, DateTimeZone.UTC)
         .withZoneRetainFields(DateTimeZone.getDefault()).getMillis(); // utc -> default
-    result.setTime(newTimestamp);
-    return result;
+    resultTS.setTime(newTimestamp);
+    return resultTS;
+  }
+
+  public TimestampLocalTZWritable evaluate(TimestampLocalTZWritable t) {
+    if (t == null) {
+      return null;
+    }
+    final ZonedDateTime localZDT = t.getTimestampTZ().getZonedDateTime(); // default
+    final long originalTimestampUTC = localZDT.withZoneSameLocal(ZoneOffset.UTC)
+        .toInstant().toEpochMilli(); // default -> utc
+    final long newTimestampUTC = granularity.truncate(originalTimestampUTC); // utc
+    final ZonedDateTime newLocalZDT = ZonedDateTime.of(
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(newTimestampUTC), ZoneOffset.UTC),
+        localZDT.getZone()); // utc -> default
+    resultTSLTZ.set(new TimestampTZ(newLocalZDT));
+    return resultTSLTZ;
   }
 
   /*

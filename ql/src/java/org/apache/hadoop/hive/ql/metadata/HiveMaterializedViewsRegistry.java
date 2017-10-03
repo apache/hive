@@ -188,7 +188,8 @@ public final class HiveMaterializedViewsRegistry {
               " ignored; error parsing original query");
       return null;
     }
-    RelOptMaterialization materialization = new RelOptMaterialization(tableRel, queryRel, null);
+    RelOptMaterialization materialization = new RelOptMaterialization(tableRel, queryRel,
+        null, tableRel.getTable().getQualifiedName());
     cq.put(vk, materialization);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Cached materialized view for rewriting: " + tableRel.getTable().getQualifiedName());
@@ -314,10 +315,13 @@ public final class HiveMaterializedViewsRegistry {
         }
         metrics.add(field.getName());
       }
+      // TODO: Default interval will be an Interval once Calcite 1.15.0 is released.
+      // We will need to update the type of this list.
       List<LocalInterval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
 
       DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
-          dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN, intervals);
+          dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
+          intervals, null, null);
       final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
           optTable, viewTable.getTableName(), null, false, false);
       tableRel = DruidQuery.create(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),

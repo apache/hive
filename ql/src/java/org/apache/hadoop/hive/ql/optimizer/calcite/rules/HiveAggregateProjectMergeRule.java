@@ -20,16 +20,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.core.Aggregate.Group;
 import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.rules.AggregateProjectMergeRule;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
@@ -48,15 +49,13 @@ import com.google.common.collect.Lists;
  * <p>In some cases, this rule has the effect of trimming: the aggregate will
  * use fewer columns than the project did.
  */
-public class HiveAggregateProjectMergeRule extends RelOptRule {
+public class HiveAggregateProjectMergeRule extends AggregateProjectMergeRule {
   public static final HiveAggregateProjectMergeRule INSTANCE =
       new HiveAggregateProjectMergeRule();
 
   /** Private constructor. */
   private HiveAggregateProjectMergeRule() {
-    super(
-        operand(HiveAggregate.class,
-            operand(HiveProject.class, any())));
+    super(HiveAggregate.class, HiveProject.class, HiveRelFactories.HIVE_BUILDER);
   }
 
   @Override
@@ -72,17 +71,16 @@ public class HiveAggregateProjectMergeRule extends RelOptRule {
     return super.matches(call);
   }
 
-  @Override
   public void onMatch(RelOptRuleCall call) {
     final HiveAggregate aggregate = call.rel(0);
     final HiveProject project = call.rel(1);
-    RelNode x = apply(aggregate, project);
+    RelNode x = apply(call, aggregate, project);
     if (x != null) {
       call.transformTo(x);
     }
   }
 
-  public static RelNode apply(HiveAggregate aggregate,
+  public static RelNode apply(RelOptRuleCall call, HiveAggregate aggregate,
       HiveProject project) {
     final List<Integer> newKeys = Lists.newArrayList();
     final Map<Integer, Integer> map = new HashMap<>();
@@ -100,7 +98,7 @@ public class HiveAggregateProjectMergeRule extends RelOptRule {
 
     final ImmutableBitSet newGroupSet = aggregate.getGroupSet().permute(map);
     ImmutableList<ImmutableBitSet> newGroupingSets = null;
-    if (aggregate.indicator) {
+    if (aggregate.getGroupType() != Group.SIMPLE) {
       newGroupingSets =
           ImmutableBitSet.ORDERING.immutableSortedCopy(
               ImmutableBitSet.permute(aggregate.getGroupSets(), map));
@@ -139,7 +137,8 @@ public class HiveAggregateProjectMergeRule extends RelOptRule {
 
     // Add a project if the group set is not in the same order or
     // contains duplicates.
-    RelNode rel = newAggregate;
+    final RelBuilder relBuilder = call.builder();
+    relBuilder.push(newAggregate);
     if (!newKeys.equals(newGroupSet.asList())) {
       final List<Integer> posList = Lists.newArrayList();
       for (int newKey : newKeys) {
@@ -155,14 +154,12 @@ public class HiveAggregateProjectMergeRule extends RelOptRule {
            i < newAggregate.getRowType().getFieldCount(); i++) {
         posList.add(i);
       }
-      rel = HiveRelOptUtil.createProject(
-          HiveRelFactories.HIVE_BUILDER.create(aggregate.getCluster(), null),
-          rel, posList);
-
+      relBuilder.project(relBuilder.fields(posList));
     }
 
-    return rel;
+    return relBuilder.build();
   }
+
 }
 
-// End AggregateProjectMergeRule.java
+// End HiveAggregateProjectMergeRule.java

@@ -48,10 +48,11 @@ import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
-import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -244,6 +245,15 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       case TIME:
       case TIMESTAMP:
         return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, null);
+      case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+        HiveConf conf;
+        try {
+          conf = Hive.get().getConf();
+        } catch (HiveException e) {
+          throw new RuntimeException(e);
+        }
+        return new ExprNodeConstantDesc(
+                TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone()), null);
       case BINARY:
         return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, null);
       case DECIMAL:
@@ -267,12 +277,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       case INTERVAL_MINUTE_SECOND:
       case INTERVAL_SECOND:
         return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo, null);
-      case NULL:
-      case OTHER:
       default:
-        if (lType instanceof HiveType && ((HiveType) lType).getTypeClass() == TimestampTZ.class) {
-          return new ExprNodeConstantDesc(TypeInfoFactory.timestampLocalTZTypeInfo, null);
-        }
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, null);
       }
     } else {
@@ -308,6 +313,17 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       case TIMESTAMP:
         return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
             Timestamp.valueOf(literal.getValueAs(TimestampString.class).toString()));
+      case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+        HiveConf conf;
+        try {
+          conf = Hive.get().getConf();
+        } catch (HiveException e) {
+          throw new RuntimeException(e);
+        }
+        // Calcite stores timestamp with local time-zone in UTC internally, thus
+        // when we bring it back, we need to add the UTC suffix.
+        return new ExprNodeConstantDesc(TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone()),
+            literal.getValueAs(TimestampString.class).toString() + " UTC");
       case BINARY:
         return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, literal.getValue3());
       case DECIMAL:
@@ -340,12 +356,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
                 new HiveIntervalDayTime(secsBd));
       }
-      case NULL:
-      case OTHER:
       default:
-        if (lType instanceof HiveType && ((HiveType) lType).getTypeClass() == TimestampTZ.class) {
-          return new ExprNodeConstantDesc(TypeInfoFactory.timestampLocalTZTypeInfo, literal.getValue3());
-        }
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
       }
     }

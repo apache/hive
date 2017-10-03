@@ -324,6 +324,7 @@ constant
     | Number
     | dateLiteral
     | timestampLiteral
+    | timestampLocalTZLiteral
     | StringLiteral
     | stringLiteralSequence
     | IntegralLiteral
@@ -365,6 +366,14 @@ timestampLiteral
     }
     |
     KW_CURRENT_TIMESTAMP -> ^(TOK_FUNCTION KW_CURRENT_TIMESTAMP)
+    ;
+
+timestampLocalTZLiteral
+    :
+    KW_TIMESTAMPLOCALTZ StringLiteral ->
+    {
+      adaptor.create(TOK_TIMESTAMPLOCALTZLITERAL, $StringLiteral.text)
+    }
     ;
 
 intervalValue

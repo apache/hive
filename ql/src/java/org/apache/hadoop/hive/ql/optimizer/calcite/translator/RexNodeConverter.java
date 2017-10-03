@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -58,6 +59,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -436,7 +438,7 @@ public class RexNodeConverter {
     // Calcite always needs the else clause to be defined explicitly
     if (newChildRexNodeLst.size() % 2 == 0) {
       newChildRexNodeLst.add(cluster.getRexBuilder().makeNullLiteral(
-              newChildRexNodeLst.get(newChildRexNodeLst.size()-1).getType().getSqlTypeName()));
+              newChildRexNodeLst.get(newChildRexNodeLst.size()-1).getType()));
     }
     return newChildRexNodeLst;
   }
@@ -686,6 +688,20 @@ public class RexNodeConverter {
           SqlTypeName.TIMESTAMP,
           rexBuilder.getTypeFactory().getTypeSystem().getDefaultPrecision(SqlTypeName.TIMESTAMP)),
         false);
+      break;
+    case TIMESTAMPLOCALTZ:
+      final TimestampString tsLocalTZString;
+      if (value == null) {
+        tsLocalTZString = null;
+      } else {
+        Instant i = ((TimestampTZ)value).getZonedDateTime().toInstant();
+        tsLocalTZString = TimestampString
+            .fromMillisSinceEpoch(i.toEpochMilli())
+            .withNanos(i.getNano());
+      }
+      calciteLiteral = rexBuilder.makeTimestampWithLocalTimeZoneLiteral(
+        tsLocalTZString,
+        rexBuilder.getTypeFactory().getTypeSystem().getDefaultPrecision(SqlTypeName.TIMESTAMP_WITH_LOCAL_TIME_ZONE));
       break;
     case INTERVAL_YEAR_MONTH:
       // Calcite year-month literal value is months as BigDecimal

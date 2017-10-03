@@ -497,6 +497,8 @@ public final class FunctionRegistry {
     system.registerGenericUDF("to_unix_timestamp", GenericUDFToUnixTimeStamp.class);
 
     system.registerGenericUDF("internal_interval", GenericUDFInternalInterval.class);
+
+    system.registerGenericUDF("to_epoch_milli", GenericUDFEpochMilli.class);
     // Generic UDTF's
     system.registerGenericUDTF("explode", GenericUDTFExplode.class);
     system.registerGenericUDTF("replicate_rows", GenericUDTFReplicateRows.class);

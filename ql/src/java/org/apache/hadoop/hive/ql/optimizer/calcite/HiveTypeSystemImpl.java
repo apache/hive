@@ -36,6 +36,7 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
   private static final int DEFAULT_CHAR_PRECISION    = 255;
   private static final int MAX_BINARY_PRECISION      = Integer.MAX_VALUE;
   private static final int MAX_TIMESTAMP_PRECISION   = 9;
+  private static final int MAX_TIMESTAMP_WITH_LOCAL_TIME_ZONE_PRECISION = 15; // Up to nanos
 
   @Override
   public int getMaxScale(SqlTypeName typeName) {
@@ -70,6 +71,7 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
     case VARBINARY:
     case TIME:
     case TIMESTAMP:
+    case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
       return getMaxPrecision(typeName);
     case CHAR:
       return DEFAULT_CHAR_PRECISION;
@@ -110,6 +112,8 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
     case TIME:
     case TIMESTAMP:
       return MAX_TIMESTAMP_PRECISION;
+    case TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+      return MAX_TIMESTAMP_WITH_LOCAL_TIME_ZONE_PRECISION;
     case INTERVAL_YEAR:
     case INTERVAL_MONTH:
     case INTERVAL_YEAR_MONTH:

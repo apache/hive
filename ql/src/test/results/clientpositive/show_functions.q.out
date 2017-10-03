@@ -250,6 +250,7 @@ substring_index
 sum
 tan
 to_date
+to_epoch_milli
 to_unix_timestamp
 to_utc_timestamp
 translate

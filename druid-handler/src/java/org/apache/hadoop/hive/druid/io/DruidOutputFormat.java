@@ -149,10 +149,18 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
           af = new DoubleSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
           break;
         case TIMESTAMP:
+          // Granularity column
           String tColumnName = columnNames.get(i);
-          if (!tColumnName.equals(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN) && !tColumnName
-                  .equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME)) {
+          if (!tColumnName.equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME)) {
             throw new IOException("Dimension " + tColumnName + " does not have STRING type: " +
+                    primitiveCategory);
+          }
+          continue;
+        case TIMESTAMPLOCALTZ:
+          // Druid timestamp column
+          String tLocalTZColumnName = columnNames.get(i);
+          if (!tLocalTZColumnName.equals(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
+            throw new IOException("Dimension " + tLocalTZColumnName + " does not have STRING type: " +
                     primitiveCategory);
           }
           continue;

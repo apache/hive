@@ -29,6 +29,7 @@ import java.util.TreeMap;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.core.Aggregate.Group;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -173,7 +174,7 @@ public class HiveGBOpConvUtil {
     }
 
     // 2. Collect Grouping Set info
-    if (aggRel.indicator) {
+    if (aggRel.getGroupType() != Group.SIMPLE) {
       // 2.1 Translate Grouping set col bitset
       ImmutableList<ImmutableBitSet> lstGrpSet = aggRel.getGroupSets();
       int bitmap = 0;

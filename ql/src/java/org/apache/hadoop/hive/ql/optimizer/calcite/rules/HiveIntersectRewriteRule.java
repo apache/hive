@@ -27,18 +27,14 @@ import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
-import org.apache.calcite.rel.core.Intersect;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.SqlAggFunction;
-import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
@@ -52,16 +48,10 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.calcite.tools.RelBuilder;
-import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esotericsoftware.minlog.Log;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -140,7 +130,7 @@ public class HiveIntersectRewriteRule extends RelOptRule {
       aggregateCalls.add(aggregateCall);
       
       HiveRelNode aggregateRel = new HiveAggregate(cluster,
-          cluster.traitSetOf(HiveRelNode.CONVENTION), gbInputRel, false, groupSet, null,
+          cluster.traitSetOf(HiveRelNode.CONVENTION), gbInputRel, groupSet, null,
           aggregateCalls);
       bldr.add(aggregateRel);
     }
@@ -173,7 +163,7 @@ public class HiveIntersectRewriteRule extends RelOptRule {
     
     final ImmutableBitSet groupSet = ImmutableBitSet.of(groupSetPositions);
     HiveRelNode aggregateRel = new HiveAggregate(cluster,
-        cluster.traitSetOf(HiveRelNode.CONVENTION), union, false, groupSet, null, aggregateCalls);
+        cluster.traitSetOf(HiveRelNode.CONVENTION), union, groupSet, null, aggregateCalls);
 
     // add a filter count(c) = #branches
     int countInd = cInd;

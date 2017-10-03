@@ -1509,7 +1509,7 @@ public class Hive {
         Map<String, RelOptMaterialization> qualifiedNameToView =
             new HashMap<String, RelOptMaterialization>();
         for (RelOptMaterialization materialization : cachedViews) {
-          qualifiedNameToView.put(materialization.table.getQualifiedName().get(0), materialization);
+          qualifiedNameToView.put(materialization.qualifiedTableName.get(0), materialization);
         }
         for (String table : tables) {
           // Compose qualified name

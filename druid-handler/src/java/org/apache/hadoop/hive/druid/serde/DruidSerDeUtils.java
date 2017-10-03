@@ -73,7 +73,7 @@ public final class DruidSerDeUtils {
       TimeFormatExtractionFn tfe = (TimeFormatExtractionFn) eds.getExtractionFn();
       if (tfe.getFormat() == null || tfe.getFormat().equals(ISO_TIME_FORMAT)) {
         // Timestamp (null or default used by FLOOR)
-        return TypeInfoFactory.timestampTypeInfo;
+        return TypeInfoFactory.timestampLocalTZTypeInfo;
       } else {
         // EXTRACT from timestamp
         return TypeInfoFactory.intTypeInfo;

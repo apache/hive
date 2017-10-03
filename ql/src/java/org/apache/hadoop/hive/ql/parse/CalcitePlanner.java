@@ -231,8 +231,6 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
 import org.apache.hadoop.hive.ql.parse.QBExpr.Opcode;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.PlannerContext;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.PlannerContextFactory;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowExpressionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
@@ -1357,6 +1355,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       HiveRulesRegistry registry = new HiveRulesRegistry();
       Properties calciteConfigProperties = new Properties();
       calciteConfigProperties.setProperty(
+              CalciteConnectionProperty.TIME_ZONE.camelName(),
+              conf.getLocalTimeZone().getId());
+      calciteConfigProperties.setProperty(
               CalciteConnectionProperty.MATERIALIZATIONS_ENABLED.camelName(),
               Boolean.FALSE.toString());
       CalciteConnectionConfig calciteConfig = new CalciteConnectionConfigImpl(calciteConfigProperties);
@@ -1500,7 +1501,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   } else {
                     newViewScan = copyNodeScan(viewScan);
                   }
-                  return new RelOptMaterialization(newViewScan, materialization.queryRel, null);
+                  return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
+                      materialization.qualifiedTableName);
                 }
 
                 private RelNode copyNodeScan(RelNode scan) {
@@ -2399,10 +2401,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
             }
             metrics.add(field.getName());
           }
+          // TODO: Default interval will be an Interval once Calcite 1.15.0 is released.
+          // We will need to update the type of this list.
           List<LocalInterval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
 
           DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
-                  dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN, intervals);
+                  dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
+                  intervals, null, null);
           final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
                   optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
                   getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
@@ -2821,8 +2826,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       if (hasGroupSets) {
         // Create GroupingID column
-        AggregateCall aggCall = new AggregateCall(HiveGroupingID.INSTANCE,
-                false, new ImmutableList.Builder<Integer>().build(),
+        AggregateCall aggCall = AggregateCall.create(HiveGroupingID.INSTANCE,
+                false, new ImmutableList.Builder<Integer>().build(), -1,
                 this.cluster.getTypeFactory().createSqlType(SqlTypeName.INTEGER),
                 HiveGroupingID.INSTANCE.getName());
         aggregateCalls.add(aggCall);
@@ -2836,8 +2841,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelNode gbInputRel = HiveProject.create(srcRel, gbChildProjLst, null);
 
       HiveRelNode aggregateRel = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-            gbInputRel, (transformedGroupSets!=null ? true:false), groupSet,
-            transformedGroupSets, aggregateCalls);
+            gbInputRel, groupSet, transformedGroupSets, aggregateCalls);
 
       return aggregateRel;
     }
@@ -3094,19 +3098,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             groupingSets = getGroupingSetsForCube(grpByAstExprs.size());
           } else if (qbp.getDestGroupingSets().contains(detsClauseName)) {
             groupingSets = getGroupingSets(grpByAstExprs, qbp, detsClauseName);
-          }
-
-          final int limit = groupingColsSize * 2;
-          while (groupingColsSize < limit) {
-            String field = getColumnInternalName(groupingColsSize);
-            outputColumnNames.add(field);
-            groupByOutputRowResolver.put(null, field,
-                    new ColumnInfo(
-                            field,
-                            TypeInfoFactory.booleanTypeInfo,
-                            null,
-                            false));
-            groupingColsSize++;
           }
         }
 
@@ -4061,7 +4052,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (selForWindow != null && selExprList.getToken().getType() == HiveParser.TOK_SELECTDI) {
         ImmutableBitSet groupSet = ImmutableBitSet.range(outputRel.getRowType().getFieldList().size());
         outputRel = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-              outputRel, false, groupSet, null, new ArrayList<AggregateCall>());
+              outputRel, groupSet, null, new ArrayList<AggregateCall>());
         RowResolver groupByOutputRowResolver = new RowResolver();
         for (int i = 0; i < out_rwsch.getColumnInfos().size(); i++) {
           ColumnInfo colInfo = out_rwsch.getColumnInfos().get(i);

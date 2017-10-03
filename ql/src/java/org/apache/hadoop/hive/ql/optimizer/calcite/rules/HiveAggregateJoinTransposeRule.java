@@ -33,9 +33,9 @@ import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.AggregateJoinTransposeRule;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
@@ -43,6 +43,8 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlSplittableAggFunction;
+import org.apache.calcite.tools.RelBuilder;
+import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.Mappings;
@@ -64,29 +66,17 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
 
   /** Extended instance of the rule that can push down aggregate functions. */
   public static final HiveAggregateJoinTransposeRule INSTANCE =
-      new HiveAggregateJoinTransposeRule(HiveAggregate.class, HiveRelFactories.HIVE_AGGREGATE_FACTORY,
-          HiveJoin.class, HiveRelFactories.HIVE_JOIN_FACTORY, HiveRelFactories.HIVE_PROJECT_FACTORY,
-          true);
-
-  private final RelFactories.AggregateFactory aggregateFactory;
-
-  private final RelFactories.JoinFactory joinFactory;
-
-  private final RelFactories.ProjectFactory projectFactory;
+      new HiveAggregateJoinTransposeRule(HiveAggregate.class, HiveJoin.class,
+          HiveRelFactories.HIVE_BUILDER, true);
 
   private final boolean allowFunctions;
 
   /** Creates an AggregateJoinTransposeRule that may push down functions. */
   private HiveAggregateJoinTransposeRule(Class<? extends Aggregate> aggregateClass,
-      RelFactories.AggregateFactory aggregateFactory,
       Class<? extends Join> joinClass,
-      RelFactories.JoinFactory joinFactory,
-      RelFactories.ProjectFactory projectFactory,
+      RelBuilderFactory relBuilderFactory,
       boolean allowFunctions) {
-    super(aggregateClass, aggregateFactory, joinClass, joinFactory, projectFactory, true);
-    this.aggregateFactory = aggregateFactory;
-    this.joinFactory = joinFactory;
-    this.projectFactory = projectFactory;
+    super(aggregateClass, joinClass, relBuilderFactory, true);
     this.allowFunctions = allowFunctions;
   }
 
@@ -95,6 +85,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
     final Aggregate aggregate = call.rel(0);
     final Join join = call.rel(1);
     final RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
+    final RelBuilder relBuilder = call.builder();
 
     // If any aggregate functions do not support splitting, bail out
     // If any aggregate call has a filter, bail out
@@ -119,8 +110,8 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
     }
 
     // Do the columns used by the join appear in the output of the aggregate?
-    final RelMetadataQuery mq = call.getMetadataQuery();
     final ImmutableBitSet aggregateColumns = aggregate.getGroupSet();
+    final RelMetadataQuery mq = call.getMetadataQuery();
     final ImmutableBitSet keyColumns = keyColumns(aggregateColumns,
         mq.getPulledUpPredicates(join).pulledUpPredicates);
     final ImmutableBitSet joinColumns =
@@ -171,8 +162,8 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         // any functions experiencing a cartesian product effect.
         //
         // But finding out whether the input is already unique requires a call
-        // to areColumnsUnique that currently (until [CALCITE-794] "Detect
-        // cycles when computing statistics" is fixed) places a heavy load on
+        // to areColumnsUnique that currently (until [CALCITE-1048] "Make
+        // metadata more robust" is fixed) places a heavy load on
         // the metadata system.
         //
         // So we choose to imagine the the input is already unique, which is
@@ -213,8 +204,10 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
                     + belowAggCallRegistry.register(call1));
           }
         }
-        side.newInput = aggregateFactory.createAggregate(joinInput, false,
-            belowAggregateKey, null, belowAggCalls);
+        side.newInput = relBuilder.push(joinInput)
+            .aggregate(relBuilder.groupKey(belowAggregateKey, null),
+                belowAggCalls)
+            .build();
       }
       offset += fieldCount;
       belowOffset += side.newInput.getRowType().getFieldCount();
@@ -231,7 +224,6 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
     // Update condition
     final Mapping mapping = (Mapping) Mappings.target(
         new Function<Integer, Integer>() {
-          @Override
           public Integer apply(Integer a0) {
             return map.get(a0);
           }
@@ -242,9 +234,9 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         RexUtil.apply(mapping, join.getCondition());
 
     // Create new join
-    RelNode newJoin = joinFactory.createJoin(sides.get(0).newInput,
-        sides.get(1).newInput, newCondition, join.getJoinType(),
-        join.getVariablesStopped(), join.isSemiJoinDone());
+    relBuilder.push(sides.get(0).newInput)
+        .push(sides.get(1).newInput)
+        .join(join.getJoinType(), newCondition);
 
     // Aggregate above to sum up the sub-totals
     final List<AggregateCall> newAggCalls = new ArrayList<>();
@@ -252,7 +244,8 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         aggregate.getGroupCount() + aggregate.getIndicatorCount();
     final int newLeftWidth = sides.get(0).newInput.getRowType().getFieldCount();
     final List<RexNode> projects =
-        new ArrayList<>(rexBuilder.identityProjects(newJoin.getRowType()));
+        new ArrayList<>(
+            rexBuilder.identityProjects(relBuilder.peek().getRowType()));
     for (Ord<AggregateCall> aggCall : Ord.zip(aggregate.getAggCallList())) {
       final SqlAggFunction aggregation = aggCall.e.getAggregation();
       final SqlSplittableAggFunction splitter =
@@ -262,47 +255,45 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
       final Integer rightSubTotal = sides.get(1).split.get(aggCall.i);
       newAggCalls.add(
           splitter.topSplit(rexBuilder, registry(projects),
-              groupIndicatorCount, newJoin.getRowType(), aggCall.e,
+              groupIndicatorCount, relBuilder.peek().getRowType(), aggCall.e,
               leftSubTotal == null ? -1 : leftSubTotal,
               rightSubTotal == null ? -1 : rightSubTotal + newLeftWidth));
     }
-    RelNode r = newJoin;
-  b:
-    if (allColumnsInAggregate && newAggCalls.isEmpty() &&
-      RelOptUtil.areRowTypesEqual(r.getRowType(), aggregate.getRowType(), false)) {
-      // no need to aggregate
-    } else {
-      r = RelOptUtil.createProject(r, projects, null, true,
-              relBuilderFactory.create(aggregate.getCluster(), null));
-      if (allColumnsInAggregate) {
-        // let's see if we can convert
-        List<RexNode> projects2 = new ArrayList<>();
-        for (int key : Mappings.apply(mapping, aggregate.getGroupSet())) {
-          projects2.add(rexBuilder.makeInputRef(r, key));
-        }
-        for (AggregateCall newAggCall : newAggCalls) {
-          final SqlSplittableAggFunction splitter =
-              newAggCall.getAggregation()
-                  .unwrap(SqlSplittableAggFunction.class);
-          if (splitter != null) {
-            projects2.add(
-                splitter.singleton(rexBuilder, r.getRowType(), newAggCall));
-          }
-        }
-        if (projects2.size()
-            == aggregate.getGroupSet().cardinality() + newAggCalls.size()) {
-          // We successfully converted agg calls into projects.
-          r = RelOptUtil.createProject(r, projects2, null, true,
-                  relBuilderFactory.create(aggregate.getCluster(), null));
-          break b;
+
+    relBuilder.project(projects);
+
+    boolean aggConvertedToProjects = false;
+    if (allColumnsInAggregate) {
+      // let's see if we can convert aggregate into projects
+      List<RexNode> projects2 = new ArrayList<>();
+      for (int key : Mappings.apply(mapping, aggregate.getGroupSet())) {
+        projects2.add(relBuilder.field(key));
+      }
+      for (AggregateCall newAggCall : newAggCalls) {
+        final SqlSplittableAggFunction splitter =
+            newAggCall.getAggregation().unwrap(SqlSplittableAggFunction.class);
+        if (splitter != null) {
+          final RelDataType rowType = relBuilder.peek().getRowType();
+          projects2.add(splitter.singleton(rexBuilder, rowType, newAggCall));
         }
       }
-      r = aggregateFactory.createAggregate(r, aggregate.indicator,
-          Mappings.apply(mapping, aggregate.getGroupSet()),
-          Mappings.apply2(mapping, aggregate.getGroupSets()), newAggCalls);
+      if (projects2.size()
+          == aggregate.getGroupSet().cardinality() + newAggCalls.size()) {
+        // We successfully converted agg calls into projects.
+        relBuilder.project(projects2);
+        aggConvertedToProjects = true;
+      }
+    }
+
+    if (!aggConvertedToProjects) {
+      relBuilder.aggregate(
+          relBuilder.groupKey(Mappings.apply(mapping, aggregate.getGroupSet()),
+              Mappings.apply2(mapping, aggregate.getGroupSets())),
+          newAggCalls);
     }
 
     // Make a cost based decision to pick cheaper plan
+    RelNode r = relBuilder.build();
     RelOptCost afterCost = mq.getCumulativeCost(r);
     RelOptCost beforeCost = mq.getCumulativeCost(aggregate);
     if (afterCost.isLt(beforeCost)) {
@@ -316,8 +307,8 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
   private static ImmutableBitSet keyColumns(ImmutableBitSet aggregateColumns,
       ImmutableList<RexNode> predicates) {
     SortedMap<Integer, BitSet> equivalence = new TreeMap<>();
-    for (RexNode pred : predicates) {
-      populateEquivalences(equivalence, pred);
+    for (RexNode predicate : predicates) {
+      populateEquivalences(equivalence, predicate);
     }
     ImmutableBitSet keyColumns = aggregateColumns;
     for (Integer aggregateColumn : aggregateColumns) {
@@ -358,10 +349,9 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
 
   /** Creates a {@link org.apache.calcite.sql.SqlSplittableAggFunction.Registry}
    * that is a view of a list. */
-  private static <E> SqlSplittableAggFunction.Registry<E>
-  registry(final List<E> list) {
+  private static <E> SqlSplittableAggFunction.Registry<E> registry(
+      final List<E> list) {
     return new SqlSplittableAggFunction.Registry<E>() {
-      @Override
       public int register(E e) {
         int i = list.indexOf(e);
         if (i < 0) {

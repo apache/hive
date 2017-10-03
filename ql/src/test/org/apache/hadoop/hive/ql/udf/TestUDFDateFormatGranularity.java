@@ -18,7 +18,12 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.junit.Test;
 
@@ -82,6 +87,79 @@ public class TestUDFDateFormatGranularity extends TestCase {
     g = new UDFDateFloorSecond();
     TimestampWritable i8 = g.evaluate(t);
     assertEquals(494243222000L, i8.getTimestamp().getTime());
+  }
+
+  @Test
+  public void testTimestampWithLocalTZGranularity() throws Exception {
+    // Running example
+    // Friday 30th August 1985 02:47:02 AM
+    final TimestampLocalTZWritable t = new TimestampLocalTZWritable(
+        new TimestampTZ(Instant.ofEpochMilli(494243222000L).atZone(ZoneId.of("America/Los_Angeles"))));
+    UDFDateFloor g;
+
+    // Year granularity
+    // Tuesday 1st January 1985 12:00:00 AM
+    g = new UDFDateFloorYear();
+    TimestampLocalTZWritable i1 = g.evaluate(t);
+    assertEquals(
+        new TimestampTZ(Instant.ofEpochMilli(473414400000L).atZone(ZoneId.of("America/Los_Angeles"))),
+        i1.getTimestampTZ());
+
+    // Quarter granularity
+    // Monday 1st July 1985 12:00:00 AM
+    g = new UDFDateFloorQuarter();
+    TimestampLocalTZWritable i2 = g.evaluate(t);
+    assertEquals(
+        new TimestampTZ(Instant.ofEpochMilli(489049200000L).atZone(ZoneId.of("America/Los_Angeles"))),
+        i2.getTimestampTZ());
+
+    // Month granularity
+    // Thursday 1st August 1985 12:00:00 AM
+    g = new UDFDateFloorMonth();
+    TimestampLocalTZWritable i3 = g.evaluate(t);
+    assertEquals(
+        new TimestampTZ(Instant.ofEpochMilli(491727600000L).atZone(ZoneId.of("America/Los_Angeles"))),
+        i3.getTimestampTZ());
+
+    // Week granularity
+    // Monday 26th August 1985 12:00:00 AM
+    g = new UDFDateFloorWeek();
+    TimestampLocalTZWritable i4 = g.evaluate(t);
+    assertEquals(
+        new TimestampTZ(Instant.ofEpochMilli(493887600000L).atZone(ZoneId.of("America/Los_Angeles"))),
+        i4.getTimestampTZ());
+
+    // Day granularity
+    // Friday 30th August 1985 12:00:00 AM
+    g = new UDFDateFloorDay();
+    TimestampLocalTZWritable i5 = g.evaluate(t);
+    assertEquals(
+        new TimestampTZ(Instant.ofEpochMilli(494233200000L).atZone(ZoneId.of("America/Los_Angeles"))),
+        i5.getTimestampTZ());
+
+    // Hour granularity
+    // Friday 30th August 1985 02:00:00 AM
+    g = new UDFDateFloorHour();
+    TimestampLocalTZWritable i6 = g.evaluate(t);
+    assertEquals(
+        new TimestampTZ(Instant.ofEpochMilli(494240400000L).atZone(ZoneId.of("America/Los_Angeles"))),
+        i6.getTimestampTZ());
+
+    // Minute granularity
+    // Friday 30th August 1985 02:47:00 AM
+    g = new UDFDateFloorMinute();
+    TimestampLocalTZWritable i7 = g.evaluate(t);
+    assertEquals(
+        new TimestampTZ(Instant.ofEpochMilli(494243220000L).atZone(ZoneId.of("America/Los_Angeles"))),
+        i7.getTimestampTZ());
+
+    // Second granularity
+    // Friday 30th August 1985 02:47:02 AM
+    g = new UDFDateFloorSecond();
+    TimestampLocalTZWritable i8 = g.evaluate(t);
+    assertEquals(
+        new TimestampTZ(Instant.ofEpochMilli(494243222000L).atZone(ZoneId.of("America/Los_Angeles"))),
+        i8.getTimestampTZ());
   }
 
 }

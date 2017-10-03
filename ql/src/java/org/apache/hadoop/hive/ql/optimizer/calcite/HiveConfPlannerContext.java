@@ -17,10 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-import org.apache.calcite.rel.RelNode;
-
-import java.util.Set;
-
 public class HiveConfPlannerContext{
 
   private boolean isCorrelatedColumns;
