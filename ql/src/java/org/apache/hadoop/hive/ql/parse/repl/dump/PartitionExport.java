@@ -49,18 +49,16 @@ class PartitionExport {
   private final String distCpDoAsUser;
   private final HiveConf hiveConf;
   private final int nThreads;
-  private final AuthEntities authEntities;
 
   private static final Logger LOG = LoggerFactory.getLogger(PartitionExport.class);
   private BlockingQueue<Partition> queue;
 
   PartitionExport(Paths paths, PartitionIterable partitionIterable, String distCpDoAsUser,
-                  HiveConf hiveConf, AuthEntities authEntities) {
+      HiveConf hiveConf) {
     this.paths = paths;
     this.partitionIterable = partitionIterable;
     this.distCpDoAsUser = distCpDoAsUser;
     this.hiveConf = hiveConf;
-    this.authEntities = authEntities;
     this.nThreads = hiveConf.getIntVar(HiveConf.ConfVars.REPL_PARTITIONS_DUMP_PARALLELISM);
     this.queue = new ArrayBlockingQueue<>(2 * nThreads);
   }
@@ -105,7 +103,6 @@ class PartitionExport {
           Path rootDataDumpDir = paths.partitionExportDir(partitionName);
           new FileOperations(fromPath, rootDataDumpDir, distCpDoAsUser, hiveConf)
                   .export(forReplicationSpec);
-          authEntities.inputs.add(new ReadEntity(partition));
           LOG.debug("Thread: {}, finish partition dump {}", threadName, partitionName);
         } catch (Exception e) {
           throw new RuntimeException("Error while export of data files", e);

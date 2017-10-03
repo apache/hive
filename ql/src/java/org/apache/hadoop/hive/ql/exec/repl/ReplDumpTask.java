@@ -256,7 +256,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       HiveWrapper.Tuple<Table> tuple = new HiveWrapper(db, dbName).table(tblName);
       TableSpec tableSpec = new TableSpec(tuple.object);
       TableExport.Paths exportPaths =
-          new TableExport.Paths(work.astRepresentationForErrorMsg, dbRoot, tblName, conf);
+          new TableExport.Paths(work.astRepresentationForErrorMsg, dbRoot, tblName, conf, true);
       String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
       tuple.replicationSpec.setIsReplace(true);  // by default for all other objects this is false
       new TableExport(exportPaths, tableSpec, tuple.replicationSpec, db, distCpDoAsUser, conf).write();

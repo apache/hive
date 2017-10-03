@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.ExplainSQRewriteWork;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
+import org.apache.hadoop.hive.ql.plan.ExportWork;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
@@ -117,6 +118,7 @@ public final class TaskFactory {
     taskvec.add(new TaskTuple<>(ReplDumpWork.class, ReplDumpTask.class));
     taskvec.add(new TaskTuple<>(ReplLoadWork.class, ReplLoadTask.class));
     taskvec.add(new TaskTuple<>(ReplStateLogWork.class, ReplStateLogTask.class));
+    taskvec.add(new TaskTuple<ExportWork>(ExportWork.class, ExportTask.class));
   }
 
   private static ThreadLocal<Integer> tid = new ThreadLocal<Integer>() {
