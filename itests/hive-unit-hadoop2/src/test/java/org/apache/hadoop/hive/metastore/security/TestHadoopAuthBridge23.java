@@ -84,7 +84,7 @@ public class TestHadoopAuthBridge23 {
 
   private static class MyHadoopThriftAuthBridge23 extends HadoopThriftAuthBridge23 {
     @Override
-    public Server createServer(String keytabFile, String principalConf)
+    public Server createServer(String keytabFile, String principalConf, String clientConf)
     throws TTransportException {
       //Create a Server that doesn't interpret any Kerberos stuff
       return new Server();

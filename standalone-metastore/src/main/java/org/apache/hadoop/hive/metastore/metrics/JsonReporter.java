@@ -30,34 +30,75 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A metrics reporter for Metrics that dumps metrics periodically into
+ * a file in JSON format.
+ */
 public class JsonReporter extends ScheduledReporter {
+  //
+  // Implementation notes.
+  //
+  // 1. Since only local file systems are supported, there is no need to use Hadoop
+  //    version of Path class.
+  // 2. java.nio package provides modern implementation of file and directory operations
+  //    which is better then the traditional java.io, so we are using it here.
+  //    In particular, it supports atomic creation of temporary files with specified
+  //    permissions in the specified directory. This also avoids various attacks possible
+  //    when temp file name is generated first, followed by file creation.
+  //    See http://www.oracle.com/technetwork/articles/javase/nio-139333.html for
+  //    the description of NIO API and
+  //    http://docs.oracle.com/javase/tutorial/essential/io/legacy.html for the
+  //    description of interoperability between legacy IO api vs NIO API.
+  // 3. To avoid race conditions with readers of the metrics file, the implementation
+  //    dumps metrics to a temporary file in the same directory as the actual metrics
+  //    file and then renames it to the destination. Since both are located on the same
+  //    filesystem, this rename is likely to be atomic (as long as the underlying OS
+  //    support atomic renames.
+  //
+  // NOTE: This reporter is very similar to
+  //       org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter.
+  //       org.apache.hadoop.hive.metastore.metrics.JsonReporter.
+  //       It would be good to unify the two.
+  //
   private static final Logger LOG = LoggerFactory.getLogger(JsonReporter.class);
 
-  private final Configuration conf;
+  private static final FileAttribute<Set<PosixFilePermission>> FILE_ATTRS =
+          PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-r--r--"));
+
   private final MetricRegistry registry;
   private ObjectWriter jsonWriter;
-  private Path path;
-  private Path tmpPath;
-  private FileSystem fs;
+  // Location of JSON file
+  private final Path path;
+  // tmpdir is the dirname(path)
+  private final Path tmpDir;
 
   private JsonReporter(MetricRegistry registry, String name, MetricFilter filter,
                        TimeUnit rateUnit, TimeUnit durationUnit, Configuration conf) {
     super(registry, name, filter, rateUnit, durationUnit);
-    this.conf = conf;
+    String pathString = MetastoreConf.getVar(conf, MetastoreConf.ConfVars .METRICS_JSON_FILE_LOCATION);
+    path = Paths.get(pathString).toAbsolutePath();
+    LOG.info("Reporting metrics to {}", path);
+    // We want to use tmpDir i the same directory as the destination file to support atomic
+    // move of temp file to the destination metrics file
+    tmpDir = path.getParent();
     this.registry = registry;
   }
 
@@ -65,23 +106,6 @@ public class JsonReporter extends ScheduledReporter {
   public void start(long period, TimeUnit unit) {
     jsonWriter = new ObjectMapper().registerModule(new MetricsModule(TimeUnit.MILLISECONDS,
         TimeUnit.MILLISECONDS, false)).writerWithDefaultPrettyPrinter();
-    String pathString = MetastoreConf.getVar(conf, MetastoreConf.ConfVars .METRICS_JSON_FILE_LOCATION);
-    path = new Path(pathString);
-
-    tmpPath = new Path(pathString + ".tmp");
-    URI tmpPathURI = tmpPath.toUri();
-    try {
-      if (tmpPathURI.getScheme() == null && tmpPathURI.getAuthority() == null) {
-        //default local
-        fs = FileSystem.getLocal(conf);
-      } else {
-        fs = FileSystem.get(tmpPathURI, conf);
-      }
-    }
-    catch (IOException e) {
-      LOG.error("Unable to access filesystem for path " + tmpPath + ". Aborting reporting", e);
-      return;
-    }
     super.start(period, unit);
   }
 
@@ -98,31 +122,48 @@ public class JsonReporter extends ScheduledReporter {
       return;
     }
 
-    BufferedWriter bw = null;
+    // Metrics are first dumped to a temp file which is then renamed to the destination
+    Path tmpFile = null;
     try {
-      fs.delete(tmpPath, true);
-      bw = new BufferedWriter(new OutputStreamWriter(fs.create(tmpPath, true)));
-      bw.write(json);
-      fs.setPermission(tmpPath, FsPermission.createImmutable((short) 0644));
+      tmpFile = Files.createTempFile(tmpDir, "hmsmetrics", "json", FILE_ATTRS);
     } catch (IOException e) {
-      LOG.error("Unable to write to temp file " + tmpPath, e);
+      LOG.error("failed to create temp file for JSON metrics", e);
       return;
-    } finally {
-      if (bw != null) {
-        try {
-          bw.close();
-        } catch (IOException e) {
-          // Not much we can do
-          LOG.error("Caught error closing json metric reporter file", e);
-        }
-      }
+    } catch (SecurityException e) {
+      // This shouldn't ever happen
+      LOG.error("failed to create temp file for JSON metrics: no permissions", e);
+      return;
+    } catch (UnsupportedOperationException e) {
+      // This shouldn't ever happen
+      LOG.error("failed to create temp file for JSON metrics: operartion not supported", e);
+      return;
     }
 
+    // Use try .. finally to cleanup temp file if something goes wrong
     try {
-      fs.rename(tmpPath, path);
-      fs.setPermission(path, FsPermission.createImmutable((short) 0644));
-    } catch (IOException e) {
-      LOG.error("Unable to rename temp file " + tmpPath + " to " + path, e);
+      // Write json to the temp file
+      try (BufferedWriter bw = new BufferedWriter(new FileWriter(tmpFile.toFile()))) {
+        bw.write(json);
+      } catch (IOException e) {
+        LOG.error("Unable to write to temp file {}" + tmpFile, e);
+        return;
+      }
+
+      try {
+        Files.move(tmpFile, path, StandardCopyOption.REPLACE_EXISTING);
+      } catch (IOException e) {
+        LOG.error("Unable to rename temp file {} to {}", tmpFile, path, e);
+      }
+    } finally {
+      // If something happened and we were not able to rename the temp file, attempt to remove it
+      if (tmpFile.toFile().exists()) {
+        // Attempt to delete temp file, if this fails, not much can be done about it.
+        try {
+          Files.delete(tmpFile);
+        } catch (Exception e) {
+          LOG.error("failed to delete yemporary metrics file {}", tmpFile, e);
+        }
+      }
     }
   }
 

@@ -51,6 +51,8 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
@@ -58,6 +60,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.slf4j.Logger;
 import org.apache.hadoop.hive.ql.parse.repl.dump.TableExport;
+import org.apache.hadoop.hive.ql.plan.ExportWork;
 
 /**
  * ExportSemanticAnalyzer.
@@ -76,8 +79,10 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ReplicationSpec replicationSpec;
     if (ast.getChildCount() > 2) {
+      // Replication case: export table <tbl> to <location> for replication
       replicationSpec = new ReplicationSpec((ASTNode) ast.getChild(2));
     } else {
+      // Export case
       replicationSpec = new ReplicationSpec();
     }
     if (replicationSpec.getCurrentReplicationState() == null) {
@@ -112,12 +117,19 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // initialize export path
     String tmpPath = stripQuotes(toTree.getText());
-    // All parsing is done, we're now good to start the export process.
+    // All parsing is done, we're now good to start the export process
     TableExport.Paths exportPaths =
-        new TableExport.Paths(ErrorMsg.INVALID_PATH.getMsg(ast), tmpPath, conf);
-    TableExport.AuthEntities authEntities =
-        new TableExport(exportPaths, ts, replicationSpec, db, null, conf).write();
+        new TableExport.Paths(ErrorMsg.INVALID_PATH.getMsg(ast), tmpPath, conf, false);
+    TableExport tableExport = new TableExport(exportPaths, ts, replicationSpec, db, null, conf);
+    TableExport.AuthEntities authEntities = tableExport.getAuthEntities();
     inputs.addAll(authEntities.inputs);
     outputs.addAll(authEntities.outputs);
+    String exportRootDirName = tmpPath;
+    // Configure export work
+    ExportWork exportWork =
+        new ExportWork(exportRootDirName, ts, replicationSpec, ErrorMsg.INVALID_PATH.getMsg(ast));
+    // Create an export task and add it as a root task
+    Task<ExportWork> exportTask = TaskFactory.get(exportWork, conf);
+    rootTasks.add(exportTask);
   }
 }

@@ -28,11 +28,13 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.dump.TableExport.AuthEntities;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +59,6 @@ public class TableExport {
   private final String distCpDoAsUser;
   private final HiveConf conf;
   private final Paths paths;
-  private final AuthEntities authEntities = new AuthEntities();
 
   public TableExport(Paths paths, TableSpec tableSpec,
       ReplicationSpec replicationSpec, Hive db, String distCpDoAsUser, HiveConf conf)
@@ -77,7 +78,7 @@ public class TableExport {
     this.paths = paths;
   }
 
-  public AuthEntities write() throws SemanticException {
+  public void write() throws SemanticException {
     if (tableSpec == null) {
       writeMetaData(null);
     } else if (shouldExport()) {
@@ -85,18 +86,17 @@ public class TableExport {
       if (tableSpec.tableHandle.isView()) {
         replicationSpec.setIsMetadataOnly(true);
       }
-      PartitionIterable withPartitions = partitions();
+      PartitionIterable withPartitions = getPartitions();
       writeMetaData(withPartitions);
       if (!replicationSpec.isMetadataOnly()) {
         writeData(withPartitions);
       }
     }
-    return authEntities;
   }
 
-  private PartitionIterable partitions() throws SemanticException {
+  private PartitionIterable getPartitions() throws SemanticException {
     try {
-      if (tableSpec.tableHandle.isPartitioned()) {
+      if (tableSpec != null && tableSpec.tableHandle != null && tableSpec.tableHandle.isPartitioned()) {
         if (tableSpec.specType == TableSpec.SpecType.TABLE_ONLY) {
           // TABLE-ONLY, fetch partitions if regular export, don't if metadata-only
           if (replicationSpec.isMetadataOnly()) {
@@ -144,19 +144,16 @@ public class TableExport {
     try {
       if (tableSpec.tableHandle.isPartitioned()) {
         if (partitions == null) {
-          throw new IllegalStateException(
-              "partitions cannot be null for partitionTable :" + tableSpec.tableName);
+          throw new IllegalStateException("partitions cannot be null for partitionTable :"
+              + tableSpec.tableName);
         }
-        new PartitionExport(paths, partitions, distCpDoAsUser, conf, authEntities)
-                .write(replicationSpec);
+        new PartitionExport(paths, partitions, distCpDoAsUser, conf).write(replicationSpec);
       } else {
         Path fromPath = tableSpec.tableHandle.getDataLocation();
-        //this is the data copy
+        // this is the data copy
         new FileOperations(fromPath, paths.dataExportDir(), distCpDoAsUser, conf)
-                .export(replicationSpec);
-        authEntities.inputs.add(new ReadEntity(tableSpec.tableHandle));
+            .export(replicationSpec);
       }
-      authEntities.outputs.add(toWriteEntity(paths.exportRootDir, conf));
     } catch (Exception e) {
       throw new SemanticException(e);
     }
@@ -173,20 +170,22 @@ public class TableExport {
   public static class Paths {
     private final String astRepresentationForErrorMsg;
     private final HiveConf conf;
-    public final Path exportRootDir;
+    private final Path exportRootDir;
     private final FileSystem exportFileSystem;
+    private boolean writeData = true;
 
-    public Paths(String astRepresentationForErrorMsg, Path dbRoot, String tblName,
-        HiveConf conf) throws SemanticException {
+    public Paths(String astRepresentationForErrorMsg, Path dbRoot, String tblName, HiveConf conf,
+        boolean shouldWriteData) throws SemanticException {
       this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
       this.conf = conf;
+      this.writeData = shouldWriteData;
       Path tableRoot = new Path(dbRoot, tblName);
       URI exportRootDir = EximUtil.getValidatedURI(conf, tableRoot.toUri().toString());
       validateTargetDir(exportRootDir);
       this.exportRootDir = new Path(exportRootDir);
       try {
         this.exportFileSystem = this.exportRootDir.getFileSystem(conf);
-        if (!exportFileSystem.exists(this.exportRootDir)) {
+        if (!exportFileSystem.exists(this.exportRootDir) && writeData) {
           exportFileSystem.mkdirs(this.exportRootDir);
         }
       } catch (IOException e) {
@@ -194,14 +193,15 @@ public class TableExport {
       }
     }
 
-    public Paths(String astRepresentationForErrorMsg, String path, HiveConf conf)
-        throws SemanticException {
+    public Paths(String astRepresentationForErrorMsg, String path, HiveConf conf,
+        boolean shouldWriteData) throws SemanticException {
       this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
       this.conf = conf;
       this.exportRootDir = new Path(EximUtil.getValidatedURI(conf, path));
+      this.writeData = shouldWriteData;
       try {
         this.exportFileSystem = exportRootDir.getFileSystem(conf);
-        if (!exportFileSystem.exists(this.exportRootDir)) {
+        if (!exportFileSystem.exists(this.exportRootDir) && writeData) {
           exportFileSystem.mkdirs(this.exportRootDir);
         }
       } catch (IOException e) {
@@ -234,7 +234,7 @@ public class TableExport {
      * Partition's data export directory is created within the export semantics of partition.
      */
     private Path dataExportDir() throws SemanticException {
-      return exportDir(new Path(exportRootDir, EximUtil.DATA_PATH_NAME));
+      return exportDir(new Path(getExportRootDir(), EximUtil.DATA_PATH_NAME));
     }
 
     /**
@@ -267,6 +267,10 @@ public class TableExport {
         throw new SemanticException(astRepresentationForErrorMsg, e);
       }
     }
+
+    public Path getExportRootDir() {
+      return exportRootDir;
+    }
   }
 
   public static class AuthEntities {
@@ -277,5 +281,34 @@ public class TableExport {
      */
     public final Set<ReadEntity> inputs = Collections.newSetFromMap(new ConcurrentHashMap<>());
     public final Set<WriteEntity> outputs = new HashSet<>();
+  }
+
+  public AuthEntities getAuthEntities() throws SemanticException {
+    AuthEntities authEntities = new AuthEntities();
+    try {
+      // Return if metadata-only
+      if (replicationSpec.isMetadataOnly()) {
+        return authEntities;
+      }
+      PartitionIterable partitions = getPartitions();
+      if (tableSpec != null) {
+        if (tableSpec.tableHandle.isPartitioned()) {
+          if (partitions == null) {
+            throw new IllegalStateException("partitions cannot be null for partitionTable :"
+                + tableSpec.tableName);
+          }
+          new PartitionExport(paths, partitions, distCpDoAsUser, conf).write(replicationSpec);
+          for (Partition partition : partitions) {
+            authEntities.inputs.add(new ReadEntity(partition));
+          }
+        } else {
+          authEntities.inputs.add(new ReadEntity(tableSpec.tableHandle));
+        }
+      }
+      authEntities.outputs.add(toWriteEntity(paths.getExportRootDir(), conf));
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+    return authEntities;
   }
 }

@@ -24,11 +24,14 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
@@ -46,6 +49,7 @@ public class CopyUtils {
   private final long maxNumberOfFiles;
   private final boolean hiveInTest;
   private final String copyAsUser;
+  private final int MAX_COPY_RETRY = 3;
 
   public CopyUtils(String distCpDoAsUser, HiveConf hiveConf) {
     this.hiveConf = hiveConf;
@@ -55,29 +59,121 @@ public class CopyUtils {
     this.copyAsUser = distCpDoAsUser;
   }
 
-  public void doCopy(Path destination, List<Path> srcPaths) throws IOException, LoginException {
-    Map<FileSystem, List<Path>> map = fsToFileMap(srcPaths);
+  // Used by replication, copy files from source to destination. It is possible source file is
+  // changed/removed during copy, so double check the checksum after copy,
+  // if not match, copy again from cm
+  public void copyAndVerify(Path destination, List<ReplChangeManager.FileInfo> srcFiles)
+          throws IOException, LoginException {
+    Map<FileSystem, List<ReplChangeManager.FileInfo>> map = fsToFileMap(srcFiles);
     FileSystem destinationFs = destination.getFileSystem(hiveConf);
 
+    for (Map.Entry<FileSystem, List<ReplChangeManager.FileInfo>> entry : map.entrySet()) {
+      FileSystem sourceFs = entry.getKey();
+      List<ReplChangeManager.FileInfo> fileInfoList = entry.getValue();
+      boolean useRegularCopy = regularCopy(destinationFs, sourceFs, fileInfoList);
+
+      doCopyRetry(sourceFs, fileInfoList, destinationFs, destination, useRegularCopy);
+
+      // Verify checksum, retry if checksum changed
+      List<ReplChangeManager.FileInfo> retryFileInfoList = new ArrayList<>();
+      for (ReplChangeManager.FileInfo srcFile : srcFiles) {
+        if(!srcFile.isUseSourcePath()) {
+          // If already use cmpath, nothing we can do here, skip this file
+          continue;
+        }
+        String sourceChecksumString = srcFile.getCheckSum();
+        if (sourceChecksumString != null) {
+          String verifySourceChecksumString;
+          try {
+            verifySourceChecksumString
+                    = ReplChangeManager.checksumFor(srcFile.getSourcePath(), sourceFs);
+          } catch (IOException e) {
+            // Retry with CM path
+            verifySourceChecksumString = null;
+          }
+          if ((verifySourceChecksumString == null)
+                  || !sourceChecksumString.equals(verifySourceChecksumString)) {
+            // If checksum does not match, likely the file is changed/removed, copy again from cm
+            srcFile.setIsUseSourcePath(false);
+            retryFileInfoList.add(srcFile);
+          }
+        }
+      }
+      if (!retryFileInfoList.isEmpty()) {
+        doCopyRetry(sourceFs, retryFileInfoList, destinationFs, destination, useRegularCopy);
+      }
+    }
+  }
+
+  private void doCopyRetry(FileSystem sourceFs, List<ReplChangeManager.FileInfo> fileList,
+                           FileSystem destinationFs, Path destination,
+                           boolean useRegularCopy) throws IOException, LoginException {
+    int repeat = 0;
+    List<Path> pathList = Lists.transform(fileList,
+                                          fileInfo -> { return fileInfo.getEffectivePath(); });
+    while (!pathList.isEmpty() && (repeat < MAX_COPY_RETRY)) {
+      try {
+        doCopyOnce(sourceFs, pathList, destinationFs, destination, useRegularCopy);
+        return;
+      } catch (IOException e) {
+        pathList = new ArrayList<>();
+
+        // Going through file list, retry with CM if applicable
+        for (ReplChangeManager.FileInfo file : fileList) {
+          Path copyPath = file.getEffectivePath();
+          if (!destinationFs.exists(new Path(destination, copyPath.getName()))) {
+            if (!sourceFs.exists(copyPath)) {
+              if (file.isUseSourcePath()) {
+                // Source file missing, then try with CM path
+                file.setIsUseSourcePath(false);
+              } else {
+                // CM path itself is missing, so, cannot recover from this error
+                throw e;
+              }
+            }
+            pathList.add(file.getEffectivePath());
+          }
+        }
+      }
+      repeat++;
+    }
+  }
+
+  // Copy without retry
+  private void doCopyOnce(FileSystem sourceFs, List<Path> srcList,
+                          FileSystem destinationFs, Path destination,
+                          boolean useRegularCopy) throws IOException, LoginException {
     UserGroupInformation ugi = Utils.getUGI();
     String currentUser = ugi.getShortUserName();
     boolean usePrivilegedDistCp = copyAsUser != null && !currentUser.equals(copyAsUser);
 
+    if (useRegularCopy) {
+      Path[] paths = srcList.toArray(new Path[] {});
+      FileUtil.copy(sourceFs, paths, destinationFs, destination, false, true, hiveConf);
+    } else {
+      FileUtils.distCp(
+              sourceFs, // source file system
+              srcList,  // list of source paths
+              destination,
+              false,
+              usePrivilegedDistCp ? copyAsUser : null,
+              hiveConf,
+              ShimLoader.getHadoopShims()
+      );
+    }
+  }
+
+  public void doCopy(Path destination, List<Path> srcPaths) throws IOException, LoginException {
+    Map<FileSystem, List<Path>> map = fsToPathMap(srcPaths);
+    FileSystem destinationFs = destination.getFileSystem(hiveConf);
+
     for (Map.Entry<FileSystem, List<Path>> entry : map.entrySet()) {
-      if (regularCopy(destinationFs, entry)) {
-        Path[] paths = entry.getValue().toArray(new Path[] {});
-        FileUtil.copy(entry.getKey(), paths, destinationFs, destination, false, true, hiveConf);
-      } else {
-        FileUtils.distCp(
-            entry.getKey(),   // source file system
-            entry.getValue(), // list of source paths
-            destination,
-            false,
-            usePrivilegedDistCp ? copyAsUser : null,
-            hiveConf,
-            ShimLoader.getHadoopShims()
-        );
-      }
+      final FileSystem sourceFs = entry.getKey();
+      List<ReplChangeManager.FileInfo> fileList = Lists.transform(entry.getValue(),
+                                path -> { return new ReplChangeManager.FileInfo(sourceFs, path);});
+      doCopyOnce(sourceFs, entry.getValue(),
+                 destinationFs, destination,
+                 regularCopy(destinationFs, sourceFs, fileList));
     }
   }
 
@@ -88,12 +184,11 @@ public class CopyUtils {
       3. aggregate fileSize of all source Paths(can be directory /  file) is less than configured size.
       4. number of files of all source Paths(can be directory /  file) is less than configured size.
   */
-  private boolean regularCopy(FileSystem destinationFs, Map.Entry<FileSystem, List<Path>> entry)
+  private boolean regularCopy(FileSystem destinationFs, FileSystem sourceFs, List<ReplChangeManager.FileInfo> fileList)
       throws IOException {
     if (hiveInTest) {
       return true;
     }
-    FileSystem sourceFs = entry.getKey();
     if (isLocal(sourceFs) || isLocal(destinationFs)) {
       return true;
     }
@@ -104,8 +199,17 @@ public class CopyUtils {
     long size = 0;
     long numberOfFiles = 0;
 
-    for (Path path : entry.getValue()) {
-      ContentSummary contentSummary = sourceFs.getContentSummary(path);
+    for (ReplChangeManager.FileInfo fileInfo : fileList) {
+      ContentSummary contentSummary = null;
+      try {
+        contentSummary = sourceFs.getContentSummary(fileInfo.getEffectivePath());
+      } catch (IOException e) {
+        // in replication, if source file does not exist, try cmroot
+        if (fileInfo.isUseSourcePath() && fileInfo.getCmPath() != null) {
+          contentSummary = sourceFs.getContentSummary(fileInfo.getCmPath());
+          fileInfo.setIsUseSourcePath(false);
+        }
+      }
       size += contentSummary.getLength();
       numberOfFiles += contentSummary.getFileCount();
       if (limitReachedForLocalCopy(size, numberOfFiles)) {
@@ -129,14 +233,27 @@ public class CopyUtils {
     return fs.getScheme().equals("file");
   }
 
-  private Map<FileSystem, List<Path>> fsToFileMap(List<Path> srcPaths) throws IOException {
+  private Map<FileSystem, List<Path>> fsToPathMap(List<Path> srcPaths) throws IOException {
     Map<FileSystem, List<Path>> result = new HashMap<>();
     for (Path path : srcPaths) {
       FileSystem fileSystem = path.getFileSystem(hiveConf);
       if (!result.containsKey(fileSystem)) {
-        result.put(fileSystem, new ArrayList<>());
+        result.put(fileSystem, new ArrayList<Path>());
       }
       result.get(fileSystem).add(path);
+    }
+    return result;
+  }
+
+  private Map<FileSystem, List<ReplChangeManager.FileInfo>> fsToFileMap(
+      List<ReplChangeManager.FileInfo> srcFiles) throws IOException {
+    Map<FileSystem, List<ReplChangeManager.FileInfo>> result = new HashMap<>();
+    for (ReplChangeManager.FileInfo file : srcFiles) {
+      FileSystem fileSystem = file.getSrcFs();
+      if (!result.containsKey(fileSystem)) {
+        result.put(fileSystem, new ArrayList<ReplChangeManager.FileInfo>());
+      }
+      result.get(fileSystem).add(file);
     }
     return result;
   }

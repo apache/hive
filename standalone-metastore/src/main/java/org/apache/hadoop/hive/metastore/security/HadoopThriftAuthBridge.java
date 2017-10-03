@@ -108,8 +108,8 @@ public abstract class HadoopThriftAuthBridge {
     }
   }
 
-  public Server createServer(String keytabFile, String principalConf) throws TTransportException {
-    return new Server(keytabFile, principalConf);
+  public Server createServer(String keytabFile, String principalConf, String clientConf) throws TTransportException {
+    return new Server(keytabFile, principalConf, clientConf);
   }
 
 
@@ -319,11 +319,13 @@ public abstract class HadoopThriftAuthBridge {
     };
 
     protected final UserGroupInformation realUgi;
+    protected final UserGroupInformation clientValidationUGI;
     protected DelegationTokenSecretManager secretManager;
 
     public Server() throws TTransportException {
       try {
         realUgi = UserGroupInformation.getCurrentUser();
+        clientValidationUGI = UserGroupInformation.getCurrentUser();
       } catch (IOException ioe) {
         throw new TTransportException(ioe);
       }
@@ -331,7 +333,7 @@ public abstract class HadoopThriftAuthBridge {
     /**
      * Create a server with a kerberos keytab/principal.
      */
-    protected Server(String keytabFile, String principalConf)
+    protected Server(String keytabFile, String principalConf, String clientConf)
         throws TTransportException {
       if (keytabFile == null || keytabFile.isEmpty()) {
         throw new TTransportException("No keytab specified");
@@ -339,10 +341,24 @@ public abstract class HadoopThriftAuthBridge {
       if (principalConf == null || principalConf.isEmpty()) {
         throw new TTransportException("No principal specified");
       }
+      if (clientConf == null || clientConf.isEmpty()) {
+        // Don't bust existing setups.
+        LOG.warn("Client-facing principal not set. Using server-side setting: " + principalConf);
+        clientConf = principalConf;
+      }
 
       // Login from the keytab
       String kerberosName;
       try {
+        LOG.info("Logging in via CLIENT based principal ");
+        kerberosName =
+            SecurityUtil.getServerPrincipal(clientConf, "0.0.0.0");
+        UserGroupInformation.loginUserFromKeytab(
+            kerberosName, keytabFile);
+        clientValidationUGI = UserGroupInformation.getLoginUser();
+        assert clientValidationUGI.isFromKeytab();
+
+        LOG.info("Logging in via SERVER based principal ");
         kerberosName =
             SecurityUtil.getServerPrincipal(principalConf, "0.0.0.0");
         UserGroupInformation.loginUserFromKeytab(
@@ -372,7 +388,7 @@ public abstract class HadoopThriftAuthBridge {
 
       TSaslServerTransport.Factory transFactory = createSaslServerTransportFactory(saslProps);
 
-      return new TUGIAssumingTransportFactory(transFactory, realUgi);
+      return new TUGIAssumingTransportFactory(transFactory, clientValidationUGI);
     }
 
     /**
@@ -384,7 +400,7 @@ public abstract class HadoopThriftAuthBridge {
     public TSaslServerTransport.Factory createSaslServerTransportFactory(
         Map<String, String> saslProps) throws TTransportException {
       // Parse out the kerberos principal, host, realm.
-      String kerberosName = realUgi.getUserName();
+      String kerberosName = clientValidationUGI.getUserName();
       final String names[] = SaslRpcServer.splitKerberosName(kerberosName);
       if (names.length != 3) {
         throw new TTransportException("Kerberos principal should have 3 parts: " + kerberosName);
