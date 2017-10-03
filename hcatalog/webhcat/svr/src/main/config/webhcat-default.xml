@@ -371,4 +371,12 @@
         in all PUT/POST requests, and rejects requests that do not have these.
     </description>
   </property>
+    <property>
+    <name>templeton.frame.options.filter</name>
+    <value>DENY</value>
+    <description>
+        X-Frame-Options is added in HTTP response header with this value to prevent
+        clickjacking attacks. Possible values are DENY, SAMEORIGIN, ALLOW-FROM uri.
+    </description>
+  </property>
 </configuration>
