@@ -92,10 +92,14 @@ public class <ClassName> extends VectorExpression {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           outputVector[i] = (vector1[i] == 1 ? vector2[i] : arg3Scalar);
+          outputIsNull[i] = (vector1[i] == 1 ?
+              arg2ColVector.isNull[i] : false);
         }
       } else {
         for(int i = 0; i != n; i++) {
           outputVector[i] = (vector1[i] == 1 ? vector2[i] : arg3Scalar);
+          outputIsNull[i] = (vector1[i] == 1 ?
+              arg2ColVector.isNull[i] : false);
         }
       }
     } else /* there are nulls */ {
