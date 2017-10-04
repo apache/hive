@@ -415,7 +415,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
           /*ACID tables have complex directory layout and require merging of delta files
           * on read thus we should not try to read bucket files directly*/
           return null;
-        } else if (MetaStoreUtils.isInsertOnlyTable(tab.getParameters())) {
+        } else if (AcidUtils.isInsertOnlyTable(tab.getParameters())) {
           // Do not support MM tables either at this point. We could do it with some extra logic.
           return null;
         }
@@ -510,7 +510,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
             TableScanOperator ts = (TableScanOperator) op;
             Table srcTable = ts.getConf().getTableMetadata();
             // Not supported for MM tables for now.
-            if (MetaStoreUtils.isInsertOnlyTable(destTable.getParameters())) {
+            if (AcidUtils.isInsertOnlyTable(destTable.getParameters())) {
               return null;
             }
 

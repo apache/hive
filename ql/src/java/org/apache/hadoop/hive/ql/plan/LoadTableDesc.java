@@ -42,7 +42,7 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   private int stmtId;
   private Long currentTransactionId;
 
-  // TODO: the below seems like they should just be combined into partitionDesc
+  // TODO: the below seem like they should just be combined into partitionDesc
   private org.apache.hadoop.hive.ql.plan.TableDesc table;
   private Map<String, String> partitionSpec; // NOTE: this partitionSpec has to be ordered map
 
@@ -162,7 +162,7 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   }
 
   public boolean isMmTable() {
-    return MetaStoreUtils.isInsertOnlyTable(table.getProperties());
+    return AcidUtils.isInsertOnlyTable(table.getProperties());
   }
 
   public void setReplace(boolean replace) {

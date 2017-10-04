@@ -1821,58 +1821,6 @@ public class MetaStoreUtils {
     return cols;
   }
 
-  // TODO The following two utility methods can be moved to AcidUtils once no class in metastore is relying on them,
-  // right now ObjectStore.getAllMmTablesForCleanup is calling these method
-  /**
-   * Checks if a table is an ACID table that only supports INSERT, but not UPDATE/DELETE
-   * @param params table properties
-   * @return true if table is an INSERT_ONLY table, false otherwise
-   */
-  public static boolean isInsertOnlyTable(Map<String, String> params) {
-    return isInsertOnlyTable(params, false);
-  }
-
-  // TODO: CTAS for MM may currently be broken. It used to work. See the old code and why isCtas isn't used?
-  public static boolean isInsertOnlyTable(Map<String, String> params, boolean isCtas) {
-    String transactionalProp = params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
-  }
-
-   public static boolean isInsertOnlyTable(Properties params) {
-     String transactionalProp = params.getProperty(
-         hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-     return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
-  }
-
-   /** The method for altering table props; may set the table to MM, non-MM, or not affect MM. */
-  public static Boolean isToInsertOnlyTable(Map<String, String> props) {
-    // TODO: Setting these separately is a very hairy issue in certain combinations, since we
-    //       cannot decide what type of table this becomes without taking both into account, and
-    //       in many cases the conversion might be illegal.
-    //       The only thing we allow is tx = true w/o tx-props, for backward compat.
-    String transactional = props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    if (transactional == null && transactionalProp == null) return null; // Not affected.
-    boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
-    if (transactionalProp == null) {
-      if (isSetToTxn) return false; // Assume the full ACID table.
-      throw new RuntimeException("Cannot change '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL
-          + "' without '" + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "'");
-    }
-    if (!"insert_only".equalsIgnoreCase(transactionalProp)) return false; // Not MM.
-    if (!isSetToTxn) {
-      throw new RuntimeException("Cannot set '"
-          + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "' to 'insert_only' without "
-          + "setting '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL + "' to 'true'");
-    }
-    return true;
-  }
-
-  public static boolean isRemovedInsertOnlyTable(Set<String> removedSet) {
-    boolean hasTxn = removedSet.contains(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL),
-        hasProps = removedSet.contains(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    return hasTxn || hasProps;
-  }
 
   // given a list of partStats, this function will give you an aggr stats
   public static List<ColumnStatisticsObj> aggrPartitionStats(List<ColumnStatistics> partStats,
@@ -2055,5 +2003,11 @@ public class MetaStoreUtils {
     MachineList machineList = new MachineList(hostEntries);
     ipAddress = (ipAddress == null) ? StringUtils.EMPTY : ipAddress;
     return machineList.includes(ipAddress);
+  }
+
+  /** Duplicates AcidUtils; used in a couple places in metastore. */
+  public static boolean isInsertOnlyTableParam(Map<String, String> params) {
+    String transactionalProp = params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
   }
 }

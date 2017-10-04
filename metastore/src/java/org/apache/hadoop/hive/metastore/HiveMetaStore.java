@@ -2378,7 +2378,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Exception ex = null;
       try {
         t = get_table_core(dbname, name);
-        if (MetaStoreUtils.isInsertOnlyTable(t.getParameters())) {
+        if (MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
           assertClientHasCapability(capabilities, ClientCapability.INSERT_ONLY_TABLES,
               "insert-only tables", "get_table_req");
         }
@@ -2510,7 +2510,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           startIndex = endIndex;
         }
         for (Table t : tables) {
-          if (MetaStoreUtils.isInsertOnlyTable(t.getParameters())) {
+          if (MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
             assertClientHasCapability(capabilities, ClientCapability.INSERT_ONLY_TABLES,
                 "insert-only tables", "get_table_req");
           }

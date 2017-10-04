@@ -1676,7 +1676,7 @@ public class Hive {
       boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask, Long txnId, int stmtId)
           throws HiveException {
     Path tblDataLocationPath =  tbl.getDataLocation();
-    boolean isMmTableWrite = MetaStoreUtils.isInsertOnlyTable(tbl.getParameters());
+    boolean isMmTableWrite = AcidUtils.isInsertOnlyTable(tbl.getParameters());
     try {
       // Get the partition object if it already exists
       Partition oldPart = getPartition(tbl, partSpec, false);
@@ -1722,7 +1722,7 @@ public class Hive {
       if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && (null != oldPart)) {
         newFiles = Collections.synchronizedList(new ArrayList<Path>());
       }
-      // TODO: this assumes both paths are qualified; which they are, currently.
+      // Note: this assumes both paths are qualified; which they are, currently.
       if (isMmTableWrite && loadPath.equals(newPartPath)) {
         // MM insert query, move itself is a no-op.
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
@@ -1870,7 +1870,7 @@ public class Hive {
     }
     PathFilter subdirFilter = null;
 
-    // TODO: just like the move path, we only do one level of recursion.
+    // Note: just like the move path, we only do one level of recursion.
     for (FileStatus src : srcs) {
       if (src.isDirectory()) {
         if (subdirFilter == null) {
@@ -1920,8 +1920,6 @@ public class Hive {
 private void walkDirTree(FileStatus fSta, FileSystem fSys,
     Map<List<String>, String> skewedColValueLocationMaps, Path newPartPath, SkewedInfo skewedInfo)
     throws IOException {
-  // TODO: may be broken? no LB bugs for now but if any are found.
-
   /* Base Case. It's leaf. */
   if (!fSta.isDir()) {
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
@@ -1958,7 +1956,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   List<String> skewedValue = new ArrayList<String>();
   String lbDirName = FileUtils.unescapePathName(lbdPath.toString());
   String partDirName = FileUtils.unescapePathName(newPartPath.toString());
-  String lbDirSuffix = lbDirName.replace(partDirName, ""); // TODO: wtf?
+  String lbDirSuffix = lbDirName.replace(partDirName, ""); // TODO: should it rather do a prefix?
   if (lbDirSuffix.startsWith(Path.SEPARATOR)) {
     lbDirSuffix = lbDirSuffix.substring(1);
   }
@@ -2105,7 +2103,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // Get all valid partition paths and existing partitions for them (if any)
     final Table tbl = getTable(tableName);
     final Set<Path> validPartitions = getValidPartitionsInPath(numDP, numLB, loadPath, txnId, stmtId,
-        MetaStoreUtils.isInsertOnlyTable(tbl.getParameters()));
+        AcidUtils.isInsertOnlyTable(tbl.getParameters()));
 
     final int partsToLoad = validPartitions.size();
     final AtomicInteger partitionsLoaded = new AtomicInteger(0);
@@ -2238,7 +2236,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
       newFiles = Collections.synchronizedList(new ArrayList<Path>());
     }
-    // TODO: this assumes both paths are qualified; which they are, currently.
+    // Note: this assumes both paths are qualified; which they are, currently.
     if (isMmTable && loadPath.equals(tbl.getPath())) {
       Utilities.FILE_OP_LOGGER.debug("not moving " + loadPath + " to " + tbl.getPath());
       if (replace) {
@@ -3797,7 +3795,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       if (oldPath != null) {
-        // TODO: we assume lbLevels is 0 here. Same as old code for non-MM.
+        // Note: we assume lbLevels is 0 here. Same as old code for non-MM.
         //       For MM tables, this can only be a LOAD command. Does LOAD even support LB?
         deleteOldPathForReplace(destf, oldPath, conf, purge, deletePathFilter, isMmTable, 0);
       }
@@ -3863,8 +3861,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         } else {
           // We need to clean up different MM IDs from each LB directory separately.
           // Avoid temporary directories in the immediate table/part dir.
-          // TODO: we could just find directories with any MM directories inside?
-          //       the rest doesn't have to be cleaned up.
+          // Note: we could just find directories with any MM directories inside?
+          //       the rest doesn't have to be cleaned up. Play it safe.
           String mask = "[^._]*";
           for (int i = 0; i < lbLevels - 1; ++i) {
             mask += Path.SEPARATOR + "*";

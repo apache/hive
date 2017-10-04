@@ -165,14 +165,6 @@ public class MoveWork implements Serializable {
   public void setSrcLocal(boolean srcLocal) {
     this.srcLocal = srcLocal;
   }
-
-  public void setNoop(boolean b) {
-    this.isNoop = true;
-  }
-
-  public boolean isNoop() {
-    return this.isNoop;
-  }
   
   public LineageState getLineagState() {
     return sessionStateLineageState;

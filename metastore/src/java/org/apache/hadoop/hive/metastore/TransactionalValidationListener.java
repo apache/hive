@@ -139,7 +139,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       hasValidTransactionalValue = true;
     }
 
-    if (!hasValidTransactionalValue && !MetaStoreUtils.isInsertOnlyTable(oldTable.getParameters())) {
+    if (!hasValidTransactionalValue && !MetaStoreUtils.isInsertOnlyTableParam(oldTable.getParameters())) {
       // if here, there is attempt to set transactional to something other than 'true'
       // and NOT the same value it was before
       throw new MetaException("TBLPROPERTIES with 'transactional'='true' cannot be unset");
@@ -158,7 +158,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
         // null and an attempt is made to set it. This behaviour can be changed in the future.
         if ((oldTransactionalPropertiesValue == null
             || !oldTransactionalPropertiesValue.equalsIgnoreCase(transactionalPropertiesValue))
-            && !MetaStoreUtils.isInsertOnlyTable(oldTable.getParameters())) {
+            && !MetaStoreUtils.isInsertOnlyTableParam(oldTable.getParameters())) {
           throw new MetaException("TBLPROPERTIES with 'transactional_properties' cannot be "
               + "altered after the table is created");
         }

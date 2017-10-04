@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -66,7 +67,7 @@ public class SamplingOptimizer implements PhysicalPlanResolver {
       if (tbl == null) {
         continue;
       }
-      if (MetaStoreUtils.isInsertOnlyTable(tbl.getParameters())) {
+      if (AcidUtils.isInsertOnlyTable(tbl.getParameters())) {
         // Not supported for MM tables - sampler breaks separate MM dirs into splits, resulting in
         // mismatch when the downstream task looks at them again assuming they are MM table roots.
         // We could somehow unset the MM flag for the main job when the sampler succeeds, since the

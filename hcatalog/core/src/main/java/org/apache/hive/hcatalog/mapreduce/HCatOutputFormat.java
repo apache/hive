@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -114,7 +115,7 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
         throw new HCatException(ErrorType.ERROR_NOT_SUPPORTED, "Store into a partition with sorted column definition from Pig/Mapreduce is not supported");
       }
 
-      if (MetaStoreUtils.isInsertOnlyTable(table.getParameters())) {
+      if (AcidUtils.isInsertOnlyTable(table.getParameters())) {
         throw new HCatException(ErrorType.ERROR_NOT_SUPPORTED, "Store into an insert-only ACID table from Pig/Mapreduce is not supported");
       }
 

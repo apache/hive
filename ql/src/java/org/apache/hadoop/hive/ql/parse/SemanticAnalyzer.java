@@ -6837,7 +6837,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isNonNativeTable = dest_tab.isNonNative();
-      isMmTable = MetaStoreUtils.isInsertOnlyTable(dest_tab.getParameters());
+      isMmTable = AcidUtils.isInsertOnlyTable(dest_tab.getParameters());
       if (isNonNativeTable || isMmTable) {
         queryTmpdir = dest_path;
       } else {
@@ -6873,7 +6873,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
           checkAcidConstraints(qb, table_desc, dest_tab);
         }
-        if (MetaStoreUtils.isInsertOnlyTable(table_desc.getProperties())) {
+        if (AcidUtils.isInsertOnlyTable(table_desc.getProperties())) {
           acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
         }
         if (isMmTable) {
@@ -6924,7 +6924,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dest_path = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
           .getAuthority(), partPath.toUri().getPath());
 
-      isMmTable = MetaStoreUtils.isInsertOnlyTable(dest_tab.getParameters());
+      isMmTable = AcidUtils.isInsertOnlyTable(dest_tab.getParameters());
       queryTmpdir = isMmTable ? dest_path : ctx.getTempDirForPath(dest_path, true);
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("create filesink w/DEST_PARTITION specifying "
@@ -6947,7 +6947,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
         checkAcidConstraints(qb, table_desc, dest_tab);
       }
-      if (MetaStoreUtils.isInsertOnlyTable(dest_part.getTable().getParameters())) {
+      if (AcidUtils.isInsertOnlyTable(dest_part.getTable().getParameters())) {
         acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
       }
       if (isMmTable) {
@@ -6990,7 +6990,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         field_schemas = new ArrayList<FieldSchema>();
         destTableIsTemporary = tblDesc.isTemporary();
         destTableIsMaterialization = tblDesc.isMaterialization();
-        if (!destTableIsTemporary && MetaStoreUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
+        if (!destTableIsTemporary && AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
           isMmTable = isMmCtas = true;
           txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
           tblDesc.setInitialMmWriteId(txnId);
@@ -7253,8 +7253,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // If this is an insert, update, or delete on an ACID table then mark that so the
     // FileSinkOperator knows how to properly write to it.
     boolean isDestInsertOnly = (dest_part != null && dest_part.getTable() != null &&
-        MetaStoreUtils.isInsertOnlyTable(dest_part.getTable().getParameters()))
-        || (table_desc != null && MetaStoreUtils.isInsertOnlyTable(table_desc.getProperties()));
+        AcidUtils.isInsertOnlyTable(dest_part.getTable().getParameters()))
+        || (table_desc != null && AcidUtils.isInsertOnlyTable(table_desc.getProperties()));
 
     if (isDestInsertOnly) {
       fileSinkDesc.setWriteType(Operation.INSERT);
@@ -12056,7 +12056,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (p != null) {
         tbl = p.getTable();
       }
-      if (tbl != null && (AcidUtils.isFullAcidTable(tbl) || MetaStoreUtils.isInsertOnlyTable(tbl.getParameters()))) {
+      if (tbl != null && (AcidUtils.isFullAcidTable(tbl) || AcidUtils.isInsertOnlyTable(tbl.getParameters()))) {
         acidInQuery = true;
         checkAcidTxnManager(tbl);
       }
@@ -12119,7 +12119,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tbl = writeEntity.getTable();
       }
 
-      if (tbl != null && (AcidUtils.isFullAcidTable(tbl) || MetaStoreUtils.isInsertOnlyTable(tbl.getParameters()))) {
+      if (tbl != null && (AcidUtils.isFullAcidTable(tbl) || AcidUtils.isInsertOnlyTable(tbl.getParameters()))) {
         acidInQuery = true;
         checkAcidTxnManager(tbl);
       }

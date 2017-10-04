@@ -1372,12 +1372,6 @@ public final class GenMapRedUtils {
       dummyMv = new MoveWork(null, null, null,
           new LoadFileDesc(inputDirName, finalName, true, null, null, false), false,
           SessionState.get().getLineageState());
-    } else {
-      // TODO# noop MoveWork to avoid q file changes in HIVE-14990. Remove (w/the flag) after merge.
-      dummyMv = new MoveWork(null, null, null,
-          new LoadFileDesc(inputDirName, finalName, true, null, null, false), false,
-          SessionState.get().getLineageState());
-      dummyMv.setNoop(true);
     }
     // Use the original fsOp path here in case of MM - while the new FSOP merges files inside the
     // MM directory, the original MoveTask still commits based on the parent. Note that this path
@@ -1756,7 +1750,7 @@ public final class GenMapRedUtils {
     // Create a dummy task if no move is needed.
     Serializable moveWork = mvWork != null ? mvWork : new DependencyCollectionWork();
 
-    // TODO: this should never happen for mm tables.
+    // Note: this should never happen for mm tables.
     boolean shouldMergeMovePaths = (moveTaskToLink != null && dependencyTask == null
         && shouldMergeMovePaths(conf, condInputPath, condOutputPath, moveTaskToLink.getWork()));
 
@@ -1840,7 +1834,6 @@ public final class GenMapRedUtils {
     // find the move task
     for (Task<MoveWork> mvTsk : mvTasks) {
       MoveWork mvWork = mvTsk.getWork();
-      if (mvWork.isNoop()) continue;
       Path srcDir = null;
       boolean isLfd = false;
       if (mvWork.getLoadFileWork() != null) {
@@ -1878,7 +1871,7 @@ public final class GenMapRedUtils {
     MoveTask mvTask = (MoveTask) GenMapRedUtils.findMoveTaskForFsopOutput(
         mvTasks, fsOp.getConf().getFinalDirName(), fsOp.getConf().isMmTable());
 
-    // TODO: wtf? wtf?!! why is this in this method?
+    // TODO: wtf?!! why is this in this method? This has nothing to do with anything.
     if (mvTask != null && isInsertTable && hconf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
         && !fsOp.getConf().isMaterialization()) {
       // mark the MapredWork and FileSinkOperator for gathering stats

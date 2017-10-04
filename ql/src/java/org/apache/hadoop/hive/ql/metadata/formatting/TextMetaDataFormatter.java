@@ -318,7 +318,8 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     public int numOfFiles = 0;
   }
 
-  // TODO: why is this in text formatter? grrr
+  // TODO: why is this in text formatter?!!
+  //       This computes stats and should be in stats (de-duplicated too).
   private void writeFileSystemStats(DataOutputStream outStream,
       HiveConf conf,
       List<Path> locations,

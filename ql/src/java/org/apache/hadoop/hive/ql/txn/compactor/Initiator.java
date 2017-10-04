@@ -253,7 +253,7 @@ public class Initiator extends CompactorThread {
                                                  StorageDescriptor sd, Map<String, String> tblproperties)
       throws IOException, InterruptedException {
 
-    if (MetaStoreUtils.isInsertOnlyTable(tblproperties)) {
+    if (AcidUtils.isInsertOnlyTable(tblproperties)) {
       return CompactionType.MINOR;
     }
 

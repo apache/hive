@@ -275,7 +275,7 @@ public class FetchOperator implements Serializable {
       FileSystem fs = currPath.getFileSystem(job);
       if (fs.exists(currPath)) {
         if (extractValidTxnList() != null &&
-            MetaStoreUtils.isInsertOnlyTable(currDesc.getTableDesc().getProperties())) {
+            AcidUtils.isInsertOnlyTable(currDesc.getTableDesc().getProperties())) {
           return true;
         }
         for (FileStatus fStat : listStatusUnderPath(fs, currPath)) {
@@ -408,7 +408,7 @@ public class FetchOperator implements Serializable {
       return StringUtils.escapeString(currPath.toString()); // No need to process here.
     }
     ValidTxnList validTxnList;
-    if (MetaStoreUtils.isInsertOnlyTable(currDesc.getTableDesc().getProperties())) {
+    if (AcidUtils.isInsertOnlyTable(currDesc.getTableDesc().getProperties())) {
       validTxnList = extractValidTxnList();
     } else {
       validTxnList = null;  // non-MM case

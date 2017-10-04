@@ -108,7 +108,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
       FileSystem fs, Path path, boolean isSourceMm) throws IOException {
     if (!fs.exists(path)) return null;
     if (!isSourceMm) return matchFilesOneDir(fs, path, null);
-    // TODO: this doesn't handle list bucketing properly. Does the original exim do that?
+    // Note: this doesn't handle list bucketing properly; neither does the original code.
     FileStatus[] mmDirs = fs.listStatus(path, new JavaUtils.AnyIdDirFilter());
     if (mmDirs == null || mmDirs.length == 0) return null;
     List<FileStatus> allFiles = new ArrayList<FileStatus>();

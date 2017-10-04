@@ -228,7 +228,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
           + " and use 'insert... select' to allow Hive to enforce bucketing. " + error);
     }
 
-    if(AcidUtils.isAcidTable(ts.tableHandle) && !MetaStoreUtils.isInsertOnlyTable(ts.tableHandle.getParameters())) {
+    if(AcidUtils.isAcidTable(ts.tableHandle) && !AcidUtils.isInsertOnlyTable(ts.tableHandle.getParameters())) {
       throw new SemanticException(ErrorMsg.LOAD_DATA_ON_ACID_TABLE, ts.tableHandle.getCompleteName());
     }
     // make sure the arguments make sense
@@ -277,7 +277,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     Long txnId = null;
     int stmtId = 0;
     Table tbl = ts.tableHandle;
-    if (MetaStoreUtils.isInsertOnlyTable(tbl.getParameters())) {
+    if (AcidUtils.isInsertOnlyTable(tbl.getParameters())) {
       txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
     }
 

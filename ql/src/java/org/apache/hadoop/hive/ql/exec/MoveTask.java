@@ -266,7 +266,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
   @Override
   public int execute(DriverContext driverContext) {
-    if (work.isNoop()) return 0;
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("Executing MoveWork " + System.identityHashCode(work)
         + " with " + work.getLoadFileWork() + "; " + work.getLoadTableWork() + "; "
@@ -713,7 +712,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
     boolean updateBucketCols = false;
     if (bucketCols != null) {
-      // TODO: this particular bit will not work for MM tables, as there can be multiple
+      // Note: this particular bit will not work for MM tables, as there can be multiple
       //       directories for different MM IDs. We could put the path here that would account
       //       for the current MM ID being written, but it will not guarantee that other MM IDs
       //       have the correct buckets. The existing code discards the inferred data when the

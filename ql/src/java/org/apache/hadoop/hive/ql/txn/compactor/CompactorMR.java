@@ -210,7 +210,7 @@ public class CompactorMR {
 
     // For MM tables we don't need to launch MR jobs as there is no compaction needed.
     // We just need to delete the directories for aborted transactions.
-    if (MetaStoreUtils.isInsertOnlyTable(t.getParameters())) {
+    if (AcidUtils.isInsertOnlyTable(t.getParameters())) {
       LOG.debug("Going to delete directories for aborted transactions for MM table "
           + t.getDbName() + "." + t.getTableName());
       removeFiles(conf, sd.getLocation(), txns, t);

@@ -1303,7 +1303,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         } else {
           int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
               lbLevels = lbCtx == null ? 0 : lbCtx.calculateListBucketingLevel();
-          // TODO: why is it stored in both?
+          // TODO: why is it stored in both table and dpCtx?
           int numBuckets = (conf.getTable() != null) ? conf.getTable().getNumBuckets()
               : (dpCtx != null ? dpCtx.getNumBuckets() : 0);
           MissingBucketsContext mbc = new MissingBucketsContext(

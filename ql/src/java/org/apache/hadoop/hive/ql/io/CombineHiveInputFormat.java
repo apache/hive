@@ -118,7 +118,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         TableDesc tbl = part.getTableDesc();
         boolean isMmNonMerge = false;
         if (tbl != null) {
-          isMmNonMerge = !isMerge && MetaStoreUtils.isInsertOnlyTable(tbl.getProperties());
+          isMmNonMerge = !isMerge && AcidUtils.isInsertOnlyTable(tbl.getProperties());
         } else {
           // This would be the case for obscure tasks like truncate column (unsupported for MM).
           Utilities.FILE_OP_LOGGER.warn("Assuming not insert-only; no table in partition spec " + part);

@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -191,8 +192,8 @@ public class SamplePruner extends Transform {
     String fullScanMsg = "";
 
     // check if input pruning is possible
-    // TODO: this relies a lot on having one file per bucket. No support for MM tables for now.
-    boolean isMmTable = MetaStoreUtils.isInsertOnlyTable(part.getTable().getParameters());
+    // TODO: this code is buggy - it relies on having one file per bucket; no MM support (by design).
+    boolean isMmTable = AcidUtils.isInsertOnlyTable(part.getTable().getParameters());
     if (sampleDescr.getInputPruning() && !isMmTable) {
       LOG.trace("numerator = " + num);
       LOG.trace("denominator = " + den);

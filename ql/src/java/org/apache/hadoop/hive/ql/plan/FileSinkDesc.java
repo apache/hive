@@ -283,9 +283,9 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public boolean isMmTable() {
     if (getTable() != null) {
-      return MetaStoreUtils.isInsertOnlyTable(table.getParameters());
+      return AcidUtils.isInsertOnlyTable(table.getParameters());
     } else { // Dynamic Partition Insert case
-      return MetaStoreUtils.isInsertOnlyTable(getTableInfo().getProperties());
+      return AcidUtils.isInsertOnlyTable(getTableInfo().getProperties());
     }
   }
 

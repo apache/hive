@@ -459,7 +459,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       TableDesc table, List<InputSplit> result)
           throws IOException {
     ValidTxnList validTxnList;
-    if (MetaStoreUtils.isInsertOnlyTable(table.getProperties())) {
+    if (AcidUtils.isInsertOnlyTable(table.getProperties())) {
       String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
       validTxnList = txnString == null ? new ValidReadTxnList() : new ValidReadTxnList(txnString);
     } else {
@@ -549,7 +549,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         } else if (!hadAcidState) {
           AcidUtils.Directory dirInfo = AcidUtils.getAcidState(currDir, conf, validTxnList, Ref.from(false), true, null);
           hadAcidState = true;
-          // TODO: for IOW, we also need to count in base dir, if any
+          // TODO [MM gap]: for IOW, we also need to count in base dir, if any
           for (AcidUtils.ParsedDelta delta : dirInfo.getCurrentDirectories()) {
             Utilities.FILE_OP_LOGGER.debug("Adding input " + delta.getPath());
             finalPaths.add(delta.getPath());
@@ -706,9 +706,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       throws IOException {
     PartitionDesc partDesc = pathToPartitionInfo.get(dir);
     if (partDesc == null) {
-      // TODO: HiveFileFormatUtils.getPartitionDescFromPathRecursively for MM tables?
-      //       So far, the only case when this is called for a MM directory was in error.
-      //       Keep it like this for now; may need replacement if we find a valid usage like this.
+      // Note: we could call HiveFileFormatUtils.getPartitionDescFromPathRecursively for MM tables.
+      //       The recursive call is usually needed for non-MM tables, because the path management
+      //       is not strict and the code does whatever. That should not happen for MM tables.
+      //       Keep it like this for now; may need replacement if we find a valid use case.
       partDesc = pathToPartitionInfo.get(Path.getPathWithoutSchemeAndAuthority(dir));
     }
     if (partDesc == null) {

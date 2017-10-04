@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -264,7 +265,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
       }
 
       Table tbl = tso.getConf().getTableMetadata();
-      if (MetaStoreUtils.isInsertOnlyTable(tbl.getParameters())) {
+      if (AcidUtils.isInsertOnlyTable(tbl.getParameters())) {
         Utilities.FILE_OP_LOGGER.debug("No bucketed join on MM table " + tbl.getTableName());
         return false;
       }

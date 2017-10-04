@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
@@ -447,8 +448,6 @@ public class AcidUtils {
           case HASH_BASED_MERGE_STRING:
             obj.setHashBasedMerge(true);
             break;
-          case INSERT_ONLY_STRING:
-            obj.setInsertOnly(true);
           default:
             throw new IllegalArgumentException(
                 "Unexpected value " + option + " for ACID operational properties!");
@@ -1052,7 +1051,7 @@ public class AcidUtils {
       String deltaPrefix =
               (fn.startsWith(DELTA_PREFIX)) ? DELTA_PREFIX : DELETE_DELTA_PREFIX;
       ParsedDelta delta = parseDelta(child, deltaPrefix);
-      if (tblproperties != null && MetaStoreUtils.isInsertOnlyTable(tblproperties) &&
+      if (tblproperties != null && AcidUtils.isInsertOnlyTable(tblproperties) &&
           ValidTxnList.RangeResponse.ALL == txnList.isTxnRangeAborted(delta.minTransaction, delta.maxTransaction)) {
         aborted.add(child);
       }
@@ -1210,7 +1209,7 @@ public class AcidUtils {
   }
 
   public static boolean isFullAcidTable(Table table) {
-    return isAcidTable(table) && !MetaStoreUtils.isInsertOnlyTable(table.getParameters());
+    return isAcidTable(table) && !AcidUtils.isInsertOnlyTable(table.getParameters());
   }
 
   /**
@@ -1326,5 +1325,57 @@ public class AcidUtils {
      * This should be very unusual.
      */
     throw new IOException(lengths + " found but is not readable.  Consider waiting or orcfiledump --recover");
+  }
+
+
+  /**
+   * Checks if a table is an ACID table that only supports INSERT, but not UPDATE/DELETE
+   * @param params table properties
+   * @return true if table is an INSERT_ONLY table, false otherwise
+   */
+  public static boolean isInsertOnlyTable(Map<String, String> params) {
+    return isInsertOnlyTable(params, false);
+  }
+
+  // TODO [MM gap]: CTAS may currently be broken. It used to work. See the old code, and why isCtas isn't used?
+  public static boolean isInsertOnlyTable(Map<String, String> params, boolean isCtas) {
+    String transactionalProp = params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
+  }
+
+  public static boolean isInsertOnlyTable(Properties params) {
+    String transactionalProp = params.getProperty(
+        hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
+  }
+
+   /** The method for altering table props; may set the table to MM, non-MM, or not affect MM. */
+  public static Boolean isToInsertOnlyTable(Map<String, String> props) {
+    // Note: Setting these separately is a very hairy issue in certain combinations, since we
+    //       cannot decide what type of table this becomes without taking both into account, and
+    //       in many cases the conversion might be illegal.
+    //       The only thing we allow is tx = true w/o tx-props, for backward compat.
+    String transactional = props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    if (transactional == null && transactionalProp == null) return null; // Not affected.
+    boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
+    if (transactionalProp == null) {
+      if (isSetToTxn) return false; // Assume the full ACID table.
+      throw new RuntimeException("Cannot change '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL
+          + "' without '" + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "'");
+    }
+    if (!"insert_only".equalsIgnoreCase(transactionalProp)) return false; // Not MM.
+    if (!isSetToTxn) {
+      throw new RuntimeException("Cannot set '"
+          + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "' to 'insert_only' without "
+          + "setting '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL + "' to 'true'");
+    }
+    return true;
+  }
+
+  public static boolean isRemovedInsertOnlyTable(Set<String> removedSet) {
+    boolean hasTxn = removedSet.contains(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL),
+        hasProps = removedSet.contains(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return hasTxn || hasProps;
   }
 }

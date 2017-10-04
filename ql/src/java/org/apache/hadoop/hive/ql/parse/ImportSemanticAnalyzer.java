@@ -134,7 +134,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
             parsedTableName = dbTablePair.getValue();
             // get partition metadata if partition specified
             if (child.getChildCount() == 2) {
-              @SuppressWarnings("unused") // TODO: wtf?
+              @SuppressWarnings("unused")
               ASTNode partspec = (ASTNode) child.getChild(1);
               isPartSpecSet = true;
               parsePartitionSpec(child, parsedPartSpec);
@@ -233,7 +233,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     } catch (Exception e) {
       throw new HiveException(e);
     }
-    boolean isSourceMm = MetaStoreUtils.isInsertOnlyTable(tblDesc.getTblProps());
+    boolean isSourceMm = AcidUtils.isInsertOnlyTable(tblDesc.getTblProps());
 
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
       tblDesc.setReplicationSpec(replicationSpec);
@@ -313,7 +313,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Long txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
     int stmtId = 0;
-    // TODO: due to the master merge, tblDesc is no longer CreateTableDesc, but ImportTableDesc
+    // TODO [MM gap?]: bad merge; tblDesc is no longer CreateTableDesc, but ImportTableDesc.
+    //                 We need to verify the tests to see if this works correctly.
     /*
     if (isAcid(txnId)) {
       tblDesc.setInitialMmWriteId(txnId);
@@ -365,7 +366,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       ReplicationSpec replicationSpec, EximUtil.SemanticAnalyzerWrapperContext x,
       Long txnId, int stmtId, boolean isSourceMm) {
     Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
-    Path destPath = !MetaStoreUtils.isInsertOnlyTable(table.getParameters()) ? x.getCtx().getExternalTmpPath(tgtPath)
+    Path destPath = !AcidUtils.isInsertOnlyTable(table.getParameters()) ? x.getCtx().getExternalTmpPath(tgtPath)
         : new Path(tgtPath, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("adding import work for table with source location: " +
@@ -376,7 +377,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     Task<?> copyTask = null;
     if (replicationSpec.isInReplicationScope()) {
       if (isSourceMm || isAcid(txnId)) {
-        // TODO: ReplCopyTask is completely screwed. Need to support when it's not as screwed.
+        // Note: this is replication gap, not MM gap... Repl V2 is not ready yet.
         throw new RuntimeException("Replicating MM and ACID tables is not supported");
       }
       copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, destPath, x.getConf());
@@ -457,9 +458,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           + partSpecToString(partSpec.getPartSpec())
           + " with source location: " + srcLocation);
       Path tgtLocation = new Path(partSpec.getLocation());
-      Path destPath = !MetaStoreUtils.isInsertOnlyTable(table.getParameters()) ? x.getCtx().getExternalTmpPath(tgtLocation)
+      Path destPath = !AcidUtils.isInsertOnlyTable(table.getParameters()) ? x.getCtx().getExternalTmpPath(tgtLocation)
           : new Path(tgtLocation, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
-      Path moveTaskSrc =  !MetaStoreUtils.isInsertOnlyTable(table.getParameters()) ? destPath : tgtLocation;
+      Path moveTaskSrc =  !AcidUtils.isInsertOnlyTable(table.getParameters()) ? destPath : tgtLocation;
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("adding import work for partition with source location: "
           + srcLocation + "; target: " + tgtLocation + "; copy dest " + destPath + "; mm "
@@ -470,7 +471,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       Task<?> copyTask = null;
       if (replicationSpec.isInReplicationScope()) {
         if (isSourceMm || isAcid(txnId)) {
-          // TODO: ReplCopyTask is completely screwed. Need to support when it's not as screwed.
+          // Note: this is replication gap, not MM gap... Repl V2 is not ready yet.
           throw new RuntimeException("Replicating MM and ACID tables is not supported");
         }
         copyTask = ReplCopyTask.getLoadCopyTask(
@@ -792,7 +793,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         x.getLOG().debug("table partitioned");
         Task<?> ict = createImportCommitTask(
             table.getDbName(), table.getTableName(), txnId, stmtId, x.getConf(),
-            MetaStoreUtils.isInsertOnlyTable(table.getParameters()));
+            AcidUtils.isInsertOnlyTable(table.getParameters()));
 
         for (AddPartitionDesc addPartitionDesc : partitionDescs) {
           Map<String, String> partSpec = addPartitionDesc.getPartition(0).getPartSpec();
@@ -829,7 +830,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (isPartitioned(tblDesc)) {
         Task<?> ict = createImportCommitTask(
             tblDesc.getDatabaseName(), tblDesc.getTableName(), txnId, stmtId, x.getConf(),
-            MetaStoreUtils.isInsertOnlyTable(tblDesc.getTblProps()));
+            AcidUtils.isInsertOnlyTable(tblDesc.getTblProps()));
         for (AddPartitionDesc addPartitionDesc : partitionDescs) {
           t.addDependentTask(addSinglePartition(fromURI, fs, tblDesc, table, wh, addPartitionDesc,
             replicationSpec, x, txnId, stmtId, isSourceMm, ict));
@@ -956,7 +957,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (isPartitioned(tblDesc)) {
           Task<?> ict = createImportCommitTask(
               tblDesc.getDatabaseName(), tblDesc.getTableName(), txnId, stmtId, x.getConf(),
-              MetaStoreUtils.isInsertOnlyTable(tblDesc.getTblProps()));
+              AcidUtils.isInsertOnlyTable(tblDesc.getTblProps()));
           for (AddPartitionDesc addPartitionDesc : partitionDescs) {
             addPartitionDesc.setReplicationSpec(replicationSpec);
             t.addDependentTask(
@@ -982,7 +983,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           org.apache.hadoop.hive.ql.metadata.Partition ptn = null;
           Task<?> ict = replicationSpec.isMetadataOnly() ? null : createImportCommitTask(
               tblDesc.getDatabaseName(), tblDesc.getTableName(), txnId, stmtId, x.getConf(),
-              MetaStoreUtils.isInsertOnlyTable(tblDesc.getTblProps()));
+              AcidUtils.isInsertOnlyTable(tblDesc.getTblProps()));
           if ((ptn = x.getHive().getPartition(table, partSpec, false)) == null) {
             if (!replicationSpec.isMetadataOnly()){
               x.getTasks().add(addSinglePartition(
