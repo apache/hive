@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.io.IOUtils;
 
 import com.google.common.collect.Collections2;
+import org.slf4j.Logger;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -90,7 +91,8 @@ public class Utils {
             });
   }
 
-  public static String setDbBootstrapDumpState(Hive hiveDb, String dbName) throws HiveException {
+  public static String setDbBootstrapDumpState(Hive hiveDb, String dbName, Logger LOG)
+          throws HiveException {
     Database database = hiveDb.getDatabase(dbName);
     if (database == null) {
       return null;
@@ -111,11 +113,13 @@ public class Utils {
     }
 
     hiveDb.alterDatabase(dbName, database);
+    LOG.info("REPL DUMP:: Set property for Database: {}, Property: {}, Value: {}",
+            dbName, uniqueKey, Utils.ReplDumpState.ACTIVE.name());
     return uniqueKey;
   }
 
   public static void resetDbBootstrapDumpState(Hive hiveDb, String dbName,
-                                               String uniqueKey) throws HiveException {
+                                               String uniqueKey, Logger LOG) throws HiveException {
     Database database = hiveDb.getDatabase(dbName);
     if (database != null) {
       Map<String, String> params = database.getParameters();
@@ -123,6 +127,7 @@ public class Utils {
         params.remove(uniqueKey);
         database.setParameters(params);
         hiveDb.alterDatabase(dbName, database);
+        LOG.info("REPL DUMP:: Reset property for Database: {}, Property: {}", dbName, uniqueKey);
       }
     }
   }
