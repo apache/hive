@@ -211,12 +211,9 @@ public class Table implements Serializable {
       }
     }
 
-    if (isView()) {
+    if (isView() || isMaterializedView()) {
       assert (getViewOriginalText() != null);
       assert (getViewExpandedText() != null);
-    } else if (isMaterializedView()) {
-      assert(getViewOriginalText() != null);
-      assert(getViewExpandedText() == null);
     } else {
       assert(getViewOriginalText() == null);
       assert(getViewExpandedText() == null);

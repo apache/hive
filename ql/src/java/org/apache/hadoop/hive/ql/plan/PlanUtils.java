@@ -18,6 +18,17 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -32,7 +43,6 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -48,6 +58,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -66,17 +77,6 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 /**
  * PlanUtils.
@@ -216,7 +216,7 @@ public final class PlanUtils {
    */
   public static TableDesc getDefaultTableDesc(String separatorCode,
       String columns, String columnTypes, boolean lastColumnTakesRestOfTheLine) {
-    return getTableDesc(LazySimpleSerDe.class, separatorCode, columns,
+    return getTableDesc(getDefaultSerDe(), separatorCode, columns,
         columnTypes, lastColumnTakesRestOfTheLine);
   }
 
@@ -317,7 +317,7 @@ public final class PlanUtils {
                 SessionState.getSessionConf(), crtTblDesc.getStorageHandler());
       }
 
-      Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
+      Class<? extends Deserializer> serdeClass = getDefaultSerDe();
       String separatorCode = Integer.toString(Utilities.ctrlaCode);
       String columns = cols;
       String columnTypes = colTypes;
@@ -412,36 +412,63 @@ public final class PlanUtils {
     TableDesc ret;
 
     try {
-      Class serdeClass = JavaUtils.loadClass(crtViewDesc.getSerde());
-      ret = getTableDesc(serdeClass, new String(LazySerDeParameters.DefaultSeparators), cols,
-          colTypes, false,  false);
+      HiveStorageHandler storageHandler = null;
+      if (crtViewDesc.getStorageHandler() != null) {
+        storageHandler = HiveUtils.getStorageHandler(
+                SessionState.getSessionConf(), crtViewDesc.getStorageHandler());
+      }
+
+      Class<? extends Deserializer> serdeClass = getDefaultSerDe();
+      String separatorCode = Integer.toString(Utilities.ctrlaCode);
+      String columns = cols;
+      String columnTypes = colTypes;
+      boolean lastColumnTakesRestOfTheLine = false;
+
+      if (storageHandler != null) {
+        serdeClass = storageHandler.getSerDeClass();
+      } else if (crtViewDesc.getSerde() != null) {
+        serdeClass = JavaUtils.loadClass(crtViewDesc.getSerde());
+      }
+
+      ret = getTableDesc(serdeClass, separatorCode, columns, columnTypes,
+          lastColumnTakesRestOfTheLine, false);
 
       // set other table properties
-      /*
-      TODO - I don't think I need any of this
       Properties properties = ret.getProperties();
 
-      if (crtTblDesc.getTableName() != null && crtTblDesc.getDatabaseName() != null) {
-        properties.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
-            crtTblDesc.getTableName());
+      if (crtViewDesc.getStorageHandler() != null) {
+        properties.setProperty(
+                org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
+                crtViewDesc.getStorageHandler());
       }
 
-      if (crtTblDesc.getTblProps() != null) {
-        properties.putAll(crtTblDesc.getTblProps());
+      if (crtViewDesc.getTblProps() != null) {
+        properties.putAll(crtViewDesc.getTblProps());
       }
-       */
+      if (crtViewDesc.getSerdeProps() != null) {
+        properties.putAll(crtViewDesc.getSerdeProps());
+      }
 
       // replace the default input & output file format with those found in
       // crtTblDesc
-      Class<? extends InputFormat> inClass =
-          (Class<? extends InputFormat>)JavaUtils.loadClass(crtViewDesc.getInputFormat());
-      Class<? extends HiveOutputFormat> outClass =
-          (Class<? extends HiveOutputFormat>)JavaUtils.loadClass(crtViewDesc.getOutputFormat());
-
-      ret.setInputFileFormatClass(inClass);
-      ret.setOutputFileFormatClass(outClass);
+      Class<? extends InputFormat> in_class;
+      if (storageHandler != null) {
+        in_class = storageHandler.getInputFormatClass();
+      } else {
+        in_class = JavaUtils.loadClass(crtViewDesc.getInputFormat());
+      }
+      Class<? extends OutputFormat> out_class;
+      if (storageHandler != null) {
+        out_class = storageHandler.getOutputFormatClass();
+      } else {
+        out_class = JavaUtils.loadClass(crtViewDesc.getOutputFormat());
+      }
+      ret.setInputFileFormatClass(in_class);
+      ret.setOutputFileFormatClass(out_class);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Unable to find class in getTableDesc: " + e.getMessage(), e);
+    } catch (HiveException e) {
+      throw new RuntimeException("Error loading storage handler in getTableDesc: " + e.getMessage(), e);
     }
     return ret;
   }
@@ -1155,5 +1182,13 @@ public final class PlanUtils {
     }
 
     return currentInput;
+  }
+
+  /**
+   * Returns the default SerDe for table and materialized view creation
+   * if none is specified.
+   */
+  public static Class<? extends AbstractSerDe> getDefaultSerDe() {
+    return LazySimpleSerDe.class;
   }
 }
