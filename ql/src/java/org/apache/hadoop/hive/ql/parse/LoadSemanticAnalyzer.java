@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -275,7 +276,8 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     LoadTableDesc loadTableWork;
     loadTableWork = new LoadTableDesc(new Path(fromURI),
-      Utilities.getTableDesc(ts.tableHandle), partSpec, isOverWrite);
+      Utilities.getTableDesc(ts.tableHandle), partSpec,
+      isOverWrite ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING);
     if (preservePartitionSpecs){
       // Note : preservePartitionSpecs=true implies inheritTableSpecs=false but
       // but preservePartitionSpecs=false(default) here is not sufficient enough
