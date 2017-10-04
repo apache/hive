@@ -129,23 +129,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           t.reset();
         }
       });
-  public static final FixedSizedObjectPool<CacheChunk> TCC_POOL =
-      new FixedSizedObjectPool<>(1024, new PoolObjectHelper<CacheChunk>() {
-      @Override
-      public CacheChunk create() {
-        return new CacheChunk();
-      }
-      @Override
-      public void resetBeforeOffer(CacheChunk t) {
-        t.reset();
-      }
-    });
   private final static DiskRangeListFactory CC_FACTORY = new DiskRangeListFactory() {
     @Override
     public DiskRangeList createCacheChunk(MemoryBuffer buffer, long offset, long end) {
-      CacheChunk tcc = TCC_POOL.take();
-      tcc.init(buffer, offset, end);
-      return tcc;
+      return new CacheChunk(buffer, offset, end);
     }
   };
 

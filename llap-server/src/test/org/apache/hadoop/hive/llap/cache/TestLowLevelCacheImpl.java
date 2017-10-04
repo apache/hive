@@ -48,9 +48,7 @@ public class TestLowLevelCacheImpl {
 
   private static final DiskRangeListFactory testFactory = new DiskRangeListFactory() {
     public DiskRangeList createCacheChunk(MemoryBuffer buffer, long offset, long end) {
-      CacheChunk cc = new CacheChunk();
-      cc.init(buffer, offset, end);
-      return cc;
+      return new CacheChunk(buffer, offset, end);
     }
   };
 
