@@ -29,15 +29,22 @@ public class AcidOpenTxnsCounterService implements RunnableConfigurable {
   private static final Logger LOG = LoggerFactory.getLogger(AcidOpenTxnsCounterService.class);
 
   private Configuration conf;
+  private int isAliveCounter = 0;
+  private long lastLogTime = 0;
 
   @Override
   public void run() {
     try {
+      long startTime = System.currentTimeMillis();
+      isAliveCounter++;
       TxnStore txnHandler = TxnUtils.getTxnStore(conf);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Running open txn counter");
-      }
       txnHandler.countOpenTxns();
+      if (System.currentTimeMillis() - lastLogTime > 60 * 1000) {
+        LOG.info("AcidOpenTxnsCounterService ran for " +
+            ((System.currentTimeMillis() - startTime) / 1000) +
+            " seconds.  isAliveCounter = " + isAliveCounter);
+        lastLogTime = System.currentTimeMillis();
+      }
     }
     catch(Throwable t) {
       LOG.error("Serious error in {}", Thread.currentThread().getName(), ": {}" + t.getMessage(), t);

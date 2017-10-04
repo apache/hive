@@ -44,7 +44,6 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     LOG.debug("Creating Hikari connection pool for the MetaStore");
 
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
-    LOG.info("XXX got url " + driverUrl + " from DataSourceProvider");
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
     int maxPoolSize = MetastoreConf.getIntVar(hdpConfig,

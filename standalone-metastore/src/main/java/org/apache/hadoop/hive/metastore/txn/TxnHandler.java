@@ -227,8 +227,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private final static ConcurrentHashMap<String, Semaphore> derbyKey2Lock = new ConcurrentHashMap<>();
   private static final String hostname = JavaUtils.hostname();
 
-  private static final AtomicBoolean startedOpenTxnCounter = new AtomicBoolean();
-
   // Private methods should never catch SQLException and then throw MetaException.  The public
   // methods depend on SQLException coming back so they can detect and handle deadlocks.  Private
   // methods should only throw MetaException when they explicitly know there's a logic error and

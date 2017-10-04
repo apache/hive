@@ -406,6 +406,9 @@ public class MetastoreConf {
             "not blocked.\n" +
             "\n" +
             "See HIVE-4409 for more details."),
+    DUMP_CONFIG_ON_CREATION("metastore.dump.config.on.creation", NO_SUCH_KEY, false,
+        "If true, a printout of the config file (minus sensitive values) will be dumped to the " +
+            "log whenever newMetastoreConf() is called.  Can produce a lot of logs"),
     END_FUNCTION_LISTENERS("metastore.end.function.listeners",
         "hive.metastore.end.function.listeners", "",
         "List of comma separated listeners for the end of metastore functions."),
@@ -932,6 +935,10 @@ public class MetastoreConf {
     if (getBoolVar(conf, ConfVars.SCHEMA_VERIFICATION)) {
       setBoolVar(conf, ConfVars.AUTO_CREATE_ALL, false);
     }
+
+    if (getBoolVar(conf, ConfVars.DUMP_CONFIG_ON_CREATION) && LOG.isInfoEnabled()) {
+      LOG.info(dumpConfig(conf));
+    }
     return conf;
   }
 
@@ -1304,8 +1311,8 @@ public class MetastoreConf {
   }
 
   /**
-   * Return the configuration value as a String.  This does not work on time based values as it
-   * doesn't have a time unit.
+   * Return the configuration value as a String.  For time based values it will be returned in
+   * the default time unit appended with an appropriate abbreviation (eg s for seconds, ...)
    * @param conf configuration to read
    * @param var variable to read
    * @return value as an object
@@ -1319,8 +1326,12 @@ public class MetastoreConf {
       return Long.toString(getLongVar(conf, var));
     } else if (var.defaultVal.getClass() == Double.class) {
       return Double.toString(getDoubleVar(conf, var));
+    } else if (var.defaultVal.getClass() == TimeValue.class) {
+      TimeUnit timeUnit = (var.defaultVal.getClass() == TimeValue.class) ?
+          ((TimeValue)var.defaultVal).unit : null;
+      return Long.toString(getTimeVar(conf, var, timeUnit)) + timeAbbreviationFor(timeUnit);
     } else {
-      throw new RuntimeException("Invalid type for getObject " + var.defaultVal.getClass().getName());
+      throw new RuntimeException("Unknown type for getObject " + var.defaultVal.getClass().getName());
     }
   }
 
@@ -1353,6 +1364,45 @@ public class MetastoreConf {
    */
   public static boolean isEmbeddedMetaStore(String msUri) {
     return (msUri == null) || msUri.trim().isEmpty();
+  }
+
+  /**
+   * Dump the configuration file to the log.  It will be dumped at an INFO level.  This can
+   * potentially produce a lot of logs, so you might want to be careful when and where you do it.
+   * It takes care not to dump hidden keys.
+   * @param conf Configuration file to dump
+   * @return String containing dumped config file.
+   */
+  public static String dumpConfig(Configuration conf) {
+    StringBuilder buf = new StringBuilder("MetastoreConf object:\n");
+    if (hiveSiteURL != null) {
+      buf.append("Used hive-site file: ")
+          .append(hiveSiteURL)
+          .append('\n');
+    }
+    if (hiveMetastoreSiteURL != null) {
+      buf.append("Used hivemetastore-site file: ")
+          .append(hiveMetastoreSiteURL)
+          .append('\n');
+    }
+    if (metastoreSiteURL != null) {
+      buf.append("Used metastore-site file: ")
+          .append(metastoreSiteURL)
+          .append('\n');
+    }
+    for (ConfVars var : ConfVars.values()) {
+      if (!unprintables.contains(var.varname)) {
+        buf.append("Key: <")
+            .append(var.varname)
+            .append("> old hive key: <")
+            .append(var.hiveName)
+            .append(">  value: <")
+            .append(getAsString(conf, var))
+            .append(">\n");
+      }
+    }
+    buf.append("Finished MetastoreConf object.\n");
+    return buf.toString();
   }
 
   /**
