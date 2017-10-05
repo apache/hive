@@ -4512,7 +4512,7 @@ public class HiveConf extends Configuration {
     "distcp\\.options\\.overwrite",
     "distcp\\.options\\.strategy",
     "distcp\\.options\\.i",
-    "distcp\\.options\\.p",
+    "distcp\\.options\\.p.*",
     "distcp\\.options\\.update",
     "distcp\\.options\\.delete",
     "mapred\\.map\\..*",
