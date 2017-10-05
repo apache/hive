@@ -30,6 +30,7 @@ import org.apache.hadoop.io.IOUtils;
 
 import com.google.common.collect.Collections2;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -40,6 +41,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Utils {
+  private static Logger LOG = LoggerFactory.getLogger(Utils.class);
   public static final String BOOTSTRAP_DUMP_STATE_KEY_PREFIX = "bootstrap.dump.state.";
 
   public enum ReplDumpState {
@@ -91,8 +93,7 @@ public class Utils {
             });
   }
 
-  public static String setDbBootstrapDumpState(Hive hiveDb, String dbName, Logger LOG)
-          throws HiveException {
+  public static String setDbBootstrapDumpState(Hive hiveDb, String dbName) throws HiveException {
     Database database = hiveDb.getDatabase(dbName);
     if (database == null) {
       return null;
@@ -119,7 +120,7 @@ public class Utils {
   }
 
   public static void resetDbBootstrapDumpState(Hive hiveDb, String dbName,
-                                               String uniqueKey, Logger LOG) throws HiveException {
+                                               String uniqueKey) throws HiveException {
     Database database = hiveDb.getDatabase(dbName);
     if (database != null) {
       Map<String, String> params = database.getParameters();
