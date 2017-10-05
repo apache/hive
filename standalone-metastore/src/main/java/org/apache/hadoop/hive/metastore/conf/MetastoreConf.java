@@ -54,6 +54,7 @@ public class MetastoreConf {
   private static URL hiveSiteURL = null;
   private static URL hiveMetastoreSiteURL = null;
   private static URL metastoreSiteURL = null;
+  private static boolean beenDumped = false;
 
   /*
   private static Map<String, String> metaToHiveKeys;
@@ -406,7 +407,7 @@ public class MetastoreConf {
             "not blocked.\n" +
             "\n" +
             "See HIVE-4409 for more details."),
-    DUMP_CONFIG_ON_CREATION("metastore.dump.config.on.creation", NO_SUCH_KEY, false,
+    DUMP_CONFIG_ON_CREATION("metastore.dump.config.on.creation", NO_SUCH_KEY, true,
         "If true, a printout of the config file (minus sensitive values) will be dumped to the " +
             "log whenever newMetastoreConf() is called.  Can produce a lot of logs"),
     END_FUNCTION_LISTENERS("metastore.end.function.listeners",
@@ -936,7 +937,10 @@ public class MetastoreConf {
       setBoolVar(conf, ConfVars.AUTO_CREATE_ALL, false);
     }
 
-    if (getBoolVar(conf, ConfVars.DUMP_CONFIG_ON_CREATION) && LOG.isInfoEnabled()) {
+    if (!beenDumped && getBoolVar(conf, ConfVars.DUMP_CONFIG_ON_CREATION) && LOG.isInfoEnabled()) {
+      // Not locking here in the interest of ease and expediency.  If occasionally we get in a
+      // race condition where a couple of threads dump it's not that bad.
+      beenDumped = true;
       LOG.info(dumpConfig(conf));
     }
     return conf;
