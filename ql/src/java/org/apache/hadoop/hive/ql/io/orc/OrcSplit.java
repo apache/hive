@@ -225,6 +225,6 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   public String toString() {
     return "OrcSplit [" + getPath() + ", start=" + getStart() + ", length=" + getLength()
         + ", isOriginal=" + isOriginal + ", fileLength=" + fileLen + ", hasFooter=" + hasFooter +
-        ", hasBase=" + hasBase + ", deltas=" + (deltas == null ? 0 : deltas.size()) + "]";
+        ", hasBase=" + hasBase + ", deltas=" + deltas + "]";
   }
 }

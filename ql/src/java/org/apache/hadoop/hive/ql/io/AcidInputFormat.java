@@ -155,6 +155,11 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
         stmtIds.add(in.readInt());
       }
     }
+
+    @Override
+    public String toString() {
+      return "{ minTxnId: " + minTxnId + " maxTxnId: " + maxTxnId + " stmtIds: " + stmtIds + " }";
+    }
   }
   /**
    * Options for controlling the record readers.
