@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,12 +55,8 @@ public class MetastoreConf {
   private static URL hiveSiteURL = null;
   private static URL hiveMetastoreSiteURL = null;
   private static URL metastoreSiteURL = null;
-  private static boolean beenDumped = false;
+  private static AtomicBoolean beenDumped = new AtomicBoolean();
 
-  /*
-  private static Map<String, String> metaToHiveKeys;
-  private static Map<String, String> hiveToMetaKeys;
-  */
   private static Map<String, ConfVars> keyToVars;
 
   @VisibleForTesting
@@ -937,10 +934,8 @@ public class MetastoreConf {
       setBoolVar(conf, ConfVars.AUTO_CREATE_ALL, false);
     }
 
-    if (!beenDumped && getBoolVar(conf, ConfVars.DUMP_CONFIG_ON_CREATION) && LOG.isInfoEnabled()) {
-      // Not locking here in the interest of ease and expediency.  If occasionally we get in a
-      // race condition where a couple of threads dump it's not that bad.
-      beenDumped = true;
+    if (!beenDumped.getAndSet(true) && getBoolVar(conf, ConfVars.DUMP_CONFIG_ON_CREATION) &&
+        LOG.isInfoEnabled()) {
       LOG.info(dumpConfig(conf));
     }
     return conf;
