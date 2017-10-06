@@ -67,6 +67,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
@@ -2111,121 +2112,20 @@ public class BeeLine implements Closeable {
     return scanDrivers(false);
   }
 
-
   Driver[] scanDrivers(boolean knownOnly) throws IOException {
     long start = System.currentTimeMillis();
 
-    Set<String> classNames = new HashSet<String>();
+    ServiceLoader<Driver> sqlDrivers = ServiceLoader.load(Driver.class);
 
-    if (!knownOnly) {
-      classNames.addAll(Arrays.asList(
-          ClassNameCompleter.getClassNames()));
-    }
+    Set<Driver> driverClasses = new HashSet<>();
 
-    classNames.addAll(KNOWN_DRIVERS);
-
-    Set driverClasses = new HashSet();
-
-    for (Iterator<String> i = classNames.iterator(); i.hasNext();) {
-      String className = i.next().toString();
-
-      if (className.toLowerCase().indexOf("driver") == -1) {
-        continue;
-      }
-
-      try {
-        Class c = Class.forName(className, false,
-            Thread.currentThread().getContextClassLoader());
-        if (!Driver.class.isAssignableFrom(c)) {
-          continue;
-        }
-
-        if (Modifier.isAbstract(c.getModifiers())) {
-          continue;
-        }
-
-        // now instantiate and initialize it
-        driverClasses.add(c.newInstance());
-      } catch (Throwable t) {
-      }
+    for (Driver driver : sqlDrivers) {
+        driverClasses.add(driver);
     }
     info("scan complete in "
         + (System.currentTimeMillis() - start) + "ms");
     return (Driver[]) driverClasses.toArray(new Driver[0]);
   }
-
-
-  private Driver[] scanDriversOLD(String line) {
-    long start = System.currentTimeMillis();
-
-    Set<String> paths = new HashSet<String>();
-    Set driverClasses = new HashSet();
-
-    for (StringTokenizer tok = new StringTokenizer(
-        System.getProperty("java.ext.dirs"),
-        System.getProperty("path.separator")); tok.hasMoreTokens();) {
-      File[] files = new File(tok.nextToken()).listFiles();
-      for (int i = 0; files != null && i < files.length; i++) {
-        paths.add(files[i].getAbsolutePath());
-      }
-    }
-
-    for (StringTokenizer tok = new StringTokenizer(
-        System.getProperty("java.class.path"),
-        System.getProperty("path.separator")); tok.hasMoreTokens();) {
-      paths.add(new File(tok.nextToken()).getAbsolutePath());
-    }
-
-    for (Iterator<String> i = paths.iterator(); i.hasNext();) {
-      File f = new File(i.next());
-      output(getColorBuffer().pad(loc("scanning", f.getAbsolutePath()), 60),
-          false);
-
-      try (ZipFile zf = new ZipFile(f)) {
-        int total = zf.size();
-        int index = 0;
-
-        for (Enumeration zfEnum = zf.entries(); zfEnum.hasMoreElements();) {
-          ZipEntry entry = (ZipEntry) zfEnum.nextElement();
-          String name = entry.getName();
-          progress(index++, total);
-
-          if (name.endsWith(".class")) {
-            name = name.replace('/', '.');
-            name = name.substring(0, name.length() - 6);
-
-            try {
-              // check for the string "driver" in the class
-              // to see if we should load it. Not perfect, but
-              // it is far too slow otherwise.
-              if (name.toLowerCase().indexOf("driver") != -1) {
-                Class c = Class.forName(name, false,
-                    getClass().getClassLoader());
-                if (Driver.class.isAssignableFrom(c)
-                    && !(Modifier.isAbstract(
-                        c.getModifiers()))) {
-                  try {
-                    // load and initialize
-                    Class.forName(name);
-                  } catch (Exception e) {
-                  }
-                  driverClasses.add(c.newInstance());
-                }
-              }
-            } catch (Throwable t) {
-            }
-          }
-        }
-        progress(total, total);
-      } catch (Exception e) {
-      }
-    }
-
-    info("scan complete in "
-        + (System.currentTimeMillis() - start) + "ms");
-    return (Driver[]) driverClasses.toArray(new Driver[0]);
-  }
-
 
   // /////////////////////////////////////
   // ResultSet output formatting classes
