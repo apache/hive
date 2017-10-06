@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,9 +18,10 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.ReadOnly
   public Set<CompactionInfo> findPotentialCompactions(int maxAborted) throws MetaException {
     Connection dbConn = null;
-    Set<CompactionInfo> response = new HashSet<CompactionInfo>();
+    Set<CompactionInfo> response = new HashSet<>();
     Statement stmt = null;
     ResultSet rs = null;
     try {
@@ -277,7 +278,7 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.ReadOnly
   public List<CompactionInfo> findReadyToClean() throws MetaException {
     Connection dbConn = null;
-    List<CompactionInfo> rc = new ArrayList<CompactionInfo>();
+    List<CompactionInfo> rc = new ArrayList<>();
 
     Statement stmt = null;
     ResultSet rs = null;
@@ -387,7 +388,7 @@ class CompactionTxnHandler extends TxnHandler {
         while (rs.next()) txnids.add(rs.getLong(1));
         // Remove entries from txn_components, as there may be aborted txn components
         if (txnids.size() > 0) {
-          List<String> queries = new ArrayList<String>();
+          List<String> queries = new ArrayList<>();
 
           // Prepare prefix and suffix
           StringBuilder prefix = new StringBuilder();
@@ -466,7 +467,7 @@ class CompactionTxnHandler extends TxnHandler {
           return;
         }
         Collections.sort(txnids);//easier to read logs
-        List<String> queries = new ArrayList<String>();
+        List<String> queries = new ArrayList<>();
         StringBuilder prefix = new StringBuilder();
         StringBuilder suffix = new StringBuilder();
 
@@ -626,7 +627,7 @@ class CompactionTxnHandler extends TxnHandler {
         + (ci.partName == null ? "" : " AND PARTITION_NAME='" + ci.partName + "'");*/
         LOG.debug("Going to execute <" + s + ">");
         rs = stmt.executeQuery(s);
-        List<String> columns = new ArrayList<String>();
+        List<String> columns = new ArrayList<>();
         while (rs.next()) {
           columns.add(rs.getString(1));
         }
@@ -743,9 +744,9 @@ class CompactionTxnHandler extends TxnHandler {
           CompactionInfo ci = new CompactionInfo(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5).charAt(0));
           if(!ci.getFullPartitionName().equals(lastCompactedEntity)) {
             lastCompactedEntity = ci.getFullPartitionName();
-            rc = new RetentionCounters(conf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
+            rc = new RetentionCounters(MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
               getFailedCompactionRetention(),
-              conf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED));
+              MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED));
           }
           checkForDeletion(deleteSet, ci, rc);
         }
@@ -755,7 +756,7 @@ class CompactionTxnHandler extends TxnHandler {
           return;
         }
 
-        List<String> queries = new ArrayList<String>();
+        List<String> queries = new ArrayList<>();
 
         StringBuilder prefix = new StringBuilder();
         StringBuilder suffix = new StringBuilder();
@@ -788,12 +789,12 @@ class CompactionTxnHandler extends TxnHandler {
    * compaction threshold which prevents new compactions from being scheduled.
    */
   private int getFailedCompactionRetention() {
-    int failedThreshold = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD);
-    int failedRetention = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED);
+    int failedThreshold = MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD);
+    int failedRetention = MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED);
     if(failedRetention < failedThreshold) {
-      LOG.warn("Invalid configuration " + HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD.varname +
-        "=" + failedRetention + " < " + HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED + "=" +
-        failedRetention + ".  Will use " + HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD.varname +
+      LOG.warn("Invalid configuration " + ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD.varname +
+        "=" + failedRetention + " < " + ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED + "=" +
+        failedRetention + ".  Will use " + ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD.varname +
         "=" + failedRetention);
       failedRetention = failedThreshold;
     }
@@ -825,7 +826,7 @@ class CompactionTxnHandler extends TxnHandler {
           " and CC_STATE != " + quoteChar(ATTEMPTED_STATE) + " order by CC_ID desc");
         int numFailed = 0;
         int numTotal = 0;
-        int failedThreshold = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD);
+        int failedThreshold = MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD);
         while(rs.next() && ++numTotal <= failedThreshold) {
           if(rs.getString(1).charAt(0) == FAILED_STATE) {
             numFailed++;

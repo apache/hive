@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -46,9 +46,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
-    int maxPoolSize = hdpConfig.getInt(
-        MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.varname,
-        ((Long)MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.defaultVal).intValue());
+    int maxPoolSize = MetastoreConf.getIntVar(hdpConfig,
+        MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
 
     Properties properties = replacePrefix(
         DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
@@ -77,8 +76,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
   @Override
   public boolean supports(Configuration configuration) {
     String poolingType =
-        configuration.get(
-            MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE.varname).toLowerCase();
+        MetastoreConf.getVar(configuration,
+            MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();
     if (HIKARI.equals(poolingType)) {
       int hikariPropsNr = DataSourceProvider.getPrefixedProperties(configuration, HIKARI).size();
       LOG.debug("Found " + hikariPropsNr + " nr. of hikari specific configurations");

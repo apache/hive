@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,28 +23,29 @@ import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.hadoop.hive.common.ServerUtils;
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.HouseKeeperService;
+import org.apache.hadoop.hive.metastore.RunnableConfigurable;
+import org.apache.hadoop.hive.metastore.ThreadPool;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.datasource.BoneCPDataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.HikariCPDataSourceProvider;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 
 import org.apache.commons.pool.impl.GenericObjectPool;
-import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.StringableMap;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.util.StringUtils;
 
@@ -58,6 +59,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
@@ -66,8 +68,8 @@ import java.util.regex.Pattern;
  * server.
  *
  * Note on log messages:  Please include txnid:X and lockid info using
- * {@link org.apache.hadoop.hive.common.JavaUtils#txnIdToString(long)}
- * and {@link org.apache.hadoop.hive.common.JavaUtils#lockIdToString(long)} in all messages.
+ * {@link JavaUtils#txnIdToString(long)}
+ * and {@link JavaUtils#lockIdToString(long)} in all messages.
  * The txnid:X and lockid:Y matches how Thrift object toString() methods are generated,
  * so keeping the format consistent makes grep'ing the logs much easier.
  *
@@ -194,15 +196,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static volatile int maxOpenTxns = 0;
   // Whether number of open transactions reaches the threshold
   private static volatile boolean tooManyOpenTxns = false;
-  // The AcidHouseKeeperService for counting open transactions
-  private static volatile HouseKeeperService openTxnsCounter = null;
 
   /**
    * Number of consecutive deadlocks we have seen
    */
   private int deadlockCnt;
   private long deadlockRetryInterval;
-  protected HiveConf conf;
+  protected Configuration conf;
   private static DatabaseProduct dbProduct;
   private static SQLGenerator sqlGenerator;
 
@@ -225,7 +225,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * (e.g. via Compactor services)
    */
   private final static ConcurrentHashMap<String, Semaphore> derbyKey2Lock = new ConcurrentHashMap<>();
-  private static final String hostname = ServerUtils.hostname();
+  private static final String hostname = JavaUtils.hostname();
 
   // Private methods should never catch SQLException and then throw MetaException.  The public
   // methods depend on SQLException coming back so they can detect and handle deadlocks.  Private
@@ -242,22 +242,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   /**
    * This is logically part of c'tor and must be called prior to any other method.
-   * Not physically part of c'tor due to use of relfection
+   * Not physically part of c'tor due to use of reflection
    */
-  public void setConf(HiveConf conf) {
+  public void setConf(Configuration conf) {
     this.conf = conf;
 
     checkQFileTestHack();
 
     synchronized (TxnHandler.class) {
       if (connPool == null) {
-        //only do this once per JVM; useful for support
-        LOG.info(HiveConfUtil.dumpConfig(conf).toString());
-
         Connection dbConn = null;
         // Set up the JDBC connection pool
         try {
-          int maxPoolSize = conf.getIntVar(HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_MAX_CONNECTIONS);
+          int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
           long getConnectionTimeoutMs = 30000;
           connPool = setupJdbcConnectionPool(conf, maxPoolSize, getConnectionTimeoutMs);
           /*the mutex pools should ideally be somewhat larger since some operations require 1
@@ -283,14 +280,20 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
     numOpenTxns = Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_TXNS);
 
-    timeout = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
+    timeout = MetastoreConf.getTimeVar(conf, ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
     buildJumpTable();
-    retryInterval = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HMSHANDLERINTERVAL,
+    retryInterval = MetastoreConf.getTimeVar(conf, ConfVars.HMSHANDLERINTERVAL,
         TimeUnit.MILLISECONDS);
-    retryLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HMSHANDLERATTEMPTS);
+    retryLimit = MetastoreConf.getIntVar(conf, ConfVars.HMSHANDLERATTEMPTS);
     deadlockRetryInterval = retryInterval / 10;
-    maxOpenTxns = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_MAX_OPEN_TXNS);
+    maxOpenTxns = MetastoreConf.getIntVar(conf, ConfVars.MAX_OPEN_TXNS);
   }
+
+  @Override
+  public Configuration getConf() {
+    return conf;
+  }
+
   @Override
   @RetrySemantics.ReadOnly
   public GetOpenTxnsInfoResponse getOpenTxnsInfo() throws MetaException {
@@ -325,7 +328,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             "initialized, null record found in next_txn_id");
         }
         close(rs);
-        List<TxnInfo> txnInfos = new ArrayList<TxnInfo>();
+        List<TxnInfo> txnInfos = new ArrayList<>();
         //need the WHERE clause below to ensure consistent results with READ_COMMITTED
         s = "select txn_id, txn_state, txn_user, txn_host, txn_started, txn_last_heartbeat from " +
             "TXNS where txn_id <= " + hwm;
@@ -398,7 +401,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             "initialized, null record found in next_txn_id");
         }
         close(rs);
-        List<Long> openList = new ArrayList<Long>();
+        List<Long> openList = new ArrayList<>();
         //need the WHERE clause below to ensure consistent results with READ_COMMITTED
         s = "select txn_id, txn_state from TXNS where txn_id <= " + hwm + " order by txn_id";
         LOG.debug("Going to execute query<" + s + ">");
@@ -437,17 +440,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private static void startHouseKeeperService(HiveConf conf, Class c){
-    try {
-      openTxnsCounter = (HouseKeeperService)c.newInstance();
-      openTxnsCounter.start(conf);
-    } catch (Exception ex) {
-      LOG.error("Failed to start {}" , openTxnsCounter.getClass() +
-              ".  The system will not handle {} " , openTxnsCounter.getServiceDescription(),
-          ".  Root Cause: ", ex);
-    }
-  }
-
   /**
    * Retry-by-caller note:
    * Worst case, it will leave an open txn which will timeout.
@@ -455,18 +447,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.Idempotent
   public OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException {
-    if (openTxnsCounter == null) {
-      synchronized (TxnHandler.class) {
-        try {
-          if (openTxnsCounter == null) {
-            startHouseKeeperService(conf, Class.forName("org.apache.hadoop.hive.ql.txn.AcidOpenTxnsCounterService"));
-          }
-        } catch (ClassNotFoundException e) {
-          throw new MetaException(e.getMessage());
-        }
-      }
-    }
-
     if (!tooManyOpenTxns && numOpenTxns.get() >= maxOpenTxns) {
       tooManyOpenTxns = true;
     }
@@ -507,8 +487,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
          */
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         // Make sure the user has not requested an insane amount of txns.
-        int maxTxns = HiveConf.getIntVar(conf,
-          HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH);
+        int maxTxns = MetastoreConf.getIntVar(conf, ConfVars.TXN_MAX_OPEN_BATCH);
         if (numTxns > maxTxns) numTxns = maxTxns;
 
         stmt = dbConn.createStatement();
@@ -525,7 +504,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         stmt.executeUpdate(s);
 
         long now = getDbTime(dbConn);
-        List<Long> txnIds = new ArrayList<Long>(numTxns);
+        List<Long> txnIds = new ArrayList<>(numTxns);
 
         List<String> rows = new ArrayList<>();
         for (long i = first; i < first + numTxns; i++) {
@@ -639,7 +618,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * that they read appropriately.  In particular, if txns do not overlap, then one follows the other
    * (assumig they write the same entity), and thus the 2nd must see changes of the 1st.  We ensure
    * this by locking in snapshot after 
-   * {@link #openTxns(OpenTxnRequest)} call is made (see {@link org.apache.hadoop.hive.ql.Driver#acquireLocksAndOpenTxn()})
+   * {@link #openTxns(OpenTxnRequest)} call is made (see org.apache.hadoop.hive.ql.Driver.acquireLocksAndOpenTxn)
    * and mutexing openTxn() with commit().  In other words, once a S.commit() starts we must ensure
    * that txn T which will be considered a later txn, locks in a snapshot that includes the result
    * of S's commit (assuming no other txns).
@@ -1038,7 +1017,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         long intLockId = 0;
         for (LockComponent lc : rqst.getComponent()) {
           if(lc.isSetOperationType() && lc.getOperationType() == DataOperationType.UNSET &&
-            (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) || conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEZ_TEST))) {
+            (MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) || MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEZ_TEST))) {
             //old version of thrift client should have (lc.isSetOperationType() == false) but they do not
             //If you add a default value to a variable, isSet() for that variable is true regardless of the where the
             //message was created (for object variables.  It works correctly for boolean vars, e.g. LockComponent.isAcid).
@@ -1288,8 +1267,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     try {
       Connection dbConn = null;
       ShowLocksResponse rsp = new ShowLocksResponse();
-      List<ShowLocksResponseElement> elems = new ArrayList<ShowLocksResponseElement>();
-      List<LockInfoExt> sortedList = new ArrayList<LockInfoExt>();
+      List<ShowLocksResponseElement> elems = new ArrayList<>();
+      List<LockInfoExt> sortedList = new ArrayList<>();
       Statement stmt = null;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
@@ -1423,8 +1402,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       Connection dbConn = null;
       Statement stmt = null;
       HeartbeatTxnRangeResponse rsp = new HeartbeatTxnRangeResponse();
-      Set<Long> nosuch = new HashSet<Long>();
-      Set<Long> aborted = new HashSet<Long>();
+      Set<Long> nosuch = new HashSet<>();
+      Set<Long> aborted = new HashSet<>();
       rsp.setNosuch(nosuch);
       rsp.setAborted(aborted);
       try {
@@ -1627,7 +1606,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
   @RetrySemantics.ReadOnly
   public ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException {
-    ShowCompactResponse response = new ShowCompactResponse(new ArrayList<ShowCompactResponseElement>());
+    ShowCompactResponse response = new ShowCompactResponse(new ArrayList<>());
     Connection dbConn = null;
     Statement stmt = null;
     try {
@@ -1775,7 +1754,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         String tblName;
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        List<String> queries = new ArrayList<String>();
+        List<String> queries = new ArrayList<>();
         StringBuilder buff = new StringBuilder();
 
         switch (type) {
@@ -2340,14 +2319,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static Map<LockType, Map<LockType, Map<LockState, LockAction>>> jumpTable;
 
   private void checkQFileTestHack() {
-    boolean hackOn = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST) ||
-      HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEZ_TEST);
+    boolean hackOn = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) ||
+      MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEZ_TEST);
     if (hackOn) {
       LOG.info("Hacking in canned values for transaction manager");
       // Set up the transaction/locking db in the derby metastore
       TxnDbUtil.setConfValues(conf);
       try {
-        TxnDbUtil.prepDb();
+        TxnDbUtil.prepDb(conf);
       } catch (Exception e) {
         // We may have already created the tables and thus don't need to redo it.
         if (e.getMessage() != null && !e.getMessage().contains("already exists")) {
@@ -2389,7 +2368,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       stmt = dbConn.createStatement();
       //This is an update statement, thus at any Isolation level will take Write locks so will block
       //all other ops using S4U on TXNS row.
-      List<String> queries = new ArrayList<String>();
+      List<String> queries = new ArrayList<>();
 
       StringBuilder prefix = new StringBuilder();
       StringBuilder suffix = new StringBuilder();
@@ -2488,7 +2467,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         "hl_lock_int_id, hl_db, hl_table, hl_partition, hl_lock_state, " +
         "hl_lock_type, hl_txnid from HIVE_LOCKS where hl_db in (");
 
-      Set<String> strings = new HashSet<String>(locksBeingChecked.size());
+      Set<String> strings = new HashSet<>(locksBeingChecked.size());
 
       //This the set of entities that the statement represented by extLockId wants to update
       List<LockInfo> writeSet = new ArrayList<>();
@@ -2992,7 +2971,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       LOG.debug("Going to execute query <" + s + ">");
       ResultSet rs = stmt.executeQuery(s);
       boolean sawAtLeastOne = false;
-      List<LockInfo> ourLockInfo = new ArrayList<LockInfo>();
+      List<LockInfo> ourLockInfo = new ArrayList<>();
       while (rs.next()) {
         ourLockInfo.add(new LockInfo(rs));
         sawAtLeastOne = true;
@@ -3033,7 +3012,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         return;
       }
 
-      List<String> queries = new ArrayList<String>();
+      List<String> queries = new ArrayList<>();
 
       StringBuilder prefix = new StringBuilder();
       StringBuilder suffix = new StringBuilder();
@@ -3187,12 +3166,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private static synchronized DataSource setupJdbcConnectionPool(HiveConf conf, int maxPoolSize, long getConnectionTimeoutMs) throws SQLException {
+  private static synchronized DataSource setupJdbcConnectionPool(Configuration conf, int maxPoolSize, long getConnectionTimeoutMs) throws SQLException {
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(conf);
     String user = DataSourceProvider.getMetastoreJdbcUser(conf);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(conf);
-    String connectionPooler = conf.getVar(
-      HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE).toLowerCase();
+    String connectionPooler = MetastoreConf.getVar(conf, ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();
 
     if ("bonecp".equals(connectionPooler)) {
       doRetryOnConnPool = true;  // Enable retries to work around BONECP bug.
@@ -3221,16 +3199,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static synchronized void buildJumpTable() {
     if (jumpTable != null) return;
 
-    jumpTable =
-      new HashMap<LockType, Map<LockType, Map<LockState,  LockAction>>>(3);
+    jumpTable = new HashMap<>(3);
 
     // SR: Lock we are trying to acquire is shared read
-    Map<LockType, Map<LockState, LockAction>> m =
-      new HashMap<LockType, Map<LockState, LockAction>>(3);
+    Map<LockType, Map<LockState, LockAction>> m = new HashMap<>(3);
     jumpTable.put(LockType.SHARED_READ, m);
 
     // SR.SR: Lock we are examining is shared read
-    Map<LockState, LockAction> m2 = new HashMap<LockState, LockAction>(2);
+    Map<LockState, LockAction> m2 = new HashMap<>(2);
     m.put(LockType.SHARED_READ, m2);
 
     // SR.SR.acquired Lock we are examining is acquired;  We can acquire
@@ -3244,7 +3220,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     m2.put(LockState.WAITING, LockAction.KEEP_LOOKING);
 
     // SR.SW: Lock we are examining is shared write
-    m2 = new HashMap<LockState, LockAction>(2);
+    m2 = new HashMap<>(2);
     m.put(LockType.SHARED_WRITE, m2);
 
     // SR.SW.acquired Lock we are examining is acquired;  We can acquire
@@ -3259,7 +3235,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     m2.put(LockState.WAITING, LockAction.KEEP_LOOKING);
 
     // SR.E: Lock we are examining is exclusive
-    m2 = new HashMap<LockState, LockAction>(2);
+    m2 = new HashMap<>(2);
     m.put(LockType.EXCLUSIVE, m2);
 
     // No matter whether it has acquired or not, we cannot pass an exclusive.
@@ -3267,11 +3243,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     m2.put(LockState.WAITING, LockAction.WAIT);
 
     // SW: Lock we are trying to acquire is shared write
-    m = new HashMap<LockType, Map<LockState, LockAction>>(3);
+    m = new HashMap<>(3);
     jumpTable.put(LockType.SHARED_WRITE, m);
 
     // SW.SR: Lock we are examining is shared read
-    m2 = new HashMap<LockState, LockAction>(2);
+    m2 = new HashMap<>(2);
     m.put(LockType.SHARED_READ, m2);
 
     // SW.SR.acquired Lock we are examining is acquired;  We need to keep
@@ -3285,7 +3261,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     m2.put(LockState.WAITING, LockAction.KEEP_LOOKING);
 
     // SW.SW: Lock we are examining is shared write
-    m2 = new HashMap<LockState, LockAction>(2);
+    m2 = new HashMap<>(2);
     m.put(LockType.SHARED_WRITE, m2);
 
     // Regardless of acquired or waiting, one shared write cannot pass another.
@@ -3293,7 +3269,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     m2.put(LockState.WAITING, LockAction.WAIT);
 
     // SW.E: Lock we are examining is exclusive
-    m2 = new HashMap<LockState, LockAction>(2);
+    m2 = new HashMap<>(2);
     m.put(LockType.EXCLUSIVE, m2);
 
     // No matter whether it has acquired or not, we cannot pass an exclusive.
@@ -3301,11 +3277,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     m2.put(LockState.WAITING, LockAction.WAIT);
 
     // E: Lock we are trying to acquire is exclusive
-    m = new HashMap<LockType, Map<LockState, LockAction>>(3);
+    m = new HashMap<>(3);
     jumpTable.put(LockType.EXCLUSIVE, m);
 
     // E.SR: Lock we are examining is shared read
-    m2 = new HashMap<LockState, LockAction>(2);
+    m2 = new HashMap<>(2);
     m.put(LockType.SHARED_READ, m2);
 
     // Exclusives can never pass
@@ -3313,7 +3289,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     m2.put(LockState.WAITING, LockAction.WAIT);
 
     // E.SW: Lock we are examining is shared write
-    m2 = new HashMap<LockState, LockAction>(2);
+    m2 = new HashMap<>(2);
     m.put(LockType.SHARED_WRITE, m2);
 
     // Exclusives can never pass
@@ -3321,7 +3297,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     m2.put(LockState.WAITING, LockAction.WAIT);
 
     // E.E: Lock we are examining is exclusive
-    m2 = new HashMap<LockState, LockAction>(2);
+    m2 = new HashMap<>(2);
     m.put(LockType.EXCLUSIVE, m2);
 
     // No matter whether it has acquired or not, we cannot pass an exclusive.
@@ -3331,7 +3307,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   /**
    * Returns true if {@code ex} should be retried
    */
-  static boolean isRetryable(HiveConf conf, Exception ex) {
+  static boolean isRetryable(Configuration conf, Exception ex) {
     if(ex instanceof SQLException) {
       SQLException sqlException = (SQLException)ex;
       if("08S01".equalsIgnoreCase(sqlException.getSQLState())) {
@@ -3343,7 +3319,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         return true;
       }
 
-      String regex = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_TXN_RETRYABLE_SQLEX_REGEX);
+      String regex = MetastoreConf.getVar(conf, ConfVars.TXN_RETRYABLE_SQLEX_REGEX);
       if (regex != null && !regex.isEmpty()) {
         String[] patterns = regex.split(",(?=\\S)");
         String message = getMessage((SQLException)ex);
@@ -3568,13 +3544,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     // Note that this depends on the fact that no-one in this class calls anything but
     // getConnection.  If you want to use any of the Logger or wrap calls you'll have to
     // implement them.
-    private final HiveConf conf;
+    private final Configuration conf;
     private Driver driver;
     private String connString;
     private String user;
     private String passwd;
 
-    public NoPoolConnectionPool(HiveConf conf) {
+    public NoPoolConnectionPool(Configuration conf) {
       this.conf = conf;
     }
 
@@ -3591,10 +3567,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     public Connection getConnection(String username, String password) throws SQLException {
       // Find the JDBC driver
       if (driver == null) {
-        String driverName = conf.getVar(HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER);
+        String driverName = MetastoreConf.getVar(conf, ConfVars.CONNECTION_DRIVER);
         if (driverName == null || driverName.equals("")) {
           String msg = "JDBC driver for transaction db not set in configuration " +
-              "file, need to set " + HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER.varname;
+              "file, need to set " + ConfVars.CONNECTION_DRIVER.varname;
           LOG.error(msg);
           throw new RuntimeException(msg);
         }
@@ -3612,7 +3588,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           throw new RuntimeException("Unable to find driver " + driverName + ", " + e.getMessage(),
               e);
         }
-        connString = conf.getVar(HiveConf.ConfVars.METASTORECONNECTURLKEY);
+        connString = MetastoreConf.getVar(conf, ConfVars.CONNECTURLKEY);
       }
 
       try {

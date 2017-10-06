@@ -17,7 +17,16 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 public class JavaUtils {
+  public static final Logger LOG = LoggerFactory.getLogger(JavaUtils.class);
+
   /**
    * Standard way of getting classloader in Hive code (outside of Hadoop).
    *
@@ -33,5 +42,42 @@ public class JavaUtils {
       classLoader = JavaUtils.class.getClassLoader();
     }
     return classLoader;
+  }
+
+  @SuppressWarnings(value = "unchecked")
+  public static <T> Class<? extends T> getClass(String className, Class<T> clazz)
+      throws MetaException {
+    try {
+      return (Class<? extends T>) Class.forName(className, true, getClassLoader());
+    } catch (ClassNotFoundException e) {
+      throw new MetaException(className + " class not found");
+    }
+  }
+
+  /**
+   * @return name of current host
+   */
+  public static String hostname() {
+    try {
+      return InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      LOG.error("Unable to resolve my host name " + e.getMessage());
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Utility method for ACID to normalize logging info.  Matches
+   * org.apache.hadoop.hive.metastore.api.LockRequest#toString
+   */
+  public static String lockIdToString(long extLockId) {
+    return "lockid:" + extLockId;
+  }
+  /**
+   * Utility method for ACID to normalize logging info.  Matches
+   * org.apache.hadoop.hive.metastore.api.LockResponse#toString
+   */
+  public static String txnIdToString(long txnId) {
+    return "txnid:" + txnId;
   }
 }

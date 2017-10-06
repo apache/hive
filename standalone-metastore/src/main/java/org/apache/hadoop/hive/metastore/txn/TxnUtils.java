@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,17 +17,19 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidCompactorTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,11 +116,10 @@ public class TxnUtils {
    * @param conf configuration
    * @return txn store
    */
-  public static TxnStore getTxnStore(HiveConf conf) {
-    String className = conf.getVar(HiveConf.ConfVars.METASTORE_TXN_STORE_IMPL);
+  public static TxnStore getTxnStore(Configuration conf) {
+    String className = MetastoreConf.getVar(conf, ConfVars.TXN_STORE_IMPL);
     try {
-      TxnStore handler = ((Class<? extends TxnHandler>) MetaStoreUtils.getClass(
-        className)).newInstance();
+      TxnStore handler = JavaUtils.getClass(className, TxnStore.class).newInstance();
       handler.setConf(conf);
       return handler;
     } catch (Exception e) {
@@ -155,13 +156,13 @@ public class TxnUtils {
    *                  e.g. ( id in (1,2,3) OR id in (4,5,6) )
    * @param notIn clause to be broken up is NOT IN
    */
-  public static void buildQueryWithINClause(HiveConf conf, List<String> queries, StringBuilder prefix,
+  public static void buildQueryWithINClause(Configuration conf, List<String> queries, StringBuilder prefix,
                                             StringBuilder suffix, List<Long> inList,
                                             String inColumn, boolean addParens, boolean notIn) {
     if (inList == null || inList.size() == 0) {
       throw new IllegalArgumentException("The IN list is empty!");
     }
-    int batchSize = conf.getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
+    int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
     int numWholeBatches = inList.size() / batchSize;
     StringBuilder buf = new StringBuilder();
     buf.append(prefix);
@@ -233,8 +234,8 @@ public class TxnUtils {
   }
 
   /** Estimate if the size of a string will exceed certain limit */
-  private static boolean needNewQuery(HiveConf conf, StringBuilder sb) {
-    int queryMemoryLimit = conf.getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH);
+  private static boolean needNewQuery(Configuration conf, StringBuilder sb) {
+    int queryMemoryLimit = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH);
     // http://www.javamex.com/tutorials/memory/string_memory_usage.shtml
     long sizeInBytes = 8 * (((sb.length() * 2) + 45) / 8);
     return sizeInBytes / 1024 > queryMemoryLimit;

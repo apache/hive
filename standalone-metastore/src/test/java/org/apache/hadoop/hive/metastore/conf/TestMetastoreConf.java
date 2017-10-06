@@ -19,6 +19,9 @@ package org.apache.hadoop.hive.metastore.conf;
 
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.conf.Configuration;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.core.StringContains;
+import org.hamcrest.core.StringEndsWith;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -411,4 +414,18 @@ public class TestMetastoreConf {
     Assert.assertEquals("abc", MetastoreConf.get(conf, "a.random.key"));
   }
 
+  @Test
+  public void dumpConfig() throws IOException {
+    createConfFile("metastore-site.xml", true, "METASTORE_HOME", instaMap(
+        "test.long", "23"
+    ));
+    conf = MetastoreConf.newMetastoreConf();
+    String dump = MetastoreConf.dumpConfig(conf);
+    Assert.assertThat(dump, new StringContains("Used metastore-site file: file:/"));
+    Assert.assertThat(dump, new StringContains("Key: <test.long> old hive key: <hive.test.long>  value: <23>"));
+    Assert.assertThat(dump, new StringContains("Key: <test.str> old hive key: <hive.test.str>  value: <defaultval>"));
+    Assert.assertThat(dump, new StringEndsWith("Finished MetastoreConf object.\n"));
+    // Make sure the hidden keys didn't get published
+    Assert.assertThat(dump, CoreMatchers.not(new StringContains(ConfVars.PWD.varname)));
+  }
 }

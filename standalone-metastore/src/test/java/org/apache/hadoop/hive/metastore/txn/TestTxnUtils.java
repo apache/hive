@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,9 +17,11 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,14 +37,14 @@ import java.util.List;
  * Tests for TxnUtils
  */
 public class TestTxnUtils {
-  private HiveConf conf;
+  private Configuration conf;
 
   public TestTxnUtils() throws Exception {
   }
 
   @Test
   public void testBuildQueryWithINClause() throws Exception {
-    List<String> queries = new ArrayList<String>();
+    List<String> queries = new ArrayList<>();
 
     StringBuilder prefix = new StringBuilder();
     StringBuilder suffix = new StringBuilder();
@@ -53,9 +55,9 @@ public class TestTxnUtils {
 
     // Case 1 - Max in list members: 10; Max query string length: 1KB
     //          The first query happens to have 2 full batches.
-    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 1);
-    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 10);
-    List<Long> inList = new ArrayList<Long>();
+    MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 1);
+    MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 10);
+    List<Long> inList = new ArrayList<>();
     for (long i = 1; i <= 200; i++) {
       inList.add(i);
     }
@@ -72,8 +74,8 @@ public class TestTxnUtils {
     runAgainstDerby(queries);
 
     // Case 3.1 - Max in list members: 1000, Max query string length: 1KB, and exact 1000 members in a single IN clause
-    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 1);
-    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 1000);
+    MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 1);
+    MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 1000);
     queries.clear();
     for (long i = 202; i <= 1000; i++) {
       inList.add(i);
@@ -83,8 +85,8 @@ public class TestTxnUtils {
     runAgainstDerby(queries);
 
     // Case 3.2 - Max in list members: 1000, Max query string length: 10KB, and exact 1000 members in a single IN clause
-    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 10);
-    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 1000);
+    MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 10);
+    MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 1000);
     queries.clear();
     TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
     Assert.assertEquals(1, queries.size());
@@ -94,12 +96,12 @@ public class TestTxnUtils {
     for (long i = 1001; i <= 2000; i++) {
       inList.add(i);
     }
-    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 1);
+    MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 1);
     queries.clear();
     TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
     Assert.assertEquals(2, queries.size());
     runAgainstDerby(queries);
-    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 10);
+    MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 10);
     queries.clear();
     TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
     Assert.assertEquals(1, queries.size());
@@ -138,7 +140,7 @@ public class TestTxnUtils {
     ResultSet rs = null;
 
     try {
-      conn = TxnDbUtil.getConnection();
+      conn = TxnDbUtil.getConnection(conf);
       stmt = conn.createStatement();
       for (String query : queries) {
         rs = stmt.executeQuery(query);
@@ -165,7 +167,7 @@ public class TestTxnUtils {
     
     Assert.assertEquals("Wrong stmt", 
       "insert all into colors(name, category) values('yellow', 1) into colors(name, category) values('red', 2) into colors(name, category) values('orange', 3) select * from dual", sql.get(0));
-    for(int i = 0; i < conf.getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE); i++) {
+    for(int i = 0; i < MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE); i++) {
       rows.add("\'G\'," + i);
     }
     sql = sqlGenerator.createInsertValuesStmt("colors(name, category)", rows);
@@ -185,7 +187,7 @@ public class TestTxnUtils {
     sql = sqlGenerator.createInsertValuesStmt("colors(name, category)", rows);
     Assert.assertEquals("Number of stmts", 1, sql.size());
     Assert.assertEquals("Wrong stmt", "insert into colors(name, category) values('yellow', 1),('red', 2),('orange', 3)", sql.get(0));
-    for(int i = 0; i < conf.getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE); i++) {
+    for(int i = 0; i < MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE); i++) {
       rows.add("\'G\'," + i);
     }
     sql = sqlGenerator.createInsertValuesStmt("colors(name, category)", rows);
@@ -202,14 +204,13 @@ public class TestTxnUtils {
 
   @Before
   public void setUp() throws Exception {
-    tearDown();
-    conf = new HiveConf(this.getClass());
+    conf = MetastoreConf.newMetastoreConf();
     TxnDbUtil.setConfValues(conf);
-    TxnDbUtil.prepDb();
+    TxnDbUtil.prepDb(conf);
   }
 
   @After
   public void tearDown() throws Exception {
-    TxnDbUtil.cleanDb();
+    TxnDbUtil.cleanDb(conf);
   }
 }

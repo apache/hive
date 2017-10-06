@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,10 +28,11 @@ import java.sql.Statement;
 import java.util.Properties;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * Utility methods for creating and destroying txn database/schema, plus methods for
@@ -56,12 +57,12 @@ public final class TxnDbUtil {
    *
    * @param conf HiveConf to add these values to
    */
-  public static void setConfValues(HiveConf conf) {
-    conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, TXN_MANAGER);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
+  public static void setConfValues(Configuration conf) {
+    MetastoreConf.setVar(conf, ConfVars.HIVE_TXN_MANAGER, TXN_MANAGER);
+    MetastoreConf.setBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
   }
 
-  public static void prepDb() throws Exception {
+  public static void prepDb(Configuration conf) throws Exception {
     // This is a bogus hack because it copies the contents of the SQL file
     // intended for creating derby databases, and thus will inexorably get
     // out of date with it.  I'm open to any suggestions on how to make this
@@ -70,7 +71,7 @@ public final class TxnDbUtil {
     Connection conn = null;
     Statement stmt = null;
     try {
-      conn = getConnection();
+      conn = getConnection(conf);
       stmt = conn.createStatement();
       stmt.execute("CREATE TABLE TXNS (" +
           "  TXN_ID bigint PRIMARY KEY," +
@@ -174,7 +175,7 @@ public final class TxnDbUtil {
       // This might be a deadlock, if so, let's retry
       if (e instanceof SQLTransactionRollbackException && deadlockCnt++ < 5) {
         LOG.warn("Caught deadlock, retrying db creation");
-        prepDb();
+        prepDb(conf);
       } else {
         throw e;
       }
@@ -184,14 +185,14 @@ public final class TxnDbUtil {
     }
   }
 
-  public static void cleanDb() throws Exception {
+  public static void cleanDb(Configuration conf) throws Exception {
     int retryCount = 0;
     while(++retryCount <= 3) {
       boolean success = true;
       Connection conn = null;
       Statement stmt = null;
       try {
-        conn = getConnection();
+        conn = getConnection(conf);
         stmt = conn.createStatement();
 
         // We want to try these, whether they succeed or fail.
@@ -224,20 +225,31 @@ public final class TxnDbUtil {
         return;
       }
     }
+    throw new RuntimeException("Failed to clean up txn tables");
   }
 
   private static boolean dropTable(Statement stmt, String name, int retryCount) throws SQLException {
-    try {
-      stmt.execute("DROP TABLE " + name);
-      return true;
-    } catch (SQLException e) {
-      if("42Y55".equals(e.getSQLState()) && 30000 == e.getErrorCode()) {
-        //failed because object doesn't exist
+    for (int i = 0; i < 3; i++) {
+      try {
+        stmt.execute("DROP TABLE " + name);
+        LOG.debug("Successfully dropped table " + name);
         return true;
+      } catch (SQLException e) {
+        if ("42Y55".equals(e.getSQLState()) && 30000 == e.getErrorCode()) {
+          LOG.debug("Not dropping " + name + " because it doesn't exist");
+          //failed because object doesn't exist
+          return true;
+        }
+        if ("X0Y25".equals(e.getSQLState()) && 30000 == e.getErrorCode()) {
+          // Intermittent failure
+          LOG.warn("Intermittent drop failure, retrying, try number " + i);
+          continue;
+        }
+        LOG.error("Unable to drop table " + name + ": " + e.getMessage() +
+            " State=" + e.getSQLState() + " code=" + e.getErrorCode() + " retryCount=" + retryCount);
       }
-      LOG.error("Unable to drop table " + name + ": " + e.getMessage() +
-        " State=" + e.getSQLState() + " code=" + e.getErrorCode() + " retryCount=" + retryCount);
     }
+    LOG.error("Failed to drop table, don't know why");
     return false;
   }
 
@@ -249,12 +261,12 @@ public final class TxnDbUtil {
    *
    * @return number of components, or 0 if there is no lock
    */
-  public static int countLockComponents(long lockId) throws Exception {
+  public static int countLockComponents(Configuration conf, long lockId) throws Exception {
     Connection conn = null;
     PreparedStatement stmt = null;
     ResultSet rs = null;
     try {
-      conn = getConnection();
+      conn = getConnection(conf);
       stmt = conn.prepareStatement("SELECT count(*) FROM hive_locks WHERE hl_lock_ext_id = ?");
       stmt.setLong(1, lockId);
       rs = stmt.executeQuery();
@@ -273,12 +285,12 @@ public final class TxnDbUtil {
    * @return count countQuery result
    * @throws Exception
    */
-  public static int countQueryAgent(String countQuery) throws Exception {
+  public static int countQueryAgent(Configuration conf, String countQuery) throws Exception {
     Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;
     try {
-      conn = getConnection();
+      conn = getConnection(conf);
       stmt = conn.createStatement();
       rs = stmt.executeQuery(countQuery);
       if (!rs.next()) {
@@ -290,16 +302,17 @@ public final class TxnDbUtil {
     }
   }
   @VisibleForTesting
-  public static String queryToString(String query) throws Exception {
-    return queryToString(query, true);
+  public static String queryToString(Configuration conf, String query) throws Exception {
+    return queryToString(conf, query, true);
   }
-  public static String queryToString(String query, boolean includeHeader) throws Exception {
+  public static String queryToString(Configuration conf, String query, boolean includeHeader)
+      throws Exception {
     Connection conn = null;
     Statement stmt = null;
     ResultSet rs = null;
     StringBuilder sb = new StringBuilder();
     try {
-      conn = getConnection();
+      conn = getConnection(conf);
       stmt = conn.createStatement();
       rs = stmt.executeQuery(query);
       ResultSetMetaData rsmd = rs.getMetaData();
@@ -321,13 +334,12 @@ public final class TxnDbUtil {
     return sb.toString();
   }
 
-  static Connection getConnection() throws Exception {
-    HiveConf conf = new HiveConf();
-    String jdbcDriver = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER);
+  static Connection getConnection(Configuration conf) throws Exception {
+    String jdbcDriver = MetastoreConf.getVar(conf, ConfVars.CONNECTION_DRIVER);
     Driver driver = (Driver) Class.forName(jdbcDriver).newInstance();
     Properties prop = new Properties();
-    String driverUrl = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
-    String user = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
+    String driverUrl = MetastoreConf.getVar(conf, ConfVars.CONNECTURLKEY);
+    String user = MetastoreConf.getVar(conf, ConfVars.CONNECTION_USER_NAME);
     String passwd = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
     prop.setProperty("user", user);
     prop.setProperty("password", passwd);

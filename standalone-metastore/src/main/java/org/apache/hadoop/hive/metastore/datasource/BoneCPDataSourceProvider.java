@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -47,9 +47,8 @@ public class BoneCPDataSourceProvider implements DataSourceProvider {
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
-    int maxPoolSize = hdpConfig.getInt(
-        MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.varname,
-        ((Long)MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.defaultVal).intValue());
+    int maxPoolSize = MetastoreConf.getIntVar(hdpConfig,
+        MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
 
     Properties properties = DataSourceProvider.getPrefixedProperties(hdpConfig, BONECP);
     long connectionTimeout = hdpConfig.getLong(CONNECTION_TIMEOUT_PROPERTY, 30000L);
@@ -82,8 +81,8 @@ public class BoneCPDataSourceProvider implements DataSourceProvider {
   @Override
   public boolean supports(Configuration configuration) {
     String poolingType =
-        configuration.get(
-            MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE.varname).toLowerCase();
+        MetastoreConf.getVar(configuration,
+            MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();
     if (BONECP.equals(poolingType)) {
       int boneCpPropsNr = DataSourceProvider.getPrefixedProperties(configuration, BONECP).size();
       LOG.debug("Found " + boneCpPropsNr + " nr. of bonecp specific configurations");

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,9 +17,10 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertNotNull;
@@ -35,8 +36,8 @@ public class TestTxnHandlerNegative {
    */
   @Test
   public void testBadConnection() throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY, "blah");
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTURLKEY, "blah");
     RuntimeException e = null;
     try {
       TxnUtils.getTxnStore(conf);

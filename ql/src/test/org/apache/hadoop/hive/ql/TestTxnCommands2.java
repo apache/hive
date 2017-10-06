@@ -55,7 +55,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.AcidCompactionHistoryService;
-import org.apache.hadoop.hive.ql.txn.AcidOpenTxnsCounterService;
+import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
 import org.apache.hadoop.hive.ql.txn.compactor.Initiator;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
@@ -70,6 +70,10 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * TODO: this should be merged with TestTxnCommands once that is checked in
+ * specifically the tests; the supporting code here is just a clone of TestTxnCommands
+ */
 public class TestTxnCommands2 {
   static final private Logger LOG = LoggerFactory.getLogger(TestTxnCommands2.class);
   protected static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
@@ -118,7 +122,6 @@ public class TestTxnCommands2 {
   }
 
   protected void setUpWithTableProperties(String tableProperties) throws Exception {
-    tearDown();
     hiveConf = new HiveConf(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
@@ -131,7 +134,7 @@ public class TestTxnCommands2 {
     hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
 
     TxnDbUtil.setConfValues(hiveConf);
-    TxnDbUtil.prepDb();
+    TxnDbUtil.prepDb(hiveConf);
     File f = new File(TEST_WAREHOUSE_DIR);
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -168,7 +171,7 @@ public class TestTxnCommands2 {
         d.close();
         d = null;
       }
-      TxnDbUtil.cleanDb();
+      TxnDbUtil.cleanDb(hiveConf);
     } finally {
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     }
@@ -1284,7 +1287,8 @@ public class TestTxnCommands2 {
     OpenTxnsResponse openTxnsResponse = txnHandler.openTxns(new OpenTxnRequest(3, "me", "localhost"));
 
     AcidOpenTxnsCounterService openTxnsCounterService = new AcidOpenTxnsCounterService();
-    runHouseKeeperService(openTxnsCounterService, hiveConf);  // will update current number of open txns to 3
+    openTxnsCounterService.setConf(hiveConf);
+    openTxnsCounterService.run();  // will update current number of open txns to 3
 
     MetaException exception = null;
     // This should fail once it finds out the threshold has been reached
@@ -1301,7 +1305,7 @@ public class TestTxnCommands2 {
     for (long txnid : openTxnsResponse.getTxn_ids()) {
       txnHandler.commitTxn(new CommitTxnRequest(txnid));
     }
-    runHouseKeeperService(openTxnsCounterService, hiveConf);  // will update current number of open txns back to 0
+    openTxnsCounterService.run();  // will update current number of open txns back to 0
     exception = null;
     try {
       txnHandler.openTxns(new OpenTxnRequest(1, "him", "localhost"));
