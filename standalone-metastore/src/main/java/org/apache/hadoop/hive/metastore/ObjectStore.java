@@ -433,9 +433,7 @@ public class ObjectStore implements RawStore, Configurable {
     pm = getPersistenceManager();
     try {
       String productName = MetaStoreDirectSql.getProductName(pm);
-      sqlGenerator = new SQLGenerator(
-          DatabaseProduct.determineDatabaseProduct(productName),
-          new HiveConf(hiveConf, ObjectStore.class));
+      sqlGenerator = new SQLGenerator(DatabaseProduct.determineDatabaseProduct(productName), conf);
     } catch (SQLException e) {
       LOG.error("error trying to figure out the database product", e);
       throw new RuntimeException(e);
@@ -8516,7 +8514,7 @@ public class ObjectStore implements RawStore, Configurable {
   private void lockForUpdate() throws MetaException {
     String selectQuery = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
     String selectForUpdateQuery = sqlGenerator.addForUpdateClause(selectQuery);
-    new RetryingExecutor(hiveConf, () -> {
+    new RetryingExecutor(conf, () -> {
       Query query = pm.newQuery("javax.jdo.query.SQL", selectForUpdateQuery);
       query.setUnique(true);
       // only need to execute it to get db Lock
@@ -8536,13 +8534,10 @@ public class ObjectStore implements RawStore, Configurable {
     private final Command command;
 
     RetryingExecutor(Configuration config, Command command) {
-      this.maxRetries = config.getInt(ConfVars.NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES.name(),
-          ConfVars.NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES.defaultIntVal);
-      this.sleepInterval = config.getTimeDuration(
-          ConfVars.NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL.name(),
-          ConfVars.NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL.defaultLongVal,
-          TimeUnit.MILLISECONDS
-      );
+      this.maxRetries =
+          MetastoreConf.getIntVar(config, ConfVars.NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES);
+      this.sleepInterval = MetastoreConf.getTimeVar(config,
+          ConfVars.NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
       this.command = command;
     }
 

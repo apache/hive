@@ -499,12 +499,6 @@ public class MetastoreConf {
         "A comma separated list of metrics reporters to start"),
     MULTITHREADED("javax.jdo.option.Multithreaded", "javax.jdo.option.Multithreaded", true,
         "Set this to true if multiple threads access metastore through JDO concurrently."),
-    ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS("metastore.orm.retrieveMapNullsAsEmptyStrings",
-        "hive.metastore.orm.retrieveMapNullsAsEmptyStrings",false,
-        "Thrift does not support nulls in maps, so any nulls present in maps retrieved from ORM must " +
-            "either be pruned or converted to empty strings. Some backing dbs such as Oracle persist empty strings " +
-            "as nulls, so we should set this parameter if we wish to reverse that behaviour. For others, " +
-            "pruning is the correct behaviour"),
     MAX_OPEN_TXNS("metastore.max.open.txns", "hive.max.open.txns", 100000,
         "Maximum number of open transactions. If \n" +
         "current open transactions reach this limit, future open transaction requests will be \n" +
@@ -512,6 +506,21 @@ public class MetastoreConf {
     NON_TRANSACTIONAL_READ("javax.jdo.option.NonTransactionalRead",
         "javax.jdo.option.NonTransactionalRead", true,
         "Reads outside of transactions"),
+    NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES("metastore.notification.sequence.lock.max.retries",
+        "hive.notification.sequence.lock.max.retries", 5,
+        "Number of retries required to acquire a lock when getting the next notification sequential ID for entries "
+            + "in the NOTIFICATION_LOG table."),
+    NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL(
+        "metastore.notification.sequence.lock.retry.sleep.interval",
+        "hive.notification.sequence.lock.retry.sleep.interval", 500, TimeUnit.MILLISECONDS,
+        "Sleep interval between retries to acquire a notification lock as described part of property "
+            + NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES.name()),
+    ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS("metastore.orm.retrieveMapNullsAsEmptyStrings",
+        "hive.metastore.orm.retrieveMapNullsAsEmptyStrings",false,
+        "Thrift does not support nulls in maps, so any nulls present in maps retrieved from ORM must " +
+            "either be pruned or converted to empty strings. Some backing dbs such as Oracle persist empty strings " +
+            "as nulls, so we should set this parameter if we wish to reverse that behaviour. For others, " +
+            "pruning is the correct behaviour"),
     PARTITION_NAME_WHITELIST_PATTERN("metastore.partition.name.whitelist.pattern",
         "hive.metastore.partition.name.whitelist.pattern", "",
         "Partition names will be checked against this regex pattern and rejected if not matched."),
