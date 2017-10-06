@@ -555,7 +555,7 @@ public abstract class HadoopThriftAuthBridge {
           // It calls custom Authentication module
           this.customProvider.authenticate(userName, userPassword);
         } catch (AuthenticationException e) {
-          throw new InvalidToken("ERROR: ugi="+userName+" is not allowed");
+          throw new InvalidToken("ERROR: ugi="+userName+" is not allowed (" + e.getMessage() + ")");
         }
 
         if (ac != null) {
