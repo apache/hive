@@ -64,7 +64,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * StatsNoJobTask is used in cases where stats collection is the only task for the given query (no
- * parent MR or Tez job). It is used in the following cases 1) ANALYZE with partialscan/noscan for
+ * parent MR or Tez job). It is used in the following cases 1) ANALYZE with noscan for
  * file formats that implement StatsProvidingRecordReader interface: ORC format (implements
  * StatsProvidingRecordReader) stores column statistics for all columns in the file footer. Its much
  * faster to compute the table/partition statistics by reading the footer than scanning all the

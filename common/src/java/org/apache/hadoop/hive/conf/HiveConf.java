@@ -1722,7 +1722,7 @@ public class HiveConf extends Configuration {
         "analyze table T compute statistics for columns. Queries like these should compute partition"
         + "level stats for partitioned table even when no part spec is specified."),
     HIVE_STATS_GATHER_NUM_THREADS("hive.stats.gather.num.threads", 10,
-        "Number of threads used by partialscan/noscan analyze command for partitioned tables.\n" +
+        "Number of threads used by noscan analyze command for partitioned tables.\n" +
         "This is applicable only for file formats that implement StatsProvidingRecordReader (like ORC)."),
     // Collect table access keys information for operators that can benefit from bucketing
     HIVE_STATS_COLLECT_TABLEKEYS("hive.stats.collect.tablekeys", false,
@@ -4119,10 +4119,14 @@ public class HiveConf extends Configuration {
   public static String[] getTrimmedStringsVar(Configuration conf, ConfVars var) {
     assert (var.valClass == String.class) : var.varname;
     String[] result = conf.getTrimmedStrings(var.varname, (String[])null);
-    if (result != null) return result;
+    if (result != null) {
+      return result;
+    }
     if (var.altName != null) {
       result = conf.getTrimmedStrings(var.altName, (String[])null);
-      if (result != null) return result;
+      if (result != null) {
+        return result;
+      }
     }
     return org.apache.hadoop.util.StringUtils.getTrimmedStrings(var.defaultStrVal);
   }
@@ -4824,7 +4828,9 @@ public class HiveConf extends Configuration {
   public static String getNonMrEngines() {
     String result = "";
     for (String s : ConfVars.HIVE_EXECUTION_ENGINE.getValidStringValues()) {
-      if ("mr".equals(s)) continue;
+      if ("mr".equals(s)) {
+        continue;
+      }
       if (!result.isEmpty()) {
         result += ", ";
       }
@@ -4845,7 +4851,9 @@ public class HiveConf extends Configuration {
   public static HashMap<String, ConfVars> getOrCreateReverseMap() {
     // This should be called rarely enough; for now it's ok to just lock every time.
     synchronized (reverseMapLock) {
-      if (reverseMap != null) return reverseMap;
+      if (reverseMap != null) {
+        return reverseMap;
+      }
     }
     HashMap<String, ConfVars> vars = new HashMap<>();
     for (ConfVars val : ConfVars.values()) {
@@ -4855,7 +4863,9 @@ public class HiveConf extends Configuration {
       }
     }
     synchronized (reverseMapLock) {
-      if (reverseMap != null) return reverseMap;
+      if (reverseMap != null) {
+        return reverseMap;
+      }
       reverseMap = vars;
       return reverseMap;
     }

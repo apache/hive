@@ -1539,9 +1539,9 @@ analyzeStatement
 @after { popMsg(state); }
     : KW_ANALYZE KW_TABLE (parttype=tableOrPartition)
       (
-      (KW_COMPUTE) => KW_COMPUTE KW_STATISTICS ((noscan=KW_NOSCAN) | (partialscan=KW_PARTIALSCAN)
+      (KW_COMPUTE) => KW_COMPUTE KW_STATISTICS ((noscan=KW_NOSCAN)
                                                       | (KW_FOR KW_COLUMNS (statsColumnName=columnNameList)?))?
-      -> ^(TOK_ANALYZE $parttype $noscan? $partialscan? KW_COLUMNS? $statsColumnName?)
+      -> ^(TOK_ANALYZE $parttype $noscan? KW_COLUMNS? $statsColumnName?)
       |
       (KW_CACHE) => KW_CACHE KW_METADATA -> ^(TOK_CACHE_METADATA $parttype)
       )

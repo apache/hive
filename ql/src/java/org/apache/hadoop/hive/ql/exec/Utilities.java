@@ -82,8 +82,6 @@ import org.apache.hadoop.hive.ql.io.ReworkMapredInputFormat;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileMapper;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
-import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanMapper;
-import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanWork;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateMapper;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateWork;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -447,8 +445,6 @@ public final class Utilities {
             gWork = SerializationUtilities.deserializePlan(kryo, in, MergeFileWork.class);
           } else if(ColumnTruncateMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
             gWork = SerializationUtilities.deserializePlan(kryo, in, ColumnTruncateWork.class);
-          } else if(PartialScanMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, PartialScanWork.class);
           } else {
             throw new RuntimeException("unable to determine work from configuration ."
                 + MAPRED_MAPPER_CLASS + " was "+ conf.get(MAPRED_MAPPER_CLASS)) ;
@@ -2179,7 +2175,9 @@ public final class Utilities {
    */
   @VisibleForTesting
   static int getMaxExecutorsForInputListing(final Configuration conf, int inputLocationListSize) {
-    if (inputLocationListSize < 1) return 0;
+    if (inputLocationListSize < 1) {
+      return 0;
+    }
 
     int maxExecutors = 1;
 
@@ -3114,8 +3112,9 @@ public final class Utilities {
       boolean hasLogged = false;
       // Note: this copies the list because createDummyFileForEmptyPartition may modify the map.
       for (Path file : new LinkedList<Path>(work.getPathToAliases().keySet())) {
-        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
+        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT) {
           throw new IOException("Operation is Canceled.");
+        }
 
         List<String> aliases = work.getPathToAliases().get(file);
         if (aliases.contains(alias)) {
@@ -3611,8 +3610,9 @@ public final class Utilities {
   public static boolean skipHeader(RecordReader<WritableComparable, Writable> currRecReader,
       int headerCount, WritableComparable key, Writable value) throws IOException {
     while (headerCount > 0) {
-      if (!currRecReader.next(key, value))
+      if (!currRecReader.next(key, value)) {
         return false;
+      }
       headerCount--;
     }
     return true;

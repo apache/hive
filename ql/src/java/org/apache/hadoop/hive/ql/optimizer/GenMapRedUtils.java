@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,11 +40,8 @@ import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DemuxOperator;
@@ -1974,33 +1970,6 @@ public final class GenMapRedUtils {
       return new ArrayList<String>(tblSpec.getPartSpec().keySet());
     }
     return Collections.emptyList();
-  }
-
-  public static List<Path> getInputPathsForPartialScan(TableScanOperator tableScanOp,
-          Appendable aggregationKey) throws SemanticException {
-    List<Path> inputPaths = new ArrayList<Path>();
-    switch (tableScanOp.getConf().getTableMetadata().getTableSpec().specType) {
-      case TABLE_ONLY:
-        inputPaths.add(tableScanOp.getConf().getTableMetadata()
-                .getTableSpec().tableHandle.getPath());
-        break;
-      case STATIC_PARTITION:
-        Partition part = tableScanOp.getConf().getTableMetadata()
-                .getTableSpec().partHandle;
-        try {
-          aggregationKey.append(Warehouse.makePartPath(part.getSpec()));
-        } catch (MetaException e) {
-          throw new SemanticException(ErrorMsg.ANALYZE_TABLE_PARTIALSCAN_AGGKEY.getMsg(
-              part.getDataLocation().toString() + e.getMessage()));
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-        inputPaths.add(part.getDataLocation());
-        break;
-      default:
-        assert false;
-    }
-    return inputPaths;
   }
 
   public static Set<String> findAliases(final MapWork work, Operator<?> startOp) {

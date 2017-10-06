@@ -327,19 +327,8 @@ public enum ErrorMsg {
   OPERATOR_NOT_ALLOWED_WITH_MAPJOIN(10227,
     "Not all clauses are supported with mapjoin hint. Please remove mapjoin hint."),
 
-  ANALYZE_TABLE_NOSCAN_NON_NATIVE(10228, "ANALYZE TABLE NOSCAN cannot be used for "
-      + "a non-native table"),
+  ANALYZE_TABLE_NOSCAN_NON_NATIVE(10228, "ANALYZE TABLE NOSCAN cannot be used for " + "a non-native table"),
 
-  ANALYZE_TABLE_PARTIALSCAN_NON_NATIVE(10229, "ANALYZE TABLE PARTIALSCAN cannot be used for "
-      + "a non-native table"),
-  ANALYZE_TABLE_PARTIALSCAN_NON_RCFILE(10230, "ANALYZE TABLE PARTIALSCAN doesn't "
-      + "support non-RCfile. "),
-  ANALYZE_TABLE_PARTIALSCAN_EXTERNAL_TABLE(10231, "ANALYZE TABLE PARTIALSCAN "
-      + "doesn't support external table: "),
-  ANALYZE_TABLE_PARTIALSCAN_AGGKEY(10232, "Analyze partialscan command "
-            + "fails to construct aggregation for the partition "),
-  ANALYZE_TABLE_PARTIALSCAN_AUTOGATHER(10233, "Analyze partialscan is not allowed " +
-            "if hive.stats.autogather is set to false"),
   PARTITION_VALUE_NOT_CONTINUOUS(10234, "Partition values specified are not continuous." +
             " A subpartition value is specified without specifying the parent partition's value"),
   TABLES_INCOMPATIBLE_SCHEMAS(10235, "Tables have incompatible schemas and their partitions " +
@@ -606,11 +595,21 @@ public enum ErrorMsg {
    * @return ErrorMsg
    */
   public static ErrorMsg getErrorMsg(Exception e) {
-    if (e instanceof AccessControlException) return ACCESS_DENIED;
-    if (e instanceof NSQuotaExceededException) return QUOTA_EXCEEDED;
-    if (e instanceof DSQuotaExceededException) return QUOTA_EXCEEDED;
-    if (e instanceof UnresolvedPathException) return UNRESOLVED_PATH;
-    if (e instanceof FileNotFoundException) return FILE_NOT_FOUND;
+    if (e instanceof AccessControlException) {
+      return ACCESS_DENIED;
+    }
+    if (e instanceof NSQuotaExceededException) {
+      return QUOTA_EXCEEDED;
+    }
+    if (e instanceof DSQuotaExceededException) {
+      return QUOTA_EXCEEDED;
+    }
+    if (e instanceof UnresolvedPathException) {
+      return UNRESOLVED_PATH;
+    }
+    if (e instanceof FileNotFoundException) {
+      return FILE_NOT_FOUND;
+    }
     return UNRESOLVED_RT_EXCEPTION;
   }
 
