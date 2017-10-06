@@ -123,18 +123,12 @@ class TextMetaDataFormatter implements MetaDataFormatter {
   @Override
   public void describeTable(DataOutputStream outStream,  String colPath,
       String tableName, Table tbl, Partition part, List<FieldSchema> cols,
-      boolean isFormatted, boolean isExt, boolean isPretty,
+      boolean isFormatted, boolean isExt,
       boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
       PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
       UniqueConstraint ukInfo, NotNullConstraint nnInfo) throws HiveException {
     try {
       List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
-
-      if (isPretty) {
-        String output = MetaDataPrettyFormatUtils.getAllColumnsInformation(cols, partCols, prettyOutputNumCols);
-        outStream.write(output.getBytes("UTF-8"));
-        return;
-      }
       String output = "";
 
       boolean isColStatsAvailable = colStats != null;

@@ -3501,7 +3501,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
       formatter.describeTable(outStream, colPath, tableName, tbl, part,
           cols, descTbl.isFormatted(), descTbl.isExt(),
-          descTbl.isPretty(), isOutputPadded, colStats,
+          isOutputPadded, colStats,
           pkInfo, fkInfo, ukInfo, nnInfo);
 
       LOG.debug("DDLTask: written data for " + tbl.getTableName());

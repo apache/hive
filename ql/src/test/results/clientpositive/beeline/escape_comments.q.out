@@ -118,24 +118,6 @@ Bucket Columns:     	[]                  	NULL
 Sort Columns:       	[]                  	NULL
 Storage Desc Params:	NULL	NULL
 	serialization.format	1                   
-PREHOOK: query: describe pretty escape_comments_tbl1
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: escape_comments_db@escape_comments_tbl1
-POSTHOOK: query: describe pretty escape_comments_tbl1
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
-col_name 	data_type     	comment
-		
-col1     	string        	a
-         	              	b';
-p1       	string        	a
-         	              	b
-	NULL	NULL
-# Partition Information	NULL	NULL
-col_name 	data_type     	comment
-		
-p1       	string        	a
-         	              	b
 PREHOOK: query: describe escape_comments_tbl1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: escape_comments_db@escape_comments_tbl1

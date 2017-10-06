@@ -11,7 +11,6 @@ describe database extended escape_comments_db;
 describe database escape_comments_db;
 show create table escape_comments_tbl1;
 describe formatted escape_comments_tbl1;
-describe pretty escape_comments_tbl1;
 describe escape_comments_tbl1;
 show create table escape_comments_view1;
 describe formatted escape_comments_view1;

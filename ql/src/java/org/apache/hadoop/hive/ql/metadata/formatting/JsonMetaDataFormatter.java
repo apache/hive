@@ -105,7 +105,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
   @Override
   public void describeTable(DataOutputStream out, String colPath,
       String tableName, Table tbl, Partition part, List<FieldSchema> cols,
-      boolean isFormatted, boolean isExt, boolean isPretty,
+      boolean isFormatted, boolean isExt,
       boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
       PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
       UniqueConstraint ukInfo, NotNullConstraint nnInfo) throws HiveException {
@@ -362,8 +362,9 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       String[] kv = StringUtils.split(part, "=", 2);
       if (kv != null) {
         name = kv[0];
-        if (kv.length > 1)
+        if (kv.length > 1) {
           val = URLDecoder.decode(kv[1], "UTF-8");
+        }
       }
       if (val != null) {
         names.add(name + "='" + val + "'");

@@ -591,8 +591,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    if (colType == null)
+    if (colType == null) {
       throw new SemanticException("column type not found");
+    }
 
     ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tbl.getDbName() + "." + tbl.getTableName(),
         Arrays.asList(colName), Arrays.asList(colType), partSpec == null);
@@ -1799,7 +1800,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     LinkedHashMap<String, String> newPartSpec = null;
-    if (partSpec != null) newPartSpec = new LinkedHashMap<String, String>(partSpec);
+    if (partSpec != null) {
+      newPartSpec = new LinkedHashMap<String, String>(partSpec);
+    }
 
     HashMap<String, String> mapProp = null;
     boolean isBlocking = false;
@@ -2091,7 +2094,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       int descOptions = ast.getChild(1).getType();
       descTblDesc.setFormatted(descOptions == HiveParser.KW_FORMATTED);
       descTblDesc.setExt(descOptions == HiveParser.KW_EXTENDED);
-      descTblDesc.setPretty(descOptions == HiveParser.KW_PRETTY);
       // in case of "DESCRIBE FORMATTED tablename column_name" statement, colPath
       // will contain tablename.column_name. If column_name is not specified
       // colPath will be equal to tableName. This is how we can differentiate
@@ -2897,7 +2899,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs =
         getFullPartitionSpecs(ast, tab, canGroupExprs);
-    if (partSpecs.isEmpty()) return; // nothing to do
+    if (partSpecs.isEmpty())
+     {
+      return; // nothing to do
+    }
 
     validateAlterTableType(tab, AlterTableTypes.DROPPARTITION, expectView);
     ReadEntity re = new ReadEntity(tab);
@@ -3232,7 +3237,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         new HashMap<Integer, List<ExprNodeGenericFuncDesc>>();
     for (int childIndex = 0; childIndex < ast.getChildCount(); childIndex++) {
       Tree partSpecTree = ast.getChild(childIndex);
-      if (partSpecTree.getType() != HiveParser.TOK_PARTSPEC) continue;
+      if (partSpecTree.getType() != HiveParser.TOK_PARTSPEC) {
+        continue;
+      }
       ExprNodeGenericFuncDesc expr = null;
       HashSet<String> names = new HashSet<String>(partSpecTree.getChildCount());
       for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
@@ -3284,7 +3291,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         expr = (expr == null) ? op : makeBinaryPredicate("and", expr, op);
         names.add(key);
       }
-      if (expr == null) continue;
+      if (expr == null) {
+        continue;
+      }
       // We got the expr for one full partition spec. Determine the prefix length.
       int prefixLength = calculatePartPrefix(tab, names);
       List<ExprNodeGenericFuncDesc> orExpr = result.get(prefixLength);
@@ -3323,7 +3332,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private int calculatePartPrefix(Table tbl, HashSet<String> partSpecKeys) {
     int partPrefixToDrop = 0;
     for (FieldSchema fs : tbl.getPartCols()) {
-      if (!partSpecKeys.contains(fs.getName())) break;
+      if (!partSpecKeys.contains(fs.getName())) {
+        break;
+      }
       ++partPrefixToDrop;
     }
     return partPrefixToDrop;
