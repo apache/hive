@@ -273,6 +273,7 @@ PREHOOK: Input: default@test_table1@ds=1
 PREHOOK: Input: default@test_table2
 PREHOOK: Input: default@test_table2@ds=1
 PREHOOK: Output: default@test_table3@ds=1
+Hive Runtime Error: Map local work failed
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
@@ -551,6 +552,7 @@ PREHOOK: Input: default@test_table1@ds=1
 PREHOOK: Input: default@test_table2
 PREHOOK: Input: default@test_table2@ds=1
 PREHOOK: Output: default@test_table3@ds=1
+Hive Runtime Error: Map local work failed
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
