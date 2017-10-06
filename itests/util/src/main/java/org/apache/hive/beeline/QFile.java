@@ -67,6 +67,8 @@ public final class QFile {
 
   private static final String MASK_PATTERN = "#### A masked pattern was here ####\n";
 
+  private static final String[] COMMANDS_TO_REMOVE = {"EXPLAIN", "DESCRIBE[\\s\\n]+EXTENDED", "DESCRIBE[\\s\\n]+FORMATTED"};
+
   private String name;
   private String databaseName;
   private File inputFile;
@@ -77,9 +79,11 @@ public final class QFile {
   private File beforeExecuteLogFile;
   private File afterExecuteLogFile;
   private static RegexFilterSet staticFilterSet = getStaticFilterSet();
+  private static RegexFilterSet portableFilterSet = getPortableFilterSet();
   private RegexFilterSet specificFilterSet;
   private boolean rewriteSourceTables;
   private Converter converter;
+  private boolean comparePortable;
 
   private QFile() {}
 
@@ -197,6 +201,9 @@ public final class QFile {
 
   public void filterOutput() throws IOException {
     String output = FileUtils.readFileToString(rawOutputFile, "UTF-8");
+    if (comparePortable) {
+      output = portableFilterSet.filter(output);
+    }
     output = staticFilterSet.filter(specificFilterSet.filter(output));
     if (rewriteSourceTables) {
       output = sortInputOutput(revertReplaceTableNames(output));
@@ -286,6 +293,11 @@ public final class QFile {
       return this;
     }
 
+    public RegexFilterSet addFilter(String regex, int flags, String replacement) {
+      regexFilters.add(new Filter(Pattern.compile(regex, flags), replacement));
+      return this;
+    }
+
     public String filter(String input) {
       for (Filter filter : regexFilters) {
         input = filter.pattern.matcher(input).replaceAll(filter.replacement);
@@ -314,6 +326,22 @@ public final class QFile {
   }
 
   /**
+   * If the test.beeline.compare.portable system property is true,
+   * the commands, listed in the COMMANDS_TO_REMOVE array will be removed
+   * from the out files before comparison.
+   * @return The regex filters to apply to remove the commands from the out files.
+   */
+  private static RegexFilterSet getPortableFilterSet() {
+    RegexFilterSet filterSet = new RegexFilterSet();
+    String regex = "PREHOOK: query:\\s+%s[\\n\\s]+.*?(?=(PREHOOK: query:|$))";
+    for (String command : COMMANDS_TO_REMOVE) {
+      filterSet.addFilter(String.format(regex, command),
+          Pattern.DOTALL | Pattern.CASE_INSENSITIVE, "");
+    }
+    return filterSet;
+  }
+
+  /**
    * Builder to generate QFile objects. After initializing the builder it is possible the
    * generate the next QFile object using it's name only.
    */
@@ -322,6 +350,7 @@ public final class QFile {
     private File logDirectory;
     private File resultsDirectory;
     private boolean rewriteSourceTables;
+    private boolean comparePortable;
 
     public QFileBuilder() {
     }
@@ -346,6 +375,11 @@ public final class QFile {
       return this;
     }
 
+    public QFileBuilder setComparePortable(boolean compareProtable) {
+      this.comparePortable = compareProtable;
+      return this;
+    }
+
     public QFile getQFile(String name) throws IOException {
       QFile result = new QFile();
       result.name = name;
@@ -353,7 +387,6 @@ public final class QFile {
       result.inputFile = new File(queryDirectory, name + ".q");
       result.rawOutputFile = new File(logDirectory, name + ".q.out.raw");
       result.outputFile = new File(logDirectory, name + ".q.out");
-      result.expectedOutputFile = new File(resultsDirectory, name + ".q.out");
       result.logFile = new File(logDirectory, name + ".q.beeline");
       result.beforeExecuteLogFile = new File(logDirectory, name + ".q.beforeExecute.log");
       result.afterExecuteLogFile = new File(logDirectory, name + ".q.afterExecute.log");
@@ -377,7 +410,31 @@ public final class QFile {
       if (input.contains("-- SORT_AND_HASH_QUERY_RESULTS")) {
         result.converter = Converter.SORT_AND_HASH_QUERY_RESULTS;
       }
+
+      result.comparePortable = comparePortable;
+      result.expectedOutputFile = prepareExpectedOutputFile(name, comparePortable);
       return result;
+    }
+
+    /**
+     * Prepare the output file and apply the necessary filters on it.
+     * @param name
+     * @param comparePortable If this parameter is true, the commands, listed in the
+     * COMMANDS_TO_REMOVE array will be filtered out in the output file.
+     * @return The expected output file.
+     * @throws IOException
+     */
+    private File prepareExpectedOutputFile (String name, boolean comparePortable) throws IOException {
+      if (!comparePortable) {
+        return new File(resultsDirectory, name + ".q.out");
+      } else {
+        File rawExpectedOutputFile = new File(resultsDirectory, name + ".q.out");
+        String rawOutput = FileUtils.readFileToString(rawExpectedOutputFile, "UTF-8");
+        rawOutput = portableFilterSet.filter(rawOutput);
+        File expectedOutputFile = new File(logDirectory, name + ".q.out.portable");
+        FileUtils.writeStringToFile(expectedOutputFile, rawOutput);
+        return expectedOutputFile;
+      }
     }
   }
 }

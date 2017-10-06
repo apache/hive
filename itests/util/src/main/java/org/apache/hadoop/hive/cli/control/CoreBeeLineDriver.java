@@ -88,17 +88,20 @@ public class CoreBeeLineDriver extends CliAdapter {
     return miniHS2;
   }
 
+  boolean getBooleanPropertyValue(String name, boolean defaultValue) {
+    String value = System.getProperty(name);
+    if (value == null) {
+      return defaultValue;
+    }
+    return Boolean.parseBoolean(value);
+  }
+
   @Override
   @BeforeClass
   public void beforeClass() throws Exception {
-    String testOutputOverwrite = System.getProperty("test.output.overwrite");
-    if (testOutputOverwrite != null && "true".equalsIgnoreCase(testOutputOverwrite)) {
-      overwrite = true;
-    }
-    String testRewriteSourceTables = System.getProperty("test.rewrite.source.tables");
-    if (testRewriteSourceTables != null && "false".equalsIgnoreCase(testRewriteSourceTables)) {
-      rewriteSourceTables = false;
-    }
+    overwrite = getBooleanPropertyValue("test.output.overwrite", Boolean.FALSE);
+
+    rewriteSourceTables = getBooleanPropertyValue("test.rewrite.source.tables", Boolean.TRUE);
 
     String beeLineUrl = System.getProperty("test.beeline.url");
     if (StringUtils.isEmpty(beeLineUrl)) {
@@ -112,11 +115,15 @@ public class CoreBeeLineDriver extends CliAdapter {
         .setUsername(System.getProperty("test.beeline.user", "user"))
         .setPassword(System.getProperty("test.beeline.password", "password"));
 
+    boolean comparePortable =
+        getBooleanPropertyValue("test.beeline.compare.portable", Boolean.FALSE);
+
     fileBuilder = new QFileBuilder()
         .setLogDirectory(logDirectory)
         .setQueryDirectory(queryDirectory)
         .setResultsDirectory(resultsDirectory)
-        .setRewriteSourceTables(rewriteSourceTables);
+        .setRewriteSourceTables(rewriteSourceTables)
+        .setComparePortable(comparePortable);
 
     runInfraScript(initScript, new File(logDirectory, "init.beeline"),
         new File(logDirectory, "init.raw"));
