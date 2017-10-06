@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -60,6 +59,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
@@ -68,7 +68,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 
 public class CompactIndexHandler extends TableBasedIndexHandler {
 
-  private Configuration configuration;
   // The names of the partition columns
   private Set<String> partitionCols;
   // Whether or not the conditions have been met to use the fact the index is sorted
@@ -103,8 +102,9 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     StringBuilder command= new StringBuilder();
     LinkedHashMap<String, String> partSpec = indexTblPartDesc.getPartSpec();
 
-    command.append("INSERT OVERWRITE TABLE " +
-        HiveUtils.unparseIdentifier(dbName) + "." + HiveUtils.unparseIdentifier(indexTableName ));
+    String fullIndexTableName = StatsUtils.getFullyQualifiedTableName(HiveUtils.unparseIdentifier(dbName),
+        HiveUtils.unparseIdentifier(indexTableName));
+    command.append("INSERT OVERWRITE TABLE " + fullIndexTableName);
     if (partitioned && indexTblPartDesc != null) {
       command.append(" PARTITION ( ");
       List<String> ret = getPartKVPairStringArray(partSpec);
@@ -118,6 +118,8 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
       command.append(" ) ");
     }
 
+    String fullBaseTableName = StatsUtils.getFullyQualifiedTableName(HiveUtils.unparseIdentifier(dbName),
+        HiveUtils.unparseIdentifier(baseTableName));
     command.append(" SELECT ");
     command.append(indexCols);
     command.append(",");
@@ -127,8 +129,7 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     command.append(" collect_set (");
     command.append(VirtualColumn.BLOCKOFFSET.getName());
     command.append(") ");
-    command.append(" FROM " +
-        HiveUtils.unparseIdentifier(dbName) + "." + HiveUtils.unparseIdentifier(baseTableName));
+    command.append(" FROM " + fullBaseTableName);
     LinkedHashMap<String, String> basePartSpec = baseTablePartDesc.getPartSpec();
     if(basePartSpec != null) {
       command.append(" WHERE ");

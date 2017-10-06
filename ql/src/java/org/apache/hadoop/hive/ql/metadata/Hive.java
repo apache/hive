@@ -607,10 +607,15 @@ public class Hive {
     createTable(tbl);
   }
 
+  public void alterTable(Table newTbl, EnvironmentContext environmentContext)
+      throws InvalidOperationException, HiveException {
+    alterTable(newTbl.getDbName(), newTbl.getTableName(), newTbl, false, environmentContext);
+  }
+
   /**
    * Updates the existing table metadata with the new metadata.
    *
-   * @param tblName
+   * @param fullyQlfdTblName
    *          name of the existing table
    * @param newTbl
    *          new name of the table. could be the old name
@@ -618,14 +623,21 @@ public class Hive {
    *           if the changes in metadata is not acceptable
    * @throws TException
    */
-  public void alterTable(String tblName, Table newTbl, EnvironmentContext environmentContext)
+  public void alterTable(String fullyQlfdTblName, Table newTbl, EnvironmentContext environmentContext)
       throws InvalidOperationException, HiveException {
-    alterTable(tblName, newTbl, false, environmentContext);
+    alterTable(fullyQlfdTblName, newTbl, false, environmentContext);
   }
 
-  public void alterTable(String tblName, Table newTbl, boolean cascade, EnvironmentContext environmentContext)
+  public void alterTable(String fullyQlfdTblName, Table newTbl, boolean cascade, EnvironmentContext environmentContext)
       throws InvalidOperationException, HiveException {
-    String[] names = Utilities.getDbTableName(tblName);
+    String[] names = Utilities.getDbTableName(fullyQlfdTblName);
+    alterTable(names[0], names[1], newTbl, cascade, environmentContext);
+  }
+
+  public void alterTable(String dbName, String tblName, Table newTbl, boolean cascade,
+      EnvironmentContext environmentContext)
+      throws InvalidOperationException, HiveException {
+
     try {
       // Remove the DDL_TIME so it gets refreshed
       if (newTbl.getParameters() != null) {
@@ -638,7 +650,7 @@ public class Hive {
       if (cascade) {
         environmentContext.putToProperties(StatsSetupConst.CASCADE, StatsSetupConst.TRUE);
       }
-      getMSC().alter_table_with_environmentContext(names[0], names[1], newTbl.getTTable(), environmentContext);
+      getMSC().alter_table_with_environmentContext(dbName, tblName, newTbl.getTTable(), environmentContext);
     } catch (MetaException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
     } catch (TException e) {
@@ -2306,7 +2318,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
     }
     try {
-      alterTable(tableName, tbl, environmentContext);
+      alterTable(tbl, environmentContext);
     } catch (InvalidOperationException e) {
       throw new HiveException(e);
     }
@@ -2558,7 +2570,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     alterPartitionSpecInMemory(tbl, partSpec, tpart, inheritTableSpecs, partPath);
     String fullName = tbl.getTableName();
     if (!org.apache.commons.lang.StringUtils.isEmpty(tbl.getDbName())) {
-      fullName = tbl.getDbName() + "." + tbl.getTableName();
+      fullName = tbl.getFullyQualifiedName();
     }
     alterPartition(fullName, new Partition(tbl, tpart), null);
   }

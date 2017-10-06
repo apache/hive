@@ -398,7 +398,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       qb.setAnalyzeRewrite(true);
       qbp = qb.getParseInfo();
       analyzeRewrite = new AnalyzeRewriteContext();
-      analyzeRewrite.setTableName(tbl.getDbName() + "." + tbl.getTableName());
+      analyzeRewrite.setTableName(tbl.getFullyQualifiedName());
       analyzeRewrite.setTblLvl(isTableLevel);
       analyzeRewrite.setColName(colNames);
       analyzeRewrite.setColType(colType);
@@ -451,7 +451,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     rewrittenTree = genRewrittenTree(rewrittenQuery);
 
     context.analyzeRewrite = new AnalyzeRewriteContext();
-    context.analyzeRewrite.setTableName(tbl.getDbName() + "." + tbl.getTableName());
+    context.analyzeRewrite.setTableName(tbl.getFullyQualifiedName());
     context.analyzeRewrite.setTblLvl(isTableLevel);
     context.analyzeRewrite.setColName(colNames);
     context.analyzeRewrite.setColType(colType);

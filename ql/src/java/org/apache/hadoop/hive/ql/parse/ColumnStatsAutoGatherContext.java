@@ -247,7 +247,7 @@ public class ColumnStatsAutoGatherContext {
   }
 
   public String getCompleteName() {
-    return tbl.getDbName() + "." + tbl.getTableName();
+    return tbl.getFullyQualifiedName();
   }
 
   public boolean isInsertInto() {

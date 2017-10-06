@@ -103,7 +103,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
       tableName = work.getTableSpecs().tableName;
       table = db.getTable(tableName);
       int numThreads = HiveConf.getIntVar(conf, ConfVars.HIVE_STATS_GATHER_NUM_THREADS);
-      tableFullName = table.getDbName() + "." + table.getTableName();
+      tableFullName = table.getFullyQualifiedName();
       threadPool = Executors.newFixedThreadPool(numThreads,
           new ThreadFactoryBuilder().setDaemon(true).setNameFormat("StatsNoJobTask-Thread-%d")
               .build());
@@ -283,7 +283,7 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
             EnvironmentContext environmentContext = new EnvironmentContext();
             environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
 
-            db.alterTable(tableFullName, new Table(tTable), environmentContext);
+            db.alterTable(table, environmentContext);
 
             String msg = "Table " + tableFullName + " stats: [" + toString(parameters) + ']';
             if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {

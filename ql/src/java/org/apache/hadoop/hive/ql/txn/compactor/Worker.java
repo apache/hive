@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 
@@ -258,12 +259,15 @@ public class Worker extends CompactorThread {
         return;
       }
       if(columnList.isEmpty()) {
-        LOG.debug("No existing stats for " + ci.dbname + "." + ci.tableName + " found.  Will not run analyze.");
+        LOG.debug("No existing stats for "
+            + StatsUtils.getFullyQualifiedTableName(ci.dbname, ci.tableName)
+            + " found.  Will not run analyze.");
         return;//nothing to do
       }
       //e.g. analyze table page_view partition(dt='10/15/2014',country=’US’)
       // compute statistics for columns viewtime
-      StringBuilder sb = new StringBuilder("analyze table ").append(ci.dbname).append(".").append(ci.tableName);
+      StringBuilder sb = new StringBuilder("analyze table ")
+          .append(StatsUtils.getFullyQualifiedTableName(ci.dbname, ci.tableName));
       if(ci.partName != null) {
         try {
           sb.append(" partition(");

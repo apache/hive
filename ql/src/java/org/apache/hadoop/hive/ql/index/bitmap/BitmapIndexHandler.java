@@ -28,7 +28,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -51,6 +50,7 @@ import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
@@ -233,8 +233,9 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
     StringBuilder command= new StringBuilder();
     LinkedHashMap<String, String> partSpec = indexTblPartDesc.getPartSpec();
 
-    command.append("INSERT OVERWRITE TABLE " +
-        HiveUtils.unparseIdentifier(dbName) + "." + HiveUtils.unparseIdentifier(indexTableName ));
+    String fullIndexTableName = StatsUtils.getFullyQualifiedTableName(HiveUtils.unparseIdentifier(dbName),
+        HiveUtils.unparseIdentifier(indexTableName));
+    command.append("INSERT OVERWRITE TABLE " + fullIndexTableName);
     if (partitioned && indexTblPartDesc != null) {
       command.append(" PARTITION ( ");
       List<String> ret = getPartKVPairStringArray(partSpec);
@@ -248,6 +249,8 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
       command.append(" ) ");
     }
 
+    String fullBaseTableName = StatsUtils.getFullyQualifiedTableName(HiveUtils.unparseIdentifier(dbName),
+        HiveUtils.unparseIdentifier(baseTableName));
     command.append(" SELECT ");
     command.append(indexCols);
     command.append(",");
@@ -258,8 +261,7 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
     command.append("EWAH_BITMAP(");
     command.append(VirtualColumn.ROWOFFSET.getName());
     command.append(")");
-    command.append(" FROM " +
-        HiveUtils.unparseIdentifier(dbName) + "." + HiveUtils.unparseIdentifier(baseTableName));
+    command.append(" FROM " + fullBaseTableName);
     LinkedHashMap<String, String> basePartSpec = baseTablePartDesc.getPartSpec();
     if(basePartSpec != null) {
       command.append(" WHERE ");

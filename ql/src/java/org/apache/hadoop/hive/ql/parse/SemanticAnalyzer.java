@@ -2033,7 +2033,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (qb.getParseInfo().isAnalyzeCommand()) {
           throw new SemanticException(ErrorMsg.ANALYZE_VIEW.getMsg());
         }
-        String fullViewName = tab.getDbName() + "." + tab.getTableName();
+        String fullViewName = tab.getFullyQualifiedName();
         // Prevent view cycles
         if (viewsExpanded.contains(fullViewName)) {
           throw new SemanticException("Recursive view " + fullViewName +

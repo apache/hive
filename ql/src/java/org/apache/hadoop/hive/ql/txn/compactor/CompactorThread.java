@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.RawStoreProxy;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -212,6 +213,6 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
   }
 
   protected String tableName(Table t) {
-    return t.getDbName() + "." + t.getTableName();
+    return Warehouse.getQualifiedName(t);
   }
 }

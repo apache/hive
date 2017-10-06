@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.RetryUtilities.RetryException;
@@ -84,7 +85,7 @@ public class TestMsckCreatePartitionsInBatches {
           TextInputFormat.class, HiveIgnoreKeyTextOutputFormat.class);
       return db.getTable(dbName, tableName);
     } catch (Exception exception) {
-      fail("Unable to drop and create table " + dbName + "." + tableName + " because "
+      fail("Unable to drop and create table " + StatsUtils.getFullyQualifiedTableName(dbName, tableName) + " because "
           + StringUtils.stringifyException(exception));
       throw exception;
     }

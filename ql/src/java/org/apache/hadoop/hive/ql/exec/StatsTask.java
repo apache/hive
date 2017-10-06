@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.util.StringUtils;
 
 import com.google.common.collect.Lists;
@@ -170,7 +171,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       List<Partition> partitions = getPartitionsList(db);
       boolean atomic = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_ATOMIC);
 
-      String tableFullName = table.getDbName() + "." + table.getTableName();
+      String tableFullName = table.getFullyQualifiedName();
 
       if (partitions == null) {
         org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
@@ -215,7 +216,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           }
         }
 
-        getHive().alterTable(tableFullName, new Table(tTable), environmentContext);
+        getHive().alterTable(table, environmentContext);
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
           console.printInfo("Table " + tableFullName + " stats: [" + toString(parameters) + ']');
         }
@@ -356,7 +357,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       throws MetaException {
 
     // prefix is of the form dbName.tblName
-    String prefix = table.getDbName() + "." + org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(table.getTableName());
+    String prefix = StatsUtils.getFullyQualifiedTableName(table.getDbName(),
+        org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(table.getTableName()));
     if (partition != null) {
       return Utilities.join(prefix, Warehouse.makePartPath(partition.getSpec()));
     }

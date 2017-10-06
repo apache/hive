@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 import java.io.FileNotFoundException;
 import java.io.Serializable;
@@ -459,7 +460,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     AlterTableDesc alterTblDesc =  new AlterTableDesc(
             AlterTableDesc.AlterTableTypes.ADDPROPS, new ReplicationSpec(replState, replState));
     alterTblDesc.setProps(mapProp);
-    alterTblDesc.setOldName(dbName + "." + tableName);
+    alterTblDesc.setOldName(StatsUtils.getFullyQualifiedTableName(dbName, tableName));
     alterTblDesc.setPartSpec((HashMap<String, String>)partSpec);
 
     Task<? extends Serializable> updateReplIdTask = TaskFactory.get(

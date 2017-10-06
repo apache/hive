@@ -81,6 +81,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -367,10 +368,10 @@ public abstract class BaseSemanticAnalyzer {
       String dbName = dbTablePair.getKey();
       String tableName = dbTablePair.getValue();
       if (dbName != null){
-        return dbName + "." + tableName;
+        return StatsUtils.getFullyQualifiedTableName(dbName, tableName);
       }
       if (currentDatabase != null) {
-        return currentDatabase + "." + tableName;
+        return StatsUtils.getFullyQualifiedTableName(currentDatabase, tableName);
       }
       return tableName;
     } else if (tokenType == HiveParser.StringLiteral) {
@@ -1118,7 +1119,7 @@ public abstract class BaseSemanticAnalyzer {
 
     public TableSpec(Table table) {
       tableHandle = table;
-      tableName = table.getDbName() + "." + table.getTableName();
+      tableName = table.getFullyQualifiedName();
       specType = SpecType.TABLE_ONLY;
     }
 
@@ -1127,7 +1128,7 @@ public abstract class BaseSemanticAnalyzer {
       Table table = db.getTable(tableName);
       final Partition partition = partSpec == null ? null : db.getPartition(table, partSpec, false);
       tableHandle = table;
-      this.tableName = table.getDbName() + "." + table.getTableName();
+      this.tableName = table.getFullyQualifiedName();
       if (partition == null) {
         specType = SpecType.TABLE_ONLY;
       } else {

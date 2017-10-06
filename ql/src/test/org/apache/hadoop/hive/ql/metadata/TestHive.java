@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.index.HiveIndex;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer;
@@ -503,7 +504,7 @@ public class TestHive extends TestCase {
       return hm.getTable(dbName, tableName);
     }
     catch (Exception exception) {
-      fail("Unable to drop and create table " + dbName + "." + tableName
+      fail("Unable to drop and create table " + StatsUtils.getFullyQualifiedTableName(dbName, tableName)
           + " because " + StringUtils.stringifyException(exception));
       throw exception;
     }

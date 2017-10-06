@@ -1215,7 +1215,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throws HiveException {
 
     Table tbl = db.getTable(alterPartitionDesc.getTableName(), true);
-    String tabName = alterPartitionDesc.getTableName();
 
     // This is checked by DDLSemanticAnalyzer
     assert(tbl.isPartitioned());
@@ -1282,9 +1281,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     tbl.getTTable().setPartitionKeys(newPartitionKeys);
 
     try {
-      db.alterTable(tabName, tbl, null);
+      db.alterTable(tbl, null);
     } catch (InvalidOperationException e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "Unable to alter " + tabName);
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "Unable to alter " + tbl.getFullyQualifiedName());
     }
 
     work.getInputs().add(new ReadEntity(tbl));
@@ -1312,7 +1311,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     if (touchDesc.getPartSpec() == null) {
       try {
-        db.alterTable(touchDesc.getTableName(), tbl, environmentContext);
+        db.alterTable(tbl, environmentContext);
       } catch (InvalidOperationException e) {
         throw new HiveException("Uable to update table");
       }
@@ -4610,8 +4609,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     List<SQLForeignKey> foreignKeys = crtTbl.getForeignKeys();
     List<SQLUniqueConstraint> uniqueConstraints = crtTbl.getUniqueConstraints();
     List<SQLNotNullConstraint> notNullConstraints = crtTbl.getNotNullConstraints();
-    LOG.info("creating table {}.{} on {}", tbl.getDbName(), tbl.getTableName(),
-      tbl.getDataLocation());
+    LOG.debug("creating table {} on {}",tbl.getFullyQualifiedName(),tbl.getDataLocation());
 
     if (crtTbl.getReplicationSpec().isInReplicationScope() && (!crtTbl.getReplaceMode())){
       // if this is a replication spec, then replace-mode semantics might apply.
@@ -4635,7 +4633,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (crtTbl.getReplaceMode()) {
       // replace-mode creates are really alters using CreateTableDesc.
       try {
-        db.alterTable(tbl.getDbName()+"."+tbl.getTableName(),tbl,null);
+        db.alterTable(tbl, null);
       } catch (InvalidOperationException e) {
         throw new HiveException("Unable to alter table. " + e.getMessage(), e);
       }

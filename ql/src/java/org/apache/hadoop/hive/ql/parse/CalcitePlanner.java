@@ -881,7 +881,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     ctx.addMaterializedTable(cteName, table);
     // For CalcitePlanner, store qualified name too
-    ctx.addMaterializedTable(table.getDbName() + "." + table.getTableName(), table);
+    ctx.addMaterializedTable(table.getFullyQualifiedName(), table);
 
     return table;
   }

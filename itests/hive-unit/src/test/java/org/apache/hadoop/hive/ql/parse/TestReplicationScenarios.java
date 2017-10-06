@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
@@ -3157,7 +3158,8 @@ public class TestReplicationScenarios {
 	String testName = "deleteStagingDir";
 	String dbName = createDB(testName, driver);
 	String tableName = "unptned";
-    run("CREATE TABLE " + dbName + "." + tableName + "(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + StatsUtils.getFullyQualifiedTableName(dbName, tableName) + "(a string) STORED AS TEXTFILE",
+        driver);
 
     String[] unptn_data = new String[] {"one", "two"};
     String unptn_locn = new Path(TEST_PATH , testName + "_unptn").toUri().getPath();

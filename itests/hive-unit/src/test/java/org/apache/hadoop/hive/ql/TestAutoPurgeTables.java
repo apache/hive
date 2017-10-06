@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
@@ -79,26 +80,28 @@ public class TestAutoPurgeTables {
     } else {
       createTablePrefix = "create table ";
     }
+    String qualifiedTableName = StatsUtils.getFullyQualifiedTableName(testDbName, testTableName);
     if (isPartitioned) {
       // create a partitioned table
-      stmt.execute(createTablePrefix + testDbName + "." + testTableName + " (id int, value string) "
+      stmt.execute(
+          createTablePrefix + qualifiedTableName + " (id int, value string) "
           + " partitioned by (" + partitionedColumnName + " STRING)");
       // load data
-      stmt.execute("insert into " + testDbName + "." + testTableName + " PARTITION ("
+      stmt.execute("insert into " + qualifiedTableName + " PARTITION ("
           + partitionedColumnName + "=" + partitionedColumnValue1
           + ") values (1, \"dummy1\"), (2, \"dummy2\"), (3, \"dummy3\")");
-      stmt.execute("insert into " + testDbName + "." + testTableName + " PARTITION ("
+      stmt.execute("insert into " + qualifiedTableName + " PARTITION ("
           + partitionedColumnName + "=" + partitionedColumnValue2
           + ") values (4, \"dummy4\"), (5, \"dummy5\"), (6, \"dummy6\")");
     } else {
       // create a table
-      stmt.execute(createTablePrefix + testDbName + "." + testTableName + " (id int, value string)");
+      stmt.execute(createTablePrefix + qualifiedTableName + " (id int, value string)");
       // load data
-      stmt.execute("insert into " + testDbName + "." + testTableName
+      stmt.execute("insert into " + qualifiedTableName
           + " values (1, \"dummy1\"), (2, \"dummy2\"), (3, \"dummy3\")");
     }
     if (isAutopurge != null) {
-      stmt.execute("alter table " + testDbName + "." + testTableName
+      stmt.execute("alter table " + qualifiedTableName
           + " set tblproperties (\"auto.purge\"=\"" + isAutopurge + "\")");
     }
   }

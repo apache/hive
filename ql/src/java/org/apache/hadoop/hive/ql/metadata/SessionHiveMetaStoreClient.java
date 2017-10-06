@@ -214,7 +214,6 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     for (String element : tablePatterns.split("\\|")) {
       tblPatternList.add(Pattern.compile(element.replaceAll("\\*", ".*")).matcher(""));
     }
-    StringBuilder builder = new StringBuilder();
     for (Map.Entry<String, Map<String, Table>> outer : tmpTables.entrySet()) {
       if (!matchesAny(outer.getKey(), dbPatternList)) {
         continue;
@@ -403,7 +402,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     SessionState ss = SessionState.get();
     if (ss == null) {
       throw new MetaException("No current SessionState, cannot create temporary table"
-          + tbl.getDbName() + "." + tbl.getTableName());
+          + Warehouse.getQualifiedName(tbl));
     }
 
     // We may not own the table object, create a copy
@@ -413,7 +412,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     String tblName = tbl.getTableName();
     Map<String, Table> tables = getTempTablesForDatabase(dbName);
     if (tables != null && tables.containsKey(tblName)) {
-      throw new MetaException("Temporary table " + dbName + "." + tblName + " already exists");
+      throw new MetaException(
+          "Temporary table " + StatsUtils.getFullyQualifiedTableName(dbName, tblName) + " already exists");
     }
 
     // Create temp table directory
@@ -626,7 +626,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     // Remove table entry from SessionState
     Map<String, Table> tables = getTempTablesForDatabase(dbName);
     if (tables == null || tables.remove(tableName) == null) {
-      throw new MetaException("Could not find temp table entry for " + dbName + "." + tableName);
+      throw new MetaException(
+          "Could not find temp table entry for " + StatsUtils.getFullyQualifiedTableName(dbName, tableName));
     }
 
     // Delete table data
@@ -699,7 +700,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     SessionState ss = SessionState.get();
     if (ss == null) {
       throw new MetaException("No current SessionState, cannot update temporary table stats for "
-          + dbName + "." + tableName);
+          + StatsUtils.getFullyQualifiedTableName(dbName, tableName));
     }
     Map<String, ColumnStatisticsObj> ssTableColStats =
         getTempTableColumnStatsForTable(dbName, tableName);

@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -455,7 +456,7 @@ public class OpProcFactory {
               BaseColumnInfo col = expr_dep.getBaseCols().iterator().next();
               Table t = col.getTabAlias().getTable();
               if (t != null) {
-                sb.append(t.getDbName()).append(".").append(t.getTableName()).append(".");
+                sb.append(Warehouse.getQualifiedName(t)).append(".");
               }
               sb.append(col.getColumn().getName());
             }

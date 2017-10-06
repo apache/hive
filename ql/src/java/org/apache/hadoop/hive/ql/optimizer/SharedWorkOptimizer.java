@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
@@ -779,14 +780,14 @@ public class SharedWorkOptimizer extends Transform {
       TableScanDesc op1Conf = tsOp1.getConf();
       TableScanDesc op2Conf = tsOp2.getConf();
 
-      if (StringUtils.equals(
-              op1Conf.getTableMetadata().getDbName() + "." + op1Conf.getTableMetadata().getTableName(),
-              op2Conf.getTableMetadata().getDbName() + "." + op2Conf.getTableMetadata().getTableName()) &&
-        op1Conf.getNeededColumns().equals(op2Conf.getNeededColumns()) &&
-        StringUtils.equals(op1Conf.getFilterExprString(), op2Conf.getFilterExprString()) &&
-        pctx.getPrunedPartitions(tsOp1).getPartitions().equals(
-              pctx.getPrunedPartitions(tsOp2).getPartitions()) &&
-        op1Conf.getRowLimit() == op2Conf.getRowLimit()) {
+      Table tableMeta1 = op1Conf.getTableMetadata();
+      Table tableMeta2 = op2Conf.getTableMetadata();
+      if (StringUtils.equals(tableMeta1.getFullyQualifiedName(), tableMeta2.getFullyQualifiedName())
+          && op1Conf.getNeededColumns().equals(op2Conf.getNeededColumns())
+          && StringUtils.equals(op1Conf.getFilterExprString(), op2Conf.getFilterExprString())
+          && pctx.getPrunedPartitions(tsOp1).getPartitions().equals(
+              pctx.getPrunedPartitions(tsOp2).getPartitions())
+          && op1Conf.getRowLimit() == op2Conf.getRowLimit()) {
         return true;
       } else {
         return false;

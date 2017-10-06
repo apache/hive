@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -70,6 +71,7 @@ public class TestHiveAuthorizerCheckInvocation {
   private static final String acidTableName = tableName + "_acid";
   private static final String dbName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
       + "Db";
+  private static final String fullInTableName = StatsUtils.getFullyQualifiedTableName(dbName, inDbTableName);
   static HiveAuthorizer mockedAuthorizer;
 
   /**
@@ -105,7 +107,7 @@ public class TestHiveAuthorizerCheckInvocation {
         + " (i int, j int, k string) partitioned by (city string, `date` string) ");
     runCmd("create view " + viewName + " as select * from " + tableName);
     runCmd("create database " + dbName);
-    runCmd("create table " + dbName + "." + inDbTableName + "(i int)");
+    runCmd("create table " + fullInTableName + "(i int)");
     // Need a separate table for ACID testing since it has to be bucketed and it has to be Acid
     runCmd("create table " + acidTableName + " (i int, j int, k int) clustered by (k) into 2 buckets " +
         "stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -122,7 +124,7 @@ public class TestHiveAuthorizerCheckInvocation {
     runCmd("drop table if exists " + acidTableName);
     runCmd("drop table if exists " + tableName);
     runCmd("drop table if exists " + viewName);
-    runCmd("drop table if exists " + dbName + "." + inDbTableName);
+    runCmd("drop table if exists " + fullInTableName);
     runCmd("drop database if exists " + dbName );
     driver.close();
   }
@@ -420,7 +422,7 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("db name", dbName.toLowerCase(), dbObj.getDbname());
 
     resetAuthorizer();
-    status = driver.compile("repl dump " + dbName + "." + inDbTableName);
+    status = driver.compile("repl dump " + fullInTableName);
     assertEquals(0, status);
     inputs = getHivePrivilegeObjectInputs().getLeft();
     dbObj = inputs.get(0);

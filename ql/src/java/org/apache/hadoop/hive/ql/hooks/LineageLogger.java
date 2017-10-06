@@ -27,6 +27,7 @@ import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -226,7 +227,7 @@ public class LineageLogger implements ExecuteWithHookContext {
       String destTableName = null;
       List<String> colNames = null;
       if (t != null) {
-        destTableName = t.getDbName() + "." + t.getTableName();
+        destTableName = t.getFullyQualifiedName();
         fieldSchemas = t.getCols();
       } else {
         // Based on the plan outputs, find out the target table name and column names.
@@ -235,7 +236,7 @@ public class LineageLogger implements ExecuteWithHookContext {
           if (entityType == Entity.Type.TABLE
               || entityType == Entity.Type.PARTITION) {
             t = output.getTable();
-            destTableName = t.getDbName() + "." + t.getTableName();
+            destTableName = t.getFullyQualifiedName();
             List<FieldSchema> cols = t.getCols();
             if (cols != null && !cols.isEmpty()) {
               colNames = Utilities.getColumnNamesFromFieldSchema(cols);
@@ -329,7 +330,7 @@ public class LineageLogger implements ExecuteWithHookContext {
           continue;
         }
         Vertex.Type type = Vertex.Type.TABLE;
-        String tableName = table.getDbName() + "." + table.getTableName();
+        String tableName = Warehouse.getQualifiedName(table);
         FieldSchema fieldSchema = col.getColumn();
         String label = tableName;
         if (fieldSchema != null) {

@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -55,8 +56,8 @@ public class RenameTableHandler extends AbstractMessageHandler {
         }
       }
 
-      String oldName = oldDbName + "." + msg.getTableObjBefore().getTableName();
-      String newName = newDbName + "." + msg.getTableObjAfter().getTableName();
+      String oldName = StatsUtils.getFullyQualifiedTableName(oldDbName, msg.getTableObjBefore().getTableName());
+      String newName = StatsUtils.getFullyQualifiedTableName(newDbName, msg.getTableObjAfter().getTableName());
       AlterTableDesc renameTableDesc = new AlterTableDesc(
               oldName, newName, false, context.eventOnlyReplicationSpec());
       Task<DDLWork> renameTableTask = TaskFactory.get(

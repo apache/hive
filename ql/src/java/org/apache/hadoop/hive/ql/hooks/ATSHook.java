@@ -314,7 +314,7 @@ public class ATSHook implements ExecuteWithHookContext {
     List<String> tableNames = new ArrayList<String>();
     for (Entity entity : entities) {
       if (entity.getType() == Entity.Type.TABLE) {
-        tableNames.add(entity.getTable().getDbName() + "." + entity.getTable().getTableName());
+        tableNames.add(entity.getTable().getFullyQualifiedName());
       }
     }
     return tableNames;

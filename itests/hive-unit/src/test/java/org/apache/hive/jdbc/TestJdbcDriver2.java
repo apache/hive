@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -1089,9 +1090,10 @@ public class TestJdbcDriver2 {
     assertNotNull("Statement is null", stmt);
 
     String tableNameInDbUnique = tableName + "_unique";
+    String fullTestTableName = StatsUtils.getFullyQualifiedTableName(testDbName, tableNameInDbUnique);
     // create a table with a unique name in testDb
-    stmt.execute("drop table if exists " + testDbName + "." + tableNameInDbUnique);
-    stmt.execute("create table " + testDbName + "." + tableNameInDbUnique
+    stmt.execute("drop table if exists " + fullTestTableName);
+    stmt.execute("create table " + fullTestTableName
         + " (under_col int comment 'the under column', value string) comment '" + tableComment
         + "'");
 
@@ -1106,7 +1108,7 @@ public class TestJdbcDriver2 {
     }
     assertTrue("table name " + tableNameInDbUnique
         + " not found in SHOW TABLES result set", testTableExists);
-    stmt.execute("drop table if exists " + testDbName + "." + tableNameInDbUnique);
+    stmt.execute("drop table if exists " + fullTestTableName);
     stmt.close();
   }
 
@@ -1226,11 +1228,11 @@ public class TestJdbcDriver2 {
     Set<String> viewOrTableArray = new HashSet<String>();
     viewOrTableArray.addAll(tableTypeNames);
     viewOrTableArray.add(viewTypeName);
-    String testTblWithDb = testDbName + "." + tableName;
-    String testPartTblWithDb = testDbName + "." + partitionedTableName;
-    String testDataTypeTblWithDb = testDbName + "." + dataTypeTableName;
-    String testViewWithDb = testDbName + "." + viewName;
-    String testExtTblWithDb = testDbName + "." + externalTableName;
+    String testTblWithDb = StatsUtils.getFullyQualifiedTableName(testDbName, tableName);
+    String testPartTblWithDb = StatsUtils.getFullyQualifiedTableName(testDbName, partitionedTableName);
+    String testDataTypeTblWithDb = StatsUtils.getFullyQualifiedTableName(testDbName, dataTypeTableName);
+    String testViewWithDb = StatsUtils.getFullyQualifiedTableName(testDbName, viewName);
+    String testExtTblWithDb = StatsUtils.getFullyQualifiedTableName(testDbName, externalTableName);
 
     Map<Object[], String[]> tests = new IdentityHashMap<Object[], String[]>();
     tests.put(new Object[] { null, "testjdbc%", ALL }, new String[] { testTblWithDb,
@@ -1273,8 +1275,9 @@ public class TestJdbcDriver2 {
       while (rs.next()) {
         String resultDbName = rs.getString("TABLE_SCHEM");
         String resultTableName = rs.getString("TABLE_NAME");
-        assertTrue("Invalid table " + resultDbName + "." + resultTableName + " for test "
-            + debugString, expectedTables.contains(resultDbName + "." + resultTableName));
+        String fullTableName = StatsUtils.getFullyQualifiedTableName(resultDbName, resultTableName);
+        assertTrue("Invalid table " + fullTableName + " for test " + debugString,
+            expectedTables.contains(fullTableName));
 
         String resultTableComment = rs.getString("REMARKS");
         assertTrue("Missing comment on the table.", resultTableComment.length() > 0);

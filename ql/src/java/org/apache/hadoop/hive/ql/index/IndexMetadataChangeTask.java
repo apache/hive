@@ -77,7 +77,7 @@ public class IndexMetadataChangeTask extends Task<IndexMetadataChangeWork>{
         FileSystem fs = url.getFileSystem(conf);
         FileStatus fstat = fs.getFileStatus(url);
         tbl.getParameters().put(HiveIndex.INDEX_TABLE_CREATETIME, Long.toString(fstat.getModificationTime()));
-        db.alterTable(tbl.getDbName() + "." + tbl.getTableName(), tbl, null);
+        db.alterTable(tbl, null);
       }
     } catch (Exception e) {
       e.printStackTrace();
