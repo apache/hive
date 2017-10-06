@@ -163,13 +163,11 @@ POSTHOOK: query: desc formatted outputTbl1 partition(ds='2004')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@outputtbl1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 values              	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -354,13 +352,11 @@ POSTHOOK: query: desc formatted outputTbl2 partition(ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@outputtbl2
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 values              	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -528,13 +524,11 @@ POSTHOOK: query: desc formatted outputTbl3 partition(ds='2008-04-08', hr='11')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@outputtbl3
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 values              	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

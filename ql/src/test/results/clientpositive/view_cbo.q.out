@@ -113,7 +113,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -182,7 +181,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 c                   	bigint              	                    
 	 	 
@@ -262,7 +260,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -325,7 +322,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -374,7 +370,6 @@ POSTHOOK: query: desc formatted view15
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view15
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value_count         	bigint              	                    
 	 	 
@@ -425,7 +420,6 @@ POSTHOOK: query: desc formatted view16
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view16
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -477,7 +471,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -528,7 +521,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -580,7 +572,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -632,7 +623,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 

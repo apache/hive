@@ -19,7 +19,6 @@ d                   	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	string              	                    
 d                   	string              	                    
 PREHOOK: query: alter table ptestfilter add partition (c='US', d=1)

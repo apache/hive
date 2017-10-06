@@ -276,7 +276,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -343,7 +342,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 b                   	int                 	                    
 a                   	int                 	                    
 	 	 
@@ -452,7 +450,6 @@ POSTHOOK: query: desc formatted tt
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tt
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 

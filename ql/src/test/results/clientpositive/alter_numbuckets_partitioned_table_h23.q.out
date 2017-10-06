@@ -21,13 +21,11 @@ POSTHOOK: query: describe formatted tst1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tst1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -73,13 +71,11 @@ POSTHOOK: query: describe formatted tst1 partition (ds = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tst1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -130,13 +126,11 @@ POSTHOOK: query: describe formatted tst1 partition (ds = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tst1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -169,13 +163,11 @@ POSTHOOK: query: describe formatted tst1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tst1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -218,13 +210,11 @@ POSTHOOK: query: describe formatted tst1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tst1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -260,13 +250,11 @@ POSTHOOK: query: describe formatted tst1 partition (ds = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tst1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -307,13 +295,11 @@ POSTHOOK: query: describe formatted tst1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tst1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -349,13 +335,11 @@ POSTHOOK: query: describe formatted tst1 partition (ds = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tst1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -397,13 +381,11 @@ POSTHOOK: query: describe formatted tst1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tst1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -447,13 +429,11 @@ POSTHOOK: query: describe formatted tst1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tst1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -497,13 +477,11 @@ POSTHOOK: query: describe formatted tst1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tst1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -547,13 +525,11 @@ POSTHOOK: query: describe formatted tst1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tst1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 

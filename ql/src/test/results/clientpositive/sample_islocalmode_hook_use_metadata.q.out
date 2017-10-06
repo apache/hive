@@ -70,7 +70,6 @@ PREHOOK: query: desc formatted sih_src
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@sih_src
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 

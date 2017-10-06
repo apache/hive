@@ -25,7 +25,6 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 ds                  	string              	                    
@@ -110,13 +109,11 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -209,12 +206,10 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -283,13 +278,11 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -381,13 +374,11 @@ POSTHOOK: query: describe formatted vt.v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: vt@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

@@ -46,7 +46,6 @@ p                   	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p                   	int                 	                    
 PREHOOK: query: select * from test where p=1 and key > 0 order by key
 PREHOOK: type: QUERY

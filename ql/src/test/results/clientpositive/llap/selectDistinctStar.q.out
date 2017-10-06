@@ -1385,7 +1385,6 @@ POSTHOOK: query: describe formatted sdi
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@sdi
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -3849,7 +3848,6 @@ POSTHOOK: query: describe formatted sdi
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@sdi
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 

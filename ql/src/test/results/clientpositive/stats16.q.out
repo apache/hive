@@ -17,7 +17,6 @@ POSTHOOK: query: desc formatted stats16
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats16
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
@@ -65,7 +64,6 @@ POSTHOOK: query: desc formatted stats16
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats16
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 

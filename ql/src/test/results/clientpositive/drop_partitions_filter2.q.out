@@ -19,7 +19,6 @@ d                   	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 d                   	int                 	                    
 PREHOOK: query: alter table ptestfilter add partition (c=1, d=1)

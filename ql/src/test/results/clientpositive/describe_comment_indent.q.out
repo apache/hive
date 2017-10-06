@@ -41,7 +41,6 @@ POSTHOOK: query: DESCRIBE FORMATTED test_table
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_table
 # col_name            	data_type           	comment             
-	 	 
 col1                	int                 	col1 one line comment
 col2                	string              	col2                
                     	                    	two lines comment   

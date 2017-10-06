@@ -68,13 +68,11 @@ POSTHOOK: query: describe formatted tab_part partition(ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tab_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 

@@ -64,7 +64,6 @@ p                   	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p                   	int                 	                    
 PREHOOK: query: explain select test.key, test.value from test join test1 on (test.key = test1.key) order by test.key
 PREHOOK: type: QUERY

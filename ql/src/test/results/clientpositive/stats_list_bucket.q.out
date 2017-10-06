@@ -45,13 +45,11 @@ POSTHOOK: query: desc formatted stats_list_bucket partition (ds = '2008-04-08', 
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_list_bucket
 # col_name            	data_type           	comment             
-	 	 
 c1                  	string              	                    
 c2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -122,7 +120,6 @@ POSTHOOK: query: desc formatted stats_list_bucket_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_list_bucket_1
 # col_name            	data_type           	comment             
-	 	 
 c1                  	string              	                    
 c2                  	string              	                    
 	 	 

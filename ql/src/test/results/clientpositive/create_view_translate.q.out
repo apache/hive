@@ -24,7 +24,6 @@ POSTHOOK: query: describe formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -71,7 +70,6 @@ POSTHOOK: query: describe formatted w
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@w
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 

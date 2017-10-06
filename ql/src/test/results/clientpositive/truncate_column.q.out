@@ -25,7 +25,6 @@ POSTHOOK: query: DESC FORMATTED test_tab
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_tab
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -86,7 +85,6 @@ POSTHOOK: query: DESC FORMATTED test_tab
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_tab
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -156,7 +154,6 @@ POSTHOOK: query: DESC FORMATTED test_tab
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_tab
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -216,7 +213,6 @@ POSTHOOK: query: DESC FORMATTED test_tab
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_tab
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -286,7 +282,6 @@ POSTHOOK: query: DESC FORMATTED test_tab
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_tab
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -348,7 +343,6 @@ POSTHOOK: query: DESC FORMATTED test_tab
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_tab
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -409,7 +403,6 @@ POSTHOOK: query: DESC FORMATTED test_tab
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_tab
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -480,13 +473,11 @@ POSTHOOK: query: DESC FORMATTED test_tab_part PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_tab_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -547,13 +538,11 @@ POSTHOOK: query: DESC FORMATTED test_tab_part PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_tab_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 

@@ -106,7 +106,6 @@ POSTHOOK: query: desc formatted hbase_table_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hbase_table_1
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	It is a column key  
 value               	string              	It is the column string value
 	 	 
@@ -153,7 +152,6 @@ POSTHOOK: query: desc formatted hbase_table_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hbase_table_1
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	It is a column key  
 value               	string              	It is the column string value
 	 	 

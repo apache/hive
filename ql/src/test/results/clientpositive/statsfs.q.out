@@ -47,13 +47,11 @@ POSTHOOK: query: describe formatted t1 partition (ds='2010')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -86,13 +84,11 @@ POSTHOOK: query: describe formatted t1 partition (ds='2011')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -161,13 +157,11 @@ POSTHOOK: query: describe formatted t1 partition (ds='2010')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -200,13 +194,11 @@ POSTHOOK: query: describe formatted t1 partition (ds='2011')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -271,7 +263,6 @@ POSTHOOK: query: describe formatted t1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -332,7 +323,6 @@ POSTHOOK: query: describe formatted t1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -410,13 +400,11 @@ POSTHOOK: query: describe formatted t1 partition (ds='2008-04-08',hr='11')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -450,13 +438,11 @@ POSTHOOK: query: describe formatted t1 partition (ds='2008-04-09',hr='12')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

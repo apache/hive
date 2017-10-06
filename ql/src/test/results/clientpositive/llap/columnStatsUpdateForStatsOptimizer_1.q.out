@@ -25,7 +25,6 @@ POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
-	 	 
 year                	int                 	                    
 month               	int                 	                    
 	 	 
@@ -68,7 +67,6 @@ POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
-	 	 
 year                	int                 	                    
 month               	int                 	                    
 	 	 
@@ -203,7 +201,6 @@ POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
-	 	 
 year                	int                 	                    
 month               	int                 	                    
 	 	 
@@ -269,7 +266,6 @@ POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
-	 	 
 year                	int                 	                    
 month               	int                 	                    
 	 	 
@@ -448,7 +444,6 @@ POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
-	 	 
 year                	int                 	                    
 month               	int                 	                    
 	 	 
@@ -583,7 +578,6 @@ POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
-	 	 
 year                	int                 	                    
 month               	int                 	                    
 	 	 
@@ -656,12 +650,10 @@ POSTHOOK: query: desc formatted calendarp partition (p=1)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendarp
 # col_name            	data_type           	comment             
-	 	 
 year                	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -777,12 +769,10 @@ POSTHOOK: query: desc formatted calendarp partition (p=1)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendarp
 # col_name            	data_type           	comment             
-	 	 
 year                	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -836,12 +826,10 @@ POSTHOOK: query: desc formatted calendarp partition (p=1)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendarp
 # col_name            	data_type           	comment             
-	 	 
 year                	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -959,7 +947,6 @@ POSTHOOK: query: desc formatted t
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -1001,7 +988,6 @@ POSTHOOK: query: desc formatted t
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 

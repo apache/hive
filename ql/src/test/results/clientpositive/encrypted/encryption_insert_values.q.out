@@ -39,7 +39,6 @@ POSTHOOK: query: describe formatted values__tmp__table__1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@values__tmp__table__1
 # col_name            	data_type           	comment             
-	 	 
 tmp_values_col1     	string              	                    
 tmp_values_col2     	string              	                    
 	 	 

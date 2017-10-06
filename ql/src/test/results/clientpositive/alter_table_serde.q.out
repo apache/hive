@@ -91,7 +91,6 @@ dt                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -116,7 +115,6 @@ dt                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -141,7 +139,6 @@ dt                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -167,7 +164,6 @@ dt                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -193,7 +189,6 @@ dt                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 	 	 
 #### A masked pattern was here ####

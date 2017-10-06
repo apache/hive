@@ -47,13 +47,11 @@ POSTHOOK: query: DESCRIBE FORMATTED parquet_partitioned
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@parquet_partitioned
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 str                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	string              	                    
 	 	 
 # Detailed Table Information	 	 

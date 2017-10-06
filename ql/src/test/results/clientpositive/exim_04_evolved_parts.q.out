@@ -126,7 +126,6 @@ emp_state           	string              	2-char code
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 emp_country         	string              	2-char code         
 emp_state           	string              	2-char code         
 	 	 
@@ -147,7 +146,6 @@ emp_state           	string              	2-char code
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 emp_country         	string              	2-char code         
 emp_state           	string              	2-char code         
 	 	 
@@ -168,7 +166,6 @@ emp_state           	string              	2-char code
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 emp_country         	string              	2-char code         
 emp_state           	string              	2-char code         
 	 	 

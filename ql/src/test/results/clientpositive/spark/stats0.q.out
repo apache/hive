@@ -1280,7 +1280,6 @@ ds                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -1296,7 +1295,6 @@ ds                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -2598,7 +2596,6 @@ ds                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -2614,7 +2611,6 @@ ds                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 #### A masked pattern was here ####

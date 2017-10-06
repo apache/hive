@@ -106,7 +106,6 @@ POSTHOOK: query: desc formatted total_ordered
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@total_ordered
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -217,7 +216,6 @@ POSTHOOK: query: desc formatted total_ordered
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@total_ordered
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 

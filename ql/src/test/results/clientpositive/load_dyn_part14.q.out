@@ -19,7 +19,6 @@ value               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####

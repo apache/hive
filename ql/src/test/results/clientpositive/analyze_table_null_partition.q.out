@@ -80,7 +80,6 @@ age                 	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 age                 	int                 	                    
 	 	 
 #### A masked pattern was here ####

@@ -47,7 +47,6 @@ POSTHOOK: query: describe formatted src_multi1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_multi1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -124,7 +123,6 @@ POSTHOOK: query: describe formatted a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@a
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -159,7 +157,6 @@ POSTHOOK: query: describe formatted b
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -244,7 +241,6 @@ POSTHOOK: query: describe formatted a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@a
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -279,7 +275,6 @@ POSTHOOK: query: describe formatted b
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -338,7 +333,6 @@ POSTHOOK: query: describe formatted src_multi2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_multi2
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -502,12 +496,10 @@ POSTHOOK: query: describe formatted alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter5
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -544,12 +536,10 @@ POSTHOOK: query: describe formatted alter5 partition (dt='a')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter5
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -625,13 +615,11 @@ POSTHOOK: query: describe formatted src_stat_part PARTITION(partitionId=1)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 partitionid         	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -676,13 +664,11 @@ POSTHOOK: query: describe formatted src_stat_part PARTITION(partitionId=2)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 partitionid         	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -815,13 +801,11 @@ POSTHOOK: query: describe formatted tab_part partition (ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tab_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -876,13 +860,11 @@ POSTHOOK: query: describe formatted tab partition (ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tab
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -933,13 +915,11 @@ POSTHOOK: query: describe formatted nzhang_part14
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -1005,13 +985,11 @@ POSTHOOK: query: desc formatted nzhang_part14 partition(ds='1', hr='3')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -1068,13 +1046,11 @@ POSTHOOK: query: desc formatted nzhang_part14 PARTITION(ds='2010-03-03', hr='12'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -1149,13 +1125,11 @@ POSTHOOK: query: desc formatted nzhang_part14 PARTITION(ds='2010-03-03', hr='12'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

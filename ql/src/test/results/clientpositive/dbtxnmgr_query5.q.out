@@ -56,7 +56,6 @@ ds                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 PREHOOK: query: drop view V1
 PREHOOK: type: DROPVIEW

@@ -17,7 +17,6 @@ POSTHOOK: query: DESCRIBE FORMATTED druid_table_1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@druid_table_1
 # col_name            	data_type           	comment             
-	 	 
 __time              	timestamp           	from deserializer   
 robot               	string              	from deserializer   
 namespace           	string              	from deserializer   
@@ -79,7 +78,6 @@ POSTHOOK: query: DESCRIBE FORMATTED druid_table_2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@druid_table_2
 # col_name            	data_type           	comment             
-	 	 
 __time              	timestamp           	from deserializer   
 robot               	string              	from deserializer   
 namespace           	string              	from deserializer   

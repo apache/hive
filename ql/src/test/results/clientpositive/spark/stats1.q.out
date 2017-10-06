@@ -159,7 +159,6 @@ POSTHOOK: query: DESCRIBE FORMATTED tmptable
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tmptable
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -202,7 +201,6 @@ POSTHOOK: query: DESCRIBE FORMATTED tmptable
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tmptable
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 

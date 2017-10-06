@@ -13,7 +13,6 @@ POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@rcfile_default_format
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -59,7 +58,6 @@ POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format_ctas
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@rcfile_default_format_ctas
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -111,7 +109,6 @@ POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format_txtfile
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@rcfile_default_format_txtfile
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -157,7 +154,6 @@ POSTHOOK: query: DESCRIBE FORMATTED textfile_default_format_ctas
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@textfile_default_format_ctas
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -204,7 +200,6 @@ POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format_ctas_default_serde
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@rcfile_default_format_ctas_default_serde
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -247,7 +242,6 @@ POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_format_default_serde
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@rcfile_default_format_default_serde
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -293,7 +287,6 @@ POSTHOOK: query: DESCRIBE FORMATTED rcfile_ctas_default_serde
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@rcfile_ctas_default_serde
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -336,7 +329,6 @@ POSTHOOK: query: DESCRIBE FORMATTED rcfile_default_serde
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@rcfile_default_serde
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Detailed Table Information	 	 

@@ -17,7 +17,6 @@ POSTHOOK: query: desc formatted p
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             
-	 	 
 insert_num          	int                 	                    
 c1                  	tinyint             	                    
 c2                  	smallint            	                    
@@ -62,7 +61,6 @@ POSTHOOK: query: desc formatted p
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             
-	 	 
 insert_num          	int                 	                    
 c1                  	tinyint             	                    
 c2                  	smallint            	                    
@@ -106,7 +104,6 @@ POSTHOOK: query: desc formatted p
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             
-	 	 
 insert_num          	int                 	                    
 c1                  	string              	                    
 c2                  	string              	                    
@@ -142,9 +139,18 @@ PREHOOK: Input: default@p
 POSTHOOK: query: desc formatted p c1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-c1                  	string              	                    	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+col_name            	c1                  	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
+distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted p c2
 PREHOOK: type: DESCTABLE
@@ -152,7 +158,16 @@ PREHOOK: Input: default@p
 POSTHOOK: query: desc formatted p c2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-c2                  	string              	                    	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+col_name            	c2                  	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	                    	 	 	 	 	 	 	 	 	 	 
+distinct_count      	                    	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 

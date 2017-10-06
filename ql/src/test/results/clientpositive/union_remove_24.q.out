@@ -169,7 +169,6 @@ POSTHOOK: query: desc formatted outputTbl1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@outputtbl1
 # col_name            	data_type           	comment             
-	 	 
 key                 	double              	                    
 values              	bigint              	                    
 	 	 

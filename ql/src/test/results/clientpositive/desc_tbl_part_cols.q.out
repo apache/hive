@@ -19,7 +19,6 @@ d                   	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 d                   	string              	                    
 PREHOOK: query: describe t1

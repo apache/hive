@@ -74,7 +74,6 @@ POSTHOOK: query: DESC FORMATTED parquet_create_people
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@parquet_create_people
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    
@@ -122,7 +121,6 @@ POSTHOOK: query: DESC FORMATTED parquet_create_people
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@parquet_create_people
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 first_name          	string              	                    
 last_name           	string              	                    

@@ -86,14 +86,12 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@episodes_partitioned
 col_name	data_type	comment
 # col_name            	data_type           	comment             
-	 	 
 title               	string              	episode title       
 air_date            	string              	initial date        
 doctor              	int                 	main actor playing the Doctor in episode
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 doctor_pt           	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -197,7 +195,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@episodes_partitioned
 col_name	data_type	comment
 # col_name            	data_type           	comment             
-	 	 
 title               	string              	episode title       
 air_date            	string              	initial date        
 doctor              	int                 	main actor playing the Doctor in episode
@@ -205,7 +202,6 @@ value               	int                 	default value
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 doctor_pt           	int                 	                    
 	 	 
 # Detailed Table Information	 	 

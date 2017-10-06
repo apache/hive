@@ -28,7 +28,6 @@ POSTHOOK: query: DESCRIBE FORMATTED default__kv_kv_index__
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@default__kv_kv_index__
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    

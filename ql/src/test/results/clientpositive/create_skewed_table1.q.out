@@ -29,7 +29,6 @@ POSTHOOK: query: describe formatted list_bucket_single_2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@list_bucket_single_2
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -66,7 +65,6 @@ POSTHOOK: query: describe formatted list_bucket_single
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@list_bucket_single
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -103,7 +101,6 @@ POSTHOOK: query: describe formatted list_bucket_multiple
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@list_bucket_multiple
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 col2                	int                 	                    
 col3                	string              	                    

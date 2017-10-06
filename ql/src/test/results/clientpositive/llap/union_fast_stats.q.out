@@ -155,7 +155,6 @@ POSTHOOK: query: desc formatted small_alltypesorc_a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@small_alltypesorc_a
 # col_name            	data_type           	comment             
-	 	 
 ctinyint            	tinyint             	                    
 csmallint           	smallint            	                    
 cint                	int                 	                    
@@ -208,7 +207,6 @@ POSTHOOK: query: desc formatted small_alltypesorc_a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@small_alltypesorc_a
 # col_name            	data_type           	comment             
-	 	 
 ctinyint            	tinyint             	                    
 csmallint           	smallint            	                    
 cint                	int                 	                    
@@ -273,7 +271,6 @@ POSTHOOK: query: desc formatted small_alltypesorc_a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@small_alltypesorc_a
 # col_name            	data_type           	comment             
-	 	 
 ctinyint            	tinyint             	                    
 csmallint           	smallint            	                    
 cint                	int                 	                    
@@ -488,7 +485,6 @@ POSTHOOK: query: desc formatted small_alltypesorc_a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@small_alltypesorc_a
 # col_name            	data_type           	comment             
-	 	 
 ctinyint            	tinyint             	                    
 csmallint           	smallint            	                    
 cint                	int                 	                    
@@ -513,7 +509,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1069                
-	totalSize           	3245                
+	totalSize           	3243                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -541,7 +537,6 @@ POSTHOOK: query: desc formatted small_alltypesorc_a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@small_alltypesorc_a
 # col_name            	data_type           	comment             
-	 	 
 ctinyint            	tinyint             	                    
 csmallint           	smallint            	                    
 cint                	int                 	                    
@@ -566,7 +561,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	15                  
 	rawDataSize         	3320                
-	totalSize           	3245                
+	totalSize           	3243                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -606,7 +601,6 @@ POSTHOOK: query: desc formatted small_alltypesorc_a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@small_alltypesorc_a
 # col_name            	data_type           	comment             
-	 	 
 ctinyint            	tinyint             	                    
 csmallint           	smallint            	                    
 cint                	int                 	                    
@@ -631,7 +625,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	20                  
 	rawDataSize         	4389                
-	totalSize           	4618                
+	totalSize           	4616                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

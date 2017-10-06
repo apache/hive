@@ -78,7 +78,6 @@ POSTHOOK: query: desc formatted  src_orc_merge_test_stat
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_orc_merge_test_stat
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
@@ -129,7 +128,6 @@ POSTHOOK: query: desc formatted src_orc_merge_test_stat
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_orc_merge_test_stat
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
@@ -226,13 +224,11 @@ POSTHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_orc_merge_test_part_stat
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -275,13 +271,11 @@ POSTHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_orc_merge_test_part_stat
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -332,13 +326,11 @@ POSTHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_orc_merge_test_part_stat
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 

@@ -205,7 +205,6 @@ POSTHOOK: query: describe formatted orc_ppd
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@orc_ppd
 # col_name            	data_type           	comment             
-	 	 
 t                   	tinyint             	                    
 si                  	smallint            	                    
 i                   	int                 	                    

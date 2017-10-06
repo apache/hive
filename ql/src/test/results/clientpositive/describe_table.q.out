@@ -11,7 +11,6 @@ hr                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 PREHOOK: query: describe srcpart key
@@ -34,7 +33,6 @@ hr                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 PREHOOK: query: describe `srcpart`
@@ -50,7 +48,6 @@ hr                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 PREHOOK: query: describe `srcpart` `key`
@@ -73,7 +70,6 @@ hr                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 PREHOOK: query: describe extended srcpart
@@ -89,7 +85,6 @@ hr                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -114,7 +109,6 @@ hr                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -132,7 +126,6 @@ hr                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -157,7 +150,6 @@ hr                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -169,13 +161,11 @@ POSTHOOK: query: describe formatted srcpart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -210,9 +200,18 @@ PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe formatted srcpart key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
+max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted srcpart PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE
@@ -221,13 +220,11 @@ POSTHOOK: query: describe formatted srcpart PARTITION(ds='2008-04-08', hr='12')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -261,13 +258,11 @@ POSTHOOK: query: describe formatted `srcpart`
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -302,9 +297,18 @@ PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe formatted `srcpart` `key`
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
+max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted `srcpart` PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE
@@ -313,13 +317,11 @@ POSTHOOK: query: describe formatted `srcpart` PARTITION(ds='2008-04-08', hr='12'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -352,9 +354,18 @@ PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe formatted `srcpart` `ds`
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-ds                  	string              	                    	                    	0                   	2                   	100.0               	100                 	                    	                    	                    	                    
+col_name            	ds                  	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	2                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	100.0               	 	 	 	 	 	 	 	 	 	 
+max_col_len         	100                 	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	                    	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ds\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted `srcpart` `hr`
 PREHOOK: type: DESCTABLE
@@ -362,9 +373,18 @@ PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe formatted `srcpart` `hr`
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-hr                  	string              	                    	                    	0                   	2                   	100.0               	100                 	                    	                    	                    	                    
+col_name            	hr                  	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	2                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	100.0               	 	 	 	 	 	 	 	 	 	 
+max_col_len         	100                 	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	                    	 	 	 	 	 	 	 	 	 	 
+comment             	                    	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"hr\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: create table srcpart_serdeprops like srcpart
 PREHOOK: type: CREATETABLE
@@ -413,13 +433,11 @@ POSTHOOK: query: describe formatted srcpart_serdeprops
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart_serdeprops
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -534,7 +552,6 @@ name3               	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 name3               	int                 	                    
 PREHOOK: query: DESCRIBE name1.name1 name2
 PREHOOK: type: DESCTABLE
@@ -555,7 +572,6 @@ name3               	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 name3               	int                 	                    
 PREHOOK: query: DESCRIBE name1.name2
 PREHOOK: type: DESCTABLE
@@ -599,7 +615,6 @@ name3               	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 name3               	int                 	                    
 PREHOOK: query: DESCRIBE name1 name2
 PREHOOK: type: DESCTABLE
@@ -620,7 +635,6 @@ name3               	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 name3               	int                 	                    
 PREHOOK: query: DESCRIBE name1.name1
 PREHOOK: type: DESCTABLE
@@ -634,7 +648,6 @@ name3               	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 name3               	int                 	                    
 PREHOOK: query: DESCRIBE name1.name1 name2
 PREHOOK: type: DESCTABLE
@@ -655,7 +668,6 @@ name3               	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 name3               	int                 	                    
 PREHOOK: query: DESCRIBE name2
 PREHOOK: type: DESCTABLE

@@ -358,7 +358,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table1
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -400,7 +399,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table2
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -442,7 +440,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table3
 # col_name            	data_type           	comment             
-	 	 
 x                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -495,7 +492,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table4
 # col_name            	data_type           	comment             
-	 	 
 x                   	string              	                    
 y                   	string              	                    
 	 	 
@@ -556,7 +552,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table5
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table5
 # col_name            	data_type           	comment             
-	 	 
 x                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -603,7 +598,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table6
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table6
 # col_name            	data_type           	comment             
-	 	 
 x                   	string              	                    
 y                   	string              	                    
 	 	 
@@ -654,7 +648,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table7
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table7
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -696,7 +689,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table8
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table8
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -738,7 +730,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table9
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table9
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -780,7 +771,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table10
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table10
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -829,7 +819,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table11
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table11
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 c                   	string              	                    
@@ -879,7 +868,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table12
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table12
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -922,7 +910,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table13
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table13
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -965,7 +952,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table14
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table14
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -1008,7 +994,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table15
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table15
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -1043,7 +1028,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table16
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table16
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -1078,7 +1062,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table17
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table17
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -1121,7 +1104,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table18
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table18
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -1252,7 +1234,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table2
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -1287,7 +1268,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table3
 # col_name            	data_type           	comment             
-	 	 
 x                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -1334,7 +1314,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table4
 # col_name            	data_type           	comment             
-	 	 
 x                   	string              	                    
 y                   	string              	                    
 	 	 
@@ -1383,7 +1362,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table6
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table6
 # col_name            	data_type           	comment             
-	 	 
 x                   	string              	                    
 y                   	string              	                    
 	 	 
@@ -1425,7 +1403,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table16
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table16
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -1460,7 +1437,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table18
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table18
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -1519,7 +1495,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table2
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -1561,7 +1536,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table3
 # col_name            	data_type           	comment             
-	 	 
 x                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -1614,7 +1588,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table6
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table6
 # col_name            	data_type           	comment             
-	 	 
 x                   	string              	                    
 y                   	string              	                    
 	 	 
@@ -1665,7 +1638,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table16
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table16
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -1701,7 +1673,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table18
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table18
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -1761,7 +1732,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table12
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table12
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -1808,7 +1778,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table13
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table13
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -1859,7 +1828,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table12
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table12
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -1941,7 +1909,6 @@ POSTHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dbconstraint@table2
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -2004,7 +1971,6 @@ POSTHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dbconstraint@table2
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -2051,7 +2017,6 @@ POSTHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dbconstraint@table2
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 
@@ -2103,7 +2068,6 @@ POSTHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dbconstraint@table2
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 b                   	string              	                    
 	 	 

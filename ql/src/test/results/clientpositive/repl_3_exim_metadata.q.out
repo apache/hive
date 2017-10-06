@@ -75,7 +75,6 @@ emp_state           	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 emp_country         	string              	                    
 emp_state           	string              	                    
 	 	 
@@ -155,7 +154,6 @@ emp_state           	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 emp_country         	string              	                    
 emp_state           	string              	                    
 	 	 

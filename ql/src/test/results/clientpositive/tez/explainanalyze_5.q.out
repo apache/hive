@@ -192,7 +192,6 @@ POSTHOOK: query: describe formatted src_multi2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_multi2
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 

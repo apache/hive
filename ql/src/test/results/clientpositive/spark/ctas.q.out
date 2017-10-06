@@ -133,7 +133,6 @@ POSTHOOK: query: describe formatted nzhang_CTAS1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_ctas1
 # col_name            	data_type           	comment             
-	 	 
 k                   	string              	                    
 value               	string              	                    
 	 	 
@@ -280,7 +279,6 @@ POSTHOOK: query: describe formatted nzhang_CTAS2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_ctas2
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -427,7 +425,6 @@ POSTHOOK: query: describe formatted nzhang_CTAS3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_ctas3
 # col_name            	data_type           	comment             
-	 	 
 half_key            	double              	                    
 conb                	string              	                    
 	 	 
@@ -491,7 +488,6 @@ POSTHOOK: query: describe formatted nzhang_CTAS3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_ctas3
 # col_name            	data_type           	comment             
-	 	 
 half_key            	double              	                    
 conb                	string              	                    
 	 	 
@@ -639,7 +635,6 @@ POSTHOOK: query: describe formatted nzhang_CTAS4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_ctas4
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 

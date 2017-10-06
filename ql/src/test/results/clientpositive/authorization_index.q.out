@@ -20,7 +20,6 @@ POSTHOOK: query: desc formatted default__t1_t1_index__
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@default__t1_t1_index__
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 _bucketname         	string              	                    
 _offsets            	array<bigint>       	                    

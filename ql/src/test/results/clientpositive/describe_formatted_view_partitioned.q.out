@@ -43,12 +43,10 @@ POSTHOOK: query: DESCRIBE FORMATTED view_partitioned PARTITION (value='val_86')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view_partitioned
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Detailed Partition Information	 	 

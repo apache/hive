@@ -25,7 +25,6 @@ POSTHOOK: query: DESCRIBE FORMATTED tv.testView
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: tv@testview
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 ds                  	string              	                    
@@ -69,7 +68,6 @@ POSTHOOK: query: DESCRIBE FORMATTED tv.testView
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: tv@testview
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -118,7 +116,6 @@ POSTHOOK: query: DESCRIBE FORMATTED tv.testView
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: tv@testview
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 

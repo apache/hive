@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.metadata.formatting;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 

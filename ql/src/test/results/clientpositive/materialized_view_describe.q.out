@@ -54,7 +54,6 @@ POSTHOOK: query: describe formatted cmv_mat_view
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@cmv_mat_view
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 c                   	decimal(10,2)       	                    
 	 	 
@@ -137,7 +136,6 @@ POSTHOOK: query: describe formatted cmv_mat_view2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@cmv_mat_view2
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -213,7 +211,6 @@ POSTHOOK: query: describe formatted cmv_mat_view3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@cmv_mat_view3
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	varchar(256)        	                    
 c                   	decimal(10,2)       	                    
@@ -302,7 +299,6 @@ POSTHOOK: query: describe formatted cmv_mat_view4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@cmv_mat_view4
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 

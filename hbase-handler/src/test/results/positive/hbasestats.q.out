@@ -25,7 +25,6 @@ POSTHOOK: query: desc formatted users
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@users
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 state               	string              	                    
 country             	string              	                    
@@ -118,7 +117,6 @@ POSTHOOK: query: desc formatted users
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@users
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 state               	string              	                    
 country             	string              	                    
@@ -183,7 +181,6 @@ POSTHOOK: query: desc formatted users
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@users
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 state               	string              	                    
 country             	string              	                    
@@ -239,7 +236,6 @@ POSTHOOK: query: desc formatted users
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@users
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 state               	string              	                    
 country             	string              	                    
@@ -310,7 +306,6 @@ POSTHOOK: query: desc formatted users
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@users
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 state               	string              	                    
 country             	string              	                    

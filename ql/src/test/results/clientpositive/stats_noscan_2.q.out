@@ -37,7 +37,6 @@ POSTHOOK: query: describe formatted anaylyze_external
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@anaylyze_external
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -78,7 +77,6 @@ POSTHOOK: query: describe formatted anaylyze_external
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@anaylyze_external
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -199,13 +197,11 @@ POSTHOOK: query: describe formatted anaylyze_external PARTITION (insertdate='200
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@anaylyze_external
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 val                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 insertdate          	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -248,13 +244,11 @@ POSTHOOK: query: describe formatted anaylyze_external PARTITION (insertdate='200
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@anaylyze_external
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 val                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 insertdate          	string              	                    
 	 	 
 # Detailed Partition Information	 	 

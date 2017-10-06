@@ -41,7 +41,6 @@ POSTHOOK: query: describe formatted srctable
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb@srctable
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -117,7 +116,6 @@ POSTHOOK: query: describe formatted statstable
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb@statstable
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 newcol              	string              	                    
@@ -163,7 +161,6 @@ POSTHOOK: query: describe formatted statstable
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb@statstable
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 newcol              	string              	                    
@@ -208,7 +205,6 @@ POSTHOOK: query: describe formatted statstable
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb@statstable
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 newcol              	string              	                    
@@ -256,7 +252,6 @@ POSTHOOK: query: describe formatted statstable
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb@statstable
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 newcol              	string              	                    
@@ -339,13 +334,11 @@ POSTHOOK: query: describe formatted srcpart partition (ds='2008-04-08', hr='11')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb@srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -423,14 +416,12 @@ POSTHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb@srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 newcol              	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -474,14 +465,12 @@ POSTHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb@srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 newcol              	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -527,14 +516,12 @@ POSTHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb@srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 newcol              	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

@@ -25,7 +25,6 @@ POSTHOOK: query: describe formatted src_multi1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_multi1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -70,7 +69,6 @@ POSTHOOK: query: describe formatted src_multi1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_multi1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -119,13 +117,11 @@ POSTHOOK: query: describe formatted nzhang_part14
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -191,13 +187,11 @@ POSTHOOK: query: desc formatted nzhang_part14 partition(ds='1', hr='3')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -241,13 +235,11 @@ POSTHOOK: query: desc formatted nzhang_part14 partition(ds='1', hr='3')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -281,13 +273,11 @@ POSTHOOK: query: desc formatted nzhang_part14 partition(ds='2', hr='1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -351,13 +341,11 @@ POSTHOOK: query: desc formatted nzhang_part14 partition(ds='1', hr='3')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -391,13 +379,11 @@ POSTHOOK: query: desc formatted nzhang_part14 partition(ds='2', hr='1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@nzhang_part14
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

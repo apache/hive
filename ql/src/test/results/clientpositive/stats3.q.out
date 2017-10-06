@@ -71,7 +71,6 @@ POSTHOOK: query: desc formatted hive_test_src
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hive_test_src
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -204,12 +203,10 @@ POSTHOOK: query: describe formatted hive_test_dst
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@hive_test_dst
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 pcol1               	string              	                    
 pcol2               	string              	                    
 	 	 

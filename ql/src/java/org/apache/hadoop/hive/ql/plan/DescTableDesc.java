@@ -59,7 +59,7 @@ public class DescTableDesc extends DDLDesc implements Serializable {
    */
   private static final String schema = "col_name,data_type,comment#string:string:string";
   private static final String colStatsSchema = "col_name,data_type,min,max,num_nulls,"
-      + "distinct_count,avg_col_len,max_col_len,num_trues,num_falses,comment,bitVector"
+      + "distinct_count,avg_col_len,max_col_len,num_trues,num_falses,bitVector,comment"
       + "#string:string:string:string:string:string:string:string:string:string:string:string";
 
   public DescTableDesc() {

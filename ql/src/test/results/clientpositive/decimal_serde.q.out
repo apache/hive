@@ -105,7 +105,6 @@ POSTHOOK: query: describe formatted DECIMAL_RC
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@decimal_rc
 # col_name            	data_type           	comment             
-	 	 
 key                 	decimal(10,0)       	                    
 value               	int                 	                    
 	 	 
@@ -158,7 +157,6 @@ POSTHOOK: query: describe formatted DECIMAL_LAZY_COL
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@decimal_lazy_col
 # col_name            	data_type           	comment             
-	 	 
 key                 	decimal(10,0)       	                    
 value               	int                 	                    
 	 	 

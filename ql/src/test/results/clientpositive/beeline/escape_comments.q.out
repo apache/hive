@@ -84,13 +84,11 @@ PREHOOK: Input: escape_comments_db@escape_comments_tbl1
 POSTHOOK: query: describe formatted escape_comments_tbl1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
-# col_name            	data_type           	comment             
-	NULL	NULL
+# col_name	data_type	comment
 col1	string	a\nb';
 	NULL	NULL
 # Partition Information	NULL	NULL
-# col_name            	data_type           	comment             
-	NULL	NULL
+# col_name	data_type	comment
 p1	string	a\nb
 	NULL	NULL
 # Detailed Table Information	NULL	NULL
@@ -148,8 +146,7 @@ col1	string	a\nb';
 p1	string	a\nb
 	NULL	NULL
 # Partition Information	NULL	NULL
-# col_name            	data_type           	comment             
-	NULL	NULL
+# col_name	data_type	comment
 p1	string	a\nb
 PREHOOK: query: show create table escape_comments_view1
 PREHOOK: type: SHOW_CREATETABLE
@@ -164,8 +161,7 @@ PREHOOK: Input: escape_comments_db@escape_comments_view1
 POSTHOOK: query: describe formatted escape_comments_view1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: escape_comments_db@escape_comments_view1
-# col_name            	data_type           	comment             
-	NULL	NULL
+# col_name	data_type	comment
 col1	string	a\nb
 	NULL	NULL
 # Detailed Table Information	NULL	NULL
@@ -196,8 +192,6 @@ PREHOOK: type: SHOWINDEXES
 POSTHOOK: query: show formatted index on escape_comments_tbl1
 POSTHOOK: type: SHOWINDEXES
 idx_name            	tab_name            	col_names           	idx_tab_name        	idx_type            	comment             
-	NULL	NULL	NULL	NULL	NULL
-	NULL	NULL	NULL	NULL	NULL
 index2              	escape_comments_tbl1	col1                	escape_comments_db__escape_comments_tbl1_index2__	compact             	a\nb                
 PREHOOK: query: drop database escape_comments_db cascade
 PREHOOK: type: DROPDATABASE

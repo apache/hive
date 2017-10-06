@@ -25,7 +25,6 @@ POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
-	 	 
 year                	int                 	                    
 month               	int                 	                    
 	 	 
@@ -68,7 +67,6 @@ POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
-	 	 
 year                	int                 	                    
 month               	int                 	                    
 	 	 
@@ -157,7 +155,6 @@ POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
-	 	 
 year1               	int                 	                    
 month               	int                 	                    
 	 	 
@@ -279,7 +276,6 @@ POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
-	 	 
 year1               	int                 	                    
 month               	int                 	                    
 	 	 

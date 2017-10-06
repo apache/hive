@@ -17,13 +17,11 @@ POSTHOOK: query: desc formatted p
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -66,7 +64,6 @@ POSTHOOK: query: desc formatted p partition (c=1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-	 	 	 	 	 	 	 	 	 	 	 
 a                   	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted p partition (c=1)
 PREHOOK: type: DESCTABLE
@@ -75,13 +72,11 @@ POSTHOOK: query: desc formatted p partition (c=1)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -202,13 +197,11 @@ POSTHOOK: query: desc formatted p partition(c=4)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -296,13 +289,11 @@ POSTHOOK: query: desc formatted p partition (c=100)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -441,13 +432,11 @@ POSTHOOK: query: desc formatted p partition(c=100)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 

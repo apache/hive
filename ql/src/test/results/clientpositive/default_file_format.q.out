@@ -59,7 +59,6 @@ POSTHOOK: query: describe formatted t
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -93,7 +92,6 @@ POSTHOOK: query: describe formatted o
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@o
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -127,7 +125,6 @@ POSTHOOK: query: describe formatted io
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@io
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -161,7 +158,6 @@ POSTHOOK: query: describe formatted e
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@e
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -191,7 +187,6 @@ POSTHOOK: query: describe formatted i
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -225,7 +220,6 @@ POSTHOOK: query: describe formatted e2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@e2
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -359,7 +353,6 @@ POSTHOOK: query: describe formatted t
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -393,7 +386,6 @@ POSTHOOK: query: describe formatted o
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@o
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -427,7 +419,6 @@ POSTHOOK: query: describe formatted io
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@io
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -461,7 +452,6 @@ POSTHOOK: query: describe formatted e
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@e
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -493,7 +483,6 @@ POSTHOOK: query: describe formatted i
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -527,7 +516,6 @@ POSTHOOK: query: describe formatted e2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@e2
 # col_name            	data_type           	comment             
-	 	 
 c                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 

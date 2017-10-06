@@ -328,7 +328,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 k                   	string              	                    
 	 	 
 # Detailed Table Information	 	 

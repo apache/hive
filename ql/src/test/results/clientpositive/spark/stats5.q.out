@@ -47,7 +47,6 @@ POSTHOOK: query: describe formatted analyze_src
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_src
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 

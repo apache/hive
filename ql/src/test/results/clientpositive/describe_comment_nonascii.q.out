@@ -37,7 +37,6 @@ POSTHOOK: query: DESCRIBE FORMATTED dummy
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@dummy
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	한글_col1             
 col2                	string              	漢字_col2             
 col3                	string              	わご_col3             

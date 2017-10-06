@@ -13,7 +13,6 @@ POSTHOOK: query: desc formatted k1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@k1
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -64,7 +63,6 @@ POSTHOOK: query: desc formatted k1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@k1
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -115,7 +113,6 @@ POSTHOOK: query: desc formatted k1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@k1
 # col_name            	data_type           	comment             
-	 	 
 a                   	string              	                    
 	 	 
 # Detailed Table Information	 	 

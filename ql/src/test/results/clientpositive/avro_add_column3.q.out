@@ -69,7 +69,6 @@ part                	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	int                 	                    
 PREHOOK: query: SELECT * FROM doctors_copy
 PREHOOK: type: QUERY

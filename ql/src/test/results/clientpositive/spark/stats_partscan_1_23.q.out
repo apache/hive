@@ -44,13 +44,11 @@ POSTHOOK: query: describe formatted analyze_srcpart_partial_scan PARTITION(ds='2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart_partial_scan
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -110,13 +108,11 @@ POSTHOOK: query: describe formatted analyze_srcpart_partial_scan PARTITION(ds='2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart_partial_scan
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -147,13 +143,11 @@ POSTHOOK: query: describe formatted analyze_srcpart_partial_scan PARTITION(ds='2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart_partial_scan
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

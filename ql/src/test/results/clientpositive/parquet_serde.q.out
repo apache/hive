@@ -51,14 +51,12 @@ POSTHOOK: query: DESCRIBE FORMATTED parquet_mixed_fileformat PARTITION (dateint=
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@parquet_mixed_fileformat
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 str                 	string              	                    
 part                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dateint             	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -113,14 +111,12 @@ POSTHOOK: query: DESCRIBE FORMATTED parquet_mixed_fileformat
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@parquet_mixed_fileformat
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 str                 	string              	                    
 part                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dateint             	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -156,14 +152,12 @@ POSTHOOK: query: DESCRIBE FORMATTED parquet_mixed_fileformat PARTITION (dateint=
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@parquet_mixed_fileformat
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 str                 	string              	                    
 part                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dateint             	int                 	                    
 	 	 
 # Detailed Partition Information	 	 

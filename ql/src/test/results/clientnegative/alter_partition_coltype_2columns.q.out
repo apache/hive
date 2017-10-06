@@ -29,7 +29,6 @@ ts                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	string              	                    
 FAILED: ParseException line 4:50 mismatched input ',' expecting ) near 'int' in alter partition key type
