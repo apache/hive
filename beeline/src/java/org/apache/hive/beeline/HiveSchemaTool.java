@@ -806,39 +806,9 @@ public class HiveSchemaTool {
     Matcher matcher                 = null;
     Pattern regexp                  = null;
     List<String> subs               = new ArrayList<String>();
-    int groupNo                     = 0;
+    int groupNo                     = 2;
 
-    switch (dbType) {
-      case HiveSchemaHelper.DB_ORACLE:
-        regexp = Pattern.compile("(CREATE TABLE(IF NOT EXISTS)*) (\\S+).*");
-        groupNo = 3;
-        break;
-
-      case HiveSchemaHelper.DB_MYSQL:
-        regexp = Pattern.compile("(CREATE TABLE) (\\S+).*");
-        groupNo = 2;
-        break;
-
-      case HiveSchemaHelper.DB_MSSQL:
-        regexp = Pattern.compile("(CREATE TABLE) (\\S+).*");
-        groupNo = 2;
-        break;
-
-      case HiveSchemaHelper.DB_DERBY:
-        regexp = Pattern.compile("(CREATE TABLE(IF NOT EXISTS)*) (\\S+).*");
-        groupNo = 3;
-        break;
-
-      case HiveSchemaHelper.DB_POSTGRACE:
-        regexp = Pattern.compile("(CREATE TABLE(IF NOT EXISTS)*) (\\S+).*");
-        groupNo = 3;
-        break;
-
-      default:
-        regexp = Pattern.compile("(CREATE TABLE(IF NOT EXISTS)*) (\\S+).*");
-        groupNo = 3;
-        break;
-    }
+    regexp = Pattern.compile("CREATE TABLE(\\s+IF NOT EXISTS)?\\s+(\\S+).*");
 
     if (!(new File(path)).exists()) {
       throw new Exception(path + " does not exist. Potentially incorrect version in the metastore VERSION table");
@@ -867,7 +837,7 @@ public class HiveSchemaTool {
         if (matcher.find()) {
           String table = matcher.group(groupNo);
           if (dbType.equals("derby"))
-            table  = table.replaceAll("APP.","");
+            table  = table.replaceAll("APP\\.","");
           tableList.add(table.toLowerCase());
           LOG.debug("Found table " + table + " in the schema");
         }

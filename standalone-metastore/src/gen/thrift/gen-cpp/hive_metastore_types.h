@@ -438,6 +438,14 @@ class CmRecycleResponse;
 
 class TableMeta;
 
+class WMResourcePlan;
+
+class WMPool;
+
+class WMTrigger;
+
+class WMMapping;
+
 class MetaException;
 
 class UnknownTableException;
@@ -8436,6 +8444,286 @@ class TableMeta {
 void swap(TableMeta &a, TableMeta &b);
 
 inline std::ostream& operator<<(std::ostream& out, const TableMeta& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMResourcePlan__isset {
+  _WMResourcePlan__isset() : status(false), queryParallelism(false) {}
+  bool status :1;
+  bool queryParallelism :1;
+} _WMResourcePlan__isset;
+
+class WMResourcePlan {
+ public:
+
+  WMResourcePlan(const WMResourcePlan&);
+  WMResourcePlan& operator=(const WMResourcePlan&);
+  WMResourcePlan() : name(), status(), queryParallelism(0) {
+  }
+
+  virtual ~WMResourcePlan() throw();
+  std::string name;
+  std::string status;
+  int32_t queryParallelism;
+
+  _WMResourcePlan__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_status(const std::string& val);
+
+  void __set_queryParallelism(const int32_t val);
+
+  bool operator == (const WMResourcePlan & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (__isset.status != rhs.__isset.status)
+      return false;
+    else if (__isset.status && !(status == rhs.status))
+      return false;
+    if (__isset.queryParallelism != rhs.__isset.queryParallelism)
+      return false;
+    else if (__isset.queryParallelism && !(queryParallelism == rhs.queryParallelism))
+      return false;
+    return true;
+  }
+  bool operator != (const WMResourcePlan &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMResourcePlan & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMResourcePlan &a, WMResourcePlan &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMResourcePlan& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMPool__isset {
+  _WMPool__isset() : parentPoolName(false), allocFraction(false), queryParallelism(false), schedulingPolicy(false) {}
+  bool parentPoolName :1;
+  bool allocFraction :1;
+  bool queryParallelism :1;
+  bool schedulingPolicy :1;
+} _WMPool__isset;
+
+class WMPool {
+ public:
+
+  WMPool(const WMPool&);
+  WMPool& operator=(const WMPool&);
+  WMPool() : resourcePlanName(), poolName(), parentPoolName(), allocFraction(0), queryParallelism(0), schedulingPolicy() {
+  }
+
+  virtual ~WMPool() throw();
+  std::string resourcePlanName;
+  std::string poolName;
+  std::string parentPoolName;
+  double allocFraction;
+  int32_t queryParallelism;
+  std::string schedulingPolicy;
+
+  _WMPool__isset __isset;
+
+  void __set_resourcePlanName(const std::string& val);
+
+  void __set_poolName(const std::string& val);
+
+  void __set_parentPoolName(const std::string& val);
+
+  void __set_allocFraction(const double val);
+
+  void __set_queryParallelism(const int32_t val);
+
+  void __set_schedulingPolicy(const std::string& val);
+
+  bool operator == (const WMPool & rhs) const
+  {
+    if (!(resourcePlanName == rhs.resourcePlanName))
+      return false;
+    if (!(poolName == rhs.poolName))
+      return false;
+    if (__isset.parentPoolName != rhs.__isset.parentPoolName)
+      return false;
+    else if (__isset.parentPoolName && !(parentPoolName == rhs.parentPoolName))
+      return false;
+    if (__isset.allocFraction != rhs.__isset.allocFraction)
+      return false;
+    else if (__isset.allocFraction && !(allocFraction == rhs.allocFraction))
+      return false;
+    if (__isset.queryParallelism != rhs.__isset.queryParallelism)
+      return false;
+    else if (__isset.queryParallelism && !(queryParallelism == rhs.queryParallelism))
+      return false;
+    if (__isset.schedulingPolicy != rhs.__isset.schedulingPolicy)
+      return false;
+    else if (__isset.schedulingPolicy && !(schedulingPolicy == rhs.schedulingPolicy))
+      return false;
+    return true;
+  }
+  bool operator != (const WMPool &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMPool & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMPool &a, WMPool &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMPool& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMTrigger__isset {
+  _WMTrigger__isset() : triggerExpression(false), actionExpression(false) {}
+  bool triggerExpression :1;
+  bool actionExpression :1;
+} _WMTrigger__isset;
+
+class WMTrigger {
+ public:
+
+  WMTrigger(const WMTrigger&);
+  WMTrigger& operator=(const WMTrigger&);
+  WMTrigger() : resourcePlanName(), poolName(), triggerExpression(), actionExpression() {
+  }
+
+  virtual ~WMTrigger() throw();
+  std::string resourcePlanName;
+  std::string poolName;
+  std::string triggerExpression;
+  std::string actionExpression;
+
+  _WMTrigger__isset __isset;
+
+  void __set_resourcePlanName(const std::string& val);
+
+  void __set_poolName(const std::string& val);
+
+  void __set_triggerExpression(const std::string& val);
+
+  void __set_actionExpression(const std::string& val);
+
+  bool operator == (const WMTrigger & rhs) const
+  {
+    if (!(resourcePlanName == rhs.resourcePlanName))
+      return false;
+    if (!(poolName == rhs.poolName))
+      return false;
+    if (__isset.triggerExpression != rhs.__isset.triggerExpression)
+      return false;
+    else if (__isset.triggerExpression && !(triggerExpression == rhs.triggerExpression))
+      return false;
+    if (__isset.actionExpression != rhs.__isset.actionExpression)
+      return false;
+    else if (__isset.actionExpression && !(actionExpression == rhs.actionExpression))
+      return false;
+    return true;
+  }
+  bool operator != (const WMTrigger &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMTrigger & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMTrigger &a, WMTrigger &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMTrigger& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMMapping__isset {
+  _WMMapping__isset() : poolName(false), ordering(false) {}
+  bool poolName :1;
+  bool ordering :1;
+} _WMMapping__isset;
+
+class WMMapping {
+ public:
+
+  WMMapping(const WMMapping&);
+  WMMapping& operator=(const WMMapping&);
+  WMMapping() : resourcePlanName(), entityType(), entityName(), poolName(), ordering(0) {
+  }
+
+  virtual ~WMMapping() throw();
+  std::string resourcePlanName;
+  std::string entityType;
+  std::string entityName;
+  std::string poolName;
+  int32_t ordering;
+
+  _WMMapping__isset __isset;
+
+  void __set_resourcePlanName(const std::string& val);
+
+  void __set_entityType(const std::string& val);
+
+  void __set_entityName(const std::string& val);
+
+  void __set_poolName(const std::string& val);
+
+  void __set_ordering(const int32_t val);
+
+  bool operator == (const WMMapping & rhs) const
+  {
+    if (!(resourcePlanName == rhs.resourcePlanName))
+      return false;
+    if (!(entityType == rhs.entityType))
+      return false;
+    if (!(entityName == rhs.entityName))
+      return false;
+    if (__isset.poolName != rhs.__isset.poolName)
+      return false;
+    else if (__isset.poolName && !(poolName == rhs.poolName))
+      return false;
+    if (__isset.ordering != rhs.__isset.ordering)
+      return false;
+    else if (__isset.ordering && !(ordering == rhs.ordering))
+      return false;
+    return true;
+  }
+  bool operator != (const WMMapping &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMMapping & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMMapping &a, WMMapping &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMMapping& obj)
 {
   obj.printTo(out);
   return out;

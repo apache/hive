@@ -1030,6 +1030,36 @@ struct TableMeta {
   4: optional string comments;
 }
 
+struct WMResourcePlan {
+  1: required string name;
+  2: optional string status;
+  3: optional i32 queryParallelism;
+}
+
+struct WMPool {
+  1: required string resourcePlanName;
+  2: required string poolName;
+  3: optional string parentPoolName;
+  4: optional double allocFraction;
+  5: optional i32 queryParallelism;
+  6: optional string schedulingPolicy;
+}
+
+struct WMTrigger {
+  1: required string resourcePlanName;
+  2: required string poolName;
+  3: optional string triggerExpression;
+  4: optional string actionExpression;
+}
+
+struct WMMapping {
+  1: required string resourcePlanName;
+  2: required string entityType;
+  3: required string entityName;
+  4: optional string poolName;
+  5: optional i32 ordering;
+}
+
 exception MetaException {
   1: string message
 }

@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
+import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
@@ -222,6 +223,7 @@ class MetaStoreDirectSql {
       initQueries.add(pm.newQuery(MConstraint.class, "childIntegerIndex < 0"));
       initQueries.add(pm.newQuery(MNotificationLog.class, "dbName == ''"));
       initQueries.add(pm.newQuery(MNotificationNextId.class, "nextEventId < -1"));
+      initQueries.add(pm.newQuery(MWMResourcePlan.class, "name == ''"));
       Query q;
       while ((q = initQueries.peekFirst()) != null) {
         q.execute();

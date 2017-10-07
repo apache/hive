@@ -1082,6 +1082,117 @@
       </field>
     </class>
 
+    <class name="MWMResourcePlan" identity-type="datastore" table="WM_RESOURCEPLAN" detachable="true">
+      <datastore-identity>
+        <column name="RP_ID"/>
+      </datastore-identity>
+      <field name="name">
+        <column name="NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="queryParallelism">
+        <column name="QUERY_PARALLELISM" jdbc-type="integer" allows-null="true"/>
+      </field>
+      <field name="status">
+        <column name="STATUS" jdbc-type="string" allows-null="false"/>
+      </field>
+      <index name="UniqueResourcePlan" unique="true">
+        <column name="NAME"/>
+      </index>
+
+      <field name="pools" mapped-by="resourcePlan">
+        <collection element-type="MWMPool"/>
+      </field>
+      <field name="triggers" mapped-by="resourcePlan">
+        <collection element-type="MWMTrigger"/>
+      </field>
+      <field name="mappings" mapped-by="resourcePlan">
+        <collection element-type="MWMMapping"/>
+      </field>
+    </class>
+
+    <class name="MWMPool" identity-type="datastore" table="WM_POOL" detachable="true">
+      <datastore-identity>
+        <column name="POOL_ID"/>
+      </datastore-identity>
+      <field name="resourcePlan">
+        <column name="RP_ID" jdbc-type="integer" allows-null="false"/>
+      </field>
+      <field name="path">
+        <column name="PATH" length="1024" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="parentPool">
+        <column name="PARENT_POOL_ID" jdbc-type="integer" allows-null="true" target="POOL_ID"/>
+      </field>
+      <field name="allocFraction">
+        <column name="ALLOC_FRACTION" jdbc-type="double" allows-null="true"/>
+      </field>
+      <field name="queryParallelism">
+        <column name="QUERY_PARALLELISM" jdbc-type="integer" allows-null="true"/>
+      </field>
+      <field name="triggers" table="WM_POOL_TO_TRIGGER">
+        <join>
+          <column name="POOL_ID" />
+        </join>
+        <element>
+          <column name="TRIGGER_ID"/>
+        </element>
+      </field>
+      <index name="UniqueWMPool" unique="true">
+        <column name="RP_ID"/>
+        <column name="PATH"/>
+      </index>
+    </class>
+
+    <class name="MWMTrigger" identity-type="datastore" table="WM_TRIGGER" detachable="true">
+      <datastore-identity>
+        <column name="TRIGGER_ID"/>
+      </datastore-identity>
+      <field name="resourcePlan">
+        <column name="RP_ID" jdbc-type="integer" allows-null="false"/>
+      </field>
+      <field name="name">
+        <column name="NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="triggerExpression">
+        <column name="TRIGGER_EXPRESSION" jdbc-type="string" allows-null="true"/>
+      </field>
+      <field name="actionExpression">
+        <column name="ACTION_EXPRESSION" jdbc-type="string" allows-null="true"/>
+      </field>
+      <field name="pools" mapped-by="triggers">
+        <collection element-type="MWMPool" />
+      </field>
+      <index name="UniqueWMTrigger" unique="true">
+        <column name="RP_ID"/>
+        <column name="NAME"/>
+      </index>
+    </class>
+
+    <class name="MWMMapping" identity-type="datastore" table="WM_MAPPING" detachable="true">
+      <datastore-identity>
+        <column name="MAPPING_ID"/>
+      </datastore-identity>
+      <field name="resourcePlan">
+        <column name="RP_ID" jdbc-type="integer" allows-null="false"/>
+      </field>
+      <field name="entityType">
+        <column name="ENTITY_TYPE" jdbc-type="string" length="10" />
+      </field>
+      <field name="entityName">
+        <column name="ENTITY_NAME" jdbc-type="string" length="128" />
+      </field>
+      <field name="pool">
+        <column name="POOL_ID" jdbc-type="integer" allows-null="true"/>
+      </field>
+      <field name="ordering">
+        <column name="ORDERING" jdbc-type="integer" allows-null="true"/>
+      </field>
+      <index name="UniqueWMMapping" unique="true">
+        <column name="RP_ID"/>
+        <column name="ENTITY_TYPE"/>
+        <column name="ENTITY_NAME"/>
+      </index>
+    </class>
 
   </package>
 </jdo>

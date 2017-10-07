@@ -2187,6 +2187,44 @@ POSTHOOK: Lineage: PARTITION_STATS_VIEW.part_id SIMPLE [(partition_params)partit
 POSTHOOK: Lineage: PARTITION_STATS_VIEW.raw_data_size EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: PARTITION_STATS_VIEW.total_size EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: PARTITION_STATS_VIEW.transient_last_ddl_time EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
+  `NAME` string,
+  `STATUS` string,
+  `QUERY_PARALLELISM` int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"NAME\",
+  \"STATUS\",
+  \"QUERY_PARALLELISM\"
+FROM
+  \"WM_RESOURCEPLAN\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@WM_RESOURCEPLANS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
+  `NAME` string,
+  `STATUS` string,
+  `QUERY_PARALLELISM` int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"NAME\",
+  \"STATUS\",
+  \"QUERY_PARALLELISM\"
+FROM
+  \"WM_RESOURCEPLAN\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@WM_RESOURCEPLANS
+POSTHOOK: Output: database:sys
 PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
 PREHOOK: type: DROPDATABASE
 POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
@@ -2967,7 +3005,7 @@ POSTHOOK: query: select count(*) from cds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@cds
 #### A masked pattern was here ####
-65
+66
 PREHOOK: query: select column_name, type_name, integer_idx from columns_v2 order by column_name, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@columns_v2
@@ -3121,7 +3159,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-71
+72
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -3347,7 +3385,7 @@ POSTHOOK: Input: sys@table_params
 POSTHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
 {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"column_name":"true","create_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","tbl_col_priv":"true","tbl_column_grant_id":"true","tbl_id":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"name":"true","query_parallelism":"true","status":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"next_val":"true","sequence_name":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
 #### A masked pattern was here ####
@@ -3552,6 +3590,7 @@ default	sys	tbl_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	tbl_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	tbls	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	version	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	wm_resourceplans	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 PREHOOK: query: select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, PRIVILEGE_TYPE limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@table_privileges
