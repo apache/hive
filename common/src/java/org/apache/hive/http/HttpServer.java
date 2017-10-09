@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -250,12 +251,28 @@ public class HttpServer {
   }
 
   /**
+   * Check if the remote user has access to an object (e.g. query history) that belongs to a user
+   *
+   * @param ctx the context containing the admin ACL.
+   * @param request the HTTP request.
+   * @param remoteUser the user that sent out the request.
+   * @param user the user of the object being checked against.
+   * @return true if the remote user is the same as the user or has the admin access
+   * @throws IOException
+   */
+  public static boolean hasAccess(String remoteUser, String user,
+      ServletContext ctx, HttpServletRequest request) throws IOException {
+    return StringUtils.equalsIgnoreCase(remoteUser, user) ||
+        HttpServer.hasAdministratorAccess(ctx, request, null);
+  }
+
+  /**
    * Does the user sending the HttpServletRequest have the administrator ACLs? If
    * it isn't the case, response will be modified to send an error to the user.
    *
    * @param servletContext
    * @param request
-   * @param response used to send the error response if user does not have admin access.
+   * @param response used to send the error response if user does not have admin access (no error if null)
    * @return true if admin-authorized, false otherwise
    * @throws IOException
    */
@@ -269,19 +286,22 @@ public class HttpServer {
         CommonConfigurationKeys.HADOOP_SECURITY_AUTHORIZATION, false)) {
       return true;
     }
-
     String remoteUser = request.getRemoteUser();
     if (remoteUser == null) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                         "Unauthenticated users are not " +
-                         "authorized to access this page.");
+      if (response != null) {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                           "Unauthenticated users are not " +
+                           "authorized to access this page.");
+      }
       return false;
     }
 
     if (servletContext.getAttribute(ADMINS_ACL) != null &&
         !userHasAdministratorAccess(servletContext, remoteUser)) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User "
-          + remoteUser + " is unauthorized to access this page.");
+      if (response != null) {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User "
+            + remoteUser + " is unauthorized to access this page.");
+      }
       return false;
     }
 
