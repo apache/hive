@@ -58,7 +58,12 @@ public class CoreBeeLineDriver extends CliAdapter {
     super(testCliConfig);
     queryDirectory = new File(testCliConfig.getQueryDirectory());
     logDirectory = new File(testCliConfig.getLogDir());
-    resultsDirectory = new File(testCliConfig.getResultsDir());
+    String testResultsDirectoryName = System.getProperty("test.results.dir");
+    if (testResultsDirectoryName != null) {
+      resultsDirectory = new File(hiveRootDirectory, testResultsDirectoryName);
+    } else {
+      resultsDirectory = new File(testCliConfig.getResultsDir());
+    }
     String testDataDirectoryName = System.getProperty("test.data.dir");
     if (testDataDirectoryName == null) {
       testDataDirectory = new File(hiveRootDirectory, "data" + File.separator + "files");
@@ -66,7 +71,12 @@ public class CoreBeeLineDriver extends CliAdapter {
       testDataDirectory = new File(testDataDirectoryName);
     }
     testScriptDirectory = new File(hiveRootDirectory, "data" + File.separator + "scripts");
-    initScript = new File(testScriptDirectory, testCliConfig.getInitScript());
+    String initScriptFileName = System.getProperty("test.init.script");
+    if (initScriptFileName != null) {
+      initScript = new File(testScriptDirectory, initScriptFileName);
+    } else {
+      initScript = new File(testScriptDirectory, testCliConfig.getInitScript());
+    }
     cleanupScript = new File(testScriptDirectory, testCliConfig.getCleanupScript());
   }
 
