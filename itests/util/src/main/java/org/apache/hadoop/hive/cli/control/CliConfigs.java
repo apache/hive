@@ -494,6 +494,28 @@ public class CliConfigs {
     }
   }
 
+  public static class LocalSparkCliConfig extends AbstractCliConfig {
+    public LocalSparkCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+
+        includesFrom(testConfigProps, "localSpark.only.query.files");
+
+        setResultsDir("ql/src/test/results/clientpositive/spark");
+        setLogDir("itests/qtest-spark/target/qfile-results/clientpositive/spark");
+
+        setInitScript("q_test_init.sql");
+        setCleanupScript("q_test_cleanup.sql");
+
+        setHiveConfDir("data/conf/spark/local");
+        setClusterType(MiniClusterType.spark);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
   public static class SparkOnYarnCliConfig extends AbstractCliConfig {
     public SparkOnYarnCliConfig() {
       super(CoreCliDriver.class);
