@@ -1228,6 +1228,12 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe",
         "SerDes retrieving schema from metastore. This is an internal parameter."),
 
+    @Deprecated
+    HIVE_LEGACY_SCHEMA_FOR_ALL_SERDES("hive.legacy.schema.for.all.serdes",
+        false,
+        "A backward compatibility setting for external metastore users that do not handle \n" +
+        SERDESUSINGMETASTOREFORSCHEMA.varname + " correctly. This may be removed at any time."),
+
     HIVEHISTORYFILELOC("hive.querylog.location",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Location of Hive run time structured log file"),
