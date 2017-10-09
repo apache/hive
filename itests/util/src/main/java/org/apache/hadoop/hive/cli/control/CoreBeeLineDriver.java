@@ -49,7 +49,7 @@ public class CoreBeeLineDriver extends CliAdapter {
   private final File testDataDirectory;
   private final File testScriptDirectory;
   private boolean overwrite = false;
-  private boolean rewriteSourceTables = true;
+  private boolean useSharedDatabase = false;
   private MiniHS2 miniHS2;
   private QFileClientBuilder clientBuilder;
   private QFileBuilder fileBuilder;
@@ -111,7 +111,7 @@ public class CoreBeeLineDriver extends CliAdapter {
   public void beforeClass() throws Exception {
     overwrite = getBooleanPropertyValue("test.output.overwrite", Boolean.FALSE);
 
-    rewriteSourceTables = getBooleanPropertyValue("test.rewrite.source.tables", Boolean.TRUE);
+    useSharedDatabase = getBooleanPropertyValue("test.beeline.shared.database", Boolean.FALSE);
 
     String beeLineUrl = System.getProperty("test.beeline.url");
     if (StringUtils.isEmpty(beeLineUrl)) {
@@ -132,7 +132,7 @@ public class CoreBeeLineDriver extends CliAdapter {
         .setLogDirectory(logDirectory)
         .setQueryDirectory(queryDirectory)
         .setResultsDirectory(resultsDirectory)
-        .setRewriteSourceTables(rewriteSourceTables)
+        .setUseSharedDatabase(useSharedDatabase)
         .setComparePortable(comparePortable);
 
     runInfraScript(initScript, new File(logDirectory, "init.beeline"),
