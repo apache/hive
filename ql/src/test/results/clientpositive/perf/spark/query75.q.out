@@ -496,18 +496,18 @@ STAGE PLANS:
                 outputColumnNames: _col3, _col4, _col8, _col9, _col10, _col12, _col15, _col16
                 Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col8 (type: int), _col9 (type: int), _col10 (type: int), _col12 (type: int), (_col3 - COALESCE(_col15,0)) (type: int), (_col4 - COALESCE(_col16,0)) (type: decimal(13,2))
+                  expressions: _col8 (type: int), _col9 (type: int), _col10 (type: int), _col12 (type: int), (_col3 - COALESCE(_col15,0)) (type: int), (_col4 - COALESCE(_col16,0)) (type: decimal(8,2))
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                    keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                     Statistics: Num rows: 1149964734 Data size: 119542589565 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                      key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                       sort order: ++++++
-                      Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                      Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                       Statistics: Num rows: 1149964734 Data size: 119542589565 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -565,16 +565,16 @@ STAGE PLANS:
                 outputColumnNames: _col3, _col4, _col8, _col9, _col10, _col12, _col15, _col16
                 Statistics: Num rows: 191667562 Data size: 26061245514 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col8 (type: int), _col9 (type: int), _col10 (type: int), _col12 (type: int), (_col3 - COALESCE(_col15,0)) (type: int), (_col4 - COALESCE(_col16,0)) (type: decimal(13,2))
+                  expressions: _col8 (type: int), _col9 (type: int), _col10 (type: int), _col12 (type: int), (_col3 - COALESCE(_col15,0)) (type: int), (_col4 - COALESCE(_col16,0)) (type: decimal(8,2))
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 191667562 Data size: 26061245514 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                    keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                     Statistics: Num rows: 766649929 Data size: 85832540296 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                      key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                       sort order: ++++++
                       Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
                       Statistics: Num rows: 766649929 Data size: 85832540296 Basic stats: COMPLETE Column stats: NONE
@@ -618,18 +618,18 @@ STAGE PLANS:
                 outputColumnNames: _col3, _col4, _col8, _col9, _col10, _col12, _col15, _col16
                 Statistics: Num rows: 383314495 Data size: 51908482889 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col8 (type: int), _col9 (type: int), _col10 (type: int), _col12 (type: int), (_col3 - COALESCE(_col15,0)) (type: int), (_col4 - COALESCE(_col16,0)) (type: decimal(13,2))
+                  expressions: _col8 (type: int), _col9 (type: int), _col10 (type: int), _col12 (type: int), (_col3 - COALESCE(_col15,0)) (type: int), (_col4 - COALESCE(_col16,0)) (type: decimal(8,2))
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 383314495 Data size: 51908482889 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                    keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                     Statistics: Num rows: 1149964734 Data size: 119542589565 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                      key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                       sort order: ++++++
-                      Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                      Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                       Statistics: Num rows: 1149964734 Data size: 119542589565 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
@@ -650,24 +650,24 @@ STAGE PLANS:
         Reducer 30 
             Reduce Operator Tree:
               Group By Operator
-                keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int), KEY._col3 (type: int), KEY._col4 (type: int), KEY._col5 (type: decimal(13,2))
+                keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int), KEY._col3 (type: int), KEY._col4 (type: int), KEY._col5 (type: decimal(8,2))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                 Statistics: Num rows: 574982367 Data size: 59771294782 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                  keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 766649929 Data size: 85832540296 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                    key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                     sort order: ++++++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
                     Statistics: Num rows: 766649929 Data size: 85832540296 Basic stats: COMPLETE Column stats: NONE
         Reducer 31 
             Reduce Operator Tree:
               Group By Operator
-                keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int), KEY._col3 (type: int), KEY._col4 (type: int), KEY._col5 (type: decimal(13,2))
+                keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int), KEY._col3 (type: int), KEY._col4 (type: int), KEY._col5 (type: decimal(8,2))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                 Statistics: Num rows: 383324964 Data size: 42916270092 Basic stats: COMPLETE Column stats: NONE
@@ -682,7 +682,7 @@ STAGE PLANS:
                     sort order: ++++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
                     Statistics: Num rows: 191662482 Data size: 21458135046 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col4 (type: bigint), _col5 (type: decimal(23,2))
+                    value expressions: _col4 (type: bigint), _col5 (type: decimal(18,2))
         Reducer 36 
             Reduce Operator Tree:
               Join Operator
@@ -723,18 +723,18 @@ STAGE PLANS:
                 outputColumnNames: _col3, _col4, _col8, _col9, _col10, _col12, _col15, _col16
                 Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col8 (type: int), _col9 (type: int), _col10 (type: int), _col12 (type: int), (_col3 - COALESCE(_col15,0)) (type: int), (_col4 - COALESCE(_col16,0)) (type: decimal(13,2))
+                  expressions: _col8 (type: int), _col9 (type: int), _col10 (type: int), _col12 (type: int), (_col3 - COALESCE(_col15,0)) (type: int), (_col4 - COALESCE(_col16,0)) (type: decimal(8,2))
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                    keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                     Statistics: Num rows: 1149964734 Data size: 119542589565 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                      key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                       sort order: ++++++
-                      Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                      Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                       Statistics: Num rows: 1149964734 Data size: 119542589565 Basic stats: COMPLETE Column stats: NONE
         Reducer 4 
             Reduce Operator Tree:
@@ -744,18 +744,18 @@ STAGE PLANS:
                 outputColumnNames: _col3, _col4, _col8, _col9, _col10, _col12, _col15, _col16
                 Statistics: Num rows: 383314495 Data size: 51908482889 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col8 (type: int), _col9 (type: int), _col10 (type: int), _col12 (type: int), (_col3 - COALESCE(_col15,0)) (type: int), (_col4 - COALESCE(_col16,0)) (type: decimal(13,2))
+                  expressions: _col8 (type: int), _col9 (type: int), _col10 (type: int), _col12 (type: int), (_col3 - COALESCE(_col15,0)) (type: int), (_col4 - COALESCE(_col16,0)) (type: decimal(8,2))
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 383314495 Data size: 51908482889 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                    keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                     Statistics: Num rows: 1149964734 Data size: 119542589565 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                      key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                       sort order: ++++++
-                      Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                      Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                       Statistics: Num rows: 1149964734 Data size: 119542589565 Basic stats: COMPLETE Column stats: NONE
         Reducer 43 
             Reduce Operator Tree:
@@ -797,40 +797,40 @@ STAGE PLANS:
                 outputColumnNames: _col3, _col4, _col8, _col9, _col10, _col12, _col15, _col16
                 Statistics: Num rows: 191667562 Data size: 26061245514 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col8 (type: int), _col9 (type: int), _col10 (type: int), _col12 (type: int), (_col3 - COALESCE(_col15,0)) (type: int), (_col4 - COALESCE(_col16,0)) (type: decimal(13,2))
+                  expressions: _col8 (type: int), _col9 (type: int), _col10 (type: int), _col12 (type: int), (_col3 - COALESCE(_col15,0)) (type: int), (_col4 - COALESCE(_col16,0)) (type: decimal(8,2))
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 191667562 Data size: 26061245514 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                    keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                     Statistics: Num rows: 766649929 Data size: 85832540296 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                      key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                       sort order: ++++++
                       Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
                       Statistics: Num rows: 766649929 Data size: 85832540296 Basic stats: COMPLETE Column stats: NONE
         Reducer 5 
             Reduce Operator Tree:
               Group By Operator
-                keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int), KEY._col3 (type: int), KEY._col4 (type: int), KEY._col5 (type: decimal(13,2))
+                keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int), KEY._col3 (type: int), KEY._col4 (type: int), KEY._col5 (type: decimal(8,2))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                 Statistics: Num rows: 574982367 Data size: 59771294782 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                  keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 766649929 Data size: 85832540296 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(13,2))
+                    key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: decimal(8,2))
                     sort order: ++++++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
                     Statistics: Num rows: 766649929 Data size: 85832540296 Basic stats: COMPLETE Column stats: NONE
         Reducer 6 
             Reduce Operator Tree:
               Group By Operator
-                keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int), KEY._col3 (type: int), KEY._col4 (type: int), KEY._col5 (type: decimal(13,2))
+                keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int), KEY._col3 (type: int), KEY._col4 (type: int), KEY._col5 (type: decimal(8,2))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                 Statistics: Num rows: 383324964 Data size: 42916270092 Basic stats: COMPLETE Column stats: NONE
@@ -845,7 +845,7 @@ STAGE PLANS:
                     sort order: ++++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
                     Statistics: Num rows: 191662482 Data size: 21458135046 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col4 (type: bigint), _col5 (type: decimal(23,2))
+                    value expressions: _col4 (type: bigint), _col5 (type: decimal(18,2))
         Reducer 7 
             Reduce Operator Tree:
               Join Operator
@@ -860,7 +860,7 @@ STAGE PLANS:
                   predicate: ((CAST( _col10 AS decimal(17,2)) / CAST( _col4 AS decimal(17,2))) < 0.9) (type: boolean)
                   Statistics: Num rows: 70276244 Data size: 7867982946 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col10 (type: bigint), (_col10 - _col4) (type: bigint), (_col11 - _col5) (type: decimal(24,2))
+                    expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col10 (type: bigint), (_col10 - _col4) (type: bigint), (_col11 - _col5) (type: decimal(19,2))
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                     Statistics: Num rows: 70276244 Data size: 7867982946 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -868,18 +868,18 @@ STAGE PLANS:
                       sort order: +
                       Statistics: Num rows: 70276244 Data size: 7867982946 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
-                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col5 (type: bigint), _col7 (type: decimal(24,2))
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col5 (type: bigint), _col7 (type: decimal(19,2))
         Reducer 8 
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: bigint), VALUE._col5 (type: bigint), KEY.reducesinkkey0 (type: bigint), VALUE._col6 (type: decimal(24,2))
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: bigint), VALUE._col5 (type: bigint), KEY.reducesinkkey0 (type: bigint), VALUE._col6 (type: decimal(19,2))
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                 Statistics: Num rows: 70276244 Data size: 7867982946 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 100
                   Statistics: Num rows: 100 Data size: 11100 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: 2001 (type: int), 2002 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: decimal(24,2))
+                    expressions: 2001 (type: int), 2002 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: decimal(19,2))
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
                     Statistics: Num rows: 100 Data size: 11100 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
