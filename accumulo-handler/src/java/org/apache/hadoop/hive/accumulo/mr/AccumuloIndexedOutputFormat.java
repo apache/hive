@@ -38,8 +38,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -55,7 +55,7 @@ import java.util.Set;
  * Extension of AccumuloOutputFormat to support indexing.
  */
 public class AccumuloIndexedOutputFormat extends AccumuloOutputFormat {
-  private static final Logger LOG = Logger.getLogger(AccumuloIndexedOutputFormat.class);
+  private static final Logger LOG =  LoggerFactory.getLogger(AccumuloIndexedOutputFormat.class);
   private static final Class<?> CLASS = AccumuloOutputFormat.class;
   private static final byte[] EMPTY_BYTES = new byte[0];
 
@@ -107,10 +107,6 @@ public class AccumuloIndexedOutputFormat extends AccumuloOutputFormat {
 
     protected AccumuloRecordWriter(JobConf job)
         throws AccumuloException, AccumuloSecurityException, IOException {
-      Level l = AccumuloIndexedOutputFormat.getLogLevel(job);
-      if (l != null) {
-        LOG.setLevel(AccumuloIndexedOutputFormat.getLogLevel(job));
-      }
       this.isStringEncoded = AccumuloIndexedOutputFormat.getStringEncoding(job).booleanValue();
       this.simulate = AccumuloIndexedOutputFormat.getSimulationMode(job).booleanValue();
       this.createTables = AccumuloIndexedOutputFormat.canCreateTables(job).booleanValue();
@@ -124,7 +120,7 @@ public class AccumuloIndexedOutputFormat extends AccumuloOutputFormat {
 
       String iname = AccumuloIndexedOutputFormat.getIndexTableName(job);
       if (iname != null) {
-        LOG.info("Index Table = " + iname);
+        LOG.info("Index Table = {}", iname);
         this.indexTableName = new Text(iname);
         this.indexDef = createIndexDefinition(job, tname, iname);
       }
@@ -140,7 +136,7 @@ public class AccumuloIndexedOutputFormat extends AccumuloOutputFormat {
      AccumuloIndexDefinition createIndexDefinition(JobConf job, String tname, String iname) {
       AccumuloIndexDefinition def = new AccumuloIndexDefinition(tname, iname);
       String cols = AccumuloIndexedOutputFormat.getIndexColumns(job);
-      LOG.info("Index Cols = " + cols);
+      LOG.info("Index Cols = {}", cols);
       def.setColumnTuples(cols);
       return def;
     }
@@ -161,7 +157,7 @@ public class AccumuloIndexedOutputFormat extends AccumuloOutputFormat {
             try {
               this.addTable(table);
             } catch (Exception var5) {
-              LOG.error(var5);
+              LOG.error("Could not add table", var5);
               throw new IOException(var5);
             }
           }
@@ -169,7 +165,7 @@ public class AccumuloIndexedOutputFormat extends AccumuloOutputFormat {
             try {
               this.addTable(indexTableName);
             } catch (Exception var6) {
-              LOG.error(var6);
+              LOG.error("Could not add index table", var6);
               throw new IOException(var6);
             }
           }
@@ -201,26 +197,26 @@ public class AccumuloIndexedOutputFormat extends AccumuloOutputFormat {
 
     public void addTable(Text tableName) throws AccumuloException, AccumuloSecurityException {
       if(this.simulate) {
-        LOG.info("Simulating adding table: " + tableName);
+        LOG.info("Simulating adding table: {}", tableName);
       } else {
-        LOG.debug("Adding table: " + tableName);
+        LOG.debug("Adding table: {}", tableName);
         BatchWriter bw = null;
         String table = tableName.toString();
         if(this.createTables && !this.conn.tableOperations().exists(table)) {
           try {
             this.conn.tableOperations().create(table);
           } catch (AccumuloSecurityException var8) {
-            LOG.error("Accumulo security violation creating " + table, var8);
+            LOG.error("Accumulo security violation creating {}", table, var8);
             throw var8;
           } catch (TableExistsException var9) {
-            LOG.warn("Table Exists " + table, var9);
+            LOG.warn("Table Exists {}", table, var9);
           }
         }
 
         try {
           bw = this.mtbw.getBatchWriter(table);
         } catch (TableNotFoundException var5) {
-          LOG.error("Accumulo table " + table + " doesn't exist and cannot be created.", var5);
+          LOG.error("Accumulo table {} doesn't exist and cannot be created.", table, var5);
           throw new AccumuloException(var5);
         }
 
@@ -233,19 +229,15 @@ public class AccumuloIndexedOutputFormat extends AccumuloOutputFormat {
 
     private int printMutation(Text table, Mutation m) {
       if(LOG.isTraceEnabled()) {
-        LOG.trace(String.format("Table %s row key: %s",
-            new Object[]{table, this.hexDump(m.getRow())}));
+        LOG.trace("Table {} row key: {}", table, this.hexDump(m.getRow()));
         Iterator itr = m.getUpdates().iterator();
 
         while(itr.hasNext()) {
           ColumnUpdate cu = (ColumnUpdate)itr.next();
-          LOG.trace(String.format("Table %s column: %s:%s",
-              new Object[]{table, this.hexDump(cu.getColumnFamily()),
-                           this.hexDump(cu.getColumnQualifier())}));
-          LOG.trace(String.format("Table %s security: %s",
-              new Object[]{table, (new ColumnVisibility(cu.getColumnVisibility())).toString()}));
-          LOG.trace(String.format("Table %s value: %s",
-              new Object[]{table, this.hexDump(cu.getValue())}));
+          LOG.trace("Table {} column: {}:{}",
+              table, this.hexDump(cu.getColumnFamily()), this.hexDump(cu.getColumnQualifier()));
+          LOG.trace("Table {} security: {}", table, new ColumnVisibility(cu.getColumnVisibility()).toString());
+          LOG.trace("Table {} value: {}", table, this.hexDump(cu.getValue()));
         }
       }
 
@@ -269,7 +261,7 @@ public class AccumuloIndexedOutputFormat extends AccumuloOutputFormat {
           // so key=value, cf=columnFamily_columnQualifer, cq=rowKey, cv=columnVisibility value=[]
           String colType = indexDef.getColType(cf, cq);
           if (colType != null) {
-            LOG.trace(String.format("Building index for column %s:%s", new Object[]{cf, cq}));
+            LOG.trace("Building index for column {}:{}", cf, cq);
             Mutation m = new Mutation(AccumuloIndexLexicoder.encodeValue(cu.getValue(), colType,
                                                isStringEncoded));
             String colFam = cf + "_" + cq;
@@ -300,7 +292,7 @@ public class AccumuloIndexedOutputFormat extends AccumuloOutputFormat {
     }
 
     public void close(Reporter reporter) throws IOException {
-      LOG.debug("mutations written: " + this.mutCount + ", values written: " + this.valCount);
+      LOG.debug("mutations written: {}, values written: {}", this.mutCount, this.valCount);
       if(!this.simulate) {
         try {
           this.mtbw.close();
@@ -320,11 +312,11 @@ public class AccumuloIndexedOutputFormat extends AccumuloOutputFormat {
               }
             }
 
-            LOG.error("Not authorized to write to tables : " + tables);
+            LOG.error("Not authorized to write to tables {}", tables);
           }
 
           if(var7.getConstraintViolationSummaries().size() > 0) {
-            LOG.error("Constraint violations : " + var7.getConstraintViolationSummaries().size());
+            LOG.error("Constraint violations : {}", var7.getConstraintViolationSummaries().size());
           }
           throw new IOException(var7);
         }
