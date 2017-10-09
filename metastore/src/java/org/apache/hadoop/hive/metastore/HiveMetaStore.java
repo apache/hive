@@ -81,6 +81,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
+import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
@@ -7628,6 +7629,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ThreadPool.shutdown();
         }
       });
+
+      // This will only initialize the cache if configured.
+      CachedStore.initSharedCacheAsync(conf);
 
       //Start Metrics for Standalone (Remote) Mode
       if (conf.getBoolVar(ConfVars.METASTORE_METRICS)) {

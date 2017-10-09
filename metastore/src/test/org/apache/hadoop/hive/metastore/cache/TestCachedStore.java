@@ -52,6 +52,7 @@ public class TestCachedStore {
 
   private ObjectStore objectStore;
   private CachedStore cachedStore;
+  private SharedCache sharedCache;
 
   @Before
   public void setUp() throws Exception {
@@ -64,15 +65,17 @@ public class TestCachedStore {
     cachedStore = new CachedStore();
     cachedStore.setConf(conf);
     // Stop the CachedStore cache update service. We'll start it explicitly to control the test
-    cachedStore.stopCacheUpdateService(1);
+    CachedStore.stopCacheUpdateService(1);
+    cachedStore.setInitializedForTest();
 
     // Stop the CachedStore cache update service. We'll start it explicitly to control the test
-    cachedStore.stopCacheUpdateService(1);
-    SharedCache.getDatabaseCache().clear();
-    SharedCache.getTableCache().clear();
-    SharedCache.getPartitionCache().clear();
-    SharedCache.getSdCache().clear();
-    SharedCache.getPartitionColStatsCache().clear();
+    CachedStore.stopCacheUpdateService(1);
+    sharedCache = new SharedCache();
+    sharedCache.getDatabaseCache().clear();
+    sharedCache.getTableCache().clear();
+    sharedCache.getPartitionCache().clear();
+    sharedCache.getSdCache().clear();
+    sharedCache.getPartitionColStatsCache().clear();
   }
 
   /**********************************************************************************************
@@ -93,7 +96,7 @@ public class TestCachedStore {
     objectStore.createDatabase(db);
     db = objectStore.getDatabase(dbName);
     // Prewarm CachedStore
-    cachedStore.prewarm();
+    CachedStore.prewarm(objectStore);
 
     // Read database via CachedStore
     Database dbNew = cachedStore.getDatabase(dbName);
@@ -207,7 +210,7 @@ public class TestCachedStore {
     tbl = objectStore.getTable(dbName, tblName);
 
     // Prewarm CachedStore
-    cachedStore.prewarm();
+    CachedStore.prewarm(objectStore);
 
     // Read database, table via CachedStore
     Database dbNew = cachedStore.getDatabase(dbName);
@@ -324,7 +327,7 @@ public class TestCachedStore {
     ptn2 = objectStore.getPartition(dbName, tblName, Arrays.asList(ptnColVal2));
 
     // Prewarm CachedStore
-    cachedStore.prewarm();
+    CachedStore.prewarm(objectStore);
 
     // Read database, table, partition via CachedStore
     Database dbNew = cachedStore.getDatabase(dbName);
@@ -470,7 +473,7 @@ public class TestCachedStore {
     objectStore.updateTableColumnStatistics(stats);
 
     // Prewarm CachedStore
-    cachedStore.prewarm();
+    CachedStore.prewarm(objectStore);
 
     // Read table stats via CachedStore
     ColumnStatistics newStats =
@@ -482,13 +485,13 @@ public class TestCachedStore {
   private void updateCache(CachedStore cachedStore, long frequency, long sleepTime,
       long shutdownTimeout) throws InterruptedException {
     // Set cache refresh period to 100 milliseconds
-    cachedStore.setCacheRefreshPeriod(100);
+    CachedStore.setCacheRefreshPeriod(100);
     // Start the CachedStore update service
-    cachedStore.startCacheUpdateService();
+    CachedStore.startCacheUpdateService(cachedStore.getConf());
     // Sleep for 500 ms so that cache update is complete
     Thread.sleep(500);
     // Stop cache update service
-    cachedStore.stopCacheUpdateService(100);
+    CachedStore.stopCacheUpdateService(100);
   }
 
   /**********************************************************************************************
@@ -503,21 +506,21 @@ public class TestCachedStore {
     Database newDb1 = new Database();
     newDb1.setName("db1");
 
-    SharedCache.addDatabaseToCache("db1", db1);
-    SharedCache.addDatabaseToCache("db2", db2);
-    SharedCache.addDatabaseToCache("db3", db3);
+    sharedCache.addDatabaseToCache("db1", db1);
+    sharedCache.addDatabaseToCache("db2", db2);
+    sharedCache.addDatabaseToCache("db3", db3);
 
-    Assert.assertEquals(SharedCache.getCachedDatabaseCount(), 3);
+    Assert.assertEquals(sharedCache.getCachedDatabaseCount(), 3);
 
-    SharedCache.alterDatabaseInCache("db1", newDb1);
+    sharedCache.alterDatabaseInCache("db1", newDb1);
 
-    Assert.assertEquals(SharedCache.getCachedDatabaseCount(), 3);
+    Assert.assertEquals(sharedCache.getCachedDatabaseCount(), 3);
 
-    SharedCache.removeDatabaseFromCache("db2");
+    sharedCache.removeDatabaseFromCache("db2");
 
-    Assert.assertEquals(SharedCache.getCachedDatabaseCount(), 2);
+    Assert.assertEquals(sharedCache.getCachedDatabaseCount(), 2);
 
-    List<String> dbs = SharedCache.listCachedDatabases();
+    List<String> dbs = sharedCache.listCachedDatabases();
     Assert.assertEquals(dbs.size(), 2);
     Assert.assertTrue(dbs.contains("db1"));
     Assert.assertTrue(dbs.contains("db3"));
@@ -575,28 +578,28 @@ public class TestCachedStore {
     newTbl1.setSd(newSd1);
     newTbl1.setPartitionKeys(new ArrayList<FieldSchema>());
 
-    SharedCache.addTableToCache("db1", "tbl1", tbl1);
-    SharedCache.addTableToCache("db1", "tbl2", tbl2);
-    SharedCache.addTableToCache("db1", "tbl3", tbl3);
-    SharedCache.addTableToCache("db2", "tbl1", tbl1);
+    sharedCache.addTableToCache("db1", "tbl1", tbl1);
+    sharedCache.addTableToCache("db1", "tbl2", tbl2);
+    sharedCache.addTableToCache("db1", "tbl3", tbl3);
+    sharedCache.addTableToCache("db2", "tbl1", tbl1);
 
-    Assert.assertEquals(SharedCache.getCachedTableCount(), 4);
-    Assert.assertEquals(SharedCache.getSdCache().size(), 2);
+    Assert.assertEquals(sharedCache.getCachedTableCount(), 4);
+    Assert.assertEquals(sharedCache.getSdCache().size(), 2);
 
-    Table t = SharedCache.getTableFromCache("db1", "tbl1");
+    Table t = sharedCache.getTableFromCache("db1", "tbl1");
     Assert.assertEquals(t.getSd().getLocation(), "loc1");
 
-    SharedCache.removeTableFromCache("db1", "tbl1");
-    Assert.assertEquals(SharedCache.getCachedTableCount(), 3);
-    Assert.assertEquals(SharedCache.getSdCache().size(), 2);
+    sharedCache.removeTableFromCache("db1", "tbl1");
+    Assert.assertEquals(sharedCache.getCachedTableCount(), 3);
+    Assert.assertEquals(sharedCache.getSdCache().size(), 2);
 
-    SharedCache.alterTableInCache("db2", "tbl1", newTbl1);
-    Assert.assertEquals(SharedCache.getCachedTableCount(), 3);
-    Assert.assertEquals(SharedCache.getSdCache().size(), 3);
+    sharedCache.alterTableInCache("db2", "tbl1", newTbl1);
+    Assert.assertEquals(sharedCache.getCachedTableCount(), 3);
+    Assert.assertEquals(sharedCache.getSdCache().size(), 3);
 
-    SharedCache.removeTableFromCache("db1", "tbl2");
-    Assert.assertEquals(SharedCache.getCachedTableCount(), 2);
-    Assert.assertEquals(SharedCache.getSdCache().size(), 2);
+    sharedCache.removeTableFromCache("db1", "tbl2");
+    Assert.assertEquals(sharedCache.getCachedTableCount(), 2);
+    Assert.assertEquals(sharedCache.getSdCache().size(), 2);
   }
 
 
@@ -652,28 +655,28 @@ public class TestCachedStore {
     newPart1.setSd(newSd1);
     newPart1.setValues(Arrays.asList("201701"));
 
-    SharedCache.addPartitionToCache("db1", "tbl1", part1);
-    SharedCache.addPartitionToCache("db1", "tbl1", part2);
-    SharedCache.addPartitionToCache("db1", "tbl1", part3);
-    SharedCache.addPartitionToCache("db1", "tbl2", part1);
+    sharedCache.addPartitionToCache("db1", "tbl1", part1);
+    sharedCache.addPartitionToCache("db1", "tbl1", part2);
+    sharedCache.addPartitionToCache("db1", "tbl1", part3);
+    sharedCache.addPartitionToCache("db1", "tbl2", part1);
 
-    Assert.assertEquals(SharedCache.getCachedPartitionCount(), 4);
-    Assert.assertEquals(SharedCache.getSdCache().size(), 2);
+    Assert.assertEquals(sharedCache.getCachedPartitionCount(), 4);
+    Assert.assertEquals(sharedCache.getSdCache().size(), 2);
 
-    Partition t = SharedCache.getPartitionFromCache("db1", "tbl1", Arrays.asList("201701"));
+    Partition t = sharedCache.getPartitionFromCache("db1", "tbl1", Arrays.asList("201701"));
     Assert.assertEquals(t.getSd().getLocation(), "loc1");
 
-    SharedCache.removePartitionFromCache("db1", "tbl2", Arrays.asList("201701"));
-    Assert.assertEquals(SharedCache.getCachedPartitionCount(), 3);
-    Assert.assertEquals(SharedCache.getSdCache().size(), 2);
+    sharedCache.removePartitionFromCache("db1", "tbl2", Arrays.asList("201701"));
+    Assert.assertEquals(sharedCache.getCachedPartitionCount(), 3);
+    Assert.assertEquals(sharedCache.getSdCache().size(), 2);
 
-    SharedCache.alterPartitionInCache("db1", "tbl1", Arrays.asList("201701"), newPart1);
-    Assert.assertEquals(SharedCache.getCachedPartitionCount(), 3);
-    Assert.assertEquals(SharedCache.getSdCache().size(), 3);
+    sharedCache.alterPartitionInCache("db1", "tbl1", Arrays.asList("201701"), newPart1);
+    Assert.assertEquals(sharedCache.getCachedPartitionCount(), 3);
+    Assert.assertEquals(sharedCache.getSdCache().size(), 3);
 
-    SharedCache.removePartitionFromCache("db1", "tbl1", Arrays.asList("201702"));
-    Assert.assertEquals(SharedCache.getCachedPartitionCount(), 2);
-    Assert.assertEquals(SharedCache.getSdCache().size(), 2);
+    sharedCache.removePartitionFromCache("db1", "tbl1", Arrays.asList("201702"));
+    Assert.assertEquals(sharedCache.getCachedPartitionCount(), 2);
+    Assert.assertEquals(sharedCache.getSdCache().size(), 2);
   }
 
   @Test
