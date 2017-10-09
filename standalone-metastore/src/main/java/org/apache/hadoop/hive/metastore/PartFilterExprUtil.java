@@ -53,7 +53,7 @@ public class PartFilterExprUtil {
       // can't be
       // moved until after HiveMetaStore is moved, which can't be moved until this is moved.
       Class<? extends MetaException> exClass = JavaUtils.getClass(
-          "org.apache.hadoop.hive.metastore.IMetaStoreClient.IncompatibleMetastoreException",
+          "org.apache.hadoop.hive.metastore.IMetaStoreClient$IncompatibleMetastoreException",
           MetaException.class);
       throw JavaUtils.newInstance(exClass, new Class<?>[]{String.class}, new Object[]{ex.getMessage()});
     }
