@@ -76,7 +76,7 @@ public class HiveConf extends Configuration {
   protected String hiveJar;
   protected Properties origProp;
   protected String auxJars;
-  private static final Logger l4j = LoggerFactory.getLogger(HiveConf.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveConf.class);
   private static boolean loadMetastoreConfig = false;
   private static boolean loadHiveServer2Config = false;
   private static URL hiveDefaultURL = null;
@@ -170,9 +170,7 @@ public class HiveConf extends Configuration {
             URL sourceUrl = HiveConf.class.getProtectionDomain().getCodeSource().getLocation();
             jarUri = sourceUrl.getProtocol().equalsIgnoreCase("jar") ? new URI(sourceUrl.getPath()) : sourceUrl.toURI();
           } catch (Throwable e) {
-            if (l4j.isInfoEnabled()) {
-              l4j.info("Cannot get jar URI", e);
-            }
+            LOG.info("Cannot get jar URI", e);
             System.err.println("Cannot get jar URI: " + e.getMessage());
           }
           // From the jar file, the parent is /lib folder
@@ -183,8 +181,8 @@ public class HiveConf extends Configuration {
         }
       }
     }
-    if (doLog && l4j.isInfoEnabled()) {
-      l4j.info("Found configuration file " + result);
+    if (doLog)  {
+      LOG.info("Found configuration file {}", result);
     }
     return result;
   }
@@ -193,9 +191,7 @@ public class HiveConf extends Configuration {
     try {
       return (f.exists() && f.isFile()) ? f.toURI().toURL() : null;
     } catch (Throwable e) {
-      if (l4j.isInfoEnabled()) {
-        l4j.info("Error looking for config " + f, e);
-      }
+      LOG.info("Error looking for config {}", f, e);
       System.err.println("Error looking for config " + f + ": " + e.getMessage());
       return null;
     }
@@ -4143,13 +4139,13 @@ public class HiveConf extends Configuration {
 
   public String getLogIdVar(String defaultValue) {
     String retval = getVar(ConfVars.HIVE_LOG_TRACE_ID);
-    if (retval.equals("")) {
-      l4j.info("Using the default value passed in for log id: " + defaultValue);
+    if (StringUtils.EMPTY.equals(retval)) {
+      LOG.info("Using the default value passed in for log id: {}", defaultValue);
       retval = defaultValue;
     }
     if (retval.length() > LOG_PREFIX_LENGTH) {
-      l4j.warn("The original log id prefix is " + retval + " has been truncated to "
-          + retval.substring(0, LOG_PREFIX_LENGTH - 1));
+      LOG.warn("The original log id prefix is {} has been truncated to {}", retval,
+          retval.substring(0, LOG_PREFIX_LENGTH - 1));
       retval = retval.substring(0, LOG_PREFIX_LENGTH - 1);
     }
     return retval;
@@ -4283,7 +4279,7 @@ public class HiveConf extends Configuration {
 
     if ((this.get("hive.metastore.ds.retry.attempts") != null) ||
       this.get("hive.metastore.ds.retry.interval") != null) {
-        l4j.warn("DEPRECATED: hive.metastore.ds.retry.* no longer has any effect.  " +
+        LOG.warn("DEPRECATED: hive.metastore.ds.retry.* no longer has any effect.  " +
         "Use hive.hmshandler.retry.* instead");
     }
 
@@ -4316,9 +4312,9 @@ public class HiveConf extends Configuration {
           }
         }
         if (var == null) {
-          l4j.warn("HiveConf of name " + key + " does not exist");
+          LOG.warn("HiveConf of name {} does not exist", key);
         } else if (!var.isType(entry.getValue())) {
-          l4j.warn("HiveConf " + var.varname + " expects " + var.typeString() + " type value");
+          LOG.warn("HiveConf {} expects {} type value", var.varname, var.typeString());
         }
       }
       for (String key : trimmed) {
@@ -4826,7 +4822,7 @@ public class HiveConf extends Configuration {
   }
 
   public static String getNonMrEngines() {
-    String result = "";
+    String result = StringUtils.EMPTY;
     for (String s : ConfVars.HIVE_EXECUTION_ENGINE.getValidStringValues()) {
       if ("mr".equals(s)) {
         continue;
