@@ -157,8 +157,11 @@ public class OrcEncodedDataConsumer
             cvb.cols[idx] = createColumn(schema.getChildren().get(columnMapping[idx]), batchSize);
           }
           trace.logTreeReaderNextVector(idx);
-          cvb.cols[idx].ensureSize(batchSize, false);
-          reader.nextVector(cvb.cols[idx], null, batchSize);
+          ColumnVector cv = cvb.cols[idx];
+          cv.noNulls = true;
+          cv.reset(); // Reset to work around some poor assumptions in ORC.
+          cv.ensureSize(batchSize, false);
+          reader.nextVector(cv, null, batchSize);
         }
 
         // we are done reading a batch, send it to consumer for processing
