@@ -591,33 +591,58 @@ public final class MetaDataFormatUtils {
     if (isColStatsAvailable) {
       if (columnStatisticsObj != null) {
         ColumnStatisticsData csd = columnStatisticsObj.getStatsData();
+        // @formatter:off
         if (csd.isSetBinaryStats()) {
           BinaryColumnStatsData bcsd = csd.getBinaryStats();
-          ret.addAll(Lists.newArrayList("", "", "" + bcsd.getNumNulls(), "", "" + bcsd.getAvgColLen(), "" + bcsd.getMaxColLen(), "", "", ""));
+          ret.addAll(Lists.newArrayList(  "", "",
+                                          "" + bcsd.getNumNulls(), "",
+                                          "" + bcsd.getAvgColLen(), "" + bcsd.getMaxColLen(),
+                                          "", "",
+                                          convertToString(bcsd.getBitVectors())));
         } else if (csd.isSetStringStats()) {
           StringColumnStatsData scsd = csd.getStringStats();
-          ret.addAll(Lists.newArrayList("", "", "" + scsd.getNumNulls(), "" + scsd.getNumDVs(), "" + scsd.getAvgColLen(), "" + scsd.getMaxColLen(), "", "",
-              convertToString(scsd.getBitVectors())));
+          ret.addAll(Lists.newArrayList(  "", "",
+                                          "" + scsd.getNumNulls(), "" + scsd.getNumDVs(),
+                                          "" + scsd.getAvgColLen(), "" + scsd.getMaxColLen(),
+                                          "", "",
+                                          convertToString(scsd.getBitVectors())));
         } else if (csd.isSetBooleanStats()) {
           BooleanColumnStatsData bcsd = csd.getBooleanStats();
-          ret.addAll(Lists.newArrayList("", "", "" + bcsd.getNumNulls(), "", "", "", "" + bcsd.getNumTrues(), "" + bcsd.getNumFalses(), ""));
+          ret.addAll(Lists.newArrayList(  "", "",
+                                          "" + bcsd.getNumNulls(), "",
+                                          "", "",
+                                          "" + bcsd.getNumTrues(), "" + bcsd.getNumFalses(),
+                                          convertToString(bcsd.getBitVectors())));
         } else if (csd.isSetDecimalStats()) {
           DecimalColumnStatsData dcsd = csd.getDecimalStats();
-          ret.addAll(Lists.newArrayList(convertToString(dcsd.getLowValue()), convertToString(dcsd.getHighValue()), "" + dcsd.getNumNulls(),
-              "" + dcsd.getNumDVs(), "", "", "", "", convertToString(dcsd.getBitVectors())));
+          ret.addAll(Lists.newArrayList(  convertToString(dcsd.getLowValue()), convertToString(dcsd.getHighValue()),
+                                          "" + dcsd.getNumNulls(), "" + dcsd.getNumDVs(),
+                                          "", "",
+                                          "", "",
+                                          convertToString(dcsd.getBitVectors())));
         } else if (csd.isSetDoubleStats()) {
           DoubleColumnStatsData dcsd = csd.getDoubleStats();
-          ret.addAll(Lists.newArrayList("" + dcsd.getLowValue(), "" + dcsd.getHighValue(), "" + dcsd.getNumNulls(), "" + dcsd.getNumDVs(), "", "", "", "",
-              convertToString(dcsd.getBitVectors())));
+          ret.addAll(Lists.newArrayList(  "" + dcsd.getLowValue(), "" + dcsd.getHighValue(),
+                                          "" + dcsd.getNumNulls(), "" + dcsd.getNumDVs(),
+                                          "", "",
+                                          "", "",
+                                          convertToString(dcsd.getBitVectors())));
         } else if (csd.isSetLongStats()) {
           LongColumnStatsData lcsd = csd.getLongStats();
-          ret.addAll(Lists.newArrayList("" + lcsd.getLowValue(), "" + lcsd.getHighValue(), "" + lcsd.getNumNulls(), "" + lcsd.getNumDVs(), "", "", "", "",
-              convertToString(lcsd.getBitVectors())));
+          ret.addAll(Lists.newArrayList(  "" + lcsd.getLowValue(), "" + lcsd.getHighValue(),
+                                          "" + lcsd.getNumNulls(), "" + lcsd.getNumDVs(),
+                                          "", "",
+                                          "", "",
+                                          convertToString(lcsd.getBitVectors())));
         } else if (csd.isSetDateStats()) {
           DateColumnStatsData dcsd = csd.getDateStats();
-          ret.addAll(Lists.newArrayList(convertToString(dcsd.getLowValue()), convertToString(dcsd.getHighValue()), "" + dcsd.getNumNulls(),
-              "" + dcsd.getNumDVs(), "", "", "", "", convertToString(dcsd.getBitVectors())));
+          ret.addAll(Lists.newArrayList(  convertToString(dcsd.getLowValue()), convertToString(dcsd.getHighValue()),
+                                          "" + dcsd.getNumNulls(), "" + dcsd.getNumDVs(),
+                                          "", "",
+                                          "", "",
+                                          convertToString(dcsd.getBitVectors())));
         }
+        // @formatter:on
       } else {
         ret.addAll(Lists.newArrayList("", "", "", "", "", "", "", "", ""));
         }
