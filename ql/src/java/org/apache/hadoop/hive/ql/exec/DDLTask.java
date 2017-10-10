@@ -4109,7 +4109,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       boolean isFromMmTable = AcidUtils.isInsertOnlyTable(tbl.getParameters()),
           isRemoved = AcidUtils.isRemovedInsertOnlyTable(removedSet);
       if (isFromMmTable && isRemoved) {
-        result = generateRemoveMmTasks(tbl);
+        throw new HiveException("Cannot convert an ACID table to non-ACID");
       }
     }
     Iterator<String> keyItr = alterTbl.getProps().keySet().iterator();
@@ -4123,72 +4123,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return result;
   }
 
-  private List<Task<?>> generateRemoveMmTasks(Table tbl) throws HiveException {
-    // To avoid confusion from nested MM directories when table is converted back and forth, we
-    // want to rename mm_ dirs to remove the prefix; however, given the unpredictable nested
-    // directory handling in Hive/MR, we will instead move all the files into the root directory.
-    // We will also delete any directories that are not committed. 
-    // Note that this relies on locks. Note also that we only do the renames AFTER the metastore
-    // operation commits. Deleting uncommitted things is safe, but moving stuff before we convert
-    // could cause data loss.
-    List<Path> allMmDirs = new ArrayList<>();
-    checkMmLb(tbl);
-    List<String> bucketCols = tbl.getBucketCols();
-    if (bucketCols != null && !bucketCols.isEmpty()
-        && HiveConf.getBoolVar(conf, ConfVars.HIVE_STRICT_CHECKS_BUCKETING)) {
-      throw new HiveException("Converting bucketed tables from MM is not supported by default; "
-          + "copying files from multiple MM directories may potentially break the buckets. You "
-          + "can set " + ConfVars.HIVE_STRICT_CHECKS_BUCKETING.varname
-          + " to false for this query if you want to force the conversion.");
-    }
-    Hive db = getHive();
-    String value = conf.get(ValidTxnList.VALID_TXNS_KEY);
-    ValidTxnList validTxnList = value == null ? new ValidReadTxnList() : new ValidReadTxnList(value);
-    if (tbl.getPartitionKeys().size() > 0) {
-      PartitionIterable parts = new PartitionIterable(db, tbl, null,
-          HiveConf.getIntVar(conf, ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
-      Iterator<Partition> partIter = parts.iterator();
-      while (partIter.hasNext()) {
-        Partition part = partIter.next();
-        checkMmLb(part);
-        handleRemoveMm(part.getDataLocation(), validTxnList, allMmDirs);
-      }
-    } else {
-      checkMmLb(tbl);
-      handleRemoveMm(tbl.getDataLocation(), validTxnList, allMmDirs);
-    }
-    List<Path> targetPaths = new ArrayList<>(allMmDirs.size());
-    List<String> targetPrefix = new ArrayList<>(allMmDirs.size());
-    int prefixLen = JavaUtils.DELTA_PREFIX.length();
-    for (int i = 0; i < allMmDirs.size(); ++i) {
-      Path src = allMmDirs.get(i);
-      Path tgt = src.getParent();
-      String prefix = src.getName().substring(prefixLen + 1) + "_";
-      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-        Utilities.FILE_OP_LOGGER.trace("Will move " + src + " to " + tgt + " (prefix " + prefix + ")");
-      }
-      targetPaths.add(tgt);
-      targetPrefix.add(prefix);
-    }
-    // Don't set inputs and outputs - the locks have already been taken so it's pointless.
-    MoveWork mw = new MoveWork(null, null, null, null, false, SessionState.get().getLineageState());
-    mw.setMultiFilesDesc(new LoadMultiFilesDesc(
-        allMmDirs, targetPaths, targetPrefix, true, null, null));
-    return Lists.<Task<?>>newArrayList(TaskFactory.get(mw, conf));
-  }
-
   private void checkMmLb(Table tbl) throws HiveException {
     if (!tbl.isStoredAsSubDirectories()) return;
     // TODO [MM gap?]: by design; no-one seems to use LB tables. They will work, but not convert.
     //                 It's possible to work around this by re-creating and re-inserting the table.
     throw new HiveException("Converting list bucketed tables stored as subdirectories "
-        + " to and from MM is not supported. Please re-create a table in the desired format.");
+        + " to MM is not supported. Please re-create a table in the desired format.");
   }
 
   private void checkMmLb(Partition part) throws HiveException {
     if (!part.isStoredAsSubDirectories()) return;
     throw new HiveException("Converting list bucketed tables stored as subdirectories "
-        + " to and from MM is not supported. Please re-create a table in the desired format.");
+        + " to MM is not supported. Please re-create a table in the desired format.");
   }
 
   private void handleRemoveMm(
@@ -4299,7 +4245,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if (!isFromMmTable && isToMmTable) {
           result = generateAddMmTasks(tbl);
         } else if (isFromMmTable && !isToMmTable) {
-          result = generateRemoveMmTasks(tbl);
+          throw new HiveException("Cannot convert an ACID table to non-ACID");
         }
       }
       tbl.getTTable().getParameters().putAll(alterTbl.getProps());
