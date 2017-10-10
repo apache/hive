@@ -91,7 +91,6 @@ ekoifman:apache ekoifman$ find . -name *Work.java
 ./hadoop/hive/ql/exec/repl/ReplStateLogWork.java
 ./hadoop/hive/ql/index/IndexMetadataChangeWork.java
 ./hadoop/hive/ql/io/merge/MergeFileWork.java - extends MapWork
-./hadoop/hive/ql/io/rcfile/stats/PartialScanWork.java - extends MapWork
 ./hadoop/hive/ql/io/rcfile/truncate/ColumnTruncateWork.java - extends MapWork
 ./hadoop/hive/ql/parse/GenTezWork.java
 ./hadoop/hive/ql/parse/spark/GenSparkWork.java

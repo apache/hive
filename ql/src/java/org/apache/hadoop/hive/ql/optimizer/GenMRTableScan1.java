@@ -18,16 +18,12 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -36,7 +32,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
-import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanWork;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -90,13 +85,11 @@ public class GenMRTableScan1 implements NodeProcessor {
         mapCurrCtx.put(op, new GenMapRedCtx(currTask, currAliasId));
 
         if (parseCtx.getQueryProperties().isAnalyzeCommand()) {
-          boolean partialScan = parseCtx.getQueryProperties().isPartialScanAnalyzeCommand();
           boolean noScan = parseCtx.getQueryProperties().isNoScanAnalyzeCommand();
           if (OrcInputFormat.class.isAssignableFrom(inputFormat) ||
                   MapredParquetInputFormat.class.isAssignableFrom(inputFormat)) {
             // For ORC and Parquet, all the following statements are the same
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
-            // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
 
             // There will not be any MR or Tez job above this task
@@ -143,11 +136,6 @@ public class GenMRTableScan1 implements NodeProcessor {
               ctx.getRootTasks().add(statsTask);
             }
 
-            // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
-            if (partialScan) {
-              handlePartialScanCommand(op, ctx, parseCtx, currTask, statsWork, statsTask);
-            }
-
             currWork.getMapWork().setGatheringStats(true);
             if (currWork.getReduceWork() != null) {
               currWork.getReduceWork().setGatheringStats(true);
@@ -175,49 +163,4 @@ public class GenMRTableScan1 implements NodeProcessor {
     assert false;
     return null;
   }
-
-  /**
-   * handle partial scan command. It is composed of PartialScanTask followed by StatsTask .
-   * @param op
-   * @param ctx
-   * @param parseCtx
-   * @param currTask
-   * @param parseInfo
-   * @param statsWork
-   * @param statsTask
-   * @throws SemanticException
-   */
-  private void handlePartialScanCommand(TableScanOperator op, GenMRProcContext ctx,
-      ParseContext parseCtx, Task<? extends Serializable> currTask,
-      StatsWork statsWork, Task<StatsWork> statsTask) throws SemanticException {
-    String aggregationKey = op.getConf().getStatsAggPrefix();
-    StringBuilder aggregationKeyBuffer = new StringBuilder(aggregationKey);
-    List<Path> inputPaths = GenMapRedUtils.getInputPathsForPartialScan(op, aggregationKeyBuffer);
-    aggregationKey = aggregationKeyBuffer.toString();
-
-    // scan work
-    PartialScanWork scanWork = new PartialScanWork(inputPaths,
-        Utilities.getTableDesc(op.getConf().getTableMetadata()));
-    scanWork.setMapperCannotSpanPartns(true);
-    scanWork.setAggKey(aggregationKey);
-    scanWork.setStatsTmpDir(op.getConf().getTmpStatsDir(), parseCtx.getConf());
-
-    // stats work
-    statsWork.setPartialScanAnalyzeCommand(true);
-
-    // partial scan task
-    DriverContext driverCxt = new DriverContext();
-    Task<PartialScanWork> psTask = TaskFactory.get(scanWork, parseCtx.getConf());
-    psTask.initialize(parseCtx.getQueryState(), null, driverCxt, op.getCompilationOpContext());
-    psTask.setWork(scanWork);
-
-    // task dependency
-    ctx.getRootTasks().remove(currTask);
-    ctx.getRootTasks().add(psTask);
-    psTask.addDependentTask(statsTask);
-    List<Task<? extends Serializable>> parentTasks = new ArrayList<Task<? extends Serializable>>();
-    parentTasks.add(psTask);
-    statsTask.setParentTasks(parentTasks);
-  }
-
 }

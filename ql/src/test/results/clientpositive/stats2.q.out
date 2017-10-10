@@ -83,13 +83,11 @@ POSTHOOK: query: desc formatted analyze_t1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_t1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -167,13 +165,11 @@ POSTHOOK: query: describe formatted analyze_t1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_t1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

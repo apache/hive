@@ -54,8 +54,6 @@ public class StatsWork implements Serializable {
 
   private boolean isNoScanAnalyzeCommand = false;
 
-  private boolean isPartialScanAnalyzeCommand = false;
-
   // sourceTask for TS is not changed (currently) but that of FS might be changed
   // by various optimizers (auto.convert.join, for example)
   // so this is set by DriverContext in runtime
@@ -144,20 +142,6 @@ public class StatsWork implements Serializable {
    */
   public void setNoScanAnalyzeCommand(boolean isNoScanAnalyzeCommand) {
     this.isNoScanAnalyzeCommand = isNoScanAnalyzeCommand;
-  }
-
-  /**
-   * @return the isPartialScanAnalyzeCommand
-   */
-  public boolean isPartialScanAnalyzeCommand() {
-    return isPartialScanAnalyzeCommand;
-  }
-
-  /**
-   * @param isPartialScanAnalyzeCommand the isPartialScanAnalyzeCommand to set
-   */
-  public void setPartialScanAnalyzeCommand(boolean isPartialScanAnalyzeCommand) {
-    this.isPartialScanAnalyzeCommand = isPartialScanAnalyzeCommand;
   }
 
   public Task getSourceTask() {

@@ -49,7 +49,7 @@ public class CoreBeeLineDriver extends CliAdapter {
   private final File testDataDirectory;
   private final File testScriptDirectory;
   private boolean overwrite = false;
-  private boolean rewriteSourceTables = true;
+  private boolean useSharedDatabase = false;
   private MiniHS2 miniHS2;
   private QFileClientBuilder clientBuilder;
   private QFileBuilder fileBuilder;
@@ -58,7 +58,12 @@ public class CoreBeeLineDriver extends CliAdapter {
     super(testCliConfig);
     queryDirectory = new File(testCliConfig.getQueryDirectory());
     logDirectory = new File(testCliConfig.getLogDir());
-    resultsDirectory = new File(testCliConfig.getResultsDir());
+    String testResultsDirectoryName = System.getProperty("test.results.dir");
+    if (testResultsDirectoryName != null) {
+      resultsDirectory = new File(hiveRootDirectory, testResultsDirectoryName);
+    } else {
+      resultsDirectory = new File(testCliConfig.getResultsDir());
+    }
     String testDataDirectoryName = System.getProperty("test.data.dir");
     if (testDataDirectoryName == null) {
       testDataDirectory = new File(hiveRootDirectory, "data" + File.separator + "files");
@@ -66,7 +71,12 @@ public class CoreBeeLineDriver extends CliAdapter {
       testDataDirectory = new File(testDataDirectoryName);
     }
     testScriptDirectory = new File(hiveRootDirectory, "data" + File.separator + "scripts");
-    initScript = new File(testScriptDirectory, testCliConfig.getInitScript());
+    String initScriptFileName = System.getProperty("test.init.script");
+    if (initScriptFileName != null) {
+      initScript = new File(testScriptDirectory, initScriptFileName);
+    } else {
+      initScript = new File(testScriptDirectory, testCliConfig.getInitScript());
+    }
     cleanupScript = new File(testScriptDirectory, testCliConfig.getCleanupScript());
   }
 
@@ -88,17 +98,20 @@ public class CoreBeeLineDriver extends CliAdapter {
     return miniHS2;
   }
 
+  boolean getBooleanPropertyValue(String name, boolean defaultValue) {
+    String value = System.getProperty(name);
+    if (value == null) {
+      return defaultValue;
+    }
+    return Boolean.parseBoolean(value);
+  }
+
   @Override
   @BeforeClass
   public void beforeClass() throws Exception {
-    String testOutputOverwrite = System.getProperty("test.output.overwrite");
-    if (testOutputOverwrite != null && "true".equalsIgnoreCase(testOutputOverwrite)) {
-      overwrite = true;
-    }
-    String testRewriteSourceTables = System.getProperty("test.rewrite.source.tables");
-    if (testRewriteSourceTables != null && "false".equalsIgnoreCase(testRewriteSourceTables)) {
-      rewriteSourceTables = false;
-    }
+    overwrite = getBooleanPropertyValue("test.output.overwrite", Boolean.FALSE);
+
+    useSharedDatabase = getBooleanPropertyValue("test.beeline.shared.database", Boolean.FALSE);
 
     String beeLineUrl = System.getProperty("test.beeline.url");
     if (StringUtils.isEmpty(beeLineUrl)) {
@@ -112,11 +125,15 @@ public class CoreBeeLineDriver extends CliAdapter {
         .setUsername(System.getProperty("test.beeline.user", "user"))
         .setPassword(System.getProperty("test.beeline.password", "password"));
 
+    boolean comparePortable =
+        getBooleanPropertyValue("test.beeline.compare.portable", Boolean.FALSE);
+
     fileBuilder = new QFileBuilder()
         .setLogDirectory(logDirectory)
         .setQueryDirectory(queryDirectory)
         .setResultsDirectory(resultsDirectory)
-        .setRewriteSourceTables(rewriteSourceTables);
+        .setUseSharedDatabase(useSharedDatabase)
+        .setComparePortable(comparePortable);
 
     runInfraScript(initScript, new File(logDirectory, "init.beeline"),
         new File(logDirectory, "init.raw"));

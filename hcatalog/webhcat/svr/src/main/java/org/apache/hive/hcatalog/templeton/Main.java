@@ -53,7 +53,15 @@ import org.eclipse.jetty.xml.XmlConfiguration;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * The main executable that starts up and runs the Server.
@@ -213,6 +221,8 @@ public class Main {
       LOG.warn("XSRF filter disabled");
     }
 
+    root.addFilter(makeFrameOptionFilter(), "/" + SERVLET_PATH + "/*", dispatches);
+
     // Connect Jersey
     ServletHolder h = new ServletHolder(new ServletContainer(makeJerseyConfig()));
     root.addServlet(h, "/" + SERVLET_PATH + "/*");
@@ -257,6 +267,39 @@ public class Main {
         conf.kerberosKeytab());
     }
     return authFilter;
+  }
+
+  public FilterHolder makeFrameOptionFilter() {
+    FilterHolder frameOptionFilter = new FilterHolder(XFrameOptionsFilter.class);
+    frameOptionFilter.setInitParameter(AppConfig.FRAME_OPTIONS_FILETER, conf.get(AppConfig.FRAME_OPTIONS_FILETER));
+    return frameOptionFilter;
+  }
+
+  public static class XFrameOptionsFilter implements Filter {
+    private final static String defaultMode = "DENY";
+
+    private String mode = null;
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+      mode = filterConfig.getInitParameter(AppConfig.FRAME_OPTIONS_FILETER);
+      if (mode == null) {
+        mode = defaultMode;
+      }
+    }
+
+    @Override
+    public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain)
+        throws IOException, ServletException {
+      final HttpServletResponse res = (HttpServletResponse) response;
+      res.setHeader("X-FRAME-OPTIONS", mode);
+      chain.doFilter(request, response);
+    }
+
+    @Override
+    public void destroy() {
+      // do nothing
+    }
   }
 
   public PackagesResourceConfig makeJerseyConfig() {

@@ -144,7 +144,6 @@ emp_state           	string              	free-form text
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 emp_country         	string              	iso code            
 emp_state           	string              	free-form text      
 	 	 

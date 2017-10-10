@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.parquet.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -89,7 +88,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
         new CreateFunctionDesc(functionName, isTemporaryFunction, className, resources, null);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
 
-    addEntities(functionName, isTemporaryFunction, resources);
+    addEntities(functionName, className, isTemporaryFunction, resources);
   }
 
   private void analyzeDropFunction(ASTNode ast) throws SemanticException {
@@ -117,7 +116,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     DropFunctionDesc desc = new DropFunctionDesc(functionName, isTemporaryFunction, null);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
 
-    addEntities(functionName, isTemporaryFunction, null);
+    addEntities(functionName, info.getClassName(), isTemporaryFunction, null);
   }
 
   private ResourceType getResourceType(ASTNode token) throws SemanticException {
@@ -163,7 +162,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Add write entities to the semantic analyzer to restrict function creation to privileged users.
    */
-  private void addEntities(String functionName, boolean isTemporaryFunction,
+  private void addEntities(String functionName, String className, boolean isTemporaryFunction,
       List<ResourceUri> resources) throws SemanticException {
     // If the function is being added under a database 'namespace', then add an entity representing
     // the database (only applicable to permanent/metastore functions).
@@ -192,7 +191,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // Add the function name as a WriteEntity
-    outputs.add(new WriteEntity(database, functionName, Type.FUNCTION,
+    outputs.add(new WriteEntity(database, functionName, className, Type.FUNCTION,
         WriteEntity.WriteType.DDL_NO_LOCK));
 
     if (resources != null) {

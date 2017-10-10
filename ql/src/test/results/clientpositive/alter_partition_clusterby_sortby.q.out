@@ -29,13 +29,11 @@ POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_table_partition_clusterby_sortby
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -78,13 +76,11 @@ POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_table_partition_clusterby_sortby
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -127,13 +123,11 @@ POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby partition
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_table_partition_clusterby_sortby
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	string              	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -167,13 +161,11 @@ POSTHOOK: query: desc formatted alter_table_partition_clusterby_sortby
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_table_partition_clusterby_sortby
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c                   	string              	                    
 	 	 
 # Detailed Table Information	 	 

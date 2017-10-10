@@ -31,6 +31,7 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
@@ -272,6 +273,10 @@ public class StatsOptimizer extends Transform {
           return null;
         }
         Table tbl = tsOp.getConf().getTableMetadata();
+        if (MetaStoreUtils.isExternalTable(tbl.getTTable())) {
+          Logger.info("Table " + tbl.getTableName() + " is external. Skip StatsOptimizer.");
+          return null;
+        }
         if (AcidUtils.isAcidTable(tbl)) {
           Logger.info("Table " + tbl.getTableName() + " is ACID table. Skip StatsOptimizer.");
           return null;

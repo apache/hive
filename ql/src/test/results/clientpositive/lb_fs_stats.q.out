@@ -31,13 +31,11 @@ POSTHOOK: query: describe formatted test_tab partition (part='1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_tab
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 

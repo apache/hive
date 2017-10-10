@@ -196,7 +196,6 @@ p2                  	string              	Column p2
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	Column p1           
 p2                  	string              	Column p2           
 PREHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
@@ -212,7 +211,6 @@ p2                  	string              	Column p2
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	Column p1           
 p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
@@ -275,7 +273,6 @@ p2                  	string              	Column p2
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	Changed comment for p1
 p2                  	string              	Column p2           
 PREHOOK: query: alter table alter_partition_change_col1 partition (p1='abc', p2='123') change c2 c2 decimal(14,4)
@@ -300,7 +297,6 @@ p2                  	string              	Column p2
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	Changed comment for p1
 p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
@@ -365,7 +361,6 @@ p2                  	string              	Column p2
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	Changed comment for p1
 p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
@@ -430,7 +425,6 @@ p2                  	string              	Column p2
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	Changed comment for p1
 p2                  	string              	Column p2           
 PREHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
@@ -445,7 +439,6 @@ p2                  	string              	Column p2
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	Changed comment for p1
 p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
@@ -508,7 +501,6 @@ p2                  	string              	Column p2
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	Changed comment for p1
 p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
@@ -572,7 +564,6 @@ p2                  	string              	Column p2
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	Changed comment for p1
 p2                  	string              	Column p2           
 PREHOOK: query: describe alter_partition_change_col1 partition (p1='abc', p2='123')
@@ -587,7 +578,6 @@ p2                  	string              	Column p2
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	Changed comment for p1
 p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
@@ -652,7 +642,6 @@ p2                  	string              	Column p2
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	Changed comment for p1
 p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'
@@ -720,7 +709,6 @@ p2                  	string              	Column p2
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	Changed comment for p1
 p2                  	string              	Column p2           
 PREHOOK: query: describe alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
@@ -736,7 +724,6 @@ p2                  	string              	Column p2
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 p1                  	string              	Changed comment for p1
 p2                  	string              	Column p2           
 PREHOOK: query: select * from alter_partition_change_col1 where p1='abc'

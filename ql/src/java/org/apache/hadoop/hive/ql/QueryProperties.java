@@ -35,7 +35,6 @@ public class QueryProperties {
 
   boolean query;
   boolean analyzeCommand;
-  boolean partialScanAnalyzeCommand;
   boolean noScanAnalyzeCommand;
   boolean analyzeRewrite;
   boolean ctas;
@@ -84,14 +83,6 @@ public class QueryProperties {
     this.analyzeCommand = analyzeCommand;
   }
 
-  public boolean isPartialScanAnalyzeCommand() {
-    return partialScanAnalyzeCommand;
-  }
-
-  public void setPartialScanAnalyzeCommand(boolean partialScanAnalyzeCommand) {
-    this.partialScanAnalyzeCommand = partialScanAnalyzeCommand;
-  }
-
   public boolean isNoScanAnalyzeCommand() {
     return noScanAnalyzeCommand;
   }
@@ -130,8 +121,9 @@ public class QueryProperties {
 
   public void incrementJoinCount(boolean outerJoin) {
     noOfJoins++;
-    if (outerJoin)
+    if (outerJoin) {
       noOfOuterJoins++;
+    }
   }
 
   public int getJoinCount() {
@@ -278,7 +270,6 @@ public class QueryProperties {
   public void clear() {
     query = false;
     analyzeCommand = false;
-    partialScanAnalyzeCommand = false;
     noScanAnalyzeCommand = false;
     analyzeRewrite = false;
     ctas = false;

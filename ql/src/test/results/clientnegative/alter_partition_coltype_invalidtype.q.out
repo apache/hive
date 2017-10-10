@@ -29,7 +29,6 @@ ts                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	string              	                    
 FAILED: ParseException line 4:47 cannot recognize input near 'time' ')' '<EOF>' in column type

@@ -22,6 +22,7 @@
   import="org.apache.hadoop.hive.conf.HiveConf"
   import="org.apache.hadoop.hive.conf.HiveConf.ConfVars"
   import="org.apache.hive.common.util.HiveVersionInfo"
+  import="org.apache.hive.http.HttpServer"
   import="org.apache.hive.service.cli.operation.Operation"
   import="org.apache.hive.service.cli.operation.SQLOperation"
   import="org.apache.hadoop.hive.ql.QueryInfo"
@@ -40,6 +41,7 @@ Configuration conf = (Configuration)ctx.getAttribute("hive.conf");
 long startcode = conf.getLong("startcode", System.currentTimeMillis());
 SessionManager sessionManager =
   (SessionManager)ctx.getAttribute("hive.sm");
+String remoteUser = request.getRemoteUser();
 %>
 
 <!--[if IE]>
@@ -108,7 +110,13 @@ if (sessionManager != null) {
     </tr>
 <%
 Collection<HiveSession> hiveSessions = sessionManager.getSessions();
+int sessionCount = 0;
 for (HiveSession hiveSession: hiveSessions) {
+    // Permission check
+    if (!HttpServer.hasAccess(remoteUser, hiveSession.getUserName(), ctx, request)) {
+        continue;
+    }
+    sessionCount++;
 %>
     <tr>
         <td><%= hiveSession.getUserName() %></td>
@@ -121,7 +129,7 @@ for (HiveSession hiveSession: hiveSessions) {
 }
 %>
 <tr>
-  <td colspan="5">Total number of sessions: <%= hiveSessions.size() %></td>
+  <td colspan="5">Total number of sessions: <%= sessionCount %></td>
 </tr>
 </table>
 </section>
@@ -143,6 +151,9 @@ for (HiveSession hiveSession: hiveSessions) {
       int queries = 0;
       Collection<QueryInfo> operations = sessionManager.getOperationManager().getLiveQueryInfos();
       for (QueryInfo operation : operations) {
+          if (!HttpServer.hasAccess(remoteUser, operation.getUserName(), ctx, request)) {
+              continue;
+          }
           queries++;
     %>
     <tr>
@@ -184,6 +195,9 @@ for (HiveSession hiveSession: hiveSessions) {
       queries = 0;
       operations = sessionManager.getOperationManager().getHistoricalQueryInfos();
       for (QueryInfo operation : operations) {
+          if (!HttpServer.hasAccess(remoteUser, operation.getUserName(), ctx, request)) {
+              continue;
+          }
           queries++;
     %>
     <tr>

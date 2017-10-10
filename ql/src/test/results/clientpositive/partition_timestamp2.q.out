@@ -285,7 +285,6 @@ region              	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	timestamp           	                    
 region              	int                 	                    
 	 	 
@@ -348,7 +347,6 @@ region              	int
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	timestamp           	                    
 region              	int                 	                    
 	 	 

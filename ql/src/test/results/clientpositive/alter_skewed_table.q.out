@@ -13,7 +13,6 @@ POSTHOOK: query: describe formatted original
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@original
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -56,7 +55,6 @@ POSTHOOK: query: describe formatted original
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@original
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -116,7 +114,6 @@ POSTHOOK: query: describe formatted skew_test.original2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: skew_test@original2
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -159,7 +156,6 @@ POSTHOOK: query: describe formatted skew_test.original2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: skew_test@original2
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -213,7 +209,6 @@ POSTHOOK: query: describe formatted skew_test.original3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: skew_test@original3
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -258,7 +253,6 @@ POSTHOOK: query: describe formatted skew_test.original3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: skew_test@original3
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 

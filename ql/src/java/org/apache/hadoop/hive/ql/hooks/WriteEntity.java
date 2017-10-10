@@ -87,11 +87,12 @@ public class WriteEntity extends Entity implements Serializable {
    * Currently applicable only for function names.
    * @param db
    * @param objName
+   * @param className
    * @param type
    * @param writeType
    */
-  public WriteEntity(Database db, String objName, Type type, WriteType writeType) {
-    super(db, objName, type);
+  public WriteEntity(Database db, String objName, String className, Type type, WriteType writeType) {
+    super(db, objName, className, type);
     this.writeType = writeType;
   }
 

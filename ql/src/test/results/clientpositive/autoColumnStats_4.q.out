@@ -13,7 +13,6 @@ POSTHOOK: query: desc formatted acid_dtt
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid_dtt
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	varchar(128)        	                    
 	 	 
@@ -187,7 +186,6 @@ POSTHOOK: query: desc formatted acid_dtt
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid_dtt
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	varchar(128)        	                    
 	 	 
@@ -231,7 +229,6 @@ POSTHOOK: query: desc formatted acid_dtt
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid_dtt
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	varchar(128)        	                    
 	 	 

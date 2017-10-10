@@ -270,9 +270,9 @@ create table cbo_t1(key string, value string, c_int int, c_float float, c_boolea
 create table cbo_t2(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE;
 create table cbo_t3(key string, value string, c_int int, c_float float, c_boolean boolean)  row format delimited fields terminated by ',' STORED AS TEXTFILE;
 
-load data local inpath '../../data/files/cbo_t1.txt' into table cbo_t1 partition (dt='2014');
-load data local inpath '../../data/files/cbo_t2.txt' into table cbo_t2 partition (dt='2014');
-load data local inpath '../../data/files/cbo_t3.txt' into table cbo_t3;
+load data local inpath '${hiveconf:test.data.dir}/cbo_t1.txt' into table cbo_t1 partition (dt='2014');
+load data local inpath '${hiveconf:test.data.dir}/cbo_t2.txt' into table cbo_t2 partition (dt='2014');
+load data local inpath '${hiveconf:test.data.dir}/cbo_t3.txt' into table cbo_t3;
 
 CREATE TABLE part(
     p_partkey INT,
@@ -286,7 +286,7 @@ CREATE TABLE part(
     p_comment STRING
 );
 
-LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwrite into table part;
+LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/part_tiny.txt' overwrite into table part;
 
 CREATE TABLE lineitem (L_ORDERKEY      INT,
                                 L_PARTKEY       INT,
@@ -307,7 +307,7 @@ CREATE TABLE lineitem (L_ORDERKEY      INT,
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|';
 
-LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem;
+LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/lineitem.txt' OVERWRITE INTO TABLE lineitem;
 
 create table src_cbo as select * from src;
 

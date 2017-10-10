@@ -59,7 +59,6 @@ POSTHOOK: query: DESCRIBE FORMATTED parquet_create
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@parquet_create
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 str                 	string              	                    
 mp                  	map<string,string>  	                    

@@ -106,10 +106,7 @@ public class JsonSerDe extends AbstractSerDe {
     List<TypeInfo> columnTypes;
     StructTypeInfo rowTypeInfo;
 
-
-    LOG.debug("Initializing JsonSerDe");
-    LOG.debug("props to serde: {}", tbl.entrySet());
-
+    LOG.debug("Initializing JsonSerDe: {}", tbl.entrySet());
 
     // Get column names and types
     String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
@@ -117,15 +114,15 @@ public class JsonSerDe extends AbstractSerDe {
     final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
         .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
     // all table column names
-    if (columnNameProperty.length() == 0) {
-      columnNames = new ArrayList<String>();
+    if (columnNameProperty.isEmpty()) {
+      columnNames = Collections.emptyList();
     } else {
       columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
     }
 
     // all column types
-    if (columnTypeProperty.length() == 0) {
-      columnTypes = new ArrayList<TypeInfo>();
+    if (columnTypeProperty.isEmpty()) {
+      columnTypes = Collections.emptyList();
     } else {
       columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
     }
@@ -176,11 +173,9 @@ public class JsonSerDe extends AbstractSerDe {
       }
     } catch (JsonParseException e) {
       LOG.warn("Error [{}] parsing json text [{}].", e, t);
-      LOG.debug(null, e);
       throw new SerDeException(e);
     } catch (IOException e) {
       LOG.warn("Error [{}] parsing json text [{}].", e, t);
-      LOG.debug(null, e);
       throw new SerDeException(e);
     }
 

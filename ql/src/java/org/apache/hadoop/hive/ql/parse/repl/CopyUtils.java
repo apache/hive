@@ -62,11 +62,9 @@ public class CopyUtils {
   // Used by replication, copy files from source to destination. It is possible source file is
   // changed/removed during copy, so double check the checksum after copy,
   // if not match, copy again from cm
-  public void copyAndVerify(Path destination, List<ReplChangeManager.FileInfo> srcFiles)
-          throws IOException, LoginException {
+  public void copyAndVerify(FileSystem destinationFs, Path destination,
+                    List<ReplChangeManager.FileInfo> srcFiles) throws IOException, LoginException {
     Map<FileSystem, List<ReplChangeManager.FileInfo>> map = fsToFileMap(srcFiles);
-    FileSystem destinationFs = destination.getFileSystem(hiveConf);
-
     for (Map.Entry<FileSystem, List<ReplChangeManager.FileInfo>> entry : map.entrySet()) {
       FileSystem sourceFs = entry.getKey();
       List<ReplChangeManager.FileInfo> fileInfoList = entry.getValue();

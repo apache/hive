@@ -81,7 +81,6 @@ POSTHOOK: query: desc formatted acid_ivot
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid_ivot
 # col_name            	data_type           	comment             
-	 	 
 ctinyint            	tinyint             	                    
 csmallint           	smallint            	                    
 cint                	int                 	                    
@@ -147,7 +146,6 @@ POSTHOOK: query: desc formatted acid_ivot
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid_ivot
 # col_name            	data_type           	comment             
-	 	 
 ctinyint            	tinyint             	                    
 csmallint           	smallint            	                    
 cint                	int                 	                    
@@ -340,7 +338,6 @@ POSTHOOK: query: desc formatted acid_ivot
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid_ivot
 # col_name            	data_type           	comment             
-	 	 
 ctinyint            	tinyint             	                    
 csmallint           	smallint            	                    
 cint                	int                 	                    
@@ -462,7 +459,6 @@ POSTHOOK: query: desc formatted acid_ivot
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid_ivot
 # col_name            	data_type           	comment             
-	 	 
 ctinyint            	tinyint             	                    
 csmallint           	smallint            	                    
 cint                	int                 	                    
@@ -582,7 +578,6 @@ POSTHOOK: query: desc formatted acid_ivot
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid_ivot
 # col_name            	data_type           	comment             
-	 	 
 ctinyint            	tinyint             	                    
 csmallint           	smallint            	                    
 cint                	int                 	                    
@@ -689,7 +684,6 @@ POSTHOOK: query: desc formatted acid_ivot
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid_ivot
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -734,7 +728,6 @@ POSTHOOK: query: desc formatted acid_ivot
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@acid_ivot
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -815,13 +808,11 @@ POSTHOOK: query: desc formatted sp PARTITION (ds="2008-04-08", hr="11")
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@sp
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -921,13 +912,11 @@ POSTHOOK: query: desc formatted sp PARTITION (ds="2008-04-08", hr="11")
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@sp
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -972,13 +961,11 @@ POSTHOOK: query: desc formatted sp PARTITION (ds="2008-04-08", hr="11")
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@sp
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

@@ -43,6 +43,7 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
+import org.apache.hadoop.hive.common.log.LogRedirector;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -79,6 +80,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.StreamPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -325,6 +327,15 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       // Run ExecDriver in another JVM
       executor = Runtime.getRuntime().exec(cmdLine, env, new File(workDir));
 
+      final LogRedirector.LogSourceCallback callback = () -> {return executor.isAlive();};
+
+      LogRedirector.redirect(
+          Thread.currentThread().getName() + "-LocalTask-" + getName() + "-stdout",
+          new LogRedirector(executor.getInputStream(), LOG, callback));
+      LogRedirector.redirect(
+          Thread.currentThread().getName() + "-LocalTask-" + getName() + "-stderr",
+          new LogRedirector(executor.getErrorStream(), LOG, callback));
+
       CachingPrintStream errPrintStream = new CachingPrintStream(System.err);
 
       StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out);
@@ -384,14 +395,19 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       console.printInfo(Utilities.now() + "\tEnd of local task; Time Taken: "
           + Utilities.showTime(elapsed) + " sec.");
     } catch (Throwable throwable) {
+      int retVal;
+      String message;
       if (throwable instanceof OutOfMemoryError
           || (throwable instanceof MapJoinMemoryExhaustionError)) {
-        l4j.error("Hive Runtime Error: Map local work exhausted memory", throwable);
-        return 3;
+        message = "Hive Runtime Error: Map local work exhausted memory";
+        retVal = 3;
       } else {
-        l4j.error("Hive Runtime Error: Map local work failed", throwable);
-        return 2;
+        message = "Hive Runtime Error: Map local work failed";
+        retVal = 2;
       }
+      l4j.error(message, throwable);
+      console.printError(message, HiveStringUtils.stringifyException(throwable));
+      return retVal;
     }
     return 0;
   }

@@ -106,8 +106,6 @@ PREHOOK: type: SHOWINDEXES
 POSTHOOK: query: SHOW FORMATTED INDEXES ON show_idx_t1
 POSTHOOK: type: SHOWINDEXES
 idx_name            	tab_name            	col_names           	idx_tab_name        	idx_type            	comment             
-	 	 	 	 	 
-	 	 	 	 	 
 idx_t1              	show_idx_t1         	key                 	default__show_idx_t1_idx_t1__	compact             	
 PREHOOK: query: DROP TABLE show_idx_t1
 PREHOOK: type: DROPTABLE

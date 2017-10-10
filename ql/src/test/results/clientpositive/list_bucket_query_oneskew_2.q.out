@@ -87,13 +87,11 @@ POSTHOOK: query: describe formatted fact_daily PARTITION (ds = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@fact_daily
 # col_name            	data_type           	comment             
-	 	 
 x                   	int                 	                    
 y                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 

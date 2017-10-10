@@ -21,7 +21,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 _c1                 	string              	                    
 	 	 
@@ -88,7 +87,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 _c1                 	string              	                    
 	 	 
@@ -156,7 +154,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 _c1                 	string              	                    
@@ -225,7 +222,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 _c121               	string              	                    
@@ -293,7 +289,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 _c1                 	bigint              	                    
 	 	 
@@ -403,7 +398,6 @@ POSTHOOK: query: desc formatted v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@v
 # col_name            	data_type           	comment             
-	 	 
 _c0                 	string              	                    
 ca                  	string              	                    
 caa                 	string              	                    

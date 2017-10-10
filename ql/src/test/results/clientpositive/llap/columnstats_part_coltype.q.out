@@ -80,18 +80,36 @@ PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	27                  	484                 	0                   	20                  	                    	                    	                    	                    	HL                  	from deserializer   
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	27                  	 	 	 	 	 	 	 	 	 	 
+max                 	484                 	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	20                  	6.8                 	7                   	                    	                    	HL                  	from deserializer   
+col_name            	value               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	6.8                 	 	 	 	 	 	 	 	 	 	 
+max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
@@ -99,7 +117,6 @@ POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-	 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value
 PREHOOK: type: DESCTABLE
@@ -108,7 +125,6 @@ POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-	 	 	 	 	 	 	 	 	 	 	 
 value               	string              	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr=2, part) compute statistics for columns
 PREHOOK: type: QUERY
@@ -134,18 +150,36 @@ PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	27                  	484                 	0                   	20                  	                    	                    	                    	                    	HL                  	from deserializer   
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	27                  	 	 	 	 	 	 	 	 	 	 
+max                 	484                 	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	20                  	6.8                 	7                   	                    	                    	HL                  	from deserializer   
+col_name            	value               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	20                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	6.8                 	 	 	 	 	 	 	 	 	 	 
+max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
@@ -153,7 +187,6 @@ POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-	 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value
 PREHOOK: type: DESCTABLE
@@ -162,7 +195,6 @@ POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-	 	 	 	 	 	 	 	 	 	 	 
 value               	string              	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr, part) compute statistics for columns
 PREHOOK: type: QUERY
@@ -192,18 +224,36 @@ PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	27                  	495                 	0                   	30                  	                    	                    	                    	                    	HL                  	from deserializer   
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	27                  	 	 	 	 	 	 	 	 	 	 
+max                 	495                 	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	30                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	30                  	6.833333333333333   	7                   	                    	                    	HL                  	from deserializer   
+col_name            	value               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	30                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	6.833333333333333   	 	 	 	 	 	 	 	 	 	 
+max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
@@ -211,7 +261,6 @@ POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-	 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value
 PREHOOK: type: DESCTABLE
@@ -220,7 +269,6 @@ POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-	 	 	 	 	 	 	 	 	 	 	 
 value               	string              	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key
 PREHOOK: type: DESCTABLE
@@ -229,7 +277,6 @@ POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-	 	 	 	 	 	 	 	 	 	 	 
 key                 	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value
 PREHOOK: type: DESCTABLE
@@ -238,7 +285,6 @@ POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03'
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
-	 	 	 	 	 	 	 	 	 	 	 
 value               	string              	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table partcolstats partition (ds, hr, part) compute statistics for columns
 PREHOOK: type: QUERY
@@ -276,36 +322,72 @@ PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	15                  	495                 	0                   	40                  	                    	                    	                    	                    	HL                  	from deserializer   
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	15                  	 	 	 	 	 	 	 	 	 	 
+max                 	495                 	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	40                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	40                  	6.825               	7                   	                    	                    	HL                  	from deserializer   
+col_name            	value               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	40                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	6.825               	 	 	 	 	 	 	 	 	 	 
+max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	15                  	495                 	0                   	58                  	                    	                    	                    	                    	HL                  	from deserializer   
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	15                  	 	 	 	 	 	 	 	 	 	 
+max                 	495                 	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	58                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcolstats
 POSTHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partB') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstats
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	58                  	6.883333333333334   	7                   	                    	                    	HL                  	from deserializer   
+col_name            	value               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	58                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	6.883333333333334   	 	 	 	 	 	 	 	 	 	 
+max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table partcolstats
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partcolstats
@@ -356,9 +438,18 @@ PREHOOK: Input: default@partcolstatsnum
 POSTHOOK: query: describe formatted partcolstatsnum partition (tint=100, sint=1000, bint=1000000) value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstatsnum
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	30                  	6.833333333333333   	7                   	                    	                    	HL                  	from deserializer   
+col_name            	value               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	30                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	6.833333333333333   	 	 	 	 	 	 	 	 	 	 
+max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table partcolstatsnum
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partcolstatsnum
@@ -409,9 +500,18 @@ PREHOOK: Input: default@partcolstatsdec
 POSTHOOK: query: describe formatted partcolstatsdec partition (decpart='1000.0001') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstatsdec
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	30                  	6.833333333333333   	7                   	                    	                    	HL                  	from deserializer   
+col_name            	value               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	30                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	6.833333333333333   	 	 	 	 	 	 	 	 	 	 
+max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table partcolstatsdec
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partcolstatsdec
@@ -462,9 +562,18 @@ PREHOOK: Input: default@partcolstatschar
 POSTHOOK: query: describe formatted partcolstatschar partition (varpart='part1', charpart='aaa') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcolstatschar
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
-	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	30                  	6.833333333333333   	7                   	                    	                    	HL                  	from deserializer   
+col_name            	value               	 	 	 	 	 	 	 	 	 	 
+data_type           	string              	 	 	 	 	 	 	 	 	 	 
+min                 	                    	 	 	 	 	 	 	 	 	 	 
+max                 	                    	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	30                  	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	6.833333333333333   	 	 	 	 	 	 	 	 	 	 
+max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table partcolstatschar
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partcolstatschar

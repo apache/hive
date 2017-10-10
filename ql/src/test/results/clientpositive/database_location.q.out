@@ -32,7 +32,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table_db1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@table_db1
 # col_name            	data_type           	comment             
-	 	 
 name                	string              	                    
 value               	int                 	                    
 	 	 
@@ -107,7 +106,6 @@ POSTHOOK: query: DESCRIBE FORMATTED table_db2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db2@table_db2
 # col_name            	data_type           	comment             
-	 	 
 name                	string              	                    
 value               	int                 	                    
 	 	 

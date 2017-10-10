@@ -60,12 +60,10 @@ POSTHOOK: query: describe formatted exim_employee
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: importer@exim_employee
 # col_name            	data_type           	comment             
-	 	 
 emp_id              	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 emp_country         	string              	                    
 	 	 
 # Detailed Table Information	 	 

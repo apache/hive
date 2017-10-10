@@ -159,7 +159,6 @@ emp_state           	string              	free text
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 emp_country         	string              	two char iso code   
 emp_state           	string              	free text           
 	 	 

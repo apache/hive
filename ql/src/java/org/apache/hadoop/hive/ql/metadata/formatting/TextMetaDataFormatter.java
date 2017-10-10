@@ -124,21 +124,45 @@ class TextMetaDataFormatter implements MetaDataFormatter {
   @Override
   public void describeTable(DataOutputStream outStream,  String colPath,
       String tableName, Table tbl, Partition part, List<FieldSchema> cols,
-      boolean isFormatted, boolean isExt, boolean isPretty,
+      boolean isFormatted, boolean isExt,
       boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
       PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
       UniqueConstraint ukInfo, NotNullConstraint nnInfo) throws HiveException {
     try {
-      String output;
+      List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
+      String output = "";
+
+      boolean isColStatsAvailable = colStats != null;
+
+      TextMetaDataTable mdt = new TextMetaDataTable();
+      if (isFormatted && !isColStatsAvailable) {
+        output = "# ";
+      }
+      if (isFormatted) {
+        mdt.addRow(MetaDataFormatUtils.getColumnsHeader(colStats));
+      }
+      for (FieldSchema col : cols) {
+        mdt.addRow(MetaDataFormatUtils.extractColumnValues(col, isColStatsAvailable,
+            MetaDataFormatUtils.getColumnStatisticsObject(col.getName(), col.getType(), colStats)));
+      }
+      if (isColStatsAvailable) {
+        mdt.transpose();
+      }
+      output += mdt.renderTable(isOutputPadded);
+
       if (colPath.equals(tableName)) {
-        List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
-        output = isPretty ?
-            MetaDataPrettyFormatUtils.getAllColumnsInformation(
-                cols, partCols, prettyOutputNumCols)
-                :
-                  MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted, isOutputPadded, showPartColsSeparately);
+        if ((partCols != null) && !partCols.isEmpty() && showPartColsSeparately) {
+
+          mdt = new TextMetaDataTable();
+          output += MetaDataFormatUtils.LINE_DELIM + "# Partition Information" + MetaDataFormatUtils.LINE_DELIM + "# ";
+          mdt.addRow(MetaDataFormatUtils.getColumnsHeader(null));
+          for (FieldSchema col : partCols) {
+            mdt.addRow(MetaDataFormatUtils.extractColumnValues(col));
+          }
+          output += mdt.renderTable(isOutputPadded);
+        }
       } else {
-        output = MetaDataFormatUtils.getAllColumnsInformation(cols, isFormatted, isOutputPadded, colStats);
+
         String statsState;
         if (tbl.getParameters() != null && (statsState = tbl.getParameters().get(StatsSetupConst.COLUMN_STATS_ACCURATE)) != null) {
           StringBuilder str = new StringBuilder();

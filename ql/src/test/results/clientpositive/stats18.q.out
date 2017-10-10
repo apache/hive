@@ -23,13 +23,11 @@ POSTHOOK: query: desc formatted stats_part partition (ds='2010-04-08', hr='13')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -71,13 +69,11 @@ POSTHOOK: query: desc formatted stats_part partition (ds='2010-04-08', hr='13')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

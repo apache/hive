@@ -13,7 +13,6 @@ POSTHOOK: query: desc formatted alter_table_not_sorted
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_table_not_sorted
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
@@ -57,7 +56,6 @@ POSTHOOK: query: desc formatted alter_table_not_sorted
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alter_table_not_sorted
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 

@@ -53,7 +53,6 @@ POSTHOOK: query: DESCRIBE FORMATTED orc_create_staging
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@orc_create_staging
 # col_name            	data_type           	comment             
-	 	 
 str                 	string              	                    
 mp                  	map<string,string>  	                    
 lst                 	array<string>       	                    
@@ -105,13 +104,11 @@ POSTHOOK: query: DESCRIBE FORMATTED orc_create
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@orc_create
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -164,13 +161,11 @@ POSTHOOK: query: DESCRIBE FORMATTED orc_create
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@orc_create
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -213,13 +208,11 @@ POSTHOOK: query: DESCRIBE FORMATTED orc_create
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@orc_create
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -273,13 +266,11 @@ POSTHOOK: query: DESCRIBE FORMATTED orc_create
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@orc_create
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -332,7 +323,6 @@ POSTHOOK: query: DESCRIBE FORMATTED orc_create_complex
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@orc_create_complex
 # col_name            	data_type           	comment             
-	 	 
 str                 	string              	                    
 mp                  	map<string,string>  	                    
 lst                 	array<string>       	                    

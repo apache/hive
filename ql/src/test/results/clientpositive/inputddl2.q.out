@@ -39,6 +39,5 @@ country             	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 country             	string              	                    

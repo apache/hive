@@ -247,7 +247,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view1
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -296,7 +295,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view2
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -344,7 +342,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view3
 # col_name            	data_type           	comment             
-	 	 
 valoo               	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -393,7 +390,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view3
 # col_name            	data_type           	comment             
-	 	 
 valoo               	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -739,7 +735,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view8
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view8
 # col_name            	data_type           	comment             
-	 	 
 c                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -817,7 +812,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view9
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view9
 # col_name            	data_type           	comment             
-	 	 
 m                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -895,7 +889,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view9
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view9
 # col_name            	data_type           	comment             
-	 	 
 m                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -963,7 +956,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view10
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view10
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -1040,7 +1032,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view11
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view11
 # col_name            	data_type           	comment             
-	 	 
 boom                	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -1112,7 +1103,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view12
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view12
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 mycol               	int                 	                    
@@ -1197,7 +1187,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view13
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view13
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -1318,7 +1307,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view14
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view14
 # col_name            	data_type           	comment             
-	 	 
 k1                  	string              	                    
 v1                  	string              	                    
 k2                  	string              	                    
@@ -1437,7 +1425,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view15
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view15
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value_count         	bigint              	                    
 	 	 
@@ -1523,7 +1510,6 @@ POSTHOOK: query: DESCRIBE FORMATTED view16
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view16
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 

@@ -20,12 +20,10 @@ POSTHOOK: query: describe formatted mytbl partition (c2='v1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mytbl
 # col_name            	data_type           	comment             
-	 	 
 c1                  	tinyint             	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 c2                  	string              	                    
 	 	 
 # Detailed Partition Information	 	 

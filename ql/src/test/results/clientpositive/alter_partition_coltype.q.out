@@ -29,7 +29,6 @@ ts                  	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	string              	                    
 PREHOOK: query: select count(*) from alter_coltype where dt = '100'
@@ -359,7 +358,6 @@ ts                  	double
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	double              	                    
 PREHOOK: query: desc alter_coltype partition (dt='100', ts='6.30')
@@ -375,7 +373,6 @@ ts                  	double
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	double              	                    
 PREHOOK: query: desc alter_coltype partition (dt='100', ts=3.0)
@@ -391,7 +388,6 @@ ts                  	double
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 dt                  	string              	                    
 ts                  	double              	                    
 PREHOOK: query: drop table alter_coltype

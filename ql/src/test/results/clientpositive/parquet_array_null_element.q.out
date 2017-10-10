@@ -57,7 +57,6 @@ POSTHOOK: query: DESCRIBE FORMATTED parquet_array_null_element
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@parquet_array_null_element
 # col_name            	data_type           	comment             
-	 	 
 id                  	int                 	                    
 lstint              	array<int>          	                    
 lststr              	array<string>       	                    

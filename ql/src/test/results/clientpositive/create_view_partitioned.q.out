@@ -42,7 +42,6 @@ value               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -57,12 +56,10 @@ POSTHOOK: query: DESCRIBE FORMATTED vp1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@vp1
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -256,14 +253,12 @@ POSTHOOK: query: DESCRIBE FORMATTED vp2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@vp2
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 ds                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 hr                  	string              	                    
 	 	 
 # Detailed Table Information	 	 
@@ -375,12 +370,10 @@ POSTHOOK: query: DESCRIBE FORMATTED vp3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@vp3
 # col_name            	data_type           	comment             
-	 	 
 k                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 v                   	string              	                    
 	 	 
 # Detailed Table Information	 	 

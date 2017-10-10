@@ -59,6 +59,10 @@ public class ResourceDownloader {
     return "ivy".equalsIgnoreCase(createURI(value).getScheme());
   }
 
+  public static boolean isHdfsUri(String value) throws URISyntaxException {
+    return "hdfs".equalsIgnoreCase(createURI(value).getScheme());
+  }
+
   public static boolean isFileUri(String value) {
     String scheme = null;
     try {
@@ -84,7 +88,9 @@ public class ResourceDownloader {
     switch (getURLType(source)) {
     case FILE: return isLocalAllowed ? Lists.newArrayList(source) : null;
     case IVY: return dependencyResolver.downloadDependencies(source);
-    case OTHER: return Lists.newArrayList(
+    case HDFS:
+    case OTHER:
+      return Lists.newArrayList(
         createURI(downloadResource(source, subDir, convertToUnix)));
     default: throw new AssertionError(getURLType(source));
     }
@@ -117,13 +123,14 @@ public class ResourceDownloader {
     }
   }
 
-  private enum UriType { IVY, FILE, OTHER };
+  private enum UriType { IVY, FILE, HDFS, OTHER };
   private static ResourceDownloader.UriType getURLType(URI value) throws URISyntaxException {
     String scheme = value.getScheme();
     if (scheme == null) return UriType.FILE;
     scheme = scheme.toLowerCase();
     if ("ivy".equals(scheme)) return UriType.IVY;
     if ("file".equals(scheme)) return UriType.FILE;
+    if ("hdfs".equals(scheme)) return UriType.HDFS;
     return UriType.OTHER;
   }
 }

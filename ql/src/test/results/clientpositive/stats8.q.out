@@ -71,13 +71,11 @@ POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -111,13 +109,11 @@ POSTHOOK: query: describe formatted analyze_srcpart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -183,13 +179,11 @@ POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -254,13 +248,11 @@ POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -325,13 +317,11 @@ POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -408,13 +398,11 @@ POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -448,13 +436,11 @@ POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -488,13 +474,11 @@ POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -528,13 +512,11 @@ POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-09',hr
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -568,13 +550,11 @@ POSTHOOK: query: describe formatted analyze_srcpart
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

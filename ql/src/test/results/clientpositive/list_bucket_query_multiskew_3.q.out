@@ -27,13 +27,11 @@ POSTHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@fact_daily
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -87,13 +85,11 @@ POSTHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='2')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@fact_daily
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -152,13 +148,11 @@ POSTHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='3')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@fact_daily
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

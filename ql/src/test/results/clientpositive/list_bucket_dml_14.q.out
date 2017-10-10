@@ -166,7 +166,6 @@ POSTHOOK: query: desc formatted list_bucketing
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@list_bucketing
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 

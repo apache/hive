@@ -13,12 +13,10 @@ POSTHOOK: query: desc formatted mp
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mp
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 b                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -60,12 +58,10 @@ POSTHOOK: query: desc formatted mp
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mp
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 b                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -100,12 +96,10 @@ POSTHOOK: query: desc formatted mp partition (b=1)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mp
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 b                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -145,12 +139,10 @@ POSTHOOK: query: desc formatted mp
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mp
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 b                   	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -185,12 +177,10 @@ POSTHOOK: query: desc formatted mp partition (b=1)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mp
 # col_name            	data_type           	comment             
-	 	 
 a                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 b                   	int                 	                    
 	 	 
 # Detailed Partition Information	 	 

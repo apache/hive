@@ -37,8 +37,6 @@ import org.apache.hadoop.hive.ql.index.IndexMetadataChangeTask;
 import org.apache.hadoop.hive.ql.index.IndexMetadataChangeWork;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileTask;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
-import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanTask;
-import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanWork;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
@@ -111,8 +109,6 @@ public final class TaskFactory {
         DependencyCollectionTask.class));
     taskvec.add(new TaskTuple<ImportCommitWork>(ImportCommitWork.class,
         ImportCommitTask.class));
-    taskvec.add(new TaskTuple<PartialScanWork>(PartialScanWork.class,
-        PartialScanTask.class));
     taskvec.add(new TaskTuple<IndexMetadataChangeWork>(IndexMetadataChangeWork.class,
         IndexMetadataChangeTask.class));
     taskvec.add(new TaskTuple<TezWork>(TezWork.class, TezTask.class));

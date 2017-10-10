@@ -22,7 +22,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -92,10 +97,13 @@ public class TestBeelineArgParsing {
     }
   }
 
-  @Parameters public static Collection<Object[]> data() throws IOException, InterruptedException {
+  @Parameters(name="{1}")
+  public static Collection<Object[]> data() throws IOException, InterruptedException {
     // generate the dummy driver by using txt file
     String u = HiveTestUtils.getFileFromClasspath("DummyDriver.txt");
-    File jarFile = HiveTestUtils.genLocalJarForTest(u, dummyDriverClazzName);
+    Map<File, String> extraContent=new HashMap<>();
+    extraContent.put(new File("META-INF/services/java.sql.Driver"), dummyDriverClazzName);
+    File jarFile = HiveTestUtils.genLocalJarForTest(u, dummyDriverClazzName, extraContent);
     String pathToDummyDriver = jarFile.getAbsolutePath();
     return Arrays.asList(new Object[][] {
         { "jdbc:postgresql://host:5432/testdb", "org.postgresql.Driver",
@@ -284,6 +292,7 @@ public class TestBeelineArgParsing {
     TestBeeline bl = new TestBeeline();
 
     LOG.info("Add " + driverJarFileName + " for the driver class " + driverClazzName);
+    assertTrue("expected to exists: "+driverJarFileName,new File(driverJarFileName).exists());
     bl.addLocalJar(driverJarFileName);
     if (!defaultSupported) {
       Assert.assertNull(bl.findLocalDriver(connectionString));

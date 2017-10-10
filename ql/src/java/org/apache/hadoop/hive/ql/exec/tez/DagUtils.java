@@ -870,11 +870,47 @@ public class DagUtils {
       String hdfsDirPathStr, Configuration conf) throws IOException, LoginException {
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
 
-    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE,
-        getTempFilesFromConf(conf), null);
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEADDFILESUSEHDFSLOCATION)) {
+      // reference HDFS based resource directly, to use distribute cache efficiently.
+      addHdfsResource(conf, tmpResources, LocalResourceType.FILE, getHdfsTempFilesFromConf(conf));
+      // local resources are session based.
+      addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, getLocalTempFilesFromConf(conf), null);
+    } else {
+      // all resources including HDFS are session based.
+      addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, getTempFilesFromConf(conf), null);
+    }
+
     addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.ARCHIVE,
         getTempArchivesFromConf(conf), null);
     return tmpResources;
+  }
+
+  private void addHdfsResource(Configuration conf, List<LocalResource> tmpResources,
+                               LocalResourceType type, String[] files) throws IOException {
+    for (String file: files) {
+      if (StringUtils.isNotBlank(file)) {
+        Path dest = new Path(file);
+        FileSystem destFS = dest.getFileSystem(conf);
+        LocalResource localResource = createLocalResource(destFS, dest, type,
+            LocalResourceVisibility.PRIVATE);
+        tmpResources.add(localResource);
+      }
+    }
+  }
+
+  private static String[] getHdfsTempFilesFromConf(Configuration conf) {
+    String addedFiles = Utilities.getHdfsResourceFiles(conf, SessionState.ResourceType.FILE);
+    String addedJars = Utilities.getHdfsResourceFiles(conf, SessionState.ResourceType.JAR);
+    String allFiles = addedJars + "," + addedFiles;
+    return allFiles.split(",");
+  }
+
+  private static String[] getLocalTempFilesFromConf(Configuration conf) {
+    String addedFiles = Utilities.getLocalResourceFiles(conf, SessionState.ResourceType.FILE);
+    String addedJars = Utilities.getLocalResourceFiles(conf, SessionState.ResourceType.JAR);
+    String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
+    String allFiles = auxJars + "," + addedJars + "," + addedFiles;
+    return allFiles.split(",");
   }
 
   public static String[] getTempFilesFromConf(Configuration conf) {

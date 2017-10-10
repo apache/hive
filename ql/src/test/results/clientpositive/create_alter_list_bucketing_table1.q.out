@@ -15,7 +15,6 @@ POSTHOOK: query: describe formatted stored_as_dirs_multiple
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stored_as_dirs_multiple
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 col2                	int                 	                    
 col3                	string              	                    
@@ -62,7 +61,6 @@ POSTHOOK: query: describe formatted stored_as_dirs_multiple
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stored_as_dirs_multiple
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 col2                	int                 	                    
 col3                	string              	                    
@@ -109,7 +107,6 @@ POSTHOOK: query: describe formatted stored_as_dirs_multiple
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stored_as_dirs_multiple
 # col_name            	data_type           	comment             
-	 	 
 col1                	string              	                    
 col2                	int                 	                    
 col3                	string              	                    
@@ -164,7 +161,6 @@ POSTHOOK: query: describe formatted stored_as_dirs_single
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stored_as_dirs_single
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -211,7 +207,6 @@ POSTHOOK: query: describe formatted stored_as_dirs_single
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stored_as_dirs_single
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -257,7 +252,6 @@ POSTHOOK: query: describe formatted stored_as_dirs_single
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stored_as_dirs_single
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -304,7 +298,6 @@ POSTHOOK: query: describe formatted stored_as_dirs_single_like
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stored_as_dirs_single_like
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 

@@ -204,9 +204,7 @@ public class LlapCacheAwareFs extends FileSystem {
         @Override
         public DiskRangeList createCacheChunk(
             MemoryBuffer buffer, long startOffset, long endOffset) {
-          CacheChunk result = new CacheChunk(); // TODO: pool?
-          result.init(buffer, startOffset, endOffset);
-          return result;
+          return new CacheChunk(buffer, startOffset, endOffset);
         }
       }, gotAllData);
       if (LOG.isInfoEnabled()) {

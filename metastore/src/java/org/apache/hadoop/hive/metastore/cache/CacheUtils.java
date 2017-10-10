@@ -88,10 +88,10 @@ public class CacheUtils {
     return result;
   }
 
-  public static Table assemble(TableWrapper wrapper) {
+  static Table assemble(TableWrapper wrapper, SharedCache sharedCache) {
     Table t = wrapper.getTable().deepCopy();
     if (wrapper.getSdHash()!=null) {
-      StorageDescriptor sdCopy = SharedCache.getSdFromCache(wrapper.getSdHash()).deepCopy();
+      StorageDescriptor sdCopy = sharedCache.getSdFromCache(wrapper.getSdHash()).deepCopy();
       if (sdCopy.getBucketCols()==null) {
         sdCopy.setBucketCols(new ArrayList<String>());
       }
@@ -109,10 +109,10 @@ public class CacheUtils {
     return t;
   }
 
-  public static Partition assemble(PartitionWrapper wrapper) {
+  static Partition assemble(PartitionWrapper wrapper, SharedCache sharedCache) {
     Partition p = wrapper.getPartition().deepCopy();
     if (wrapper.getSdHash()!=null) {
-      StorageDescriptor sdCopy = SharedCache.getSdFromCache(wrapper.getSdHash()).deepCopy();
+      StorageDescriptor sdCopy = sharedCache.getSdFromCache(wrapper.getSdHash()).deepCopy();
       if (sdCopy.getBucketCols()==null) {
         sdCopy.setBucketCols(new ArrayList<String>());
       }

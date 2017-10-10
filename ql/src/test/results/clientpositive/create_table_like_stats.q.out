@@ -17,7 +17,6 @@ POSTHOOK: query: desc formatted a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@a
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -70,7 +69,6 @@ POSTHOOK: query: desc formatted a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@a
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
@@ -122,13 +120,11 @@ POSTHOOK: query: desc formatted a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@a
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 
@@ -180,13 +176,11 @@ POSTHOOK: query: desc formatted a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@a
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	default             
 value               	string              	default             
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

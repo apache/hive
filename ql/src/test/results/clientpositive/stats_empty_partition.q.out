@@ -23,13 +23,11 @@ POSTHOOK: query: describe formatted tmptable partition (part = '1')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tmptable
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 

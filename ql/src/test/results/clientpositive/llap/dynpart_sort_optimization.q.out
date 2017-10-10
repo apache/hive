@@ -877,7 +877,6 @@ POSTHOOK: query: desc formatted over1k_part partition(ds="foo",t=27)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -885,7 +884,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 t                   	tinyint             	                    
 	 	 
@@ -919,7 +917,6 @@ POSTHOOK: query: desc formatted over1k_part partition(ds="foo",t="__HIVE_DEFAULT
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -927,7 +924,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 t                   	tinyint             	                    
 	 	 
@@ -961,7 +957,6 @@ POSTHOOK: query: desc formatted over1k_part_limit partition(ds="foo",t=27)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part_limit
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -969,7 +964,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 t                   	tinyint             	                    
 	 	 
@@ -1003,7 +997,6 @@ POSTHOOK: query: desc formatted over1k_part_limit partition(ds="foo",t="__HIVE_D
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part_limit
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -1011,7 +1004,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 t                   	tinyint             	                    
 	 	 
@@ -1045,7 +1037,6 @@ POSTHOOK: query: desc formatted over1k_part_buck partition(t=27)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part_buck
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -1053,7 +1044,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 t                   	tinyint             	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -1086,7 +1076,6 @@ POSTHOOK: query: desc formatted over1k_part_buck partition(t="__HIVE_DEFAULT_PAR
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part_buck
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -1094,7 +1083,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 t                   	tinyint             	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -1127,7 +1115,6 @@ POSTHOOK: query: desc formatted over1k_part_buck_sort partition(t=27)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part_buck_sort
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -1135,7 +1122,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 t                   	tinyint             	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -1168,7 +1154,6 @@ POSTHOOK: query: desc formatted over1k_part_buck_sort partition(t="__HIVE_DEFAUL
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part_buck_sort
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -1176,7 +1161,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 t                   	tinyint             	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -1694,7 +1678,6 @@ POSTHOOK: query: desc formatted over1k_part2 partition(ds="foo",t=27)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part2
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -1702,7 +1685,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 t                   	tinyint             	                    
 	 	 
@@ -1736,7 +1718,6 @@ POSTHOOK: query: desc formatted over1k_part2 partition(ds="foo",t="__HIVE_DEFAUL
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part2
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -1744,7 +1725,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 t                   	tinyint             	                    
 	 	 
@@ -1839,7 +1819,6 @@ POSTHOOK: query: desc formatted over1k_part2 partition(ds="foo",t=27)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part2
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -1847,7 +1826,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 t                   	tinyint             	                    
 	 	 
@@ -1881,7 +1859,6 @@ POSTHOOK: query: desc formatted over1k_part2 partition(ds="foo",t="__HIVE_DEFAUL
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part2
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -1889,7 +1866,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 t                   	tinyint             	                    
 	 	 
@@ -2151,7 +2127,6 @@ POSTHOOK: query: desc formatted over1k_part_buck_sort2 partition(t=27)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part_buck_sort2
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -2159,7 +2134,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 t                   	tinyint             	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -2192,7 +2166,6 @@ POSTHOOK: query: desc formatted over1k_part_buck_sort2 partition(t="__HIVE_DEFAU
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part_buck_sort2
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -2200,7 +2173,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 t                   	tinyint             	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -2294,7 +2266,6 @@ POSTHOOK: query: desc formatted over1k_part_buck_sort2 partition(t=27)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part_buck_sort2
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -2302,7 +2273,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 t                   	tinyint             	                    
 	 	 
 # Detailed Partition Information	 	 
@@ -2335,7 +2305,6 @@ POSTHOOK: query: desc formatted over1k_part_buck_sort2 partition(t="__HIVE_DEFAU
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@over1k_part_buck_sort2
 # col_name            	data_type           	comment             
-	 	 
 si                  	smallint            	                    
 i                   	int                 	                    
 b                   	bigint              	                    
@@ -2343,7 +2312,6 @@ f                   	float
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 t                   	tinyint             	                    
 	 	 
 # Detailed Partition Information	 	 

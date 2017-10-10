@@ -13,7 +13,6 @@ POSTHOOK: query: describe formatted t4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t4
 # col_name            	data_type           	comment             
-	 	 
 x+1`                	string              	                    
 y&y                 	string              	                    
 	 	 
@@ -56,7 +55,6 @@ POSTHOOK: query: describe formatted t4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t4
 # col_name            	data_type           	comment             
-	 	 
 x+1`                	string              	                    
 y&y                 	string              	                    
 	 	 

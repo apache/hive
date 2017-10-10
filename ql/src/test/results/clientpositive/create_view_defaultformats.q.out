@@ -37,7 +37,6 @@ POSTHOOK: query: describe formatted sfsrc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@sfsrc
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -69,7 +68,6 @@ POSTHOOK: query: describe formatted rcsrc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@rcsrc
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 

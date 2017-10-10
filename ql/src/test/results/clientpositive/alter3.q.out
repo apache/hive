@@ -76,7 +76,6 @@ pcol2               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 pcol1               	string              	                    
 pcol2               	string              	                    
 	 	 
@@ -93,7 +92,6 @@ pcol2               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 pcol1               	string              	                    
 pcol2               	string              	                    
 	 	 
@@ -148,7 +146,6 @@ pcol2               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 pcol1               	string              	                    
 pcol2               	string              	                    
 	 	 
@@ -294,7 +291,6 @@ pcol2               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 pcol1               	string              	                    
 pcol2               	string              	                    
 	 	 
@@ -311,7 +307,6 @@ pcol2               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 pcol1               	string              	                    
 pcol2               	string              	                    
 	 	 
@@ -366,7 +361,6 @@ pcol2               	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 pcol1               	string              	                    
 pcol2               	string              	                    
 	 	 

@@ -18,7 +18,6 @@ insertdate          	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -49,7 +48,6 @@ insertdate          	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -81,7 +79,6 @@ insertdate          	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -121,7 +118,6 @@ insertdate          	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -152,7 +148,6 @@ insertdate          	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -184,7 +179,6 @@ insertdate          	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -263,7 +257,6 @@ insertdate          	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -294,7 +287,6 @@ insertdate          	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -326,7 +318,6 @@ insertdate          	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -366,7 +357,6 @@ insertdate          	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -397,7 +387,6 @@ insertdate          	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -429,7 +418,6 @@ insertdate          	string
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 insertdate          	string              	                    
 	 	 
 #### A masked pattern was here ####

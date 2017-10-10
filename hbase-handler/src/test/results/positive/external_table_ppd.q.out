@@ -39,7 +39,6 @@ POSTHOOK: query: DESCRIBE FORMATTED t_hbase
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@t_hbase
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 tinyint_col         	tinyint             	                    
 smallint_col        	smallint            	                    

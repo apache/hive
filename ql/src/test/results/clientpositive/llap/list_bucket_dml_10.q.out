@@ -188,13 +188,11 @@ POSTHOOK: query: desc formatted list_bucketing_static_part partition (ds='2008-0
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@list_bucketing_static_part
 # col_name            	data_type           	comment             
-	 	 
 key                 	string              	                    
 value               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
-	 	 
 ds                  	string              	                    
 hr                  	string              	                    
 	 	 

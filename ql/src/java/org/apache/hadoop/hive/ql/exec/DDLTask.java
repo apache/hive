@@ -148,6 +148,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
+import org.apache.hadoop.hive.ql.metadata.formatting.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
@@ -2024,7 +2025,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             for (String val : vals) {
               String escapedPath = FileUtils.escapePathName(val);
               assert escapedPath != null;
-              if (escapedPath.equals(val)) continue;
+              if (escapedPath.equals(val)) {
+                continue;
+              }
               String errorMsg = "Repair: Cannot add partition " + msckDesc.getTableName()
                   + ':' + part.getPartitionName() + " due to invalid characters in the name";
               if (doSkip) {
@@ -2535,8 +2538,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (showIndexes.isFormatted()) {
         // column headers
         outStream.write(MetaDataFormatUtils.getIndexColumnsHeader().getBytes(StandardCharsets.UTF_8));
-        outStream.write(terminator);
-        outStream.write(terminator);
       }
 
       for (Index index : indexes)
@@ -2650,8 +2651,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // In case the query is served by HiveServer2, don't pad it with spaces,
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
       boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
-      outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(
-          cols, false, isOutputPadded, null));
+      TextMetaDataTable tmd = new TextMetaDataTable();
+      for (FieldSchema fieldSchema : cols) {
+        tmd.addRow(MetaDataFormatUtils.extractColumnValues(fieldSchema));
+      }
+      outStream.writeBytes(tmd.renderTable(isOutputPadded));
     } catch (IOException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     } finally {
@@ -2728,7 +2732,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     HiveTxnManager txnManager = ctx.getHiveTxnManager();
     HiveLockManager lockMgr = txnManager.getLockManager();
 
-    if (txnManager.useNewShowLocksFormat()) return showLocksNewFormat(showLocks, lockMgr);
+    if (txnManager.useNewShowLocksFormat()) {
+      return showLocksNewFormat(showLocks, lockMgr);
+    }
 
     boolean isExt = showLocks.isExt();
     if (lockMgr == null) {
@@ -3502,7 +3508,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
       formatter.describeTable(outStream, colPath, tableName, tbl, part,
           cols, descTbl.isFormatted(), descTbl.isExt(),
-          descTbl.isPretty(), isOutputPadded, colStats,
+          isOutputPadded, colStats,
           pkInfo, fkInfo, ukInfo, nnInfo);
 
       LOG.debug("DDLTask: written data for " + tbl.getTableName());
