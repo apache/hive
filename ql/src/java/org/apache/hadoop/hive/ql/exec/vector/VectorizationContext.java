@@ -2351,11 +2351,10 @@ public class VectorizationContext {
   }
 
   private boolean isNullConst(ExprNodeDesc exprNodeDesc) {
-    if (exprNodeDesc instanceof ExprNodeConstantDesc) {
-      String typeString = exprNodeDesc.getTypeString();
-      if (typeString.equalsIgnoreCase("void")) {
+    //null constant could be typed so we need to check the value
+    if (exprNodeDesc instanceof ExprNodeConstantDesc &&
+        ((ExprNodeConstantDesc) exprNodeDesc).getValue() == null) {
         return true;
-      }
     }
     return false;
   }
