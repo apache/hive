@@ -2852,6 +2852,9 @@ public class HiveConf extends Configuration {
     HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT("hive.vectorized.use.vectorized.input.format", true,
         "This flag should be set to true to enable vectorizing with vectorized input file format capable SerDe.\n" +
         "The default value is true."),
+    HIVE_VECTORIZATION_VECTORIZED_INPUT_FILE_FORMAT_EXCLUDES("hive.vectorized.input.format.excludes","",
+        "This configuration should be set to fully described input format class names for which \n"
+            + " vectorized input format should not be used for vectorized execution."),
     HIVE_VECTORIZATION_USE_VECTOR_DESERIALIZE("hive.vectorized.use.vector.serde.deserialize", true,
         "This flag should be set to true to enable vectorizing rows using vector deserialize.\n" +
         "The default value is true."),

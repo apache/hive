@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -479,9 +480,11 @@ public class LlapDecider implements PhysicalPlanResolver {
 
     private boolean checkInputsVectorized(MapWork mapWork) {
       boolean mayWrap = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED);
+      Collection<Class<?>> excludedInputFormats = Utilities.getClassNamesFromConfig(conf, ConfVars.HIVE_VECTORIZATION_VECTORIZED_INPUT_FILE_FORMAT_EXCLUDES);
       for (PartitionDesc pd : mapWork.getPathToPartitionInfo().values()) {
-        if (Utilities.isInputFileFormatVectorized(pd) || (mayWrap
-            && HiveInputFormat.canWrapForLlap(pd.getInputFileFormatClass(), true))) {
+        if ((Utilities.isInputFileFormatVectorized(pd) && !excludedInputFormats
+            .contains(pd.getInputFileFormatClass())) || (mayWrap && HiveInputFormat
+            .canWrapForLlap(pd.getInputFileFormatClass(), true))) {
           continue;
         }
         LOG.info("Input format: " + pd.getInputFileFormatClassName()
