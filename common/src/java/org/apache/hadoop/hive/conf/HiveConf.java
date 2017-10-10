@@ -2014,13 +2014,6 @@ public class HiveConf extends Configuration {
     HIVE_DRUID_COORDINATOR_DEFAULT_ADDRESS("hive.druid.coordinator.address.default", "localhost:8081",
             "Address of the Druid coordinator. It is used to check the load status of newly created segments"
     ),
-    HIVE_DRUID_SELECT_DISTRIBUTE("hive.druid.select.distribute", true,
-        "If it is set to true, we distribute the execution of Druid Select queries. Concretely, we retrieve\n" +
-        "the result for Select queries directly from the Druid nodes containing the segments data.\n" +
-        "In particular, first we contact the Druid broker node to obtain the nodes containing the segments\n" +
-        "for the given query, and then we contact those nodes to retrieve the results for the query.\n" +
-        "If it is set to false, we do not execute the Select queries in a distributed fashion. Instead, results\n" +
-        "for those queries are returned by the Druid broker node."),
     HIVE_DRUID_SELECT_THRESHOLD("hive.druid.select.threshold", 10000,
         "Takes only effect when hive.druid.select.distribute is set to false. \n" +
         "When we can split a Select query, this is the maximum number of rows that we try to retrieve\n" +
