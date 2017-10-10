@@ -77,6 +77,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private Integer maxEventLimit;
   // Base path for REPL LOAD
   private String path;
+  // Added conf member to set the REPL command specific config entries without affecting the configs
+  // of any other queries running in the session
   private HiveConf conf;
 
   private static String testInjectDumpDir = null; // unit tests can overwrite this to affect default dump behaviour
