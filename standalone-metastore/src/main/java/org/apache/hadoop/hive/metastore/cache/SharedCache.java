@@ -48,8 +48,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 
 public class SharedCache {
-  private Map<String, Database> databaseCache = new TreeMap<String, Database>();
-  private Map<String, TableWrapper> tableCache = new TreeMap<String, TableWrapper>();
+  private Map<String, Database> databaseCache = new TreeMap<>();
+  private Map<String, TableWrapper> tableCache = new TreeMap<>();
   private Map<String, PartitionWrapper> partitionCache = new TreeMap<>();
   private Map<String, ColumnStatisticsObj> partitionColStatsCache = new TreeMap<>();
   private Map<String, ColumnStatisticsObj> tableColStatsCache = new TreeMap<>();
@@ -81,12 +81,12 @@ public class SharedCache {
   }
 
   public synchronized List<String> listCachedDatabases() {
-    return new ArrayList<String>(databaseCache.keySet());
+    return new ArrayList<>(databaseCache.keySet());
   }
 
   public synchronized void alterDatabaseInCache(String dbName, Database newDb) {
-    removeDatabaseFromCache(HiveStringUtils.normalizeIdentifier(dbName));
-    addDatabaseToCache(HiveStringUtils.normalizeIdentifier(newDb.getName()), newDb.deepCopy());
+    removeDatabaseFromCache(StringUtils.normalizeIdentifier(dbName));
+    addDatabaseToCache(StringUtils.normalizeIdentifier(newDb.getName()), newDb.deepCopy());
   }
 
   public synchronized int getCachedDatabaseCount() {
@@ -248,7 +248,7 @@ public class SharedCache {
   }
 
   public synchronized List<Table> listCachedTables(String dbName) {
-    List<Table> tables = new ArrayList<Table>();
+    List<Table> tables = new ArrayList<>();
     for (TableWrapper wrapper : tableCache.values()) {
       if (wrapper.getTable().getDbName().equals(dbName)) {
         tables.add(CacheUtils.assemble(wrapper, this));
@@ -258,7 +258,7 @@ public class SharedCache {
   }
 
   public synchronized List<TableMeta> getTableMeta(String dbNames, String tableNames, List<String> tableTypes) {
-    List<TableMeta> tableMetas = new ArrayList<TableMeta>();
+    List<TableMeta> tableMetas = new ArrayList<>();
     for (String dbName : listCachedDatabases()) {
       if (CacheUtils.matches(dbName, dbNames)) {
         for (Table table : listCachedTables(dbName)) {
@@ -354,7 +354,7 @@ public class SharedCache {
   }
 
   public synchronized List<Partition> listCachedPartitions(String dbName, String tblName, int max) {
-    List<Partition> partitions = new ArrayList<Partition>();
+    List<Partition> partitions = new ArrayList<>();
     int count = 0;
     for (PartitionWrapper wrapper : partitionCache.values()) {
       if (wrapper.getPartition().getDbName().equals(dbName)
