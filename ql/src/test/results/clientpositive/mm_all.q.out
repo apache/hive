@@ -88,10 +88,7 @@ STAGE PLANS:
     Conditional Operator
 
   Stage: Stage-4
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
+    Dependency Collection
 
   Stage: Stage-0
     Move Operator
@@ -125,10 +122,7 @@ STAGE PLANS:
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
 
   Stage: Stage-6
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
+    Dependency Collection
 
 PREHOOK: query: insert into table part_mm partition(key_mm=455) select key from intermediate
 PREHOOK: type: QUERY
@@ -1792,7 +1786,6 @@ POSTHOOK: query: desc formatted stats_mm
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_mm
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -1843,7 +1836,6 @@ POSTHOOK: query: desc formatted stats_mm
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_mm
 # col_name            	data_type           	comment             
-	 	 
 key                 	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -1902,7 +1894,6 @@ POSTHOOK: query: desc formatted stats2_mm
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats2_mm
 # col_name            	data_type           	comment             
-	 	 
 _c0                 	array<string>       	                    
 	 	 
 # Detailed Table Information	 	 
