@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -269,6 +270,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private BaseWork currentBaseWork;
   private Operator<? extends OperatorDesc> currentOperator;
+  private Collection<Class<?>> vectorizedInputFormatExcludes;
 
   public void testSetCurrentBaseWork(BaseWork testBaseWork) {
     currentBaseWork = testBaseWork;
@@ -734,13 +736,14 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       if (useVectorizedInputFileFormat) {
 
-        if (isInputFileFormatVectorized) {
+        if (isInputFileFormatVectorized && !isInputFormatExcluded(inputFileFormatClassName,
+            vectorizedInputFormatExcludes)) {
+          pd.setVectorPartitionDesc(VectorPartitionDesc
+              .createVectorizedInputFileFormat(inputFileFormatClassName,
+                  Utilities.isInputFileFormatSelfDescribing(pd)));
 
-          pd.setVectorPartitionDesc(
-              VectorPartitionDesc.createVectorizedInputFileFormat(
-                  inputFileFormatClassName, Utilities.isInputFileFormatSelfDescribing(pd)));
-
-          enabledConditionsMetSet.add(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT.varname);
+          enabledConditionsMetSet
+              .add(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT.varname);
           return true;
         }
         // Fall through and look for other options...
@@ -819,7 +822,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       // inspect-able Object[] row to a VectorizedRowBatch in the VectorMapOperator.
 
       if (useRowDeserialize) {
-
         pd.setVectorPartitionDesc(
             VectorPartitionDesc.createRowDeserialize(
                 inputFileFormatClassName,
@@ -828,12 +830,18 @@ public class Vectorizer implements PhysicalPlanResolver {
 
         enabledConditionsMetSet.add(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_ROW_DESERIALIZE.varname);
         return true;
-
       }
 
       if (isInputFileFormatVectorized) {
-        Preconditions.checkState(!useVectorizedInputFileFormat);
-        enabledConditionsNotMetList.add(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT.varname);
+        if(useVectorizedInputFileFormat) {
+          enabledConditionsNotMetList.add(
+              HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT.varname + " IS true AND "
+                  + HiveConf.ConfVars.HIVE_VECTORIZATION_VECTORIZED_INPUT_FILE_FORMAT_EXCLUDES.varname
+                  + " NOT CONTAINS " + inputFileFormatClassName);
+        } else {
+          enabledConditionsNotMetList
+              .add(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT.varname);
+        }
       } else {
         // Only offer these when the input file format is not the fast vectorized formats.
         if (isVectorDeserializeEligable) {
@@ -845,6 +853,23 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
       }
  
+      return false;
+    }
+
+    private boolean isInputFormatExcluded(String inputFileFormatClassName, Collection<Class<?>> excludes) {
+      Class<?> ifClass = null;
+      try {
+        ifClass = Class.forName(inputFileFormatClassName);
+      } catch (ClassNotFoundException e) {
+        LOG.warn("Cannot verify class for " + inputFileFormatClassName, e);
+        return true;
+      }
+      if(excludes == null || excludes.isEmpty()) {
+        return false;
+      }
+      for (Class<?> badClass : excludes) {
+        if (badClass.isAssignableFrom(ifClass)) return true;
+      }
       return false;
     }
 
@@ -1658,6 +1683,9 @@ public class Vectorizer implements PhysicalPlanResolver {
     useVectorizedInputFileFormat =
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT);
+    if(useVectorizedInputFileFormat) {
+      initVectorizedInputFormatExcludeClasses();
+    }
     useVectorDeserialize =
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTOR_DESERIALIZE);
@@ -1689,6 +1717,11 @@ public class Vectorizer implements PhysicalPlanResolver {
     // begin to walk through the task tree.
     ogw.startWalking(topNodes, null);
     return physicalContext;
+  }
+
+  private void initVectorizedInputFormatExcludeClasses() {
+    vectorizedInputFormatExcludes = Utilities.getClassNamesFromConfig(hiveConf,
+        HiveConf.ConfVars.HIVE_VECTORIZATION_VECTORIZED_INPUT_FILE_FORMAT_EXCLUDES);
   }
 
   private void setOperatorNotSupported(Operator<? extends OperatorDesc> op) {
