@@ -154,10 +154,13 @@ public final class TaskFactory {
   }
 
   @SafeVarargs
-  public static <T extends Serializable> Task<T> get(T work, HiveConf conf,
-      Task<? extends Serializable>... tasklist) {
+  public static <T extends Serializable> Task<T> get(T work, HiveConf conf, boolean setConf,
+                                                     Task<? extends Serializable>... tasklist) {
     Task<T> ret = get((Class<T>) work.getClass(), conf);
     ret.setWork(work);
+    if (setConf && (null != conf)) {
+      ret.setConf(conf);
+    }
     if (tasklist.length == 0) {
       return (ret);
     }
@@ -168,6 +171,12 @@ public final class TaskFactory {
     }
     ret.setChildTasks(clist);
     return (ret);
+  }
+
+  @SafeVarargs
+  public static <T extends Serializable> Task<T> get(T work, HiveConf conf,
+      Task<? extends Serializable>... tasklist) {
+    return get(work, conf, false, tasklist);
   }
 
   public static <T extends Serializable> Task<T> getAndMakeChild(T work,
