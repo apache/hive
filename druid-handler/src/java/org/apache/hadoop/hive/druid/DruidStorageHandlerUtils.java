@@ -390,9 +390,8 @@ public final class DruidStorageHandlerUtils {
                 // If we are overwriting, we disable existing sources
                 disableDataSourceWithHandle(handle, metadataStorageTablesConfig, dataSource);
 
-                // When overwriting or when we do not have segments, we can just start with empty timeline,
-                // as we are overwriting segments with new versions and not inserting new segments at all,
-                // respectively
+                // When overwriting, we just start with empty timeline,
+                // as we are overwriting segments with new versions
                 timeline = new VersionedIntervalTimeline<>(Ordering.natural());
               } else {
                 // Append Mode
