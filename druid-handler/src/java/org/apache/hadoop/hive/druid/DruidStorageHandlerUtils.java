@@ -35,7 +35,6 @@ import io.druid.math.expr.ExprMacroTable;
 import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.SQLMetadataConnector;
 import io.druid.metadata.storage.mysql.MySQLConnector;
-import io.druid.query.BaseQuery;
 import io.druid.query.select.SelectQueryConfig;
 import io.druid.segment.IndexIO;
 import io.druid.segment.IndexMergerV9;
@@ -63,26 +62,14 @@ import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryProxy;
 import org.apache.hadoop.util.StringUtils;
 
-import com.fasterxml.jackson.databind.InjectableValues;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.io.CharStreams;
 import com.metamx.common.MapUtils;
-import com.metamx.emitter.EmittingLogger;
-import com.metamx.emitter.core.NoopEmitter;
-import com.metamx.emitter.service.ServiceEmitter;
-import com.metamx.http.client.HttpClient;
 import com.metamx.http.client.Request;
-import com.metamx.http.client.response.InputStreamResponseHandler;
 
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
@@ -97,13 +84,13 @@ import org.skife.jdbi.v2.Query;
 import org.skife.jdbi.v2.ResultIterator;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.TransactionCallback;
-import org.skife.jdbi.v2.TransactionStatus;
 import org.skife.jdbi.v2.exceptions.CallbackFailedException;
 import org.skife.jdbi.v2.tweak.HandleCallback;
 import org.skife.jdbi.v2.util.ByteArrayMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -121,7 +108,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 
@@ -264,13 +250,21 @@ public final class DruidStorageHandlerUtils {
           throws IOException {
     ImmutableList.Builder<DataSegment> publishedSegmentsBuilder = ImmutableList.builder();
     FileSystem fs = taskDir.getFileSystem(conf);
-    for (FileStatus fileStatus : fs.listStatus(taskDir)) {
+    FileStatus[] fss;
+    try {
+      fss = fs.listStatus(taskDir);
+    } catch (FileNotFoundException e) {
+      // This is a CREATE TABLE statement or query executed for CTAS/INSERT
+      // did not produce any result. We do not need to do anything, this is
+      // expected behavior.
+      return publishedSegmentsBuilder.build();
+    }
+    for (FileStatus fileStatus : fss) {
       final DataSegment segment = JSON_MAPPER
               .readValue(fs.open(fileStatus.getPath()), DataSegment.class);
       publishedSegmentsBuilder.add(segment);
     }
-    List<DataSegment> publishedSegments = publishedSegmentsBuilder.build();
-    return publishedSegments;
+    return publishedSegmentsBuilder.build();
   }
 
   /**
@@ -390,16 +384,23 @@ public final class DruidStorageHandlerUtils {
   ) throws CallbackFailedException {
     connector.getDBI().inTransaction(
             (TransactionCallback<Void>) (handle, transactionStatus) -> {
-              final List<DataSegment> finalSegmentsToPublish = Lists.newArrayList();
+              // We create the timeline for the existing and new segments
               VersionedIntervalTimeline<String, DataSegment> timeline;
               if (overwrite) {
+                // If we are overwriting, we disable existing sources
                 disableDataSourceWithHandle(handle, metadataStorageTablesConfig, dataSource);
-                // When overwriting start with empty timeline, as we are overwriting segments with new versions
-                timeline = new VersionedIntervalTimeline<>(
-                        Ordering.natural()
-                );
+
+                // When overwriting or when we do not have segments, we can just start with empty timeline,
+                // as we are overwriting segments with new versions and not inserting new segments at all,
+                // respectively
+                timeline = new VersionedIntervalTimeline<>(Ordering.natural());
               } else {
-                // Append Mode - build a timeline of existing segments in metadata storage.
+                // Append Mode
+                if (segments.isEmpty()) {
+                  // If there are no new segments, we can just bail out
+                  return null;
+                }
+                // Otherwise, build a timeline of existing segments in metadata storage
                 Interval indexedInterval = JodaUtils
                         .umbrellaInterval(Iterables.transform(segments,
                                 input -> input.getInterval()
@@ -408,6 +409,8 @@ public final class DruidStorageHandlerUtils {
                 timeline = getTimelineForIntervalWithHandle(
                         handle, dataSource, indexedInterval, metadataStorageTablesConfig);
               }
+
+              final List<DataSegment> finalSegmentsToPublish = Lists.newArrayList();
               for (DataSegment segment : segments) {
                 List<TimelineObjectHolder<String, DataSegment>> existingChunks = timeline
                         .lookup(segment.getInterval());

@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.druid.serde.DruidSerDe;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -59,7 +60,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -88,9 +88,6 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-
-import javax.annotation.Nullable;
 
 /**
  * DruidStorageHandler provides a HiveStorageHandler implementation for Druid.
@@ -235,9 +232,23 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     }
     String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
     if (MetaStoreUtils.isExternalTable(table)) {
+      if (dataSourceName == null) {
+        throw new MetaException(
+            String.format("Datasource name should be specified using [%s] for external tables "
+                + "using Druid", Constants.DRUID_DATA_SOURCE));
+      }
+      // If it is an external table, we are done
       return;
     }
-    // If it is not an external table we need to check the metadata
+    // It is not an external table
+    // We need to check that datasource was not specified by user
+    if (dataSourceName != null) {
+      throw new MetaException(
+          String.format("Datasource name cannot be specified using [%s] for managed tables "
+              + "using Druid", Constants.DRUID_DATA_SOURCE));
+    }
+    // We need to check the Druid metadata
+    dataSourceName = Warehouse.getQualifiedName(table);
     try {
       connector.createSegmentTable();
     } catch (Exception e) {
@@ -250,6 +261,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     if (existingDataSources.contains(dataSourceName)) {
       throw new MetaException(String.format("Data source [%s] already existing", dataSourceName));
     }
+    table.getParameters().put(Constants.DRUID_DATA_SOURCE, dataSourceName);
   }
 
   @Override
@@ -279,13 +291,14 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   @Override
   public void commitCreateTable(Table table) throws MetaException {
     LOG.debug("commit create table {}", table.getTableName());
+    if (MetaStoreUtils.isExternalTable(table)) {
+      // For external tables, we do not need to do anything else
+      return;
+    }
     publishSegments(table, true);
   }
 
   public void publishSegments(Table table, boolean overwrite) throws MetaException {
-    if (MetaStoreUtils.isExternalTable(table)) {
-      return;
-    }
     final String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
     final List<DataSegment> segmentList = Lists.newArrayList();
     final Path tableDir = getSegmentDescriptorDir();
@@ -513,6 +526,9 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   public void commitInsertTable(Table table, boolean overwrite) throws MetaException {
     LOG.debug("commit insert into table {} overwrite {}", table.getTableName(),
             overwrite);
+    if (MetaStoreUtils.isExternalTable(table)) {
+      throw new MetaException("Cannot insert data into external table backed by Druid");
+    }
     this.publishSegments(table, overwrite);
   }
 

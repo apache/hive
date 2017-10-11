@@ -35,7 +35,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -64,8 +63,8 @@ import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class TestDruidStorageHandler {
@@ -76,7 +75,9 @@ public class TestDruidStorageHandler {
   @Rule
   public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  private static final String DATA_SOURCE_NAME = "testName";
+  private static final String DB_NAME = "default";
+  private static final String TABLE_NAME = "testName";
+  private static final String DATA_SOURCE_NAME = "default.testName";
 
   private String segmentsTable;
 
@@ -103,13 +104,13 @@ public class TestDruidStorageHandler {
   public void before() throws Throwable {
     tableWorkingPath = temporaryFolder.newFolder().getAbsolutePath();
     segmentsTable = derbyConnectorRule.metadataTablesConfigSupplier().get().getSegmentsTable();
-    Map<String, String> mockMap = ImmutableMap.of(Constants.DRUID_DATA_SOURCE, DATA_SOURCE_NAME);
-    Mockito.when(tableMock.getParameters()).thenReturn(mockMap);
+    Mockito.when(tableMock.getParameters()).thenReturn(new HashMap<>());
     Mockito.when(tableMock.getPartitionKeysSize()).thenReturn(0);
     StorageDescriptor storageDes = Mockito.mock(StorageDescriptor.class);
     Mockito.when(storageDes.getBucketColsSize()).thenReturn(0);
     Mockito.when(tableMock.getSd()).thenReturn(storageDes);
-    Mockito.when(tableMock.getDbName()).thenReturn(DATA_SOURCE_NAME);
+    Mockito.when(tableMock.getDbName()).thenReturn(DB_NAME);
+    Mockito.when(tableMock.getTableName()).thenReturn(TABLE_NAME);
     config = new Configuration();
     config.set(String.valueOf(HiveConf.ConfVars.HIVEQUERYID), UUID.randomUUID().toString());
     config.set(String.valueOf(HiveConf.ConfVars.DRUID_WORKING_DIR), tableWorkingPath);
@@ -121,7 +122,6 @@ public class TestDruidStorageHandler {
             derbyConnectorRule.metadataTablesConfigSupplier().get()
     );
     druidStorageHandler.setConf(config);
-
   }
 
   Table tableMock = Mockito.mock(Table.class);
@@ -180,7 +180,62 @@ public class TestDruidStorageHandler {
             DruidStorageHandlerUtils.getAllDataSourceNames(derbyConnectorRule.getConnector(),
                     derbyConnectorRule.metadataTablesConfigSupplier().get()
             )).toArray());
+  }
 
+  @Test
+  public void testCommitCreateTablePlusCommitDropTableWithPurge()
+          throws MetaException, IOException {
+    druidStorageHandler.preCreateTable(tableMock);
+    LocalFileSystem localFileSystem = FileSystem.getLocal(config);
+    Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
+    DataSegment dataSegment = createSegment(new Path(taskDirPath, "index.zip").toString());
+
+    Path descriptorPath = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment,
+            new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
+    );
+    DruidStorageHandlerUtils.writeSegmentDescriptor(localFileSystem, dataSegment, descriptorPath);
+    druidStorageHandler.commitCreateTable(tableMock);
+    Assert.assertArrayEquals(Lists.newArrayList(DATA_SOURCE_NAME).toArray(), Lists.newArrayList(
+            DruidStorageHandlerUtils.getAllDataSourceNames(derbyConnectorRule.getConnector(),
+                    derbyConnectorRule.metadataTablesConfigSupplier().get()
+            )).toArray());
+    druidStorageHandler.commitDropTable(tableMock, true);
+    Assert.assertArrayEquals(Lists.newArrayList().toArray(), Lists.newArrayList(
+            DruidStorageHandlerUtils.getAllDataSourceNames(derbyConnectorRule.getConnector(),
+                    derbyConnectorRule.metadataTablesConfigSupplier().get()
+            )).toArray());
+  }
+
+  @Test
+  public void testCommitCreateEmptyTablePlusCommitDropTableWithoutPurge()
+          throws MetaException, IOException {
+    druidStorageHandler.preCreateTable(tableMock);
+    druidStorageHandler.commitCreateTable(tableMock);
+    Assert.assertArrayEquals(Lists.newArrayList().toArray(), Lists.newArrayList(
+            DruidStorageHandlerUtils.getAllDataSourceNames(derbyConnectorRule.getConnector(),
+                    derbyConnectorRule.metadataTablesConfigSupplier().get()
+            )).toArray());
+    druidStorageHandler.commitDropTable(tableMock, false);
+    Assert.assertArrayEquals(Lists.newArrayList().toArray(), Lists.newArrayList(
+            DruidStorageHandlerUtils.getAllDataSourceNames(derbyConnectorRule.getConnector(),
+                    derbyConnectorRule.metadataTablesConfigSupplier().get()
+            )).toArray());
+  }
+
+  @Test
+  public void testCommitCreateEmptyTablePlusCommitDropTableWithPurge()
+          throws MetaException, IOException {
+    druidStorageHandler.preCreateTable(tableMock);
+    druidStorageHandler.commitCreateTable(tableMock);
+    Assert.assertArrayEquals(Lists.newArrayList().toArray(), Lists.newArrayList(
+            DruidStorageHandlerUtils.getAllDataSourceNames(derbyConnectorRule.getConnector(),
+                    derbyConnectorRule.metadataTablesConfigSupplier().get()
+            )).toArray());
+    druidStorageHandler.commitDropTable(tableMock, true);
+    Assert.assertArrayEquals(Lists.newArrayList().toArray(), Lists.newArrayList(
+            DruidStorageHandlerUtils.getAllDataSourceNames(derbyConnectorRule.getConnector(),
+                    derbyConnectorRule.metadataTablesConfigSupplier().get()
+            )).toArray());
   }
 
   @Test
@@ -195,6 +250,16 @@ public class TestDruidStorageHandler {
     DruidStorageHandlerUtils.writeSegmentDescriptor(localFileSystem, dataSegment, descriptorPath);
     druidStorageHandler.commitCreateTable(tableMock);
     Assert.assertArrayEquals(Lists.newArrayList(DATA_SOURCE_NAME).toArray(), Lists.newArrayList(
+            DruidStorageHandlerUtils.getAllDataSourceNames(derbyConnectorRule.getConnector(),
+                    derbyConnectorRule.metadataTablesConfigSupplier().get()
+            )).toArray());
+  }
+
+  @Test
+  public void testCommitEmptyInsertTable() throws MetaException, IOException {
+    druidStorageHandler.preCreateTable(tableMock);
+    druidStorageHandler.commitCreateTable(tableMock);
+    Assert.assertArrayEquals(Lists.newArrayList().toArray(), Lists.newArrayList(
             DruidStorageHandlerUtils.getAllDataSourceNames(derbyConnectorRule.getConnector(),
                     derbyConnectorRule.metadataTablesConfigSupplier().get()
             )).toArray());
@@ -293,6 +358,122 @@ public class TestDruidStorageHandler {
             persistedSegment.getLoadSpec());
     Assert.assertEquals("dummySegmentData",
             FileUtils.readFileToString(new File(expectedFinalHadoopPath.toUri())));
+  }
+
+  @Test
+  public void testCommitMultiInsertOverwriteTable() throws MetaException, IOException {
+    DerbyConnectorTestUtility connector = derbyConnectorRule.getConnector();
+    MetadataStorageTablesConfig metadataStorageTablesConfig = derbyConnectorRule
+            .metadataTablesConfigSupplier().get();
+    LocalFileSystem localFileSystem = FileSystem.getLocal(config);
+    druidStorageHandler.preCreateTable(tableMock);
+    Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
+    HdfsDataSegmentPusherConfig pusherConfig = new HdfsDataSegmentPusherConfig();
+    pusherConfig.setStorageDirectory(config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)));
+    DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
+
+    // This create and publish the segment to be overwritten
+    List<DataSegment> existingSegments = Arrays
+            .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
+                    new Interval(100, 150), "v0", new LinearShardSpec(0)));
+    DruidStorageHandlerUtils
+            .publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
+                    existingSegments,
+                    true,
+                    taskDirPath.toString(),
+                    config,
+                    dataSegmentPusher
+            );
+    // Check that there is one datasource with the published segment
+    Assert.assertArrayEquals(Lists.newArrayList(DATA_SOURCE_NAME).toArray(), Lists.newArrayList(
+            DruidStorageHandlerUtils.getAllDataSourceNames(connector,
+                    metadataStorageTablesConfig
+            )).toArray());
+
+    // Sequence is the following:
+    // 1) INSERT with no segments -> Original segment still present in the datasource
+    // 2) INSERT OVERWRITE with no segments -> Datasource is empty
+    // 3) INSERT OVERWRITE with no segments -> Datasource is empty
+    // 4) INSERT with no segments -> Datasource is empty
+    // 5) INSERT with one segment -> Datasource has one segment
+    // 6) INSERT OVERWRITE with one segment -> Datasource has one segment
+    // 7) INSERT with one segment -> Datasource has two segments
+    // 8) INSERT OVERWRITE with no segments -> Datasource is empty
+
+    // We start:
+    // #1
+    druidStorageHandler.commitInsertTable(tableMock, false);
+    Assert.assertArrayEquals(Lists.newArrayList(DATA_SOURCE_NAME).toArray(), Lists.newArrayList(
+            DruidStorageHandlerUtils.getAllDataSourceNames(connector,
+                    metadataStorageTablesConfig
+            )).toArray());
+    Assert.assertEquals(1, getUsedSegmentsList(connector,
+            metadataStorageTablesConfig).size());
+
+    // #2
+    druidStorageHandler.commitInsertTable(tableMock, true);
+    Assert.assertEquals(0, getUsedSegmentsList(connector,
+            metadataStorageTablesConfig).size());
+
+    // #3
+    druidStorageHandler.commitInsertTable(tableMock, true);
+    Assert.assertEquals(0, getUsedSegmentsList(connector,
+            metadataStorageTablesConfig).size());
+
+    // #4
+    druidStorageHandler.commitInsertTable(tableMock, true);
+    Assert.assertEquals(0, getUsedSegmentsList(connector,
+            metadataStorageTablesConfig).size());
+
+    // #5
+    DataSegment dataSegment1 = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
+            new Interval(180, 250), "v1", new LinearShardSpec(0));
+    Path descriptorPath1 = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment1,
+            new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
+    );
+    DruidStorageHandlerUtils.writeSegmentDescriptor(localFileSystem, dataSegment1, descriptorPath1);
+    druidStorageHandler.commitInsertTable(tableMock, false);
+    Assert.assertArrayEquals(Lists.newArrayList(DATA_SOURCE_NAME).toArray(), Lists.newArrayList(
+            DruidStorageHandlerUtils.getAllDataSourceNames(connector,
+                    metadataStorageTablesConfig
+            )).toArray());
+    Assert.assertEquals(1, getUsedSegmentsList(connector,
+            metadataStorageTablesConfig).size());
+
+    // #6
+    DataSegment dataSegment2 = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
+            new Interval(200, 250), "v1", new LinearShardSpec(0));
+    Path descriptorPath2 = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment2,
+            new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
+    );
+    DruidStorageHandlerUtils.writeSegmentDescriptor(localFileSystem, dataSegment2, descriptorPath2);
+    druidStorageHandler.commitInsertTable(tableMock, true);
+    Assert.assertArrayEquals(Lists.newArrayList(DATA_SOURCE_NAME).toArray(), Lists.newArrayList(
+            DruidStorageHandlerUtils.getAllDataSourceNames(connector,
+                    metadataStorageTablesConfig
+            )).toArray());
+    Assert.assertEquals(1, getUsedSegmentsList(connector,
+            metadataStorageTablesConfig).size());
+
+    // #7
+    DataSegment dataSegment3 = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
+            new Interval(100, 200), "v1", new LinearShardSpec(0));
+    Path descriptorPath3 = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment3,
+            new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
+    );
+    DruidStorageHandlerUtils.writeSegmentDescriptor(localFileSystem, dataSegment3, descriptorPath3);
+    druidStorageHandler.commitInsertTable(tableMock, false);
+    Assert.assertArrayEquals(Lists.newArrayList(DATA_SOURCE_NAME).toArray(), Lists.newArrayList(
+            DruidStorageHandlerUtils.getAllDataSourceNames(connector,
+                    metadataStorageTablesConfig
+            )).toArray());
+    Assert.assertEquals(2, getUsedSegmentsList(connector,
+            metadataStorageTablesConfig).size());
+
+    // #8
+    druidStorageHandler.commitInsertTable(tableMock, true);
+    Assert.assertEquals(0, getUsedSegmentsList(connector,
+            metadataStorageTablesConfig).size());
   }
 
   private List<DataSegment> getUsedSegmentsList(DerbyConnectorTestUtility connector,
