@@ -1112,8 +1112,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     long max = HiveConf.getLongVar(context.parseContext.getConf(),
             HiveConf.ConfVars.HIVECONVERTJOINMAXSHUFFLESIZE);
     if (max < 1) {
-      // Max is disabled, we can safely return true
-      return true;
+      // Max is disabled, we can safely return false
+      return false;
     }
     // Evaluate
     ReduceSinkOperator rsOp = (ReduceSinkOperator) joinOp.getParentOperators().get(position);
