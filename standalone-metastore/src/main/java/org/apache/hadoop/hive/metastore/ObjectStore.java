@@ -502,6 +502,8 @@ public class ObjectStore implements RawStore, Configurable {
     Properties prop = new Properties();
     correctAutoStartMechanism(conf);
 
+    // First, go through and set all our values for datanucleus and javax.jdo parameters.  This
+    // has to be a separate first step because we don't set the default values in the config object.
     for (ConfVars var : MetastoreConf.dataNucleusAndJdoConfs) {
       String confVal = MetastoreConf.getAsString(conf, var);
       Object prevVal = prop.setProperty(var.varname, confVal);
@@ -510,6 +512,21 @@ public class ObjectStore implements RawStore, Configurable {
             + " from  jpox.properties with " + confVal);
       }
     }
+
+    // Now, we need to look for any values that the user set that MetastoreConf doesn't know about.
+    for (Map.Entry<String, String> e : conf) {
+      if (e.getKey().startsWith("datanucleus.") || e.getKey().startsWith("javax.jdo.")) {
+        // We have to handle this differently depending on whether it is a value known to
+        // MetastoreConf or not.  If it is, we need to get the default value if a value isn't
+        // provided.  If not, we just set whatever the user has set.
+        Object prevVal = prop.setProperty(e.getKey(), e.getValue());
+        if (LOG.isDebugEnabled() && MetastoreConf.isPrintable(e.getKey())) {
+          LOG.debug("Overriding " + e.getKey() + " value " + prevVal
+              + " from  jpox.properties with " + e.getValue());
+        }
+      }
+    }
+
     // Password may no longer be in the conf, use getPassword()
     try {
       String passwd = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
@@ -9254,5 +9271,10 @@ public class ObjectStore implements RawStore, Configurable {
   @VisibleForTesting
   public static void setTwoMetastoreTesting(boolean twoMetastoreTesting) {
     forTwoMetastoreTesting = twoMetastoreTesting;
+  }
+
+  @VisibleForTesting
+  Properties getProp() {
+    return prop;
   }
 }

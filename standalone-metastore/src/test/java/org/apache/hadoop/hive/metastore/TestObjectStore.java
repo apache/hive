@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -423,5 +424,22 @@ public class TestObjectStore {
     Assert.assertTrue("invalid sleep value", re.getSleepInterval() >= 0);
   }
 
+  @Test
+  public void testNonConfDatanucleusValueSet() {
+    String key = "datanucleus.no.such.key";
+    String value = "test_value";
+    String key1 = "blabla.no.such.key";
+    String value1 = "another_value";
+    Assume.assumeTrue(System.getProperty(key) == null);
+    Configuration localConf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(localConf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS,
+        MockPartitionExpressionProxy.class.getName());
+    localConf.set(key, value);
+    localConf.set(key1, value1);
+    objectStore = new ObjectStore();
+    objectStore.setConf(localConf);
+    Assert.assertEquals(value, objectStore.getProp().getProperty(key));
+    Assert.assertNull(objectStore.getProp().getProperty(key1));
+  }
 }
 
