@@ -3350,7 +3350,9 @@ public final class Utilities {
         if (tempDir != null) {
           Path tempPath = Utilities.toTempPath(tempDir);
           FileSystem fs = tempPath.getFileSystem(conf);
-          fs.mkdirs(tempPath);
+          // The parent directory of tempPath is created by Context.getStagingDir.
+          // Make tempPath in the same fashion to avoid inconsistencies.
+          FileUtils.mkdir(fs, tempPath, true, conf);
         }
       }
 
