@@ -62,11 +62,13 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.wm.TriggerContext;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.common.TezUtils;
 import org.apache.tez.dag.api.PreWarmVertex;
@@ -74,7 +76,9 @@ import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.UserPayload;
+import org.apache.tez.mapreduce.hadoop.DeprecatedKeys;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
+import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.apache.tez.serviceplugins.api.ContainerLauncherDescriptor;
 import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
 import org.apache.tez.serviceplugins.api.TaskCommunicatorDescriptor;
@@ -275,7 +279,10 @@ public class TezSessionState {
 
     // and finally we're ready to create and start the session
     // generate basic tez config
-    final TezConfiguration tezConfig = new TezConfiguration(conf);
+    final TezConfiguration tezConfig = new TezConfiguration(true);
+    tezConfig.addResource(conf);
+
+    setupTezParamsBasedOnMR(tezConfig);
 
     // set up the staging directory to use
     tezConfig.set(TezConfiguration.TEZ_AM_STAGING_DIR, tezScratchDir.toUri().toString());
@@ -437,6 +444,74 @@ public class TezSessionState {
       this.session = this.sessionFuture.get();
     } catch (ExecutionException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * This takes settings from MR and applies them to the appropriate Tez configuration. This is
+   * similar to what Pig on Tez does (refer MRToTezHelper.java).
+   *
+   * @param conf configuration with MR settings
+   */
+  private void setupTezParamsBasedOnMR(TezConfiguration conf) {
+
+    String env = conf.get(MRJobConfig.MR_AM_ADMIN_USER_ENV);
+    if (conf.get(MRJobConfig.MR_AM_ENV) != null) {
+      env = (env == null) ? conf.get(MRJobConfig.MR_AM_ENV) : env + "," + conf.get(MRJobConfig.MR_AM_ENV);
+    }
+    if (env != null) {
+      conf.setIfUnset(TezConfiguration.TEZ_AM_LAUNCH_ENV, env);
+    }
+
+    conf.setIfUnset(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS,
+        org.apache.tez.mapreduce.hadoop.MRHelpers.getJavaOptsForMRAM(conf));
+
+    String queueName = conf.get(JobContext.QUEUE_NAME, YarnConfiguration.DEFAULT_QUEUE_NAME);
+    conf.setIfUnset(TezConfiguration.TEZ_QUEUE_NAME, queueName);
+
+    int amMemMB = conf.getInt(MRJobConfig.MR_AM_VMEM_MB, MRJobConfig.DEFAULT_MR_AM_VMEM_MB);
+    conf.setIfUnset(TezConfiguration.TEZ_AM_RESOURCE_MEMORY_MB, "" + amMemMB);
+
+    int amCores = conf.getInt(MRJobConfig.MR_AM_CPU_VCORES, MRJobConfig.DEFAULT_MR_AM_CPU_VCORES);
+    conf.setIfUnset(TezConfiguration.TEZ_AM_RESOURCE_CPU_VCORES, "" + amCores);
+
+    conf.setIfUnset(TezConfiguration.TEZ_AM_MAX_APP_ATTEMPTS, ""
+        + conf.getInt(MRJobConfig.MR_AM_MAX_ATTEMPTS, MRJobConfig.DEFAULT_MR_AM_MAX_ATTEMPTS));
+
+    conf.setIfUnset(TezConfiguration.TEZ_AM_VIEW_ACLS,
+        conf.get(MRJobConfig.JOB_ACL_VIEW_JOB, MRJobConfig.DEFAULT_JOB_ACL_VIEW_JOB));
+
+    conf.setIfUnset(TezConfiguration.TEZ_AM_MODIFY_ACLS,
+        conf.get(MRJobConfig.JOB_ACL_MODIFY_JOB, MRJobConfig.DEFAULT_JOB_ACL_MODIFY_JOB));
+
+
+    // Refer to org.apache.tez.mapreduce.hadoop.MRHelpers.processDirectConversion.
+    ArrayList<Map<String, String>> maps = new ArrayList<Map<String, String>>(2);
+    maps.add(DeprecatedKeys.getMRToTezRuntimeParamMap());
+    maps.add(DeprecatedKeys.getMRToDAGParamMap());
+
+    boolean preferTez = true; // Can make this configurable.
+
+    for (Map<String, String> map : maps) {
+      for (Map.Entry<String, String> dep : map.entrySet()) {
+        if (conf.get(dep.getKey()) != null) {
+          // TODO Deprecation reason does not seem to reflect in the config ?
+          // The ordering is important in case of keys which are also deprecated.
+          // Unset will unset the deprecated keys and all its variants.
+          final String mrValue = conf.get(dep.getKey());
+          final String tezValue = conf.get(dep.getValue());
+          conf.unset(dep.getKey());
+          if (tezValue == null) {
+            conf.set(dep.getValue(), mrValue, "TRANSLATED_TO_TEZ");
+          } else if (!preferTez) {
+            conf.set(dep.getValue(), mrValue, "TRANSLATED_TO_TEZ_AND_MR_OVERRIDE");
+          }
+          LOG.info("Config: mr(unset):" + dep.getKey() + ", mr initial value="
+              + mrValue
+              + ", tez(original):" + dep.getValue() + "=" + tezValue
+              + ", tez(final):" + dep.getValue() + "=" + conf.get(dep.getValue()));
+        }
+      }
     }
   }
 
