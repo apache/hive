@@ -514,6 +514,9 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     // Now, we need to look for any values that the user set that MetastoreConf doesn't know about.
+    // TODO Commenting this out for now, as it breaks because the conf values aren't getting properly
+    // interpolated in case of variables.  See HIVE-17788.
+    /*
     for (Map.Entry<String, String> e : conf) {
       if (e.getKey().startsWith("datanucleus.") || e.getKey().startsWith("javax.jdo.")) {
         // We have to handle this differently depending on whether it is a value known to
@@ -526,6 +529,7 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
     }
+    */
 
     // Password may no longer be in the conf, use getPassword()
     try {

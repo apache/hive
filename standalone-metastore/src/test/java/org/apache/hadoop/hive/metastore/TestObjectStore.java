@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -424,6 +425,7 @@ public class TestObjectStore {
     Assert.assertTrue("invalid sleep value", re.getSleepInterval() >= 0);
   }
 
+  @Ignore // See comment in ObjectStore.getDataSourceProps
   @Test
   public void testNonConfDatanucleusValueSet() {
     String key = "datanucleus.no.such.key";
