@@ -19,6 +19,8 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
+import org.apache.hadoop.hive.metastore.api.Table;
+
 public abstract class DropTableMessage extends EventMessage {
 
   protected DropTableMessage() {
@@ -32,6 +34,8 @@ public abstract class DropTableMessage extends EventMessage {
   public abstract String getTable();
 
   public abstract String getTableType();
+
+  public abstract Table getTableObj() throws Exception;
 
   @Override
   public EventMessage checkValid() {
