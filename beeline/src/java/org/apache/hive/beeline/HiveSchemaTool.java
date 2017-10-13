@@ -614,14 +614,12 @@ public class HiveSchemaTool {
       if (validateLocations(conn, this.validationServers)) {
         System.out.println("[SUCCESS]\n");
       } else {
-        success = false;
-        System.out.println("[FAIL]\n");
+        System.out.println("[WARN]\n");
       }
       if (validateColumnNullValues(conn)) {
         System.out.println("[SUCCESS]\n");
       } else {
-        success = false;
-        System.out.println("[FAIL]\n");
+        System.out.println("[WARN]\n");
       }
     } finally {
       if (conn != null) {
