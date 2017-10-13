@@ -1,0 +1,182 @@
+PREHOOK: query: CREATE TABLE table_7 (int_col INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_7
+POSTHOOK: query: CREATE TABLE table_7 (int_col INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_7
+Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[24][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
+PREHOOK: query: explain
+SELECT
+(t1.int_col) * (t1.int_col) AS int_col
+FROM (
+SELECT
+MIN(NULL) OVER () AS int_col
+FROM table_7
+) t1
+WHERE
+(False) NOT IN (SELECT
+False AS boolean_col
+FROM (
+SELECT
+MIN(NULL) OVER () AS int_col
+FROM table_7
+) tt1
+WHERE
+(t1.int_col) = (tt1.int_col))
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT
+(t1.int_col) * (t1.int_col) AS int_col
+FROM (
+SELECT
+MIN(NULL) OVER () AS int_col
+FROM table_7
+) t1
+WHERE
+(False) NOT IN (SELECT
+False AS boolean_col
+FROM (
+SELECT
+MIN(NULL) OVER () AS int_col
+FROM table_7
+) tt1
+WHERE
+(t1.int_col) = (tt1.int_col))
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 5 (PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 1), Reducer 7 (PARTITION-LEVEL SORT, 1)
+        Reducer 5 <- Map 4 (GROUP, 1)
+        Reducer 7 <- Map 6 (GROUP, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_7
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: table_7
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Filter Operator
+                      predicate: false (type: boolean)
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: table_7
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Filter Operator
+                      predicate: false (type: boolean)
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                      Group By Operator
+                        keys: false (type: boolean)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: boolean)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: boolean)
+                          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1
+                Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1, _col2
+                Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: ((_col1 = 0) or _col2 is null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: null (type: double)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint)
+        Reducer 7 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: boolean)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Select Operator
+                  expressions: true (type: boolean)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    value expressions: _col0 (type: boolean)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
