@@ -58,7 +58,7 @@ public class TestTxnUtils {
     MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 1);
     MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 10);
     List<Long> inList = new ArrayList<>();
-    for (long i = 1; i <= 200; i++) {
+    for (long i = 1; i <= 189; i++) {
       inList.add(i);
     }
     TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
@@ -68,7 +68,7 @@ public class TestTxnUtils {
     // Case 2 - Max in list members: 10; Max query string length: 1KB
     //          The first query has 2 full batches, and the second query only has 1 batch which only contains 1 member
     queries.clear();
-    inList.add((long)201);
+    inList.add((long)190);
     TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
     Assert.assertEquals(2, queries.size());
     runAgainstDerby(queries);
@@ -77,11 +77,11 @@ public class TestTxnUtils {
     MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 1);
     MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 1000);
     queries.clear();
-    for (long i = 202; i <= 1000; i++) {
+    for (long i = 191; i <= 1000; i++) {
       inList.add(i);
     }
     TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
-    Assert.assertEquals(1, queries.size());
+    Assert.assertEquals(5, queries.size());
     runAgainstDerby(queries);
 
     // Case 3.2 - Max in list members: 1000, Max query string length: 10KB, and exact 1000 members in a single IN clause
@@ -99,7 +99,7 @@ public class TestTxnUtils {
     MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 1);
     queries.clear();
     TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
-    Assert.assertEquals(2, queries.size());
+    Assert.assertEquals(10, queries.size());
     runAgainstDerby(queries);
     MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 10);
     queries.clear();
@@ -107,18 +107,18 @@ public class TestTxnUtils {
     Assert.assertEquals(1, queries.size());
     runAgainstDerby(queries);
 
-    // Case 4 - Max in list members: 1000; Max query string length: 10KB
+    // Case 4 - NOT IN list
+    queries.clear();
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, true);
+    Assert.assertEquals(1, queries.size());
+    runAgainstDerby(queries);
+
+    // Case 5 - Max in list members: 1000; Max query string length: 10KB
     queries.clear();
     for (long i = 2001; i <= 4321; i++) {
       inList.add(i);
     }
     TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
-    Assert.assertEquals(3, queries.size());
-    runAgainstDerby(queries);
-
-    // Case 5 - NOT IN list
-    queries.clear();
-    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, true);
     Assert.assertEquals(3, queries.size());
     runAgainstDerby(queries);
 

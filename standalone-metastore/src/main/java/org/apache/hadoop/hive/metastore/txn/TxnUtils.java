@@ -144,88 +144,150 @@ public class TxnUtils {
   }
 
   /**
-   * Build a query (or queries if one query is too big) with specified "prefix" and "suffix",
-   * while populating the IN list into multiple OR clauses, e.g. id in (1,2,3) OR id in (4,5,6)
-   * For NOT IN case, NOT IN list is broken into multiple AND clauses.
-   * @param queries array of complete query strings
-   * @param prefix part of the query that comes before IN list
-   * @param suffix part of the query that comes after IN list
-   * @param inList the list containing IN list values
-   * @param inColumn column name of IN list operator
-   * @param addParens add a pair of parenthesis outside the IN lists
-   *                  e.g. ( id in (1,2,3) OR id in (4,5,6) )
-   * @param notIn clause to be broken up is NOT IN
+   * Build a query (or queries if one query is too big but only for the case of 'IN' 
+   * composite clause. For the case of 'NOT IN' clauses, multiple queries change
+   * the semantics of the intended query.
+   * E.g., Let's assume that input "inList" parameter has [5, 6] and that
+   * _DIRECT_SQL_MAX_QUERY_LENGTH_ configuration parameter only allows one value in a 'NOT IN' clause,
+   * Then having two delete statements changes the semantics of the inteneded SQL statement.
+   * I.e. 'delete from T where a not in (5)' and 'delete from T where a not in (6)' sequence
+   * is not equal to 'delete from T where a not in (5, 6)'.)
+   * with one or multiple 'IN' or 'NOT IN' clauses with the given input parameters.
+   *
+   * Note that this method currently support only single column for
+   * IN/NOT IN clauses and that only covers OR-based composite 'IN' clause and
+   * AND-based composite 'NOT IN' clause.
+   * For example, for 'IN' clause case, the method will build a query with OR.
+   * E.g., "id in (1,2,3) OR id in (4,5,6)".
+   * For 'NOT IN' case, NOT IN list is broken into multiple 'NOT IN" clauses connected by AND.
+   *
+   * Note that, in this method, "a composite 'IN' clause" is defined as "a list of multiple 'IN'
+   * clauses in a query".
+   *
+   * @param queries   OUT: Array of query strings
+   * @param prefix    IN:  Part of the query that comes before IN list
+   * @param suffix    IN:  Part of the query that comes after IN list
+   * @param inList    IN:  the list with IN list values
+   * @param inColumn  IN:  single column name of IN list operator
+   * @param addParens IN:  add a pair of parenthesis outside the IN lists
+   *                       e.g. "(id in (1,2,3) OR id in (4,5,6))"
+   * @param notIn     IN:  is this for building a 'NOT IN' composite clause?
    */
-  public static void buildQueryWithINClause(Configuration conf, List<String> queries, StringBuilder prefix,
-                                            StringBuilder suffix, List<Long> inList,
-                                            String inColumn, boolean addParens, boolean notIn) {
-    if (inList == null || inList.size() == 0) {
+  public static void buildQueryWithINClause(Configuration conf,
+                                            List<String> queries,
+                                            StringBuilder prefix,
+                                            StringBuilder suffix,
+                                            List<Long> inList,
+                                            String inColumn,
+                                            boolean addParens,
+                                            boolean notIn) {
+    // Get configuration parameters
+    int maxQueryLength = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH);
+    int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
+
+    // Check parameter set validity as a public method.
+    if (inList == null || inList.size() == 0 || maxQueryLength <= 0 || batchSize <= 0) {
       throw new IllegalArgumentException("The IN list is empty!");
     }
-    int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
-    int numWholeBatches = inList.size() / batchSize;
-    StringBuilder buf = new StringBuilder();
-    buf.append(prefix);
-    if (addParens) {
-      buf.append("(");
-    }
-    buf.append(inColumn);
-    if (notIn) {
-      buf.append(" not in (");
-    } else {
-      buf.append(" in (");
-    }
 
-    for (int i = 0; i <= numWholeBatches; i++) {
-      if (i * batchSize == inList.size()) {
-        // At this point we just realized we don't need another query
-        break;
+    // Define constants and local variables.
+    int inListSize = inList.size();
+    StringBuilder buf = new StringBuilder();
+
+    int cursor4InListArray = 0,  // cursor for the "inList" array.
+        cursor4InClauseElements = 0,  // cursor for an element list per an 'IN'/'NOT IN'-clause.
+        cursor4queryOfInClauses = 0;  // cursor for in-clause lists per a query.
+    boolean nextItemNeeded = true;
+    boolean newInclausePrefixJustAppended = false;
+    StringBuilder nextValue = new StringBuilder("");
+    StringBuilder newInclausePrefix =
+      new StringBuilder(notIn ? " and " + inColumn + " not in (":
+	                        " or " + inColumn + " in (");
+
+    // Loop over the given inList elements.
+    while( cursor4InListArray < inListSize || !nextItemNeeded) {
+      if (cursor4queryOfInClauses == 0) {
+        // Append prefix
+        buf.append(prefix);
+        if (addParens) {
+          buf.append("(");
+        }
+        buf.append(inColumn);
+
+        if (notIn) {
+          buf.append(" not in (");
+        } else {
+          buf.append(" in (");
+        }
+        cursor4queryOfInClauses++;
+        newInclausePrefixJustAppended = false;
       }
 
-      if (needNewQuery(conf, buf)) {
-        // Wrap up current query string
+      // Get the next "inList" value element if needed.
+      if (nextItemNeeded) {
+        nextValue.setLength(0);
+        nextValue.append(String.valueOf(inList.get(cursor4InListArray++)));
+        nextItemNeeded = false;
+      }
+
+      // Compute the size of a query when the 'nextValue' is added to the current query.
+      int querySize = querySizeExpected(buf.length(), nextValue.length(), suffix.length(), addParens);
+
+      if (querySize > maxQueryLength * 1024) {
+        // Check an edge case where the DIRECT_SQL_MAX_QUERY_LENGTH does not allow one 'IN' clause with single value.
+        if (cursor4queryOfInClauses == 1 && cursor4InClauseElements == 0) {
+          throw new IllegalArgumentException("The current " + ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH.varname + " is set too small to have one IN clause with single value!");
+        }
+
+        // Check en edge case to throw Exception if we can not build a single query for 'NOT IN' clause cases as mentioned at the method comments.
+        if (notIn) {
+          throw new IllegalArgumentException("The NOT IN list has too many elements for the current " + ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH.varname + "!");
+        }
+
+        // Wrap up the current query string since we can not add another "inList" element value.
+        if (newInclausePrefixJustAppended) {
+          buf.delete(buf.length()-newInclausePrefix.length(), buf.length());
+        }
+
+        buf.setCharAt(buf.length() - 1, ')'); // replace the "commar" to finish a 'IN' clause string.
+
         if (addParens) {
           buf.append(")");
         }
+
         buf.append(suffix);
         queries.add(buf.toString());
 
-        // Prepare a new query string
+        // Prepare a new query string.
         buf.setLength(0);
-      }
+        cursor4queryOfInClauses = cursor4InClauseElements = 0;
+        querySize = 0;
+        newInclausePrefixJustAppended = false;
+        continue;
+      } else if (cursor4InClauseElements >= batchSize-1 && cursor4InClauseElements != 0) {
+        // Finish the current 'IN'/'NOT IN' clause and start a new clause.
+        buf.setCharAt(buf.length() - 1, ')'); // replace the "commar".
+        buf.append(newInclausePrefix.toString());
 
-      if (i > 0) {
-        if (notIn) {
-          if (buf.length() == 0) {
-            buf.append(prefix);
-            if (addParens) {
-              buf.append("(");
-            }
-          } else {
-            buf.append(" and ");
-          }
-          buf.append(inColumn);
-          buf.append(" not in (");
-        } else {
-          if (buf.length() == 0) {
-            buf.append(prefix);
-            if (addParens) {
-              buf.append("(");
-            }
-          } else {
-            buf.append(" or ");
-          }
-          buf.append(inColumn);
-          buf.append(" in (");
-        }
-      }
+        newInclausePrefixJustAppended = true;
 
-      for (int j = i * batchSize; j < (i + 1) * batchSize && j < inList.size(); j++) {
-        buf.append(inList.get(j)).append(",");
+        // increment cursor for per-query IN-clause list
+        cursor4queryOfInClauses++;
+        cursor4InClauseElements = 0;
+      } else {
+        buf.append(nextValue.toString()).append(",");
+        nextItemNeeded = true;
+        newInclausePrefixJustAppended = false;
+        // increment cursor for elements per 'IN'/'NOT IN' clause.
+        cursor4InClauseElements++;
       }
-      buf.setCharAt(buf.length() - 1, ')');
     }
 
+    // Finish the last query.
+    if (newInclausePrefixJustAppended) {
+        buf.delete(buf.length()-newInclausePrefix.length(), buf.length());
+      }
+    buf.setCharAt(buf.length() - 1, ')'); // replace the commar.
     if (addParens) {
       buf.append(")");
     }
@@ -233,11 +295,25 @@ public class TxnUtils {
     queries.add(buf.toString());
   }
 
-  /** Estimate if the size of a string will exceed certain limit */
-  private static boolean needNewQuery(Configuration conf, StringBuilder sb) {
-    int queryMemoryLimit = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH);
-    // http://www.javamex.com/tutorials/memory/string_memory_usage.shtml
-    long sizeInBytes = 8 * (((sb.length() * 2) + 45) / 8);
-    return sizeInBytes / 1024 > queryMemoryLimit;
+  /*
+   * Compute and return the size of a query statement with the given parameters as input variables.
+   *
+   * @param sizeSoFar     size of the current contents of the buf
+   * @param sizeNextItem      size of the next 'IN' clause element value.
+   * @param suffixSize    size of the suffix for a quey statement
+   * @param addParens     Do we add an additional parenthesis?
+   */
+  private static int querySizeExpected(int sizeSoFar,
+                                       int sizeNextItem,
+                                       int suffixSize,
+                                       boolean addParens) {
+
+    int size = sizeSoFar + sizeNextItem + suffixSize;
+
+    if (addParens) {
+       size++;
+    }
+
+    return size;
   }
 }
