@@ -174,7 +174,7 @@ public class UDFToShort extends UDF {
       }
       try {
         shortWritable.set(LazyShort.parseShort(i.getBytes(), 0, i.getLength(),
-            10));
+            10, true));
         return shortWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.

@@ -22,6 +22,7 @@ import java.io.OutputStream;
 
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyIntObjectInspector;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hive.common.util.HiveStringUtils;
 
 /**
  * LazyObject for storing a value of Integer.
@@ -98,11 +99,41 @@ public class LazyInteger extends
    *              if the argument could not be parsed as an int quantity.
    */
   public static int parseInt(byte[] bytes, int start, int length, int radix) {
+    return parseInt(bytes, start, length, radix, false);
+  }
+
+  /**
+   * Parses the string argument as if it was an int value and returns the
+   * result. Throws NumberFormatException if the string does not represent an
+   * int quantity. The second argument specifies the radix to use when parsing
+   * the value.
+   *
+   * @param bytes
+   * @param start
+   * @param length
+   *          a UTF-8 encoded string representation of an int quantity.
+   * @param radix
+   *          the base to use for conversion.
+   * @param trim
+   *          whether to trim leading/trailing whitespace
+   * @return the value represented by the argument
+   * @exception NumberFormatException
+   *              if the argument could not be parsed as an int quantity.
+   */
+  public static int parseInt(byte[] bytes, int start, int length, int radix, boolean trim) {
     if (bytes == null) {
       throw new NumberFormatException("String is null");
     }
     if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX) {
       throw new NumberFormatException("Invalid radix: " + radix);
+    }
+    if (trim) {
+      // Handle leading/trailing whitespace
+      int leadingSpaces = HiveStringUtils.findLeadingSpaces(bytes, start, length);
+      int trailingSpaces = HiveStringUtils.findTrailingSpaces(bytes, start, length);
+      start = start + leadingSpaces;
+      // min() needed in the case that entire string is whitespace
+      length = length - Math.min(length, leadingSpaces + trailingSpaces);
     }
     if (length == 0) {
       throw new NumberFormatException("Empty string!");

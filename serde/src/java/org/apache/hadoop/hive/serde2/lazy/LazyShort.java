@@ -95,7 +95,29 @@ public class LazyShort extends
    *              if the argument could not be parsed as a short quantity.
    */
   public static short parseShort(byte[] bytes, int start, int length, int radix) {
-    int intValue = LazyInteger.parseInt(bytes, start, length, radix);
+    return parseShort(bytes, start, length, radix, false);
+  }
+
+  /**
+   * Parses the string argument as if it was a short value and returns the
+   * result. Throws NumberFormatException if the string does not represent a
+   * single short quantity. The second argument specifies the radix to use when
+   * parsing the value.
+   *
+   * @param bytes
+   * @param start
+   * @param length
+   *          a UTF-8 encoded string representation of a short quantity.
+   * @param radix
+   *          the radix to use when parsing.
+   * @param trim
+   *          whether to trim leading/trailing whitespace
+   * @return short the value represented by the argument
+   * @exception NumberFormatException
+   *              if the argument could not be parsed as a short quantity.
+   */
+  public static short parseShort(byte[] bytes, int start, int length, int radix, boolean trim) {
+    int intValue = LazyInteger.parseInt(bytes, start, length, radix, trim);
     short result = (short) intValue;
     if (result == intValue) {
       return result;

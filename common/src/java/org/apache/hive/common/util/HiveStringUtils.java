@@ -1007,6 +1007,57 @@ public class HiveStringUtils {
     return len;
   }
 
+  /**
+   * Checks if b is an ascii character
+   */
+  public static boolean isAscii(byte b) {
+    return (b & 0x80) == 0;
+  }
+
+  /**
+   * Returns the number of leading whitespace characters in the utf-8 string
+   */
+  public static int findLeadingSpaces(byte[] bytes, int start, int length) {
+    int numSpaces;
+    for (numSpaces = 0; numSpaces < length; ++numSpaces) {
+      int curPos = start + numSpaces;
+      if (isAscii(bytes[curPos]) && Character.isWhitespace(bytes[curPos])) {
+        continue;
+      }
+      break; // non-space character
+    }
+    return (numSpaces - start);
+  }
+
+  /**
+   * Returns the number of trailing whitespace characters in the utf-8 string
+   */
+  public static int findTrailingSpaces(byte[] bytes, int start, int length) {
+    int numSpaces;
+    for (numSpaces = 0; numSpaces < length; ++numSpaces) {
+      int curPos = start + (length - (numSpaces + 1));
+      if (isAscii(bytes[curPos]) && Character.isWhitespace(bytes[curPos])) {
+        continue;
+      } else {
+        break; // non-space character
+      }
+    }
+    return numSpaces;
+  }
+
+  /**
+   * Finds trimmed length of utf-8 string
+   */
+  public static int findTrimmedLength(byte[] bytes, int start, int length, int leadingSpaces) {
+    int trailingSpaces = findTrailingSpaces(bytes, start, length);
+    length = length - leadingSpaces;
+    // If string is entirely whitespace, no need to apply trailingSpaces.
+    if (length > 0) {
+      length = length - trailingSpaces;
+    }
+    return length;
+  }
+
   public static String normalizeIdentifier(String identifier) {
 	  return identifier.trim().toLowerCase();
 	}

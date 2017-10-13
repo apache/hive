@@ -184,7 +184,7 @@ public class UDFToLong extends UDF {
       }
       try {
         longWritable
-            .set(LazyLong.parseLong(i.getBytes(), 0, i.getLength(), 10));
+            .set(LazyLong.parseLong(i.getBytes(), 0, i.getLength(), 10, true));
         return longWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.

@@ -175,7 +175,7 @@ public class UDFToInteger extends UDF {
       }
       try {
         intWritable.set(LazyInteger
-            .parseInt(i.getBytes(), 0, i.getLength(), 10));
+            .parseInt(i.getBytes(), 0, i.getLength(), 10, true));
         return intWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.
