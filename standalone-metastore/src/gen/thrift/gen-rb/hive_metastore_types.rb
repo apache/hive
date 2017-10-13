@@ -120,8 +120,9 @@ end
 
 module ClientCapability
   TEST_CAPABILITY = 1
-  VALUE_MAP = {1 => "TEST_CAPABILITY"}
-  VALID_VALUES = Set.new([TEST_CAPABILITY]).freeze
+  INSERT_ONLY_TABLES = 2
+  VALUE_MAP = {1 => "TEST_CAPABILITY", 2 => "INSERT_ONLY_TABLES"}
+  VALID_VALUES = Set.new([TEST_CAPABILITY, INSERT_ONLY_TABLES]).freeze
 end
 
 class Version

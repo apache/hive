@@ -84,7 +84,6 @@ public class IndexUpdater {
   }
 
   private void doIndexUpdate(List<Index> tblIndexes) throws HiveException {
-    Driver driver = new Driver(this.conf);
     for (Index idx : tblIndexes) {
       StringBuilder sb = new StringBuilder();
       sb.append("ALTER INDEX ");
@@ -93,9 +92,7 @@ public class IndexUpdater {
       sb.append(idx.getDbName()).append('.');
       sb.append(idx.getOrigTableName());
       sb.append(" REBUILD");
-      driver.compile(sb.toString(), false);
-      tasks.addAll(driver.getPlan().getRootTasks());
-      inputs.addAll(driver.getPlan().getInputs());
+      compileRebuild(sb.toString());
     }
   }
 
@@ -108,8 +105,7 @@ public class IndexUpdater {
     }
   }
 
-  private void doIndexUpdate(Index index, Map<String, String> partSpec) throws
-    HiveException {
+  private void doIndexUpdate(Index index, Map<String, String> partSpec) {
     StringBuilder ps = new StringBuilder();
     boolean first = true;
     ps.append("(");
@@ -133,14 +129,19 @@ public class IndexUpdater {
     sb.append(" PARTITION ");
     sb.append(ps.toString());
     sb.append(" REBUILD");
+    compileRebuild(sb.toString());
+  }
+
+  private void compileRebuild(String query) {
     Driver driver = new Driver(this.conf);
-    driver.compile(sb.toString(), false);
+    driver.compile(query, false);
     tasks.addAll(driver.getPlan().getRootTasks());
     inputs.addAll(driver.getPlan().getInputs());
   }
 
-  private boolean containsPartition(Index index, Map<String, String> partSpec)
-      throws HiveException {
+
+  private boolean containsPartition(Index index,
+      Map<String, String> partSpec) throws HiveException {
     String[] qualified = Utilities.getDbTableName(index.getDbName(), index.getIndexTableName());
     Table indexTable = hive.getTable(qualified[0], qualified[1]);
     List<Partition> parts = hive.getPartitions(indexTable, partSpec);

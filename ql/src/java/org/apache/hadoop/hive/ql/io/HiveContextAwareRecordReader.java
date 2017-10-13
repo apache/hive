@@ -326,7 +326,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
               .getMapWork(jobConf).getPathToPartitionInfo();
           }
           part = HiveFileFormatUtils
-              .getPartitionDescFromPathRecursively(pathToPartitionInfo,
+              .getFromPathRecursively(pathToPartitionInfo,
                   filePath, IOPrepareCache.get().getPartitionDescMap());
         } catch (AssertionError ae) {
           LOG.info("Cannot get partition description from " + this.ioCxtRef.getInputPath()

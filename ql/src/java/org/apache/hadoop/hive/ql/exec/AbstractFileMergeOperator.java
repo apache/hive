@@ -34,6 +34,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 /**
  * Fast file merge operator for ORC and RCfile. This is an abstract class which
  * does not process any rows. Refer {@link org.apache.hadoop.hive.ql.exec.OrcFileMergeOperator}
@@ -48,20 +50,21 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
 
   protected JobConf jc;
   protected FileSystem fs;
-  protected boolean autoDelete;
-  protected boolean exception;
-  protected Path outPath;
-  protected Path finalPath;
-  protected Path dpPath;
-  protected Path tmpPath;
-  protected Path taskTmpPath;
-  protected int listBucketingDepth;
-  protected boolean hasDynamicPartitions;
-  protected boolean isListBucketingAlterTableConcatenate;
-  protected boolean tmpPathFixedConcatenate;
-  protected boolean tmpPathFixed;
-  protected Set<Path> incompatFileSet;
-  protected transient DynamicPartitionCtx dpCtx;
+  private boolean autoDelete;
+  private Path outPath; // The output path used by the subclasses.
+  private Path finalPath; // Used as a final destination; same as outPath for MM tables.
+  private Path dpPath;
+  private Path tmpPath; // Only stored to update based on the original in fixTmpPath.
+  private Path taskTmpPath; // Only stored to update based on the original in fixTmpPath.
+  private int listBucketingDepth;
+  private boolean hasDynamicPartitions;
+  private boolean isListBucketingAlterTableConcatenate;
+  private boolean tmpPathFixedConcatenate;
+  private boolean tmpPathFixed;
+  private Set<Path> incompatFileSet;
+  private transient DynamicPartitionCtx dpCtx;
+  private boolean isMmTable;
+  private String taskId;
 
   /** Kryo ctor. */
   protected AbstractFileMergeOperator() {
@@ -78,39 +81,52 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
     this.jc = new JobConf(hconf);
     incompatFileSet = new HashSet<Path>();
     autoDelete = false;
-    exception = false;
     tmpPathFixed = false;
     tmpPathFixedConcatenate = false;
-    outPath = null;
-    finalPath = null;
     dpPath = null;
-    tmpPath = null;
-    taskTmpPath = null;
     dpCtx = conf.getDpCtx();
     hasDynamicPartitions = conf.hasDynamicPartitions();
     isListBucketingAlterTableConcatenate = conf
         .isListBucketingAlterTableConcatenate();
     listBucketingDepth = conf.getListBucketingDepth();
     Path specPath = conf.getOutputPath();
-    updatePaths(Utilities.toTempPath(specPath),
-        Utilities.toTaskTempPath(specPath));
+    isMmTable = conf.getIsMmTable();
+    if (isMmTable) {
+      updatePaths(specPath, null);
+    } else {
+      updatePaths(Utilities.toTempPath(specPath), Utilities.toTaskTempPath(specPath));
+    }
     try {
       fs = specPath.getFileSystem(hconf);
-      autoDelete = fs.deleteOnExit(outPath);
+      if (!isMmTable) {
+        // Do not delete for MM tables. We either want the file if we succeed, or we must
+        // delete is explicitly before proceeding if the merge fails.
+        autoDelete = fs.deleteOnExit(outPath);
+      }
     } catch (IOException e) {
-      this.exception = true;
-      throw new HiveException("Failed to initialize AbstractFileMergeOperator",
-          e);
+      throw new HiveException("Failed to initialize AbstractFileMergeOperator", e);
     }
   }
 
   // sets up temp and task temp path
   private void updatePaths(Path tp, Path ttp) {
-    String taskId = Utilities.getTaskId(jc);
+    if (taskId == null) {
+      taskId = Utilities.getTaskId(jc);
+    }
     tmpPath = tp;
-    taskTmpPath = ttp;
-    finalPath = new Path(tp, taskId);
-    outPath = new Path(ttp, Utilities.toTempPath(taskId));
+    if (isMmTable) {
+      taskTmpPath = null;
+      // Make sure we don't collide with the source.
+      outPath = finalPath = new Path(tmpPath, taskId + ".merged");
+    } else {
+      taskTmpPath = ttp;
+      finalPath = new Path(tp, taskId);
+      outPath = new Path(ttp, Utilities.toTempPath(taskId));
+    }
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Paths for merge " + taskId + ": tmp " + tmpPath + ", task "
+          + taskTmpPath + ", final " + finalPath + ", out " + outPath);
+    }
   }
 
   /**
@@ -143,7 +159,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
   protected void fixTmpPath(Path inputPath, int depthDiff) throws IOException {
 
     // don't need to update tmp paths when there is no depth difference in paths
-    if (depthDiff <=0) {
+    if (depthDiff <= 0) {
       return;
     }
 
@@ -158,10 +174,14 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
     }
 
     Path newTmpPath = new Path(tmpPath, newPath);
-    Path newTaskTmpPath = new Path(taskTmpPath, newPath);
     if (!fs.exists(newTmpPath)) {
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("Creating " + newTmpPath);
+      }
       fs.mkdirs(newTmpPath);
     }
+
+    Path newTaskTmpPath = (taskTmpPath != null) ? new Path(taskTmpPath, newPath) : null;
     updatePaths(newTmpPath, newTaskTmpPath);
   }
 
@@ -183,7 +203,9 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
   }
 
   protected void fixTmpPath(Path path) throws IOException {
-
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Calling fixTmpPath with " + path);
+    }
     // Fix temp path for alter table ... concatenate
     if (isListBucketingAlterTableConcatenate) {
       if (this.tmpPathFixedConcatenate) {
@@ -216,21 +238,39 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
   @Override
   public void closeOp(boolean abort) throws HiveException {
     try {
-      if (!abort) {
-        // if outPath does not exist, then it means all paths within combine split are skipped as
-        // they are incompatible for merge (for example: files without stripe stats).
-        // Those files will be added to incompatFileSet
-        if (fs.exists(outPath)) {
-          FileStatus fss = fs.getFileStatus(outPath);
-          if (!fs.rename(outPath, finalPath)) {
-            throw new IOException(
-                "Unable to rename " + outPath + " to " + finalPath);
-          }
-          LOG.info("renamed path " + outPath + " to " + finalPath + " . File" +
-              " size is "
-              + fss.getLen());
+      if (abort) {
+        if (!autoDelete || isMmTable) {
+          fs.delete(outPath, true);
         }
+        return;
+      }
+      // if outPath does not exist, then it means all paths within combine split are skipped as
+      // they are incompatible for merge (for example: files without stripe stats).
+      // Those files will be added to incompatFileSet
+      if (fs.exists(outPath)) {
+        FileStatus fss = fs.getFileStatus(outPath);
+        if (!isMmTable) {
+          if (!fs.rename(outPath, finalPath)) {
+            throw new IOException("Unable to rename " + outPath + " to " + finalPath);
+          }
+          LOG.info("Renamed path " + outPath + " to " + finalPath
+              + "(" + fss.getLen() + " bytes).");
+        } else {
+          assert finalPath.equals(outPath);
+          // There's always just one file that we have merged.
+          // The union/DP/etc. should already be account for in the path.
+          Utilities.writeMmCommitManifest(Lists.newArrayList(outPath),
+              tmpPath.getParent(), fs, taskId, conf.getTxnId(), conf.getStmtId(), null);
+          LOG.info("Merged into " + finalPath + "(" + fss.getLen() + " bytes).");
+        }
+      }
 
+      // move any incompatible files to final path
+      if (incompatFileSet != null && !incompatFileSet.isEmpty()) {
+        if (isMmTable) {
+          // We only support query-time merge for MM tables, so don't handle this.
+          throw new HiveException("Incompatible files should not happen in MM tables.");
+        }
         Path destDir = finalPath.getParent();
         Path destPath = destDir;
         // move any incompatible files to final path
@@ -269,10 +309,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
             }
           }
         }
-      } else {
-        if (!autoDelete) {
-          fs.delete(outPath, true);
-        }
+
       }
     } catch (IOException e) {
       throw new HiveException("Failed to close AbstractFileMergeOperator", e);
@@ -285,16 +322,27 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
     try {
       Path outputDir = conf.getOutputPath();
       FileSystem fs = outputDir.getFileSystem(hconf);
-      Path backupPath = backupOutputPath(fs, outputDir);
-      Utilities
-          .mvFileToFinalPath(outputDir, hconf, success, LOG, conf.getDpCtx(),
-              null, reporter);
-      if (success) {
-        LOG.info("jobCloseOp moved merged files to output dir: " + outputDir);
+      Long mmWriteId = conf.getTxnId();
+      int stmtId = conf.getStmtId();
+      if (!isMmTable) {
+        Path backupPath = backupOutputPath(fs, outputDir);
+        Utilities.mvFileToFinalPath(
+            outputDir, hconf, success, LOG, conf.getDpCtx(), null, reporter);
+        if (success) {
+          LOG.info("jobCloseOp moved merged files to output dir: " + outputDir);
+        }
+        if (backupPath != null) {
+          fs.delete(backupPath, true);
+        }
+      } else {
+        int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
+            lbLevels = conf.getListBucketingDepth();
+        // We don't expect missing buckets from mere (actually there should be no buckets),
+        // so just pass null as bucketing context. Union suffix should also be accounted for.
+        Utilities.handleMmTableFinalPath(outputDir.getParent(), null, hconf, success,
+            dpLevels, lbLevels, null, mmWriteId, stmtId, reporter, isMmTable, false);
       }
-      if (backupPath != null) {
-        fs.delete(backupPath, true);
-      }
+
     } catch (IOException e) {
       throw new HiveException("Failed jobCloseOp for AbstractFileMergeOperator",
           e);
@@ -321,5 +369,13 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
 
   public static String getOperatorName() {
     return "MERGE";
+  }
+
+  protected final Path getOutPath() {
+    return outPath;
+  }
+
+  protected final void addIncompatibleFile(Path path) {
+    incompatFileSet.add(path);
   }
 }

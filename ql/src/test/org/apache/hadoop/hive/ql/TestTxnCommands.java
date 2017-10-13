@@ -411,7 +411,6 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     }
   }
 
-
   @Test
   public void exchangePartition() throws Exception {
     runStatementOnDriver("create database ex1");

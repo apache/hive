@@ -92,8 +92,7 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
       return new DeserializerOrcWriter(serDe, sourceOi, allocSize);
     }
     Path path = splitPath.getFileSystem(daemonConf).makeQualified(splitPath);
-    PartitionDesc partDesc = HiveFileFormatUtils.getPartitionDescFromPathRecursively(
-        parts, path, null);
+    PartitionDesc partDesc = HiveFileFormatUtils.getFromPathRecursively(parts, path, null);
     if (partDesc == null) {
       LlapIoImpl.LOG.info("Not using VertorDeserializeOrcWriter: no partition desc for " + path);
       return new DeserializerOrcWriter(serDe, sourceOi, allocSize);

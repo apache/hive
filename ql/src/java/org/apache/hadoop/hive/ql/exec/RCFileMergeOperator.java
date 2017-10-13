@@ -77,7 +77,7 @@ public class RCFileMergeOperator
         codec = key.getCodec();
         columnNumber = key.getKeyBuffer().getColumnNumber();
         RCFileOutputFormat.setColumnNumber(jc, columnNumber);
-        outWriter = new RCFile.Writer(fs, jc, outPath, null, codec);
+        outWriter = new RCFile.Writer(fs, jc, getOutPath(), null, codec);
       }
 
       boolean sameCodec = ((codec == key.getCodec()) || codec.getClass().equals(
@@ -94,7 +94,6 @@ public class RCFileMergeOperator
           key.getRecordLength(), key.getKeyLength(),
           key.getCompressedKeyLength());
     } catch (Throwable e) {
-      this.exception = true;
       closeOp(true);
       throw new HiveException(e);
     }

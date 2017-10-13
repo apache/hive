@@ -61,8 +61,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     FileSystem dstFs = null;
     Path toPath = null;
     try {
-      Path fromPath = work.getFromPath();
-      toPath = work.getToPath();
+      Path fromPath = work.getFromPaths()[0];
+      toPath = work.getToPaths()[0];
 
       console.printInfo("Copying data from " + fromPath.toString(), " to "
           + toPath.toString());

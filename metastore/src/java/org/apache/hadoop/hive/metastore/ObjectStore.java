@@ -25,6 +25,7 @@ import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -58,6 +59,7 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
+import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 import javax.sql.DataSource;
 
@@ -246,6 +248,7 @@ public class ObjectStore implements RawStore, Configurable {
   private PersistenceManager pm = null;
   private SQLGenerator sqlGenerator = null;
   private MetaStoreDirectSql directSql = null;
+  private DatabaseProduct dbType = null;
   private PartitionExpressionProxy expressionProxy = null;
   private Configuration hiveConf;
   private volatile int openTrasactionCalls = 0;
@@ -444,6 +447,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     isInitialized = pm != null;
     if (isInitialized) {
+      dbType = determineDatabaseProduct();
       expressionProxy = createExpressionProxy(hiveConf);
       if (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL)) {
         String schema = prop.getProperty("javax.jdo.mapping.Schema");
@@ -455,6 +459,27 @@ public class ObjectStore implements RawStore, Configurable {
     }
     LOG.debug("RawStore: " + this + ", with PersistenceManager: " + pm +
         " created in the thread with id: " + Thread.currentThread().getId());
+  }
+
+  private DatabaseProduct determineDatabaseProduct() {
+    try {
+      return DatabaseProduct.determineDatabaseProduct(getProductName(pm));
+    } catch (SQLException e) {
+      LOG.warn("Cannot determine database product; assuming OTHER", e);
+      return DatabaseProduct.OTHER;
+    }
+  }
+
+  private static String getProductName(PersistenceManager pm) {
+    JDOConnection jdoConn = pm.getDataStoreConnection();
+    try {
+      return ((Connection)jdoConn.getNativeConnection()).getMetaData().getDatabaseProductName();
+    } catch (Throwable t) {
+      LOG.warn("Error retrieving product name", t);
+      return null;
+    } finally {
+      jdoConn.close(); // We must release the connection before we call other pm methods.
+    }
   }
 
   /**
@@ -683,7 +708,6 @@ public class ObjectStore implements RawStore, Configurable {
       transactionStatus = TXN_STATUS.COMMITED;
       currentTransaction.commit();
     }
-
     return true;
   }
 
@@ -789,7 +813,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   public Database getDatabaseInternal(String name) throws MetaException, NoSuchObjectException {
-    return new GetDbHelper(name, null, true, true) {
+    return new GetDbHelper(name, true, true) {
       @Override
       protected Database getSqlResult(GetHelper<Database> ctx) throws MetaException {
         return directSql.getDatabase(dbName);
@@ -1510,13 +1534,13 @@ public class ObjectStore implements RawStore, Configurable {
         tableType = TableType.MANAGED_TABLE.toString();
       }
     }
-    final Table table = new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
-            .getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl
-            .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
-            convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
-            mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
-    table.setRewriteEnabled(mtbl.isRewriteEnabled());
-    return table;
+    final Table t = new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
+        .getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl
+        .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
+        convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
+        mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
+    t.setRewriteEnabled(mtbl.isRewriteEnabled());
+    return t;
   }
 
   private MTable convertToMTable(Table tbl) throws InvalidObjectException,
@@ -3009,7 +3033,8 @@ public class ObjectStore implements RawStore, Configurable {
       boolean isConfigEnabled = HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL)
           && (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL_DDL) || !isInTxn);
       if (isConfigEnabled && directSql == null) {
-        directSql = new MetaStoreDirectSql(pm, getConf());
+        dbType = determineDatabaseProduct();
+        directSql = new MetaStoreDirectSql(pm, getConf(), "");
       }
 
       if (!allowJdo && isConfigEnabled && !directSql.isCompatibleDatastore()) {
@@ -3050,7 +3075,7 @@ public class ObjectStore implements RawStore, Configurable {
         throw ex;
       } catch (Exception ex) {
         LOG.error("", ex);
-        throw MetaStoreUtils.newMetaException(ex);
+        throw new MetaException(ex.getMessage());
       } finally {
         close();
       }
@@ -3080,7 +3105,7 @@ public class ObjectStore implements RawStore, Configurable {
         if (ex instanceof MetaException) {
           throw (MetaException)ex;
         }
-        throw MetaStoreUtils.newMetaException(ex);
+        throw new MetaException(ex.getMessage());
       }
       if (!isInTxn) {
         JDOException rollbackEx = null;
@@ -3181,15 +3206,13 @@ public class ObjectStore implements RawStore, Configurable {
   public abstract class GetDbHelper extends GetHelper<Database> {
     /**
      * GetHelper for returning db info using directSql/JDO.
-     * Since this is a db-level call, tblName is ignored, and null is passed irrespective of what is passed in.
      * @param dbName The Database Name
-     * @param tblName Placeholder param to match signature, always ignored.
      * @param allowSql Whether or not we allow DirectSQL to perform this query.
      * @param allowJdo Whether or not we allow ORM to perform this query.
      * @throws MetaException
      */
     public GetDbHelper(
-        String dbName, String tblName, boolean allowSql, boolean allowJdo) throws MetaException {
+        String dbName,boolean allowSql, boolean allowJdo) throws MetaException {
       super(dbName,null,allowSql,allowJdo);
     }
 
@@ -3610,8 +3633,12 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!success) {
         rollbackTransaction();
-        throw MetaStoreUtils.newMetaException(
-            "The transaction for alter partition did not commit successfully.", e);
+        MetaException metaException = new MetaException(
+            "The transaction for alter partition did not commit successfully.");
+        if (e != null) {
+          metaException.initCause(e);
+        }
+        throw metaException;
       }
     }
   }
@@ -3635,8 +3662,12 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!success) {
         rollbackTransaction();
-        throw MetaStoreUtils.newMetaException(
-            "The transaction for alter partition did not commit successfully.", e);
+        MetaException metaException = new MetaException(
+            "The transaction for alter partition did not commit successfully.");
+        if (e != null) {
+          metaException.initCause(e);
+        }
+        throw metaException;
       }
     }
   }
@@ -7292,10 +7323,8 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       List<MTableColumnStatistics> stats = getMTableColumnStatistics(table,
           colNames, queryWrapper);
-      if (stats != null) {
-        for(MTableColumnStatistics cStat : stats) {
-          statsMap.put(cStat.getColName(), cStat);
-        }
+      for(MTableColumnStatistics cStat : stats) {
+        statsMap.put(cStat.getColName(), cStat);
       }
     } finally {
       queryWrapper.close();
@@ -7458,7 +7487,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (ex instanceof MetaException) {
         throw (MetaException) ex;
       }
-      throw MetaStoreUtils.newMetaException(ex);
+      throw new MetaException(ex.getMessage());
     } finally {
       if (!committed) {
         rollbackTransaction();
@@ -7508,7 +7537,7 @@ public class ObjectStore implements RawStore, Configurable {
 
         try {
         List<MTableColumnStatistics> mStats = getMTableColumnStatistics(getTable(), colNames, queryWrapper);
-        if (mStats == null || mStats.isEmpty()) return null;
+        if (mStats.isEmpty()) return null;
         // LastAnalyzed is stored per column, but thrift object has it per multiple columns.
         // Luckily, nobody actually uses it, so we will set to lowest value of all columns for now.
         ColumnStatisticsDesc desc = StatObjectConverter.getTableColumnStatisticsDesc(mStats.get(0));
@@ -7699,7 +7728,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (ex instanceof MetaException) {
         throw (MetaException) ex;
       }
-      throw MetaStoreUtils.newMetaException(ex);
+      throw new MetaException(ex.getMessage());
     } finally {
       if (!committed) {
         rollbackTransaction();
@@ -8178,7 +8207,7 @@ public class ObjectStore implements RawStore, Configurable {
           throw new MetaException("Version table not found. " + "The metastore is not upgraded to "
               + MetaStoreSchemaInfoFactory.get(getConf()).getHiveSchemaVersion());
         } else {
-          throw MetaStoreUtils.newMetaException(e);
+          throw e;
         }
       }
       committed = commitTransaction();
@@ -9233,7 +9262,7 @@ public class ObjectStore implements RawStore, Configurable {
   @VisibleForTesting
   void rollbackAndCleanup(boolean success, Query query) {
     try {
-      if(!success) {
+      if (!success) {
         rollbackTransaction();
       }
     } finally {
@@ -9253,7 +9282,7 @@ public class ObjectStore implements RawStore, Configurable {
   @VisibleForTesting
   void rollbackAndCleanup(boolean success, QueryWrapper queryWrapper) {
     try {
-      if(!success) {
+      if (!success) {
         rollbackTransaction();
       }
     } finally {

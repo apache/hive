@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -185,6 +186,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private final Set<String> reservedPartitionValues;
   private final HiveAuthorizationTaskFactory hiveAuthorizationTaskFactory;
+  private WriteEntity alterTableOutput;
 
   static {
     TokenToTypeName.put(HiveParser.TOK_BOOLEAN, serdeConstants.BOOLEAN_TYPE_NAME);
@@ -694,6 +696,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeShowRoles(ASTNode ast) throws SemanticException {
+    @SuppressWarnings("unchecked")
     Task<DDLWork> roleDDLTask = (Task<DDLWork>) hiveAuthorizationTaskFactory
         .createShowRolesTask(ast, ctx.getResFile(), getInputs(), getOutputs());
 
@@ -991,6 +994,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (indexes != null && indexes.size() > 0) {
           throw new SemanticException(ErrorMsg.TRUNCATE_COLUMN_INDEXED_TABLE.getMsg());
         }
+        // It would be possible to support this, but this is such a pointless command.
+        if (AcidUtils.isInsertOnlyTable(table.getParameters())) {
+          throw new SemanticException("Truncating MM table columns not presently supported");
+        }
 
         List<String> bucketCols = null;
         Class<? extends InputFormat> inputFormatClass = null;
@@ -1089,11 +1096,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
         truncateTblDesc.setOutputDir(queryTmpdir);
         LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
-            partSpec == null ? new HashMap<>() : partSpec);
+            partSpec == null ? new HashMap<>() : partSpec, null);
         ltd.setLbCtx(lbCtx);
-        Task<MoveWork> moveTsk = TaskFactory
-            .get(new MoveWork(null, null, ltd, null, false, SessionState.get().getLineageState()),
-            conf);
+        @SuppressWarnings("unchecked")
+        Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(
+          null, null, ltd, null, false, SessionState.get().getLineageState()), conf);
         truncateTask.addDependentTask(moveTsk);
 
         // Recalculate the HDFS stats if auto gather stats is set
@@ -1442,10 +1449,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     alterTblDesc.setEnvironmentContext(environmentContext);
     alterTblDesc.setOldName(tableName);
 
-    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc);
+    boolean isPotentialMmSwitch = mapProp.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)
+        || mapProp.containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc, isPotentialMmSwitch);
 
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        alterTblDesc), conf));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
   }
 
   private void analyzeAlterTableSerdeProps(ASTNode ast, String tableName,
@@ -1505,16 +1513,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
       AlterTableTypes op) throws SemanticException {
-    addInputsOutputsAlterTable(tableName, partSpec, null, op);
+    addInputsOutputsAlterTable(tableName, partSpec, null, op, false);
+  }
+
+  private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
+      AlterTableDesc desc, boolean doForceExclusive) throws SemanticException {
+     addInputsOutputsAlterTable(tableName, partSpec, desc, desc.getOp(), doForceExclusive);
   }
 
   private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
      AlterTableDesc desc) throws SemanticException {
-    addInputsOutputsAlterTable(tableName, partSpec, desc, desc.getOp());
+    addInputsOutputsAlterTable(tableName, partSpec, desc, desc.getOp(), false);
   }
 
   private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
-      AlterTableDesc desc, AlterTableTypes op) throws SemanticException {
+      AlterTableDesc desc, AlterTableTypes op, boolean doForceExclusive) throws SemanticException {
     boolean isCascade = desc != null && desc.getIsCascade();
     boolean alterPartitions = partSpec != null && !partSpec.isEmpty();
     //cascade only occurs at table level then cascade to partition level
@@ -1531,11 +1544,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // Determine the lock type to acquire
-    WriteEntity.WriteType writeType = WriteEntity.determineAlterTableWriteType(op);
+    WriteEntity.WriteType writeType = doForceExclusive
+        ? WriteType.DDL_EXCLUSIVE : WriteEntity.determineAlterTableWriteType(op);
 
     if (!alterPartitions) {
       inputs.add(new ReadEntity(tab));
-      outputs.add(new WriteEntity(tab, writeType));
+      alterTableOutput = new WriteEntity(tab, writeType);
+      outputs.add(alterTableOutput);
       //do not need the lock for partitions since they are covered by the table lock
       if (isCascade) {
         for (Partition part : getPartitions(tab, partSpec, false)) {
@@ -1624,6 +1639,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     try {
       tblObj = getTable(tableName);
+      // TODO: we should probably block all ACID tables here.
+      if (AcidUtils.isInsertOnlyTable(tblObj.getParameters())) {
+        throw new SemanticException("Merge is not supported for MM tables");
+      }
+      mergeDesc.setTableDesc(Utilities.getTableDesc(tblObj));
 
       List<String> bucketCols = null;
       Class<? extends InputFormat> inputFormatClass = null;
@@ -1723,12 +1743,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       TableDesc tblDesc = Utilities.getTableDesc(tblObj);
       Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
       mergeDesc.setOutputDir(queryTmpdir);
+      // No need to handle MM tables - unsupported path.
       LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
-          partSpec == null ? new HashMap<>() : partSpec);
+          partSpec == null ? new HashMap<>() : partSpec, null);
       ltd.setLbCtx(lbCtx);
-      Task<MoveWork> moveTsk = TaskFactory
-          .get(new MoveWork(null, null, ltd, null, false, SessionState.get().getLineageState()),
-          conf);
+      Task<MoveWork> moveTsk = TaskFactory.get(
+        new MoveWork(null, null, ltd, null, false, SessionState.get().getLineageState()), conf);
       mergeTask.addDependentTask(moveTsk);
 
       if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {

@@ -160,7 +160,8 @@ extern const std::map<int, const char*> _FileMetadataExprType_VALUES_TO_NAMES;
 
 struct ClientCapability {
   enum type {
-    TEST_CAPABILITY = 1
+    TEST_CAPABILITY = 1,
+    INSERT_ONLY_TABLES = 2
   };
 };
 

@@ -732,7 +732,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         for (FileStatus st : status) {
           LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>();
           if (!customDynamicLocationUsed) {
-            Warehouse.makeSpecFromName(fullPartSpec, st.getPath());
+            Warehouse.makeSpecFromName(fullPartSpec, st.getPath(), null);
           } else {
             HCatFileUtil.getPartKeyValuesForCustomLocation(fullPartSpec, jobInfo,
                 st.getPath().toString());

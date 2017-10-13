@@ -1,0 +1,9 @@
+PREHOOK: query: CREATE TABLE mm_table(key int, value string) stored as rcfile tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mm_table
+POSTHOOK: query: CREATE TABLE mm_table(key int, value string) stored as rcfile tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mm_table
+FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: Truncating MM table columns not presently supported

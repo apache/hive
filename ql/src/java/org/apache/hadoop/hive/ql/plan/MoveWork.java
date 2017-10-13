@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -61,10 +62,12 @@ public class MoveWork implements Serializable {
    * List of inserted partitions
    */
   protected List<Partition> movedParts;
+  private boolean isNoop;
 
   public MoveWork() {
     sessionStateLineageState = null;
   }
+
 
   private MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       LineageState lineageState) {
@@ -77,6 +80,10 @@ public class MoveWork implements Serializable {
       final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
       boolean checkFileFormat, boolean srcLocal, LineageState lineageState) {
     this(inputs, outputs, lineageState);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Creating MoveWork " + System.identityHashCode(this)
+        + " with " + loadTableWork + "; " + loadFileWork);
+    }
     this.loadTableWork = loadTableWork;
     this.loadFileWork = loadFileWork;
     this.checkFileFormat = checkFileFormat;
@@ -86,10 +93,7 @@ public class MoveWork implements Serializable {
   public MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       final LoadTableDesc loadTableWork, final LoadFileDesc loadFileWork,
       boolean checkFileFormat, LineageState lineageState) {
-    this(inputs, outputs, lineageState);
-    this.loadTableWork = loadTableWork;
-    this.loadFileWork = loadFileWork;
-    this.checkFileFormat = checkFileFormat;
+    this(inputs, outputs, loadTableWork, loadFileWork, checkFileFormat, false, lineageState);
   }
 
   public MoveWork(final MoveWork o) {
@@ -161,7 +165,7 @@ public class MoveWork implements Serializable {
   public void setSrcLocal(boolean srcLocal) {
     this.srcLocal = srcLocal;
   }
-
+  
   public LineageState getLineagState() {
     return sessionStateLineageState;
   }

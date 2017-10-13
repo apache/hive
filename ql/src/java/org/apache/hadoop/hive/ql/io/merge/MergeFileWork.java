@@ -60,13 +60,13 @@ public class MergeFileWork extends MapWork {
   private Class<? extends InputFormat> internalInputFormat;
 
   public MergeFileWork(List<Path> inputPaths, Path outputDir,
-      String srcTblInputFormat) {
-    this(inputPaths, outputDir, false, srcTblInputFormat);
+      String srcTblInputFormat, TableDesc tbl) {
+    this(inputPaths, outputDir, false, srcTblInputFormat, tbl);
   }
 
   public MergeFileWork(List<Path> inputPaths, Path outputDir,
       boolean hasDynamicPartitions,
-      String srcTblInputFormat) {
+      String srcTblInputFormat, TableDesc tbl) {
     this.inputPaths = inputPaths;
     this.outputDir = outputDir;
     this.hasDynamicPartitions = hasDynamicPartitions;
@@ -78,6 +78,7 @@ public class MergeFileWork extends MapWork {
       this.internalInputFormat = RCFileBlockMergeInputFormat.class;
     }
     partDesc.setInputFileFormatClass(internalInputFormat);
+    partDesc.setTableDesc(tbl);
     for (Path path : this.inputPaths) {
       this.addPathToPartitionInfo(path, partDesc);
     }

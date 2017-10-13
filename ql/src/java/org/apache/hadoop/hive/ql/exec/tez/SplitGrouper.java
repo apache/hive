@@ -275,7 +275,7 @@ public class SplitGrouper {
                                        MapWork work) throws IOException {
     boolean retval = false;
     Path path = ((FileSplit) s).getPath();
-    PartitionDesc pd = HiveFileFormatUtils.getPartitionDescFromPathRecursively(
+    PartitionDesc pd = HiveFileFormatUtils.getFromPathRecursively(
         work.getPathToPartitionInfo(), path, cache);
     String currentDeserializerClass = pd.getDeserializerClassName();
     Class<?> currentInputFormatClass = pd.getInputFileFormatClass();
@@ -288,7 +288,7 @@ public class SplitGrouper {
         return !path.equals(prevPath);
       }
       PartitionDesc prevPD =
-          HiveFileFormatUtils.getPartitionDescFromPathRecursively(work.getPathToPartitionInfo(),
+          HiveFileFormatUtils.getFromPathRecursively(work.getPathToPartitionInfo(),
               prevPath, cache);
       previousDeserializerClass = prevPD.getDeserializerClassName();
       previousInputFormatClass = prevPD.getInputFileFormatClass();

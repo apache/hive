@@ -189,7 +189,7 @@ public class TestAcidUtils {
         new MockFile("mock:/tbl/part1/delta_050_100/bucket_0", 0, new byte[0]),
         new MockFile("mock:/tbl/part1/delta_101_101/bucket_0", 0, new byte[0]));
     AcidUtils.Directory dir =
-        AcidUtils.getAcidState(new TestInputOutputFormat.MockPath(fs,
+        AcidUtils.getAcidState(new MockPath(fs,
             "mock:/tbl/part1"), conf, new ValidReadTxnList("100:" + Long.MAX_VALUE + ":"));
     assertEquals(null, dir.getBaseDirectory());
     List<FileStatus> obsolete = dir.getObsolete();
@@ -231,7 +231,7 @@ public class TestAcidUtils {
         new MockFile("mock:/tbl/part1/delta_050_105/bucket_0", 0, new byte[0]),
         new MockFile("mock:/tbl/part1/delta_90_120/bucket_0", 0, new byte[0]));
     AcidUtils.Directory dir =
-        AcidUtils.getAcidState(new TestInputOutputFormat.MockPath(fs,
+        AcidUtils.getAcidState(new MockPath(fs,
             "mock:/tbl/part1"), conf, new ValidReadTxnList("100:" + Long.MAX_VALUE + ":"));
     assertEquals("mock:/tbl/part1/base_49", dir.getBaseDirectory().toString());
     List<FileStatus> obsolete = dir.getObsolete();
@@ -527,7 +527,7 @@ public class TestAcidUtils {
         new MockFile("mock:/tbl/part1/delete_delta_050_105/bucket_0", 0, new byte[0]),
         new MockFile("mock:/tbl/part1/delete_delta_110_110/bucket_0", 0, new byte[0]));
     AcidUtils.Directory dir =
-        AcidUtils.getAcidState(new TestInputOutputFormat.MockPath(fs,
+        AcidUtils.getAcidState(new MockPath(fs,
             "mock:/tbl/part1"), conf, new ValidReadTxnList("100:" + Long.MAX_VALUE + ":"));
     assertEquals("mock:/tbl/part1/base_49", dir.getBaseDirectory().toString());
     List<FileStatus> obsolete = dir.getObsolete();

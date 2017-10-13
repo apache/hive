@@ -18,16 +18,20 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
@@ -36,7 +40,6 @@ import org.apache.hadoop.util.StringUtils;
  * CopyTask implementation.
  **/
 public class CopyTask extends Task<CopyWork> implements Serializable {
-
   private static final long serialVersionUID = 1L;
 
   private static transient final Logger LOG = LoggerFactory.getLogger(CopyTask.class);
@@ -47,19 +50,24 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
 
   @Override
   public int execute(DriverContext driverContext) {
-    FileSystem dstFs = null;
-    Path toPath = null;
-    try {
-      Path fromPath = work.getFromPath();
-      toPath = work.getToPath();
+    Path[] from = work.getFromPaths(), to = work.getToPaths();
+    for (int i = 0; i < from.length; ++i) {
+      int result = copyOnePath(from[i], to[i]);
+      if (result != 0) return result;
+    }
+    return 0;
+  }
 
+  protected int copyOnePath(Path fromPath, Path toPath) {
+    FileSystem dstFs = null;
+    try {
       console.printInfo("Copying data from " + fromPath.toString(), " to "
           + toPath.toString());
 
       FileSystem srcFs = fromPath.getFileSystem(conf);
       dstFs = toPath.getFileSystem(conf);
 
-      FileStatus[] srcs = LoadSemanticAnalyzer.matchFilesOrDir(srcFs, fromPath);
+      FileStatus[] srcs = matchFilesOrDir(srcFs, fromPath, work.doSkipSourceMmDirs());
       if (srcs == null || srcs.length == 0) {
         if (work.isErrorOnSrcEmpty()) {
           console.printError("No files matching path: " + fromPath.toString());
@@ -92,6 +100,48 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));
       return (1);
+    }
+  }
+
+  // Note: initially copied from LoadSemanticAnalyzer.
+  private static FileStatus[] matchFilesOrDir(
+      FileSystem fs, Path path, boolean isSourceMm) throws IOException {
+    if (!fs.exists(path)) return null;
+    if (!isSourceMm) return matchFilesOneDir(fs, path, null);
+    // Note: this doesn't handle list bucketing properly; neither does the original code.
+    FileStatus[] mmDirs = fs.listStatus(path, new JavaUtils.AnyIdDirFilter());
+    if (mmDirs == null || mmDirs.length == 0) return null;
+    List<FileStatus> allFiles = new ArrayList<FileStatus>();
+    for (FileStatus mmDir : mmDirs) {
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("Found source MM directory " + mmDir.getPath());
+      }
+      matchFilesOneDir(fs, mmDir.getPath(), allFiles);
+    }
+    return allFiles.toArray(new FileStatus[allFiles.size()]);
+  }
+
+  private static FileStatus[] matchFilesOneDir(
+      FileSystem fs, Path path, List<FileStatus> result) throws IOException {
+    FileStatus[] srcs = fs.globStatus(path, new EximPathFilter());
+    if (srcs != null && srcs.length == 1) {
+      if (srcs[0].isDirectory()) {
+        srcs = fs.listStatus(srcs[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
+      }
+    }
+    if (result != null && srcs != null) {
+      for (int i = 0; i < srcs.length; ++i) {
+        result.add(srcs[i]);
+      }
+    }
+    return srcs;
+  }
+
+  private static final class EximPathFilter implements PathFilter {
+    @Override
+    public boolean accept(Path p) {
+      String name = p.getName();
+      return name.equals("_metadata") ? true : !name.startsWith("_") && !name.startsWith(".");
     }
   }
 

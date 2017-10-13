@@ -12,7 +12,8 @@ import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
 public enum ClientCapability implements org.apache.thrift.TEnum {
-  TEST_CAPABILITY(1);
+  TEST_CAPABILITY(1),
+  INSERT_ONLY_TABLES(2);
 
   private final int value;
 
@@ -35,6 +36,8 @@ public enum ClientCapability implements org.apache.thrift.TEnum {
     switch (value) {
       case 1:
         return TEST_CAPABILITY;
+      case 2:
+        return INSERT_ONLY_TABLES;
       default:
         return null;
     }

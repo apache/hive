@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.JobConf;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Interner;
 
 /**
@@ -156,6 +157,8 @@ public class MapWork extends BaseWork {
 
   /** Whether LLAP IO will be used for inputs. */
   private String llapIoDesc;
+
+  private boolean isMergeFromResolver;
 
   public MapWork() {}
 
@@ -374,6 +377,7 @@ public class MapWork extends BaseWork {
   }
 
   @SuppressWarnings("nls")
+  @VisibleForTesting
   public void addMapWork(Path path, String alias, Operator<?> work,
       PartitionDesc pd) {
     StringInternUtils.internUriStringsInPath(path);
@@ -720,6 +724,14 @@ public class MapWork extends BaseWork {
 
   public VectorizedRowBatch getVectorizedRowBatch() {
     return vectorizedRowBatch;
+  }
+
+  public void setIsMergeFromResolver(boolean b) {
+    this.isMergeFromResolver = b;
+  }
+
+  public boolean isMergeFromResolver() {
+    return this.isMergeFromResolver;
   }
 
   /*

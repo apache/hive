@@ -145,7 +145,8 @@ public class EximUtil {
    */
   public static URI getValidatedURI(HiveConf conf, String dcPath) throws SemanticException {
     try {
-      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE)
+          || conf.getBoolVar(HiveConf.ConfVars.HIVEEXIMTESTMODE);
       URI uri = new Path(dcPath).toUri();
       FileSystem fs = FileSystem.get(uri, conf);
       // Get scheme from FileSystem
@@ -201,7 +202,8 @@ public class EximUtil {
   public static String relativeToAbsolutePath(HiveConf conf, String location)
       throws SemanticException {
     try {
-      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE)
+        || conf.getBoolVar(HiveConf.ConfVars.HIVEEXIMTESTMODE);;
       if (testMode) {
         URI uri = new Path(location).toUri();
         FileSystem fs = FileSystem.get(uri, conf);
@@ -210,6 +212,9 @@ public class EximUtil {
         String path = uri.getPath();
         if (!path.startsWith("/")) {
           path = (new Path(System.getProperty("test.tmp.dir"), path)).toUri().getPath();
+        }
+        if (StringUtils.isEmpty(scheme)) {
+          scheme = "pfile";
         }
         try {
           uri = new URI(scheme, authority, path, null, null);

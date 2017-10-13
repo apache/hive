@@ -46,15 +46,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.BlockLocation;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FSInputStream;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -2619,6 +2611,7 @@ public class TestInputOutputFormat {
     conf.setClass("fs.mock.impl", MockFileSystem.class, FileSystem.class);
     String badUser = UserGroupInformation.getCurrentUser().getShortUserName() + "-foo";
     MockFileSystem.setBlockedUgi(badUser);
+    // TODO: could we instead get FS from path here and add normal files for every UGI?
     MockFileSystem.clearGlobalFiles();
     OrcInputFormat.Context.resetThreadPool(); // We need the size above to take effect.
     try {

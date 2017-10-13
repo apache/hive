@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.common.ValidCompactorTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -71,6 +72,7 @@ import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -205,6 +207,16 @@ public class CompactorMR {
     if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
       throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
     }
+
+    // For MM tables we don't need to launch MR jobs as there is no compaction needed.
+    // We just need to delete the directories for aborted transactions.
+    if (AcidUtils.isInsertOnlyTable(t.getParameters())) {
+      LOG.debug("Going to delete directories for aborted transactions for MM table "
+          + t.getDbName() + "." + t.getTableName());
+      removeFiles(conf, sd.getLocation(), txns, t);
+      return;
+    }
+
     JobConf job = createBaseJobConf(conf, jobName, t, sd, txns, ci);
 
     // Figure out and encode what files we need to read.  We do this here (rather than in
@@ -355,6 +367,30 @@ public class CompactorMR {
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, colTypes.toString());
     HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
     HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
+  }
+
+  // Remove the directories for aborted transactions only
+  private void removeFiles(HiveConf conf, String location, ValidTxnList txnList, Table t)
+      throws IOException {
+    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(location), conf, txnList,
+        Ref.from(false), false, t.getParameters());
+    // For MM table, we only want to delete delta dirs for aborted txns.
+    List<FileStatus> abortedDirs = dir.getAbortedDirectories();
+    List<Path> filesToDelete = new ArrayList<>(abortedDirs.size());
+    for (FileStatus stat : abortedDirs) {
+      filesToDelete.add(stat.getPath());
+    }
+    if (filesToDelete.size() < 1) {
+      LOG.warn("Hmm, nothing to delete in the worker for directory " + location +
+          ", that hardly seems right.");
+      return;
+    }
+    LOG.info("About to remove " + filesToDelete.size() + " aborted directories from " + location);
+    FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
+    for (Path dead : filesToDelete) {
+      LOG.debug("Going to delete path " + dead.toString());
+      fs.delete(dead, true);
+    }
   }
 
   public JobConf getMrJob() {

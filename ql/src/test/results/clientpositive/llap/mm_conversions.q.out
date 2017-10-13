@@ -1,0 +1,309 @@
+PREHOOK: query: drop table intermediate
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table intermediate
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@intermediate
+POSTHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@intermediate
+PREHOOK: query: insert into table intermediate partition(p='455') select distinct key from src where key >= 0 order by key desc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate@p=455
+POSTHOOK: query: insert into table intermediate partition(p='455') select distinct key from src where key >= 0 order by key desc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate@p=455
+POSTHOOK: Lineage: intermediate PARTITION(p=455).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate@p=456
+POSTHOOK: query: insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate@p=456
+POSTHOOK: Lineage: intermediate PARTITION(p=456).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate@p=457
+POSTHOOK: query: insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate@p=457
+POSTHOOK: Lineage: intermediate PARTITION(p=457).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: drop table simple_to_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table simple_to_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table simple_to_mm(key int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@simple_to_mm
+POSTHOOK: query: create table simple_to_mm(key int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@simple_to_mm
+PREHOOK: query: insert into table simple_to_mm select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@simple_to_mm
+POSTHOOK: query: insert into table simple_to_mm select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@simple_to_mm
+POSTHOOK: Lineage: simple_to_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from simple_to_mm s1 order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_to_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from simple_to_mm s1 order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_to_mm
+#### A masked pattern was here ####
+0
+98
+100
+PREHOOK: query: alter table simple_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@simple_to_mm
+PREHOOK: Output: default@simple_to_mm
+POSTHOOK: query: alter table simple_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@simple_to_mm
+POSTHOOK: Output: default@simple_to_mm
+PREHOOK: query: select * from simple_to_mm s2 order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_to_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from simple_to_mm s2 order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_to_mm
+#### A masked pattern was here ####
+0
+98
+100
+PREHOOK: query: insert into table simple_to_mm select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@simple_to_mm
+POSTHOOK: query: insert into table simple_to_mm select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@simple_to_mm
+POSTHOOK: Lineage: simple_to_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: insert into table simple_to_mm select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@simple_to_mm
+POSTHOOK: query: insert into table simple_to_mm select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@simple_to_mm
+POSTHOOK: Lineage: simple_to_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from simple_to_mm s3 order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_to_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from simple_to_mm s3 order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_to_mm
+#### A masked pattern was here ####
+0
+0
+0
+98
+98
+98
+100
+100
+100
+PREHOOK: query: drop table simple_to_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@simple_to_mm
+PREHOOK: Output: default@simple_to_mm
+POSTHOOK: query: drop table simple_to_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@simple_to_mm
+POSTHOOK: Output: default@simple_to_mm
+PREHOOK: query: drop table part_to_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table part_to_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table part_to_mm(key int) partitioned by (key_mm int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_to_mm
+POSTHOOK: query: create table part_to_mm(key int) partitioned by (key_mm int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_to_mm
+PREHOOK: query: insert into table part_to_mm partition(key_mm='455') select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@part_to_mm@key_mm=455
+POSTHOOK: query: insert into table part_to_mm partition(key_mm='455') select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@part_to_mm@key_mm=455
+POSTHOOK: Lineage: part_to_mm PARTITION(key_mm=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: insert into table part_to_mm partition(key_mm='456') select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@part_to_mm@key_mm=456
+POSTHOOK: query: insert into table part_to_mm partition(key_mm='456') select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@part_to_mm@key_mm=456
+POSTHOOK: Lineage: part_to_mm PARTITION(key_mm=456).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from part_to_mm s1 order by key, key_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_to_mm
+PREHOOK: Input: default@part_to_mm@key_mm=455
+PREHOOK: Input: default@part_to_mm@key_mm=456
+#### A masked pattern was here ####
+POSTHOOK: query: select * from part_to_mm s1 order by key, key_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_to_mm
+POSTHOOK: Input: default@part_to_mm@key_mm=455
+POSTHOOK: Input: default@part_to_mm@key_mm=456
+#### A masked pattern was here ####
+0	455
+0	456
+98	455
+98	456
+100	455
+100	456
+PREHOOK: query: alter table part_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@part_to_mm
+PREHOOK: Output: default@part_to_mm
+POSTHOOK: query: alter table part_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@part_to_mm
+POSTHOOK: Output: default@part_to_mm
+PREHOOK: query: select * from part_to_mm s2 order by key, key_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_to_mm
+PREHOOK: Input: default@part_to_mm@key_mm=455
+PREHOOK: Input: default@part_to_mm@key_mm=456
+#### A masked pattern was here ####
+POSTHOOK: query: select * from part_to_mm s2 order by key, key_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_to_mm
+POSTHOOK: Input: default@part_to_mm@key_mm=455
+POSTHOOK: Input: default@part_to_mm@key_mm=456
+#### A masked pattern was here ####
+0	455
+0	456
+98	455
+98	456
+100	455
+100	456
+PREHOOK: query: insert into table part_to_mm partition(key_mm='456') select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@part_to_mm@key_mm=456
+POSTHOOK: query: insert into table part_to_mm partition(key_mm='456') select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@part_to_mm@key_mm=456
+POSTHOOK: Lineage: part_to_mm PARTITION(key_mm=456).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: insert into table part_to_mm partition(key_mm='457') select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@part_to_mm@key_mm=457
+POSTHOOK: query: insert into table part_to_mm partition(key_mm='457') select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@part_to_mm@key_mm=457
+POSTHOOK: Lineage: part_to_mm PARTITION(key_mm=457).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from part_to_mm s3 order by key, key_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_to_mm
+PREHOOK: Input: default@part_to_mm@key_mm=455
+PREHOOK: Input: default@part_to_mm@key_mm=456
+PREHOOK: Input: default@part_to_mm@key_mm=457
+#### A masked pattern was here ####
+POSTHOOK: query: select * from part_to_mm s3 order by key, key_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_to_mm
+POSTHOOK: Input: default@part_to_mm@key_mm=455
+POSTHOOK: Input: default@part_to_mm@key_mm=456
+POSTHOOK: Input: default@part_to_mm@key_mm=457
+#### A masked pattern was here ####
+0	455
+0	456
+0	456
+0	457
+98	455
+98	456
+98	456
+98	457
+100	455
+100	456
+100	456
+100	457
+PREHOOK: query: drop table part_to_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@part_to_mm
+PREHOOK: Output: default@part_to_mm
+POSTHOOK: query: drop table part_to_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@part_to_mm
+POSTHOOK: Output: default@part_to_mm
+PREHOOK: query: drop table intermediate
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@intermediate
+PREHOOK: Output: default@intermediate
+POSTHOOK: query: drop table intermediate
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Output: default@intermediate

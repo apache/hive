@@ -110,7 +110,6 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public boolean commitTransaction() {
-
     return false;
   }
 
@@ -121,8 +120,6 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public void rollbackTransaction() {
-
-
   }
 
   @Override

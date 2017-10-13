@@ -112,6 +112,7 @@ ALTER TABLE "APP"."KEY_CONSTRAINTS" ADD CONSTRAINT "CONSTRAINTS_PK" PRIMARY KEY 
 
 CREATE INDEX "APP"."CONSTRAINTS_PARENT_TBL_ID_INDEX" ON "APP"."KEY_CONSTRAINTS"("PARENT_TBL_ID");
 
+
 -- ----------------------------------------------
 -- DDL Statements for indexes
 -- ----------------------------------------------

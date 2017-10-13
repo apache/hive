@@ -1296,6 +1296,8 @@ public class HiveConf extends Configuration {
     HIVETESTMODE("hive.test.mode", false,
         "Whether Hive is running in test mode. If yes, it turns on sampling and prefixes the output tablename.",
         false),
+    HIVEEXIMTESTMODE("hive.exim.test.mode", false,
+        "The subset of test mode that only enables custom path handling for ExIm.", false),
     HIVETESTMODEPREFIX("hive.test.mode.prefix", "test_",
         "In test mode, specfies prefixes for the output table", false),
     HIVETESTMODESAMPLEFREQ("hive.test.mode.samplefreq", 32,
@@ -1890,8 +1892,15 @@ public class HiveConf extends Configuration {
         "hive.lock.numretries and hive.lock.sleep.between.retries."),
 
     HIVE_TXN_OPERATIONAL_PROPERTIES("hive.txn.operational.properties", 1,
-        "This is intended to be used as an internal property for future versions of ACID. (See\n" +
-        "HIVE-14035 for details.)"),
+        "Sets the operational properties that control the appropriate behavior for various\n"
+        + "versions of the Hive ACID subsystem. Mostly it is intended to be used as an internal property\n"
+        + "for future versions of ACID. (See HIVE-14035 for details.)\n"
+        + "0: Turn on the legacy mode for ACID\n"
+        + "1: Enable split-update feature found in the newer version of Hive ACID subsystem\n"
+        + "2: Hash-based merge, which combines delta files using GRACE hash join based approach (not implemented)\n"
+        + "3: Make the table 'quarter-acid' as it only supports insert. But it doesn't require ORC or bucketing.\n"
+        + "This is intended to be used as an internal property for future versions of ACID. (See\n" +
+          "HIVE-14035 for details.)"),
 
     HIVE_MAX_OPEN_TXNS("hive.max.open.txns", 100000, "Maximum number of open transactions. If \n" +
         "current open transactions reach this limit, future open transaction requests will be \n" +
@@ -3488,6 +3497,8 @@ public class HiveConf extends Configuration {
         "Log tracing id that can be used by upstream clients for tracking respective logs. " +
         "Truncated to " + LOG_PREFIX_LENGTH + " characters. Defaults to use auto-generated session id."),
 
+    HIVE_MM_AVOID_GLOBSTATUS_ON_S3("hive.mm.avoid.s3.globstatus", true,
+        "Whether to use listFiles (optimized on S3) instead of globStatus when on S3."),
 
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager," +

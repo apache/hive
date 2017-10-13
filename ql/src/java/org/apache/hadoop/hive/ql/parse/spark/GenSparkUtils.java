@@ -406,6 +406,7 @@ public class GenSparkUtils {
       HiveConf hconf, DependencyCollectionTask dependencyTask) {
 
     Path dest = null;
+    FileSinkDesc fileSinkDesc = fsOp.getConf();
 
     if (chDir) {
       dest = fsOp.getConf().getFinalDirName();
@@ -416,7 +417,6 @@ public class GenSparkUtils {
 
       Path tmpDir = baseCtx.getExternalTmpPath(dest);
 
-      FileSinkDesc fileSinkDesc = fsOp.getConf();
       // Change all the linked file sink descriptors
       if (fileSinkDesc.getLinkedFileSinkDesc() != null) {
         for (FileSinkDesc fsConf : fileSinkDesc.getLinkedFileSinkDesc()) {
@@ -430,7 +430,7 @@ public class GenSparkUtils {
     Task<MoveWork> mvTask = null;
 
     if (!chDir) {
-      mvTask = GenMapRedUtils.findMoveTask(mvTasks, fsOp);
+      mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fileSinkDesc.getFinalDirName(), false);
     }
 
     // Set the move task to be dependent on the current task

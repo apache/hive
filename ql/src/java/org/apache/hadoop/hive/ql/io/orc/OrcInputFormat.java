@@ -1117,7 +1117,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     private AcidDirInfo callInternal() throws IOException {
       AcidUtils.Directory dirInfo = AcidUtils.getAcidState(dir, context.conf,
-          context.transactionList, useFileIds, true);
+          context.transactionList, useFileIds, true, null);
       Path base = dirInfo.getBaseDirectory();
       // find the base files (original or new style)
       List<AcidBaseFileInfo> baseFiles = new ArrayList<AcidBaseFileInfo>();

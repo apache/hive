@@ -325,8 +325,8 @@ public class TestHive extends TestCase {
       tbl.setCreateTime(ft.getTTable().getCreateTime());
       tbl.getParameters().put(hive_metastoreConstants.DDL_TIME,
           ft.getParameters().get(hive_metastoreConstants.DDL_TIME));
-      assertTrue("Tables  doesn't match: " + tableName, ft.getTTable()
-          .equals(tbl.getTTable()));
+      assertTrue("Tables  doesn't match: " + tableName + " (" + ft.getTTable()
+          + "; " + tbl.getTTable() + ")", ft.getTTable().equals(tbl.getTTable()));
       assertEquals("SerializationLib is not set correctly", tbl
           .getSerializationLib(), ft.getSerializationLib());
       assertEquals("Serde is not set correctly", tbl.getDeserializer()

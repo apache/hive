@@ -256,7 +256,7 @@ public final class GenMRSkewJoinProcessor {
         Operator<? extends OperatorDesc> ts =
             GenMapRedUtils.createTemporaryTableScanOperator(
                 joinOp.getCompilationOpContext(), rowSchemaList.get((byte)k));
-        ((TableScanOperator)ts).setTableDesc(tableDescList.get((byte)k));
+        ((TableScanOperator)ts).setTableDescSkewJoin(tableDescList.get((byte)k));
         parentOps[k] = ts;
       }
       Operator<? extends OperatorDesc> tblScan_op = parentOps[i];

@@ -28,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.slf4j.Logger;
@@ -76,7 +77,6 @@ public class FSStatsPublisher implements StatsPublisher {
 
   @Override
   public boolean publishStat(String partKV, Map<String, String> stats) {
-    LOG.debug("Putting in map : " + partKV + "\t" + stats);
     // we need to do new hashmap, since stats object is reused across calls.
     Map<String,String> cpy = new HashMap<String, String>(stats);
     Map<String,String> statMap = statsMap.get(partKV);
@@ -105,7 +105,9 @@ public class FSStatsPublisher implements StatsPublisher {
         statsFile = new Path(statsDir, StatsSetupConst.STATS_FILE_PREFIX
             + conf.getInt("mapred.task.partition", 0));
       }
-      LOG.debug("About to create stats file for this task : " + statsFile);
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("About to create stats file for this task : " + statsFile);
+      }
       Output output = new Output(statsFile.getFileSystem(conf).create(statsFile,true));
       LOG.debug("Created file : " + statsFile);
       LOG.debug("Writing stats in it : " + statsMap);
@@ -118,7 +120,7 @@ public class FSStatsPublisher implements StatsPublisher {
       output.close();
       return true;
     } catch (IOException e) {
-      LOG.error("Failed to persist stats on filesystem",e);
+      Utilities.FILE_OP_LOGGER.error("Failed to persist stats on filesystem",e);
       return false;
     }
   }

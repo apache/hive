@@ -77,6 +77,7 @@ public class OrcFileMergeOperator extends
   private void processKeyValuePairs(Object key, Object value)
       throws HiveException {
     String filePath = "";
+    boolean exception = false;
     try {
       OrcFileValueWrapper v;
       OrcFileKeyWrapper k;
@@ -89,11 +90,14 @@ public class OrcFileMergeOperator extends
       // skip incompatible file, files that are missing stripe statistics are set to incompatible
       if (k.isIncompatFile()) {
         LOG.warn("Incompatible ORC file merge! Stripe statistics is missing. " + k.getInputPath());
-        incompatFileSet.add(k.getInputPath());
+        addIncompatibleFile(k.getInputPath());
         return;
       }
 
       filePath = k.getInputPath().toUri().getPath();
+
+      Utilities.FILE_OP_LOGGER.info("OrcFileMergeOperator processing " + filePath);
+
 
       fixTmpPath(k.getInputPath().getParent());
 
@@ -129,6 +133,7 @@ public class OrcFileMergeOperator extends
           options.bufferSize(compressBuffSize).enforceBufferSize();
         }
 
+        Path outPath = getOutPath();
         outWriter = OrcFile.createWriter(outPath, options);
         if (LOG.isDebugEnabled()) {
           LOG.info("ORC merge file output path: " + outPath);
@@ -136,7 +141,7 @@ public class OrcFileMergeOperator extends
       }
 
       if (!checkCompatibility(k)) {
-        incompatFileSet.add(k.getInputPath());
+        addIncompatibleFile(k.getInputPath());
         return;
       }
 
@@ -167,7 +172,7 @@ public class OrcFileMergeOperator extends
         outWriter.appendUserMetadata(v.getUserMetadata());
       }
     } catch (Throwable e) {
-      this.exception = true;
+      exception = true;
       LOG.error("Closing operator..Exception: " + ExceptionUtils.getStackTrace(e));
       throw new HiveException(e);
     } finally {

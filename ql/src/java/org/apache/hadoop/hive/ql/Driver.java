@@ -843,7 +843,7 @@ public class Driver implements CommandProcessor {
     }
 
     // The following union operation returns a union, which traverses over the
-    // first set once and then  then over each element of second set, in order, 
+    // first set once and then  then over each element of second set, in order,
     // that is not contained in first. This means it doesn't replace anything
     // in first set, and would preserve the WriteType in WriteEntity in first
     // set in case of outputs list.
@@ -1239,7 +1239,7 @@ public class Driver implements CommandProcessor {
           desc.setStatementId(queryTxnMgr.getWriteIdAndIncrement());
         }
       }
-      /*It's imperative that {@code acquireLocks()} is called for all commands so that 
+      /*It's imperative that {@code acquireLocks()} is called for all commands so that
       HiveTxnManager can transition its state machine correctly*/
       queryTxnMgr.acquireLocks(plan, ctx, userFromUGI, lDrvState);
       if(queryTxnMgr.recordSnapshot(plan)) {

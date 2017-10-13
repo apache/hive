@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore;
 
 
 import com.codahale.metrics.Counter;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ObjectStore.RetryingExecutor;
@@ -87,6 +88,15 @@ public class TestObjectStore {
   private static final String ROLE1 = "testobjectstorerole1";
   private static final String ROLE2 = "testobjectstorerole2";
   private static final Logger LOG = LoggerFactory.getLogger(TestObjectStore.class.getName());
+
+  private static final class LongSupplier implements Supplier<Long> {
+    public long value = 0;
+
+    @Override
+    public Long get() {
+      return value;
+    }
+  }
 
   public static class MockPartitionExpressionProxy implements PartitionExpressionProxy {
     @Override
@@ -276,6 +286,12 @@ public class TestObjectStore {
     objectStore.dropDatabase(DB1);
   }
 
+  private StorageDescriptor createFakeSd(String location) {
+    return new StorageDescriptor(null, location, null, null, false, 0,
+        new SerDeInfo("SerDeName", "serializationLib", null), null, null, null);
+  }
+
+
   /**
    * Tests partition operations
    */
@@ -283,7 +299,7 @@ public class TestObjectStore {
   public void testPartitionOps() throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
     Database db1 = new Database(DB1, "description", "locationurl", null);
     objectStore.createDatabase(db1);
-    StorageDescriptor sd = new StorageDescriptor(null, "location", null, null, false, 0, new SerDeInfo("SerDeName", "serializationLib", null), null, null, null);
+    StorageDescriptor sd = createFakeSd("location");
     HashMap<String, String> tableParams = new HashMap<>();
     tableParams.put("EXTERNAL", "false");
     FieldSchema partitionKey1 = new FieldSchema("Country", ColumnType.STRING_TYPE_NAME, "");
@@ -381,7 +397,7 @@ public class TestObjectStore {
     Counter directSqlErrors =
         Metrics.getRegistry().getCounters().get(MetricsConstants.DIRECTSQL_ERRORS);
 
-    objectStore.new GetDbHelper("foo", null, true, true) {
+    objectStore.new GetDbHelper("foo", true, true) {
       @Override
       protected Database getSqlResult(ObjectStore.GetHelper<Database> ctx) throws MetaException {
         return null;
@@ -396,7 +412,7 @@ public class TestObjectStore {
 
     Assert.assertEquals(0, directSqlErrors.getCount());
 
-    objectStore.new GetDbHelper("foo", null, true, true) {
+    objectStore.new GetDbHelper("foo", true, true) {
       @Override
       protected Database getSqlResult(ObjectStore.GetHelper<Database> ctx) throws MetaException {
         throw new RuntimeException();

@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
@@ -387,7 +389,10 @@ public class AcidUtils {
     public static final String SPLIT_UPDATE_STRING = "split_update";
     public static final int HASH_BASED_MERGE_BIT = 0x02;
     public static final String HASH_BASED_MERGE_STRING = "hash_merge";
+    public static final int INSERT_ONLY_BIT = 0x04;
+    public static final String INSERT_ONLY_STRING = "insert_only";
     public static final String DEFAULT_VALUE_STRING = TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
+    public static final String INSERTONLY_VALUE_STRING = TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY;
 
     private AcidOperationalProperties() {
     }
@@ -402,6 +407,18 @@ public class AcidUtils {
       AcidOperationalProperties obj = new AcidOperationalProperties();
       obj.setSplitUpdate(true);
       obj.setHashBasedMerge(false);
+      obj.setInsertOnly(false);
+      return obj;
+    }
+
+    /**
+     * Returns an acidOperationalProperties object for tables that uses ACID framework but only
+     * supports INSERT operation and does not require ORC or bucketing
+     * @return the acidOperationalProperties object
+     */
+    public static AcidOperationalProperties getInsertOnly() {
+      AcidOperationalProperties obj = new AcidOperationalProperties();
+      obj.setInsertOnly(true);
       return obj;
     }
 
@@ -416,6 +433,9 @@ public class AcidUtils {
       }
       if (propertiesStr.equalsIgnoreCase(DEFAULT_VALUE_STRING)) {
         return AcidOperationalProperties.getDefault();
+      }
+      if (propertiesStr.equalsIgnoreCase(INSERTONLY_VALUE_STRING)) {
+        return AcidOperationalProperties.getInsertOnly();
       }
       AcidOperationalProperties obj = new AcidOperationalProperties();
       String[] options = propertiesStr.split("\\|");
@@ -449,6 +469,9 @@ public class AcidUtils {
       if ((properties & HASH_BASED_MERGE_BIT)  > 0) {
         obj.setHashBasedMerge(true);
       }
+      if ((properties & INSERT_ONLY_BIT) > 0) {
+        obj.setInsertOnly(true);
+      }
       return obj;
     }
 
@@ -477,12 +500,22 @@ public class AcidUtils {
       return this;
     }
 
+    public AcidOperationalProperties setInsertOnly(boolean isInsertOnly) {
+      description = (isInsertOnly
+              ? (description | INSERT_ONLY_BIT) : (description & ~INSERT_ONLY_BIT));
+      return this;
+    }
+
     public boolean isSplitUpdate() {
       return (description & SPLIT_UPDATE_BIT) > 0;
     }
 
     public boolean isHashBasedMerge() {
       return (description & HASH_BASED_MERGE_BIT) > 0;
+    }
+
+    public boolean isInsertOnly() {
+      return (description & INSERT_ONLY_BIT) > 0;
     }
 
     public int toInt() {
@@ -497,6 +530,9 @@ public class AcidUtils {
       }
       if (isHashBasedMerge()) {
         str.append("|" + HASH_BASED_MERGE_STRING);
+      }
+      if (isInsertOnly()) {
+        str.append("|" + INSERT_ONLY_STRING);
       }
       return str.toString();
     }
@@ -532,6 +568,12 @@ public class AcidUtils {
      * more up to date ones.  Not {@code null}.
      */
     List<FileStatus> getObsolete();
+
+    /**
+     * Get the list of directories that has nothing but aborted transactions.
+     * @return the list of aborted directories
+     */
+    List<FileStatus> getAbortedDirectories();
   }
 
   public static class ParsedDelta implements Comparable<ParsedDelta> {
@@ -793,21 +835,22 @@ public class AcidUtils {
                                        boolean useFileIds,
                                        boolean ignoreEmptyFiles
                                        ) throws IOException {
-    return getAcidState(directory, conf, txnList, Ref.from(useFileIds), ignoreEmptyFiles);
+    return getAcidState(directory, conf, txnList, Ref.from(useFileIds), ignoreEmptyFiles, null);
   }
 
   public static Directory getAcidState(Path directory,
                                        Configuration conf,
                                        ValidTxnList txnList,
                                        Ref<Boolean> useFileIds,
-                                       boolean ignoreEmptyFiles
-                                       ) throws IOException {
+                                       boolean ignoreEmptyFiles,
+                                       Map<String, String> tblproperties) throws IOException {
     FileSystem fs = directory.getFileSystem(conf);
     // The following 'deltas' includes all kinds of delta files including insert & delete deltas.
     final List<ParsedDelta> deltas = new ArrayList<ParsedDelta>();
     List<ParsedDelta> working = new ArrayList<ParsedDelta>();
     List<FileStatus> originalDirectories = new ArrayList<FileStatus>();
     final List<FileStatus> obsolete = new ArrayList<FileStatus>();
+    final List<FileStatus> abortedDirectories = new ArrayList<>();
     List<HdfsFileStatusWithId> childrenWithId = null;
     Boolean val = useFileIds.value;
     if (val == null || val) {
@@ -827,14 +870,14 @@ public class AcidUtils {
     final List<HdfsFileStatusWithId> original = new ArrayList<>();
     if (childrenWithId != null) {
       for (HdfsFileStatusWithId child : childrenWithId) {
-        getChildState(child.getFileStatus(), child, txnList, working,
-            originalDirectories, original, obsolete, bestBase, ignoreEmptyFiles);
+        getChildState(child.getFileStatus(), child, txnList, working, originalDirectories, original,
+            obsolete, bestBase, ignoreEmptyFiles, abortedDirectories, tblproperties);
       }
     } else {
       List<FileStatus> children = HdfsUtils.listLocatedStatus(fs, directory, hiddenFileFilter);
       for (FileStatus child : children) {
-        getChildState(
-            child, null, txnList, working, originalDirectories, original, obsolete, bestBase, ignoreEmptyFiles);
+        getChildState(child, null, txnList, working, originalDirectories, original, obsolete,
+            bestBase, ignoreEmptyFiles, abortedDirectories, tblproperties);
       }
     }
 
@@ -954,6 +997,11 @@ public class AcidUtils {
       public List<FileStatus> getObsolete() {
         return obsolete;
       }
+
+      @Override
+      public List<FileStatus> getAbortedDirectories() {
+        return abortedDirectories;
+      }
     };
   }
   /**
@@ -974,7 +1022,7 @@ public class AcidUtils {
   private static void getChildState(FileStatus child, HdfsFileStatusWithId childWithId,
       ValidTxnList txnList, List<ParsedDelta> working, List<FileStatus> originalDirectories,
       List<HdfsFileStatusWithId> original, List<FileStatus> obsolete, TxnBase bestBase,
-      boolean ignoreEmptyFiles) throws IOException {
+      boolean ignoreEmptyFiles, List<FileStatus> aborted, Map<String, String> tblproperties) throws IOException {
     Path p = child.getPath();
     String fn = p.getName();
     if (fn.startsWith(BASE_PREFIX) && child.isDir()) {
@@ -1003,6 +1051,10 @@ public class AcidUtils {
       String deltaPrefix =
               (fn.startsWith(DELTA_PREFIX)) ? DELTA_PREFIX : DELETE_DELTA_PREFIX;
       ParsedDelta delta = parseDelta(child, deltaPrefix);
+      if (tblproperties != null && AcidUtils.isInsertOnlyTable(tblproperties) &&
+          ValidTxnList.RangeResponse.ALL == txnList.isTxnRangeAborted(delta.minTransaction, delta.maxTransaction)) {
+        aborted.add(child);
+      }
       if (txnList.isTxnRangeValid(delta.minTransaction,
           delta.maxTransaction) !=
           ValidTxnList.RangeResponse.NONE) {
@@ -1156,6 +1208,10 @@ public class AcidUtils {
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
 
+  public static boolean isFullAcidTable(Table table) {
+    return isAcidTable(table) && !AcidUtils.isInsertOnlyTable(table.getParameters());
+  }
+
   /**
    * Sets the acidOperationalProperties in the configuration object argument.
    * @param conf Mutable configuration object
@@ -1269,5 +1325,57 @@ public class AcidUtils {
      * This should be very unusual.
      */
     throw new IOException(lengths + " found but is not readable.  Consider waiting or orcfiledump --recover");
+  }
+
+
+  /**
+   * Checks if a table is an ACID table that only supports INSERT, but not UPDATE/DELETE
+   * @param params table properties
+   * @return true if table is an INSERT_ONLY table, false otherwise
+   */
+  public static boolean isInsertOnlyTable(Map<String, String> params) {
+    return isInsertOnlyTable(params, false);
+  }
+
+  // TODO [MM gap]: CTAS may currently be broken. It used to work. See the old code, and why isCtas isn't used?
+  public static boolean isInsertOnlyTable(Map<String, String> params, boolean isCtas) {
+    String transactionalProp = params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
+  }
+
+  public static boolean isInsertOnlyTable(Properties params) {
+    String transactionalProp = params.getProperty(
+        hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
+  }
+
+   /** The method for altering table props; may set the table to MM, non-MM, or not affect MM. */
+  public static Boolean isToInsertOnlyTable(Map<String, String> props) {
+    // Note: Setting these separately is a very hairy issue in certain combinations, since we
+    //       cannot decide what type of table this becomes without taking both into account, and
+    //       in many cases the conversion might be illegal.
+    //       The only thing we allow is tx = true w/o tx-props, for backward compat.
+    String transactional = props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    if (transactional == null && transactionalProp == null) return null; // Not affected.
+    boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
+    if (transactionalProp == null) {
+      if (isSetToTxn) return false; // Assume the full ACID table.
+      throw new RuntimeException("Cannot change '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL
+          + "' without '" + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "'");
+    }
+    if (!"insert_only".equalsIgnoreCase(transactionalProp)) return false; // Not MM.
+    if (!isSetToTxn) {
+      throw new RuntimeException("Cannot set '"
+          + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "' to 'insert_only' without "
+          + "setting '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL + "' to 'true'");
+    }
+    return true;
+  }
+
+  public static boolean isRemovedInsertOnlyTable(Set<String> removedSet) {
+    boolean hasTxn = removedSet.contains(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL),
+        hasProps = removedSet.contains(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return hasTxn || hasProps;
   }
 }

@@ -39,6 +39,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
 
   // These constants are also imported by org.apache.hadoop.hive.ql.io.AcidUtils.
   public static final String DEFAULT_TRANSACTIONAL_PROPERTY = "default";
+  public static final String INSERTONLY_TRANSACTIONAL_PROPERTY = "insert_only";
 
   TransactionalValidationListener(Configuration conf) {
     super(conf);
@@ -117,7 +118,10 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     if ("true".equalsIgnoreCase(transactionalValue) && !"true".equalsIgnoreCase(oldTransactionalValue)) {
       //only need to check conformance if alter table enabled aicd
       if (!conformToAcid(newTable)) {
-        throw new MetaException("The table must be stored using an ACID compliant format (such as ORC)");
+        // INSERT_ONLY tables don't have to conform to ACID requirement like ORC or bucketing
+        if (transactionalPropertiesValue == null || !"insert_only".equalsIgnoreCase(transactionalPropertiesValue)) {
+          throw new MetaException("The table must be stored using an ACID compliant format (such as ORC)");
+        }
       }
 
       if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
@@ -135,7 +139,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       hasValidTransactionalValue = true;
     }
 
-    if (!hasValidTransactionalValue) {
+    if (!hasValidTransactionalValue && !MetaStoreUtils.isInsertOnlyTableParam(oldTable.getParameters())) {
       // if here, there is attempt to set transactional to something other than 'true'
       // and NOT the same value it was before
       throw new MetaException("TBLPROPERTIES with 'transactional'='true' cannot be unset");
@@ -152,8 +156,9 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
         // 'transactional_properties' must match the old value. Any attempt to alter the previous
         // value will throw an error. An exception will still be thrown if the previous value was
         // null and an attempt is made to set it. This behaviour can be changed in the future.
-        if (oldTransactionalPropertiesValue == null
-            || !oldTransactionalPropertiesValue.equalsIgnoreCase(transactionalPropertiesValue) ) {
+        if ((oldTransactionalPropertiesValue == null
+            || !oldTransactionalPropertiesValue.equalsIgnoreCase(transactionalPropertiesValue))
+            && !MetaStoreUtils.isInsertOnlyTableParam(oldTable.getParameters())) {
           throw new MetaException("TBLPROPERTIES with 'transactional_properties' cannot be "
               + "altered after the table is created");
         }
@@ -172,31 +177,39 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     if (parameters == null || parameters.isEmpty()) {
       return;
     }
-    String transactionalValue = null;
-    boolean transactionalPropFound = false;
+    String transactional = null;
+    String transactionalProperties = null;
     Set<String> keys = new HashSet<>(parameters.keySet());
     for(String key : keys) {
-      if(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.equalsIgnoreCase(key)) {
-        transactionalPropFound = true;
-        transactionalValue = parameters.get(key);
+      // Get the "transactional" tblproperties value
+      if (hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.equalsIgnoreCase(key)) {
+        transactional = parameters.get(key);
         parameters.remove(key);
+      }
+
+      // Get the "transactional_properties" tblproperties value
+      if (hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES.equalsIgnoreCase(key)) {
+        transactionalProperties = parameters.get(key);
       }
     }
 
-    if (!transactionalPropFound) {
+    if (transactional == null) {
       return;
     }
 
-    if ("false".equalsIgnoreCase(transactionalValue)) {
+    if ("false".equalsIgnoreCase(transactional)) {
       // just drop transactional=false.  For backward compatibility in case someone has scripts
       // with transactional=false
       LOG.info("'transactional'='false' is no longer a valid property and will be ignored");
       return;
     }
 
-    if ("true".equalsIgnoreCase(transactionalValue)) {
+    if ("true".equalsIgnoreCase(transactional)) {
       if (!conformToAcid(newTable)) {
-        throw new MetaException("The table must be stored using an ACID compliant format (such as ORC)");
+        // INSERT_ONLY tables don't have to conform to ACID requirement like ORC or bucketing
+        if (transactionalProperties == null || !"insert_only".equalsIgnoreCase(transactionalProperties)) {
+          throw new MetaException("The table must be stored using an ACID compliant format (such as ORC)");
+        }
       }
 
       if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
@@ -210,7 +223,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       return;
     }
 
-    // transactional prop is found, but the value is not in expected range
+    // transactional is found, but the value is not in expected range
     throw new MetaException("'transactional' property of TBLPROPERTIES may only have value 'true'");
   }
 
@@ -273,6 +286,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     boolean isValid = false;
     switch (transactionalProperties) {
       case DEFAULT_TRANSACTIONAL_PROPERTY:
+      case INSERTONLY_TRANSACTIONAL_PROPERTY:
         isValid = true;
         break;
       default:

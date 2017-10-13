@@ -254,6 +254,7 @@ import com.google.common.math.IntMath;
 
 public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
+
   public static final String DUMMY_DATABASE = "_dummy_database";
   public static final String DUMMY_TABLE = "_dummy_table";
   public static final String SUBQUERY_TAG_1 = "-subquery1";
@@ -276,7 +277,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private final Map<JoinOperator, QBJoinTree> joinContext;
   private final Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext;
   private final HashMap<TableScanOperator, Table> topToTable;
-  private final Map<FileSinkOperator, Table> fsopToTable;
   private final List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting;
   private final HashMap<TableScanOperator, Map<String, String>> topToTableProps;
   private QB qb;
@@ -374,7 +374,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     smbMapJoinContext = new HashMap<SMBMapJoinOperator, QBJoinTree>();
     // Must be deterministic order map for consistent q-test output across Java versions
     topToTable = new LinkedHashMap<TableScanOperator, Table>();
-    fsopToTable = new HashMap<FileSinkOperator, Table>();
     reduceSinkOperatorsAddedByEnforceBucketingSorting = new ArrayList<ReduceSinkOperator>();
     topToTableProps = new HashMap<TableScanOperator, Map<String, String>>();
     destTableId = 1;
@@ -438,7 +437,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opToPartToSkewedPruner.clear();
     opToSamplePruner.clear();
     nameToSplitSample.clear();
-    fsopToTable.clear();
     resultSchema = null;
     createVwDesc = null;
     viewsExpanded = null;
@@ -2030,6 +2028,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(alias));
         }
       }
+
      if (tab.isView()) {
         if (qb.getParseInfo().isAnalyzeCommand()) {
           throw new SemanticException(ErrorMsg.ANALYZE_VIEW.getMsg());
@@ -6712,7 +6711,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         nullOrder.append(sortOrder == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC ? 'a' : 'z');
       }
       input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(), nullOrder.toString(),
-              maxReducers, (AcidUtils.isAcidTable(dest_tab) ? getAcidType(dest) : AcidUtils.Operation.NOT_ACID));
+              maxReducers, (AcidUtils.isFullAcidTable(dest_tab) ?
+              getAcidType(table_desc.getOutputFileFormatClass(), dest) : AcidUtils.Operation.NOT_ACID));
       reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator)input.getParentOperators().get(0));
       ctx.setMultiFileSpray(multiFileSpray);
       ctx.setNumFiles(numFiles);
@@ -6790,78 +6790,40 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LoadTableDesc ltd = null;
     ListBucketingCtx lbCtx = null;
     Map<String, String> partSpec = null;
+    boolean isMmTable = false, isMmCtas = false;
+    Long txnId = null;
 
     switch (dest_type.intValue()) {
     case QBMetaData.DEST_TABLE: {
 
       dest_tab = qbm.getDestTableForAlias(dest);
-      destTableIsAcid = AcidUtils.isAcidTable(dest_tab);
+      destTableIsAcid = AcidUtils.isFullAcidTable(dest_tab);
       destTableIsTemporary = dest_tab.isTemporary();
 
       // Is the user trying to insert into a external tables
-      if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_INSERT_INTO_EXTERNAL_TABLES)) &&
-          (dest_tab.getTableType().equals(TableType.EXTERNAL_TABLE))) {
-        throw new SemanticException(
-            ErrorMsg.INSERT_EXTERNAL_TABLE.getMsg(dest_tab.getTableName()));
-      }
+      checkExternalTable(dest_tab);
 
       partSpec = qbm.getPartSpecForAlias(dest);
       dest_path = dest_tab.getPath();
 
-      // If the query here is an INSERT_INTO and the target is an immutable table,
-      // verify that our destination is empty before proceeding
-      if (dest_tab.isImmutable() &&
-          qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),dest_tab.getTableName())){
-        try {
-          FileSystem fs = dest_path.getFileSystem(conf);
-          if (! MetaStoreUtils.isDirEmpty(fs,dest_path)){
-            LOG.warn("Attempted write into an immutable table : "
-                + dest_tab.getTableName() + " : " + dest_path);
-            throw new SemanticException(
-                ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(dest_tab.getTableName()));
-          }
-        } catch (IOException ioe) {
-            LOG.warn("Error while trying to determine if immutable table has any data : "
-                + dest_tab.getTableName() + " : " + dest_path);
-          throw new SemanticException(ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(ioe.getMessage()));
-        }
-      }
+      checkImmutableTable(qb, dest_tab, dest_path, false);
 
-      // check for partition
-      List<FieldSchema> parts = dest_tab.getPartitionKeys();
-      if (parts != null && parts.size() > 0) { // table is partitioned
-        if (partSpec == null || partSpec.size() == 0) { // user did NOT specify partition
-          throw new SemanticException(generateErrorMessage(
-              qb.getParseInfo().getDestForClause(dest),
-              ErrorMsg.NEED_PARTITION_ERROR.getMsg()));
-        }
-        dpCtx = qbm.getDPCtx(dest);
-        if (dpCtx == null) {
-          dest_tab.validatePartColumnNames(partSpec, false);
-          dpCtx = new DynamicPartitionCtx(dest_tab, partSpec,
-              conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
-              conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
-          qbm.setDPCtx(dest, dpCtx);
-        }
-
-        if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)) { // allow DP
-          throw new SemanticException(generateErrorMessage(
-              qb.getParseInfo().getDestForClause(dest),
-              ErrorMsg.DYNAMIC_PARTITION_DISABLED.getMsg()));
-        }
-        if (dpCtx.getSPPath() != null) {
-          dest_path = new Path(dest_tab.getPath(), dpCtx.getSPPath());
-        }
-        if ((dest_tab.getNumBuckets() > 0)) {
-          dpCtx.setNumBuckets(dest_tab.getNumBuckets());
-        }
+      // Check for dynamic partitions.
+      dpCtx = checkDynPart(qb, qbm, dest_tab, partSpec, dest);
+      if (dpCtx != null && dpCtx.getSPPath() != null) {
+        dest_path = new Path(dest_tab.getPath(), dpCtx.getSPPath());
       }
 
       boolean isNonNativeTable = dest_tab.isNonNative();
-      if (isNonNativeTable) {
+      isMmTable = AcidUtils.isInsertOnlyTable(dest_tab.getParameters());
+      if (isNonNativeTable || isMmTable) {
         queryTmpdir = dest_path;
       } else {
         queryTmpdir = ctx.getTempDirForPath(dest_path, true);
+      }
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("create filesink w/DEST_TABLE specifying " + queryTmpdir
+            + " from " + dest_path);
       }
       if (dpCtx != null) {
         // set the root of the temporary path where dynamic partition columns will populate
@@ -6889,10 +6851,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
           checkAcidConstraints(qb, table_desc, dest_tab);
         }
-        Long currentTransactionId = acidOp == Operation.NOT_ACID ? null :
+        if (AcidUtils.isInsertOnlyTable(table_desc.getProperties())) {
+          acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
+        }
+        if (isMmTable) {
+          txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
+        } else {
+          txnId = acidOp == Operation.NOT_ACID ? null :
             SessionState.get().getTxnMgr().getCurrentTxnId();
-        ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp,
-            currentTransactionId);
+        }
+        boolean isReplace = !qb.getParseInfo().isInsertIntoTable(
+            dest_tab.getDbName(), dest_tab.getTableName());
+        ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp, isReplace, txnId);
         // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
         // deltas and base and leave them up to the cleaner to clean up
         LoadFileType loadType = (!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
@@ -6911,45 +6881,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         createInsertDesc(dest_tab, overwrite);
       }
 
-      WriteEntity output = null;
-
-      // Here only register the whole table for post-exec hook if no DP present
-      // in the case of DP, we will register WriteEntity in MoveTask when the
-      // list of dynamically created partitions are known.
-      if ((dpCtx == null || dpCtx.getNumDPCols() == 0)) {
-        output = new WriteEntity(dest_tab,  determineWriteType(ltd, isNonNativeTable, dest));
-        if (!outputs.add(output)) {
-          throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
-              .getMsg(dest_tab.getTableName()));
-        }
-      }
-      if ((dpCtx != null) && (dpCtx.getNumDPCols() >= 0)) {
-        // No static partition specified
-        if (dpCtx.getNumSPCols() == 0) {
-          output = new WriteEntity(dest_tab, determineWriteType(ltd, isNonNativeTable, dest), false);
-          outputs.add(output);
-          output.setDynamicPartitionWrite(true);
-        }
-        // part of the partition specified
-        // Create a DummyPartition in this case. Since, the metastore does not store partial
-        // partitions currently, we need to store dummy partitions
-        else {
-          try {
-            String ppath = dpCtx.getSPPath();
-            ppath = ppath.substring(0, ppath.length() - 1);
-            DummyPartition p =
-                new DummyPartition(dest_tab, dest_tab.getDbName()
-                    + "@" + dest_tab.getTableName() + "@" + ppath,
-                    partSpec);
-            output = new WriteEntity(p, getWriteType(dest), false);
-            output.setDynamicPartitionWrite(true);
-            outputs.add(output);
-          } catch (HiveException e) {
-            throw new SemanticException(e.getMessage(), e);
-          }
-        }
-      }
-
+      WriteEntity output = generateTableWriteEntity(
+          dest, dest_tab, partSpec, ltd, dpCtx, isNonNativeTable);
       ctx.getLoadTableOutputMap().put(ltd, output);
       break;
     }
@@ -6957,41 +6890,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       dest_part = qbm.getDestPartitionForAlias(dest);
       dest_tab = dest_part.getTable();
-      destTableIsAcid = AcidUtils.isAcidTable(dest_tab);
-      if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_INSERT_INTO_EXTERNAL_TABLES)) &&
-          dest_tab.getTableType().equals(TableType.EXTERNAL_TABLE)) {
-        throw new SemanticException(
-            ErrorMsg.INSERT_EXTERNAL_TABLE.getMsg(dest_tab.getTableName()));
-      }
+      destTableIsAcid = AcidUtils.isFullAcidTable(dest_tab);
+
+      checkExternalTable(dest_tab);
 
       Path tabPath = dest_tab.getPath();
       Path partPath = dest_part.getDataLocation();
 
-      // If the query here is an INSERT_INTO and the target is an immutable table,
-      // verify that our destination is empty before proceeding
-      if (dest_tab.isImmutable() &&
-          qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),dest_tab.getTableName())){
-        try {
-          FileSystem fs = partPath.getFileSystem(conf);
-          if (! MetaStoreUtils.isDirEmpty(fs,partPath)){
-            LOG.warn("Attempted write into an immutable table partition : "
-                + dest_tab.getTableName() + " : " + partPath);
-            throw new SemanticException(
-                ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(dest_tab.getTableName()));
-          }
-        } catch (IOException ioe) {
-            LOG.warn("Error while trying to determine if immutable table partition has any data : "
-                + dest_tab.getTableName() + " : " + partPath);
-          throw new SemanticException(ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(ioe.getMessage()));
-        }
-      }
+      checkImmutableTable(qb, dest_tab, partPath, true);
 
       // if the table is in a different dfs than the partition,
       // replace the partition's dfs with the table's dfs.
       dest_path = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
           .getAuthority(), partPath.toUri().getPath());
 
-      queryTmpdir = ctx.getTempDirForPath(dest_path, true);
+      isMmTable = AcidUtils.isInsertOnlyTable(dest_tab.getParameters());
+      queryTmpdir = isMmTable ? dest_path : ctx.getTempDirForPath(dest_path, true);
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("create filesink w/DEST_PARTITION specifying "
+            + queryTmpdir + " from " + dest_path);
+      }
       table_desc = Utilities.getTableDesc(dest_tab);
 
       // Add sorting/bucketing if needed
@@ -7009,10 +6927,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
         checkAcidConstraints(qb, table_desc, dest_tab);
       }
-      Long currentTransactionId = (acidOp == Operation.NOT_ACID) ? null :
+      if (AcidUtils.isInsertOnlyTable(dest_part.getTable().getParameters())) {
+        acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
+      }
+      if (isMmTable) {
+        txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
+      } else {
+        txnId = (acidOp == Operation.NOT_ACID) ? null :
           SessionState.get().getTxnMgr().getCurrentTxnId();
-      ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp,
-          currentTransactionId);
+      }
+      ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp, txnId);
       // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
       // deltas and base and leave them up to the cleaner to clean up
       LoadFileType loadType = (!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
@@ -7036,24 +6960,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case QBMetaData.DEST_DFS_FILE: {
       dest_path = new Path(qbm.getDestFileForAlias(dest));
 
-      if (isLocal) {
-        // for local directory - we always write to map-red intermediate
-        // store and then copy to local fs
-        queryTmpdir = ctx.getMRTmpPath();
-      } else {
-        // otherwise write to the file system implied by the directory
-        // no copy is required. we may want to revisit this policy in future
-
-        try {
-          Path qPath = FileUtils.makeQualified(dest_path, conf);
-          queryTmpdir = ctx.getTempDirForPath(qPath, true);
-        } catch (Exception e) {
-          throw new SemanticException("Error creating temporary folder on: "
-              + dest_path, e);
-        }
-      }
-      String cols = "";
-      String colTypes = "";
       ArrayList<ColumnInfo> colInfos = inputRR.getColumnInfos();
 
       // CTAS case: the file output format and serde are defined by the create
@@ -7061,67 +6967,44 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       List<FieldSchema> field_schemas = null;
       CreateTableDesc tblDesc = qb.getTableDesc();
       CreateViewDesc viewDesc = qb.getViewDesc();
+      boolean isCtas = false;
       if (tblDesc != null) {
         field_schemas = new ArrayList<FieldSchema>();
         destTableIsTemporary = tblDesc.isTemporary();
         destTableIsMaterialization = tblDesc.isMaterialization();
+        if (!destTableIsTemporary && AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
+          isMmTable = isMmCtas = true;
+          txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
+          tblDesc.setInitialMmWriteId(txnId);
+        }
       } else if (viewDesc != null) {
         field_schemas = new ArrayList<FieldSchema>();
         destTableIsTemporary = false;
       }
 
-      boolean first = true;
-      for (ColumnInfo colInfo : colInfos) {
-        String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
-
-        if (nm[1] != null) { // non-null column alias
-          colInfo.setAlias(nm[1]);
-        }
-
-        String colName = colInfo.getInternalName();  //default column name
-        if (field_schemas != null) {
-          FieldSchema col = new FieldSchema();
-          if (!("".equals(nm[0])) && nm[1] != null) {
-            colName = unescapeIdentifier(colInfo.getAlias()).toLowerCase(); // remove ``
+      if (isLocal) {
+        assert !isMmTable;
+        // for local directory - we always write to map-red intermediate
+        // store and then copy to local fs
+        queryTmpdir = ctx.getMRTmpPath();
+      } else {
+        // otherwise write to the file system implied by the directory
+        // no copy is required. we may want to revisit this policy in future
+        try {
+          Path qPath = FileUtils.makeQualified(dest_path, conf);
+          queryTmpdir = isMmTable ? qPath : ctx.getTempDirForPath(qPath, true);
+          if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+            Utilities.FILE_OP_LOGGER.trace("Setting query directory " + queryTmpdir
+                  + " from " + dest_path + " (" + isMmTable + ")");
           }
-          colName = fixCtasColumnName(colName);
-          col.setName(colName);
-          String typeName = colInfo.getType().getTypeName();
-          // CTAS should NOT create a VOID type
-          if (typeName.equals(serdeConstants.VOID_TYPE_NAME)) {
-              throw new SemanticException(ErrorMsg.CTAS_CREATES_VOID_TYPE
-              .getMsg(colName));
-          }
-          col.setType(typeName);
-          field_schemas.add(col);
-        }
-
-        if (!first) {
-          cols = cols.concat(",");
-          colTypes = colTypes.concat(":");
-        }
-
-        first = false;
-        cols = cols.concat(colName);
-
-        // Replace VOID type with string when the output is a temp table or
-        // local files.
-        // A VOID type can be generated under the query:
-        //
-        // select NULL from tt;
-        // or
-        // insert overwrite local directory "abc" select NULL from tt;
-        //
-        // where there is no column type to which the NULL value should be
-        // converted.
-        //
-        String tName = colInfo.getType().getTypeName();
-        if (tName.equals(serdeConstants.VOID_TYPE_NAME)) {
-          colTypes = colTypes.concat(serdeConstants.STRING_TYPE_NAME);
-        } else {
-          colTypes = colTypes.concat(tName);
+        } catch (Exception e) { 
+          throw new SemanticException("Error creating temporary folder on: "
+              + dest_path, e);
         }
       }
+
+      ColsAndTypes ct = deriveFileSinkColTypes(inputRR, field_schemas);
+      String cols = ct.cols, colTypes = ct.colTypes;
 
       // update the create table descriptor with the resulting schema.
       if (tblDesc != null) {
@@ -7141,8 +7024,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isDfsDir = (dest_type.intValue() == QBMetaData.DEST_DFS_FILE);
+      // Create LFD even for MM CTAS - it's a no-op move, but it still seems to be used for stats.
       loadFileWork.add(new LoadFileDesc(tblDesc, viewDesc, queryTmpdir, dest_path, isDfsDir, cols,
-          colTypes, destTableIsAcid ? Operation.INSERT : Operation.NOT_ACID));
+          colTypes, destTableIsAcid ? Operation.INSERT : Operation.NOT_ACID, isMmCtas));
       if (tblDesc == null) {
         if (viewDesc != null) {
           table_desc = PlanUtils.getTableDesc(viewDesc, cols, colTypes);
@@ -7228,23 +7112,137 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       genPartnCols(dest, input, qb, table_desc, dest_tab, rsCtx);
     }
 
-    FileSinkDesc fileSinkDesc = new FileSinkDesc(
-      queryTmpdir,
-      table_desc,
-      conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT),
-      currentTableId,
-      rsCtx.isMultiFileSpray(),
-      canBeMerged,
-      rsCtx.getNumFiles(),
-      rsCtx.getTotalFiles(),
-      rsCtx.getPartnCols(),
-      dpCtx,
-      dest_path);
+    FileSinkDesc fileSinkDesc = createFileSinkDesc(dest, table_desc, dest_part,
+        dest_path, currentTableId, destTableIsAcid, destTableIsTemporary,
+        destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
+        canBeMerged, dest_tab, txnId, isMmCtas, dest_type);
+    if (isMmCtas) {
+      // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
+      tableDesc.setWriter(fileSinkDesc);
+    }
+
+    if (SessionState.get().isHiveServerQuery() &&
+      null != table_desc &&
+      table_desc.getSerdeClassName().equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName()) &&
+      HiveConf.getBoolVar(conf,HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS)) {
+        fileSinkDesc.setIsUsingThriftJDBCBinarySerDe(true);
+    } else {
+        fileSinkDesc.setIsUsingThriftJDBCBinarySerDe(false);
+    }
+
+    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
+        fileSinkDesc, fsRS, input), inputRR);
+
+    handleLineage(ltd, output);
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Created FileSink Plan for clause: " + dest + "dest_path: "
+          + dest_path + " row schema: " + inputRR.toString());
+    }
+
+    FileSinkOperator fso = (FileSinkOperator) output;
+    fso.getConf().setTable(dest_tab);
+    // the following code is used to collect column stats when
+    // hive.stats.autogather=true
+    // and it is an insert overwrite or insert into table
+    if (dest_tab != null && conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
+        && conf.getBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER)
+        && ColumnStatsAutoGatherContext.canRunAutogatherStats(fso)) {
+      if (dest_type.intValue() == QBMetaData.DEST_TABLE) {
+        genAutoColumnStatsGatheringPipeline(qb, table_desc, partSpec, input, qb.getParseInfo()
+            .isInsertIntoTable(dest_tab.getDbName(), dest_tab.getTableName()));
+      } else if (dest_type.intValue() == QBMetaData.DEST_PARTITION) {
+        genAutoColumnStatsGatheringPipeline(qb, table_desc, dest_part.getSpec(), input, qb
+            .getParseInfo().isInsertIntoTable(dest_tab.getDbName(), dest_tab.getTableName()));
+
+      }
+    }
+    return output;
+  }
+
+  private ColsAndTypes deriveFileSinkColTypes(
+      RowResolver inputRR, List<FieldSchema> field_schemas) throws SemanticException {
+    ColsAndTypes result = new ColsAndTypes("", "");
+    ArrayList<ColumnInfo> colInfos = inputRR.getColumnInfos();
+    boolean first = true;
+    for (ColumnInfo colInfo : colInfos) {
+      String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
+
+      if (nm[1] != null) { // non-null column alias
+        colInfo.setAlias(nm[1]);
+      }
+
+      String colName = colInfo.getInternalName();  //default column name
+      if (field_schemas != null) {
+        FieldSchema col = new FieldSchema();
+        if (!("".equals(nm[0])) && nm[1] != null) {
+          colName = unescapeIdentifier(colInfo.getAlias()).toLowerCase(); // remove ``
+        }
+        colName = fixCtasColumnName(colName);
+        col.setName(colName);
+        String typeName = colInfo.getType().getTypeName();
+        // CTAS should NOT create a VOID type
+        if (typeName.equals(serdeConstants.VOID_TYPE_NAME)) {
+            throw new SemanticException(ErrorMsg.CTAS_CREATES_VOID_TYPE.getMsg(colName));
+        }
+        col.setType(typeName);
+        field_schemas.add(col);
+      }
+
+      if (!first) {
+        result.cols = result.cols.concat(",");
+        result.colTypes = result.colTypes.concat(":");
+      }
+
+      first = false;
+      result.cols = result.cols.concat(colName);
+
+      // Replace VOID type with string when the output is a temp table or
+      // local files.
+      // A VOID type can be generated under the query:
+      //
+      // select NULL from tt;
+      // or
+      // insert overwrite local directory "abc" select NULL from tt;
+      //
+      // where there is no column type to which the NULL value should be
+      // converted.
+      //
+      String tName = colInfo.getType().getTypeName();
+      if (tName.equals(serdeConstants.VOID_TYPE_NAME)) {
+        result.colTypes = result.colTypes.concat(serdeConstants.STRING_TYPE_NAME);
+      } else {
+        result.colTypes = result.colTypes.concat(tName);
+      }
+    }
+    return result;
+  }
+
+  private FileSinkDesc createFileSinkDesc(String dest, TableDesc table_desc,
+      Partition dest_part, Path dest_path, int currentTableId,
+      boolean destTableIsAcid, boolean destTableIsTemporary,
+      boolean destTableIsMaterialization, Path queryTmpdir,
+      SortBucketRSCtx rsCtx, DynamicPartitionCtx dpCtx, ListBucketingCtx lbCtx,
+      RowSchema fsRS, boolean canBeMerged, Table dest_tab, Long mmWriteId, boolean isMmCtas,
+      Integer dest_type) throws SemanticException {
+    FileSinkDesc fileSinkDesc = new FileSinkDesc(queryTmpdir, table_desc,
+        conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT), currentTableId, rsCtx.isMultiFileSpray(),
+        canBeMerged, rsCtx.getNumFiles(), rsCtx.getTotalFiles(), rsCtx.getPartnCols(), dpCtx,
+        dest_path, mmWriteId, isMmCtas);
 
     boolean isHiveServerQuery = SessionState.get().isHiveServerQuery();
     fileSinkDesc.setHiveServerQuery(isHiveServerQuery);
     // If this is an insert, update, or delete on an ACID table then mark that so the
     // FileSinkOperator knows how to properly write to it.
+    boolean isDestInsertOnly = (dest_part != null && dest_part.getTable() != null &&
+        AcidUtils.isInsertOnlyTable(dest_part.getTable().getParameters()))
+        || (table_desc != null && AcidUtils.isInsertOnlyTable(table_desc.getProperties()));
+
+    if (isDestInsertOnly) {
+      fileSinkDesc.setWriteType(Operation.INSERT);
+      acidFileSinks.add(fileSinkDesc);
+    }
+
     if (destTableIsAcid) {
       AcidUtils.Operation wt = updating(dest) ? AcidUtils.Operation.UPDATE :
           (deleting(dest) ? AcidUtils.Operation.DELETE : AcidUtils.Operation.INSERT);
@@ -7302,19 +7300,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if (dpCtx != null) {
       fileSinkDesc.setStaticSpec(dpCtx.getSPPath());
     }
+    return fileSinkDesc;
+  }
 
-    if (isHiveServerQuery &&
-      null != table_desc &&
-      table_desc.getSerdeClassName().equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName()) &&
-      HiveConf.getBoolVar(conf,HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS)) {
-        fileSinkDesc.setIsUsingThriftJDBCBinarySerDe(true);
-    } else {
-        fileSinkDesc.setIsUsingThriftJDBCBinarySerDe(false);
-    }
-
-    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        fileSinkDesc, fsRS, input), inputRR);
-
+  private void handleLineage(LoadTableDesc ltd, Operator output)
+      throws SemanticException {
     if (ltd != null && SessionState.get() != null) {
       SessionState.get().getLineageState()
           .mapDirToOp(ltd.getSourcePath(), output);
@@ -7332,32 +7322,113 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       SessionState.get().getLineageState()
               .mapDirToOp(tlocation, output);
     }
+  }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Created FileSink Plan for clause: " + dest + "dest_path: "
-          + dest_path + " row schema: " + inputRR.toString());
+  private WriteEntity generateTableWriteEntity(String dest, Table dest_tab,
+      Map<String, String> partSpec, LoadTableDesc ltd,
+      DynamicPartitionCtx dpCtx, boolean isNonNativeTable)
+      throws SemanticException {
+    WriteEntity output = null;
+
+    // Here only register the whole table for post-exec hook if no DP present
+    // in the case of DP, we will register WriteEntity in MoveTask when the
+    // list of dynamically created partitions are known.
+    if ((dpCtx == null || dpCtx.getNumDPCols() == 0)) {
+      output = new WriteEntity(dest_tab, determineWriteType(ltd, isNonNativeTable, dest));
+      if (!outputs.add(output)) {
+        throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
+            .getMsg(dest_tab.getTableName()));
+      }
     }
 
-    FileSinkOperator fso = (FileSinkOperator) output;
-    fso.getConf().setTable(dest_tab);
-    fsopToTable.put(fso, dest_tab);
-    // the following code is used to collect column stats when
-    // hive.stats.autogather=true
-    // and it is an insert overwrite or insert into table
-    if (dest_tab != null && conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
-        && conf.getBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER)
-        && ColumnStatsAutoGatherContext.canRunAutogatherStats(fso)) {
-      if (dest_type.intValue() == QBMetaData.DEST_TABLE) {
-        genAutoColumnStatsGatheringPipeline(qb, table_desc, partSpec, input, qb.getParseInfo()
-            .isInsertIntoTable(dest_tab.getDbName(), dest_tab.getTableName()));
-      } else if (dest_type.intValue() == QBMetaData.DEST_PARTITION) {
-        genAutoColumnStatsGatheringPipeline(qb, table_desc, dest_part.getSpec(), input, qb
-            .getParseInfo().isInsertIntoTable(dest_tab.getDbName(), dest_tab.getTableName()));
-
+    if ((dpCtx != null) && (dpCtx.getNumDPCols() >= 0)) {
+      // No static partition specified
+      if (dpCtx.getNumSPCols() == 0) {
+        output = new WriteEntity(dest_tab, determineWriteType(ltd, isNonNativeTable, dest), false);
+        outputs.add(output);
+        output.setDynamicPartitionWrite(true);
+      }
+      // part of the partition specified
+      // Create a DummyPartition in this case. Since, the metastore does not store partial
+      // partitions currently, we need to store dummy partitions
+      else {
+        try {
+          String ppath = dpCtx.getSPPath();
+          ppath = ppath.substring(0, ppath.length() - 1);
+          DummyPartition p =
+              new DummyPartition(dest_tab, dest_tab.getDbName()
+                  + "@" + dest_tab.getTableName() + "@" + ppath,
+                  partSpec);
+          output = new WriteEntity(p, getWriteType(dest), false);
+          output.setDynamicPartitionWrite(true);
+          outputs.add(output);
+        } catch (HiveException e) {
+          throw new SemanticException(e.getMessage(), e);
+        }
       }
     }
     return output;
   }
+
+  private void checkExternalTable(Table dest_tab) throws SemanticException {
+    if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_INSERT_INTO_EXTERNAL_TABLES)) &&
+        (dest_tab.getTableType().equals(TableType.EXTERNAL_TABLE))) {
+      throw new SemanticException(
+          ErrorMsg.INSERT_EXTERNAL_TABLE.getMsg(dest_tab.getTableName()));
+    }
+  }
+
+  private void checkImmutableTable(QB qb, Table dest_tab, Path dest_path, boolean isPart)
+      throws SemanticException {
+    // If the query here is an INSERT_INTO and the target is an immutable table,
+    // verify that our destination is empty before proceeding
+    if (!dest_tab.isImmutable() || !qb.getParseInfo().isInsertIntoTable(
+        dest_tab.getDbName(), dest_tab.getTableName())) {
+      return;
+    }
+    try {
+      FileSystem fs = dest_path.getFileSystem(conf);
+      if (! MetaStoreUtils.isDirEmpty(fs,dest_path)){
+        LOG.warn("Attempted write into an immutable table : "
+            + dest_tab.getTableName() + " : " + dest_path);
+        throw new SemanticException(
+            ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(dest_tab.getTableName()));
+      }
+    } catch (IOException ioe) {
+        LOG.warn("Error while trying to determine if immutable table "
+            + (isPart ? "partition " : "") + "has any data : "  + dest_tab.getTableName()
+            + " : " + dest_path);
+      throw new SemanticException(ErrorMsg.INSERT_INTO_IMMUTABLE_TABLE.getMsg(ioe.getMessage()));
+    }
+  }
+
+  private DynamicPartitionCtx checkDynPart(QB qb, QBMetaData qbm, Table dest_tab,
+      Map<String, String> partSpec, String dest) throws SemanticException {
+    List<FieldSchema> parts = dest_tab.getPartitionKeys();
+    if (parts == null || parts.isEmpty()) return null; // table is not partitioned
+    if (partSpec == null || partSpec.size() == 0) { // user did NOT specify partition
+      throw new SemanticException(generateErrorMessage(qb.getParseInfo().getDestForClause(dest),
+          ErrorMsg.NEED_PARTITION_ERROR.getMsg()));
+    }
+    DynamicPartitionCtx dpCtx = qbm.getDPCtx(dest);
+    if (dpCtx == null) {
+      dest_tab.validatePartColumnNames(partSpec, false);
+      dpCtx = new DynamicPartitionCtx(dest_tab, partSpec,
+          conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
+          conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
+      qbm.setDPCtx(dest, dpCtx);
+    }
+
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)) { // allow DP
+      throw new SemanticException(generateErrorMessage(qb.getParseInfo().getDestForClause(dest),
+          ErrorMsg.DYNAMIC_PARTITION_DISABLED.getMsg()));
+    }
+    if ((dest_tab.getNumBuckets() > 0)) {
+      dpCtx.setNumBuckets(dest_tab.getNumBuckets());
+    }
+    return dpCtx;
+  }
+
 
   private void createInsertDesc(Table table, boolean overwrite) {
     Task<? extends Serializable>[] tasks = new Task[this.rootTasks.size()];
@@ -7412,9 +7483,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (table.getSortCols() != null && table.getSortCols().size() > 0) {
       throw new SemanticException(ErrorMsg.ACID_NO_SORTED_BUCKETS, table.getTableName());
     }
-
-
-
   }
 
   /**
@@ -10559,7 +10627,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (partitions != null) {
           for (Partition partn : partitions) {
             // inputs.add(new ReadEntity(partn)); // is this needed at all?
-	      LOG.info("XXX: adding part: "+partn);
+        LOG.info("XXX: adding part: "+partn);
             outputs.add(new WriteEntity(partn, WriteEntity.WriteType.DDL_NO_LOCK));
           }
         }
@@ -11983,7 +12051,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (p != null) {
         tbl = p.getTable();
       }
-      if (tbl != null && AcidUtils.isAcidTable(tbl)) {
+      if (tbl != null && (AcidUtils.isFullAcidTable(tbl) || AcidUtils.isInsertOnlyTable(tbl.getParameters()))) {
         acidInQuery = true;
         checkAcidTxnManager(tbl);
       }
@@ -12046,7 +12114,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tbl = writeEntity.getTable();
       }
 
-      if (tbl != null && AcidUtils.isAcidTable(tbl)) {
+      if (tbl != null && (AcidUtils.isFullAcidTable(tbl) || AcidUtils.isInsertOnlyTable(tbl.getParameters()))) {
         acidInQuery = true;
         checkAcidTxnManager(tbl);
       }
@@ -12397,7 +12465,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      if(location != null && location.length() != 0) {
+      if (location != null && location.length() != 0) {
         Path locPath = new Path(location);
         FileSystem curFs = null;
         FileStatus locStats = null;
@@ -12406,7 +12474,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if(curFs != null) {
             locStats = curFs.getFileStatus(locPath);
           }
-          if(locStats != null && locStats.isDir()) {
+          if (locStats != null && locStats.isDir()) {
             FileStatus[] lStats = curFs.listStatus(locPath);
             if(lStats != null && lStats.length != 0) {
               // Don't throw an exception if the target location only contains the staging-dirs
@@ -12428,7 +12496,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       tblProps = addDefaultProperties(tblProps);
-
       tableDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
           partCols, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape, rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim,
@@ -13680,4 +13747,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.loadFileWork = loadFileWork;
   }
 
+  private static final class ColsAndTypes {
+    public ColsAndTypes(String cols, String colTypes) {
+      this.cols = cols;
+      this.colTypes = colTypes;
+    }
+    public String cols;
+    public String colTypes;
+  }
 }

@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -407,11 +408,15 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
         return null;
       }
 
-      if(stack.get(0) instanceof TableScanOperator) {
+      if (stack.get(0) instanceof TableScanOperator) {
         TableScanOperator tso = ((TableScanOperator)stack.get(0));
-        if(AcidUtils.isAcidTable(tso.getConf().getTableMetadata())) {
+        Table tab = tso.getConf().getTableMetadata();
+        if (AcidUtils.isFullAcidTable(tab)) {
           /*ACID tables have complex directory layout and require merging of delta files
           * on read thus we should not try to read bucket files directly*/
+          return null;
+        } else if (AcidUtils.isInsertOnlyTable(tab.getParameters())) {
+          // Do not support MM tables either at this point. We could do it with some extra logic.
           return null;
         }
       }
@@ -455,6 +460,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
       List<ExprNodeColumnDesc> sourceTableSortCols = new ArrayList<ExprNodeColumnDesc>();
       op = op.getParentOperators().get(0);
 
+      boolean isSrcMmTable = false;
       while (true) {
         if (!(op instanceof TableScanOperator) &&
             !(op instanceof FilterOperator) &&
@@ -503,6 +509,11 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
             assert !useBucketSortPositions;
             TableScanOperator ts = (TableScanOperator) op;
             Table srcTable = ts.getConf().getTableMetadata();
+            // Not supported for MM tables for now.
+            if (AcidUtils.isInsertOnlyTable(destTable.getParameters())) {
+              return null;
+            }
+
 
             // Find the positions of the bucketed columns in the table corresponding
             // to the select list.

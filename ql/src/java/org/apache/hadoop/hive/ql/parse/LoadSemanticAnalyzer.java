@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -49,6 +50,7 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -214,12 +216,12 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     if(ts.tableHandle.isStoredAsSubDirectories()) {
       throw new SemanticException(ErrorMsg.LOAD_INTO_STORED_AS_DIR.getMsg());
     }
-
     List<FieldSchema> parts = ts.tableHandle.getPartitionKeys();
     if ((parts != null && parts.size() > 0)
         && (ts.partSpec == null || ts.partSpec.size() == 0)) {
       throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
     }
+
     List<String> bucketCols = ts.tableHandle.getBucketCols();
     if (bucketCols != null && !bucketCols.isEmpty()) {
       String error = StrictChecks.checkBucketing(conf);
@@ -227,7 +229,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
           + " and use 'insert... select' to allow Hive to enforce bucketing. " + error);
     }
 
-    if(AcidUtils.isAcidTable(ts.tableHandle)) {
+    if(AcidUtils.isAcidTable(ts.tableHandle) && !AcidUtils.isInsertOnlyTable(ts.tableHandle.getParameters())) {
       throw new SemanticException(ErrorMsg.LOAD_DATA_ON_ACID_TABLE, ts.tableHandle.getCompleteName());
     }
     // make sure the arguments make sense
@@ -273,11 +275,19 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    Long txnId = null;
+    int stmtId = 0;
+    Table tbl = ts.tableHandle;
+    if (AcidUtils.isInsertOnlyTable(tbl.getParameters())) {
+      txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
+    }
 
     LoadTableDesc loadTableWork;
     loadTableWork = new LoadTableDesc(new Path(fromURI),
       Utilities.getTableDesc(ts.tableHandle), partSpec,
-      isOverWrite ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING);
+      isOverWrite ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING, txnId);
+    loadTableWork.setTxnId(txnId);
+    loadTableWork.setStmtId(stmtId);
     if (preservePartitionSpecs){
       // Note : preservePartitionSpecs=true implies inheritTableSpecs=false but
       // but preservePartitionSpecs=false(default) here is not sufficient enough

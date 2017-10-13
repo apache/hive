@@ -162,8 +162,7 @@ public class TableDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
-    return properties
-        .getProperty(hive_metastoreConstants.META_TABLE_NAME);
+    return properties.getProperty(hive_metastoreConstants.META_TABLE_NAME);
   }
 
   @Explain(displayName = "input format")
@@ -233,5 +232,12 @@ public class TableDesc implements Serializable, Cloneable {
     ret = ret && (jobProperties == null ? target.jobProperties == null :
       jobProperties.equals(target.jobProperties));
     return ret;
+  }
+
+  @Override
+  public String toString() {
+    return "TableDesc [inputFileFormatClass=" + inputFileFormatClass
+        + ", outputFileFormatClass=" + outputFileFormatClass + ", properties="
+        + properties + ", jobProperties=" + jobProperties + "]";
   }
 }

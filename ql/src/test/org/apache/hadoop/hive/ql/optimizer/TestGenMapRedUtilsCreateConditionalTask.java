@@ -99,17 +99,20 @@ public class TestGenMapRedUtilsCreateConditionalTask {
         GenMapRedUtils.shouldMergeMovePaths(hiveConf, condInputPath, condOutputPath, mockWork));
 
     reset(mockWork);
-    when(mockWork.getLoadFileWork()).thenReturn(new LoadFileDesc(condInputPath, condOutputPath, false, "", ""));
+    when(mockWork.getLoadFileWork()).thenReturn(new LoadFileDesc(
+        condInputPath, condOutputPath, false, "", "", false));
     assertFalse("Merging paths is not allowed when both conditional output path is not equals to MoveWork input path.",
         GenMapRedUtils.shouldMergeMovePaths(hiveConf, condInputPath, condOutputPath, mockWork));
 
     reset(mockWork);
-    when(mockWork.getLoadFileWork()).thenReturn(new LoadFileDesc(condOutputPath, new Path("unused"), false, "", ""));
+    when(mockWork.getLoadFileWork()).thenReturn(new LoadFileDesc(
+        condOutputPath, new Path("unused"), false, "", "", false));
     assertFalse("Merging paths is not allowed when conditional input path is not a BlobStore path.",
         GenMapRedUtils.shouldMergeMovePaths(hiveConf, new Path("hdfs://hdfs-path"), condOutputPath, mockWork));
 
     reset(mockWork);
-    when(mockWork.getLoadFileWork()).thenReturn(new LoadFileDesc(condOutputPath, new Path("hdfs://hdfs-path"), false, "", ""));
+    when(mockWork.getLoadFileWork()).thenReturn(new LoadFileDesc(
+        condOutputPath, new Path("hdfs://hdfs-path"), false, "", "", false));
     assertFalse("Merging paths is not allowed when MoveWork output path is not a BlobStore path.",
         GenMapRedUtils.shouldMergeMovePaths(hiveConf, condInputPath, condOutputPath, mockWork));
   }
@@ -121,7 +124,8 @@ public class TestGenMapRedUtilsCreateConditionalTask {
     final Path targetMoveWorkPath = new Path("s3a://bucket/scratch/-ext-10003");
     final MoveWork mockWork = mock(MoveWork.class);
 
-    when(mockWork.getLoadFileWork()).thenReturn(new LoadFileDesc(condOutputPath, targetMoveWorkPath, false, "", ""));
+    when(mockWork.getLoadFileWork()).thenReturn(new LoadFileDesc(
+        condOutputPath, targetMoveWorkPath, false, "", "", false));
 
     assertTrue("Merging BlobStore paths should be allowed.",
         GenMapRedUtils.shouldMergeMovePaths(hiveConf, condInputPath, condOutputPath, mockWork));
@@ -145,7 +149,8 @@ public class TestGenMapRedUtilsCreateConditionalTask {
     MoveWork newWork;
 
     // test using loadFileWork
-    when(mockWork.getLoadFileWork()).thenReturn(new LoadFileDesc(condOutputPath, targetMoveWorkPath, false, "", ""));
+    when(mockWork.getLoadFileWork()).thenReturn(new LoadFileDesc(
+        condOutputPath, targetMoveWorkPath, false, "", "", false));
     newWork = GenMapRedUtils.mergeMovePaths(condInputPath, mockWork);
     assertNotNull(newWork);
     assertNotEquals(newWork, mockWork);
@@ -155,7 +160,8 @@ public class TestGenMapRedUtilsCreateConditionalTask {
     // test using loadTableWork
     TableDesc tableDesc = new TableDesc();
     reset(mockWork);
-    when(mockWork.getLoadTableWork()).thenReturn(new LoadTableDesc(condOutputPath, tableDesc, null));
+    when(mockWork.getLoadTableWork()).thenReturn(new LoadTableDesc(
+        condOutputPath, tableDesc, null, null));
     newWork = GenMapRedUtils.mergeMovePaths(condInputPath, mockWork);
     assertNotNull(newWork);
     assertNotEquals(newWork, mockWork);
@@ -290,7 +296,7 @@ public class TestGenMapRedUtilsCreateConditionalTask {
   private Task<MoveWork> createMoveTask(Path source, Path destination) {
     Task<MoveWork> moveTask = mock(MoveTask.class);
     MoveWork moveWork = new MoveWork();
-    moveWork.setLoadFileWork(new LoadFileDesc(source, destination, true, null, null));
+    moveWork.setLoadFileWork(new LoadFileDesc(source, destination, true, null, null, false));
 
     when(moveTask.getWork()).thenReturn(moveWork);
 

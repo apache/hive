@@ -371,7 +371,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           continue;
       }
       if(t != null) {
-        compBuilder.setIsAcid(AcidUtils.isAcidTable(t));
+        compBuilder.setIsAcid(AcidUtils.isFullAcidTable(t));
       }
       LockComponent comp = compBuilder.build();
       LOG.debug("Adding lock component to lock request " + comp.toString());
@@ -435,7 +435,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           break;
         case INSERT:
           assert t != null;
-          if(AcidUtils.isAcidTable(t)) {
+          if(AcidUtils.isFullAcidTable(t)) {
             compBuilder.setShared();
           }
           else {
@@ -469,7 +469,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
               output.getWriteType().toString());
       }
       if(t != null) {
-        compBuilder.setIsAcid(AcidUtils.isAcidTable(t));
+        compBuilder.setIsAcid(AcidUtils.isFullAcidTable(t));
       }
 
       compBuilder.setIsDynamicPartitionWrite(output.isDynamicPartitionWrite());

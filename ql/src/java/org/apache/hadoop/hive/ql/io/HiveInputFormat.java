@@ -25,20 +25,28 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
@@ -378,7 +386,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     boolean nonNative = false;
-    PartitionDesc part = HiveFileFormatUtils.getPartitionDescFromPathRecursively(
+    PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(
         pathToPartitionInfo, hsplit.getPath(), null);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Found spec for " + hsplit.getPath() + " " + part + " from " + pathToPartitionInfo);
@@ -448,7 +456,15 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
    */
   private void addSplitsForGroup(List<Path> dirs, TableScanOperator tableScan, JobConf conf,
       InputFormat inputFormat, Class<? extends InputFormat> inputFormatClass, int splits,
-      TableDesc table, List<InputSplit> result) throws IOException {
+      TableDesc table, List<InputSplit> result)
+          throws IOException {
+    ValidTxnList validTxnList;
+    if (AcidUtils.isInsertOnlyTable(table.getProperties())) {
+      String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+      validTxnList = txnString == null ? new ValidReadTxnList() : new ValidReadTxnList(txnString);
+    } else {
+      validTxnList = null;  // for non-MM case
+    }
 
     try {
       Utilities.copyTablePropertiesToConf(table, conf);
@@ -460,7 +476,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       pushFilters(conf, tableScan);
     }
 
-    FileInputFormat.setInputPaths(conf, dirs.toArray(new Path[dirs.size()]));
+    Path[] finalDirs = processPathsForMmRead(dirs, conf, validTxnList);
+    if (finalDirs == null) {
+      return; // No valid inputs.
+    }
+    FileInputFormat.setInputPaths(conf, finalDirs);
     conf.setInputFormat(inputFormat.getClass());
 
     int headerCount = 0;
@@ -477,6 +497,65 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     InputSplit[] iss = inputFormat.getSplits(conf, splits);
     for (InputSplit is : iss) {
       result.add(new HiveInputSplit(is, inputFormatClass.getName()));
+    }
+  }
+
+  public static Path[] processPathsForMmRead(List<Path> dirs, JobConf conf,
+      ValidTxnList validTxnList) throws IOException {
+    if (validTxnList == null) {
+      return dirs.toArray(new Path[dirs.size()]);
+    } else {
+      List<Path> finalPaths = new ArrayList<>(dirs.size());
+      for (Path dir : dirs) {
+        processForWriteIds(dir, conf, validTxnList, finalPaths);
+      }
+      if (finalPaths.isEmpty()) {
+        LOG.warn("No valid inputs found in " + dirs);
+        return null;
+      }
+      return finalPaths.toArray(new Path[finalPaths.size()]);
+    }
+  }
+
+  private static void processForWriteIds(Path dir, JobConf conf,
+      ValidTxnList validTxnList, List<Path> finalPaths) throws IOException {
+    FileSystem fs = dir.getFileSystem(conf);
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Checking " + dir + " (root) for inputs");
+    }
+    // Ignore nullscan-optimized paths.
+    if (fs instanceof NullScanFileSystem) {
+      finalPaths.add(dir);
+      return;
+    }
+
+    // Tez require the use of recursive input dirs for union processing, so we have to look into the
+    // directory to find out
+    LinkedList<Path> subdirs = new LinkedList<>();
+    subdirs.add(dir); // add itself as a starting point
+    while (!subdirs.isEmpty()) {
+      Path currDir = subdirs.poll();
+      FileStatus[] files = fs.listStatus(currDir);
+      boolean hadAcidState = false;   // whether getAcidState has been called for currDir
+      for (FileStatus file : files) {
+        Path path = file.getPath();
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("Checking " + path + " for inputs");
+        }
+        if (!file.isDirectory()) {
+          Utilities.FILE_OP_LOGGER.warn("Ignoring a file not in MM directory " + path);
+        } else if (JavaUtils.extractTxnId(path) == null) {
+          subdirs.add(path);
+        } else if (!hadAcidState) {
+          AcidUtils.Directory dirInfo = AcidUtils.getAcidState(currDir, conf, validTxnList, Ref.from(false), true, null);
+          hadAcidState = true;
+          // TODO [MM gap]: for IOW, we also need to count in base dir, if any
+          for (AcidUtils.ParsedDelta delta : dirInfo.getCurrentDirectories()) {
+            Utilities.FILE_OP_LOGGER.debug("Adding input " + delta.getPath());
+            finalPaths.add(delta.getPath());
+          }
+        }
+      }
     }
   }
 
@@ -627,6 +706,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       throws IOException {
     PartitionDesc partDesc = pathToPartitionInfo.get(dir);
     if (partDesc == null) {
+      // Note: we could call HiveFileFormatUtils.getPartitionDescFromPathRecursively for MM tables.
+      //       The recursive call is usually needed for non-MM tables, because the path management
+      //       is not strict and the code does whatever. That should not happen for MM tables.
+      //       Keep it like this for now; may need replacement if we find a valid use case.
       partDesc = pathToPartitionInfo.get(Path.getPathWithoutSchemeAndAuthority(dir));
     }
     if (partDesc == null) {

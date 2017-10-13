@@ -53,6 +53,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+
 import javax.jdo.JDODataStoreException;
 
 import org.apache.calcite.plan.RelOptMaterialization;
@@ -61,10 +64,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
@@ -1634,12 +1639,13 @@ public class Hive {
    * @throws HiveException
    */
   public void loadPartition(Path loadPath, String tableName,
-      Map<String, String> partSpec, LoadFileType loadFileType,
-      boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
-      boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask) throws HiveException {
+      Map<String, String> partSpec, LoadFileType loadFileType, boolean inheritTableSpecs,
+      boolean isSkewedStoreAsSubdir,  boolean isSrcLocal, boolean isAcid,
+      boolean hasFollowingStatsTask, Long txnId, int stmtId)
+          throws HiveException {
     Table tbl = getTable(tableName);
     loadPartition(loadPath, tbl, partSpec, loadFileType, inheritTableSpecs,
-        isSkewedStoreAsSubdir, isSrcLocal, isAcid, hasFollowingStatsTask);
+        isSkewedStoreAsSubdir, isSrcLocal, isAcid, hasFollowingStatsTask, txnId, stmtId);
   }
 
   /**
@@ -1667,12 +1673,12 @@ public class Hive {
    *          true if there is a following task which updates the stats, so, this method need not update.
    * @return Partition object being loaded with data
    */
-  public Partition loadPartition(Path loadPath, Table tbl,
-      Map<String, String> partSpec, LoadFileType loadFileType,
-      boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
-      boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask) throws HiveException {
-
+  public Partition loadPartition(Path loadPath, Table tbl, Map<String, String> partSpec,
+      LoadFileType loadFileType, boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
+      boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask, Long txnId, int stmtId)
+          throws HiveException {
     Path tblDataLocationPath =  tbl.getDataLocation();
+    boolean isMmTableWrite = AcidUtils.isInsertOnlyTable(tbl.getParameters());
     try {
       // Get the partition object if it already exists
       Partition oldPart = getPartition(tbl, partSpec, false);
@@ -1712,22 +1718,54 @@ public class Hive {
       List<Path> newFiles = null;
       PerfLogger perfLogger = SessionState.getPerfLogger();
       perfLogger.PerfLogBegin("MoveTask", "FileMoves");
-
       // If config is set, table is not temporary and partition being inserted exists, capture
       // the list of files added. For not yet existing partitions (insert overwrite to new partition
       // or dynamic partition inserts), the add partition event will capture the list of files added.
       if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && (null != oldPart)) {
         newFiles = Collections.synchronizedList(new ArrayList<Path>());
       }
-
-      if ((loadFileType == LoadFileType.REPLACE_ALL) || (oldPart == null && !isAcid)) {
-        boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
-        replaceFiles(tbl.getPath(), loadPath, newPartPath, oldPartPath, getConf(),
-            isSrcLocal, isAutoPurge, newFiles);
+      // Note: this assumes both paths are qualified; which they are, currently.
+      if (isMmTableWrite && loadPath.equals(newPartPath)) {
+        // MM insert query, move itself is a no-op.
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("not moving " + loadPath + " to " + newPartPath + " (MM)");
+        }
+        assert !isAcid;
+        if (areEventsForDmlNeeded(tbl, oldPart)) {
+          newFiles = listFilesCreatedByQuery(loadPath, txnId, stmtId);
+        }
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("maybe deleting stuff from " + oldPartPath
+              + " (new " + newPartPath + ") for replace");
+        }
+        if ((loadFileType == LoadFileType.REPLACE_ALL) && oldPartPath != null) {
+          boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
+          deleteOldPathForReplace(newPartPath, oldPartPath, getConf(), isAutoPurge,
+              new JavaUtils.IdPathFilter(txnId, stmtId, false, true), true,
+              tbl.isStoredAsSubDirectories() ? tbl.getSkewedColNames().size() : 0);
+        }
       } else {
-        FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
-        Hive.copyFiles(conf, loadPath, newPartPath, fs, isSrcLocal, isAcid,
-                            (loadFileType == LoadFileType.OVERWRITE_EXISTING), newFiles);
+        // Either a non-MM query, or a load into MM table from an external source.
+        PathFilter filter = FileUtils.HIDDEN_FILES_PATH_FILTER;
+        Path destPath = newPartPath;
+        if (isMmTableWrite) {
+          // We will load into MM directory, and delete from the parent if needed.
+          destPath = new Path(destPath, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
+          filter = (loadFileType == LoadFileType.REPLACE_ALL)
+            ? new JavaUtils.IdPathFilter(txnId, stmtId, false, true) : filter;
+        }
+        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+          Utilities.FILE_OP_LOGGER.trace("moving " + loadPath + " to " + destPath);
+        }
+        if ((loadFileType == LoadFileType.REPLACE_ALL) || (oldPart == null && !isAcid)) {
+          boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
+          replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(),
+              isSrcLocal, isAutoPurge, newFiles, filter, isMmTableWrite);
+        } else {
+          FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
+          copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcid,
+            (loadFileType == LoadFileType.OVERWRITE_EXISTING), newFiles);
+        }
       }
       perfLogger.PerfLogEnd("MoveTask", "FileMoves");
       Partition newTPart = oldPart != null ? oldPart : new Partition(tbl, partSpec, newPartPath);
@@ -1813,6 +1851,54 @@ public class Hive {
     }
   }
 
+
+  private boolean areEventsForDmlNeeded(Table tbl, Partition oldPart) {
+    return conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPart != null;
+  }
+
+  private List<Path> listFilesCreatedByQuery(Path loadPath, long txnId, int stmtId) throws HiveException {
+    List<Path> newFiles = new ArrayList<Path>();
+    final String filePrefix = AcidUtils.deltaSubdir(txnId, txnId, stmtId);
+    FileStatus[] srcs;
+    FileSystem srcFs;
+    try {
+      srcFs = loadPath.getFileSystem(conf);
+      srcs = srcFs.listStatus(loadPath);
+    } catch (IOException e) {
+      LOG.error("Error listing files", e);
+      throw new HiveException(e);
+    }
+    if (srcs == null) {
+      LOG.info("No sources specified: " + loadPath);
+      return newFiles;
+    }
+    PathFilter subdirFilter = null;
+
+    // Note: just like the move path, we only do one level of recursion.
+    for (FileStatus src : srcs) {
+      if (src.isDirectory()) {
+        if (subdirFilter == null) {
+          subdirFilter = new PathFilter() {
+            @Override
+            public boolean accept(Path path) {
+              return path.getName().startsWith(filePrefix);
+            }
+          };
+        }
+        try {
+          for (FileStatus srcFile : srcFs.listStatus(src.getPath(), subdirFilter)) {
+            newFiles.add(srcFile.getPath());
+          }
+        } catch (IOException e) {
+          throw new HiveException(e);
+        }
+      } else if (src.getPath().getName().startsWith(filePrefix)) {
+        newFiles.add(src.getPath());
+      }
+    }
+    return newFiles;
+  }
+
   private void setStatsPropAndAlterPartition(boolean hasFollowingStatsTask, Table tbl,
       Partition newTPart) throws MetaException, TException {
     EnvironmentContext environmentContext = null;
@@ -1840,6 +1926,9 @@ private void walkDirTree(FileStatus fSta, FileSystem fSys,
     throws IOException {
   /* Base Case. It's leaf. */
   if (!fSta.isDir()) {
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Processing LB leaf " + fSta.getPath());
+    }
     /* construct one location map if not exists. */
     constructOneLBLocationMap(fSta, skewedColValueLocationMaps, newPartPath, skewedInfo);
     return;
@@ -1848,6 +1937,9 @@ private void walkDirTree(FileStatus fSta, FileSystem fSys,
   /* dfs. */
   FileStatus[] children = fSys.listStatus(fSta.getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
   if (children != null) {
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace("Processing LB dir " + fSta.getPath());
+    }
     for (FileStatus child : children) {
       walkDirTree(child, fSys, skewedColValueLocationMaps, newPartPath, skewedInfo);
     }
@@ -1868,22 +1960,39 @@ private void constructOneLBLocationMap(FileStatus fSta,
   List<String> skewedValue = new ArrayList<String>();
   String lbDirName = FileUtils.unescapePathName(lbdPath.toString());
   String partDirName = FileUtils.unescapePathName(newPartPath.toString());
-  String lbDirSuffix = lbDirName.replace(partDirName, "");
+  String lbDirSuffix = lbDirName.replace(partDirName, ""); // TODO: should it rather do a prefix?
+  if (lbDirSuffix.startsWith(Path.SEPARATOR)) {
+    lbDirSuffix = lbDirSuffix.substring(1);
+  }
   String[] dirNames = lbDirSuffix.split(Path.SEPARATOR);
-  for (String dirName : dirNames) {
-    if ((dirName != null) && (dirName.length() > 0)) {
-      // Construct skewed-value to location map except default directory.
-      // why? query logic knows default-dir structure and don't need to get from map
-        if (!dirName
-            .equalsIgnoreCase(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME)) {
-        String[] kv = dirName.split("=");
-        if (kv.length == 2) {
-          skewedValue.add(kv[1]);
-        }
+  int keysFound = 0, dirsToTake = 0;
+  int colCount = skewedInfo.getSkewedColNames().size();
+  while (dirsToTake < dirNames.length && keysFound < colCount) {
+    String dirName = dirNames[dirsToTake++];
+    // Construct skewed-value to location map except default directory.
+    // why? query logic knows default-dir structure and don't need to get from map
+    if (dirName.equalsIgnoreCase(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME)) {
+      ++keysFound;
+    } else {
+      String[] kv = dirName.split("=");
+      if (kv.length == 2) {
+        skewedValue.add(kv[1]);
+        ++keysFound;
+      } else {
+        // TODO: we should really probably throw. Keep the existing logic for now.
+        LOG.warn("Skipping unknown directory " + dirName
+            + " when expecting LB keys or default directory (from " + lbDirName + ")");
       }
     }
   }
-  if ((skewedValue.size() > 0) && (skewedValue.size() == skewedInfo.getSkewedColNames().size())
+  for (int i = 0; i < (dirNames.length - dirsToTake); ++i) {
+    lbdPath = lbdPath.getParent();
+  }
+  if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+    Utilities.FILE_OP_LOGGER.trace("Saving LB location " + lbdPath + " based on "
+      + colCount + " keys and " + fSta.getPath());
+  }
+  if ((skewedValue.size() > 0) && (skewedValue.size() == colCount)
       && !skewedColValueLocationMaps.containsKey(skewedValue)) {
     skewedColValueLocationMaps.put(skewedValue, lbdPath.toString());
   }
@@ -1902,8 +2011,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       SkewedInfo skewedInfo) throws IOException, FileNotFoundException {
     Map<List<String>, String> skewedColValueLocationMaps = new HashMap<List<String>, String>();
     FileSystem fSys = newPartPath.getFileSystem(conf);
-    walkDirTree(fSys.getFileStatus(newPartPath), fSys, skewedColValueLocationMaps, newPartPath,
-        skewedInfo);
+    walkDirTree(fSys.getFileStatus(newPartPath),
+        fSys, skewedColValueLocationMaps, newPartPath, skewedInfo);
     return skewedColValueLocationMaps;
   }
 
@@ -1914,17 +2023,36 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return Set of valid partitions
    * @throws HiveException
    */
-  private Set<Path> getValidPartitionsInPath(int numDP, Path loadPath) throws HiveException {
+  private Set<Path> getValidPartitionsInPath(
+      int numDP, int numLB, Path loadPath, Long txnId, int stmtId, boolean isMmTable) throws HiveException {
     Set<Path> validPartitions = new HashSet<Path>();
     try {
       FileSystem fs = loadPath.getFileSystem(conf);
-      FileStatus[] leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP, fs);
-      // Check for empty partitions
-      for (FileStatus s : leafStatus) {
-        if (!s.isDirectory()) {
-          throw new HiveException("partition " + s.getPath() + " is not a directory!");
+      if (!isMmTable) {
+        FileStatus[] leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP, fs);
+        // Check for empty partitions
+        for (FileStatus s : leafStatus) {
+          if (!s.isDirectory()) {
+            throw new HiveException("partition " + s.getPath() + " is not a directory!");
+          }
+          Path dpPath = s.getPath();
+          validPartitions.add(dpPath);
         }
-        validPartitions.add(s.getPath());
+      } else {
+        // The non-MM path only finds new partitions, as it is looking at the temp path.
+        // To produce the same effect, we will find all the partitions affected by this write ID.
+        Path[] leafStatus = Utilities.getMmDirectoryCandidates(
+            fs, loadPath, numDP, numLB, null, txnId, stmtId, conf);
+        for (Path p : leafStatus) {
+          Path dpPath = p.getParent(); // Skip the MM directory that we have found.
+          for (int i = 0; i < numLB; ++i) {
+            dpPath = dpPath.getParent(); // Now skip the LB directories, if any...
+          }
+          if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+            Utilities.FILE_OP_LOGGER.trace("Found DP " + dpPath);
+          }
+          validPartitions.add(dpPath);
+        }
       }
     } catch (IOException e) {
       throw new HiveException(e);
@@ -1962,7 +2090,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public Map<Map<String, String>, Partition> loadDynamicPartitions(final Path loadPath,
       final String tableName, final Map<String, String> partSpec, final LoadFileType loadFileType,
-      final int numDP, final boolean listBucketingEnabled, final boolean isAcid, final long txnId,
+      final int numDP, final int numLB, final boolean isAcid, final long txnId, final int stmtId,
       final boolean hasFollowingStatsTask, final AcidUtils.Operation operation)
       throws HiveException {
 
@@ -1978,7 +2106,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     // Get all valid partition paths and existing partitions for them (if any)
     final Table tbl = getTable(tableName);
-    final Set<Path> validPartitions = getValidPartitionsInPath(numDP, loadPath);
+    final Set<Path> validPartitions = getValidPartitionsInPath(numDP, numLB, loadPath, txnId, stmtId,
+        AcidUtils.isInsertOnlyTable(tbl.getParameters()));
 
     final int partsToLoad = validPartitions.size();
     final AtomicInteger partitionsLoaded = new AtomicInteger(0);
@@ -1996,7 +2125,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for(final Path partPath : validPartitions) {
         // generate a full partition specification
         final LinkedHashMap<String, String> fullPartSpec = Maps.newLinkedHashMap(partSpec);
-        Warehouse.makeSpecFromName(fullPartSpec, partPath);
+        if (!Warehouse.makeSpecFromName(
+            fullPartSpec, partPath, new HashSet<String>(partSpec.keySet()))) {
+          Utilities.FILE_OP_LOGGER.warn("Ignoring invalid DP directory " + partPath);
+          continue;
+        }
         futures.add(pool.submit(new Callable<Void>() {
           @Override
           public Void call() throws Exception {
@@ -2007,8 +2140,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
               // load the partition
               Partition newPartition = loadPartition(partPath, tbl, fullPartSpec,
-                  loadFileType, true, listBucketingEnabled,
-                  false, isAcid, hasFollowingStatsTask);
+                  loadFileType, true, numLB > 0,
+                  false, isAcid, hasFollowingStatsTask, txnId, stmtId);
               partitionsMap.put(fullPartSpec, newPartition);
 
               if (inPlaceEligible) {
@@ -2032,7 +2165,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                   + " table=" + tbl.getTableName() + ", "
                   + " partSpec=" + fullPartSpec + ", "
                   + " loadFileType=" + loadFileType.toString() + ", "
-                  + " listBucketingEnabled=" + listBucketingEnabled + ", "
+                  + " listBucketingLevel=" + numLB + ", "
                   + " isAcid=" + isAcid + ", "
                   + " hasFollowingStatsTask=" + hasFollowingStatsTask, t);
               throw t;
@@ -2100,8 +2233,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param isAcid true if this is an ACID based write
    */
   public void loadTable(Path loadPath, String tableName, LoadFileType loadFileType, boolean isSrcLocal,
-                        boolean isSkewedStoreAsSubdir, boolean isAcid, boolean hasFollowingStatsTask)
-      throws HiveException {
+      boolean isSkewedStoreAsSubdir, boolean isAcid, boolean hasFollowingStatsTask,
+      Long txnId, int stmtId, boolean isMmTable) throws HiveException {
 
     List<Path> newFiles = null;
     Table tbl = getTable(tableName);
@@ -2109,18 +2242,41 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
       newFiles = Collections.synchronizedList(new ArrayList<Path>());
     }
-    if (loadFileType == LoadFileType.REPLACE_ALL) {
-      Path tableDest = tbl.getPath();
-      boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
-      replaceFiles(tableDest, loadPath, tableDest, tableDest, sessionConf, isSrcLocal, isAutopurge, newFiles);
+    // Note: this assumes both paths are qualified; which they are, currently.
+    if (isMmTable && loadPath.equals(tbl.getPath())) {
+      Utilities.FILE_OP_LOGGER.debug("not moving " + loadPath + " to " + tbl.getPath());
+      if (loadFileType == LoadFileType.REPLACE_ALL) {
+        Path tableDest = tbl.getPath();
+        boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
+        deleteOldPathForReplace(tableDest, tableDest, sessionConf, isAutopurge,
+            new JavaUtils.IdPathFilter(txnId, stmtId, false, true), true,
+            tbl.isStoredAsSubDirectories() ? tbl.getSkewedColNames().size() : 0);
+      }
+      newFiles = listFilesCreatedByQuery(loadPath, txnId, stmtId);
     } else {
-      FileSystem fs;
-      try {
-        fs = tbl.getDataLocation().getFileSystem(sessionConf);
-        copyFiles(sessionConf, loadPath, tbl.getPath(), fs, isSrcLocal, isAcid,
-                          (loadFileType == LoadFileType.OVERWRITE_EXISTING), newFiles);
-      } catch (IOException e) {
-        throw new HiveException("addFiles: filesystem error in check phase", e);
+      // Either a non-MM query, or a load into MM table from an external source.
+      Path tblPath = tbl.getPath(), destPath = tblPath;
+      PathFilter filter = FileUtils.HIDDEN_FILES_PATH_FILTER;
+      if (isMmTable) {
+        // We will load into MM directory, and delete from the parent if needed.
+        destPath = new Path(destPath, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
+        filter = loadFileType == LoadFileType.REPLACE_ALL
+            ? new JavaUtils.IdPathFilter(txnId, stmtId, false, true) : filter;
+      }
+      Utilities.FILE_OP_LOGGER.debug("moving " + loadPath + " to " + tblPath
+          + " (replace = " + loadFileType + ")");
+      if (loadFileType == LoadFileType.REPLACE_ALL) {
+        boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
+        replaceFiles(tblPath, loadPath, destPath, tblPath,
+            sessionConf, isSrcLocal, isAutopurge, newFiles, filter, isMmTable);
+      } else {
+        try {
+          FileSystem fs = tbl.getDataLocation().getFileSystem(sessionConf);
+          copyFiles(sessionConf, loadPath, destPath, fs, isSrcLocal, isAcid,
+            loadFileType == LoadFileType.OVERWRITE_EXISTING, newFiles);
+        } catch (IOException e) {
+          throw new HiveException("addFiles: filesystem error in check phase", e);
+        }
       }
     }
     if (!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
@@ -2581,7 +2737,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param tbl
    *          object for which partition is needed
    * @return list of partition objects
-   * @throws HiveException
    */
   public List<Partition> getPartitions(Table tbl) throws HiveException {
     if (tbl.isPartitioned()) {
@@ -3253,15 +3408,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     HdfsUtils.HadoopFileStatus destStatus = null;
 
-    // If source path is a subdirectory of the destination path:
+    // If source path is a subdirectory of the destination path (or the other way around):
     //   ex: INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300;
     //   where the staging directory is a subdirectory of the destination directory
     // (1) Do not delete the dest dir before doing the move operation.
     // (2) It is assumed that subdir and dir are in same encryption zone.
     // (3) Move individual files from scr dir to dest dir.
-    boolean destIsSubDir = isSubDir(srcf, destf, srcFs, destFs, isSrcLocal);
+    boolean srcIsSubDirOfDest = isSubDir(srcf, destf, srcFs, destFs, isSrcLocal),
+        destIsSubDirOfSrc = isSubDir(destf, srcf, destFs, srcFs, false);
     final String msg = "Unable to move source " + srcf + " to destination " + destf;
-
     try {
       if (replace) {
         try{
@@ -3271,7 +3426,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           //if replace is false, rename (mv) actually move the src under dest dir
           //if destf is an existing file, rename is actually a replace, and do not need
           // to delete the file first
-          if (replace && !destIsSubDir) {
+          if (replace && !srcIsSubDirOfDest) {
             destFs.delete(destf, true);
             LOG.debug("The path " + destf.toString() + " is deleted");
           }
@@ -3293,13 +3448,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
               replace, // overwrite destination
               conf);
         } else {
-          if (destIsSubDir) {
+          if (srcIsSubDirOfDest || destIsSubDirOfSrc) {
             FileStatus[] srcs = destFs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);
 
             List<Future<Void>> futures = new LinkedList<>();
             final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
                 Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
                 new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build()) : null;
+            if (destIsSubDirOfSrc && !destFs.exists(destf)) {
+              if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+                Utilities.FILE_OP_LOGGER.trace("Creating " + destf);
+              }
+              destFs.mkdirs(destf);
+            }
             /* Move files one by one because source is a subdirectory of destination */
             for (final FileStatus srcStatus : srcs) {
 
@@ -3630,7 +3791,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
    *          Output the list of new files replaced in the destination path
    */
   protected void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
-          boolean isSrcLocal, boolean purge, List<Path> newFiles) throws HiveException {
+          boolean isSrcLocal, boolean purge, List<Path> newFiles, PathFilter deletePathFilter,
+          boolean isMmTable) throws HiveException {
     try {
 
       FileSystem destFs = destf.getFileSystem(conf);
@@ -3649,41 +3811,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       if (oldPath != null) {
-        boolean oldPathDeleted = false;
-        boolean isOldPathUnderDestf = false;
-        FileStatus[] statuses = null;
-        try {
-          FileSystem oldFs = oldPath.getFileSystem(conf);
-
-          // Do not delete oldPath if:
-          //  - destf is subdir of oldPath
-          isOldPathUnderDestf = isSubDir(oldPath, destf, oldFs, destFs, false);
-          if (isOldPathUnderDestf) {
-            // if oldPath is destf or its subdir, its should definitely be deleted, otherwise its
-            // existing content might result in incorrect (extra) data.
-            // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
-            // not the destf or its subdir?
-            if (conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
-              recycleDirToCmPath(oldPath, purge);
-            }
-            statuses = oldFs.listStatus(oldPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
-            oldPathDeleted = trashFiles(oldFs, statuses, conf, purge);
-          }
-        } catch (IOException e) {
-          if (isOldPathUnderDestf) {
-            // if oldPath is a subdir of destf but it could not be cleaned
-            throw new HiveException("Directory " + oldPath.toString()
-                + " could not be cleaned up.", e);
-          } else {
-            //swallow the exception since it won't affect the final result
-            LOG.warn("Directory " + oldPath.toString() + " cannot be cleaned: " + e, e);
-          }
-        }
-        if (statuses != null && statuses.length > 0) {
-          if (!oldPathDeleted) {
-            throw new HiveException("Destination directory " + destf + " has not be cleaned up.");
-          }
-        }
+        // Note: we assume lbLevels is 0 here. Same as old code for non-MM.
+        //       For MM tables, this can only be a LOAD command. Does LOAD even support LB?
+        deleteOldPathForReplace(destf, oldPath, conf, purge, deletePathFilter, isMmTable, 0);
       }
 
       // first call FileUtils.mkdir to make sure that destf directory exists, if not, it creates
@@ -3725,6 +3855,76 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     } catch (IOException e) {
       throw new HiveException(e.getMessage(), e);
+    }
+  }
+
+  private void deleteOldPathForReplace(Path destPath, Path oldPath, HiveConf conf, boolean purge,
+      PathFilter pathFilter, boolean isMmTable, int lbLevels) throws HiveException {
+    Utilities.FILE_OP_LOGGER.debug("Deleting old paths for replace in " + destPath
+        + " and old path " + oldPath);
+    boolean isOldPathUnderDestf = false;
+    try {
+      FileSystem oldFs = oldPath.getFileSystem(conf);
+      FileSystem destFs = destPath.getFileSystem(conf);
+      // if oldPath is destf or its subdir, its should definitely be deleted, otherwise its
+      // existing content might result in incorrect (extra) data.
+      // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
+      // not the destf or its subdir?
+      isOldPathUnderDestf = isSubDir(oldPath, destPath, oldFs, destFs, false);
+      if (isOldPathUnderDestf || isMmTable) {
+        if (lbLevels == 0 || !isMmTable) {
+          cleanUpOneDirectoryForReplace(oldPath, oldFs, pathFilter, conf, purge);
+        } else {
+          // We need to clean up different MM IDs from each LB directory separately.
+          // Avoid temporary directories in the immediate table/part dir.
+          // Note: we could just find directories with any MM directories inside?
+          //       the rest doesn't have to be cleaned up. Play it safe.
+          String mask = "[^._]*";
+          for (int i = 0; i < lbLevels - 1; ++i) {
+            mask += Path.SEPARATOR + "*";
+          }
+          Path glob = new Path(oldPath, mask);
+          FileStatus[] lbDirs = oldFs.globStatus(glob);
+          for (FileStatus lbDir : lbDirs) {
+            Path lbPath = lbDir.getPath();
+            if (!lbDir.isDirectory()) {
+              throw new HiveException("Unexpected path during overwrite: " + lbPath);
+            }
+            Utilities.FILE_OP_LOGGER.info("Cleaning up LB directory " + lbPath);
+            cleanUpOneDirectoryForReplace(lbPath, oldFs, pathFilter, conf, purge);
+          }
+        }
+      }
+    } catch (IOException e) {
+      if (isOldPathUnderDestf || isMmTable) {
+        // if oldPath is a subdir of destf but it could not be cleaned
+        throw new HiveException("Directory " + oldPath.toString()
+            + " could not be cleaned up.", e);
+      } else {
+        //swallow the exception since it won't affect the final result
+        LOG.warn("Directory " + oldPath.toString() + " cannot be cleaned: " + e, e);
+      }
+    }
+  }
+
+
+  private void cleanUpOneDirectoryForReplace(Path path, FileSystem fs,
+      PathFilter pathFilter, HiveConf conf, boolean purge) throws IOException, HiveException {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
+      recycleDirToCmPath(path, purge);
+    }
+    FileStatus[] statuses = fs.listStatus(path, pathFilter);
+    if (statuses == null || statuses.length == 0) return;
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      String s = "Deleting files under " + path + " for replace: ";
+      for (FileStatus file : statuses) {
+        s += file.getPath().getName() + ", ";
+      }
+      Utilities.FILE_OP_LOGGER.trace(s);
+    }
+
+    if (!trashFiles(fs, statuses, conf, purge)) {
+      throw new HiveException("Old path " + path + " has not been cleaned up.");
     }
   }
 

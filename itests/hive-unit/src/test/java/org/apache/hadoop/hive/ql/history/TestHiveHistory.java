@@ -105,7 +105,8 @@ public class TestHiveHistory extends TestCase {
         db.dropTable(Warehouse.DEFAULT_DATABASE_NAME, src, true, true);
         db.createTable(src, cols, null, TextInputFormat.class,
             IgnoreKeyTextOutputFormat.class);
-        db.loadTable(hadoopDataFile[i], src, LoadFileType.KEEP_EXISTING, false, false, false, false);
+        db.loadTable(hadoopDataFile[i], src,
+          LoadFileType.KEEP_EXISTING, false, false, false, false, null, 0, false);
         i++;
       }
 

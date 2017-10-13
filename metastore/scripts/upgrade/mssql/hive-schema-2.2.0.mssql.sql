@@ -593,6 +593,7 @@ CREATE TABLE NOTIFICATION_SEQUENCE
 
 ALTER TABLE NOTIFICATION_SEQUENCE ADD CONSTRAINT NOTIFICATION_SEQUENCE_PK PRIMARY KEY (NNI_ID);
 
+
 -- Constraints for table MASTER_KEYS for class(es) [org.apache.hadoop.hive.metastore.model.MMasterKey]
 
 -- Constraints for table IDXS for class(es) [org.apache.hadoop.hive.metastore.model.MIndex]

@@ -1024,5 +1024,4 @@ public class Table implements Serializable {
   public boolean hasDeserializer() {
     return deserializer != null;
   }
-
 };

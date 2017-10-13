@@ -52,6 +52,9 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
+import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
@@ -348,9 +351,13 @@ public final class FileUtils {
    */
   public static void listStatusRecursively(FileSystem fs, FileStatus fileStatus,
       List<FileStatus> results) throws IOException {
+    listStatusRecursively(fs, fileStatus, HIDDEN_FILES_PATH_FILTER, results);
+  }
 
+  public static void listStatusRecursively(FileSystem fs, FileStatus fileStatus,
+      PathFilter filter, List<FileStatus> results) throws IOException {
     if (fileStatus.isDir()) {
-      for (FileStatus stat : fs.listStatus(fileStatus.getPath(), HIDDEN_FILES_PATH_FILTER)) {
+      for (FileStatus stat : fs.listStatus(fileStatus.getPath(), filter)) {
         listStatusRecursively(fs, stat, results);
       }
     } else {
@@ -905,11 +912,11 @@ public final class FileUtils {
     }
     return false;
   }
-  
-  
+
+
   /**
    * Return whenever all paths in the collection are schemaless
-   * 
+   *
    * @param paths
    * @return
    */
@@ -924,16 +931,16 @@ public final class FileUtils {
 
   /**
    * Returns the deepest candidate path for the given path.
-   * 
+   *
    * prioritizes on paths including schema / then includes matches without schema
-   * 
+   *
    * @param path
    * @param candidates  the candidate paths
    * @return
    */
   public static Path getParentRegardlessOfScheme(Path path, Collection<Path> candidates) {
     Path schemalessPath = Path.getPathWithoutSchemeAndAuthority(path);
-    
+
     for(;path!=null && schemalessPath!=null; path=path.getParent(),schemalessPath=schemalessPath.getParent()){
       if(candidates.contains(path))
         return path;
@@ -946,13 +953,13 @@ public final class FileUtils {
 
   /**
    * Checks whenever path is inside the given subtree
-   * 
+   *
    * return true iff
    *  * path = subtree
    *  * subtreeContains(path,d) for any descendant of the subtree node
    * @param path    the path in question
    * @param subtree
-   * 
+   *
    * @return
    */
   public static boolean isPathWithinSubtree(Path path, Path subtree) {

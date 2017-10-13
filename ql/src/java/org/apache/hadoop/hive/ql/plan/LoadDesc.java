@@ -37,6 +37,7 @@ public class LoadDesc implements Serializable {
    */
   final AcidUtils.Operation writeType;
 
+
   public LoadDesc(final Path sourcePath, AcidUtils.Operation writeType) {
     this.sourcePath = sourcePath;
     this.writeType = writeType;

@@ -275,13 +275,16 @@ public class MetaStoreUtils {
   public static void populateQuickStats(FileStatus[] fileStatus, Map<String, String> params) {
     int numFiles = 0;
     long tableSize = 0L;
+    String s = "LOG14535 Populating quick stats for: ";
     for (FileStatus status : fileStatus) {
+      s += status.getPath() + ", ";
       // don't take directories into account for quick stats
       if (!status.isDir()) {
         tableSize += status.getLen();
         numFiles += 1;
       }
     }
+    LOG.info(s/*, new Exception()*/);
     params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
     params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
   }
@@ -1818,6 +1821,7 @@ public class MetaStoreUtils {
     return cols;
   }
 
+
   // given a list of partStats, this function will give you an aggr stats
   public static List<ColumnStatisticsObj> aggrPartitionStats(List<ColumnStatistics> partStats,
       String dbName, String tableName, List<String> partNames, List<String> colNames,
@@ -1999,5 +2003,11 @@ public class MetaStoreUtils {
     MachineList machineList = new MachineList(hostEntries);
     ipAddress = (ipAddress == null) ? StringUtils.EMPTY : ipAddress;
     return machineList.includes(ipAddress);
+  }
+
+  /** Duplicates AcidUtils; used in a couple places in metastore. */
+  public static boolean isInsertOnlyTableParam(Map<String, String> params) {
+    String transactionalProp = params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
   }
 }

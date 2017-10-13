@@ -55,8 +55,8 @@ public class MTable {
    */
   public MTable(String tableName, MDatabase database, MStorageDescriptor sd, String owner,
       int createTime, int lastAccessTime, int retention, List<MFieldSchema> partitionKeys,
-      Map<String, String> parameters, String viewOriginalText, String viewExpandedText,
-      boolean rewriteEnabled, String tableType) {
+      Map<String, String> parameters,
+      String viewOriginalText, String viewExpandedText, boolean rewriteEnabled, String tableType) {
     this.tableName = tableName;
     this.database = database;
     this.sd = sd;

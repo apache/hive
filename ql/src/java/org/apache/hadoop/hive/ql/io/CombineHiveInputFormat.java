@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -43,6 +45,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Driver.DriverState;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -88,32 +91,42 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     private final int start;
     private final int length;
     private final JobConf conf;
+    private final boolean isMerge;
 
-    public CheckNonCombinablePathCallable(Path[] paths, int start, int length, JobConf conf) {
+    public CheckNonCombinablePathCallable(
+        Path[] paths, int start, int length, JobConf conf, boolean isMerge) {
       this.paths = paths;
       this.start = start;
       this.length = length;
       this.conf = conf;
+      this.isMerge = isMerge;
     }
 
     @Override
     public Set<Integer> call() throws Exception {
       Set<Integer> nonCombinablePathIndices = new HashSet<Integer>();
       for (int i = 0; i < length; i++) {
-        PartitionDesc part =
-            HiveFileFormatUtils.getPartitionDescFromPathRecursively(
+        PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(
                 pathToPartitionInfo, paths[i + start],
                 IOPrepareCache.get().allocatePartitionDescMap());
         // Use HiveInputFormat if any of the paths is not splittable
         Class<? extends InputFormat> inputFormatClass = part.getInputFileFormatClass();
         InputFormat<WritableComparable, Writable> inputFormat =
             getInputFormatFromCache(inputFormatClass, conf);
-        if (inputFormat instanceof AvoidSplitCombination &&
-            ((AvoidSplitCombination) inputFormat).shouldSkipCombine(paths[i + start], conf)) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("The path [" + paths[i + start] +
-                "] is being parked for HiveInputFormat.getSplits");
-          }
+        boolean isAvoidSplitCombine = inputFormat instanceof AvoidSplitCombination &&
+            ((AvoidSplitCombination) inputFormat).shouldSkipCombine(paths[i + start], conf);
+        TableDesc tbl = part.getTableDesc();
+        boolean isMmNonMerge = false;
+        if (tbl != null) {
+          isMmNonMerge = !isMerge && AcidUtils.isInsertOnlyTable(tbl.getProperties());
+        } else {
+          // This would be the case for obscure tasks like truncate column (unsupported for MM).
+          Utilities.FILE_OP_LOGGER.warn("Assuming not insert-only; no table in partition spec " + part);
+        }
+
+        if (isAvoidSplitCombine || isMmNonMerge) {
+          Utilities.FILE_OP_LOGGER.info("The path [" + paths[i + start] +
+              "] is being parked for HiveInputFormat.getSplits");
           nonCombinablePathIndices.add(i + start);
         }
       }
@@ -159,7 +172,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         Path[] ipaths = inputSplitShim.getPaths();
         if (ipaths.length > 0) {
           PartitionDesc part = HiveFileFormatUtils
-              .getPartitionDescFromPathRecursively(this.pathToPartitionInfo,
+              .getFromPathRecursively(this.pathToPartitionInfo,
                   ipaths[0], IOPrepareCache.get().getPartitionDescMap());
           inputFormatClassName = part.getInputFileFormatClass().getName();
         }
@@ -273,7 +286,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
         // extract all the inputFormatClass names for each chunk in the
         // CombinedSplit.
-        PartitionDesc part = HiveFileFormatUtils.getPartitionDescFromPathRecursively(pathToPartitionInfo,
+        PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(pathToPartitionInfo,
             inputSplitShim.getPath(0), IOPrepareCache.get().getPartitionDescMap());
 
         // create a new InputFormat instance if this is the first time to see
@@ -357,7 +370,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
         throw new IOException("Operation is Canceled. ");
 
-      PartitionDesc part = HiveFileFormatUtils.getPartitionDescFromPathRecursively(
+      PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(
           pathToPartitionInfo, path, IOPrepareCache.get().allocatePartitionDescMap());
       TableDesc tableDesc = part.getTableDesc();
       if ((tableDesc != null) && tableDesc.isNonNative()) {
@@ -472,11 +485,12 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     ExecutorService executor = Executors.newFixedThreadPool(numThreads);
     List<Future<Set<Integer>>> futureList = new ArrayList<Future<Set<Integer>>>(numThreads);
     try {
+      boolean isMerge = mrwork != null && mrwork.isMergeFromResolver();
       for (int i = 0; i < numThreads; i++) {
         int start = i * numPathPerThread;
         int length = i != numThreads - 1 ? numPathPerThread : paths.length - start;
-        futureList.add(executor.submit(
-            new CheckNonCombinablePathCallable(paths, start, length, job)));
+        futureList.add(executor.submit(new CheckNonCombinablePathCallable(
+            paths, start, length, job, isMerge)));
       }
       Set<Integer> nonCombinablePathIndices = new HashSet<Integer>();
       for (Future<Set<Integer>> future : futureList) {

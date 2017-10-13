@@ -178,12 +178,14 @@ const char* _kFileMetadataExprTypeNames[] = {
 const std::map<int, const char*> _FileMetadataExprType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(1, _kFileMetadataExprTypeValues, _kFileMetadataExprTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kClientCapabilityValues[] = {
-  ClientCapability::TEST_CAPABILITY
+  ClientCapability::TEST_CAPABILITY,
+  ClientCapability::INSERT_ONLY_TABLES
 };
 const char* _kClientCapabilityNames[] = {
-  "TEST_CAPABILITY"
+  "TEST_CAPABILITY",
+  "INSERT_ONLY_TABLES"
 };
-const std::map<int, const char*> _ClientCapability_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(1, _kClientCapabilityValues, _kClientCapabilityNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _ClientCapability_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(2, _kClientCapabilityValues, _kClientCapabilityNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 
 Version::~Version() throw() {
