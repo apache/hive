@@ -297,7 +297,6 @@ public class TableExport {
             throw new IllegalStateException("partitions cannot be null for partitionTable :"
                 + tableSpec.tableName);
           }
-          new PartitionExport(paths, partitions, distCpDoAsUser, conf).write(replicationSpec);
           for (Partition partition : partitions) {
             authEntities.inputs.add(new ReadEntity(partition));
           }
