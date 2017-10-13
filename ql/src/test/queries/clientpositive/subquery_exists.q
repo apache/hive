@@ -85,3 +85,27 @@ explain select * from t where exists (select count(*) from src where 1=2);
 select * from t where exists (select count(*) from src where 1=2);
 
 drop table t;
+
+drop table if exists tx1;
+create table tx1 (a integer,b integer);
+insert into tx1	values  (1, 1),
+                        (1, 2),
+                        (1, 3);
+
+select count(*) as result,3 as expected from tx1 u
+    where exists (select * from tx1 v where u.a=v.a and u.b <> v.b);
+explain select count(*) as result,3 as expected from tx1 u
+    where exists (select * from tx1 v where u.a=v.a and u.b <> v.b);
+
+drop table tx1;
+
+create table t1(i int, j int);
+insert into t1 values(4,1);
+
+create table t2(i int, j int);
+insert into t2 values(4,2),(4,3),(4,5);
+
+explain select * from t1 where t1.i in (select t2.i from t2 where t2.j <> t1.j);
+select * from t1 where t1.i in (select t2.i from t2 where t2.j <> t1.j);
+drop table t1;
+drop table t2;

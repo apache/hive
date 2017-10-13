@@ -27,18 +27,12 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * The first is always a boolean (LongColumnVector).
  * The second and third are long columns or long expression results.
  */
-public class IfExprIntervalDayTimeColumnColumn extends VectorExpression {
+public class IfExprIntervalDayTimeColumnColumn extends IfExprConditionalFilter {
 
   private static final long serialVersionUID = 1L;
 
-  private int arg1Column, arg2Column, arg3Column;
-  private int outputColumn;
-
   public IfExprIntervalDayTimeColumnColumn(int arg1Column, int arg2Column, int arg3Column, int outputColumn) {
-    this.arg1Column = arg1Column;
-    this.arg2Column = arg2Column;
-    this.arg3Column = arg3Column;
-    this.outputColumn = outputColumn;
+    super(arg1Column, arg2Column, arg3Column, outputColumn);
   }
 
   public IfExprIntervalDayTimeColumnColumn() {
@@ -48,7 +42,7 @@ public class IfExprIntervalDayTimeColumnColumn extends VectorExpression {
   public void evaluate(VectorizedRowBatch batch) {
 
     if (childExpressions != null) {
-      super.evaluateChildren(batch);
+      super.evaluateIfConditionalExpr(batch, childExpressions);
     }
 
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
@@ -123,11 +117,6 @@ public class IfExprIntervalDayTimeColumnColumn extends VectorExpression {
     // restore repeating and no nulls indicators
     arg2ColVector.unFlatten();
     arg3ColVector.unFlatten();
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
   }
 
   @Override

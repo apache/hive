@@ -519,6 +519,12 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, dropTblMsg.getDB());
     assertEquals(tblName, dropTblMsg.getTable());
     assertEquals(TableType.MANAGED_TABLE.toString(), dropTblMsg.getTableType());
+    Table tableObj = dropTblMsg.getTableObj();
+    assertEquals(table.getDbName(), tableObj.getDbName());
+    assertEquals(table.getTableName(), tableObj.getTableName());
+    assertEquals(table.getOwner(), tableObj.getOwner());
+    assertEquals(table.getParameters(), tableObj.getParameters());
+    assertEquals(TableType.MANAGED_TABLE.toString(), tableObj.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.DROP_TABLE, firstEventId + 2);

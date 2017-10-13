@@ -118,8 +118,7 @@ public class JSONMessageFactory extends MessageFactory {
 
   @Override
   public DropTableMessage buildDropTableMessage(Table table) {
-    return new JSONDropTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table.getDbName(),
-        table.getTableName(), table.getTableType(), now());
+    return new JSONDropTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table, now());
   }
 
   @Override

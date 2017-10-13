@@ -223,10 +223,10 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
         rcwork.setDistCpDoAsUser(distCpDoAsUser);
       }
-      copyTask = TaskFactory.get(rcwork, conf);
+      copyTask = TaskFactory.get(rcwork, conf, true);
     } else {
       LOG.debug("ReplCopyTask:\tcwork");
-      copyTask = TaskFactory.get(new CopyWork(srcPath, dstPath, false), conf);
+      copyTask = TaskFactory.get(new CopyWork(srcPath, dstPath, false), conf, true);
     }
     return copyTask;
   }

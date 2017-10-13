@@ -786,7 +786,7 @@ public class HiveConf extends Configuration {
     NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES("hive.notification.sequence.lock.max.retries", 5,
         "Number of retries required to acquire a lock when getting the next notification sequential ID for entries "
             + "in the NOTIFICATION_LOG table."),
-    NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL("hive.notification.sequence.lock.retry.sleep.interval", 500,
+    NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL("hive.notification.sequence.lock.retry.sleep.interval", 500L,
         new TimeValidator(TimeUnit.MILLISECONDS),
         "Sleep interval between retries to acquire a notification lock as described part of property "
             + NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES.name()),
@@ -1395,6 +1395,9 @@ public class HiveConf extends Configuration {
         "references for the cached object. Setting this to true can help avoid out of memory\n" +
         "issues under memory pressure (in some cases) at the cost of slight unpredictability in\n" +
         "overall query performance."),
+    HIVE_IO_SARG_CACHE_MAX_WEIGHT_MB("hive.io.sarg.cache.max.weight.mb", 10,
+        "The max weight allowed for the SearchArgument Cache. By default, the cache allows a max-weight of 10MB, " +
+        "after which entries will be evicted."),
 
     HIVE_LAZYSIMPLE_EXTENDED_BOOLEAN_LITERAL("hive.lazysimple.extended_boolean_literal", false,
         "LazySimpleSerde uses this property to determine if it treats 'T', 't', 'F', 'f',\n" +
@@ -2023,13 +2026,6 @@ public class HiveConf extends Configuration {
     HIVE_DRUID_COORDINATOR_DEFAULT_ADDRESS("hive.druid.coordinator.address.default", "localhost:8081",
             "Address of the Druid coordinator. It is used to check the load status of newly created segments"
     ),
-    HIVE_DRUID_SELECT_DISTRIBUTE("hive.druid.select.distribute", true,
-        "If it is set to true, we distribute the execution of Druid Select queries. Concretely, we retrieve\n" +
-        "the result for Select queries directly from the Druid nodes containing the segments data.\n" +
-        "In particular, first we contact the Druid broker node to obtain the nodes containing the segments\n" +
-        "for the given query, and then we contact those nodes to retrieve the results for the query.\n" +
-        "If it is set to false, we do not execute the Select queries in a distributed fashion. Instead, results\n" +
-        "for those queries are returned by the Druid broker node."),
     HIVE_DRUID_SELECT_THRESHOLD("hive.druid.select.threshold", 10000,
         "Takes only effect when hive.druid.select.distribute is set to false. \n" +
         "When we can split a Select query, this is the maximum number of rows that we try to retrieve\n" +

@@ -1,0 +1,7 @@
+PREHOOK: query: CREATE TABLE druid_table_1
+STORED BY 'org.apache.hadoop.hive.druid.QTestDruidStorageHandler'
+TBLPROPERTIES ("property" = "localhost", "druid.datasource" = "mydatasource")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@druid_table_1
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Datasource name cannot be specified using [druid.datasource] for managed tables using Druid)

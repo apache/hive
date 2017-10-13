@@ -448,7 +448,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [12, 0, 14]
-                    selectExpressions: ConstantVectorExpression(val null) -> 12:bigint, VectorCoalesce(columns [13, 0])(children: ConstantVectorExpression(val null) -> 13:tinyint, col 0) -> 14:tinyint
+                    selectExpressions: ConstantVectorExpression(val null) -> 12:bigint, VectorCoalesce(columns [13, 0])(children: ConstantVectorExpression(val null) -> 13:bigint, col 0) -> 14:bigint
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true

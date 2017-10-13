@@ -239,13 +239,13 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization expression
-select 
+select
   sum(case when cint % 2 = 0 then 1 else 0 end) as ceven,
   sum(case when cint % 2 = 1 then 1 else 0 end) as codd
 from alltypesorc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select 
+select
   sum(case when cint % 2 = 0 then 1 else 0 end) as ceven,
   sum(case when cint % 2 = 1 then 1 else 0 end) as codd
 from alltypesorc
@@ -352,14 +352,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select 
+PREHOOK: query: select
   sum(case when cint % 2 = 0 then 1 else 0 end) as ceven,
   sum(case when cint % 2 = 1 then 1 else 0 end) as codd
 from alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: select 
+POSTHOOK: query: select
   sum(case when cint % 2 = 0 then 1 else 0 end) as ceven,
   sum(case when cint % 2 = 1 then 1 else 0 end) as codd
 from alltypesorc
@@ -368,13 +368,13 @@ POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 5110	4607
 PREHOOK: query: explain vectorization expression
-select 
+select
   sum(case when cint % 2 = 0 then cint else 0 end) as ceven,
   sum(case when cint % 2 = 1 then cint else 0 end) as codd
 from alltypesorc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select 
+select
   sum(case when cint % 2 = 0 then cint else 0 end) as ceven,
   sum(case when cint % 2 = 1 then cint else 0 end) as codd
 from alltypesorc
@@ -481,14 +481,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select 
+PREHOOK: query: select
   sum(case when cint % 2 = 0 then cint else 0 end) as ceven,
   sum(case when cint % 2 = 1 then cint else 0 end) as codd
 from alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: select 
+POSTHOOK: query: select
   sum(case when cint % 2 = 0 then cint else 0 end) as ceven,
   sum(case when cint % 2 = 1 then cint else 0 end) as codd
 from alltypesorc
@@ -496,3 +496,335 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 248718130534	1995744891643
+PREHOOK: query: CREATE TABLE test_1 (member DECIMAL , attr DECIMAL) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_1
+POSTHOOK: query: CREATE TABLE test_1 (member DECIMAL , attr DECIMAL) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_1
+PREHOOK: query: INSERT INTO test_1 VALUES (3.0,1.0),(2.0,2.0),(1.0,3.0)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_1
+POSTHOOK: query: INSERT INTO test_1 VALUES (3.0,1.0),(2.0,2.0),(1.0,3.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_1
+POSTHOOK: Lineage: test_1.attr EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: test_1.member EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: EXPLAIN
+SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_1
+                  Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE ((attr + 2)) END (type: decimal(11,0))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1
+#### A masked pattern was here ####
+3
+4
+4
+PREHOOK: query: EXPLAIN
+SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_1
+                  Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: CASE WHEN ((member = 1)) THEN (1) ELSE ((attr + 2)) END (type: decimal(11,0))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1
+#### A masked pattern was here ####
+3
+4
+1
+PREHOOK: query: EXPLAIN
+SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_1
+                  Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE (2) END (type: decimal(11,0))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1
+#### A masked pattern was here ####
+2
+2
+4
+PREHOOK: query: CREATE TABLE test_2 (member BIGINT, attr BIGINT) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_2
+POSTHOOK: query: CREATE TABLE test_2 (member BIGINT, attr BIGINT) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_2
+PREHOOK: query: INSERT INTO test_2 VALUES (3,1),(2,2),(1,3)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_2
+POSTHOOK: query: INSERT INTO test_2 VALUES (3,1),(2,2),(1,3)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_2
+POSTHOOK: Lineage: test_2.attr EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: test_2.member EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: EXPLAIN
+SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_2
+                  Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE ((attr + 2)) END (type: bigint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_2
+#### A masked pattern was here ####
+3
+4
+4
+PREHOOK: query: EXPLAIN
+SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_2
+                  Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: CASE WHEN ((member = 1)) THEN (null) ELSE ((attr + 2)) END (type: bigint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_2
+#### A masked pattern was here ####
+3
+4
+NULL
+PREHOOK: query: EXPLAIN
+SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_2
+                  Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE (null) END (type: bigint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_2
+#### A masked pattern was here ####
+NULL
+NULL
+4

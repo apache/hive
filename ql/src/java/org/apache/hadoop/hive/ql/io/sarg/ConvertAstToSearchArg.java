@@ -21,13 +21,16 @@ package org.apache.hadoop.hive.ql.io.sarg;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
-import org.apache.hadoop.hive.ql.io.sarg.LiteralDelegate;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -436,13 +439,59 @@ public class ConvertAstToSearchArg {
     }
   }
 
-
   public static final String SARG_PUSHDOWN = "sarg.pushdown";
+
+  private static volatile Cache<String, SearchArgument> sargsCache = null;
+
+  private static synchronized Cache<String, SearchArgument> initializeAndGetSargsCache(Configuration conf) {
+    if (sargsCache == null) {
+      sargsCache = CacheBuilder.newBuilder()
+            .weigher((String key, SearchArgument value) -> key.length())
+            .maximumWeight(
+                HiveConf.getIntVar(conf,
+                                   HiveConf.ConfVars.HIVE_IO_SARG_CACHE_MAX_WEIGHT_MB) * 1024 *1024
+            )
+            .build(); // Can't use CacheLoader because SearchArguments may be built either from Kryo strings,
+                      // or from expressions.
+    }
+    return sargsCache;
+  }
+
+  private static Cache<String, SearchArgument> getSargsCache(Configuration conf) {
+    return sargsCache == null? initializeAndGetSargsCache(conf) : sargsCache;
+  }
+
+  private static boolean isSargsCacheEnabled(Configuration conf) {
+    return HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_IO_SARG_CACHE_MAX_WEIGHT_MB) > 0;
+  }
+
+  private static SearchArgument getSearchArgumentFromString(Configuration conf, String sargString) {
+
+    try {
+      return isSargsCacheEnabled(conf)? getSargsCache(conf).get(sargString, () -> create(sargString))
+                                      : create(sargString);
+    }
+    catch (ExecutionException exception) {
+      throw new RuntimeException(exception);
+    }
+  }
+
+  private static SearchArgument getSearchArgumentFromExpression(Configuration conf, String sargString) {
+
+    try {
+      return isSargsCacheEnabled(conf)?
+              getSargsCache(conf).get(sargString,
+                                      () -> create(conf, SerializationUtilities.deserializeExpression(sargString)))
+              : create(conf, SerializationUtilities.deserializeExpression(sargString));
+    }
+    catch (ExecutionException exception) {
+      throw new RuntimeException(exception);
+    }
+  }
 
   public static SearchArgument create(Configuration conf, ExprNodeGenericFuncDesc expression) {
     return new ConvertAstToSearchArg(conf, expression).buildSearchArgument();
   }
-
 
   private final static ThreadLocal<Kryo> kryo = new ThreadLocal<Kryo>() {
     protected Kryo initialValue() { return new Kryo(); }
@@ -459,9 +508,9 @@ public class ConvertAstToSearchArg {
   public static SearchArgument createFromConf(Configuration conf) {
     String sargString;
     if ((sargString = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR)) != null) {
-      return create(conf, SerializationUtilities.deserializeExpression(sargString));
+      return getSearchArgumentFromExpression(conf, sargString);
     } else if ((sargString = conf.get(SARG_PUSHDOWN)) != null) {
-      return create(sargString);
+      return getSearchArgumentFromString(conf, sargString);
     }
     return null;
   }

@@ -191,11 +191,14 @@ public class TestReplicationSemanticAnalyzer {
     ParseDriver pd = new ParseDriver();
     ASTNode root;
     ASTNode child;
+    ASTNode subChild;
+    ASTNode configNode;
     String replRoot = conf.getVar(HiveConf.ConfVars.REPLDIR);
     Path dumpRoot = new Path(replRoot, "next");
     System.out.println(replRoot);
     System.out.println(dumpRoot);
     String newDB = "default_bak";
+    String newDB2= "default_bak_2";
 
     String query = "repl load  from '" + dumpRoot.toString() + "'";
     root = (ASTNode) pd.parse(query).getChild(0);
@@ -213,8 +216,42 @@ public class TestReplicationSemanticAnalyzer {
     assertEquals(child.getText(), "'" + dumpRoot.toString() + "'");
     assertEquals(child.getChildCount(), 0);
     child =  (ASTNode) root.getChild(1);
-    assertEquals(child.getText(), newDB);
+    assertEquals(child.getText(), "TOK_DBNAME");
+    assertEquals(child.getChildCount(), 1);
+    subChild = (ASTNode) child.getChild(0);
+    assertEquals(subChild.getText(), newDB);
+    assertEquals(subChild.getChildCount(), 0);
+
+    query = "repl load " + newDB2 + " from '" + dumpRoot.toString()
+            + "' with ('mapred.job.queue.name'='repl','hive.repl.approx.max.load.tasks'='100')";
+    root = (ASTNode) pd.parse(query).getChild(0);
+    assertEquals(root.getText(), "TOK_REPL_LOAD");
+    assertEquals(root.getChildCount(), 3);
+    child =  (ASTNode) root.getChild(0);
+    assertEquals(child.getText(), "'" + dumpRoot.toString() + "'");
     assertEquals(child.getChildCount(), 0);
+    child =  (ASTNode) root.getChild(1);
+    assertEquals(child.getText(), "TOK_DBNAME");
+    assertEquals(child.getChildCount(), 1);
+    subChild = (ASTNode) child.getChild(0);
+    assertEquals(subChild.getText(), newDB2);
+    assertEquals(subChild.getChildCount(), 0);
+    child =  (ASTNode) root.getChild(2);
+    assertEquals(child.getText(), "TOK_REPL_CONFIG");
+    assertEquals(child.getChildCount(), 1);
+    subChild = (ASTNode) child.getChild(0);
+    assertEquals(subChild.getText(), "TOK_REPL_CONFIG_LIST");
+    assertEquals(subChild.getChildCount(), 2);
+    configNode = (ASTNode) subChild.getChild(0);
+    assertEquals(configNode.getText(), "TOK_TABLEPROPERTY");
+    assertEquals(configNode.getChildCount(), 2);
+    assertEquals(configNode.getChild(0).getText(), "'mapred.job.queue.name'");
+    assertEquals(configNode.getChild(1).getText(), "'repl'");
+    configNode = (ASTNode) subChild.getChild(1);
+    assertEquals(configNode.getText(), "TOK_TABLEPROPERTY");
+    assertEquals(configNode.getChildCount(), 2);
+    assertEquals(configNode.getChild(0).getText(), "'hive.repl.approx.max.load.tasks'");
+    assertEquals(configNode.getChild(1).getText(), "'100'");
   }
 
   //@Test
