@@ -30,10 +30,12 @@ public class AcidHouseKeeperService implements RunnableConfigurable {
   private static final Logger LOG = LoggerFactory.getLogger(AcidHouseKeeperService.class);
 
   private Configuration conf;
+  private TxnStore txnHandler;
 
   @Override
   public void setConf(Configuration configuration) {
     this.conf = configuration;
+    txnHandler = TxnUtils.getTxnStore(conf);
   }
 
   @Override
@@ -45,7 +47,6 @@ public class AcidHouseKeeperService implements RunnableConfigurable {
   public void run() {
     TxnStore.MutexAPI.LockHandle handle = null;
     try {
-      TxnStore txnHandler = TxnUtils.getTxnStore(conf);
       handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.HouseKeeper.name());
       long startTime = System.currentTimeMillis();
       txnHandler.performTimeOuts();
