@@ -31,13 +31,13 @@ public class AcidOpenTxnsCounterService implements RunnableConfigurable {
   private Configuration conf;
   private int isAliveCounter = 0;
   private long lastLogTime = 0;
+  private TxnStore txnHandler;
 
   @Override
   public void run() {
     try {
       long startTime = System.currentTimeMillis();
       isAliveCounter++;
-      TxnStore txnHandler = TxnUtils.getTxnStore(conf);
       txnHandler.countOpenTxns();
       if (System.currentTimeMillis() - lastLogTime > 60 * 1000) {
         LOG.info("AcidOpenTxnsCounterService ran for " +
@@ -54,6 +54,7 @@ public class AcidOpenTxnsCounterService implements RunnableConfigurable {
   @Override
   public void setConf(Configuration configuration) {
     conf = configuration;
+    txnHandler = TxnUtils.getTxnStore(conf);
   }
 
   @Override

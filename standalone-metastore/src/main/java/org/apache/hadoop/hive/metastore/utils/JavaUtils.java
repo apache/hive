@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -51,6 +52,38 @@ public class JavaUtils {
       return (Class<? extends T>) Class.forName(className, true, getClassLoader());
     } catch (ClassNotFoundException e) {
       throw new MetaException(className + " class not found");
+    }
+  }
+
+  /**
+   * Create an object of the given class.
+   * @param theClass
+   * @param parameterTypes
+   *          an array of parameterTypes for the constructor
+   * @param initargs
+   *          the list of arguments for the constructor
+   */
+  public static <T> T newInstance(Class<T> theClass, Class<?>[] parameterTypes,
+                                  Object[] initargs) {
+    // Perform some sanity checks on the arguments.
+    if (parameterTypes.length != initargs.length) {
+      throw new IllegalArgumentException(
+          "Number of constructor parameter types doesn't match number of arguments");
+    }
+    for (int i = 0; i < parameterTypes.length; i++) {
+      Class<?> clazz = parameterTypes[i];
+      if (initargs[i] != null && !(clazz.isInstance(initargs[i]))) {
+        throw new IllegalArgumentException("Object : " + initargs[i]
+            + " is not an instance of " + clazz);
+      }
+    }
+
+    try {
+      Constructor<T> meth = theClass.getDeclaredConstructor(parameterTypes);
+      meth.setAccessible(true);
+      return meth.newInstance(initargs);
+    } catch (Exception e) {
+      throw new RuntimeException("Unable to instantiate " + theClass.getName(), e);
     }
   }
 

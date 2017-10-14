@@ -33,9 +33,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.jolbox</groupId>
-      <artifactId>bonecp</artifactId>
-      <version>${bonecp.version}</version>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.new.version}</version>
     </dependency>
     <dependency>
       <groupId>com.github.joshelser</groupId>
@@ -51,6 +51,11 @@
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
       <version>${protobuf.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.jolbox</groupId>
+      <artifactId>bonecp</artifactId>
+      <version>${bonecp.version}</version>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>
@@ -76,6 +81,16 @@
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-json</artifactId>
       <version>${dropwizard.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javolution</groupId>
+      <artifactId>javolution</artifactId>
+      <version>${javolution.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr-runtime</artifactId>
+      <version>${antlr.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -282,6 +297,20 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr3-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>antlr</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
