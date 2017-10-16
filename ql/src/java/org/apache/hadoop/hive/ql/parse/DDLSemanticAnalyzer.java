@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1511,6 +1512,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         alterTblDesc), conf));
   }
 
+  private WriteType determineAlterTableWriteType(Table tab, AlterTableDesc desc, AlterTableTypes op) {
+    boolean convertingToAcid = false;
+    if(desc != null && desc.getProps() != null && Boolean.parseBoolean(desc.getProps().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL))) {
+      convertingToAcid = true;
+    }
+    if(!AcidUtils.isAcidTable(tab) && convertingToAcid) {
+      //non to acid conversion (property itself) must be mutexed to prevent concurrent writes.
+      // See HIVE-16688 for use case.
+      return WriteType.DDL_EXCLUSIVE;
+    }
+    return WriteEntity.determineAlterTableWriteType(op);
+  }
   private void addInputsOutputsAlterTable(String tableName, Map<String, String> partSpec,
       AlterTableTypes op) throws SemanticException {
     addInputsOutputsAlterTable(tableName, partSpec, null, op, false);
@@ -1545,7 +1558,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Determine the lock type to acquire
     WriteEntity.WriteType writeType = doForceExclusive
-        ? WriteType.DDL_EXCLUSIVE : WriteEntity.determineAlterTableWriteType(op);
+        ? WriteType.DDL_EXCLUSIVE : determineAlterTableWriteType(tab, desc, op);
 
     if (!alterPartitions) {
       inputs.add(new ReadEntity(tab));

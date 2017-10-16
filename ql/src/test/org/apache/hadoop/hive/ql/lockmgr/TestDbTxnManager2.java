@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -42,8 +41,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,11 +51,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * See additional tests in {@link org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager}
@@ -117,6 +109,37 @@ public class TestDbTxnManager2 {
   public void tearDown() throws Exception {
     driver.close();
     if (txnMgr != null) txnMgr.closeTxnManager();
+  }
+
+  /**
+   * HIVE-16688
+   */
+  @Test
+  public void testMetadataOperationLocks() throws Exception {
+    boolean isStrict = conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE);
+    //to make insert into non-acid take shared lock
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE, false);
+    dropTable(new String[] {"T"});
+    checkCmdOnDriver(driver.run("create table if not exists T (a int, b int)"));
+    checkCmdOnDriver(driver.compileAndRespond("insert into T values (1,2)"));
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer");
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    //since LM is using non strict mode we get shared lock
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T", null, locks);
+
+    //simulate concurrent session
+    HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    checkCmdOnDriver(driver.compileAndRespond("alter table T SET TBLPROPERTIES ('transactional'='true')"));
+    ((DbTxnManager)txnMgr2).acquireLocks(driver.getPlan(), ctx, "Fiddler", false);
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T", null, locks);
+    checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T", null, locks);
+    txnMgr2.rollbackTxn();
+    txnMgr.commitTxn();
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE, isStrict);
   }
   @Test
   public void testLocksInSubquery() throws Exception {
