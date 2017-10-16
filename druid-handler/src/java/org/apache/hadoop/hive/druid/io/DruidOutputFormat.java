@@ -92,7 +92,12 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) != null ?
                     tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) :
                     HiveConf.getVar(jc, HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY);
-    final String dataSource = tableProperties.getProperty(Constants.DRUID_DATA_SOURCE);
+    // If datasource is in the table properties, it is an INSERT/INSERT OVERWRITE as the datasource
+    // name was already persisted. Otherwise, it is a CT/CTAS and we need to get the name from the
+    // job properties that are set by configureOutputJobProperties in the DruidStorageHandler
+    final String dataSource = tableProperties.getProperty(Constants.DRUID_DATA_SOURCE) == null
+        ? jc.get(Constants.DRUID_DATA_SOURCE)
+        : tableProperties.getProperty(Constants.DRUID_DATA_SOURCE);
     final String segmentDirectory = jc.get(Constants.DRUID_SEGMENT_INTERMEDIATE_DIRECTORY);
 
     final GranularitySpec granularitySpec = new UniformGranularitySpec(
