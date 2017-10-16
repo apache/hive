@@ -67,7 +67,14 @@ public final class QFile {
 
   private static final String MASK_PATTERN = "#### A masked pattern was here ####\n";
 
-  private static final String[] COMMANDS_TO_REMOVE = {"EXPLAIN", "DESCRIBE[\\s\\n]+EXTENDED", "DESCRIBE[\\s\\n]+FORMATTED"};
+  private static final String[] COMMANDS_TO_REMOVE = {
+      "EXPLAIN",
+      "DESC(RIBE)?[\\s\\n]+EXTENDED",
+      "DESC(RIBE)?[\\s\\n]+FORMATTED",
+      "DESC(RIBE)?",
+      "SHOW[\\s\\n]+TABLES",
+      "SHOW[\\s\\n]+FORMATTED[\\s\\n]+INDEXES",
+      "SHOW[\\s\\n]+DATABASES"};
 
   private String name;
   private String databaseName;
@@ -360,6 +367,9 @@ public final class QFile {
       filterSet.addFilter(String.format(regex, command),
           Pattern.DOTALL | Pattern.CASE_INSENSITIVE, "");
     }
+    filterSet.addFilter("(Warning: )(.* Join .*JOIN\\[\\d+\\].*)( is a cross product)", "$1MASKED$3");
+    filterSet.addFilter("mapreduce.jobtracker.address=.*\n",
+        "mapreduce.jobtracker.address=MASKED\n");
     return filterSet;
   }
 
