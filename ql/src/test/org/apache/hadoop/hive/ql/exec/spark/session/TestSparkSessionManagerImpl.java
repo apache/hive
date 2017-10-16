@@ -27,7 +27,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClient;
+import org.apache.hadoop.hive.ql.exec.spark.HiveSparkClientFactory;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.spark.SparkConf;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -95,6 +101,51 @@ public class TestSparkSessionManagerImpl {
 
     System.out.println("Ending SessionManagerHS2");
     sessionManagerHS2.shutdown();
+  }
+
+  /**
+   *  Test HIVE-16395 - by default we force cloning of Configurations for Spark jobs
+   */
+  @Test
+  public void testForceConfCloning() throws Exception {
+    HiveConf conf = new HiveConf();
+    conf.set("spark.master", "local");
+    String sparkCloneConfiguration = HiveSparkClientFactory.SPARK_CLONE_CONFIGURATION;
+
+    // Clear the value of sparkCloneConfiguration
+    conf.unset(sparkCloneConfiguration);
+    assertNull( "Could not clear " + sparkCloneConfiguration + " in HiveConf",
+        conf.get(sparkCloneConfiguration));
+
+    // By default we should set sparkCloneConfiguration to true in the Spark config
+    checkSparkConf(conf, sparkCloneConfiguration, "true");
+
+    // User can override value for sparkCloneConfiguration in Hive config to false
+    conf.set(sparkCloneConfiguration, "false");
+    checkSparkConf(conf, sparkCloneConfiguration, "false");
+
+    // User can override value of sparkCloneConfiguration in Hive config to true
+    conf.set(sparkCloneConfiguration, "true");
+    checkSparkConf(conf, sparkCloneConfiguration, "true");
+  }
+
+  /**
+   * Force a Spark config to be generated and check that a config value has the expected value
+   * @param conf the Hive config to use as a base
+   * @param paramName the Spark config name to check
+   * @param expectedValue the expected value in the Spark config
+   */
+  private void checkSparkConf(HiveConf conf, String paramName, String expectedValue) throws HiveException {
+    SparkSessionManager sessionManager = SparkSessionManagerImpl.getInstance();
+    SparkSessionImpl sparkSessionImpl = (SparkSessionImpl)
+        sessionManager.getSession(null, conf, true);
+    assertTrue(sparkSessionImpl.isOpen());
+    HiveSparkClient hiveSparkClient = sparkSessionImpl.getHiveSparkClient();
+    SparkConf sparkConf = hiveSparkClient.getSparkConf();
+    String cloneConfig = sparkConf.get(paramName);
+    sessionManager.closeSession(sparkSessionImpl);
+    assertEquals(expectedValue, cloneConfig);
+    sessionManager.shutdown();
   }
 
   /* Thread simulating a user session in HiveServer2. */

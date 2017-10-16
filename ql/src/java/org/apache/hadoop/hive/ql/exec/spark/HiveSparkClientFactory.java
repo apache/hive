@@ -26,10 +26,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.compress.utils.CharsetNames;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.common.LogUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.spark.client.SparkClientUtilities;
 import org.slf4j.Logger;
@@ -60,6 +60,8 @@ public class HiveSparkClientFactory {
   private static final String SPARK_DEFAULT_REFERENCE_TRACKING = "false";
   private static final String SPARK_WAIT_APP_COMPLETE = "spark.yarn.submit.waitAppCompletion";
   private static final String SPARK_DEPLOY_MODE = "spark.submit.deployMode";
+  @VisibleForTesting
+  public static final String SPARK_CLONE_CONFIGURATION = "spark.hadoop.cloneConf";
 
   public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf) throws Exception {
     Map<String, String> sparkConf = initiateSparkConf(hiveconf);
@@ -221,6 +223,10 @@ public class HiveSparkClientFactory {
         sparkConf.get(SPARK_WAIT_APP_COMPLETE) == null) {
       sparkConf.put(SPARK_WAIT_APP_COMPLETE, "false");
     }
+
+    // Force Spark configs to be cloned by default
+    sparkConf.putIfAbsent(SPARK_CLONE_CONFIGURATION, "true");
+
 
     // Set the credential provider passwords if found, if there is job specific password
     // the credential provider location is set directly in the execute method of LocalSparkClient
