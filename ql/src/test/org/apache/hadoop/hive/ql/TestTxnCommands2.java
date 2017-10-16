@@ -937,6 +937,23 @@ public class TestTxnCommands2 {
   }
 
   /**
+   * https://issues.apache.org/jira/browse/HIVE-17391
+   */
+  @Test
+  public void testEmptyInTblproperties() throws Exception {
+    runStatementOnDriver("create table t1 " + "(a int, b int) stored as orc TBLPROPERTIES ('serialization.null.format'='', 'transactional'='true')");
+    runStatementOnDriver("insert into t1 " + "(a,b) values(1,7),(3,7)");
+    runStatementOnDriver("update t1" + " set b = -2 where b = 2");
+    runStatementOnDriver("alter table t1 " + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
+    Assert.assertTrue(resp.getCompacts().get(0).getHadoopJobId().startsWith("job_local"));
+  }
+
+  /**
    * https://issues.apache.org/jira/browse/HIVE-10151
    */
   @Test
