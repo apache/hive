@@ -175,8 +175,7 @@ public final class QFile {
    */
   private String replaceTableNames(String source) {
     for (String table : srcTables) {
-      source = source.replaceAll("(?is)(\\s+)" + table + "([\\s;\\n\\)])", "$1default." + table
-          + "$2");
+      source = source.replaceAll("(?is)(\\s+)(" + table + ")([\\s;\\n\\),])", "$1default.$2$3");
     }
     return source;
   }
