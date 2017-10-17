@@ -101,6 +101,7 @@ public class MetastoreConf {
    */
   public static final MetastoreConf.ConfVars[] metaVars = {
       ConfVars.WAREHOUSE,
+      ConfVars.REPLDIR,
       ConfVars.THRIFT_URIS,
       ConfVars.SERVER_PORT,
       ConfVars.THRIFT_CONNECTION_RETRIES,
@@ -281,6 +282,10 @@ public class MetastoreConf {
     CLIENT_CONNECT_RETRY_DELAY("metastore.client.connect.retry.delay",
         "hive.metastore.client.connect.retry.delay", 1, TimeUnit.SECONDS,
         "Number of seconds for the client to wait between consecutive connection attempts"),
+    CLIENT_KERBEROS_PRINCIPAL("metastore.client.kerberos.principal",
+        "hive.metastore.client.kerberos.principal",
+        "", // E.g. "hive-metastore/_HOST@EXAMPLE.COM".
+        "The Kerberos principal associated with the HA cluster of hcat_servers."),
     CLIENT_SOCKET_LIFETIME("metastore.client.socket.lifetime",
         "hive.metastore.client.socket.lifetime", 0, TimeUnit.SECONDS,
         "MetaStore Client socket lifetime in seconds. After this time is exceeded, client\n" +
@@ -441,6 +446,10 @@ public class MetastoreConf {
         "hive.metastore.event.message.factory",
         "org.apache.hadoop.hive.metastore.messaging.json.JSONMessageFactory",
         "Factory class for making encoding and decoding messages in the events generated."),
+    EVENT_DB_NOTIFICATION_API_AUTH("metastore.metastore.event.db.notification.api.auth",
+        "hive.metastore.event.db.notification.api.auth", true,
+        "Should metastore do authorization against database notification related APIs such as get_next_notification.\n" +
+            "If set to true, then only the superusers in proxy settings have the permission"),
     EXECUTE_SET_UGI("metastore.execute.setugi", "hive.metastore.execute.setugi", true,
         "In unsecure mode, setting this property to true will cause the metastore to execute DFS operations using \n" +
             "the client's reported user and group permissions. Note that this property must be set on \n" +
@@ -578,6 +587,8 @@ public class MetastoreConf {
         "Inteval for cmroot cleanup thread."),
     REPLCMENABLED("metastore.repl.cm.enabled", "hive.repl.cm.enabled", false,
         "Turn on ChangeManager, so delete files will go to cmrootdir."),
+    REPLDIR("metastore.repl.rootdir", "hive.repl.rootdir", "/user/hive/repl/",
+        "HDFS root dir for all replication dumps."),
     REPL_COPYFILE_MAXNUMFILES("metastore.repl.copyfile.maxnumfiles",
         "hive.exec.copyfile.maxnumfiles", 1L,
         "Maximum number of files Hive uses to do sequential HDFS copies between directories." +
@@ -586,6 +597,10 @@ public class MetastoreConf {
         "hive.exec.copyfile.maxsize", 32L * 1024 * 1024 /*32M*/,
         "Maximum file size (in bytes) that Hive uses to do single HDFS copies between directories." +
             "Distributed copies (distcp) will be used instead for bigger files so that copies can be done faster."),
+    REPL_DUMPDIR_CLEAN_FREQ("metastore.repl.dumpdir.clean.freq", "hive.repl.dumpdir.clean.freq",
+        0, TimeUnit.SECONDS, "Frequency at which timer task runs to purge expired dump dirs."),
+    REPL_DUMPDIR_TTL("metastore.repl.dumpdir.ttl", "hive.repl.dumpdir.ttl", 7, TimeUnit.DAYS,
+        "TTL of dump dirs before cleanup."),
     SCHEMA_INFO_CLASS("metastore.schema.info.class", "hive.metastore.schema.info.class",
         "org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo",
         "Fully qualified class name for the metastore schema information class \n"

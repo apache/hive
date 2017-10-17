@@ -18,14 +18,12 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
-import java.util.TimerTask;
-
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.RawStore;
 
-public class EventCleanerTask extends TimerTask{
+public class EventCleanerTask implements Runnable {
 
   public static final Logger LOG = LoggerFactory.getLogger(EventCleanerTask.class);
   private final IHMSHandler handler;

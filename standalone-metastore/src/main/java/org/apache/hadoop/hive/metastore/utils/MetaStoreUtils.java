@@ -59,6 +59,9 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.security.SaslRpcServer;
+import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
+import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.hadoop.util.MachineList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,6 +79,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1026,5 +1030,26 @@ public class MetaStoreUtils {
     }
     return oneurl;
   }
->>>>>>> 0d231875bb... WIP.  Have moved HMS, but tests don't all pass yet.
+
+  /**
+   * Verify if the user is allowed to make DB notification related calls.
+   * Only the superusers defined in the Hadoop proxy user settings have the permission.
+   *
+   * @param user the short user name
+   * @param conf that contains the proxy user settings
+   * @return if the user has the permission
+   */
+  public static boolean checkUserHasHostProxyPrivileges(String user, Configuration conf, String ipAddress) {
+    DefaultImpersonationProvider sip = ProxyUsers.getDefaultImpersonationProvider();
+    // Just need to initialize the ProxyUsers for the first time, given that the conf will not change on the fly
+    if (sip == null) {
+      ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
+      sip = ProxyUsers.getDefaultImpersonationProvider();
+    }
+    Map<String, Collection<String>> proxyHosts = sip.getProxyHosts();
+    Collection<String> hostEntries = proxyHosts.get(sip.getProxySuperuserIpConfKey(user));
+    MachineList machineList = new MachineList(hostEntries);
+    ipAddress = (ipAddress == null) ? StringUtils.EMPTY : ipAddress;
+    return machineList.includes(ipAddress);
+  }
 }

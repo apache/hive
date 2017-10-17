@@ -27,7 +27,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -79,9 +78,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.security.SaslRpcServer;
-import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
-import org.apache.hadoop.security.authorize.ProxyUsers;
-import org.apache.hadoop.util.MachineList;
 import org.apache.hive.common.util.ReflectionUtil;
 
 public class MetaStoreUtils {
@@ -1408,27 +1404,6 @@ public class MetaStoreUtils {
     return cols;
   }
 
-  /**
-   * Verify if the user is allowed to make DB notification related calls.
-   * Only the superusers defined in the Hadoop proxy user settings have the permission.
-   *
-   * @param user the short user name
-   * @param conf that contains the proxy user settings
-   * @return if the user has the permission
-   */
-  public static boolean checkUserHasHostProxyPrivileges(String user, Configuration conf, String ipAddress) {
-    DefaultImpersonationProvider sip = ProxyUsers.getDefaultImpersonationProvider();
-    // Just need to initialize the ProxyUsers for the first time, given that the conf will not change on the fly
-    if (sip == null) {
-      ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
-      sip = ProxyUsers.getDefaultImpersonationProvider();
-    }
-    Map<String, Collection<String>> proxyHosts = sip.getProxyHosts();
-    Collection<String> hostEntries = proxyHosts.get(sip.getProxySuperuserIpConfKey(user));
-    MachineList machineList = new MachineList(hostEntries);
-    ipAddress = (ipAddress == null) ? StringUtils.EMPTY : ipAddress;
-    return machineList.includes(ipAddress);
-  }
 
   /** Duplicates AcidUtils; used in a couple places in metastore. */
   public static boolean isInsertOnlyTableParam(Map<String, String> params) {
