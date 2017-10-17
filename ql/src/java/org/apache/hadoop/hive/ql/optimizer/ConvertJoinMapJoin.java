@@ -385,6 +385,32 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       return false;
     }
 
+    // Incase the join has extra keys other than bucketed columns, partition keys need to be updated
+    // on small table(s).
+    ReduceSinkOperator bigTableRS = (ReduceSinkOperator)joinOp.getParentOperators().get(bigTablePosition);
+    OpTraits opTraits = bigTableRS.getOpTraits();
+    List<List<String>> listBucketCols = opTraits.getBucketColNames();
+    ArrayList<ExprNodeDesc> bigTablePartitionCols = bigTableRS.getConf().getPartitionCols();
+    boolean updatePartitionCols = false;
+    List<Integer> positions = new ArrayList<>();
+
+    if (listBucketCols.get(0).size() != bigTablePartitionCols.size()) {
+      updatePartitionCols = true;
+      // Prepare updated partition columns for small table(s).
+      // Get the positions of bucketed columns
+
+      int i = 0;
+      Map<String, ExprNodeDesc> colExprMap = bigTableRS.getColumnExprMap();
+      for (ExprNodeDesc bigTableExpr : bigTablePartitionCols) {
+        // It is guaranteed there is only 1 list within listBucketCols.
+        for (String colName : listBucketCols.get(0)) {
+          if (colExprMap.get(colName).isSame(bigTableExpr)) {
+            positions.add(i++);
+          }
+        }
+      }
+    }
+
     MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, bigTablePosition, true);
     if (mapJoinOp == null) {
       LOG.debug("Conversion to bucket map join failed.");
@@ -394,7 +420,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     joinDesc.setBucketMapJoin(true);
 
     // we can set the traits for this join operator
-    OpTraits opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(),
+    opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(),
         tezBucketJoinProcCtx.getNumBuckets(), null, joinOp.getOpTraits().getNumReduceSinks());
     mapJoinOp.setOpTraits(opTraits);
     mapJoinOp.setStatistics(joinOp.getStatistics());
@@ -405,6 +431,22 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     bigTableBucketNumMapping.put(joinDesc.getBigTableAlias(), tezBucketJoinProcCtx.getNumBuckets());
     joinDesc.setBigTableBucketNumMapping(bigTableBucketNumMapping);
 
+    // Update the partition columns in small table to ensure correct routing of hash tables.
+    if (updatePartitionCols) {
+      // use the positions to only pick the partitionCols which are required
+      // on the small table side.
+      for (Operator<?> op : mapJoinOp.getParentOperators()) {
+        if (!(op instanceof ReduceSinkOperator)) continue;;
+
+        ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
+        ArrayList<ExprNodeDesc> newPartitionCols = new ArrayList<>();
+        ArrayList<ExprNodeDesc> partitionCols = rsOp.getConf().getPartitionCols();
+        for (Integer position : positions) {
+          newPartitionCols.add(partitionCols.get(position));
+        }
+        rsOp.getConf().setPartitionCols(newPartitionCols);
+      }
+    }
     return true;
   }
 

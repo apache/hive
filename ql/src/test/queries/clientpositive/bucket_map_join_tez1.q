@@ -242,3 +242,39 @@ explain
 select a.key, a.value, b.value
 from tab a join tab_part b on a.key = b.key and a.ds = b.ds;
 
+-- HIVE-17792 : Enable Bucket Map Join when there are extra keys other than bucketed columns
+set hive.auto.convert.join.noconditionaltask.size=20000;
+set hive.convert.join.bucket.mapjoin.tez = false;
+explain select a.key, a.value, b.value
+        from tab a join tab_part b on a.key = b.key and a.value = b.value;
+select a.key, a.value, b.value
+from tab a join tab_part b on a.key = b.key and a.value = b.value
+order by a.key, a.value, b.value;
+
+set hive.convert.join.bucket.mapjoin.tez = true;
+explain select a.key, a.value, b.value
+        from tab a join tab_part b on a.key = b.key and a.value = b.value;
+select a.key, a.value, b.value
+from tab a join tab_part b on a.key = b.key and a.value = b.value
+order by a.key, a.value, b.value;
+
+
+-- With non-bucketed small table
+CREATE TABLE tab2(key int, value string) PARTITIONED BY(ds STRING) STORED AS TEXTFILE;
+insert overwrite table tab2 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin;
+analyze table tab2 compute statistics for columns;
+
+set hive.convert.join.bucket.mapjoin.tez = false;
+explain select a.key, a.value, b.value
+        from tab2 a join tab_part b on a.key = b.key and a.value = b.value;
+select a.key, a.value, b.value
+from tab2 a join tab_part b on a.key = b.key and a.value = b.value
+order by a.key, a.value, b.value;
+
+set hive.convert.join.bucket.mapjoin.tez = true;
+explain select a.key, a.value, b.value
+        from tab2 a join tab_part b on a.key = b.key and a.value = b.value;
+select a.key, a.value, b.value
+from tab2 a join tab_part b on a.key = b.key and a.value = b.value
+order by a.key, a.value, b.value;
