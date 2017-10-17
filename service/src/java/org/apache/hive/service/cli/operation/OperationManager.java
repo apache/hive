@@ -210,7 +210,9 @@ public class OperationManager extends AbstractService {
 
   private Operation removeOperation(OperationHandle opHandle) {
     Operation operation = handleToOperation.remove(opHandle);
-    queryIdOperation.remove(getQueryId(operation));
+    String queryId = getQueryId(operation);
+    queryIdOperation.remove(queryId);
+    LOG.info("Removed queryId: {} corresponding to operation: {}", queryId, opHandle);
     if (operation instanceof SQLOperation) {
       removeSafeQueryInfo(opHandle);
     }

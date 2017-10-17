@@ -101,7 +101,6 @@ public class TestJdbcWithMiniLlap {
   private static String dataFileDir;
   private static Path kvDataFilePath;
   private static Path dataTypesFilePath;
-  private static final String tmpDir = System.getProperty("test.tmp.dir");
 
   private static HiveConf conf = null;
   private Connection hs2Conn = null;
@@ -138,7 +137,7 @@ public class TestJdbcWithMiniLlap {
     hs2Conn = getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
   }
 
-  private Connection getConnection(String jdbcURL, String user, String pwd) throws SQLException {
+  public static Connection getConnection(String jdbcURL, String user, String pwd) throws SQLException {
     Connection conn = DriverManager.getConnection(jdbcURL, user, pwd);
     conn.createStatement().execute("set hive.support.concurrency = false");
     return conn;
@@ -158,11 +157,12 @@ public class TestJdbcWithMiniLlap {
   }
 
   private void createTestTable(String tableName) throws Exception {
-    createTestTable(null, tableName);
+    createTestTable(hs2Conn, null, tableName, kvDataFilePath.toString());
   }
 
-  private void createTestTable(String database, String tableName) throws Exception {
-    Statement stmt = hs2Conn.createStatement();
+  public static void createTestTable(Connection connection, String database, String tableName, String srcFile) throws
+    Exception {
+    Statement stmt = connection.createStatement();
 
     if (database != null) {
       stmt.execute("CREATE DATABASE IF NOT EXISTS " + database);
@@ -175,8 +175,7 @@ public class TestJdbcWithMiniLlap {
         + " (under_col INT COMMENT 'the under column', value STRING) COMMENT ' test table'");
 
     // load data
-    stmt.execute("load data local inpath '"
-        + kvDataFilePath.toString() + "' into table " + tableName);
+    stmt.execute("load data local inpath '" + srcFile + "' into table " + tableName);
 
     ResultSet res = stmt.executeQuery("SELECT * FROM " + tableName);
     assertTrue(res.next());
@@ -236,7 +235,7 @@ public class TestJdbcWithMiniLlap {
 
   @Test(timeout = 60000)
   public void testNonAsciiStrings() throws Exception {
-    createTestTable("nonascii", "testtab_nonascii");
+    createTestTable(hs2Conn, "nonascii", "testtab_nonascii", kvDataFilePath.toString());
 
     RowCollector rowCollector = new RowCollector();
     String nonAscii = "À côté du garçon";

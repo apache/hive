@@ -41,6 +41,7 @@ public class QueryDisplay {
   private String explainPlan;
   private String errorMessage;
   private String queryId;
+  private long queryStartTime = System.currentTimeMillis();
 
   private final Map<Phase, Map<String, Long>> hmsTimingMap = new HashMap<Phase, Map<String, Long>>();
   private final Map<Phase, Map<String, Long>> perfLogStartMap = new HashMap<Phase, Map<String, Long>>();
@@ -300,5 +301,9 @@ public class QueryDisplay {
 
   private String returnStringOrUnknown(String s) {
     return s == null ? "UNKNOWN" : s;
+  }
+
+  public long getQueryStartTime() {
+    return queryStartTime;
   }
 }

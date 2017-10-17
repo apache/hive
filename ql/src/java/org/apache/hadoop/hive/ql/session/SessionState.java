@@ -1830,12 +1830,14 @@ public class SessionState {
     if (tezSessionState == session) return; // The same object.
     if (tezSessionState != null) {
       tezSessionState.markFree();
+      tezSessionState.setKillQuery(null);
       tezSessionState = null;
     }
+    tezSessionState = session;
     if (session != null) {
       session.markInUse();
+      tezSessionState.setKillQuery(getKillQuery());
     }
-    tezSessionState = session;
   }
 
   public String getUserName() {

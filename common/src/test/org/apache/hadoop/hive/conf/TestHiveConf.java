@@ -111,7 +111,7 @@ public class TestHiveConf {
     Assert.assertEquals(TimeUnit.MILLISECONDS, HiveConf.unitFor("ms", null));
     Assert.assertEquals(TimeUnit.MILLISECONDS, HiveConf.unitFor("msecs", null));
     Assert.assertEquals(TimeUnit.MICROSECONDS, HiveConf.unitFor("us", null));
-    Assert.assertEquals(TimeUnit.MICROSECONDS, HiveConf.unitFor("useconds", null));
+    Assert.assertEquals(TimeUnit.MICROSECONDS, HiveConf.unitFor("usecs", null));
     Assert.assertEquals(TimeUnit.NANOSECONDS, HiveConf.unitFor("ns", null));
     Assert.assertEquals(TimeUnit.NANOSECONDS, HiveConf.unitFor("nsecs", null));
   }

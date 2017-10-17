@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.conf;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -3408,6 +3409,12 @@ public class HiveConf extends Configuration {
             Constants.LLAP_LOGGER_NAME_CONSOLE),
         "logger used for llap-daemons."),
 
+    HIVE_TRIGGER_VALIDATION_INTERVAL_MS("hive.trigger.validation.interval.ms", "500ms",
+      new TimeValidator(TimeUnit.MILLISECONDS),
+      "Interval for validating triggers during execution of a query. Triggers defined in resource plan will get\n" +
+        "validated for all SQL operations after every defined interval (default: 500ms) and corresponding action\n" +
+        "defined in the trigger will be taken"),
+
     SPARK_USE_OP_STATS("hive.spark.use.op.stats", true,
         "Whether to use operator stats to determine reducer parallelism for Hive on Spark.\n" +
         "If this is false, Hive will use source table stats to determine reducer\n" +
@@ -3957,6 +3964,18 @@ public class HiveConf extends Configuration {
     return new String[] {value.substring(0, i), value.substring(i)};
   }
 
+  private static Set<String> daysSet = ImmutableSet.of("d", "D", "day", "DAY", "days", "DAYS");
+  private static Set<String> hoursSet = ImmutableSet.of("h", "H", "hour", "HOUR", "hours", "HOURS");
+  private static Set<String> minutesSet = ImmutableSet.of("m", "M", "min", "MIN", "mins", "MINS",
+    "minute", "MINUTE", "minutes", "MINUTES");
+  private static Set<String> secondsSet = ImmutableSet.of("s", "S", "sec", "SEC", "secs", "SECS",
+    "second", "SECOND", "seconds", "SECONDS");
+  private static Set<String> millisSet = ImmutableSet.of("ms", "MS", "msec", "MSEC", "msecs", "MSECS",
+    "millisecond", "MILLISECOND", "milliseconds", "MILLISECONDS");
+  private static Set<String> microsSet = ImmutableSet.of("us", "US", "usec", "USEC", "usecs", "USECS",
+    "microsecond", "MICROSECOND", "microseconds", "MICROSECONDS");
+  private static Set<String> nanosSet = ImmutableSet.of("ns", "NS", "nsec", "NSEC", "nsecs", "NSECS",
+    "nanosecond", "NANOSECOND", "nanoseconds", "NANOSECONDS");
   public static TimeUnit unitFor(String unit, TimeUnit defaultUnit) {
     unit = unit.trim().toLowerCase();
     if (unit.isEmpty() || unit.equals("l")) {
@@ -3964,19 +3983,19 @@ public class HiveConf extends Configuration {
         throw new IllegalArgumentException("Time unit is not specified");
       }
       return defaultUnit;
-    } else if (unit.equals("d") || unit.startsWith("day")) {
+    } else if (daysSet.contains(unit)) {
       return TimeUnit.DAYS;
-    } else if (unit.equals("h") || unit.startsWith("hour")) {
+    } else if (hoursSet.contains(unit)) {
       return TimeUnit.HOURS;
-    } else if (unit.equals("m") || unit.startsWith("min")) {
+    } else if (minutesSet.contains(unit)) {
       return TimeUnit.MINUTES;
-    } else if (unit.equals("s") || unit.startsWith("sec")) {
+    } else if (secondsSet.contains(unit)) {
       return TimeUnit.SECONDS;
-    } else if (unit.equals("ms") || unit.startsWith("msec")) {
+    } else if (millisSet.contains(unit)) {
       return TimeUnit.MILLISECONDS;
-    } else if (unit.equals("us") || unit.startsWith("usec")) {
+    } else if (microsSet.contains(unit)) {
       return TimeUnit.MICROSECONDS;
-    } else if (unit.equals("ns") || unit.startsWith("nsec")) {
+    } else if (nanosSet.contains(unit)) {
       return TimeUnit.NANOSECONDS;
     }
     throw new IllegalArgumentException("Invalid time unit " + unit);

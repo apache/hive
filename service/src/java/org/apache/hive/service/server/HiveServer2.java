@@ -112,6 +112,7 @@ public class HiveServer2 extends CompositeService {
   private CuratorFramework zooKeeperClient;
   private boolean deregisteredWithZooKeeper = false; // Set to true only when deregistration happens
   private HttpServer webServer; // Web UI
+  private TezSessionPoolManager tezSessionPoolManager;
   private WorkloadManager wm;
 
   public HiveServer2() {
@@ -125,6 +126,11 @@ public class HiveServer2 extends CompositeService {
     try {
       if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
         MetricsFactory.init(hiveConf);
+      }
+
+      if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
+        tezSessionPoolManager = TezSessionPoolManager.getInstance();
+        tezSessionPoolManager.setupPool(hiveConf);
       }
     } catch (Throwable t) {
       LOG.warn("Could not initiate the HiveServer2 Metrics system.  Metrics may not be reported.", t);
@@ -528,6 +534,24 @@ public class HiveServer2 extends CompositeService {
         throw new ServiceException(e);
       }
     }
+    if (tezSessionPoolManager != null) {
+      try {
+        tezSessionPoolManager.startPool();
+        LOG.info("Started tez session pool manager..");
+      } catch (Exception e) {
+        LOG.error("Error starting tez session pool manager: ", e);
+        throw new ServiceException(e);
+      }
+    }
+    if (wm != null) {
+      try {
+        wm.start();
+        LOG.info("Started workload manager..");
+      } catch (Exception e) {
+        LOG.error("Error starting workload manager", e);
+        throw new ServiceException(e);
+      }
+    }
   }
 
   @Override
@@ -562,9 +586,10 @@ public class HiveServer2 extends CompositeService {
     }
     // There should already be an instance of the session pool manager.
     // If not, ignoring is fine while stopping HiveServer2.
-    if (hiveConf != null && hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
+    if (hiveConf != null && hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS) &&
+      tezSessionPoolManager != null) {
       try {
-        TezSessionPoolManager.getInstance().stop();
+        tezSessionPoolManager.stop();
       } catch (Exception e) {
         LOG.error("Tez session pool manager stop had an error during stop of HiveServer2. "
             + "Shutting down HiveServer2 anyway.", e);
@@ -614,13 +639,6 @@ public class HiveServer2 extends CompositeService {
               TimeUnit.MILLISECONDS);
       HiveServer2 server = null;
       try {
-        // Initialize the pool before we start the server; don't start yet.
-        TezSessionPoolManager sessionPool = null;
-        if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
-          sessionPool = TezSessionPoolManager.getInstance();
-          sessionPool.setupPool(hiveConf);
-        }
-
         // Cleanup the scratch dir before starting
         ServerUtils.cleanUpScratchDir(hiveConf);
         // Schedule task to cleanup dangling scratch dir periodically,
@@ -638,13 +656,6 @@ public class HiveServer2 extends CompositeService {
         } catch (Throwable t) {
           LOG.warn("Could not initiate the JvmPauseMonitor thread." + " GCs and Pauses may not be " +
             "warned upon.", t);
-        }
-
-        if (sessionPool != null) {
-          sessionPool.startPool();
-        }
-        if (server.wm != null) {
-          server.wm.start();
         }
 
         if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {

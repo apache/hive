@@ -17,20 +17,23 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.util.concurrent.TimeoutException;
-
-import java.util.concurrent.TimeUnit;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
+import org.apache.hadoop.hive.ql.wm.Trigger;
+import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
@@ -45,8 +48,8 @@ import com.google.common.annotations.VisibleForTesting;
 
 
 /** Workload management entry point for HS2. */
-public class WorkloadManager
-    implements TezSessionPoolSession.Manager, SessionExpirationTracker.RestartImpl {
+public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValidator
+  implements TezSessionPoolSession.Manager, SessionExpirationTracker.RestartImpl {
   private static final Logger LOG = LoggerFactory.getLogger(WorkloadManager.class);
   // TODO: this is a temporary setting that will go away, so it's not in HiveConf.
   public static final String TEST_WM_CONFIG = "hive.test.workload.management";
@@ -57,20 +60,24 @@ public class WorkloadManager
   private final RestrictedConfigChecker restrictedConfig;
   private final QueryAllocationManager allocationManager;
   private final String yarnQueue;
-  // TODO: it's not clear that we need to track this - unlike PoolManager we don't have non-pool
-  //       sessions, so the pool itself could internally track the sessions it gave out, since
-  //       calling close on an unopened session is probably harmless.
-  private final IdentityHashMap<TezSessionPoolSession, Boolean> openSessions =
-      new IdentityHashMap<>();
   /** Sessions given out (i.e. between get... and return... calls), separated by Hive pool. */
   private final ReentrantReadWriteLock poolsLock = new ReentrantReadWriteLock();
-  private final HashMap<String, PoolState> pools = new HashMap<>();
+  private final List<TezSessionPoolSession> openSessions = new LinkedList<>();
+  private final Map<String, PoolState> pools = new HashMap<>();
   private final int amRegistryTimeoutMs;
+  private SessionTriggerProvider sessionTriggerProvider;
+  private TriggerActionHandler triggerActionHandler;
+  private TriggerValidatorRunnable triggerValidatorRunnable;
 
-  private static class PoolState {
+  public static class PoolState {
     // Add stuff here as WM is implemented.
     private final Object lock = new Object();
     private final List<WmTezSession> sessions = new ArrayList<>();
+    private final List<Trigger> triggers = new ArrayList<>();
+
+    public List<Trigger> getTriggers() {
+      return triggers;
+    }
   }
 
   // TODO: this is temporary before HiveServerEnvironment is merged.
@@ -114,7 +121,6 @@ public class WorkloadManager
     this.yarnQueue = yarnQueue;
     this.conf = conf;
     initializeHivePools();
-
     this.amRegistryTimeoutMs = (int)HiveConf.getTimeVar(
         conf, ConfVars.HIVE_SERVER2_TEZ_WM_AM_REGISTRY_TIMEOUT, TimeUnit.MILLISECONDS);
     sessions = new TezSessionPool<>(conf, numSessions, true);
@@ -125,12 +131,18 @@ public class WorkloadManager
     for (int i = 0; i < numSessions; i++) {
       sessions.addInitialSession(createSession());
     }
+    // TODO: add support for per pool action handler and triggers fetcher (+atomic update to active triggers)
+    sessionTriggerProvider = new SessionTriggerProvider();
+    triggerActionHandler = new TriggerViolationActionHandler();
+    triggerValidatorRunnable = new TriggerValidatorRunnable(getSessionTriggerProvider(), getTriggerActionHandler());
+    startTriggerValidator(conf);
   }
 
   private void initializeHivePools() {
     // TODO: real implementation
     poolsLock.writeLock().lock();
     try {
+      // FIXME: Add Triggers from metastore to poolstate
       pools.put("llap", new PoolState());
     } finally {
       poolsLock.writeLock().unlock();
@@ -195,6 +207,7 @@ public class WorkloadManager
       poolsLock.readLock().unlock();
     }
     allocationManager.updateSessionsAsync(totalAlloc, sessionsToUpdate);
+    updateSessionsTriggers();
   }
 
   private WmTezSession checkSessionForReuse(TezSessionState session) throws Exception {
@@ -259,15 +272,19 @@ public class WorkloadManager
   public void stop() throws Exception {
     List<TezSessionPoolSession> sessionsToClose = null;
     synchronized (openSessions) {
-      sessionsToClose = new ArrayList<TezSessionPoolSession>(openSessions.keySet());
+      sessionsToClose = new ArrayList<TezSessionPoolSession>(openSessions);
     }
-    for (TezSessionState sessionState : sessionsToClose) {
+
+    for (TezSessionPoolSession sessionState : sessionsToClose) {
       sessionState.close(false);
     }
+
     if (expirationTracker != null) {
       expirationTracker.stop();
     }
     allocationManager.stop();
+
+    INSTANCE = null;
   }
 
   private WmTezSession createSession() {
@@ -317,8 +334,9 @@ public class WorkloadManager
   @Override
   public void registerOpenSession(TezSessionPoolSession session) {
     synchronized (openSessions) {
-      openSessions.put(session, true);
+      openSessions.add(session);
     }
+    updateSessionsTriggers();
   }
 
   /** Called by TezSessionPoolSession when closed. */
@@ -326,6 +344,20 @@ public class WorkloadManager
   public void unregisterOpenSession(TezSessionPoolSession session) {
     synchronized (openSessions) {
       openSessions.remove(session);
+    }
+    updateSessionsTriggers();
+  }
+
+  private void updateSessionsTriggers() {
+    if (sessionTriggerProvider != null) {
+      List<TezSessionState> openSessions = new ArrayList<>();
+      List<Trigger> activeTriggers = new ArrayList<>();
+      for (PoolState poolState : pools.values()) {
+        activeTriggers.addAll(poolState.getTriggers());
+        openSessions.addAll(poolState.sessions);
+      }
+      sessionTriggerProvider.setOpenSessions(Collections.unmodifiableList(openSessions));
+      sessionTriggerProvider.setActiveTriggers(Collections.unmodifiableList(activeTriggers));
     }
   }
 
@@ -363,7 +395,36 @@ public class WorkloadManager
     redistributePoolAllocations(wmSession.getPoolName(), null, wmSession);
   }
 
+  @Override
+  SessionTriggerProvider getSessionTriggerProvider() {
+    return sessionTriggerProvider;
+  }
+
+  @Override
+  TriggerActionHandler getTriggerActionHandler() {
+    return triggerActionHandler;
+  }
+
+  @Override
+  TriggerValidatorRunnable getTriggerValidatorRunnable() {
+    return triggerValidatorRunnable;
+  }
+
+  @VisibleForTesting
+  public Map<String, PoolState> getPools() {
+    return pools;
+  }
+
   protected final HiveConf getConf() {
     return conf;
+  }
+
+  public List<String> getTriggerCounterNames() {
+    List<Trigger> activeTriggers = sessionTriggerProvider.getActiveTriggers();
+    List<String> counterNames = new ArrayList<>();
+    for (Trigger trigger : activeTriggers) {
+      counterNames.add(trigger.getExpression().getCounterLimit().getName());
+    }
+    return counterNames;
   }
 }

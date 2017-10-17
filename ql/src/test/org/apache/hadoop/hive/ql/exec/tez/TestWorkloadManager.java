@@ -18,19 +18,27 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.tez.dag.api.TezConfiguration;
-
-import java.util.List;
-
 import org.junit.Test;
 
 public class TestWorkloadManager {
-  private static class MockQam implements QueryAllocationManager {
+  public static class MockQam implements QueryAllocationManager {
     boolean isCalled = false;
 
     @Override
@@ -52,10 +60,10 @@ public class TestWorkloadManager {
     }
   }
 
-  private static class WorkloadManagerForTest extends WorkloadManager {
+  public static class WorkloadManagerForTest extends WorkloadManager {
 
-    WorkloadManagerForTest(String yarnQueue, HiveConf conf, int numSessions,
-        QueryAllocationManager qam) {
+    public WorkloadManagerForTest(String yarnQueue, HiveConf conf, int numSessions,
+      QueryAllocationManager qam) {
       super(yarnQueue, conf, numSessions, qam, null);
     }
 

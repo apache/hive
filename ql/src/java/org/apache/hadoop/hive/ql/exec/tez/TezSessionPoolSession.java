@@ -18,26 +18,27 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hadoop.hive.registry.impl.TezAmInstance;
-
-import org.apache.hadoop.security.token.Token;
-import org.apache.tez.common.security.JobTokenIdentifier;
-
-import org.apache.hadoop.conf.Configuration;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
+import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
+import org.apache.hadoop.hive.registry.impl.TezAmInstance;
 import org.apache.tez.dag.api.TezException;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * TezSession that is aware of the session pool, and also keeps track of expiration and use.
@@ -52,13 +53,35 @@ import com.google.common.annotations.VisibleForTesting;
 class TezSessionPoolSession extends TezSessionState {
   private static final int STATE_NONE = 0, STATE_IN_USE = 1, STATE_EXPIRED = 2;
 
-  interface Manager {
+  public interface Manager {
     void registerOpenSession(TezSessionPoolSession session);
+
     void unregisterOpenSession(TezSessionPoolSession session);
+
     void returnAfterUse(TezSessionPoolSession session) throws Exception;
+
     TezSessionState reopen(TezSessionState session, Configuration conf,
-        String[] inputOutputJars) throws Exception;
+      String[] inputOutputJars) throws Exception;
+
     void destroy(TezSessionState session) throws Exception;
+  }
+
+  public static abstract class AbstractTriggerValidator {
+    abstract SessionTriggerProvider getSessionTriggerProvider();
+
+    abstract TriggerActionHandler getTriggerActionHandler();
+
+    abstract TriggerValidatorRunnable getTriggerValidatorRunnable();
+
+    public void startTriggerValidator(Configuration conf) {
+      long triggerValidationIntervalMs = HiveConf.getTimeVar(conf,
+        HiveConf.ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL_MS, TimeUnit.MILLISECONDS);
+      final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("TriggerValidator").build());
+      TriggerValidatorRunnable triggerValidatorRunnable = getTriggerValidatorRunnable();
+      scheduledExecutorService.scheduleWithFixedDelay(triggerValidatorRunnable, triggerValidationIntervalMs,
+        triggerValidationIntervalMs, TimeUnit.MILLISECONDS);
+    }
   }
 
   private final AtomicInteger sessionState = new AtomicInteger(STATE_NONE);

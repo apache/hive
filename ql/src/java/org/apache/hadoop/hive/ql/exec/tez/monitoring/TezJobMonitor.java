@@ -18,20 +18,35 @@
 
 package org.apache.hadoop.hive.ql.exec.tez.monitoring;
 
-import com.google.common.base.Preconditions;
+import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
+
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.io.StringWriter;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.hadoop.hive.common.log.InPlaceUpdate;
+import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
-import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.wm.TimeCounterLimit;
+import org.apache.hadoop.hive.ql.wm.TriggerContext;
+import org.apache.hadoop.hive.ql.wm.VertexCounterLimit;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.tez.common.counters.CounterGroup;
 import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.dag.api.DAG;
@@ -41,17 +56,10 @@ import org.apache.tez.dag.api.client.DAGStatus;
 import org.apache.tez.dag.api.client.Progress;
 import org.apache.tez.dag.api.client.StatusGetOpts;
 import org.apache.tez.util.StopWatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.StringWriter;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
+import com.google.common.base.Preconditions;
 
 /**
  * TezJobMonitor keeps track of a tez job while it's being executed. It will
@@ -61,6 +69,7 @@ import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
 public class TezJobMonitor {
 
   static final String CLASS_NAME = TezJobMonitor.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final int MIN_CHECK_INTERVAL = 200;
   private static final int MAX_CHECK_INTERVAL = 1000;
   private static final int MAX_RETRY_INTERVAL = 2500;
@@ -146,7 +155,7 @@ public class TezJobMonitor {
     DAGStatus.State lastState = null;
     boolean running = false;
 
-    int checkInterval = MIN_CHECK_INTERVAL;
+    long checkInterval = MIN_CHECK_INTERVAL;
     while (true) {
 
       try {
@@ -154,8 +163,17 @@ public class TezJobMonitor {
           context.checkHeartbeaterLockException();
         }
 
-        status = dagClient.getDAGStatus(new HashSet<StatusGetOpts>(), checkInterval);
+        status = dagClient.getDAGStatus(EnumSet.of(StatusGetOpts.GET_COUNTERS), checkInterval);
+        TezCounters dagCounters = status.getDAGCounters();
         vertexProgressMap = status.getVertexProgress();
+        TriggerContext triggerContext = context.getTriggerContext();
+        if (dagCounters != null && triggerContext != null) {
+          Set<String> desiredCounters = triggerContext.getDesiredCounters();
+          if (desiredCounters != null && !desiredCounters.isEmpty()) {
+            Map<String, Long> currentCounters = getCounterValues(dagCounters, vertexProgressMap, desiredCounters, done);
+            triggerContext.setCurrentCounters(currentCounters);
+          }
+        }
         DAGStatus.State state = status.getState();
 
         failedCounter = 0; // AM is responsive again (recovery?)
@@ -235,8 +253,7 @@ public class TezJobMonitor {
           } catch (IOException | TezException tezException) {
             // best effort
           }
-          console
-              .printError("Execution has failed. stack trace: " + ExceptionUtils.getStackTrace(e));
+          console.printError("Execution has failed. stack trace: " + ExceptionUtils.getStackTrace(e));
           rc = 1;
           done = true;
         } else {
@@ -261,6 +278,52 @@ public class TezJobMonitor {
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
     printSummary(success, vertexProgressMap);
     return rc;
+  }
+
+  private Map<String, Long> getCounterValues(final TezCounters dagCounters,
+    final Map<String, Progress> vertexProgressMap,
+    final Set<String> desiredCounters, final boolean done) {
+    // DAG specific counters
+    Map<String, Long> updatedCounters = new HashMap<>();
+    for (CounterGroup counterGroup : dagCounters) {
+      for (TezCounter tezCounter : counterGroup) {
+        String counterName = tezCounter.getName();
+        if (desiredCounters.contains(counterName)) {
+          updatedCounters.put(counterName, tezCounter.getValue());
+        }
+      }
+    }
+
+    // Process per vertex counters.
+    String counterName = VertexCounterLimit.VertexCounter.TOTAL_TASKS.name();
+    if (desiredCounters.contains(counterName) && vertexProgressMap != null) {
+      for (Map.Entry<String, Progress> entry : vertexProgressMap.entrySet()) {
+        // TOTAL_TASKS counter is per vertex counter, but triggers are validated at query level
+        // looking for query level violations. So we always choose max TOTAL_TASKS among all vertices.
+        // Publishing TOTAL_TASKS for all vertices is not really useful from the context of triggers.
+        long currentMax = 0;
+        if (updatedCounters.containsKey(counterName)) {
+          currentMax = updatedCounters.get(counterName);
+        }
+        long totalTasks = Math.max(currentMax, entry.getValue().getTotalTaskCount());
+        updatedCounters.put(counterName, totalTasks);
+      }
+    }
+
+    // Time based counters. If DAG is done already don't update these counters.
+    if (!done) {
+      counterName = TimeCounterLimit.TimeCounter.ELAPSED_TIME.name();
+      if (desiredCounters.contains(counterName)) {
+        updatedCounters.put(counterName, context.getTriggerContext().getElapsedTime());
+      }
+
+      counterName = TimeCounterLimit.TimeCounter.EXECUTION_TIME.name();
+      if (desiredCounters.contains(counterName) && executionStartTime > 0) {
+        updatedCounters.put(counterName, System.currentTimeMillis() - executionStartTime);
+      }
+    }
+
+    return updatedCounters;
   }
 
   private void printSummary(boolean success, Map<String, Progress> progressMap) {

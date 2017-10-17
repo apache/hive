@@ -18,25 +18,29 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.util.HashSet;
-
-import java.util.concurrent.Semaphore;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
-import org.apache.tez.dag.api.TezConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolSession.Manager;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.wm.MetastoreGlobalTriggersFetcher;
+import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
+import org.apache.hadoop.hive.ql.wm.Trigger;
+import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.tez.dag.api.TezConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -47,8 +51,8 @@ import com.google.common.annotations.VisibleForTesting;
  * In case the user specifies a queue explicitly, a new session is created
  * on that queue and assigned to the session state.
  */
-public class TezSessionPoolManager
-  implements SessionExpirationTracker.RestartImpl, Manager {
+public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTriggerValidator
+  implements Manager, SessionExpirationTracker.RestartImpl {
 
   private enum CustomQueueAllowed {
     TRUE,
@@ -57,7 +61,6 @@ public class TezSessionPoolManager
   }
 
   private static final Logger LOG = LoggerFactory.getLogger(TezSessionPoolManager.class);
-  static final Random rdm = new Random();
 
   private Semaphore llapQueue;
   private HiveConf initConf = null;
@@ -79,6 +82,10 @@ public class TezSessionPoolManager
 
   /** This is used to close non-default sessions, and also all sessions when stopping. */
   private final List<TezSessionPoolSession> openSessions = new LinkedList<>();
+  private MetastoreGlobalTriggersFetcher globalTriggersFetcher;
+  private SessionTriggerProvider sessionTriggerProvider;
+  private TriggerActionHandler triggerActionHandler;
+  private TriggerValidatorRunnable triggerValidatorRunnable;
 
   /** Note: this is not thread-safe. */
   public static TezSessionPoolManager getInstance() throws Exception {
@@ -102,7 +109,7 @@ public class TezSessionPoolManager
     }
   }
 
-  public void setupPool(HiveConf conf) throws InterruptedException {
+  public void setupPool(HiveConf conf) throws Exception {
     String[] defaultQueueList = HiveConf.getTrimmedStringsVar(
         conf, HiveConf.ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES);
     this.initConf = conf;
@@ -121,6 +128,14 @@ public class TezSessionPoolManager
 
     numConcurrentLlapQueries = conf.getIntVar(ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES);
     llapQueue = new Semaphore(numConcurrentLlapQueries, true);
+
+    sessionTriggerProvider = new SessionTriggerProvider();
+    triggerActionHandler = new KillTriggerActionHandler();
+    // TODO: update runnable to handle per pool validation
+    triggerValidatorRunnable = new TriggerValidatorRunnable(getSessionTriggerProvider(), getTriggerActionHandler());
+    Hive db = Hive.get(conf);
+    globalTriggersFetcher = new MetastoreGlobalTriggersFetcher(db);
+    startTriggerValidator(conf);
 
     String queueAllowedStr = HiveConf.getVar(initConf,
         ConfVars.HIVE_SERVER2_TEZ_SESSION_CUSTOM_QUEUE_ALLOWED);
@@ -295,20 +310,23 @@ public class TezSessionPoolManager
     if ((instance == null) || !this.hasInitialSessions) {
       return;
     }
-
     List<TezSessionPoolSession> sessionsToClose = null;
     synchronized (openSessions) {
       sessionsToClose = new ArrayList<TezSessionPoolSession>(openSessions);
     }
+
     // we can just stop all the sessions
     for (TezSessionState sessionState : sessionsToClose) {
       if (sessionState.isDefault()) {
         sessionState.close(false);
       }
     }
+
     if (expirationTracker != null) {
       expirationTracker.stop();
     }
+
+    instance = null;
   }
 
   /**
@@ -324,6 +342,21 @@ public class TezSessionPoolManager
     LOG.warn("We are closing a " + (tezSessionState.isDefault() ? "default" : "non-default")
         + " session because of retry failure.");
     tezSessionState.close(false);
+  }
+
+  @Override
+  SessionTriggerProvider getSessionTriggerProvider() {
+    return sessionTriggerProvider;
+  }
+
+  @Override
+  TriggerActionHandler getTriggerActionHandler() {
+    return triggerActionHandler;
+  }
+
+  @Override
+  TriggerValidatorRunnable getTriggerValidatorRunnable() {
+    return triggerValidatorRunnable;
   }
 
   protected TezSessionPoolSession createSession(String sessionId, HiveConf conf) {
@@ -450,6 +483,14 @@ public class TezSessionPoolManager
     synchronized (openSessions) {
       openSessions.add(session);
     }
+    updateSessionsTriggers();
+  }
+
+  private void updateSessionsTriggers() {
+    if (sessionTriggerProvider != null && globalTriggersFetcher != null) {
+      sessionTriggerProvider.setOpenSessions(Collections.unmodifiableList(openSessions));
+      sessionTriggerProvider.setActiveTriggers(Collections.unmodifiableList(globalTriggersFetcher.fetch()));
+    }
   }
 
   /** Called by TezSessionPoolSession when closed. */
@@ -461,10 +502,29 @@ public class TezSessionPoolManager
     synchronized (openSessions) {
       openSessions.remove(session);
     }
+    updateSessionsTriggers();
   }
 
   @VisibleForTesting
   public SessionExpirationTracker getExpirationTracker() {
     return expirationTracker;
+  }
+
+
+  @VisibleForTesting
+  public void setGlobalTriggersFetcher(MetastoreGlobalTriggersFetcher metastoreGlobalTriggersFetcher) {
+    this.globalTriggersFetcher = metastoreGlobalTriggersFetcher;
+    updateSessionsTriggers();
+  }
+
+  public List<String> getTriggerCounterNames() {
+    List<String> counterNames = new ArrayList<>();
+    if (sessionTriggerProvider != null) {
+      List<Trigger> activeTriggers = sessionTriggerProvider.getActiveTriggers();
+      for (Trigger trigger : activeTriggers) {
+        counterNames.add(trigger.getExpression().getCounterLimit().getName());
+      }
+    }
+    return counterNames;
   }
 }

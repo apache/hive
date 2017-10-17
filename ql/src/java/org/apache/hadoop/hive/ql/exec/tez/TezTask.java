@@ -18,14 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,9 +42,12 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.QueryInfo;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -59,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.wm.TriggerContext;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -84,7 +87,6 @@ import org.apache.tez.dag.api.client.DAGStatus;
 import org.apache.tez.dag.api.client.StatusGetOpts;
 import org.apache.tez.dag.api.client.VertexStatus;
 import org.json.JSONObject;
-import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -139,6 +141,11 @@ public class TezTask extends Task<TezWork> {
       if (ctx == null) {
         ctx = new Context(conf);
         cleanContext = true;
+        // some DDL task that directly executes a TezTask does not setup Context and hence TriggerContext.
+        // Setting queryId is messed up. Some DDL tasks have executionId instead of proper queryId.
+        String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+        TriggerContext triggerContext = new TriggerContext(System.currentTimeMillis(), queryId);
+        ctx.setTriggerContext(triggerContext);
       }
 
       // Need to remove this static hack. But this is the way currently to get a session.
@@ -149,14 +156,23 @@ public class TezTask extends Task<TezWork> {
       if (session != null && !session.isOpen()) {
         LOG.warn("The session: " + session + " has not been opened");
       }
+      Set<String> desiredCounters = new HashSet<>();
       if (WorkloadManager.isInUse(ss.getConf())) {
+        WorkloadManager wm = WorkloadManager.getInstance();
         // TODO: in future, we may also pass getUserIpAddress.
         // Note: for now this will just block to wait for a session based on parallelism.
-        session = WorkloadManager.getInstance().getSession(session, ss.getUserName(), conf);
+        session = wm.getSession(session, ss.getUserName(), conf);
+        desiredCounters.addAll(wm.getTriggerCounterNames());
       } else {
-        session = TezSessionPoolManager.getInstance().getSession(
-            session, conf, false, getWork().getLlapMode());
+        TezSessionPoolManager pm = TezSessionPoolManager.getInstance();
+        session = pm.getSession(session, conf, false, getWork().getLlapMode());
+        desiredCounters.addAll(pm.getTriggerCounterNames());
       }
+
+      TriggerContext triggerContext = ctx.getTriggerContext();
+      triggerContext.setDesiredCounters(desiredCounters);
+      session.setTriggerContext(triggerContext);
+      LOG.info("Subscribed to counters: {} for queryId: {}", desiredCounters, triggerContext.getQueryId());
       ss.setTezSession(session);
       try {
         // jobConf will hold all the configuration for hadoop, tez, and hive
@@ -219,7 +235,7 @@ public class TezTask extends Task<TezWork> {
         }
 
         // finally monitor will print progress until the job is done
-        TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(),dagClient, conf, dag, ctx);
+        TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx);
         rc = monitor.monitorExecution();
 
         if (rc != 0) {

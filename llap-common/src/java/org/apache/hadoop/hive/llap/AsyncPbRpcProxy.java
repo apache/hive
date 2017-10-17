@@ -392,8 +392,12 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
     this.hostProxies = cb.build();
     this.socketFactory = NetUtils.getDefaultSocketFactory(conf);
     this.token = token;
-    String tokenUser = getTokenUser(token);
-    this.tokenUser = tokenUser;
+    if (token != null) {
+      String tokenUser = getTokenUser(token);
+      this.tokenUser = tokenUser;
+    } else {
+      this.tokenUser = null;
+    }
 
     this.retryPolicy = RetryPolicies.retryUpToMaximumTimeWithFixedSleep(
         connectionTimeoutMs, retrySleepMs, TimeUnit.MILLISECONDS);

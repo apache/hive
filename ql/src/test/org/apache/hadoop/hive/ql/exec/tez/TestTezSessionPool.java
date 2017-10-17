@@ -48,7 +48,7 @@ public class TestTezSessionPool {
     }
 
     @Override
-    public void setupPool(HiveConf conf) throws InterruptedException {
+    public void setupPool(HiveConf conf) throws Exception {
       conf.setVar(ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME, "");
       super.setupPool(conf);
     }

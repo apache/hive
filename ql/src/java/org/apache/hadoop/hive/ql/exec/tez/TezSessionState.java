@@ -57,8 +57,10 @@ import org.apache.hadoop.hive.llap.tezplugins.LlapContainerLauncher;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.wm.TriggerContext;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -112,6 +114,8 @@ public class TezSessionState {
   private final Set<LocalResource> localizedResources = new HashSet<LocalResource>();
   private boolean doAsEnabled;
   private boolean isLegacyLlapMode;
+  private TriggerContext triggerContext;
+  private KillQuery killQuery;
 
   /**
    * Constructor. We do not automatically connect, because we only want to
@@ -750,5 +754,21 @@ public class TezSessionState {
   public void destroy() throws Exception {
     // By default, TezSessionPoolManager handles this for both pool and non-pool session.
     TezSessionPoolManager.getInstance().destroy(this);
+  }
+
+  public TriggerContext getTriggerContext() {
+    return triggerContext;
+  }
+
+  public void setTriggerContext(final TriggerContext triggerContext) {
+    this.triggerContext = triggerContext;
+  }
+
+  public void setKillQuery(final KillQuery killQuery) {
+    this.killQuery = killQuery;
+  }
+
+  public KillQuery getKillQuery() {
+    return killQuery;
   }
 }

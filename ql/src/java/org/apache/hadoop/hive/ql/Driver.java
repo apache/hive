@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.wm.TriggerContext;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.ClusterStatus;
@@ -484,6 +485,9 @@ public class Driver implements CommandProcessor {
 
     String queryId = queryState.getQueryId();
 
+    if (ctx != null) {
+      setTriggerContext(queryId);
+    }
     //save some info for webUI for use after plan is freed
     this.queryDisplay.setQueryStr(queryStr);
     this.queryDisplay.setQueryId(queryId);
@@ -528,6 +532,7 @@ public class Driver implements CommandProcessor {
       }
       if (ctx == null) {
         ctx = new Context(conf);
+        setTriggerContext(queryId);
       }
 
       ctx.setTryCount(getTryCount());
@@ -710,6 +715,20 @@ public class Driver implements CommandProcessor {
         LOG.info("Completed compiling command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
       }
     }
+  }
+
+  private void setTriggerContext(final String queryId) {
+    final long queryStartTime;
+    // query info is created by SQLOperation which will have start time of the operation. When JDBC Statement is not
+    // used queryInfo will be null, in which case we take creation of Driver instance as query start time (which is also
+    // the time when query display object is created)
+    if (queryInfo != null) {
+      queryStartTime = queryInfo.getBeginTime();
+    } else {
+      queryStartTime = queryDisplay.getQueryStartTime();
+    }
+    TriggerContext triggerContext = new TriggerContext(queryStartTime, queryId);
+    ctx.setTriggerContext(triggerContext);
   }
 
   private boolean startImplicitTxn(HiveTxnManager txnManager) throws LockException {
