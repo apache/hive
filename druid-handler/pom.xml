@@ -263,6 +263,105 @@
     </dependency>
   </dependencies>
 
+  <profiles>
+    <profile>
+      <id>dev-fast-build</id>
+      <activation>
+        <property>
+          <name>skipShade</name>
+          <value>!true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>${maven.shade.plugin.version}</version>
+            <executions>
+              <!-- we need to shade netty, as there is a conflict between versions
+              used by Hadoop (3.6.2.Final) and Druid (3.10.4.Final) -->
+              <!-- we need to shade jackson, as there is a conflict between versions
+              used by Hive (2.4.2) and Druid (2.4.6) -->
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>shade</goal>
+                </goals>
+                <configuration>
+                  <shadeTestJar>true</shadeTestJar>
+                  <createDependencyReducedPom>false</createDependencyReducedPom>
+                  <relocations>
+                    <relocation>
+                      <pattern>io.druid</pattern>
+                      <shadedPattern>org.apache.hive.druid.io.druid</shadedPattern>
+                    </relocation>
+                    <relocation>
+                      <pattern>com.metamx</pattern>
+                      <shadedPattern>org.apache.hive.druid.com.metamx</shadedPattern>
+                    </relocation>
+                    <relocation>
+                      <pattern>io.netty</pattern>
+                      <shadedPattern>org.apache.hive.druid.io.netty</shadedPattern>
+                    </relocation>
+                    <relocation>
+                      <pattern>org.apache.calcite</pattern>
+                      <shadedPattern>org.apache.hive.druid.org.apache.calcite</shadedPattern>
+                    </relocation>
+                    <relocation>
+                      <pattern>org.jboss.netty</pattern>
+                      <shadedPattern>org.apache.hive.druid.org.jboss.netty</shadedPattern>
+                    </relocation>
+                    <relocation>
+                      <pattern>com.fasterxml.jackson</pattern>
+                      <shadedPattern>org.apache.hive.druid.com.fasterxml.jackson</shadedPattern>
+                    </relocation>
+                    <relocation>
+                      <pattern>com.google.common</pattern>
+                      <shadedPattern>org.apache.hive.druid.com.google.common</shadedPattern>
+                    </relocation>
+                    <relocation>
+                      <pattern>org.roaringbitmap</pattern>
+                      <shadedPattern>org.apache.hive.druid.org.roaringbitmap</shadedPattern>
+                    </relocation>
+                  </relocations>
+                  <artifactSet>
+                    <includes>
+                      <include>io.druid:*</include>
+                      <include>io.druid.extensions:*</include>
+                      <include>com.metamx:*</include>
+                      <include>io.netty:*</include>
+                      <include>org.apache.calcite:*</include>
+                      <include>com.fasterxml.jackson.core:*</include>
+                      <include>com.fasterxml.jackson.datatype:*</include>
+                      <include>com.fasterxml.jackson.dataformat:*</include>
+                      <include>com.google.guava:*</include>
+                      <include>it.unimi.dsi:*</include>
+                      <include>org.jdbi:*</include>
+                      <include>net.jpountz.lz4:*</include>
+                      <include>org.apache.commons:*</include>
+                      <include>org.roaringbitmap:*</include>
+                    </includes>
+                  </artifactSet>
+                  <filters>
+                    <filter>
+                      <artifact>*:*</artifact>
+                      <excludes>
+                        <exclude>META-INF/*.SF</exclude>
+                        <exclude>META-INF/*.DSA</exclude>
+                        <exclude>META-INF/*.RSA</exclude>
+                      </excludes>
+                    </filter>
+                  </filters>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
   <build>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
@@ -275,89 +374,6 @@
             <goals>
               <goal>test-jar</goal>
             </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>${maven.shade.plugin.version}</version>
-        <executions>
-          <!-- we need to shade netty, as there is a conflict between versions
-          used by Hadoop (3.6.2.Final) and Druid (3.10.4.Final) -->
-          <!-- we need to shade jackson, as there is a conflict between versions
-          used by Hive (2.4.2) and Druid (2.4.6) -->
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <shadeTestJar>true</shadeTestJar>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
-              <relocations>
-                <relocation>
-                  <pattern>io.druid</pattern>
-                  <shadedPattern>org.apache.hive.druid.io.druid</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.metamx</pattern>
-                  <shadedPattern>org.apache.hive.druid.com.metamx</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>io.netty</pattern>
-                  <shadedPattern>org.apache.hive.druid.io.netty</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>org.apache.calcite</pattern>
-                  <shadedPattern>org.apache.hive.druid.org.apache.calcite</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>org.jboss.netty</pattern>
-                  <shadedPattern>org.apache.hive.druid.org.jboss.netty</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.fasterxml.jackson</pattern>
-                  <shadedPattern>org.apache.hive.druid.com.fasterxml.jackson</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.google.common</pattern>
-                  <shadedPattern>org.apache.hive.druid.com.google.common</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>org.roaringbitmap</pattern>
-                  <shadedPattern>org.apache.hive.druid.org.roaringbitmap</shadedPattern>
-                </relocation>
-              </relocations>
-              <artifactSet>
-                <includes>
-                  <include>io.druid:*</include>
-                  <include>io.druid.extensions:*</include>
-                  <include>com.metamx:*</include>
-                  <include>io.netty:*</include>
-                  <include>org.apache.calcite:*</include>
-                  <include>com.fasterxml.jackson.core:*</include>
-                  <include>com.fasterxml.jackson.datatype:*</include>
-                  <include>com.fasterxml.jackson.dataformat:*</include>
-                  <include>com.google.guava:*</include>
-                  <include>it.unimi.dsi:*</include>
-                  <include>org.jdbi:*</include>
-                  <include>net.jpountz.lz4:*</include>
-                  <include>org.apache.commons:*</include>
-                  <include>org.roaringbitmap:*</include>
-                </includes>
-              </artifactSet>
-              <filters>
-                <filter>
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.SF</exclude>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.RSA</exclude>
-                  </excludes>
-                </filter>
-              </filters>
-            </configuration>
           </execution>
         </executions>
       </plugin>
