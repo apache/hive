@@ -109,7 +109,7 @@ public class SelectStringColLikeStringScalar extends VectorExpression {
             outputVector[i] = (checker.check(vector[i], start[i], length[i]) ? 1 : 0);
             outV.isNull[i] = false;
           } else {
-            outputVector[0] = LongColumnVector.NULL_VALUE;
+            outputVector[i] = LongColumnVector.NULL_VALUE;
             outV.isNull[i] = true;
           }
         }
@@ -119,7 +119,7 @@ public class SelectStringColLikeStringScalar extends VectorExpression {
             outputVector[i] = (checker.check(vector[i], start[i], length[i]) ? 1 : 0);
             outV.isNull[i] = false;
           } else {
-            outputVector[0] = LongColumnVector.NULL_VALUE;
+            outputVector[i] = LongColumnVector.NULL_VALUE;
             outV.isNull[i] = true;
           }
         }
