@@ -1893,7 +1893,19 @@ public class Driver implements CommandProcessor {
         if (tskRun == null) {
           continue;
         }
-        hookContext.addCompleteTask(tskRun);
+        /*
+          This should be removed eventually. HIVE-17814 gives more detail
+          explanation of whats happening and HIVE-17815 as to why this is done.
+          Briefly for replication the graph is huge and so memory pressure is going to be huge if
+          we keep a lot of references around.
+        */
+        String opName = plan.getOperationName();
+        boolean isReplicationOperation = opName.equals(HiveOperation.REPLDUMP.getOperationName())
+            || opName.equals(HiveOperation.REPLLOAD.getOperationName());
+        if (!isReplicationOperation) {
+          hookContext.addCompleteTask(tskRun);
+        }
+
         queryDisplay.setTaskResult(tskRun.getTask().getId(), tskRun.getTaskResult());
 
         Task<? extends Serializable> tsk = tskRun.getTask();
