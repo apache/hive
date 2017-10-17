@@ -1181,6 +1181,11 @@ public final class Utilities {
     for (FileStatus file : files) {
       if (filesToMove.contains(file.getPath())) {
         Utilities.moveFile(fs, file, dst);
+      } else if (file.isDir()) {
+        // Traverse directory contents.
+        // Directory nesting for dst needs to match src.
+        Path nestedDstPath = new Path(dst, file.getPath().getName());
+        Utilities.moveSpecifiedFiles(fs, file.getPath(), nestedDstPath, filesToMove);
       }
     }
   }
