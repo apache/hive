@@ -531,9 +531,9 @@ public class ObjectStore implements RawStore, Configurable {
     // has to be a separate first step because we don't set the default values in the config object.
     for (ConfVars var : MetastoreConf.dataNucleusAndJdoConfs) {
       String confVal = MetastoreConf.getAsString(conf, var);
-      Object prevVal = prop.setProperty(var.varname, confVal);
-      if (LOG.isDebugEnabled() && MetastoreConf.isPrintable(var.varname)) {
-        LOG.debug("Overriding " + var.varname + " value " + prevVal
+      Object prevVal = prop.setProperty(var.getVarname(), confVal);
+      if (LOG.isDebugEnabled() && MetastoreConf.isPrintable(var.getVarname())) {
+        LOG.debug("Overriding " + var.getVarname() + " value " + prevVal
             + " from  jpox.properties with " + confVal);
       }
     }
@@ -561,7 +561,7 @@ public class ObjectStore implements RawStore, Configurable {
       String passwd = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
       if (passwd != null && !passwd.isEmpty()) {
         // We can get away with the use of varname here because varname == hiveName for PWD
-        prop.setProperty(ConfVars.PWD.varname, passwd);
+        prop.setProperty(ConfVars.PWD.getVarname(), passwd);
       }
     } catch (IOException err) {
       throw new RuntimeException("Error getting metastore password: " + err.getMessage(), err);

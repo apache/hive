@@ -192,7 +192,8 @@ public class DelegationTokenTool extends Configured implements Tool {
     Configuration conf = new Configuration();
     conf.addResource(new Path(confLocation));
 
-    String tokenStoreClassName = conf.get(MetastoreConf.ConfVars.DELEGATION_TOKEN_STORE_CLS.varname, "");
+    String tokenStoreClassName =
+        MetastoreConf.getVar(conf,MetastoreConf.ConfVars.DELEGATION_TOKEN_STORE_CLS, "");
     if (StringUtils.isBlank(tokenStoreClassName)) {
       throw new Exception("Could not find Delegation TokenStore implementation.");
     }

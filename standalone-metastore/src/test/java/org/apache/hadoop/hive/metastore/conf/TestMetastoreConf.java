@@ -426,6 +426,6 @@ public class TestMetastoreConf {
     Assert.assertThat(dump, new StringContains("Key: <test.str> old hive key: <hive.test.str>  value: <defaultval>"));
     Assert.assertThat(dump, new StringEndsWith("Finished MetastoreConf object.\n"));
     // Make sure the hidden keys didn't get published
-    Assert.assertThat(dump, CoreMatchers.not(new StringContains(ConfVars.PWD.varname)));
+    Assert.assertThat(dump, CoreMatchers.not(new StringContains(ConfVars.PWD.getVarname())));
   }
 }

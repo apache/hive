@@ -77,7 +77,7 @@ public class Warehouse {
     this.conf = conf;
     whRootString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
     if (StringUtils.isBlank(whRootString)) {
-      throw new MetaException(ConfVars.WAREHOUSE.varname
+      throw new MetaException(ConfVars.WAREHOUSE.getVarname()
           + " is not set in the config or blank");
     }
     fsHandler = getMetaStoreFsHandler(conf);

@@ -90,9 +90,9 @@ public class HiveSchemaHelper {
 
   public static String getValidConfVar(MetastoreConf.ConfVars confVar, Configuration conf)
       throws IOException {
-    String confVarStr = conf.get(confVar.varname);
+    String confVarStr = MetastoreConf.getAsString(conf, confVar);
     if (confVarStr == null || confVarStr.isEmpty()) {
-      throw new IOException("Empty " + confVar.varname);
+      throw new IOException("Empty " + confVar.getVarname());
     }
     return confVarStr.trim();
   }

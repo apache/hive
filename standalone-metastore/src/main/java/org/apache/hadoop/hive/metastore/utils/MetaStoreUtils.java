@@ -251,7 +251,7 @@ public class MetaStoreUtils {
       throw new MetaException("Partition value '" + invalidPartitionVal +
           "' contains a character " + "not matched by whitelist pattern '" +
           partitionValidationPattern.toString() + "'.  " + "(configure with " +
-          MetastoreConf.ConfVars.PARTITION_NAME_WHITELIST_PATTERN.varname + ")");
+          MetastoreConf.ConfVars.PARTITION_NAME_WHITELIST_PATTERN.getVarname() + ")");
     }
   }
 
