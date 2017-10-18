@@ -76,6 +76,7 @@ public class VectorExpressionDescriptor {
     INTERVAL_YEAR_MONTH     (0x100),
     INTERVAL_DAY_TIME       (0x200),
     BINARY                  (0x400),
+    STRUCT                  (0x800),
     DATETIME_FAMILY         (DATE.value | TIMESTAMP.value),
     INTERVAL_FAMILY         (INTERVAL_YEAR_MONTH.value | INTERVAL_DAY_TIME.value),
     INT_INTERVAL_YEAR_MONTH     (INT_FAMILY.value | INTERVAL_YEAR_MONTH.value),
@@ -122,6 +123,8 @@ public class VectorExpressionDescriptor {
         return INTERVAL_YEAR_MONTH;
       } else if (lower.equals(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME)) {
         return INTERVAL_DAY_TIME;
+      } else if (VectorizationContext.structTypePattern.matcher(lower).matches()) {
+        return STRUCT;
       } else if (lower.equals("void")) {
         // The old code let void through...
         return INT_FAMILY;

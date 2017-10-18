@@ -2149,7 +2149,11 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     } else if (batch.hasVectors(columnIndex)) {
       vectors = batch.getColumnVectors(columnIndex);
     } else {
-      throw new AssertionError("Batch has no data for " + columnIndex + ": " + batch);
+      // A struct column can have a null child column
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Batch has no data for " + columnIndex + ": " + batch);
+      }
+      return null;
     }
 
     // EncodedColumnBatch is already decompressed, we don't really need to pass codec.
@@ -2712,7 +2716,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       }
       if (fields != null) {
         for (TreeReader child : fields) {
-          child.seek(index);
+          if (child != null) {
+            child.seek(index);
+          }
         }
       }
     }

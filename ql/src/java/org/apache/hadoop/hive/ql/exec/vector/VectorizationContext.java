@@ -347,6 +347,9 @@ public class VectorizationContext {
   public static final Pattern charVarcharTypePattern = Pattern.compile("char.*|varchar.*",
       Pattern.CASE_INSENSITIVE);
 
+  public static final Pattern structTypePattern = Pattern.compile("struct.*",
+      Pattern.CASE_INSENSITIVE);
+
   //Map column number to type
   private OutputColumnManager ocm;
 
@@ -2714,6 +2717,8 @@ public class VectorizationContext {
     case INTERVAL_YEAR_MONTH:
     case INTERVAL_DAY_TIME:
       return hiveTypeName;
+    case STRUCT:
+      return "Struct";
     default:
       throw new HiveException("Unexpected hive type name " + hiveTypeName);
     }

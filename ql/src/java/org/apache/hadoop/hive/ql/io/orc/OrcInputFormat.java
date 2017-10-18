@@ -1607,19 +1607,18 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
       return ReaderImpl.getRawDataSizeFromColIndices(internalColIds, fileTypes, stats);
     }
-
-    private boolean[] shiftReaderIncludedForAcid(boolean[] included) {
-      // We always need the base row
-      included[0] = true;
-      boolean[] newIncluded = new boolean[included.length + OrcRecordUpdater.FIELDS];
-      Arrays.fill(newIncluded, 0, OrcRecordUpdater.FIELDS, true);
-      for(int i= 0; i < included.length; ++i) {
-        newIncluded[i + OrcRecordUpdater.FIELDS] = included[i];
-      }
-      return newIncluded;
-    }
   }
 
+  public static boolean[] shiftReaderIncludedForAcid(boolean[] included) {
+    // We always need the base row
+    included[0] = true;
+    boolean[] newIncluded = new boolean[included.length + OrcRecordUpdater.FIELDS];
+    Arrays.fill(newIncluded, 0, OrcRecordUpdater.FIELDS, true);
+    for (int i = 0; i < included.length; ++i) {
+      newIncluded[i + OrcRecordUpdater.FIELDS] = included[i];
+    }
+    return newIncluded;
+  }
 
   /** Class intended to update two values from methods... Java-related cruft. */
   @VisibleForTesting

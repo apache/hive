@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -62,20 +63,72 @@ public class VectorizedOrcAcidRowBatchReader
 
   private static final Logger LOG = LoggerFactory.getLogger(VectorizedOrcAcidRowBatchReader.class);
 
-  private org.apache.hadoop.hive.ql.io.orc.RecordReader baseReader;
-  private VectorizedRowBatchCtx rbCtx;
-  private VectorizedRowBatch vectorizedRowBatchBase;
+  public org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch> baseReader;
+  protected VectorizedRowBatchCtx rbCtx;
+  protected VectorizedRowBatch vectorizedRowBatchBase;
   private long offset;
   private long length;
-  private float progress = 0.0f;
-  private Object[] partitionValues;
-  private boolean addPartitionCols = true;
+  protected float progress = 0.0f;
+  protected Object[] partitionValues;
+  protected boolean addPartitionCols = true;
   private ValidTxnList validTxnList;
-  private DeleteEventRegistry deleteEventRegistry;
+  protected DeleteEventRegistry deleteEventRegistry;
+  protected StructColumnVector recordIdColumnVector;
+  private org.apache.orc.Reader.Options readerOptions;
 
   public VectorizedOrcAcidRowBatchReader(InputSplit inputSplit, JobConf conf,
         Reporter reporter) throws IOException {
+    this.init(inputSplit, conf, reporter, Utilities.getVectorizedRowBatchCtx(conf));
 
+    final Reader reader = OrcInputFormat.createOrcReaderForSplit(conf, (OrcSplit) inputSplit);
+    // Careful with the range here now, we do not want to read the whole base file like deltas.
+    final RecordReader innerReader = reader.rowsOptions(readerOptions.range(offset, length));
+    baseReader = new org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch>() {
+
+      @Override
+      public boolean next(NullWritable key, VectorizedRowBatch value) throws IOException {
+        return innerReader.nextBatch(value);
+      }
+
+      @Override
+      public NullWritable createKey() {
+        return NullWritable.get();
+      }
+
+      @Override
+      public VectorizedRowBatch createValue() {
+        return rbCtx.createVectorizedRowBatch();
+      }
+
+      @Override
+      public long getPos() throws IOException {
+        return 0;
+      }
+
+      @Override
+      public void close() throws IOException {
+        innerReader.close();
+      }
+
+      @Override
+      public float getProgress() throws IOException {
+        return innerReader.getProgress();
+      }
+    };
+    this.vectorizedRowBatchBase = ((RecordReaderImpl) innerReader).createRowBatch();
+  }
+
+  public VectorizedOrcAcidRowBatchReader(InputSplit inputSplit, JobConf conf, Reporter reporter,
+      org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch> baseReader,
+      VectorizedRowBatchCtx rbCtx) throws IOException {
+    this.init(inputSplit, conf, reporter, rbCtx);
+    this.baseReader = baseReader;
+    this.vectorizedRowBatchBase = baseReader.createValue();
+  }
+
+  private void init(InputSplit inputSplit, JobConf conf, Reporter reporter,
+      VectorizedRowBatchCtx rowBatchCtx) throws IOException {
+    this.rbCtx = rowBatchCtx;
     final boolean isAcidRead = HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
     final AcidUtils.AcidOperationalProperties acidOperationalProperties
             = AcidUtils.getAcidOperationalProperties(conf);
@@ -89,27 +142,12 @@ public class VectorizedOrcAcidRowBatchReader
     }
     final OrcSplit orcSplit = (OrcSplit) inputSplit;
 
-    rbCtx = Utilities.getVectorizedRowBatchCtx(conf);
-
     reporter.setStatus(orcSplit.toString());
-    Reader reader = OrcInputFormat.createOrcReaderForSplit(conf, orcSplit);
-    Reader.Options readerOptions = OrcInputFormat.createOptionsForReader(conf);
+    readerOptions = OrcInputFormat.createOptionsForReader(conf);
     readerOptions = OrcRawRecordMerger.createEventOptions(readerOptions);
 
     this.offset = orcSplit.getStart();
     this.length = orcSplit.getLength();
-
-    // Careful with the range here now, we do not want to read the whole base file like deltas.
-    this.baseReader = reader.rowsOptions(readerOptions.range(offset, length));
-
-    // VectorizedRowBatchBase schema is picked up from the baseReader because the SchemaEvolution
-    // stuff happens at the ORC layer that understands how to map user schema to acid schema.
-    if (this.baseReader instanceof RecordReaderImpl) {
-      this.vectorizedRowBatchBase = ((RecordReaderImpl) this.baseReader).createRowBatch();
-    } else {
-      throw new IOException("Failed to create vectorized row batch for the reader of type "
-          + this.baseReader.getClass().getName());
-    }
 
     int partitionColumnCount = (rbCtx != null) ? rbCtx.getPartitionColumnCount() : 0;
     if (partitionColumnCount > 0) {
@@ -137,6 +175,8 @@ public class VectorizedOrcAcidRowBatchReader
       // delete event on-demand. Caps the memory consumption to (some_const * no. of readers).
       this.deleteEventRegistry = new SortMergedDeleteEventRegistry(conf, orcSplit, deleteEventReaderOptions);
     }
+
+    recordIdColumnVector = new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE, null, null, null);
   }
 
   /**
@@ -190,7 +230,7 @@ public class VectorizedOrcAcidRowBatchReader
         }
         addPartitionCols = false;
       }
-      if (!baseReader.nextBatch(vectorizedRowBatchBase)) {
+      if (!baseReader.next(null, vectorizedRowBatchBase)) {
         return false;
       }
     } catch (Exception e) {
@@ -222,7 +262,8 @@ public class VectorizedOrcAcidRowBatchReader
     findRecordsWithInvalidTransactionIds(vectorizedRowBatchBase, selectedBitSet);
 
     // Case 2- find rows which have been deleted.
-    this.deleteEventRegistry.findDeletedRecords(vectorizedRowBatchBase, selectedBitSet);
+    this.deleteEventRegistry.findDeletedRecords(vectorizedRowBatchBase.cols,
+        vectorizedRowBatchBase.size, selectedBitSet);
 
     if (selectedBitSet.cardinality() == vectorizedRowBatchBase.size) {
       // None of the cases above matched and everything is selected. Hence, we will use the
@@ -251,23 +292,33 @@ public class VectorizedOrcAcidRowBatchReader
     StructColumnVector payloadStruct = (StructColumnVector) vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW];
     // Transfer columnVector objects from base batch to outgoing batch.
     System.arraycopy(payloadStruct.fields, 0, value.cols, 0, value.getDataColumnCount());
+    if (rbCtx != null) {
+      recordIdColumnVector.fields[0] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ORIGINAL_TRANSACTION];
+      recordIdColumnVector.fields[1] = vectorizedRowBatchBase.cols[OrcRecordUpdater.BUCKET];
+      recordIdColumnVector.fields[2] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW_ID];
+      rbCtx.setRecordIdColumnVector(recordIdColumnVector);
+    }
     progress = baseReader.getProgress();
     return true;
   }
 
-  private void findRecordsWithInvalidTransactionIds(VectorizedRowBatch batch, BitSet selectedBitSet) {
-    if (batch.cols[OrcRecordUpdater.CURRENT_TRANSACTION].isRepeating) {
+  protected void findRecordsWithInvalidTransactionIds(VectorizedRowBatch batch, BitSet selectedBitSet) {
+    findRecordsWithInvalidTransactionIds(batch.cols, batch.size, selectedBitSet);
+  }
+
+  protected void findRecordsWithInvalidTransactionIds(ColumnVector[] cols, int size, BitSet selectedBitSet) {
+    if (cols[OrcRecordUpdater.CURRENT_TRANSACTION].isRepeating) {
       // When we have repeating values, we can unset the whole bitset at once
       // if the repeating value is not a valid transaction.
       long currentTransactionIdForBatch = ((LongColumnVector)
-          batch.cols[OrcRecordUpdater.CURRENT_TRANSACTION]).vector[0];
+          cols[OrcRecordUpdater.CURRENT_TRANSACTION]).vector[0];
       if (!validTxnList.isTxnValid(currentTransactionIdForBatch)) {
-        selectedBitSet.clear(0, batch.size);
+        selectedBitSet.clear(0, size);
       }
       return;
     }
     long[] currentTransactionVector =
-        ((LongColumnVector) batch.cols[OrcRecordUpdater.CURRENT_TRANSACTION]).vector;
+        ((LongColumnVector) cols[OrcRecordUpdater.CURRENT_TRANSACTION]).vector;
     // Loop through the bits that are set to true and mark those rows as false, if their
     // current transactions are not valid.
     for (int setBitIndex = selectedBitSet.nextSetBit(0);
@@ -319,15 +370,16 @@ public class VectorizedOrcAcidRowBatchReader
    * will read the delete delta files and will create their own internal
    * data structures to maintain record ids of the records that got deleted.
    */
-  static interface DeleteEventRegistry {
+  protected static interface DeleteEventRegistry {
     /**
      * Modifies the passed bitset to indicate which of the rows in the batch
      * have been deleted. Assumes that the batch.size is equal to bitset size.
-     * @param batch
+     * @param cols
+     * @param size
      * @param selectedBitSet
      * @throws IOException
      */
-    public void findDeletedRecords(VectorizedRowBatch batch, BitSet selectedBitSet) throws IOException;
+    public void findDeletedRecords(ColumnVector[] cols, int size, BitSet selectedBitSet) throws IOException;
 
     /**
      * The close() method can be called externally to signal the implementing classes
@@ -376,29 +428,29 @@ public class VectorizedOrcAcidRowBatchReader
     }
 
     @Override
-    public void findDeletedRecords(VectorizedRowBatch batch, BitSet selectedBitSet)
+    public void findDeletedRecords(ColumnVector[] cols, int size, BitSet selectedBitSet)
         throws IOException {
       if (!isDeleteRecordAvailable) {
         return;
       }
 
       long[] originalTransaction =
-          batch.cols[OrcRecordUpdater.ORIGINAL_TRANSACTION].isRepeating ? null
-              : ((LongColumnVector) batch.cols[OrcRecordUpdater.ORIGINAL_TRANSACTION]).vector;
+          cols[OrcRecordUpdater.ORIGINAL_TRANSACTION].isRepeating ? null
+              : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_TRANSACTION]).vector;
       long[] bucket =
-          batch.cols[OrcRecordUpdater.BUCKET].isRepeating ? null
-              : ((LongColumnVector) batch.cols[OrcRecordUpdater.BUCKET]).vector;
+          cols[OrcRecordUpdater.BUCKET].isRepeating ? null
+              : ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector;
       long[] rowId =
-          batch.cols[OrcRecordUpdater.ROW_ID].isRepeating ? null
-              : ((LongColumnVector) batch.cols[OrcRecordUpdater.ROW_ID]).vector;
+          cols[OrcRecordUpdater.ROW_ID].isRepeating ? null
+              : ((LongColumnVector) cols[OrcRecordUpdater.ROW_ID]).vector;
 
       // The following repeatedX values will be set, if any of the columns are repeating.
       long repeatedOriginalTransaction = (originalTransaction != null) ? -1
-          : ((LongColumnVector) batch.cols[OrcRecordUpdater.ORIGINAL_TRANSACTION]).vector[0];
+          : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_TRANSACTION]).vector[0];
       long repeatedBucket = (bucket != null) ? -1
-          : ((LongColumnVector) batch.cols[OrcRecordUpdater.BUCKET]).vector[0];
+          : ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector[0];
       long repeatedRowId = (rowId != null) ? -1
-          : ((LongColumnVector) batch.cols[OrcRecordUpdater.ROW_ID]).vector[0];
+          : ((LongColumnVector) cols[OrcRecordUpdater.ROW_ID]).vector[0];
 
 
       // Get the first valid row in the batch still available.
@@ -413,7 +465,7 @@ public class VectorizedOrcAcidRowBatchReader
               rowId != null ? (int)  rowId[firstValidIndex] : repeatedRowId);
 
       // Get the last valid row in the batch still available.
-      int lastValidIndex = selectedBitSet.previousSetBit(batch.size - 1);
+      int lastValidIndex = selectedBitSet.previousSetBit(size - 1);
       RecordIdentifier lastRecordIdInBatch =
           new RecordIdentifier(
               originalTransaction != null ? originalTransaction[lastValidIndex] : repeatedOriginalTransaction,
@@ -860,7 +912,7 @@ public class VectorizedOrcAcidRowBatchReader
     }
 
     @Override
-    public void findDeletedRecords(VectorizedRowBatch batch, BitSet selectedBitSet)
+    public void findDeletedRecords(ColumnVector[] cols, int size, BitSet selectedBitSet)
         throws IOException {
       if (rowIds == null || compressedOtids == null) {
         return;
@@ -869,19 +921,19 @@ public class VectorizedOrcAcidRowBatchReader
       // check if it is deleted or not.
 
       long[] originalTransactionVector =
-          batch.cols[OrcRecordUpdater.ORIGINAL_TRANSACTION].isRepeating ? null
-              : ((LongColumnVector) batch.cols[OrcRecordUpdater.ORIGINAL_TRANSACTION]).vector;
+          cols[OrcRecordUpdater.ORIGINAL_TRANSACTION].isRepeating ? null
+              : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_TRANSACTION]).vector;
       long repeatedOriginalTransaction = (originalTransactionVector != null) ? -1
-          : ((LongColumnVector) batch.cols[OrcRecordUpdater.ORIGINAL_TRANSACTION]).vector[0];
+          : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_TRANSACTION]).vector[0];
 
       long[] bucketProperties =
-        batch.cols[OrcRecordUpdater.BUCKET].isRepeating ? null
-          : ((LongColumnVector)batch.cols[OrcRecordUpdater.BUCKET]).vector;
+        cols[OrcRecordUpdater.BUCKET].isRepeating ? null
+          : ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector;
       int repeatedBucketProperty = (bucketProperties != null) ? -1
-        : (int)((LongColumnVector) batch.cols[OrcRecordUpdater.BUCKET]).vector[0];
+        : (int)((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector[0];
 
       long[] rowIdVector =
-          ((LongColumnVector) batch.cols[OrcRecordUpdater.ROW_ID]).vector;
+          ((LongColumnVector) cols[OrcRecordUpdater.ROW_ID]).vector;
 
       for (int setBitIndex = selectedBitSet.nextSetBit(0);
           setBitIndex >= 0;

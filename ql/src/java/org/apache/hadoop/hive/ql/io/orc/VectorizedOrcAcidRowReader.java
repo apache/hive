@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
@@ -39,7 +41,7 @@ import java.io.IOException;
  * the non-vectorized ACID reader and moving the data into a vectorized row
  * batch.
  */
-class VectorizedOrcAcidRowReader
+public class VectorizedOrcAcidRowReader
     implements org.apache.hadoop.mapred.RecordReader<NullWritable,
                                                      VectorizedRowBatch> {
   private final AcidInputFormat.RowReader<OrcStruct> innerReader;
@@ -49,11 +51,14 @@ class VectorizedOrcAcidRowReader
   private Object[] partitionValues;
   private final ObjectInspector objectInspector;
   private final DataOutputBuffer buffer = new DataOutputBuffer();
+  private final StructColumnVector recordIdColumnVector;
+  private final LongColumnVector transactionColumnVector;
+  private final LongColumnVector bucketColumnVector;
+  private final LongColumnVector rowIdColumnVector;
 
-  VectorizedOrcAcidRowReader(AcidInputFormat.RowReader<OrcStruct> inner,
-                             Configuration conf,
-                             VectorizedRowBatchCtx vectorizedRowBatchCtx,
-                             FileSplit split) throws IOException {
+  public VectorizedOrcAcidRowReader(AcidInputFormat.RowReader<OrcStruct> inner,
+      Configuration conf, VectorizedRowBatchCtx vectorizedRowBatchCtx, FileSplit split)
+      throws IOException {
     this.innerReader = inner;
     this.key = inner.createKey();
     rbCtx = vectorizedRowBatchCtx;
@@ -64,6 +69,12 @@ class VectorizedOrcAcidRowReader
     }
     this.value = inner.createValue();
     this.objectInspector = inner.getObjectInspector();
+    this.transactionColumnVector = new LongColumnVector();
+    this.bucketColumnVector = new LongColumnVector();
+    this.rowIdColumnVector = new LongColumnVector();
+    this.recordIdColumnVector =
+        new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+            transactionColumnVector, bucketColumnVector, rowIdColumnVector);
   }
 
   @Override
@@ -81,17 +92,28 @@ class VectorizedOrcAcidRowReader
     try {
       VectorizedBatchUtil.acidAddRowToBatch(value,
           (StructObjectInspector) objectInspector,
-          vectorizedRowBatch.size++, vectorizedRowBatch, rbCtx, buffer);
+          vectorizedRowBatch.size, vectorizedRowBatch, rbCtx, buffer);
+      addRecordId(vectorizedRowBatch.size, key);
+      vectorizedRowBatch.size++;
       while (vectorizedRowBatch.size < vectorizedRowBatch.selected.length &&
           innerReader.next(key, value)) {
         VectorizedBatchUtil.acidAddRowToBatch(value,
             (StructObjectInspector) objectInspector,
-            vectorizedRowBatch.size++, vectorizedRowBatch, rbCtx, buffer);
+            vectorizedRowBatch.size, vectorizedRowBatch, rbCtx, buffer);
+        addRecordId(vectorizedRowBatch.size, key);
+        vectorizedRowBatch.size++;
       }
+      rbCtx.setRecordIdColumnVector(recordIdColumnVector);
     } catch (Exception e) {
       throw new IOException("error iterating", e);
     }
     return true;
+  }
+
+  private void addRecordId(int index, RecordIdentifier key) {
+    transactionColumnVector.vector[index] = key.getTransactionId();
+    bucketColumnVector.vector[index] = key.getBucketProperty();
+    rowIdColumnVector.vector[index] = key.getRowId();
   }
 
   @Override

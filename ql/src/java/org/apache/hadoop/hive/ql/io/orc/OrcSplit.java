@@ -26,8 +26,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.ColumnarSplit;
 import org.apache.hadoop.hive.ql.io.LlapAwareSplit;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
@@ -225,8 +229,35 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   }
 
   @Override
-  public boolean canUseLlapIo() {
-    return isOriginal && (deltas == null || deltas.isEmpty());
+  public boolean canUseLlapIo(Configuration conf) {
+    final boolean hasDelta = deltas != null && !deltas.isEmpty();
+    final boolean isAcidRead = HiveConf.getBoolVar(conf,
+        HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+    final boolean isVectorized = HiveConf.getBoolVar(conf,
+        HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
+    final AcidUtils.AcidOperationalProperties acidOperationalProperties
+        = AcidUtils.getAcidOperationalProperties(conf);
+    final boolean isSplitUpdate = acidOperationalProperties.isSplitUpdate();
+
+    if (isOriginal) {
+      if (!isAcidRead && !hasDelta) {
+        // Original scan only
+        return true;
+      }
+    } else {
+      if (isAcidRead && hasBase && isVectorized) {
+        if (hasDelta) {
+          if (isSplitUpdate) {
+            // Base with delete deltas
+            return true;
+          }
+        } else {
+          // Base scan only
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   @Override

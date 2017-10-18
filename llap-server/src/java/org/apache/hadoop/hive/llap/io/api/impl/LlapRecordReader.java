@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcAcidRowBatchReader;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
@@ -140,8 +141,20 @@ class LlapRecordReader
     isAcidScan = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
     TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(
         job, isAcidScan, Integer.MAX_VALUE);
-    this.columnIds = includedCols;
-    this.columnCount = columnIds.size();
+    if (isAcidScan) {
+      this.columnIds = new ArrayList<>();
+      final int ACID_FIELDS = OrcInputFormat.getRootColumn(false);
+      for (int i = 0; i < ACID_FIELDS; i++) {
+        columnIds.add(i);
+      }
+      for (int i = 0; i < includedCols.size(); i++) {
+        columnIds.add(i + ACID_FIELDS);
+      }
+      this.columnCount = columnIds.size();
+    } else {
+      this.columnIds = includedCols;
+      this.columnCount = columnIds.size();
+    }
 
     VectorizedRowBatchCtx ctx = mapWork.getVectorizedRowBatchCtx();
     rbCtx = ctx != null ? ctx : LlapInputFormat.createFakeVrbCtx(mapWork);
@@ -254,17 +267,63 @@ class LlapRecordReader
       counters.incrTimeCounter(LlapIOCounters.CONSUMER_TIME_NS, firstReturnTime);
       return false;
     }
-    if (columnCount != cvb.cols.length) {
-      throw new RuntimeException("Unexpected number of columns, VRB has " + columnCount
-          + " included, but the reader returned " + cvb.cols.length);
+    final boolean isVectorized = HiveConf.getBoolVar(jobConf,
+        HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
+
+    if (isAcidScan) {
+      value.selectedInUse = true;
+      if (isVectorized) {
+        final VectorizedRowBatch acidVrb = new VectorizedRowBatch(cvb.cols.length);
+        acidVrb.cols = cvb.cols;
+        acidVrb.size = cvb.size;
+        final VectorizedOrcAcidRowBatchReader acidReader =
+            new VectorizedOrcAcidRowBatchReader(split, jobConf, Reporter.NULL,
+                new RecordReader<NullWritable, VectorizedRowBatch>() {
+                  @Override
+                  public boolean next(NullWritable key, VectorizedRowBatch value) throws IOException {
+                    return true;
+                  }
+
+                  @Override
+                  public NullWritable createKey() {
+                    return NullWritable.get();
+                  }
+
+                  @Override
+                  public VectorizedRowBatch createValue() {
+                    return acidVrb;
+                  }
+
+                  @Override
+                  public long getPos() throws IOException {
+                    return 0;
+                  }
+
+                  @Override
+                  public void close() throws IOException {
+                  }
+
+                  @Override
+                  public float getProgress() throws IOException {
+                    return 0;
+                  }
+                }, rbCtx);
+        acidReader.next(NullWritable.get(), value);
+      }
+    } else {
+      if (columnCount != cvb.cols.length) {
+        throw new RuntimeException("Unexpected number of columns, VRB has " + columnCount
+            + " included, but the reader returned " + cvb.cols.length);
+      }
+      // VRB was created from VrbCtx, so we already have pre-allocated column vectors
+      for (int i = 0; i < cvb.cols.length; ++i) {
+        // Return old CVs (if any) to caller. We assume these things all have the same schema.
+        cvb.swapColumnVector(i, value.cols, columnIds.get(i));
+      }
+      value.selectedInUse = false;
+      value.size = cvb.size;
     }
-    // VRB was created from VrbCtx, so we already have pre-allocated column vectors
-    for (int i = 0; i < cvb.cols.length; ++i) {
-      // Return old CVs (if any) to caller. We assume these things all have the same schema.
-      cvb.swapColumnVector(i, value.cols, columnIds.get(i));
-    }
-    value.selectedInUse = false;
-    value.size = cvb.size;
+
     if (wasFirst) {
       firstReturnTime = counters.startTimeCounter();
     }

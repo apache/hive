@@ -138,7 +138,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       InputSplit split, JobConf job, Reporter reporter) throws IOException {
     boolean useLlapIo = true;
     if (split instanceof LlapAwareSplit) {
-      useLlapIo = ((LlapAwareSplit) split).canUseLlapIo();
+      useLlapIo = ((LlapAwareSplit) split).canUseLlapIo(job);
     }
     if (useLlapIo) return null;
 
@@ -170,9 +170,14 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     RowSchema rowSchema = findTsOp(mapWork).getSchema();
     final List<String> colNames = new ArrayList<String>(rowSchema.getSignature().size());
     final List<TypeInfo> colTypes = new ArrayList<TypeInfo>(rowSchema.getSignature().size());
+    boolean hasRowId = false;
     for (ColumnInfo c : rowSchema.getSignature()) {
       String columnName = c.getInternalName();
-      if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName)) continue;
+      if (VirtualColumn.ROWID.getName().equals(columnName)) {
+        hasRowId = true;
+      } else {
+        if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName)) continue;
+      }
       colNames.add(columnName);
       colTypes.add(TypeInfoUtils.getTypeInfoFromTypeString(c.getTypeName()));
     }
@@ -190,10 +195,15 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
         }
       }
     }
-    // UNDONE: Virtual column support?
+    final VirtualColumn[] virtualColumns;
+    if (hasRowId) {
+      virtualColumns = new VirtualColumn[] {VirtualColumn.ROWID};
+    } else {
+      virtualColumns = new VirtualColumn[0];
+    }
     return new VectorizedRowBatchCtx(colNames.toArray(new String[colNames.size()]),
         colTypes.toArray(new TypeInfo[colTypes.size()]), null, partitionColumnCount,
-        new VirtualColumn[0], new String[0]);
+        virtualColumns, new String[0]);
   }
 
   static TableScanOperator findTsOp(MapWork mapWork) throws HiveException {

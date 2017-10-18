@@ -818,12 +818,11 @@ public class VectorMapOperator extends AbstractMapOperator {
             VectorizedRowBatch batch = (VectorizedRowBatch) value;
             numRows += batch.size;
             if (hasRowIdentifier) {
-
-              // UNDONE: Pass ROW__ID STRUCT column through IO Context to get filled in by ACID reader
-              // UNDONE: Or, perhaps tell it to do it before calling us, ...
-              // UNDONE: For now, set column to NULL.
-
-              setRowIdentiferToNull(batch);
+              if (batchContext.getRecordIdColumnVector() == null) {
+                setRowIdentiferToNull(batch);
+              } else {
+                batch.cols[rowIdentifierColumnNum] = batchContext.getRecordIdColumnVector();
+              }
             }
           }
           oneRootOperator.process(value, 0);

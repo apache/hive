@@ -154,7 +154,8 @@ public class OrcEncodedDataConsumer
           if (cvb.cols[idx] == null) {
             // Orc store rows inside a root struct (hive writes it this way).
             // When we populate column vectors we skip over the root struct.
-            cvb.cols[idx] = createColumn(schema.getChildren().get(columnMapping[idx]), batchSize);
+            cvb.cols[idx] = createColumn(schema.getChildren().get(columnMapping[idx]),
+                VectorizedRowBatch.DEFAULT_SIZE);
           }
           trace.logTreeReaderNextVector(idx);
           ColumnVector cv = cvb.cols[idx];

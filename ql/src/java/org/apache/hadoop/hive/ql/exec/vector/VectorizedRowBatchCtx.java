@@ -81,6 +81,13 @@ public class VectorizedRowBatchCtx {
   private int partitionColumnCount;
   private int virtualColumnCount;
   private VirtualColumn[] neededVirtualColumns;
+  /**
+   * A record ID column is a virtual column, so it should be separated from normal data column
+   * processes. A recordIdColumnVector contains RecordIdentifier information in a
+   * StructColumnVector. It has three LongColumnVectors as its fields; original transaction IDs,
+   * bucket IDs, and row IDs.
+   */
+  private StructColumnVector recordIdColumnVector;
 
   private String[] scratchColumnTypeNames;
 
@@ -134,6 +141,14 @@ public class VectorizedRowBatchCtx {
 
   public String[] getScratchColumnTypeNames() {
     return scratchColumnTypeNames;
+  }
+
+  public StructColumnVector getRecordIdColumnVector() {
+    return this.recordIdColumnVector;
+  }
+
+  public void setRecordIdColumnVector(StructColumnVector recordIdColumnVector) {
+    this.recordIdColumnVector = recordIdColumnVector;
   }
 
   /**
@@ -274,6 +289,11 @@ public class VectorizedRowBatchCtx {
    */
   public void addPartitionColsToBatch(VectorizedRowBatch batch, Object[] partitionValues)
   {
+    addPartitionColsToBatch(batch.cols, partitionValues);
+  }
+
+  public void addPartitionColsToBatch(ColumnVector[] cols, Object[] partitionValues)
+  {
     if (partitionValues != null) {
       for (int i = 0; i < partitionColumnCount; i++) {
         Object value = partitionValues[i];
@@ -283,7 +303,7 @@ public class VectorizedRowBatchCtx {
         PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) rowColumnTypeInfos[colIndex];
         switch (primitiveTypeInfo.getPrimitiveCategory()) {
         case BOOLEAN: {
-          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          LongColumnVector lcv = (LongColumnVector) cols[colIndex];
           if (value == null) {
             lcv.noNulls = false;
             lcv.isNull[0] = true;
@@ -296,7 +316,7 @@ public class VectorizedRowBatchCtx {
         break;
 
         case BYTE: {
-          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          LongColumnVector lcv = (LongColumnVector) cols[colIndex];
           if (value == null) {
             lcv.noNulls = false;
             lcv.isNull[0] = true;
@@ -309,7 +329,7 @@ public class VectorizedRowBatchCtx {
         break;
 
         case SHORT: {
-          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          LongColumnVector lcv = (LongColumnVector) cols[colIndex];
           if (value == null) {
             lcv.noNulls = false;
             lcv.isNull[0] = true;
@@ -322,7 +342,7 @@ public class VectorizedRowBatchCtx {
         break;
 
         case INT: {
-          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          LongColumnVector lcv = (LongColumnVector) cols[colIndex];
           if (value == null) {
             lcv.noNulls = false;
             lcv.isNull[0] = true;
@@ -335,7 +355,7 @@ public class VectorizedRowBatchCtx {
         break;
 
         case LONG: {
-          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          LongColumnVector lcv = (LongColumnVector) cols[colIndex];
           if (value == null) {
             lcv.noNulls = false;
             lcv.isNull[0] = true;
@@ -348,7 +368,7 @@ public class VectorizedRowBatchCtx {
         break;
 
         case DATE: {
-          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          LongColumnVector lcv = (LongColumnVector) cols[colIndex];
           if (value == null) {
             lcv.noNulls = false;
             lcv.isNull[0] = true;
@@ -361,7 +381,7 @@ public class VectorizedRowBatchCtx {
         break;
 
         case TIMESTAMP: {
-          TimestampColumnVector lcv = (TimestampColumnVector) batch.cols[colIndex];
+          TimestampColumnVector lcv = (TimestampColumnVector) cols[colIndex];
           if (value == null) {
             lcv.noNulls = false;
             lcv.isNull[0] = true;
@@ -374,7 +394,7 @@ public class VectorizedRowBatchCtx {
         break;
 
         case INTERVAL_YEAR_MONTH: {
-          LongColumnVector lcv = (LongColumnVector) batch.cols[colIndex];
+          LongColumnVector lcv = (LongColumnVector) cols[colIndex];
           if (value == null) {
             lcv.noNulls = false;
             lcv.isNull[0] = true;
@@ -386,7 +406,7 @@ public class VectorizedRowBatchCtx {
         }
 
         case INTERVAL_DAY_TIME: {
-          IntervalDayTimeColumnVector icv = (IntervalDayTimeColumnVector) batch.cols[colIndex];
+          IntervalDayTimeColumnVector icv = (IntervalDayTimeColumnVector) cols[colIndex];
           if (value == null) {
             icv.noNulls = false;
             icv.isNull[0] = true;
@@ -398,7 +418,7 @@ public class VectorizedRowBatchCtx {
         }
 
         case FLOAT: {
-          DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[colIndex];
+          DoubleColumnVector dcv = (DoubleColumnVector) cols[colIndex];
           if (value == null) {
             dcv.noNulls = false;
             dcv.isNull[0] = true;
@@ -411,7 +431,7 @@ public class VectorizedRowBatchCtx {
         break;
 
         case DOUBLE: {
-          DoubleColumnVector dcv = (DoubleColumnVector) batch.cols[colIndex];
+          DoubleColumnVector dcv = (DoubleColumnVector) cols[colIndex];
           if (value == null) {
             dcv.noNulls = false;
             dcv.isNull[0] = true;
@@ -424,7 +444,7 @@ public class VectorizedRowBatchCtx {
         break;
 
         case DECIMAL: {
-          DecimalColumnVector dv = (DecimalColumnVector) batch.cols[colIndex];
+          DecimalColumnVector dv = (DecimalColumnVector) cols[colIndex];
           if (value == null) {
             dv.noNulls = false;
             dv.isNull[0] = true;
@@ -439,7 +459,7 @@ public class VectorizedRowBatchCtx {
         break;
 
         case BINARY: {
-            BytesColumnVector bcv = (BytesColumnVector) batch.cols[colIndex];
+            BytesColumnVector bcv = (BytesColumnVector) cols[colIndex];
             byte[] bytes = (byte[]) value;
             if (bytes == null) {
               bcv.noNulls = false;
@@ -455,7 +475,7 @@ public class VectorizedRowBatchCtx {
         case STRING:
         case CHAR:
         case VARCHAR: {
-          BytesColumnVector bcv = (BytesColumnVector) batch.cols[colIndex];
+          BytesColumnVector bcv = (BytesColumnVector) cols[colIndex];
           String sVal = value.toString();
           if (sVal == null) {
             bcv.noNulls = false;

@@ -1124,7 +1124,7 @@ STAGE PLANS:
                         sort order: +
                         Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
@@ -1303,7 +1303,7 @@ STAGE PLANS:
                         sort order: +
                         Statistics: Num rows: 20 Data size: 8880 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col1 (type: string), _col2 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
@@ -1620,7 +1620,7 @@ STAGE PLANS:
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 500 Data size: 308500 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
@@ -1800,7 +1800,7 @@ STAGE PLANS:
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 20 Data size: 8880 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col1 (type: string), _col2 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap

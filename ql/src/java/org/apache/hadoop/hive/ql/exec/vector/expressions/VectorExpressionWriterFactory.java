@@ -61,6 +61,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestamp
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.DateUtils;
@@ -1462,12 +1464,18 @@ public final class VectorExpressionWriterFactory {
   private static VectorExpressionWriter genVectorExpressionWritableStruct(
       SettableStructObjectInspector fieldObjInspector) throws HiveException {
 
-    return new VectorExpressionWriterMap() {
+    return new VectorExpressionWriterStruct() {
       private Object obj;
+      private VectorExtractRow vectorExtractRow;
+      private StructTypeInfo structTypeInfo;
 
-      public VectorExpressionWriter init(SettableStructObjectInspector objInspector) throws HiveException {
+      public VectorExpressionWriter init(SettableStructObjectInspector objInspector)
+          throws HiveException {
         super.init(objInspector);
         obj = initValue(null);
+        vectorExtractRow = new VectorExtractRow();
+        structTypeInfo = (StructTypeInfo)
+            TypeInfoUtils.getTypeInfoFromTypeString(objInspector.getTypeName());
         return this;
       }
 
@@ -1477,15 +1485,43 @@ public final class VectorExpressionWriterFactory {
       }
 
       @Override
-      public Object writeValue(ColumnVector column, int row)
-          throws HiveException {
-        throw new HiveException("Not implemented yet");
+      public Object writeValue(ColumnVector column, int row) throws HiveException {
+        final StructColumnVector structColVector = (StructColumnVector) column;
+        final SettableStructObjectInspector structOI =
+            (SettableStructObjectInspector) this.objectInspector;
+        final List<? extends StructField> fields = structOI.getAllStructFieldRefs();
+        final List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+
+        final int fieldSize = fields.size();
+        for (int i = 0; i < fieldSize; i++) {
+          final StructField structField = fields.get(i);
+          final Object value = vectorExtractRow.extractRowColumn(structColVector.fields[i],
+              fieldTypeInfos.get(i), structField.getFieldObjectInspector(), row);
+          structOI.setStructFieldData(obj, structField, value);
+        }
+        return this.obj;
       }
 
       @Override
-      public Object setValue(Object row, ColumnVector column, int columnRow)
-          throws HiveException {
-        throw new HiveException("Not implemented yet");
+      public Object setValue(Object field, ColumnVector column, int row) throws HiveException {
+        if (null == field) {
+          field = initValue(null);
+        }
+
+        final StructColumnVector structColVector = (StructColumnVector) column;
+        final SettableStructObjectInspector structOI =
+            (SettableStructObjectInspector) this.objectInspector;
+        final List<? extends StructField> fields = structOI.getAllStructFieldRefs();
+        final List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+
+        final int fieldSize = fields.size();
+        for (int i = 0; i < fieldSize; i++) {
+          final StructField structField = fields.get(i);
+          final Object value = vectorExtractRow.extractRowColumn(structColVector.fields[i],
+              fieldTypeInfos.get(i), structField.getFieldObjectInspector(), row);
+          structOI.setStructFieldData(obj, structField, value);
+        }
+        return field;
       }
     }.init(fieldObjInspector);
   }

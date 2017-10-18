@@ -188,7 +188,7 @@ public class VectorExtractRow {
         colVector, typeInfos[logicalColumnIndex], objectInspectors[logicalColumnIndex], batchIndex);
   }
 
-  Object extractRowColumn(
+  public Object extractRowColumn(
       ColumnVector colVector, TypeInfo typeInfo, ObjectInspector objectInspector, int batchIndex) {
 
     if (colVector == null) {
