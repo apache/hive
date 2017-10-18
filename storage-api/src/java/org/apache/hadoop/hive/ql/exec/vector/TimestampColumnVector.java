@@ -67,7 +67,7 @@ public class TimestampColumnVector extends ColumnVector {
    * @param len the number of rows
    */
   public TimestampColumnVector(int len) {
-    super(len);
+    super(Type.TIMESTAMP, len);
 
     time = new long[len];
     nanos = new int[len];

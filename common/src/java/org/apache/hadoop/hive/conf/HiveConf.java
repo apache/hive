@@ -2872,9 +2872,17 @@ public class HiveConf extends Configuration {
         "1. chosen : use VectorUDFAdaptor for a small set of UDFs that were choosen for good performance\n" +
         "2. all    : use VectorUDFAdaptor for all UDFs"
     ),
-    HIVE_VECTORIZATION_PTF_ENABLED("hive.vectorized.execution.ptf.enabled", false,
+    HIVE_VECTORIZATION_PTF_ENABLED("hive.vectorized.execution.ptf.enabled", true,
         "This flag should be set to true to enable vectorized mode of the PTF of query execution.\n" +
-        "The default value is false."),
+        "The default value is true."),
+
+    HIVE_VECTORIZATION_PTF_MAX_MEMORY_BUFFERING_BATCH_COUNT("hive.vectorized.ptf.max.memory.buffering.batch.count", 25,
+        "Maximum number of vectorized row batches to buffer in memory for PTF\n" +
+        "The default value is 25"),
+    HIVE_VECTORIZATION_TESTING_REDUCER_BATCH_SIZE("hive.vectorized.testing.reducer.batch.size", -1,
+        "internal use only, used for creating small group key vectorized row batches to exercise more logic\n" +
+        "The default value is -1 which means don't restrict for testing",
+        true),
 
     HIVE_VECTORIZATION_COMPLEX_TYPES_ENABLED("hive.vectorized.complex.types.enabled", true,
         "This flag should be set to true to enable vectorization\n" +

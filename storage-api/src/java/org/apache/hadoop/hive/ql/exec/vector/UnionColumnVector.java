@@ -41,7 +41,7 @@ public class UnionColumnVector extends ColumnVector {
    * @param fields the field column vectors
    */
   public UnionColumnVector(int len, ColumnVector... fields) {
-    super(len);
+    super(Type.UNION, len);
     tags = new int[len];
     this.fields = fields;
   }

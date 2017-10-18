@@ -5947,3 +5947,345 @@ Manufacturer#5	almond antique medium spring khaki	1611.66	2
 Manufacturer#5	almond antique sky peru orange	1788.73	4
 Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	5
 Manufacturer#5	almond azure blanched chiffon midnight	1464.48	6
+PREHOOK: query: select p_mfgr,p_name, p_retailprice,
+row_number() over(partition by p_mfgr) as rn,
+rank() over(partition by p_mfgr) as r,
+dense_rank() over(partition by p_mfgr) as dr,
+first_value(p_retailprice) over(partition by p_mfgr) as fv,
+last_value(p_retailprice) over(partition by p_mfgr) as lv,
+count(p_retailprice) over(partition by p_mfgr) as c,
+count(*) over(partition by p_mfgr) as cs
+from vector_ptf_part_simple_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr,p_name, p_retailprice,
+row_number() over(partition by p_mfgr) as rn,
+rank() over(partition by p_mfgr) as r,
+dense_rank() over(partition by p_mfgr) as dr,
+first_value(p_retailprice) over(partition by p_mfgr) as fv,
+last_value(p_retailprice) over(partition by p_mfgr) as lv,
+count(p_retailprice) over(partition by p_mfgr) as c,
+count(*) over(partition by p_mfgr) as cs
+from vector_ptf_part_simple_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
+p_mfgr	p_name	p_retailprice	rn	r	dr	fv	lv	c	cs
+Manufacturer#4	almond azure aquamarine papaya violet	1290.35	1	1	1	1290.35	1206.26	4	6
+Manufacturer#4	almond antique violet mint lemon	1375.42	2	1	1	1290.35	1206.26	4	6
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	3	1	1	1290.35	1206.26	4	6
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	4	1	1	1290.35	1206.26	4	6
+Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	5	1	1	1290.35	1206.26	4	6
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	6	1	1	1290.35	1206.26	4	6
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1	1	1	1464.48	1788.73	6	6
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	2	1	1	1464.48	1788.73	6	6
+Manufacturer#5	almond antique medium spring khaki	1611.66	3	1	1	1464.48	1788.73	6	6
+Manufacturer#5	almond antique blue firebrick mint	1789.69	4	1	1	1464.48	1788.73	6	6
+Manufacturer#5	almond antique medium spring khaki	1611.66	5	1	1	1464.48	1788.73	6	6
+Manufacturer#5	almond antique sky peru orange	1788.73	6	1	1	1464.48	1788.73	6	6
+Manufacturer#2	almond aquamarine rose maroon antique	900.66	1	1	1	900.66	1800.7	8	8
+Manufacturer#2	almond aquamarine rose maroon antique	1698.66	2	1	1	900.66	1800.7	8	8
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	3	1	1	900.66	1800.7	8	8
+Manufacturer#2	almond antique violet chocolate turquoise	1690.68	4	1	1	900.66	1800.7	8	8
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	5	1	1	900.66	1800.7	8	8
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	6	1	1	900.66	1800.7	8	8
+Manufacturer#2	almond aquamarine midnight light salmon	2031.98	7	1	1	900.66	1800.7	8	8
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	8	1	1	900.66	1800.7	8	8
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1	1	1	1753.76	1632.66	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	2	1	1	1753.76	1632.66	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	3	1	1	1753.76	1632.66	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	4	1	1	1753.76	1632.66	11	12
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	5	1	1	1753.76	1632.66	11	12
+Manufacturer#1	almond antique burnished rose metallic	1173.15	6	1	1	1753.76	1632.66	11	12
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	7	1	1	1753.76	1632.66	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	8	1	1	1753.76	1632.66	11	12
+Manufacturer#1	almond antique burnished rose metallic	1173.15	9	1	1	1753.76	1632.66	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	10	1	1	1753.76	1632.66	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	11	1	1	1753.76	1632.66	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	12	1	1	1753.76	1632.66	11	12
+Manufacturer#3	almond antique forest lavender goldenrod	590.27	1	1	1	590.27	99.68	7	8
+Manufacturer#3	almond antique metallic orange dim	55.39	2	1	1	590.27	99.68	7	8
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	3	1	1	590.27	99.68	7	8
+Manufacturer#3	almond antique olive coral navajo	1337.29	4	1	1	590.27	99.68	7	8
+Manufacturer#3	almond antique misty red olive	1922.98	5	1	1	590.27	99.68	7	8
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	6	1	1	590.27	99.68	7	8
+Manufacturer#3	almond antique forest lavender goldenrod	NULL	7	1	1	590.27	99.68	7	8
+Manufacturer#3	almond antique chartreuse khaki white	99.68	8	1	1	590.27	99.68	7	8
+PREHOOK: query: select p_mfgr,p_name, p_retailprice,
+row_number() over(partition by p_mfgr order by p_name) as rn,
+rank() over(partition by p_mfgr order by p_name) as r,
+dense_rank() over(partition by p_mfgr order by p_name) as dr,
+first_value(p_retailprice) over(partition by p_mfgr order by p_name) as fv,
+last_value(p_retailprice) over(partition by p_mfgr order by p_name) as lv,
+count(p_retailprice) over(partition by p_mfgr order by p_name) as c,
+count(*) over(partition by p_mfgr order by p_name) as cs
+from vector_ptf_part_simple_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr,p_name, p_retailprice,
+row_number() over(partition by p_mfgr order by p_name) as rn,
+rank() over(partition by p_mfgr order by p_name) as r,
+dense_rank() over(partition by p_mfgr order by p_name) as dr,
+first_value(p_retailprice) over(partition by p_mfgr order by p_name) as fv,
+last_value(p_retailprice) over(partition by p_mfgr order by p_name) as lv,
+count(p_retailprice) over(partition by p_mfgr order by p_name) as c,
+count(*) over(partition by p_mfgr order by p_name) as cs
+from vector_ptf_part_simple_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
+p_mfgr	p_name	p_retailprice	rn	r	dr	fv	lv	c	cs
+Manufacturer#1	almond antique burnished rose metallic	1173.15	1	1	1	1173.15	1173.15	2	2
+Manufacturer#1	almond antique burnished rose metallic	1173.15	2	1	1	1173.15	1173.15	2	2
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	3	3	2	1173.15	1753.76	6	6
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	4	3	2	1173.15	1753.76	6	6
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	5	3	2	1173.15	1753.76	6	6
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	6	3	2	1173.15	1753.76	6	6
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	7	7	3	1173.15	1602.59	7	7
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	8	8	4	1173.15	1414.42	8	8
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	9	9	5	1173.15	1632.66	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	10	9	5	1173.15	1632.66	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	11	9	5	1173.15	1632.66	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	12	9	5	1173.15	1632.66	11	12
+Manufacturer#2	almond antique violet chocolate turquoise	1690.68	1	1	1	1690.68	1690.68	1	1
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	2	2	2	1690.68	1800.7	4	4
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	3	2	2	1690.68	1800.7	4	4
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	4	2	2	1690.68	1800.7	4	4
+Manufacturer#2	almond aquamarine midnight light salmon	2031.98	5	5	3	1690.68	2031.98	5	5
+Manufacturer#2	almond aquamarine rose maroon antique	900.66	6	6	4	1690.68	1698.66	7	7
+Manufacturer#2	almond aquamarine rose maroon antique	1698.66	7	6	4	1690.68	1698.66	7	7
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	8	8	5	1690.68	1000.6	8	8
+Manufacturer#3	almond antique chartreuse khaki white	99.68	1	1	1	99.68	99.68	1	1
+Manufacturer#3	almond antique forest lavender goldenrod	590.27	2	2	2	99.68	1190.27	4	5
+Manufacturer#3	almond antique forest lavender goldenrod	NULL	3	2	2	99.68	1190.27	4	5
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	4	2	2	99.68	1190.27	4	5
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	5	2	2	99.68	1190.27	4	5
+Manufacturer#3	almond antique metallic orange dim	55.39	6	6	3	99.68	55.39	5	6
+Manufacturer#3	almond antique misty red olive	1922.98	7	7	4	99.68	1922.98	6	7
+Manufacturer#3	almond antique olive coral navajo	1337.29	8	8	5	99.68	1337.29	7	8
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	1	1	1	NULL	NULL	0	1
+Manufacturer#4	almond antique violet mint lemon	1375.42	2	2	2	NULL	1375.42	1	2
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	3	3	3	NULL	1206.26	2	4
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	4	3	3	NULL	1206.26	2	4
+Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	5	5	4	NULL	1844.92	3	5
+Manufacturer#4	almond azure aquamarine papaya violet	1290.35	6	6	5	NULL	1290.35	4	6
+Manufacturer#5	almond antique blue firebrick mint	1789.69	1	1	1	1789.69	1789.69	1	1
+Manufacturer#5	almond antique medium spring khaki	1611.66	2	2	2	1789.69	1611.66	3	3
+Manufacturer#5	almond antique medium spring khaki	1611.66	3	2	2	1789.69	1611.66	3	3
+Manufacturer#5	almond antique sky peru orange	1788.73	4	4	3	1789.69	1788.73	4	4
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	5	5	4	1789.69	1018.1	5	5
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	6	6	5	1789.69	1464.48	6	6
+PREHOOK: query: select p_mfgr, p_retailprice,
+rank() over(partition by p_mfgr) as r
+from vector_ptf_part_simple_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_retailprice,
+rank() over(partition by p_mfgr) as r
+from vector_ptf_part_simple_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
+p_mfgr	p_retailprice	r
+Manufacturer#4	1290.35	1
+Manufacturer#4	1375.42	1
+Manufacturer#4	NULL	1
+Manufacturer#4	NULL	1
+Manufacturer#4	1844.92	1
+Manufacturer#4	1206.26	1
+Manufacturer#5	1464.48	1
+Manufacturer#5	1018.1	1
+Manufacturer#5	1611.66	1
+Manufacturer#5	1789.69	1
+Manufacturer#5	1611.66	1
+Manufacturer#5	1788.73	1
+Manufacturer#2	900.66	1
+Manufacturer#2	1698.66	1
+Manufacturer#2	1800.7	1
+Manufacturer#2	1690.68	1
+Manufacturer#2	1800.7	1
+Manufacturer#2	1000.6	1
+Manufacturer#2	2031.98	1
+Manufacturer#2	1800.7	1
+Manufacturer#1	1753.76	1
+Manufacturer#1	1632.66	1
+Manufacturer#1	1632.66	1
+Manufacturer#1	1753.76	1
+Manufacturer#1	1414.42	1
+Manufacturer#1	1173.15	1
+Manufacturer#1	1602.59	1
+Manufacturer#1	1753.76	1
+Manufacturer#1	1173.15	1
+Manufacturer#1	1753.76	1
+Manufacturer#1	NULL	1
+Manufacturer#1	1632.66	1
+Manufacturer#3	590.27	1
+Manufacturer#3	55.39	1
+Manufacturer#3	1190.27	1
+Manufacturer#3	1337.29	1
+Manufacturer#3	1922.98	1
+Manufacturer#3	1190.27	1
+Manufacturer#3	NULL	1
+Manufacturer#3	99.68	1
+PREHOOK: query: select p_mfgr, p_retailprice,
+rank() over(partition by p_mfgr order by p_name) as r
+from vector_ptf_part_simple_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_retailprice,
+rank() over(partition by p_mfgr order by p_name) as r
+from vector_ptf_part_simple_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
+p_mfgr	p_retailprice	r
+Manufacturer#1	1173.15	1
+Manufacturer#1	1173.15	1
+Manufacturer#1	1753.76	3
+Manufacturer#1	1753.76	3
+Manufacturer#1	1753.76	3
+Manufacturer#1	1753.76	3
+Manufacturer#1	1602.59	7
+Manufacturer#1	1414.42	8
+Manufacturer#1	1632.66	9
+Manufacturer#1	NULL	9
+Manufacturer#1	1632.66	9
+Manufacturer#1	1632.66	9
+Manufacturer#2	1690.68	1
+Manufacturer#2	1800.7	2
+Manufacturer#2	1800.7	2
+Manufacturer#2	1800.7	2
+Manufacturer#2	2031.98	5
+Manufacturer#2	900.66	6
+Manufacturer#2	1698.66	6
+Manufacturer#2	1000.6	8
+Manufacturer#3	99.68	1
+Manufacturer#3	590.27	2
+Manufacturer#3	NULL	2
+Manufacturer#3	1190.27	2
+Manufacturer#3	1190.27	2
+Manufacturer#3	55.39	6
+Manufacturer#3	1922.98	7
+Manufacturer#3	1337.29	8
+Manufacturer#4	NULL	1
+Manufacturer#4	1375.42	2
+Manufacturer#4	NULL	3
+Manufacturer#4	1206.26	3
+Manufacturer#4	1844.92	5
+Manufacturer#4	1290.35	6
+Manufacturer#5	1789.69	1
+Manufacturer#5	1611.66	2
+Manufacturer#5	1611.66	2
+Manufacturer#5	1788.73	4
+Manufacturer#5	1018.1	5
+Manufacturer#5	1464.48	6
+PREHOOK: query: select p_mfgr, p_name, p_retailprice,
+rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
+from vector_ptf_part_simple_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_name, p_retailprice,
+rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
+from vector_ptf_part_simple_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
+p_mfgr	p_name	p_retailprice	r
+Manufacturer#1	almond antique burnished rose metallic	1173.15	1
+Manufacturer#1	almond antique burnished rose metallic	1173.15	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	3
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	3
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	3
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	3
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	7
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	8
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	9
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	9
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	9
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	9
+Manufacturer#2	almond antique violet chocolate turquoise	1690.68	1
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	2
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	2
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	2
+Manufacturer#2	almond aquamarine midnight light salmon	2031.98	5
+Manufacturer#2	almond aquamarine rose maroon antique	900.66	6
+Manufacturer#2	almond aquamarine rose maroon antique	1698.66	6
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	8
+Manufacturer#3	almond antique chartreuse khaki white	99.68	1
+Manufacturer#3	almond antique forest lavender goldenrod	590.27	2
+Manufacturer#3	almond antique forest lavender goldenrod	NULL	2
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	2
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	2
+Manufacturer#3	almond antique metallic orange dim	55.39	6
+Manufacturer#3	almond antique misty red olive	1922.98	7
+Manufacturer#3	almond antique olive coral navajo	1337.29	8
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	1
+Manufacturer#4	almond antique violet mint lemon	1375.42	2
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	3
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	3
+Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	5
+Manufacturer#4	almond azure aquamarine papaya violet	1290.35	6
+Manufacturer#5	almond antique blue firebrick mint	1789.69	1
+Manufacturer#5	almond antique medium spring khaki	1611.66	2
+Manufacturer#5	almond antique medium spring khaki	1611.66	2
+Manufacturer#5	almond antique sky peru orange	1788.73	4
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	5
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	6
+PREHOOK: query: select p_mfgr, p_name, p_retailprice,
+rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
+from vector_ptf_part_simple_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_name, p_retailprice,
+rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
+from vector_ptf_part_simple_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_part_simple_orc
+#### A masked pattern was here ####
+p_mfgr	p_name	p_retailprice	r
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	1
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond antique burnished rose metallic	1173.15	1
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	1
+Manufacturer#1	almond antique burnished rose metallic	1173.15	1
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#2	almond aquamarine rose maroon antique	900.66	1
+Manufacturer#2	almond aquamarine rose maroon antique	1698.66	1
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
+Manufacturer#2	almond antique violet chocolate turquoise	1690.68	1
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	1
+Manufacturer#2	almond aquamarine midnight light salmon	2031.98	1
+Manufacturer#4	almond antique violet mint lemon	1375.42	1
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	1
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	1
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	1
+Manufacturer#4	almond azure aquamarine papaya violet	1290.35	1
+Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	1
+Manufacturer#3	almond antique misty red olive	1922.98	1
+Manufacturer#3	almond antique chartreuse khaki white	99.68	1
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
+Manufacturer#3	almond antique metallic orange dim	55.39	1
+Manufacturer#3	almond antique olive coral navajo	1337.29	1
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
+Manufacturer#3	almond antique forest lavender goldenrod	590.27	1
+Manufacturer#3	almond antique forest lavender goldenrod	NULL	1
+Manufacturer#5	almond antique medium spring khaki	1611.66	1
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	1
+Manufacturer#5	almond antique sky peru orange	1788.73	1
+Manufacturer#5	almond antique medium spring khaki	1611.66	1
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1
+Manufacturer#5	almond antique blue firebrick mint	1789.69	1

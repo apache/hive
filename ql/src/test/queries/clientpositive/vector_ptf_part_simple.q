@@ -502,3 +502,50 @@ from vector_ptf_part_simple_orc;
 select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
 from vector_ptf_part_simple_orc;
+
+
+--
+-- Run some tests with these parameters that force spilling to disk.
+--
+set hive.vectorized.ptf.max.memory.buffering.batch.count=1;
+set hive.vectorized.testing.reducer.batch.size=2;
+
+select p_mfgr,p_name, p_retailprice,
+row_number() over(partition by p_mfgr) as rn,
+rank() over(partition by p_mfgr) as r,
+dense_rank() over(partition by p_mfgr) as dr,
+first_value(p_retailprice) over(partition by p_mfgr) as fv,
+last_value(p_retailprice) over(partition by p_mfgr) as lv,
+count(p_retailprice) over(partition by p_mfgr) as c,
+count(*) over(partition by p_mfgr) as cs
+from vector_ptf_part_simple_orc;
+
+select p_mfgr,p_name, p_retailprice,
+row_number() over(partition by p_mfgr order by p_name) as rn,
+rank() over(partition by p_mfgr order by p_name) as r,
+dense_rank() over(partition by p_mfgr order by p_name) as dr,
+first_value(p_retailprice) over(partition by p_mfgr order by p_name) as fv,
+last_value(p_retailprice) over(partition by p_mfgr order by p_name) as lv,
+count(p_retailprice) over(partition by p_mfgr order by p_name) as c,
+count(*) over(partition by p_mfgr order by p_name) as cs
+from vector_ptf_part_simple_orc;
+
+
+select p_mfgr, p_retailprice,
+rank() over(partition by p_mfgr) as r
+from vector_ptf_part_simple_orc;
+
+select p_mfgr, p_retailprice,
+rank() over(partition by p_mfgr order by p_name) as r
+from vector_ptf_part_simple_orc;
+
+
+select p_mfgr, p_name, p_retailprice,
+rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
+from vector_ptf_part_simple_orc;
+
+
+select p_mfgr, p_name, p_retailprice,
+rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
+from vector_ptf_part_simple_orc;
+

@@ -40,7 +40,7 @@ public class DecimalColumnVector extends ColumnVector {
   }
 
   public DecimalColumnVector(int size, int precision, int scale) {
-    super(size);
+    super(Type.DECIMAL, size);
     this.precision = (short) precision;
     this.scale = (short) scale;
     vector = new HiveDecimalWritable[size];

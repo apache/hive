@@ -42,7 +42,7 @@ public class MapColumnVector extends MultiValuedColumnVector {
    * @param values The values column vector
    */
   public MapColumnVector(int len, ColumnVector keys, ColumnVector values) {
-    super(len);
+    super(Type.MAP, len);
     this.keys = keys;
     this.values = values;
   }

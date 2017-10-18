@@ -92,3 +92,38 @@ round(sum(p_retailprice) over w1 , 2) + 50.0 = round(sum(lag(p_retailprice,1,50.
 from part
 window w1 as (distribute by p_mfgr sort by p_retailprice)
 limit 11;
+
+
+--
+-- Run some tests with these parameters that force spilling to disk.
+--
+set hive.vectorized.ptf.max.memory.buffering.batch.count=1;
+set hive.vectorized.testing.reducer.batch.size=2;
+
+select p_mfgr, p_retailprice, p_size,
+round(sum(p_retailprice) over w1 , 2) = round(sum(lag(p_retailprice,1,0.0)) over w1 + last_value(p_retailprice) over w1 , 2), 
+max(p_retailprice) over w1 - min(p_retailprice) over w1 = last_value(p_retailprice) over w1 - first_value(p_retailprice) over w1
+from part
+window w1 as (distribute by p_mfgr sort by p_retailprice)
+;
+
+select p_mfgr, p_retailprice, p_size,
+rank() over (distribute by p_mfgr sort by p_retailprice) as r,
+sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) as s2,
+sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) -5 as s1
+from part
+;
+
+select p_mfgr, avg(p_retailprice) over(partition by p_mfgr, p_type order by p_mfgr) from part;
+
+select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfgr rows between unbounded preceding and current row) from part;
+
+from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select * ;
+select * from t1 limit 3;
+select * from t2 limit 3;
+
+select p_mfgr, p_retailprice, p_size,
+round(sum(p_retailprice) over w1 , 2) + 50.0 = round(sum(lag(p_retailprice,1,50.0)) over w1 + (last_value(p_retailprice) over w1),2)
+from part
+window w1 as (distribute by p_mfgr sort by p_retailprice)
+limit 11;

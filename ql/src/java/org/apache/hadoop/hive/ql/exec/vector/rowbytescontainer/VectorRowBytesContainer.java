@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
+package org.apache.hadoop.hive.ql.exec.vector.rowbytescontainer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +31,9 @@ import java.io.IOException;
 /**
  * An eager bytes container that puts row bytes to an output stream.
  */
-public class VectorMapJoinRowBytesContainer {
+public class VectorRowBytesContainer {
 
-  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinRowBytesContainer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(VectorRowBytesContainer.class);
 
   private File parentDir;
   private File tmpFile;
@@ -75,7 +75,7 @@ public class VectorMapJoinRowBytesContainer {
 
   private final String spillLocalDirs;
 
-  public VectorMapJoinRowBytesContainer(String spillLocalDirs) {
+  public VectorRowBytesContainer(String spillLocalDirs) {
     output = new Output();
     readBuffer = new byte[INPUT_SIZE];
     readNextBytes = new byte[MAX_READS][];
@@ -288,6 +288,16 @@ public class VectorMapJoinRowBytesContainer {
 
   public int currentLength() {
     return currentLength;
+  }
+
+  public void resetWrite() throws IOException {
+    if (!isOpen) {
+      return;
+    }
+
+    // Truncate by re-opening FileOutputStream.
+    fileOutputStream.close();
+    fileOutputStream = new FileOutputStream(tmpFile);
   }
 
   public void clear() {

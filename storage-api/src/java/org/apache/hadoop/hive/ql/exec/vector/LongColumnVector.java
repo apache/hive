@@ -48,7 +48,7 @@ public class LongColumnVector extends ColumnVector {
    * @param len the number of rows
    */
   public LongColumnVector(int len) {
-    super(len);
+    super(Type.LONG, len);
     vector = new long[len];
   }
 

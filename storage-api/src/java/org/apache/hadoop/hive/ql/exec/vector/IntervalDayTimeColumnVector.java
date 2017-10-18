@@ -69,7 +69,7 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
    * @param len the number of rows
    */
   public IntervalDayTimeColumnVector(int len) {
-    super(len);
+    super(Type.INTERVAL_DAY_TIME, len);
 
     totalSeconds = new long[len];
     nanos = new int[len];

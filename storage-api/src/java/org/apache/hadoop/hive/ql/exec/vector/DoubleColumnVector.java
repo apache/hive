@@ -48,7 +48,7 @@ public class DoubleColumnVector extends ColumnVector {
    * @param len
    */
   public DoubleColumnVector(int len) {
-    super(len);
+    super(Type.DOUBLE, len);
     vector = new double[len];
   }
 

@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer.Key
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinRowBytesContainer;
+import org.apache.hadoop.hive.ql.exec.vector.rowbytescontainer.VectorRowBytesContainer;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -131,7 +131,7 @@ public class HybridHashTableContainer
     BytesBytesMultiHashMap hashMap;         // In memory hashMap
     KeyValueContainer sidefileKVContainer;  // Stores small table key/value pairs
     ObjectContainer matchfileObjContainer;  // Stores big table rows
-    VectorMapJoinRowBytesContainer matchfileRowBytesContainer;
+    VectorRowBytesContainer matchfileRowBytesContainer;
                                             // Stores big table rows as bytes for native vector map join.
     Path hashMapLocalPath;                  // Local file system path for spilled hashMap
     boolean hashMapOnDisk;                  // Status of hashMap. true: on disk, false: in memory
@@ -216,9 +216,9 @@ public class HybridHashTableContainer
     }
 
     /* Get the big table row bytes container for native vector map join */
-    public VectorMapJoinRowBytesContainer getMatchfileRowBytesContainer() {
+    public VectorRowBytesContainer getMatchfileRowBytesContainer() {
       if (matchfileRowBytesContainer == null) {
-        matchfileRowBytesContainer = new VectorMapJoinRowBytesContainer(spillLocalDirs);
+        matchfileRowBytesContainer = new VectorRowBytesContainer(spillLocalDirs);
       }
       return matchfileRowBytesContainer;
     }

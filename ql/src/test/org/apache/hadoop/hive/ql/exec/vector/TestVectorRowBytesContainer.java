@@ -16,23 +16,24 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
+package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.Random;
 
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinRowBytesContainer;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.RandomByteArrayStream;
+import org.apache.hadoop.hive.ql.exec.vector.rowbytescontainer.VectorRowBytesContainer;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class TestVectorMapJoinRowBytesContainer  {
+public class TestVectorRowBytesContainer  {
 
   public void doFillReplay(Random random, int maxCount) throws Exception {
 
     RandomByteArrayStream randomByteArrayStream = new RandomByteArrayStream(random);
-    VectorMapJoinRowBytesContainer vectorMapJoinRowBytesContainer =
-        new VectorMapJoinRowBytesContainer(null);
+    VectorRowBytesContainer vectorMapJoinRowBytesContainer =
+        new VectorRowBytesContainer(null);
 
     int count = Math.min(maxCount, random.nextInt(500));
     for (int i = 0; i < count; i++) {

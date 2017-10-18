@@ -78,7 +78,7 @@ public class BytesColumnVector extends ColumnVector {
    * @param size  number of elements in the column vector
    */
   public BytesColumnVector(int size) {
-    super(size);
+    super(Type.BYTES, size);
     vector = new byte[size][];
     start = new int[size];
     length = new int[size];

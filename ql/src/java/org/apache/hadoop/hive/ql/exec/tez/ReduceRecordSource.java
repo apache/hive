@@ -121,13 +121,22 @@ public class ReduceRecordSource implements RecordSource {
   private final GroupIterator groupIterator = new GroupIterator();
 
   private long vectorizedVertexNum;
+  private int vectorizedTestingReducerBatchSize;
 
   void init(JobConf jconf, Operator<?> reducer, boolean vectorized, TableDesc keyTableDesc,
       TableDesc valueTableDesc, Reader reader, boolean handleGroupKey, byte tag,
-      VectorizedRowBatchCtx batchContext, long vectorizedVertexNum)
+      VectorizedRowBatchCtx batchContext, long vectorizedVertexNum,
+      int vectorizedTestingReducerBatchSize)
       throws Exception {
 
     this.vectorizedVertexNum = vectorizedVertexNum;
+    if (vectorizedTestingReducerBatchSize > VectorizedRowBatch.DEFAULT_SIZE) {
+
+      // For now, we don't go higher than the default batch size unless we do more work
+      // to verify every vectorized operator downstream can handle a larger batch size.
+      vectorizedTestingReducerBatchSize = VectorizedRowBatch.DEFAULT_SIZE;
+    }
+    this.vectorizedTestingReducerBatchSize = vectorizedTestingReducerBatchSize;
     ObjectInspector keyObjectInspector;
 
     this.reducer = reducer;
@@ -417,7 +426,10 @@ public class ReduceRecordSource implements RecordSource {
       VectorizedBatchUtil.setRepeatingColumn(batch, i);
     }
 
-    final int maxSize = batch.getMaxSize();
+    final int maxSize =
+        (vectorizedTestingReducerBatchSize > 0 ?
+            Math.min(vectorizedTestingReducerBatchSize, batch.getMaxSize()) :
+            batch.getMaxSize());
     Preconditions.checkState(maxSize > 0);
     int rowIdx = 0;
     int batchBytes = keyBytes.length;

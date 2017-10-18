@@ -99,6 +99,8 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     supportedFunctionNames.addAll(treeSet);
   }
 
+  private TypeInfo[] reducerBatchTypeInfos;
+
   private boolean isPartitionOrderBy;
 
   private String[] evaluatorFunctionNames;
@@ -113,6 +115,8 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
   private VectorPTFInfo vectorPTFInfo;
 
+  private int vectorizedPTFMaxMemoryBufferingBatchCount;
+
   public VectorPTFDesc() {
     isPartitionOrderBy = false;
 
@@ -124,6 +128,9 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
     outputColumnNames = null;
     outputTypeInfos = null;
+
+    vectorizedPTFMaxMemoryBufferingBatchCount = -1;
+
   }
 
   // We provide this public method to help EXPLAIN VECTORIZATION show the evaluator classes.
@@ -274,16 +281,24 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     return evaluators;
   }
 
-  public static int[] getStreamingColumnMap(VectorPTFEvaluatorBase[] evaluators) {
+  public static int[] getStreamingEvaluatorNums(VectorPTFEvaluatorBase[] evaluators) {
     final int evaluatorCount = evaluators.length;
-    ArrayList<Integer> streamingColumns = new ArrayList<Integer>();
+    ArrayList<Integer> streamingEvaluatorNums = new ArrayList<Integer>();
     for (int i = 0; i < evaluatorCount; i++) {
       final VectorPTFEvaluatorBase evaluator = evaluators[i];
       if (evaluator.streamsResult()) {
-        streamingColumns.add(evaluator.getOutputColumnNum());
+        streamingEvaluatorNums.add(i);
       }
     }
-    return ArrayUtils.toPrimitive(streamingColumns.toArray(new Integer[0]));
+    return ArrayUtils.toPrimitive(streamingEvaluatorNums.toArray(new Integer[0]));
+  }
+
+  public TypeInfo[] getReducerBatchTypeInfos() {
+    return reducerBatchTypeInfos;
+  }
+
+  public void setReducerBatchTypeInfos(TypeInfo[] reducerBatchTypeInfos) {
+    this.reducerBatchTypeInfos = reducerBatchTypeInfos;
   }
 
   public boolean getIsPartitionOrderBy() {
@@ -357,4 +372,14 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
   public VectorPTFInfo getVectorPTFInfo() {
     return vectorPTFInfo;
   }
+
+  public void setVectorizedPTFMaxMemoryBufferingBatchCount(
+      int vectorizedPTFMaxMemoryBufferingBatchCount) {
+    this.vectorizedPTFMaxMemoryBufferingBatchCount = vectorizedPTFMaxMemoryBufferingBatchCount;
+  }
+
+  public int getVectorizedPTFMaxMemoryBufferingBatchCount() {
+    return vectorizedPTFMaxMemoryBufferingBatchCount;
+  }
+
 }

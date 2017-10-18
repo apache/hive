@@ -40,8 +40,8 @@ public abstract class MultiValuedColumnVector extends ColumnVector {
    *
    * @param len Vector length
    */
-  public MultiValuedColumnVector(int len) {
-    super(len);
+  public MultiValuedColumnVector(Type type, int len) {
+    super(type, len);
     childCount = 0;
     offsets = new long[len];
     lengths = new long[len];

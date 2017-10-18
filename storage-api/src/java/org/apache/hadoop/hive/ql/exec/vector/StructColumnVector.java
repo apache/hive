@@ -40,7 +40,7 @@ public class StructColumnVector extends ColumnVector {
    * @param fields the field column vectors
    */
   public StructColumnVector(int len, ColumnVector... fields) {
-    super(len);
+    super(Type.STRUCT, len);
     this.fields = fields;
   }
 

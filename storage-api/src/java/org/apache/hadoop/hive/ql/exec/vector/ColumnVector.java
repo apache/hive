@@ -49,6 +49,8 @@ public abstract class ColumnVector {
     UNION
   }
 
+  public final Type type;
+
   /*
    * If hasNulls is true, then this array contains true if the value
    * is null, otherwise false. The array is always allocated, so a batch can be re-used
@@ -75,7 +77,8 @@ public abstract class ColumnVector {
    *
    * @param len Vector length
    */
-  public ColumnVector(int len) {
+  public ColumnVector(Type type, int len) {
+    this.type = type;
     isNull = new boolean[len];
     noNulls = true;
     isRepeating = false;

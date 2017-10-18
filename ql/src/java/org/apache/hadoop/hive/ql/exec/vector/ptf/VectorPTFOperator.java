@@ -97,10 +97,9 @@ public class VectorPTFOperator extends Operator<PTFDesc>
    * PTF vector expressions.
    */
 
-  // This is map of which vectorized row batch columns are the input columns and the group value
-  // (aggregation) output columns.
-  // And, their types.
-  private int[] outputColumnMap;
+  private TypeInfo[] reducerBatchTypeInfos;
+
+  private int[] outputProjectionColumnMap;
   private String[] outputColumnNames;
   private TypeInfo[] outputTypeInfos;
 
@@ -135,7 +134,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
 
   private transient VectorPTFEvaluatorBase[] evaluators;
 
-  private transient int[] streamingColumnMap;
+  private transient int[] streamingEvaluatorNums;
 
   private transient boolean allEvaluatorsAreStreaming;
 
@@ -179,11 +178,13 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     vectorPTFInfo = vectorDesc.getVectorPTFInfo();
     this.vContext = vContext;
 
+    reducerBatchTypeInfos = vectorDesc.getReducerBatchTypeInfos();
+
     isPartitionOrderBy = vectorDesc.getIsPartitionOrderBy();
 
     outputColumnNames = vectorDesc.getOutputColumnNames();
     outputTypeInfos = vectorDesc.getOutputTypeInfos();
-    outputColumnMap = vectorPTFInfo.getOutputColumnMap();
+    outputProjectionColumnMap = vectorPTFInfo.getOutputColumnMap();
 
     /*
      * Create a new vectorization context to create a new projection, but keep
@@ -222,7 +223,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     final int count = outputColumnNames.length;
     for (int i = 0; i < count; ++i) {
       String columnName = outputColumnNames[i];
-      int outputColumn = outputColumnMap[i];
+      int outputColumn = outputProjectionColumnMap[i];
       vOutContext.addProjectionColumn(columnName, outputColumn);
     }
   }
@@ -255,8 +256,8 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     overflowBatch = new VectorizedRowBatch(totalNumColumns);
 
     // First, just allocate just the output columns we will be using.
-    for (int i = 0; i < outputColumnMap.length; i++) {
-      int outputColumn = outputColumnMap[i];
+    for (int i = 0; i < outputProjectionColumnMap.length; i++) {
+      int outputColumn = outputProjectionColumnMap[i];
       String typeName = outputTypeInfos[i].getTypeName();
       allocateOverflowBatchColumnVector(overflowBatch, outputColumn, typeName);
     }
@@ -267,8 +268,8 @@ public class VectorPTFOperator extends Operator<PTFDesc>
       allocateOverflowBatchColumnVector(overflowBatch, outputColumn++, typeName);
     }
 
-    overflowBatch.projectedColumns = outputColumnMap;
-    overflowBatch.projectionSize = outputColumnMap.length;
+    overflowBatch.projectedColumns = outputProjectionColumnMap;
+    overflowBatch.projectionSize = outputProjectionColumnMap.length;
 
     overflowBatch.reset();
 
@@ -311,18 +312,26 @@ public class VectorPTFOperator extends Operator<PTFDesc>
 
     evaluators = VectorPTFDesc.getEvaluators(vectorDesc, vectorPTFInfo);
 
-    streamingColumnMap = VectorPTFDesc.getStreamingColumnMap(evaluators);
+    streamingEvaluatorNums = VectorPTFDesc.getStreamingEvaluatorNums(evaluators);
 
-    allEvaluatorsAreStreaming = (streamingColumnMap.length == evaluatorCount);
+    allEvaluatorsAreStreaming = (streamingEvaluatorNums.length == evaluatorCount);
 
     /*
      * Setup the overflow batch.
      */
     overflowBatch = setupOverflowBatch();
 
-    groupBatches = new VectorPTFGroupBatches();
+    groupBatches = new VectorPTFGroupBatches(
+        hconf, vectorDesc.getVectorizedPTFMaxMemoryBufferingBatchCount());
     groupBatches.init(
-        evaluators, outputColumnMap, keyInputColumnMap, nonKeyInputColumnMap, streamingColumnMap, overflowBatch);
+        reducerBatchTypeInfos,
+        evaluators,
+        outputProjectionColumnMap,
+        outputTypeInfos,
+        keyInputColumnMap,
+        nonKeyInputColumnMap,
+        streamingEvaluatorNums,
+        overflowBatch);
 
     isFirstPartition = true;
 

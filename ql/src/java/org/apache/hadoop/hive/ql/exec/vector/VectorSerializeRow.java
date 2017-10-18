@@ -111,6 +111,22 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
     vectorExtractRow.init(typeInfos);
   }
 
+  public void init(TypeInfo[] typeInfos)
+      throws HiveException {
+
+    final int size = typeInfos.length;
+    this.typeInfos = Arrays.copyOf(typeInfos, size);
+    outputColumnNums = new int[size];
+    objectInspectors = new ObjectInspector[size];
+    for (int i = 0; i < size; i++) {
+      objectInspectors[i] =
+          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfos[i]);
+      outputColumnNums[i] = i;
+    }
+
+    vectorExtractRow.init(this.typeInfos, outputColumnNums);
+  }
+
   public void init(TypeInfo[] typeInfos, int[] columnMap)
       throws HiveException {
 

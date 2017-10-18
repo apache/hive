@@ -90,6 +90,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   private boolean usesVectorUDFAdaptor;
 
   protected long vectorizedVertexNum;
+  protected int vectorizedTestingReducerBatchSize;
 
   protected boolean llapMode = false;
   protected boolean uberMode = false;
@@ -191,6 +192,14 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   public long getVectorizedVertexNum() {
     return vectorizedVertexNum;
+  }
+
+  public void setVectorizedTestingReducerBatchSize(int vectorizedTestingReducerBatchSize) {
+    this.vectorizedTestingReducerBatchSize = vectorizedTestingReducerBatchSize;
+  }
+
+  public int getVectorizedTestingReducerBatchSize() {
+    return vectorizedTestingReducerBatchSize;
   }
 
   // -----------------------------------------------------------------------------------------------

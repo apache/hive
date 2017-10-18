@@ -40,7 +40,7 @@ public class ListColumnVector extends MultiValuedColumnVector {
    * @param child The child vector
    */
   public ListColumnVector(int len, ColumnVector child) {
-    super(len);
+    super(Type.LIST, len);
     this.child = child;
   }
 
