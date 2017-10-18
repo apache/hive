@@ -793,8 +793,8 @@ public abstract class BaseSemanticAnalyzer {
     }
     if (enable) {
       throw new SemanticException(
-          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("ENABLE feature not supported yet. "
-              + "Please use DISABLE instead."));
+          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("ENABLE/ENFORCED feature not supported yet. "
+              + "Please use DISABLE/NOT ENFORCED instead."));
     }
     if (validate) {
       throw new SemanticException(

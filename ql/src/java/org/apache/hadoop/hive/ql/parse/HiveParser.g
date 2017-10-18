@@ -2190,6 +2190,7 @@ enableValidateSpecification
 @init { pushMsg("enable specification", state); }
 @after { popMsg(state); }
     : enableSpecification validateSpecification?
+    | enforcedSpecification
     ;
 
 enableSpecification
@@ -2204,6 +2205,13 @@ validateSpecification
 @after { popMsg(state); }
     : KW_VALIDATE -> ^(TOK_VALIDATE)
     | KW_NOVALIDATE -> ^(TOK_NOVALIDATE)
+    ;
+
+enforcedSpecification
+@init { pushMsg("enforced specification", state); }
+@after { popMsg(state); }
+    : KW_ENFORCED -> ^(TOK_ENABLE)
+    | KW_NOT KW_ENFORCED -> ^(TOK_DISABLE)
     ;
 
 relySpecification
