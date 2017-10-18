@@ -169,4 +169,16 @@ public final class SQLGenerator {
       throw new MetaException(msg);
     }
   }
+
+  private static final String DEFAULT_SELECT = "select NEXT_EVENT_ID from NOTIFICATION_SEQUENCE";
+  private static final String POSTGRES_SELECT = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
+
+  public String selectFromNotificationSequence() {
+    switch (dbProduct) {
+    case POSTGRES:
+      return POSTGRES_SELECT;
+    default:
+      return DEFAULT_SELECT;
+    }
+  }
 }
