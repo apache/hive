@@ -25,6 +25,8 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -32,7 +34,6 @@ import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.common.metrics.metrics2.MetricsReporting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.util.Time;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -373,9 +374,20 @@ public class TestSessionManagerMetrics {
     sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", "127.0.0.1",
                     new HashMap<String, String>());
 
-    Thread.sleep(3200);
-
-    json = metrics.dumpJson();
-    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.HS2_ABANDONED_SESSIONS, 1);
+    // We're going to wait for the session to be abandoned.
+    String currentValue;
+    int count = 5; // how many times we'll sleep before giving up
+    String expectedValue = "1";
+    do {
+      // HIVE_SERVER2_SESSION_CHECK_INTERVAL is set to 3 seconds, so we have to wait for at least
+      // that long to see an abandoned session
+      Thread.sleep(3200);
+      json = metrics.dumpJson();
+      currentValue = MetricsTestUtils
+          .getJsonNode(json, MetricsTestUtils.COUNTER, MetricsConstant.HS2_ABANDONED_SESSIONS)
+          .asText();
+      // loop until the value is correct or we run out of tries
+    } while (!expectedValue.equals(currentValue) && --count > 0);
+    Assert.assertEquals(expectedValue, currentValue);
   }
 }
