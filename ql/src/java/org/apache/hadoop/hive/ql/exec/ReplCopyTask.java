@@ -144,10 +144,13 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         if (dstFs.exists(destFile)) {
           String destFileWithSourceName = srcFile.getSourcePath().getName();
           Path newDestFile = new Path(toPath, destFileWithSourceName);
-          dstFs.rename(destFile, newDestFile);
+          boolean result = dstFs.rename(destFile, newDestFile);
+          if (!result) {
+            throw new IllegalStateException(
+                "could not rename " + destFile.getName() + " to " + newDestFile.getName());
+          }
         }
       }
-
       return 0;
     } catch (Exception e) {
       console.printError("Failed with exception " + e.getMessage(), "\n"
@@ -167,32 +170,32 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     }
 
     List<ReplChangeManager.FileInfo> filePaths = new ArrayList<>();
-    BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(fileListing)));
-    // TODO : verify if skipping charset here is okay
+    try (BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(fileListing)))) {
+      // TODO : verify if skipping charset here is okay
 
-    String line = null;
-    while ((line = br.readLine()) != null) {
-      LOG.debug("ReplCopyTask :_filesReadLine:" + line);
+      String line = null;
+      while ((line = br.readLine()) != null) {
+        LOG.debug("ReplCopyTask :_filesReadLine:" + line);
 
-      String[] fileWithChksum = ReplChangeManager.getFileWithChksumFromURI(line);
-      try {
-        ReplChangeManager.FileInfo f = ReplChangeManager
-                .getFileInfo(new Path(fileWithChksum[0]), fileWithChksum[1], conf);
-        filePaths.add(f);
-      } catch (MetaException e) {
-        // issue warning for missing file and throw exception
-        LOG.warn("Cannot find " + fileWithChksum[0] + " in source repo or cmroot");
-        throw new IOException(e.getMessage());
+        String[] fileWithChksum = ReplChangeManager.getFileWithChksumFromURI(line);
+        try {
+          ReplChangeManager.FileInfo f = ReplChangeManager
+              .getFileInfo(new Path(fileWithChksum[0]), fileWithChksum[1], conf);
+          filePaths.add(f);
+        } catch (MetaException e) {
+          // issue warning for missing file and throw exception
+          LOG.warn("Cannot find " + fileWithChksum[0] + " in source repo or cmroot");
+          throw new IOException(e.getMessage());
+        }
+        // Note - we need srcFs rather than fs, because it is possible that the _files lists files
+        // which are from a different filesystem than the fs where the _files file itself was loaded
+        // from. Currently, it is possible, for eg., to do REPL LOAD hdfs://<ip>/dir/ and for the _files
+        // in it to contain hdfs://<name>/ entries, and/or vice-versa, and this causes errors.
+        // It might also be possible that there will be a mix of them in a given _files file.
+        // TODO: revisit close to the end of replv2 dev, to see if our assumption now still holds,
+        // and if not so, optimize.
       }
-      // Note - we need srcFs rather than fs, because it is possible that the _files lists files
-      // which are from a different filesystem than the fs where the _files file itself was loaded
-      // from. Currently, it is possible, for eg., to do REPL LOAD hdfs://<ip>/dir/ and for the _files
-      // in it to contain hdfs://<name>/ entries, and/or vice-versa, and this causes errors.
-      // It might also be possible that there will be a mix of them in a given _files file.
-      // TODO: revisit close to the end of replv2 dev, to see if our assumption now still holds,
-      // and if not so, optimize.
     }
-
     return filePaths;
   }
 
