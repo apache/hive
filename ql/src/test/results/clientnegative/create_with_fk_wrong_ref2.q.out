@@ -1,0 +1,13 @@
+PREHOOK: query: CREATE TABLE table2 (a STRING, b INT, CONSTRAINT uk1 UNIQUE (a,b) DISABLE, CONSTRAINT uk2 UNIQUE (b,a) DISABLE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2
+POSTHOOK: query: CREATE TABLE table2 (a STRING, b INT, CONSTRAINT uk1 UNIQUE (a,b) DISABLE, CONSTRAINT uk2 UNIQUE (b,a) DISABLE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2
+PREHOOK: query: CREATE TABLE table1 (a STRING, b STRING, CONSTRAINT fk1 FOREIGN KEY (a,b) REFERENCES table2(a,b) DISABLE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Foreign key references a:string;b:string; but no corresponding primary key or unique key exists. Possible keys: [b:int;a:string;, a:string;b:int;])

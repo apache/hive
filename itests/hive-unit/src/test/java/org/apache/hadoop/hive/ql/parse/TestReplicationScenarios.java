@@ -2933,9 +2933,9 @@ public class TestReplicationScenarios {
 
     run("CREATE DATABASE " + dbName, driver);
 
-    run("CREATE TABLE " + dbName + ".tbl1(a string, b string, primary key (a) disable novalidate rely, unique (b) disable)", driver);
+    run("CREATE TABLE " + dbName + ".tbl1(a string, b string, primary key (a, b) disable novalidate rely)", driver);
     run("CREATE TABLE " + dbName + ".tbl2(a string, b string, foreign key (a, b) references " + dbName + ".tbl1(a, b) disable novalidate)", driver);
-    run("CREATE TABLE " + dbName + ".tbl3(a string, b string not null disable)", driver);
+    run("CREATE TABLE " + dbName + ".tbl3(a string, b string not null disable, unique (a) disable)", driver);
 
     advanceDumpDir();
     run("REPL DUMP " + dbName, driver);
@@ -2946,20 +2946,20 @@ public class TestReplicationScenarios {
 
     try {
       List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(dbName+ "_dupe" , "tbl1"));
-      assertEquals(pks.size(), 1);
-      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(dbName+ "_dupe" , "tbl1"));
+      assertEquals(pks.size(), 2);
+      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(dbName+ "_dupe" , "tbl3"));
       assertEquals(uks.size(), 1);
       List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, dbName+ "_dupe" , "tbl2"));
-      assertEquals(fks.size(), 1);
+      assertEquals(fks.size(), 2);
       List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(dbName+ "_dupe" , "tbl3"));
       assertEquals(nns.size(), 1);
     } catch (TException te) {
       assertNull(te);
     }
 
-    run("CREATE TABLE " + dbName + ".tbl4(a string, b string, primary key (a) disable novalidate rely, unique (b) disable)", driver);
+    run("CREATE TABLE " + dbName + ".tbl4(a string, b string, primary key (a, b) disable novalidate rely)", driver);
     run("CREATE TABLE " + dbName + ".tbl5(a string, b string, foreign key (a, b) references " + dbName + ".tbl4(a, b) disable novalidate)", driver);
-    run("CREATE TABLE " + dbName + ".tbl6(a string, b string not null disable)", driver);
+    run("CREATE TABLE " + dbName + ".tbl6(a string, b string not null disable, unique (a) disable)", driver);
 
     advanceDumpDir();
     run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
@@ -2974,13 +2974,13 @@ public class TestReplicationScenarios {
     String nnName = null;
     try {
       List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(dbName+ "_dupe" , "tbl4"));
-      assertEquals(pks.size(), 1);
+      assertEquals(pks.size(), 2);
       pkName = pks.get(0).getPk_name();
-      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(dbName+ "_dupe" , "tbl4"));
+      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(dbName+ "_dupe" , "tbl6"));
       assertEquals(uks.size(), 1);
       ukName = uks.get(0).getUk_name();
       List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, dbName+ "_dupe" , "tbl5"));
-      assertEquals(fks.size(), 1);
+      assertEquals(fks.size(), 2);
       fkName = fks.get(0).getFk_name();
       List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(dbName+ "_dupe" , "tbl6"));
       assertEquals(nns.size(), 1);

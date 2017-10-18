@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -185,8 +186,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.SortedSetMultimap;
+import com.google.common.collect.TreeMultimap;
 
 
 /**
@@ -1084,8 +1091,8 @@ public class ObjectStore implements RawStore, Configurable {
       // Add constraints.
       // We need not do a deep retrieval of the Table Column Descriptor while persisting the
       // constraints since this transaction involving create table is not yet committed.
-      List<String> constraintNames = addPrimaryKeys(primaryKeys, false);
-      constraintNames.addAll(addForeignKeys(foreignKeys, false));
+      List<String> constraintNames = addForeignKeys(foreignKeys, false, primaryKeys, uniqueConstraints);
+      constraintNames.addAll(addPrimaryKeys(primaryKeys, false));
       constraintNames.addAll(addUniqueConstraints(uniqueConstraints, false));
       constraintNames.addAll(addNotNullConstraints(notNullConstraints, false));
       success = commitTransaction();
@@ -3808,7 +3815,20 @@ public class ObjectStore implements RawStore, Configurable {
     return sds;
   }
 
-  private int getColumnIndexFromTableColumns(List<MFieldSchema> cols, String col) {
+  private static MFieldSchema getColumnFromTableColumns(List<MFieldSchema> cols, String col) {
+    if (cols == null) {
+      return null;
+    }
+    for (int i = 0; i < cols.size(); i++) {
+      MFieldSchema mfs = cols.get(i);
+      if (mfs.getName().equalsIgnoreCase(col)) {
+        return mfs;
+      }
+    }
+    return null;
+  }
+
+  private static int getColumnIndexFromTableColumns(List<MFieldSchema> cols, String col) {
     if (cols == null) {
       return -1;
     }
@@ -3857,7 +3877,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<String> addForeignKeys(
     List<SQLForeignKey> fks) throws InvalidObjectException, MetaException {
-   return addForeignKeys(fks, true);
+   return addForeignKeys(fks, true, null, null);
   }
 
   @Override
@@ -3931,87 +3951,204 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  private List<String> addForeignKeys(
-    List<SQLForeignKey> fks, boolean retrieveCD) throws InvalidObjectException,
-    MetaException {
+  private List<String> addForeignKeys(List<SQLForeignKey> foreignKeys, boolean retrieveCD,
+      List<SQLPrimaryKey> primaryKeys, List<SQLUniqueConstraint> uniqueConstraints)
+          throws InvalidObjectException, MetaException {
     List<String> fkNames = new ArrayList<>();
-    List<MConstraint> mpkfks = new ArrayList<>();
-    String currentConstraintName = null;
 
-    for (int i = 0; i < fks.size(); i++) {
-      final String pkTableDB = normalizeIdentifier(fks.get(i).getPktable_db());
-      final String pkTableName = normalizeIdentifier(fks.get(i).getPktable_name());
-      final String pkColumnName =normalizeIdentifier(fks.get(i).getPkcolumn_name());
-      final String fkTableDB = normalizeIdentifier(fks.get(i).getFktable_db());
-      final String fkTableName = normalizeIdentifier(fks.get(i).getFktable_name());
-      final String fkColumnName = normalizeIdentifier(fks.get(i).getFkcolumn_name());
-
-      // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
-      // For instance, this is the case when we are creating the table.
-      AttachedMTableInfo nParentTable = getMTable(pkTableDB, pkTableName, retrieveCD);
-      MTable parentTable = nParentTable.mtbl;
-      if (parentTable == null) {
-        throw new InvalidObjectException("Parent table not found: " + pkTableName);
-      }
-
-      AttachedMTableInfo nChildTable = getMTable(fkTableDB, fkTableName, retrieveCD);
-      MTable childTable = nChildTable.mtbl;
-      if (childTable == null) {
-        throw new InvalidObjectException("Child table not found: " + fkTableName);
-      }
-
-      MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
-      List<MFieldSchema> parentCols = parentCD == null ? null : parentCD.getCols();
-      int parentIntegerIndex = getColumnIndexFromTableColumns(parentCols, pkColumnName);
-      if (parentIntegerIndex == -1) {
-        throw new InvalidObjectException("Parent column not found: " + pkColumnName);
-      }
-
-      MColumnDescriptor childCD = retrieveCD ? nChildTable.mcd : childTable.getSd().getCD();
-      List<MFieldSchema> childCols = childCD.getCols();
-      int childIntegerIndex = getColumnIndexFromTableColumns(childCols, fkColumnName);
-      if (childIntegerIndex == -1) {
-        throw new InvalidObjectException("Child column not found: " + fkColumnName);
-      }
-
-      if (fks.get(i).getFk_name() == null) {
-        // When there is no explicit foreign key name associated with the constraint and the key is composite,
-        // we expect the foreign keys to be send in order in the input list.
-        // Otherwise, the below code will break.
-        // If this is the first column of the FK constraint, generate the foreign key name
-        // NB: The below code can result in race condition where duplicate names can be generated (in theory).
-        // However, this scenario can be ignored for practical purposes because of
-        // the uniqueness of the generated constraint name.
-        if (fks.get(i).getKey_seq() == 1) {
-          currentConstraintName = generateConstraintName(
-            fkTableDB, fkTableName, pkTableDB, pkTableName, pkColumnName, fkColumnName, "fk");
+    if (foreignKeys.size() > 0) {
+      List<MConstraint> mpkfks = new ArrayList<>();
+      String currentConstraintName = null;
+      // We start iterating through the foreign keys. This list might contain more than a single
+      // foreign key, and each foreign key might contain multiple columns. The outer loop retrieves
+      // the information that is common for a single key (table information) while the inner loop
+      // checks / adds information about each column.
+      for (int i = 0; i < foreignKeys.size(); i++) {
+        final String fkTableDB = normalizeIdentifier(foreignKeys.get(i).getFktable_db());
+        final String fkTableName = normalizeIdentifier(foreignKeys.get(i).getFktable_name());
+        // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
+        // For instance, this is the case when we are creating the table.
+        final AttachedMTableInfo nChildTable = getMTable(fkTableDB, fkTableName, retrieveCD);
+        final MTable childTable = nChildTable.mtbl;
+        if (childTable == null) {
+          throw new InvalidObjectException("Child table not found: " + fkTableName);
         }
-      } else {
-        currentConstraintName = normalizeIdentifier(fks.get(i).getFk_name());
+        final MColumnDescriptor childCD = retrieveCD ? nChildTable.mcd : childTable.getSd().getCD();
+        final List<MFieldSchema> childCols = childCD.getCols();
+
+        final String pkTableDB = normalizeIdentifier(foreignKeys.get(i).getPktable_db());
+        final String pkTableName = normalizeIdentifier(foreignKeys.get(i).getPktable_name());
+        // For primary keys, we retrieve the column descriptors if retrieveCD is true (which means
+        // it is an alter table statement) or if it is a create table statement but we are
+        // referencing another table instead of self for the primary key.
+        final AttachedMTableInfo nParentTable;
+        final MTable parentTable;
+        final MColumnDescriptor parentCD;
+        final List<MFieldSchema> parentCols;
+        final List<SQLPrimaryKey> existingTablePrimaryKeys;
+        final List<SQLUniqueConstraint> existingTableUniqueConstraints;
+        final boolean sameTable = fkTableDB.equals(pkTableDB) && fkTableName.equals(pkTableName);
+        if (sameTable) {
+          nParentTable = nChildTable;
+          parentTable = childTable;
+          parentCD = childCD;
+          parentCols = childCols;
+          existingTablePrimaryKeys = primaryKeys;
+          existingTableUniqueConstraints = uniqueConstraints;
+        } else {
+          nParentTable = getMTable(pkTableDB, pkTableName, true);
+          parentTable = nParentTable.mtbl;
+          if (parentTable == null) {
+            throw new InvalidObjectException("Parent table not found: " + pkTableName);
+          }
+          parentCD = nParentTable.mcd;
+          parentCols = parentCD == null ? null : parentCD.getCols();
+          existingTablePrimaryKeys = getPrimaryKeys(pkTableDB, pkTableName);
+          existingTableUniqueConstraints = getUniqueConstraints(pkTableDB, pkTableName);
+        }
+
+        // Here we build an aux structure that is used to verify that the foreign key that is declared
+        // is actually referencing a valid primary key or unique key. We also check that the types of
+        // the columns correspond.
+        if (existingTablePrimaryKeys.isEmpty() && existingTableUniqueConstraints.isEmpty()) {
+          throw new MetaException(
+              "Trying to define foreign key but there are no primary keys or unique keys for referenced table");
+        }
+        final Set<String> validPKsOrUnique = generateValidPKsOrUniqueSignatures(parentCols,
+            existingTablePrimaryKeys, existingTableUniqueConstraints);
+
+        StringBuilder fkSignature = new StringBuilder();
+        StringBuilder referencedKSignature = new StringBuilder();
+        for (; i < foreignKeys.size(); i++) {
+          final SQLForeignKey foreignKey = foreignKeys.get(i);
+          final String fkColumnName = normalizeIdentifier(foreignKey.getFkcolumn_name());
+          int childIntegerIndex = getColumnIndexFromTableColumns(childCols, fkColumnName);
+          if (childIntegerIndex == -1) {
+            throw new InvalidObjectException("Child column not found: " + fkColumnName);
+          }
+
+          final String pkColumnName = normalizeIdentifier(foreignKey.getPkcolumn_name());
+          int parentIntegerIndex = getColumnIndexFromTableColumns(parentCols, pkColumnName);
+          if (parentIntegerIndex == -1) {
+            throw new InvalidObjectException("Parent column not found: " + pkColumnName);
+          }
+
+          if (foreignKey.getFk_name() == null) {
+            // When there is no explicit foreign key name associated with the constraint and the key is composite,
+            // we expect the foreign keys to be send in order in the input list.
+            // Otherwise, the below code will break.
+            // If this is the first column of the FK constraint, generate the foreign key name
+            // NB: The below code can result in race condition where duplicate names can be generated (in theory).
+            // However, this scenario can be ignored for practical purposes because of
+            // the uniqueness of the generated constraint name.
+            if (foreignKey.getKey_seq() == 1) {
+              currentConstraintName = generateConstraintName(
+                fkTableDB, fkTableName, pkTableDB, pkTableName, pkColumnName, fkColumnName, "fk");
+            }
+          } else {
+            currentConstraintName = normalizeIdentifier(foreignKey.getFk_name());
+          }
+          fkNames.add(currentConstraintName);
+          Integer updateRule = foreignKey.getUpdate_rule();
+          Integer deleteRule = foreignKey.getDelete_rule();
+          int enableValidateRely = (foreignKey.isEnable_cstr() ? 4 : 0) +
+                  (foreignKey.isValidate_cstr() ? 2 : 0) + (foreignKey.isRely_cstr() ? 1 : 0);
+          MConstraint mpkfk = new MConstraint(
+            currentConstraintName,
+            MConstraint.FOREIGN_KEY_CONSTRAINT,
+            foreignKey.getKey_seq(),
+            deleteRule,
+            updateRule,
+            enableValidateRely,
+            parentTable,
+            childTable,
+            parentCD,
+            childCD,
+            childIntegerIndex,
+            parentIntegerIndex
+          );
+          mpkfks.add(mpkfk);
+
+          final String fkColType = getColumnFromTableColumns(childCols, fkColumnName).getType();
+          fkSignature.append(
+              generateColNameTypeSignature(fkColumnName, fkColType));
+          referencedKSignature.append(
+              generateColNameTypeSignature(pkColumnName, fkColType));
+
+          if (i + 1 < foreignKeys.size() && foreignKeys.get(i + 1).getKey_seq() == 1) {
+            // Next one is a new key, we bail out from the inner loop
+            break;
+          }
+        }
+        String referenced = referencedKSignature.toString();
+        if (!validPKsOrUnique.contains(referenced)) {
+          throw new MetaException(
+              "Foreign key references " + referenced + " but no corresponding "
+              + "primary key or unique key exists. Possible keys: " + validPKsOrUnique);
+        }
+        if (sameTable && fkSignature.toString().equals(referenced)) {
+          throw new MetaException(
+              "Cannot be both foreign key and primary/unique key on same table: " + referenced);
+        }
+        fkSignature = new StringBuilder();
+        referencedKSignature = new StringBuilder();
       }
-      fkNames.add(currentConstraintName);
-      Integer updateRule = fks.get(i).getUpdate_rule();
-      Integer deleteRule = fks.get(i).getDelete_rule();
-      int enableValidateRely = (fks.get(i).isEnable_cstr() ? 4 : 0) +
-      (fks.get(i).isValidate_cstr() ? 2 : 0) + (fks.get(i).isRely_cstr() ? 1 : 0);
-      MConstraint mpkfk = new MConstraint(
-        currentConstraintName,
-        MConstraint.FOREIGN_KEY_CONSTRAINT,
-        fks.get(i).getKey_seq(),
-        deleteRule,
-        updateRule,
-        enableValidateRely,
-        parentTable,
-        childTable,
-        parentCD,
-        childCD,
-        childIntegerIndex,
-        parentIntegerIndex
-      );
-      mpkfks.add(mpkfk);
+      pm.makePersistentAll(mpkfks);
     }
-    pm.makePersistentAll(mpkfks);
     return fkNames;
+  }
+
+  private static Set<String> generateValidPKsOrUniqueSignatures(List<MFieldSchema> tableCols,
+      List<SQLPrimaryKey> refTablePrimaryKeys, List<SQLUniqueConstraint> refTableUniqueConstraints) {
+    final Set<String> validPKsOrUnique = new HashSet<>();
+    if (!refTablePrimaryKeys.isEmpty()) {
+      Collections.sort(refTablePrimaryKeys, new Comparator<SQLPrimaryKey>() {
+        @Override
+        public int compare(SQLPrimaryKey o1, SQLPrimaryKey o2) {
+          int keyNameComp = o1.getPk_name().compareTo(o2.getPk_name());
+          if (keyNameComp == 0) { return Integer.compare(o1.getKey_seq(), o2.getKey_seq()); }
+          return keyNameComp;
+        }
+      });
+      StringBuilder pkSignature = new StringBuilder();
+      for (SQLPrimaryKey pk : refTablePrimaryKeys) {
+        pkSignature.append(
+            generateColNameTypeSignature(
+                pk.getColumn_name(), getColumnFromTableColumns(tableCols, pk.getColumn_name()).getType()));
+      }
+      validPKsOrUnique.add(pkSignature.toString());
+    }
+    if (!refTableUniqueConstraints.isEmpty()) {
+      Collections.sort(refTableUniqueConstraints, new Comparator<SQLUniqueConstraint>() {
+        @Override
+        public int compare(SQLUniqueConstraint o1, SQLUniqueConstraint o2) {
+          int keyNameComp = o1.getUk_name().compareTo(o2.getUk_name());
+          if (keyNameComp == 0) { return Integer.compare(o1.getKey_seq(), o2.getKey_seq()); }
+          return keyNameComp;
+        }
+      });
+      StringBuilder ukSignature = new StringBuilder();
+      for (int j = 0; j < refTableUniqueConstraints.size(); j++) {
+        SQLUniqueConstraint uk = refTableUniqueConstraints.get(j);
+        ukSignature.append(
+            generateColNameTypeSignature(
+                uk.getColumn_name(), getColumnFromTableColumns(tableCols, uk.getColumn_name()).getType()));
+        if (j + 1 < refTableUniqueConstraints.size()) {
+          if (!refTableUniqueConstraints.get(j + 1).getUk_name().equals(
+                  refTableUniqueConstraints.get(j).getUk_name())) {
+            validPKsOrUnique.add(ukSignature.toString());
+            ukSignature = new StringBuilder();
+          }
+        } else {
+          validPKsOrUnique.add(ukSignature.toString());
+        }
+      }
+    }
+    return validPKsOrUnique;
+  }
+
+  private static String generateColNameTypeSignature(String colName, String colType) {
+    return colName + ":" + colType + ";";
   }
 
   @Override
