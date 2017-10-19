@@ -728,6 +728,7 @@ public class ObjectStore implements RawStore, Configurable {
    * @return true if there is an active transaction. If the current transaction
    *         is either committed or rolled back it returns false
    */
+  @Override
   public boolean isActiveTransaction() {
     if (currentTransaction == null) {
       return false;
@@ -3254,13 +3255,14 @@ public class ObjectStore implements RawStore, Configurable {
         ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
 
     return new GetHelper<Integer>(dbName, tblName, true, true) {
-      private SqlFilterForPushdown filter = new SqlFilterForPushdown();
+      private final SqlFilterForPushdown filter = new SqlFilterForPushdown();
 
       @Override
       protected String describeResult() {
         return "Partition count";
       }
 
+      @Override
       protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
         return directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, filter);
       }
@@ -3285,13 +3287,14 @@ public class ObjectStore implements RawStore, Configurable {
 
 
     return new GetHelper<Integer>(dbName, tblName, true, true) {
-      private SqlFilterForPushdown filter = new SqlFilterForPushdown();
+      private final SqlFilterForPushdown filter = new SqlFilterForPushdown();
 
       @Override
       protected String describeResult() {
         return "Partition count";
       }
 
+      @Override
       protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
         return directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, filter);
       };
@@ -3331,7 +3334,7 @@ public class ObjectStore implements RawStore, Configurable {
     final ExpressionTree tree = (filter != null && !filter.isEmpty())
         ? PartFilterExprUtil.getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
     return new GetListHelper<Partition>(dbName, tblName, allowSql, allowJdo) {
-      private SqlFilterForPushdown filter = new SqlFilterForPushdown();
+      private final SqlFilterForPushdown filter = new SqlFilterForPushdown();
 
       @Override
       protected boolean canUseDirectSql(GetHelper<List<Partition>> ctx) throws MetaException {
@@ -7280,6 +7283,11 @@ public class ObjectStore implements RawStore, Configurable {
       if (oldStats != null) {
         StatObjectConverter.setFieldsIntoOldStats(mStatsObj, oldStats);
       } else {
+        if (sqlGenerator.getDbProduct().equals(DatabaseProduct.POSTGRES) && mStatsObj.getBitVector() == null) {
+          // workaround for DN bug in persisting nulls in pg bytea column
+          // instead set empty bit vector with header.
+          mStatsObj.setBitVector(new byte[] {'H','L'});
+        }
         pm.makePersistent(mStatsObj);
       }
     } finally {
@@ -7316,6 +7324,11 @@ public class ObjectStore implements RawStore, Configurable {
       if (oldStats != null) {
         StatObjectConverter.setFieldsIntoOldStats(mStatsObj, oldStats);
       } else {
+        if (sqlGenerator.getDbProduct().equals(DatabaseProduct.POSTGRES) && mStatsObj.getBitVector() == null) {
+          // workaround for DN bug in persisting nulls in pg bytea column
+          // instead set empty bit vector with header.
+          mStatsObj.setBitVector(new byte[] {'H','L'});
+        }
         pm.makePersistent(mStatsObj);
       }
     } finally {
@@ -8801,7 +8814,7 @@ public class ObjectStore implements RawStore, Configurable {
       pmCache.setAccessible(true);
       Set<JDOPersistenceManager> pmSet = (Set<JDOPersistenceManager>)pmCache.get(pmf);
       for (JDOPersistenceManager pm : pmSet) {
-        org.datanucleus.ExecutionContext ec = (org.datanucleus.ExecutionContext)pm.getExecutionContext();
+        org.datanucleus.ExecutionContext ec = pm.getExecutionContext();
         if (ec instanceof org.datanucleus.ExecutionContextThreadedImpl) {
           ClassLoaderResolver clr = ((org.datanucleus.ExecutionContextThreadedImpl)ec).getClassLoaderResolver();
           clearClr(clr);

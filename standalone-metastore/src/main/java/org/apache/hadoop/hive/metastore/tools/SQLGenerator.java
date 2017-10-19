@@ -38,6 +38,7 @@ import java.util.List;
 public final class SQLGenerator {
   static final private Logger LOG = LoggerFactory.getLogger(SQLGenerator.class.getName());
   private final DatabaseProduct dbProduct;
+
   private final Configuration conf;
 
   public SQLGenerator(DatabaseProduct dbProduct, Configuration conf) {
@@ -169,4 +170,9 @@ public final class SQLGenerator {
       throw new MetaException(msg);
     }
   }
+
+  public DatabaseProduct getDbProduct() {
+    return dbProduct;
+  }
+
 }
