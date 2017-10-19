@@ -338,7 +338,7 @@ public class TestSchemaTool extends TestCase {
     String expectedSQL = StringUtils.join(resultScript, System.getProperty("line.separator")) +
         System.getProperty("line.separator");
     File testScriptFile = generateTestScript(testScript);
-    String flattenedSql = HiveSchemaHelper.getDbCommandParser("derby")
+    String flattenedSql = HiveSchemaHelper.getDbCommandParser("derby", false)
         .buildCommand(testScriptFile.getParentFile().getPath(),
             testScriptFile.getName());
 
@@ -380,7 +380,7 @@ public class TestSchemaTool extends TestCase {
       };
 
     File testScriptFile = generateTestScript(parentTestScript);
-    String flattenedSql = HiveSchemaHelper.getDbCommandParser("derby")
+    String flattenedSql = HiveSchemaHelper.getDbCommandParser("derby", false)
         .buildCommand(testScriptFile.getParentFile().getPath(),
             testScriptFile.getName());
     assertFalse(flattenedSql.contains("RUN"));
@@ -425,7 +425,7 @@ public class TestSchemaTool extends TestCase {
       };
 
     File testScriptFile = generateTestScript(parentTestScript);
-    String flattenedSql = HiveSchemaHelper.getDbCommandParser("mysql")
+    String flattenedSql = HiveSchemaHelper.getDbCommandParser("mysql", false)
         .buildCommand(testScriptFile.getParentFile().getPath(),
             testScriptFile.getName());
     assertFalse(flattenedSql.contains("RUN"));
@@ -467,7 +467,7 @@ public class TestSchemaTool extends TestCase {
     String expectedSQL = StringUtils.join(resultScript, System.getProperty("line.separator")) +
         System.getProperty("line.separator");
     File testScriptFile = generateTestScript(testScript);
-    NestedScriptParser testDbParser = HiveSchemaHelper.getDbCommandParser("mysql");
+    NestedScriptParser testDbParser = HiveSchemaHelper.getDbCommandParser("mysql", false);
     String flattenedSql = testDbParser.buildCommand(testScriptFile.getParentFile().getPath(),
         testScriptFile.getName());
 
@@ -502,7 +502,7 @@ public class TestSchemaTool extends TestCase {
     String expectedSQL = StringUtils.join(parsedScript, System.getProperty("line.separator")) +
         System.getProperty("line.separator");
     File testScriptFile = generateTestScript(testScript);
-    NestedScriptParser testDbParser = HiveSchemaHelper.getDbCommandParser("mysql");
+    NestedScriptParser testDbParser = HiveSchemaHelper.getDbCommandParser("mysql", false);
     String flattenedSql = testDbParser.buildCommand(testScriptFile.getParentFile().getPath(),
         testScriptFile.getName());
 
@@ -544,7 +544,7 @@ public class TestSchemaTool extends TestCase {
       };
 
     File testScriptFile = generateTestScript(parentTestScript);
-    String flattenedSql = HiveSchemaHelper.getDbCommandParser("oracle")
+    String flattenedSql = HiveSchemaHelper.getDbCommandParser("oracle", false)
         .buildCommand(testScriptFile.getParentFile().getPath(),
             testScriptFile.getName());
     assertFalse(flattenedSql.contains("@"));
@@ -576,7 +576,7 @@ public class TestSchemaTool extends TestCase {
     };
 
     NestedScriptParser noDbOptParser = HiveSchemaHelper
-        .getDbCommandParser("postgres");
+        .getDbCommandParser("postgres", false);
     String expectedSQL = StringUtils.join(
         expectedScriptWithOptionPresent, System.getProperty("line.separator")) +
             System.getProperty("line.separator");
@@ -594,7 +594,7 @@ public class TestSchemaTool extends TestCase {
     NestedScriptParser dbOptParser = HiveSchemaHelper.getDbCommandParser(
         "postgres",
         PostgresCommandParser.POSTGRES_SKIP_STANDARD_STRINGS_DBOPT,
-        null, null, null, null);
+        null, null, null, null, false);
     expectedSQL = StringUtils.join(
         expectedScriptWithOptionAbsent, System.getProperty("line.separator")) +
             System.getProperty("line.separator");

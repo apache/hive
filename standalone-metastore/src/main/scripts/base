@@ -1,0 +1,231 @@
+#!/usr/bin/env bash
+
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+cygwin=false
+case "`uname`" in
+   CYGWIN*) cygwin=true;;
+esac
+
+bin=`dirname "$0"`
+# The strange redirect on cd is because on some systems cd outputs the directory you changed to
+bin=`cd "$bin" 2>&1 > /dev/null; pwd`
+
+. "$bin"/metastore-config.sh
+
+SERVICE=""
+HELP=""
+SKIP_HADOOPVERSION=false
+
+SERVICE_ARGS=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --version)
+      shift
+      SERVICE=version
+      ;;
+    --service)
+      shift
+      SERVICE=$1
+      shift
+      ;;
+    --skiphadoopversion)
+      SKIP_HADOOPVERSION=true
+      shift
+      ;;
+    --help)
+      HELP=_help
+      shift
+      ;;
+    --debug*)
+      DEBUG=$1
+      shift
+      ;;
+    *)
+      SERVICE_ARGS=("${SERVICE_ARGS[@]}" "$1")
+      shift
+      ;;
+  esac
+done
+
+if [ "$SERVICE" = "" ] ; then
+  if [ "$HELP" = "_help" ] ; then
+    SERVICE="help"
+  else
+    SERVICE="cli"
+  fi
+fi
+
+if [[ "$SERVICE" =~ ^(help|schemaTool)$ ]] ; then
+  SKIP_HADOOPVERSION=true
+fi
+
+if [ -f "${METASTORE_CONF_DIR}/metastore-env.sh" ]; then
+  . "${METASTORE_CONF_DIR}/metastore-env.sh"
+fi
+
+CLASSPATH="${METASTORE_CONF_DIR}"
+
+METASTORE_LIB=${METASTORE_HOME}/lib
+
+# needed for execution
+if [ ! -f ${METASTORE_LIB}/hive-standalone-metastore-*.jar ]; then
+  echo "Missing Standalone MetaStore Jar"
+  exit 2;
+fi
+
+for f in ${METASTORE_LIB}/*.jar; do
+  CLASSPATH=${CLASSPATH}:$f;
+done
+
+# add the auxillary jars such as serdes
+if [ -d "${METASTORE_AUX_JARS_PATH}" ]; then
+  hive_aux_jars_abspath=`cd ${METASTORE_AUX_JARS_PATH} 2>&1 > /dev/null && pwd`
+  for f in $hive_aux_jars_abspath/*.jar; do
+    if [[ ! -f $f ]]; then
+        continue;
+    fi
+    if $cygwin; then
+	f=`cygpath -w "$f"`
+    fi
+    AUX_CLASSPATH=${AUX_CLASSPATH}:$f
+    if [ "${AUX_PARAM}" == "" ]; then
+        AUX_PARAM=file://$f
+    else
+        AUX_PARAM=${AUX_PARAM},file://$f;
+    fi
+  done
+elif [ "${METASTORE_AUX_JARS_PATH}" != "" ]; then 
+  METASTORE_AUX_JARS_PATH=`echo $METASTORE_AUX_JARS_PATH | sed 's/,/:/g'`
+  if $cygwin; then
+      METASTORE_AUX_JARS_PATH=`cygpath -p -w "$METASTORE_AUX_JARS_PATH"`
+      METASTORE_AUX_JARS_PATH=`echo $METASTORE_AUX_JARS_PATH | sed 's/;/,/g'`
+  fi
+  AUX_CLASSPATH=${AUX_CLASSPATH}:${METASTORE_AUX_JARS_PATH}
+  AUX_PARAM="file://$(echo ${METASTORE_AUX_JARS_PATH} | sed 's/:/,file:\/\//g')"
+fi
+
+if $cygwin; then
+    CLASSPATH=`cygpath -p -w "$CLASSPATH"`
+    CLASSPATH=${CLASSPATH};${AUX_CLASSPATH}
+else
+    CLASSPATH=${CLASSPATH}:${AUX_CLASSPATH}
+fi
+
+# supress the HADOOP_HOME warnings in 1.x.x
+export HADOOP_HOME_WARN_SUPPRESS=true 
+
+# to make sure log4j2.x and jline jars are loaded ahead of the jars pulled by hadoop
+export HADOOP_USER_CLASSPATH_FIRST=true
+
+# pass classpath to hadoop
+if [ "$HADOOP_CLASSPATH" != "" ]; then
+  export HADOOP_CLASSPATH="${CLASSPATH}:${HADOOP_CLASSPATH}"
+else
+  export HADOOP_CLASSPATH="$CLASSPATH"
+fi
+
+# also pass hive classpath to hadoop
+if [ "$METASTORE_CLASSPATH" != "" ]; then
+  export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${METASTORE_CLASSPATH}";
+fi
+
+# check for hadoop in the path
+HADOOP_IN_PATH=`which hadoop 2>/dev/null`
+if [ -f ${HADOOP_IN_PATH} ]; then
+  HADOOP_DIR=`dirname "$HADOOP_IN_PATH"`/..
+fi
+# HADOOP_HOME env variable overrides hadoop in the path
+HADOOP_HOME=${HADOOP_HOME:-${HADOOP_PREFIX:-$HADOOP_DIR}}
+if [ "$HADOOP_HOME" == "" ]; then
+  echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
+  exit 4;
+fi
+
+HADOOP=$HADOOP_HOME/bin/hadoop
+if [ ! -f ${HADOOP} ]; then
+  echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
+  exit 4;
+fi
+
+if [ "$SKIP_HADOOPVERSION" = false ]; then
+  # Make sure we're using a compatible version of Hadoop
+  if [ "x$HADOOP_VERSION" == "x" ]; then
+      HADOOP_VERSION=$($HADOOP version 2>&2 | awk -F"\t" '/Hadoop/ {print $0}' | cut -d' ' -f 2);
+  fi
+  
+  # Save the regex to a var to workaround quoting incompatabilities
+  # between Bash 3.1 and 3.2
+  hadoop_version_re="^([[:digit:]]+)\.([[:digit:]]+)(\.([[:digit:]]+))?.*$"
+  
+  if [[ "$HADOOP_VERSION" =~ $hadoop_version_re ]]; then
+      hadoop_major_ver=${BASH_REMATCH[1]}
+      hadoop_minor_ver=${BASH_REMATCH[2]}
+      hadoop_patch_ver=${BASH_REMATCH[4]}
+  else
+      echo "Unable to determine Hadoop version information."
+      echo "'hadoop version' returned:"
+      echo `$HADOOP version`
+      exit 5
+  fi
+  
+  if [ "$hadoop_major_ver" -lt "2" ] || [ "$hadoop_major_ver" -eq "2" -a "$hadoop_minor_ver" -lt "6" ]; then
+      echo "Standalone metastore requires Hadoop 2.6 or later."
+      echo "'hadoop version' returned:"
+      echo `$HADOOP version`
+      exit 6
+  fi
+fi
+
+if [ "${AUX_PARAM}" != "" ]; then
+  METASTORE_OPTS="$METASTORE_OPTS --hiveconf hive.aux.jars.path=${AUX_PARAM}"
+  AUX_JARS_CMD_LINE="-libjars ${AUX_PARAM}"
+fi
+
+SERVICE_LIST=""
+
+for i in "$bin"/ext/*.sh ; do
+  . $i
+done
+
+if [ "$DEBUG" ]; then
+  if [ "$HELP" ]; then
+    debug_help
+    exit 0
+  else
+    get_debug_params "$DEBUG"
+    export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS $METASTORE_MAIN_CLIENT_DEBUG_OPTS"
+  fi
+fi
+
+TORUN=""
+for j in $SERVICE_LIST ; do
+  if [ "$j" = "$SERVICE" ] ; then
+    TORUN=${j}$HELP
+  fi
+done
+
+# to initialize logging for all services
+export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=metastore-log4j2.properties"
+
+if [ "$TORUN" = "" ] ; then
+  echo "Service $SERVICE not found"
+  echo "Available Services: $SERVICE_LIST"
+  exit 7
+else
+  set -- "${SERVICE_ARGS[@]}"
+  $TORUN "$@"
+fi
