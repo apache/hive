@@ -1,0 +1,71 @@
+PREHOOK: query: create database acidtestdb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:acidtestdb
+POSTHOOK: query: create database acidtestdb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:acidtestdb
+PREHOOK: query: use acidtestdb
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:acidtestdb
+POSTHOOK: query: use acidtestdb
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:acidtestdb
+PREHOOK: query: create table nocopyfiles(a int, b int) clustered by (a)  into 2 buckets stored as orc TBLPROPERTIES('transactional'='false')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: acidtestdb@nocopyfiles
+PREHOOK: Output: database:acidtestdb
+POSTHOOK: query: create table nocopyfiles(a int, b int) clustered by (a)  into 2 buckets stored as orc TBLPROPERTIES('transactional'='false')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: acidtestdb@nocopyfiles
+POSTHOOK: Output: database:acidtestdb
+PREHOOK: query: insert into nocopyfiles(a,b) values(1,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: acidtestdb@values__tmp__table__1
+PREHOOK: Output: acidtestdb@nocopyfiles
+POSTHOOK: query: insert into nocopyfiles(a,b) values(1,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: acidtestdb@values__tmp__table__1
+POSTHOOK: Output: acidtestdb@nocopyfiles
+POSTHOOK: Lineage: nocopyfiles.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: nocopyfiles.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: alter table nocopyfiles SET TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: acidtestdb@nocopyfiles
+PREHOOK: Output: acidtestdb@nocopyfiles
+POSTHOOK: query: alter table nocopyfiles SET TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: acidtestdb@nocopyfiles
+POSTHOOK: Output: acidtestdb@nocopyfiles
+PREHOOK: query: create table withcopyfiles(a int, b int) clustered by (a)  into 2 buckets stored as orc TBLPROPERTIES('transactional'='false')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: acidtestdb@withcopyfiles
+PREHOOK: Output: database:acidtestdb
+POSTHOOK: query: create table withcopyfiles(a int, b int) clustered by (a)  into 2 buckets stored as orc TBLPROPERTIES('transactional'='false')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: acidtestdb@withcopyfiles
+POSTHOOK: Output: database:acidtestdb
+PREHOOK: query: insert into withcopyfiles(a,b) values(1,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: acidtestdb@values__tmp__table__2
+PREHOOK: Output: acidtestdb@withcopyfiles
+POSTHOOK: query: insert into withcopyfiles(a,b) values(1,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: acidtestdb@values__tmp__table__2
+POSTHOOK: Output: acidtestdb@withcopyfiles
+POSTHOOK: Lineage: withcopyfiles.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: withcopyfiles.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: insert into withcopyfiles(a,b) values(1,3)
+PREHOOK: type: QUERY
+PREHOOK: Input: acidtestdb@values__tmp__table__3
+PREHOOK: Output: acidtestdb@withcopyfiles
+POSTHOOK: query: insert into withcopyfiles(a,b) values(1,3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: acidtestdb@values__tmp__table__3
+POSTHOOK: Output: acidtestdb@withcopyfiles
+POSTHOOK: Lineage: withcopyfiles.a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: withcopyfiles.b EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: alter table withcopyfiles SET TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: acidtestdb@withcopyfiles
+PREHOOK: Output: acidtestdb@withcopyfiles
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. acidtestdb.withcopyfiles cannot be declared transactional because it has _COPY_N files.

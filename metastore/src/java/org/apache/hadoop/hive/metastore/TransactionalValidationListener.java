@@ -18,6 +18,10 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
@@ -25,12 +29,17 @@ import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 final class TransactionalValidationListener extends MetaStorePreEventListener {
   public static final Logger LOG = LoggerFactory.getLogger(TransactionalValidationListener.class);
+
+  public static final Pattern COPY_N_PATTERN =
+          Pattern.compile("[0-9]+_[0-9]+" + "_copy_" + "[0-9]+");
 
   TransactionalValidationListener(Configuration conf) {
     super(conf);
@@ -89,7 +98,12 @@ final class TransactionalValidationListener extends MetaStorePreEventListener {
 
       if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
         throw new MetaException(newTable.getDbName() + "." + newTable.getTableName() +
-            " cannot be declared transactional because it's an external table");
+                " cannot be declared transactional because it's an external table");
+      }
+
+      if (containsCopyNFiles(context.getHandler().getMS(), newTable)) {
+        throw new MetaException(newTable.getDbName() + "." + newTable.getTableName() +
+                " cannot be declared transactional because it has _COPY_N files.");
       }
 
       return;
@@ -186,5 +200,43 @@ final class TransactionalValidationListener extends MetaStorePreEventListener {
     }
 
     return true;
+  }
+
+  /**
+   * Check if table contains *_copy_N files. The table can't be converted to ACID if it does.
+   * See HIVE-16177 for details.
+   * @param table
+   * @return True if table contains files named *_copy_N. False otherwise.
+   * @throws MetaException
+   */
+  boolean containsCopyNFiles(RawStore ms, Table table) throws MetaException {
+    Warehouse wh = new Warehouse(getConf());
+
+    try {
+      Path tablePath;
+      if (table.getSd().getLocation() == null
+              || table.getSd().getLocation().isEmpty()) {
+        tablePath = wh.getDefaultTablePath(
+                ms.getDatabase(table.getDbName()), table.getTableName());
+      } else {
+        tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
+      }
+      FileSystem fs = wh.getFs(tablePath);
+      RemoteIterator<LocatedFileStatus> iterator = fs.listFiles(tablePath, true);
+      while (iterator.hasNext()) {
+        LocatedFileStatus fileStatus = iterator.next();
+        if (COPY_N_PATTERN.matcher(fileStatus.getPath().getName()).matches()) {
+          return true;
+        }
+      }
+    } catch (IOException e) {
+      throw new MetaException("Unable to list files for " + table.getDbName() + "."+
+              table.getTableName());
+    } catch (NoSuchObjectException e) {
+      throw new MetaException("Unable to get location for " + table.getDbName() + "."+
+              table.getTableName());
+    }
+
+    return false;
   }
 }
