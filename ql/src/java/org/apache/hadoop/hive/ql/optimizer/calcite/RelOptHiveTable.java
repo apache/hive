@@ -172,6 +172,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   }
 
   private List<ImmutableBitSet> generateKeys() {
+    ImmutableList.Builder<ImmutableBitSet> builder = ImmutableList.builder();
     // First PK
     final PrimaryKeyInfo pki;
     try {
@@ -180,7 +181,6 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     } catch (HiveException e) {
       throw new RuntimeException(e);
     }
-    ImmutableList.Builder<ImmutableBitSet> builder = ImmutableList.builder();
     if (!pki.getColNames().isEmpty()) {
       ImmutableBitSet.Builder keys = ImmutableBitSet.builder();
       for (String pkColName : pki.getColNames().values()) {
