@@ -138,8 +138,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             tgtFs.delete(deletePath, true);
           }
         } catch (IOException e) {
-          LOG.info("Unable to delete the path created for facilitating rename"
-              + deletePath);
+          LOG.info("Unable to delete the path created for facilitating rename: {}",
+            deletePath);
         }
         throw new HiveException("Unable to rename: " + sourcePath
             + " to: " + targetPath);
@@ -230,14 +230,14 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       for (HiveLock lock : locks) {
         if (lock.getHiveLockMode() == lockObj.getMode()) {
           if (ctx.getHiveLocks().remove(lock)) {
-            LOG.info("about to release lock for output: " + output.toString() +
-                " lock: " + lock.getHiveLockObject().getName());
+            LOG.info("about to release lock for output: {} lock: {}", output,
+              lock.getHiveLockObject().getName());
             try {
               lockMgr.unlock(lock);
             } catch (LockException le) {
               // should be OK since the lock is ephemeral and will eventually be deleted
               // when the query finishes and zookeeper session is closed.
-              LOG.warn("Could not release lock " + lock.getHiveLockObject().getName());
+              LOG.warn("Could not release lock {}", lock.getHiveLockObject().getName());
             }
           }
         }
@@ -385,7 +385,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
           }
         } else {
-          LOG.info("Partition is: " + tbd.getPartitionSpec().toString());
+          LOG.info("Partition is: {}", tbd.getPartitionSpec());
 
           // Check if the bucketing and/or sorting columns were inferred
           TaskInformation ti = new TaskInformation(this, tbd.getSourcePath().toUri().toString());
@@ -558,7 +558,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         work.getLineagState().setLineage(tbd.getSourcePath(), dc,
             table.getCols());
       }
-      LOG.info("\tLoading partition " + entry.getKey());
+      LOG.info("Loading partition " + entry.getKey());
     }
     console.printInfo("\t Time taken for adding to write entity : " +
         (System.currentTimeMillis() - startTime)/1000.0 + " seconds");

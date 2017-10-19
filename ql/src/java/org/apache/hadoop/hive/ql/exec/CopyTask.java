@@ -83,13 +83,14 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
       }
 
       for (FileStatus oneSrc : srcs) {
-        console.printInfo("Copying file: " + oneSrc.getPath().toString());
-        LOG.debug("Copying file: " + oneSrc.getPath().toString());
+        String oneSrcPathStr = oneSrc.getPath().toString();
+        console.printInfo("Copying file: " + oneSrcPathStr);
+        LOG.debug("Copying file: {}", oneSrcPathStr);
         if (!FileUtils.copy(srcFs, oneSrc.getPath(), dstFs, toPath,
             false, // delete source
             true, // overwrite destination
             conf)) {
-          console.printError("Failed to copy: '" + oneSrc.getPath().toString()
+          console.printError("Failed to copy: '" + oneSrcPathStr
               + "to: '" + toPath.toString() + "'");
           return 1;
         }

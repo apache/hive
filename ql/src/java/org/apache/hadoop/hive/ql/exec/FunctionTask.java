@@ -93,7 +93,7 @@ public class FunctionTask extends Task<FunctionWork> {
           return createPermanentFunction(Hive.get(conf), createFunctionDesc);
         } catch (Exception e) {
           setException(e);
-          LOG.error(stringifyException(e));
+          LOG.error("Failed to create function", e);
           return 1;
         }
       }
@@ -121,7 +121,7 @@ public class FunctionTask extends Task<FunctionWork> {
           return dropPermanentFunction(Hive.get(conf), dropFunctionDesc);
         } catch (Exception e) {
           setException(e);
-          LOG.error(stringifyException(e));
+          LOG.error("Failed to drop function", e);
           return 1;
         }
       }
@@ -132,7 +132,7 @@ public class FunctionTask extends Task<FunctionWork> {
         Hive.get().reloadFunctions();
       } catch (Exception e) {
         setException(e);
-        LOG.error(stringifyException(e));
+        LOG.error("Failed to reload functions", e);
         return 1;
       }
     }
@@ -212,12 +212,12 @@ public class FunctionTask extends Task<FunctionWork> {
       return 1;
     } catch (HiveException e) {
       console.printError("FAILED: " + e.toString());
-      LOG.info("create function: " + StringUtils.stringifyException(e));
+      LOG.info("create function: ", e);
       return 1;
     } catch (ClassNotFoundException e) {
 
       console.printError("FAILED: Class " + createFunctionDesc.getClassName() + " not found");
-      LOG.info("create function: " + StringUtils.stringifyException(e));
+      LOG.info("create function: ", e);
       return 1;
     }
   }
@@ -237,7 +237,7 @@ public class FunctionTask extends Task<FunctionWork> {
       FunctionRegistry.unregisterTemporaryUDF(dropMacroDesc.getMacroName());
       return 0;
     } catch (HiveException e) {
-      LOG.info("drop macro: " + StringUtils.stringifyException(e));
+      LOG.info("drop macro: ", e);
       return 1;
     }
   }
@@ -256,7 +256,7 @@ public class FunctionTask extends Task<FunctionWork> {
 
       return 0;
     } catch (Exception e) {
-      LOG.info("drop function: " + StringUtils.stringifyException(e));
+      LOG.info("drop function: ", e);
       console.printError("FAILED: error during drop function: " + StringUtils.stringifyException(e));
       return 1;
     }
@@ -267,7 +267,7 @@ public class FunctionTask extends Task<FunctionWork> {
       FunctionRegistry.unregisterTemporaryUDF(dropFunctionDesc.getFunctionName());
       return 0;
     } catch (HiveException e) {
-      LOG.info("drop function: " + StringUtils.stringifyException(e));
+      LOG.info("drop function: ", e);
       return 1;
     }
   }

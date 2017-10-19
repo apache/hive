@@ -662,7 +662,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       e = e.getCause();
     }
     setException(e);
-    LOG.error(stringifyException(e));
+    LOG.error("Failed", e);
   }
 
   private int showConf(Hive db, ShowConfDesc showConf) throws Exception {
@@ -1125,7 +1125,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       db.alterIndex(baseTableName, indexName, idx);
     } catch (InvalidOperationException e) {
       console.printError("Invalid alter operation: " + e.getMessage());
-      LOG.info("alter index: " + stringifyException(e));
+      LOG.info("alter index: ", e);
       return 1;
     } catch (HiveException e) {
       console.printError("Invalid alter operation: " + e.getMessage());
@@ -1169,9 +1169,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (!allowOperationInReplicationScope(db, tableName, oldPartSpec, renamePartitionDesc.getReplicationSpec())) {
       // no rename, the table is missing either due to drop/rename which follows the current rename.
       // or the existing table is newer than our update.
+      if (LOG.isDebugEnabled()) {
       LOG.debug("DDLTask: Rename Partition is skipped as table {} / partition {} is newer than update",
               tableName,
-              FileUtils.makePartName(new ArrayList(oldPartSpec.keySet()), new ArrayList(oldPartSpec.values())));
+              FileUtils.makePartName(new ArrayList<>(oldPartSpec.keySet()), new ArrayList<>(oldPartSpec.values())));
+      }
       return 0;
     }
 
@@ -2472,7 +2474,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       outStream.write(createTab_stmt.render().getBytes(StandardCharsets.UTF_8));
     } catch (IOException e) {
-      LOG.info("show create table: " + stringifyException(e));
+      LOG.info("show create table: ", e);
       return 1;
     }
 
@@ -2545,10 +2547,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         outStream.write(MetaDataFormatUtils.getIndexInformation(index, isOutputPadded).getBytes(StandardCharsets.UTF_8));
       }
     } catch (FileNotFoundException e) {
-      LOG.info("show indexes: " + stringifyException(e));
+      LOG.info("show indexes: ", e);
       throw new HiveException(e.toString());
     } catch (IOException e) {
-      LOG.info("show indexes: " + stringifyException(e));
+      LOG.info("show indexes: ", e);
       throw new HiveException(e.toString());
     } catch (Exception e) {
       throw new HiveException(e.toString());
@@ -2572,12 +2574,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // get the databases for the desired pattern - populate the output stream
     List<String> databases = null;
     if (showDatabasesDesc.getPattern() != null) {
-      LOG.info("pattern: " + showDatabasesDesc.getPattern());
+      LOG.info("pattern: {}", showDatabasesDesc.getPattern());
       databases = db.getDatabasesByPattern(showDatabasesDesc.getPattern());
     } else {
       databases = db.getAllDatabases();
     }
-    LOG.info("results : " + databases.size());
+    LOG.info("results : {}", databases.size());
 
     // write the results in the file
     DataOutputStream outStream = getOutputStream(showDatabasesDesc.getResFile());
@@ -2615,9 +2617,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
 
-    LOG.debug("pattern: " + pattern);
+    LOG.debug("pattern: {}", pattern);
     tablesOrViews = db.getTablesByType(dbName, pattern, type);
-    LOG.debug("results : " + tablesOrViews.size());
+    LOG.debug("results : {}", tablesOrViews.size());
 
     // write the results in the file
     DataOutputStream outStream = null;
@@ -2678,14 +2680,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // get the tables for the desired patten - populate the output stream
     Set<String> funcs = null;
     if (showFuncs.getPattern() != null) {
-      LOG.info("pattern: " + showFuncs.getPattern());
+      LOG.info("pattern: {}", showFuncs.getPattern());
       if (showFuncs.getIsLikePattern()) {
          funcs = FunctionRegistry.getFunctionNamesByLikePattern(showFuncs.getPattern());
       } else {
          console.printInfo("SHOW FUNCTIONS is deprecated, please use SHOW FUNCTIONS LIKE instead.");
          funcs = FunctionRegistry.getFunctionNames(showFuncs.getPattern());
       }
-      LOG.info("results : " + funcs.size());
+      LOG.info("results : {}", funcs.size());
     } else {
       funcs = FunctionRegistry.getFunctionNames();
     }
@@ -2704,10 +2706,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         outStream.write(terminator);
       }
     } catch (FileNotFoundException e) {
-      LOG.warn("show function: " + stringifyException(e));
+      LOG.warn("show function: ", e);
       return 1;
     } catch (IOException e) {
-      LOG.warn("show function: " + stringifyException(e));
+      LOG.warn("show function: ", e);
       return 1;
     } catch (Exception e) {
       throw new HiveException(e);
@@ -2800,10 +2802,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         outStream.write(terminator);
       }
     } catch (FileNotFoundException e) {
-      LOG.warn("show function: " + stringifyException(e));
+      LOG.warn("show function: ", e);
       return 1;
     } catch (IOException e) {
-      LOG.warn("show function: " + stringifyException(e));
+      LOG.warn("show function: ", e);
       return 1;
     } catch (Exception e) {
       throw new HiveException(e.toString(), e);
@@ -2922,10 +2924,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       dumpLockInfo(os, rsp);
     } catch (FileNotFoundException e) {
-      LOG.warn("show function: " + stringifyException(e));
+      LOG.warn("show function: ", e);
       return 1;
     } catch (IOException e) {
-      LOG.warn("show function: " + stringifyException(e));
+      LOG.warn("show function: ", e);
       return 1;
     } catch (Exception e) {
       throw new HiveException(e.toString());
@@ -2993,7 +2995,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
     } catch (IOException e) {
-      LOG.warn("show compactions: " + stringifyException(e));
+      LOG.warn("show compactions: ", e);
       return 1;
     } finally {
       IOUtils.closeStream(os);
@@ -3037,7 +3039,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         os.write(terminator);
       }
     } catch (IOException e) {
-      LOG.warn("show transactions: " + stringifyException(e));
+      LOG.warn("show transactions: ", e);
       return 1;
     } finally {
       IOUtils.closeStream(os);
@@ -3055,7 +3057,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     for (String queryId : desc.getQueryIds()) {
       sessionState.getKillQuery().killQuery(queryId);
     }
-    LOG.info("kill query called (" + desc.getQueryIds().toString() + ")");
+    LOG.info("kill query called ({})", desc.getQueryIds());
     return 0;
   }
 
@@ -3182,10 +3184,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
     } catch (FileNotFoundException e) {
-      LOG.warn("describe function: " + stringifyException(e));
+      LOG.warn("describe function: ", e);
       return 1;
     } catch (IOException e) {
-      LOG.warn("describe function: " + stringifyException(e));
+      LOG.warn("describe function: ", e);
       return 1;
     } catch (Exception e) {
       throw new HiveException(e);
@@ -3255,7 +3257,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       tbls.add(tbl);
     } else {
-      LOG.info("pattern: " + showTblStatus.getPattern());
+      LOG.info("pattern: {}", showTblStatus.getPattern());
       List<String> tblStr = db.getTablesForDb(showTblStatus.getDbName(),
           showTblStatus.getPattern());
       SortedSet<String> sortedTbls = new TreeSet<String>(tblStr);
@@ -3266,7 +3268,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         Table tbl = db.getTable(showTblStatus.getDbName(), tblName);
         tbls.add(tbl);
       }
-      LOG.info("results : " + tblStr.size());
+      LOG.info("results : {}", tblStr.size());
     }
 
     // write the results in the file
@@ -3304,7 +3306,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return 0;
       }
 
-      LOG.info("DDLTask: show properties for " + tbl.getTableName());
+      LOG.info("DDLTask: show properties for {}", tableName);
 
       StringBuilder builder = new StringBuilder();
       String propertyName = showTblPrpt.getPropertyName();
@@ -3326,14 +3328,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
 
-      LOG.info("DDLTask: written data for showing properties of " + tbl.getTableName());
+      LOG.info("DDLTask: written data for showing properties of {}", tableName);
       writeToFile(builder.toString(), showTblPrpt.getResFile());
 
     } catch (FileNotFoundException e) {
-      LOG.info("show table properties: " + stringifyException(e));
+      LOG.info("show table properties: ", e);
       return 1;
     } catch (IOException e) {
-      LOG.info("show table properties: " + stringifyException(e));
+      LOG.info("show table properties: ", e);
       return 1;
     } catch (Exception e) {
       throw new HiveException(e);
@@ -3391,7 +3393,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     DataOutputStream outStream = getOutputStream(descTbl.getResFile());
     try {
-      LOG.debug("DDLTask: got data for " + tbl.getTableName());
+      LOG.debug("DDLTask: got data for {}", tableName);
 
       List<FieldSchema> cols = null;
       List<ColumnStatisticsObj> colStats = null;
@@ -3511,7 +3513,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           isOutputPadded, colStats,
           pkInfo, fkInfo, ukInfo, nnInfo);
 
-      LOG.debug("DDLTask: written data for " + tbl.getTableName());
+      LOG.debug("DDLTask: written data for {}", tableName);
 
     } catch (SQLException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, tableName);
@@ -3701,7 +3703,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // Add constraints if necessary
       addConstraints(db, alterTbl);
     } catch (InvalidOperationException e) {
-      LOG.error("alter table: " + stringifyException(e));
+      LOG.error("alter table: ", e);
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     }
 
@@ -3743,8 +3745,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   static boolean addIfAbsentByName(WriteEntity newWriteEntity, Set<WriteEntity> outputs) {
     for(WriteEntity writeEntity : outputs) {
       if(writeEntity.getName().equalsIgnoreCase(newWriteEntity.getName())) {
-        LOG.debug("Ignoring request to add " + newWriteEntity.toStringDetail() + " because " +
-          writeEntity.toStringDetail() + " is present");
+        LOG.debug("Ignoring request to add {} because {} is present",
+          newWriteEntity.toStringDetail(), writeEntity.toStringDetail());
         return false;
       }
     }
@@ -4280,7 +4282,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
               && alterTbl.getReplicationSpec()!= null && alterTbl.getReplicationSpec().isInReplicationScope()) {
             // During repl load, NoSuchObjectException in foreign key shall
             // ignore as the foreign table may not be part of the replication
-            LOG.debug(e.getMessage());
+            LOG.debug("InvalidObjectException: ", e);
           } else {
             throw e;
           }
@@ -4500,7 +4502,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Deserializer d = ReflectionUtil.newInstance(conf.getClassByName(serdeName).
           asSubclass(Deserializer.class), conf);
       if (d != null) {
-        LOG.debug("Found class for " + serdeName);
+        LOG.debug("Found class for {}", serdeName);
       }
     } catch (Exception e) {
       throw new HiveException("Cannot validate serde: " + serdeName, e);
@@ -4580,8 +4582,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       for (HiveConf.ConfVars var: HiveConf.dbVars) {
         String newValue = dbParams.get(var.varname);
         if (newValue != null) {
-          LOG.info("Changing " + var.varname +
-              " from " + conf.getVar(var) + " to " + newValue);
+          LOG.info("Changing {} from {} to {}", var.varname, conf.getVar(var),
+            newValue);
           conf.setVar(var, newValue);
         }
       }
@@ -4608,8 +4610,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     List<SQLForeignKey> foreignKeys = crtTbl.getForeignKeys();
     List<SQLUniqueConstraint> uniqueConstraints = crtTbl.getUniqueConstraints();
     List<SQLNotNullConstraint> notNullConstraints = crtTbl.getNotNullConstraints();
-    LOG.info("creating table " + tbl.getDbName() + "." + tbl.getTableName() + " on " +
-            tbl.getDataLocation());
+    LOG.info("creating table {}.{} on {}", tbl.getDbName(), tbl.getTableName(),
+      tbl.getDataLocation());
 
     if (crtTbl.getReplicationSpec().isInReplicationScope() && (!crtTbl.getReplaceMode())){
       // if this is a replication spec, then replace-mode semantics might apply.
@@ -4698,7 +4700,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.setPartCols(oldtbl.getPartCols());
 
       if (crtTbl.getDefaultSerName() == null) {
-        LOG.info("Default to LazySimpleSerDe for table " + crtTbl.getTableName());
+        LOG.info("Default to LazySimpleSerDe for table {}", targetTableName);
         tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
       } else {
         // let's validate that the serde exists
@@ -4775,7 +4777,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl.getTTable().getSd().setOutputFormat(
         tbl.getOutputFormatClass().getName());
         if (crtTbl.getDefaultSerName() == null) {
-          LOG.info("Default to LazySimpleSerDe for like table " + crtTbl.getTableName());
+          LOG.info("Default to LazySimpleSerDe for like table {}", targetTableName);
           tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
         } else {
           // let's validate that the serde exists
@@ -4907,12 +4909,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if (crtView.getSerde() == null) {
           if (storageHandler == null) {
             serDeClassName = PlanUtils.getDefaultSerDe().getName();
-            LOG.info("Default to " + serDeClassName
-                    + " for materialized view " + crtView.getViewName());
+            LOG.info("Default to {} for materialized view {}", serDeClassName,
+              crtView.getViewName());
           } else {
             serDeClassName = storageHandler.getSerDeClass().getName();
-            LOG.info("Use StorageHandler-supplied " + serDeClassName
-                    + " for materialized view " + crtView.getViewName());
+            LOG.info("Use StorageHandler-supplied {} for materialized view {}",
+              serDeClassName, crtView.getViewName());
           }
         } else {
           // let's validate that the serde exists
@@ -4974,9 +4976,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (!allowOperationInReplicationScope(db, tableName, partSpec, truncateTableDesc.getReplicationSpec())) {
       // no truncate, the table is missing either due to drop/rename which follows the truncate.
       // or the existing table is newer than our update.
-      LOG.debug("DDLTask: Truncate Table/Partition is skipped as table {} / partition {} is newer than update",
-              tableName,
-              (partSpec == null) ? "null" : FileUtils.makePartName(new ArrayList(partSpec.keySet()), new ArrayList(partSpec.values())));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("DDLTask: Truncate Table/Partition is skipped as table {} / partition {} is newer than update",
+          tableName,
+          (partSpec == null) ? "null" : FileUtils.makePartName(new ArrayList<>(partSpec.keySet()), new ArrayList<>(partSpec.values())));
+      }
       return 0;
     }
 

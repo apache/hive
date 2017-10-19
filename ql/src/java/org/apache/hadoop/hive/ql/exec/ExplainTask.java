@@ -358,8 +358,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
             jsonParser.print(jsonPlan, out);
           } catch (Exception e) {
             // if there is anything wrong happen, we bail out.
-            LOG.error("Running explain user level has problem: " + e.toString()
-                + ". Falling back to normal explain");
+            LOG.error("Running explain user level has problem." +
+              " Falling back to normal explain.", e);
             work.getConfig().setFormatted(false);
             work.getConfig().setUserLevelExplain(false);
             jsonPlan = getJSONPlan(out, work);
@@ -371,7 +371,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
             JsonParser jsonParser = JsonParserFactory.getParser(conf);
             if (jsonParser != null) {
               jsonParser.print(jsonPlan, null);
-              LOG.info("JsonPlan is augmented to " + jsonPlan.toString());
+              LOG.info("JsonPlan is augmented to {}", jsonPlan);
             }
             out.print(jsonPlan);
           }

@@ -365,7 +365,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
           statsObjs.add(statsObj);
         } catch (UnsupportedDoubleException e) {
           // due to infinity or nan.
-          LOG.info("Because " + colName.get(i) + " is infinite or NaN, we skip stats.");
+          LOG.info("Because {} is infinite or NaN, we skip stats.",  colName.get(i));
         }
       }
 

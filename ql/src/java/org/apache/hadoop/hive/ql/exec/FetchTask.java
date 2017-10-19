@@ -93,7 +93,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     } catch (Exception e) {
       // Bail out ungracefully - we should never hit
       // this here - but would have hit it in SemanticAnalyzer
-      LOG.error(StringUtils.stringifyException(e));
+      LOG.error("Initialize failed", e);
       throw new RuntimeException(e);
     }
   }

@@ -326,7 +326,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       return new Date(writableVal.getDays());
     } catch (IllegalArgumentException err) {
       // Fallback to integer parsing
-      LOG.debug("Reading date value as days since epoch: " + dateStr);
+      LOG.debug("Reading date value as days since epoch: {}", dateStr);
       return new Date(Long.parseLong(dateStr));
     }
   }

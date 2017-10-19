@@ -94,7 +94,9 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         // This flow is usually taken for REPL LOAD
         // Our input is the result of a _files listing, we should expand out _files.
         srcFiles = filesInFileListing(srcFs, fromPath);
-        LOG.debug("ReplCopyTask _files contains:" + (srcFiles == null ? "null" : srcFiles.size()));
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("ReplCopyTask _files contains: {}", (srcFiles == null ? "null" : srcFiles.size()));
+        }
         if ((srcFiles == null) || (srcFiles.isEmpty())) {
           if (work.isErrorOnSrcEmpty()) {
             console.printError("No _files entry found on source: " + fromPath.toString());
@@ -106,7 +108,9 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       } else {
         // This flow is usually taken for IMPORT command
         FileStatus[] srcs = LoadSemanticAnalyzer.matchFilesOrDir(srcFs, fromPath);
-        LOG.debug("ReplCopyTasks srcs= {}", (srcs == null ? "null" : srcs.length));
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("ReplCopyTasks srcs= {}", (srcs == null ? "null" : srcs.length));
+        }
         if (srcs == null || srcs.length == 0) {
           if (work.isErrorOnSrcEmpty()) {
             console.printError("No files matching path: " + fromPath.toString());
@@ -162,7 +166,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
   private List<ReplChangeManager.FileInfo> filesInFileListing(FileSystem fs, Path dataPath)
       throws IOException {
     Path fileListing = new Path(dataPath, EximUtil.FILES_NAME);
-    LOG.debug("ReplCopyTask filesInFileListing() reading " + fileListing.toUri());
+    LOG.debug("ReplCopyTask filesInFileListing() reading {}", fileListing.toUri());
     if (! fs.exists(fileListing)){
       LOG.debug("ReplCopyTask : _files does not exist");
       return null; // Returning null from this fn can serve as an err condition.
@@ -175,7 +179,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
 
       String line = null;
       while ((line = br.readLine()) != null) {
-        LOG.debug("ReplCopyTask :_filesReadLine:" + line);
+        LOG.debug("ReplCopyTask :_filesReadLine: {}", line);
 
         String[] fileWithChksum = ReplChangeManager.getFileWithChksumFromURI(line);
         try {
@@ -184,7 +188,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           filePaths.add(f);
         } catch (MetaException e) {
           // issue warning for missing file and throw exception
-          LOG.warn("Cannot find " + fileWithChksum[0] + " in source repo or cmroot");
+          LOG.warn("Cannot find {} in source repo or cmroot", fileWithChksum[0]);
           throw new IOException(e.getMessage());
         }
         // Note - we need srcFs rather than fs, because it is possible that the _files lists files
@@ -213,7 +217,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
 
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath, HiveConf conf) {
     Task<?> copyTask = null;
-    LOG.debug("ReplCopyTask:getLoadCopyTask: "+srcPath + "=>" + dstPath);
+    LOG.debug("ReplCopyTask:getLoadCopyTask: {}=>{}", srcPath, dstPath);
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
       ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false);
       LOG.debug("ReplCopyTask:\trcwork");
