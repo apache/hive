@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.ISchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -66,6 +67,8 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -810,4 +813,136 @@ public interface RawStore extends Configurable {
 
   void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath)
       throws NoSuchObjectException, InvalidOperationException, MetaException;
+
+  /**
+   * Create a new ISchema.
+   * @param schema schema to create
+   * @throws AlreadyExistsException there's already a schema with this name
+   * @throws MetaException general database exception
+   */
+  void createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
+      NoSuchObjectException;
+
+  /**
+   * Alter an existing ISchema.  This assumes the caller has already checked that such a schema
+   * exists.
+   * @param schemaName name of the schema
+   * @param newSchema new schema object
+   * @throws NoSuchObjectException no function with this name exists
+   * @throws MetaException general database exception
+   */
+  void alterISchema(String schemaName, ISchema newSchema) throws NoSuchObjectException, MetaException;
+
+  /**
+   * Get an ISchema by name.
+   * @param schemaName name of the schema
+   * @return ISchema
+   * @throws MetaException general database exception
+   */
+  ISchema getISchema(String schemaName) throws MetaException;
+
+  /**
+   * Drop an ISchema.  This does not check whether there are valid versions of the schema in
+   * existence, it assumes the caller has already done that.
+   * @param schemaName name of the schema to drop
+   * @throws NoSuchObjectException no schema of this name exists
+   * @throws MetaException general database exception
+   */
+  void dropISchema(String schemaName) throws NoSuchObjectException, MetaException;
+
+  /**
+   * Create a new version of an existing schema.
+   * @param schemaVersion version number
+   * @throws AlreadyExistsException a version of the schema with the same version number already
+   * exists.
+   * @throws InvalidObjectException the passed in SchemaVersion object has problems.
+   * @throws NoSuchObjectException no schema with the passed in name exists.
+   * @throws MetaException general database exception
+   */
+  void addSchemaVersion(SchemaVersion schemaVersion)
+      throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException;
+
+  /**
+   * Alter a schema version.  Note that the Thrift interface only supports changing the serde
+   * mapping and states.  This method does not guarantee it will check anymore than that.  This
+   * method does not understand the state transitions and just assumes that the new state it is
+   * passed is reasonable.
+   * @param schemaName name of the schema
+   * @param version version of the schema
+   * @param newVersion altered SchemaVersion
+   * @throws NoSuchObjectException no such version of the named schema exists
+   * @throws MetaException general database exception
+   */
+  void alterSchemaVersion(String schemaName, int version, SchemaVersion newVersion)
+      throws NoSuchObjectException, MetaException;
+
+  /**
+   * Get a specific schema version.
+   * @param schemaName name of the schema
+   * @param version version of the schema
+   * @return the SchemaVersion
+   * @throws MetaException general database exception
+   */
+  SchemaVersion getSchemaVersion(String schemaName, int version) throws MetaException;
+
+  /**
+   * Get the latest version of a schema.
+   * @param schemaName name of the schema
+   * @return latest version of the schema
+   * @throws MetaException general database exception
+   */
+  SchemaVersion getLatestSchemaVersion(String schemaName) throws MetaException;
+
+  /**
+   * Get all of the versions of a schema
+   * @param schemaName name of the schema
+   * @return all versions of the schema
+   * @throws MetaException general database exception
+   */
+  List<SchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException;
+
+  /**
+   * Find all SchemaVersion objects that match a query.  The query will select all SchemaVersions
+   * that are equal to all of the non-null passed in arguments.  That is, if arguments
+   * colName='name', colNamespace=null, type='string' are passed in, then all schemas that have
+   * a column with colName 'name' and type 'string' will be returned.
+   * @param colName column name.  Null is ok, which will cause this field to not be used in the
+   *                query.
+   * @param colNamespace column namespace.   Null is ok, which will cause this field to not be
+   *                     used in the query.
+   * @param type column type.   Null is ok, which will cause this field to not be used in the
+   *             query.
+   * @return List of all SchemaVersions that match.  Note that there is no expectation that these
+   * SchemaVersions derive from the same ISchema.  The list will be empty if there are no
+   * matching SchemaVersions.
+   * @throws MetaException general database exception
+   */
+  List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace, String type)
+      throws MetaException;
+
+  /**
+   * Drop a version of the schema.
+   * @param schemaName name of the schema
+   * @param version version of the schema
+   * @throws NoSuchObjectException no such version of the named schema exists
+   * @throws MetaException general database exception
+   */
+  void dropSchemaVersion(String schemaName, int version) throws NoSuchObjectException, MetaException;
+
+  /**
+   * Get serde information
+   * @param serDeName name of the SerDe
+   * @return the SerDe, or null if there is no such serde
+   * @throws NoSuchObjectException no serde with this name exists
+   * @throws MetaException general database exception
+   */
+  SerDeInfo getSerDeInfo(String serDeName) throws NoSuchObjectException, MetaException;
+
+  /**
+   * Add a serde
+   * @param serde serde to add
+   * @throws AlreadyExistsException a serde of this name already exists
+   * @throws MetaException general database exception
+   */
+  void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException;
 }

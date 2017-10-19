@@ -100,7 +100,11 @@ CREATE TABLE SERDES
 (
     SERDE_ID NUMBER NOT NULL,
     "NAME" VARCHAR2(128) NULL,
-    SLIB VARCHAR2(4000) NULL
+    SLIB VARCHAR2(4000) NULL,
+    "DESCRIPTION" VARCHAR2(4000),
+    "SERIALIZER_CLASS" VARCHAR2(4000),
+    "DESERIALIZER_CLASS" VARCHAR2(4000),
+    "SERDE_TYPE" NUMBER
 );
 
 ALTER TABLE SERDES ADD CONSTRAINT SERDES_PK PRIMARY KEY (SERDE_ID);
@@ -1006,6 +1010,33 @@ CREATE TABLE WRITE_SET (
   WS_TXNID number(19) NOT NULL,
   WS_COMMIT_ID number(19) NOT NULL,
   WS_OPERATION_TYPE char(1) NOT NULL
+);
+
+CREATE TABLE "I_SCHEMA" (
+  "SCHEMA_ID" number primary key,
+  "SCHEMA_TYPE" number not null,
+  "NAME" varchar2(256) unique,
+  "DB_ID" number references "DBS" ("DB_ID"),
+  "COMPATIBILITY" number not null,
+  "VALIDATION_LEVEL" number not null,
+  "CAN_EVOLVE" number(1) not null,
+  "SCHEMA_GROUP" varchar2(256),
+  "DESCRIPTION" varchar2(4000)
+);
+
+CREATE TABLE "SCHEMA_VERSION" (
+  "SCHEMA_VERSION_ID" number primary key,
+  "SCHEMA_ID" number references "I_SCHEMA" ("SCHEMA_ID"),
+  "VERSION" number not null,
+  "CREATED_AT" number not null,
+  "CD_ID" number references "CDS" ("CD_ID"), 
+  "STATE" number not null,
+  "DESCRIPTION" varchar2(4000),
+  "SCHEMA_TEXT" clob,
+  "FINGERPRINT" varchar2(256),
+  "SCHEMA_VERSION_NAME" varchar2(256),
+  "SERDE_ID" number references "SERDES" ("SERDE_ID"), 
+  UNIQUE ("SCHEMA_ID", "VERSION")
 );
 
 -- -----------------------------------------------------------------

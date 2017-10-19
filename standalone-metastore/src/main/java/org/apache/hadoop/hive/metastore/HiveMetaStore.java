@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import javax.jdo.JDOException;
@@ -80,38 +81,52 @@ import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
+import org.apache.hadoop.hive.metastore.events.CreateISchemaEvent;
+import org.apache.hadoop.hive.metastore.events.AddSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
+import org.apache.hadoop.hive.metastore.events.DropISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.DropSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.PreAlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.PreAlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreAuthorizationCallEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.PreCreateISchemaEvent;
+import org.apache.hadoop.hive.metastore.events.PreAddSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.PreDropISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.PreDropSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.events.PreLoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.PreReadISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
+import org.apache.hadoop.hive.metastore.events.PreReadhSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -7329,7 +7344,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-
     @Override
     public WMCreateResourcePlanResponse create_resource_plan(WMCreateResourcePlanRequest request)
         throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
@@ -7480,7 +7494,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         WMGetTriggersForResourePlanRequest request)
         throws NoSuchObjectException, MetaException, TException {
       try {
-        List<WMTrigger> triggers = getMS().getTriggersForResourcePlan(request.getResourcePlanName());
+        List<WMTrigger> triggers =
+            getMS().getTriggersForResourcePlan(request.getResourcePlanName());
         WMGetTriggersForResourePlanResponse response = new WMGetTriggersForResourePlanResponse();
         response.setTriggers(triggers);
         return response;
@@ -7542,18 +7557,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public WMDropMappingResponse drop_wm_mapping(WMDropMappingRequest request)
-        throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
-      try {
-        getMS().dropWMMapping(request.getMapping());
-        return new WMDropMappingResponse();
-      } catch (MetaException e) {
-        LOG.error("Exception while trying to drop WMMapping", e);
-        throw e;
-      }
-    }
-
-    @Override
     public WMCreateOrDropTriggerToPoolMappingResponse create_or_drop_wm_trigger_to_pool_mapping(
         WMCreateOrDropTriggerToPoolMappingRequest request) throws AlreadyExistsException,
         NoSuchObjectException, InvalidObjectException, MetaException, TException {
@@ -7569,6 +7572,453 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } catch (MetaException e) {
         LOG.error("Exception while trying to create or drop pool mappings", e);
         throw e;
+      }
+    }
+
+    @Override
+    public WMDropMappingResponse drop_wm_mapping(WMDropMappingRequest request)
+        throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+      try {
+        getMS().dropWMMapping(request.getMapping());
+        return new WMDropMappingResponse();
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to drop WMMapping", e);
+        throw e;
+      }
+    }
+
+    public void create_ischema(ISchema schema) throws TException {
+      startFunction("create_ischema", ": " + schema.getName());
+      boolean success = false;
+      Exception ex = null;
+      RawStore ms = getMS();
+      try {
+        firePreEvent(new PreCreateISchemaEvent(this, schema));
+        Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+        ms.openTransaction();
+        try {
+          ms.createISchema(schema);
+
+          if (!transactionalListeners.isEmpty()) {
+            transactionalListenersResponses =
+                MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventType.CREATE_ISCHEMA, new CreateISchemaEvent(true, this, schema));
+          }
+          success = ms.commitTransaction();
+        } finally {
+          if (!success) ms.rollbackTransaction();
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners, EventType.CREATE_ISCHEMA,
+                new CreateISchemaEvent(success, this, schema), null,
+                transactionalListenersResponses, ms);
+          }
+        }
+      } catch (MetaException|AlreadyExistsException e) {
+        LOG.error("Caught exception creating schema", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("create_ischema", success, ex);
+      }
+    }
+
+    @Override
+    public void alter_ischema(String schemaName, ISchema newSchema) throws TException {
+      startFunction("alter_ischema", ": " + schemaName);
+      boolean success = false;
+      Exception ex = null;
+      RawStore ms = getMS();
+      try {
+        ISchema oldSchema = ms.getISchema(schemaName);
+        if (oldSchema == null) {
+          throw new NoSuchObjectException("Could not find schema " + schemaName);
+        }
+        firePreEvent(new PreAlterISchemaEvent(this, oldSchema, newSchema));
+        Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+        ms.openTransaction();
+        try {
+          ms.alterISchema(schemaName, newSchema);
+          if (!transactionalListeners.isEmpty()) {
+            transactionalListenersResponses =
+                MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventType.ALTER_ISCHEMA, new AlterISchemaEvent(true, this, oldSchema, newSchema));
+          }
+          success = ms.commitTransaction();
+        } finally {
+          if (!success) ms.rollbackTransaction();
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALTER_ISCHEMA,
+                new AlterISchemaEvent(success, this, oldSchema, newSchema), null,
+                transactionalListenersResponses, ms);
+          }
+        }
+      } catch (MetaException|NoSuchObjectException e) {
+        LOG.error("Caught exception altering schema", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("alter_ischema", success, ex);
+      }
+    }
+
+    @Override
+    public ISchema get_ischema(String schemaName) throws TException {
+      startFunction("get_ischema", ": " + schemaName);
+      Exception ex = null;
+      ISchema schema = null;
+      try {
+        schema = getMS().getISchema(schemaName);
+        if (schema == null) {
+          throw new NoSuchObjectException("No schema named " + schemaName + " exists");
+        }
+        firePreEvent(new PreReadISchemaEvent(this, schema));
+        return schema;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting schema", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_ischema", schema != null, ex);
+      }
+    }
+
+    @Override
+    public void drop_ischema(String schemaName) throws TException {
+      startFunction("drop_ischema", ": " + schemaName);
+      Exception ex = null;
+      boolean success = false;
+      RawStore ms = getMS();
+      try {
+        // look for any valid versions.  This will also throw NoSuchObjectException if the schema
+        // itself doesn't exist, which is what we want.
+        SchemaVersion latest = ms.getLatestSchemaVersion(schemaName);
+        if (latest != null) {
+          ex = new InvalidOperationException("Schema " + schemaName + " cannot be dropped, it has" +
+              " at least one valid version");
+          throw (InvalidObjectException)ex;
+        }
+        ISchema schema = ms.getISchema(schemaName);
+        firePreEvent(new PreDropISchemaEvent(this, schema));
+        Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+        ms.openTransaction();
+        try {
+          ms.dropISchema(schemaName);
+          if (!transactionalListeners.isEmpty()) {
+            transactionalListenersResponses =
+                MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventType.DROP_ISCHEMA, new DropISchemaEvent(true, this, schema));
+          }
+          success = ms.commitTransaction();
+        } finally {
+          if (!success) ms.rollbackTransaction();
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners, EventType.DROP_ISCHEMA,
+                new DropISchemaEvent(success, this, schema), null,
+                transactionalListenersResponses, ms);
+          }
+        }
+      } catch (MetaException|NoSuchObjectException e) {
+        LOG.error("Caught exception dropping schema", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("drop_ischema", success, ex);
+      }
+    }
+
+    @Override
+    public void add_schema_version(SchemaVersion schemaVersion) throws TException {
+      startFunction("add_schema_version", ": " + schemaVersion.getSchemaName() + ", " +
+          schemaVersion.getVersion());
+      boolean success = false;
+      Exception ex = null;
+      RawStore ms = getMS();
+      try {
+        // Make sure the referenced schema exists
+        if (ms.getISchema(schemaVersion.getSchemaName()) == null) {
+          throw new NoSuchObjectException("No schema named " + schemaVersion.getSchemaName());
+        }
+        firePreEvent(new PreAddSchemaVersionEvent(this, schemaVersion));
+        Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+        ms.openTransaction();
+        try {
+          ms.addSchemaVersion(schemaVersion);
+
+          if (!transactionalListeners.isEmpty()) {
+            transactionalListenersResponses =
+                MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventType.ADD_SCHEMA_VERSION, new AddSchemaVersionEvent(true, this, schemaVersion));
+          }
+          success = ms.commitTransaction();
+        } finally {
+          if (!success) ms.rollbackTransaction();
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_SCHEMA_VERSION,
+                new AddSchemaVersionEvent(success, this, schemaVersion), null,
+                transactionalListenersResponses, ms);
+          }
+        }
+      } catch (MetaException|AlreadyExistsException e) {
+        LOG.error("Caught exception adding schema version", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("add_schema_version", success, ex);
+      }
+    }
+
+    @Override
+    public SchemaVersion get_schema_version(String schemaName, int version) throws TException {
+      startFunction("get_schema_version", ": " + schemaName);
+      Exception ex = null;
+      SchemaVersion schemaVersion = null;
+      try {
+        schemaVersion = getMS().getSchemaVersion(schemaName, version);
+        if (schemaVersion == null) {
+          throw new NoSuchObjectException("No schema " + schemaName + " with version " + version
+              + "exists");
+        }
+        firePreEvent(new PreReadhSchemaVersionEvent(this, Collections.singletonList(schemaVersion)));
+        return schemaVersion;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting schema version", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_schema_version", schemaVersion != null, ex);
+      }
+    }
+
+    @Override
+    public SchemaVersion get_schema_latest_version(String schemaName) throws TException {
+      startFunction("get_latest_schema_version", ": " + schemaName);
+      Exception ex = null;
+      SchemaVersion schemaVersion = null;
+      try {
+        schemaVersion = getMS().getLatestSchemaVersion(schemaName);
+        if (schemaVersion == null) {
+          throw new NoSuchObjectException("No versions of schema " + schemaName + "exist");
+        }
+        firePreEvent(new PreReadhSchemaVersionEvent(this, Collections.singletonList(schemaVersion)));
+        return schemaVersion;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting latest schema version", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_latest_schema_version", schemaVersion != null, ex);
+      }
+    }
+
+    @Override
+    public List<SchemaVersion> get_schema_all_versions(String schemaName) throws TException {
+      startFunction("get_all_schema_versions", ": " + schemaName);
+      Exception ex = null;
+      List<SchemaVersion> schemaVersions = null;
+      try {
+        schemaVersions = getMS().getAllSchemaVersion(schemaName);
+        if (schemaVersions == null) {
+          throw new NoSuchObjectException("No versions of schema " + schemaName + "exist");
+        }
+        firePreEvent(new PreReadhSchemaVersionEvent(this, schemaVersions));
+        return schemaVersions;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting all schema versions", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_all_schema_versions", schemaVersions != null, ex);
+      }
+    }
+
+    @Override
+    public void drop_schema_version(String schemaName, int version) throws TException {
+      startFunction("drop_schema_version", ": " + schemaName);
+      Exception ex = null;
+      boolean success = false;
+      RawStore ms = getMS();
+      try {
+        SchemaVersion schemaVersion = ms.getSchemaVersion(schemaName, version);
+        if (schemaVersion == null) {
+          throw new NoSuchObjectException("No schema " + schemaName + " of version " + version);
+        }
+        firePreEvent(new PreDropSchemaVersionEvent(this, schemaVersion));
+        Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+        ms.openTransaction();
+        try {
+          ms.dropSchemaVersion(schemaName, version);
+          if (!transactionalListeners.isEmpty()) {
+            transactionalListenersResponses =
+                MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventType.DROP_SCHEMA_VERSION, new DropSchemaVersionEvent(true, this, schemaVersion));
+          }
+          success = ms.commitTransaction();
+        } finally {
+          if (!success) ms.rollbackTransaction();
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners, EventType.DROP_SCHEMA_VERSION,
+                new DropSchemaVersionEvent(success, this, schemaVersion), null,
+                transactionalListenersResponses, ms);
+          }
+        }
+      } catch (MetaException|NoSuchObjectException e) {
+        LOG.error("Caught exception dropping schema version", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("drop_schema_version", success, ex);
+      }
+    }
+
+    @Override
+    public FindSchemasByColsResp get_schemas_by_cols(FindSchemasByColsRqst rqst) throws TException {
+      startFunction("get_schemas_by_cols");
+      Exception ex = null;
+      List<SchemaVersion> schemaVersions = Collections.emptyList();
+      try {
+        schemaVersions = getMS().getSchemaVersionsByColumns(rqst.getColName(),
+            rqst.getColNamespace(), rqst.getType());
+        firePreEvent(new PreReadhSchemaVersionEvent(this, schemaVersions));
+        final List<FindSchemasByColsRespEntry> entries = new ArrayList<>(schemaVersions.size());
+        schemaVersions.forEach(schemaVersion -> entries.add(
+            new FindSchemasByColsRespEntry(schemaVersion.getSchemaName(), schemaVersion.getVersion())));
+        return new FindSchemasByColsResp(entries);
+      } catch (MetaException e) {
+        LOG.error("Caught exception doing schema version query", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_schemas_by_cols", !schemaVersions.isEmpty(), ex);
+      }
+    }
+
+    @Override
+    public void map_schema_version_to_serde(String schemaName, int version, String serdeName)
+        throws TException {
+      startFunction("map_schema_version_to_serde");
+      boolean success = false;
+      Exception ex = null;
+      RawStore ms = getMS();
+      try {
+        SchemaVersion oldSchemaVersion = ms.getSchemaVersion(schemaName, version);
+        if (oldSchemaVersion == null) {
+          throw new NoSuchObjectException("No schema " + schemaName + " of version " + version);
+        }
+        SerDeInfo serde = ms.getSerDeInfo(serdeName);
+        if (serde == null) {
+          throw new NoSuchObjectException("No SerDe named " + serdeName);
+        }
+        SchemaVersion newSchemaVersion = new SchemaVersion(oldSchemaVersion);
+        newSchemaVersion.setSerDe(serde);
+        firePreEvent(new PreAlterSchemaVersionEvent(this, oldSchemaVersion, newSchemaVersion));
+        Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+        ms.openTransaction();
+        try {
+          ms.alterSchemaVersion(schemaName, version, newSchemaVersion);
+          if (!transactionalListeners.isEmpty()) {
+            transactionalListenersResponses =
+                MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventType.ALTER_SCHEMA_VERSION, new AlterSchemaVersionEvent(true, this,
+                        oldSchemaVersion, newSchemaVersion));
+          }
+          success = ms.commitTransaction();
+        } finally {
+          if (!success) ms.rollbackTransaction();
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALTER_SCHEMA_VERSION,
+                new AlterSchemaVersionEvent(success, this, oldSchemaVersion, newSchemaVersion), null,
+                transactionalListenersResponses, ms);
+          }
+        }
+      } catch (MetaException|NoSuchObjectException e) {
+        LOG.error("Caught exception mapping schema version to serde", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("map_schema_version_to_serde", success, ex);
+      }
+    }
+
+    @Override
+    public void set_schema_version_state(String schemaName, int version,
+                                         SchemaVersionState state) throws TException {
+      startFunction("set_schema_version_state");
+      boolean success = false;
+      Exception ex = null;
+      RawStore ms = getMS();
+      try {
+        SchemaVersion oldSchemaVersion = ms.getSchemaVersion(schemaName, version);
+        if (oldSchemaVersion == null) {
+          throw new NoSuchObjectException("No schema " + schemaName + " of version " + version);
+        }
+        SchemaVersion newSchemaVersion = new SchemaVersion(oldSchemaVersion);
+        newSchemaVersion.setState(state);
+        firePreEvent(new PreAlterSchemaVersionEvent(this, oldSchemaVersion, newSchemaVersion));
+        Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+        ms.openTransaction();
+        try {
+          ms.alterSchemaVersion(schemaName, version, newSchemaVersion);
+          if (!transactionalListeners.isEmpty()) {
+            transactionalListenersResponses =
+                MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventType.ALTER_SCHEMA_VERSION, new AlterSchemaVersionEvent(true, this,
+                        oldSchemaVersion, newSchemaVersion));
+          }
+          success = ms.commitTransaction();
+        } finally {
+          if (!success) ms.rollbackTransaction();
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALTER_SCHEMA_VERSION,
+                new AlterSchemaVersionEvent(success, this, oldSchemaVersion, newSchemaVersion), null,
+                transactionalListenersResponses, ms);
+          }
+        }
+      } catch (MetaException|NoSuchObjectException e) {
+        LOG.error("Caught exception changing schema version state", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("set_schema_version_state", success, ex);
+      }
+    }
+
+    @Override
+    public void add_serde(SerDeInfo serde) throws TException {
+      startFunction("create_serde", ": " + serde.getName());
+      Exception ex = null;
+      boolean success = false;
+      RawStore ms = getMS();
+      try {
+        ms.openTransaction();
+        ms.addSerde(serde);
+        success = ms.commitTransaction();
+      } catch (MetaException|AlreadyExistsException e) {
+        LOG.error("Caught exception creating serde", e);
+        ex = e;
+        throw e;
+      } finally {
+        if (!success) ms.rollbackTransaction();
+        endFunction("create_serde", success, ex);
+      }
+    }
+
+    @Override
+    public SerDeInfo get_serde(String serdeName) throws TException {
+      startFunction("get_serde", ": " + serdeName);
+      Exception ex = null;
+      SerDeInfo serde = null;
+      try {
+        serde = getMS().getSerDeInfo(serdeName);
+        if (serde == null) {
+          throw new NoSuchObjectException("No serde named " + serdeName + " exists");
+        }
+        return serde;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting serde", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_serde", serde != null, ex);
       }
     }
   }

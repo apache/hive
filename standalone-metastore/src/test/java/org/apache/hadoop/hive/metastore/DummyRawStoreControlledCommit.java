@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.ISchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -64,6 +65,8 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -1056,5 +1059,75 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName,
       String poolPath) throws NoSuchObjectException, InvalidOperationException, MetaException {
     objectStore.dropWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath);
+  }
+
+  public void createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
+      NoSuchObjectException {
+    objectStore.createISchema(schema);
+  }
+
+  @Override
+  public void alterISchema(String schemaName, ISchema newSchema) throws NoSuchObjectException,
+      MetaException {
+    objectStore.alterISchema(schemaName, newSchema);
+  }
+
+  @Override
+  public ISchema getISchema(String schemaName) throws MetaException {
+    return objectStore.getISchema(schemaName);
+  }
+
+  @Override
+  public void dropISchema(String schemaName) throws NoSuchObjectException, MetaException {
+    objectStore.dropISchema(schemaName);
+  }
+
+  @Override
+  public void addSchemaVersion(SchemaVersion schemaVersion) throws
+      AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException {
+    objectStore.addSchemaVersion(schemaVersion);
+  }
+
+  @Override
+  public void alterSchemaVersion(String schemaName, int version, SchemaVersion newVersion) throws
+      NoSuchObjectException, MetaException {
+    objectStore.alterSchemaVersion(schemaName, version, newVersion);
+  }
+
+  @Override
+  public SchemaVersion getSchemaVersion(String schemaName, int version) throws MetaException {
+    return objectStore.getSchemaVersion(schemaName, version);
+  }
+
+  @Override
+  public SchemaVersion getLatestSchemaVersion(String schemaName) throws MetaException {
+    return objectStore.getLatestSchemaVersion(schemaName);
+  }
+
+  @Override
+  public List<SchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException {
+    return objectStore.getAllSchemaVersion(schemaName);
+  }
+
+  @Override
+  public List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
+                                                        String type) throws MetaException {
+    return objectStore.getSchemaVersionsByColumns(colName, colNamespace, type);
+  }
+
+  @Override
+  public void dropSchemaVersion(String schemaName, int version) throws NoSuchObjectException,
+      MetaException {
+    objectStore.dropSchemaVersion(schemaName, version);
+  }
+
+  @Override
+  public SerDeInfo getSerDeInfo(String serDeName) throws NoSuchObjectException, MetaException {
+    return objectStore.getSerDeInfo(serDeName);
+  }
+
+  @Override
+  public void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException {
+    objectStore.addSerde(serde);
   }
 }
