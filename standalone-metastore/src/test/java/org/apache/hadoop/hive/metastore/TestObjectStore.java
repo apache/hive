@@ -26,7 +26,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
@@ -50,7 +49,6 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -93,36 +91,6 @@ public class TestObjectStore {
     @Override
     public Long get() {
       return value;
-    }
-  }
-
-  public static class MockPartitionExpressionProxy implements PartitionExpressionProxy {
-    @Override
-    public String convertExprToFilter(byte[] expr) throws MetaException {
-      return null;
-    }
-
-    @Override
-    public boolean filterPartitionsByExpr(List<FieldSchema> partColumns,
-                                          byte[] expr, String defaultPartitionName,
-                                          List<String> partitionNames)
-        throws MetaException {
-      return false;
-    }
-
-    @Override
-    public FileMetadataExprType getMetadataType(String inputFormat) {
-      return null;
-    }
-
-    @Override
-    public SearchArgument createSarg(byte[] expr) {
-      return null;
-    }
-
-    @Override
-    public FileFormatProxy getFileFormatProxy(FileMetadataExprType type) {
-      return null;
     }
   }
 

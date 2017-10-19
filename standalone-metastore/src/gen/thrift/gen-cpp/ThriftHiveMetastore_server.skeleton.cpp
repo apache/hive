@@ -927,6 +927,76 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("create_or_drop_wm_trigger_to_pool_mapping\n");
   }
 
+  void create_ischema(const ISchema& schema) {
+    // Your implementation goes here
+    printf("create_ischema\n");
+  }
+
+  void alter_ischema(const std::string& schemaName, const ISchema& newSchema) {
+    // Your implementation goes here
+    printf("alter_ischema\n");
+  }
+
+  void get_ischema(ISchema& _return, const std::string& schemaName) {
+    // Your implementation goes here
+    printf("get_ischema\n");
+  }
+
+  void drop_ischema(const std::string& schemaName) {
+    // Your implementation goes here
+    printf("drop_ischema\n");
+  }
+
+  void add_schema_version(const SchemaVersion& schemaVersion) {
+    // Your implementation goes here
+    printf("add_schema_version\n");
+  }
+
+  void get_schema_version(SchemaVersion& _return, const std::string& schemaName, const int32_t version) {
+    // Your implementation goes here
+    printf("get_schema_version\n");
+  }
+
+  void get_schema_latest_version(SchemaVersion& _return, const std::string& schemaName) {
+    // Your implementation goes here
+    printf("get_schema_latest_version\n");
+  }
+
+  void get_schema_all_versions(std::vector<SchemaVersion> & _return, const std::string& schemaName) {
+    // Your implementation goes here
+    printf("get_schema_all_versions\n");
+  }
+
+  void drop_schema_version(const std::string& schemaName, const int32_t version) {
+    // Your implementation goes here
+    printf("drop_schema_version\n");
+  }
+
+  void get_schemas_by_cols(FindSchemasByColsResp& _return, const FindSchemasByColsRqst& rqst) {
+    // Your implementation goes here
+    printf("get_schemas_by_cols\n");
+  }
+
+  void map_schema_version_to_serde(const std::string& schemaName, const int32_t version, const std::string& serdeName) {
+    // Your implementation goes here
+    printf("map_schema_version_to_serde\n");
+  }
+
+  void set_schema_version_state(const std::string& schemaName, const int32_t version, const SchemaVersionState::type state) {
+    // Your implementation goes here
+    printf("set_schema_version_state\n");
+  }
+
+  void add_serde(const SerDeInfo& serde) {
+    // Your implementation goes here
+    printf("add_serde\n");
+  }
+
+  void get_serde(SerDeInfo& _return, const std::string& serdeName) {
+    // Your implementation goes here
+    printf("get_serde\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

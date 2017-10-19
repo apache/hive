@@ -270,6 +270,18 @@
            <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
         </value>
       </field>
+      <field name="description">
+        <column name="DESCRIPTION" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+      <field name="serializerClass">
+        <column name="SERIALIZER_CLASS" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+      <field name="deserializerClass">
+        <column name="DESERIALIZER_CLASS" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+      <field name="serdeType">
+        <column name="SERDE_TYPE" jdbc-type="integer" allows-null="true"/>
+      </field>
     </class>
 
     <class name="MOrder" embedded-only="true" table="SORT_ORDER" detachable="true">
@@ -1223,6 +1235,71 @@
       </index>
     </class>
 
+    <class name="MISchema" identity-type="datastore" table="I_SCHEMA" detachable="true">
+      <datastore-identity>
+        <column name="SCHEMA_ID"/>
+      </datastore-identity>
+      <field name="schemaType">
+        <column name="SCHEMA_TYPE" jdbc-type="integer"/>
+      </field>
+      <field name="name">
+        <column name="NAME" jdbc-type="varchar" length="256"/>
+      </field>
+      <field name="db">
+        <column name="DB_ID"/>
+      </field>
+      <field name="compatibility">
+        <column name="COMPATIBILITY" jdbc-type="integer"/>
+      </field>
+      <field name="validationLevel">
+        <column name="VALIDATION_LEVEL" jdbc-type="integer"/>
+      </field>
+      <field name="canEvolve">
+        <column name="CAN_EVOLVE"/>
+      </field>
+      <field name="schemaGroup">
+        <column name="SCHEMA_GROUP" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="description">
+        <column name="DESCRIPTION" jdbc-type="varchar" length="4000" allows-null="true"/>
+      </field>
+    </class>
+
+    <class name="MSchemaVersion" identity-type="datastore" table="SCHEMA_VERSION" detachable="true">
+      <datastore-identity>
+        <column name="SCHEMA_VERSION_ID"/>
+      </datastore-identity>
+      <field name="iSchema">
+        <column name="SCHEMA_ID"/>
+      </field>
+      <field name="version">
+        <column name="VERSION" jdbc-type="integer"/>
+      </field>
+      <field name="createdAt">
+        <column name="CREATED_AT" jdbc-type="bigint"/>
+      </field>
+      <field name="cols">
+          <column name="CD_ID"/>
+      </field>
+      <field name="state">
+        <column name="STATE" jdbc-type="integer"/>
+      </field>
+      <field name="description">
+        <column name="DESCRIPTION" jdbc-type="varchar" length="4000" allows-null="true"/>
+      </field>
+      <field name="schemaText" default-fetch-group="false">
+        <column name="SCHEMA_TEXT" jdbc-type="LONGVARCHAR"/>
+      </field>
+      <field name="fingerprint">
+        <column name="FINGERPRINT" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="name">
+        <column name="SCHEMA_VERSION_NAME" jdbc-type="varchar" length="256" allows-null="true"/>
+      </field>
+      <field name="serDe">
+        <column name="SERDE_ID"/>
+      </field>
+    </class>
   </package>
 </jdo>
 

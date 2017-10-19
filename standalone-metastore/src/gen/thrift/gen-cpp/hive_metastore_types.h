@@ -132,6 +132,59 @@ struct EventRequestType {
 
 extern const std::map<int, const char*> _EventRequestType_VALUES_TO_NAMES;
 
+struct SerdeType {
+  enum type {
+    HIVE = 1,
+    SCHEMA_REGISTRY = 2
+  };
+};
+
+extern const std::map<int, const char*> _SerdeType_VALUES_TO_NAMES;
+
+struct SchemaType {
+  enum type {
+    HIVE = 1,
+    AVRO = 2
+  };
+};
+
+extern const std::map<int, const char*> _SchemaType_VALUES_TO_NAMES;
+
+struct SchemaCompatibility {
+  enum type {
+    NONE = 1,
+    BACKWARD = 2,
+    FORWARD = 3,
+    BOTH = 4
+  };
+};
+
+extern const std::map<int, const char*> _SchemaCompatibility_VALUES_TO_NAMES;
+
+struct SchemaValidation {
+  enum type {
+    LATEST = 1,
+    ALL = 2
+  };
+};
+
+extern const std::map<int, const char*> _SchemaValidation_VALUES_TO_NAMES;
+
+struct SchemaVersionState {
+  enum type {
+    INITIATED = 1,
+    START_REVIEW = 2,
+    CHANGES_REQUIRED = 3,
+    REVIEWED = 4,
+    ENABLED = 5,
+    DISABLED = 6,
+    ARCHIVED = 7,
+    DELETED = 8
+  };
+};
+
+extern const std::map<int, const char*> _SchemaVersionState_VALUES_TO_NAMES;
+
 struct FunctionType {
   enum type {
     JAVA = 1
@@ -547,6 +600,16 @@ class WMDropMappingResponse;
 class WMCreateOrDropTriggerToPoolMappingRequest;
 
 class WMCreateOrDropTriggerToPoolMappingResponse;
+
+class ISchema;
+
+class SchemaVersion;
+
+class FindSchemasByColsRqst;
+
+class FindSchemasByColsRespEntry;
+
+class FindSchemasByColsResp;
 
 class MetaException;
 
@@ -2088,10 +2151,14 @@ inline std::ostream& operator<<(std::ostream& out, const Database& obj)
 }
 
 typedef struct _SerDeInfo__isset {
-  _SerDeInfo__isset() : name(false), serializationLib(false), parameters(false) {}
+  _SerDeInfo__isset() : name(false), serializationLib(false), parameters(false), description(false), serializerClass(false), deserializerClass(false), serdeType(false) {}
   bool name :1;
   bool serializationLib :1;
   bool parameters :1;
+  bool description :1;
+  bool serializerClass :1;
+  bool deserializerClass :1;
+  bool serdeType :1;
 } _SerDeInfo__isset;
 
 class SerDeInfo {
@@ -2099,13 +2166,17 @@ class SerDeInfo {
 
   SerDeInfo(const SerDeInfo&);
   SerDeInfo& operator=(const SerDeInfo&);
-  SerDeInfo() : name(), serializationLib() {
+  SerDeInfo() : name(), serializationLib(), description(), serializerClass(), deserializerClass(), serdeType((SerdeType::type)0) {
   }
 
   virtual ~SerDeInfo() throw();
   std::string name;
   std::string serializationLib;
   std::map<std::string, std::string>  parameters;
+  std::string description;
+  std::string serializerClass;
+  std::string deserializerClass;
+  SerdeType::type serdeType;
 
   _SerDeInfo__isset __isset;
 
@@ -2115,6 +2186,14 @@ class SerDeInfo {
 
   void __set_parameters(const std::map<std::string, std::string> & val);
 
+  void __set_description(const std::string& val);
+
+  void __set_serializerClass(const std::string& val);
+
+  void __set_deserializerClass(const std::string& val);
+
+  void __set_serdeType(const SerdeType::type val);
+
   bool operator == (const SerDeInfo & rhs) const
   {
     if (!(name == rhs.name))
@@ -2122,6 +2201,22 @@ class SerDeInfo {
     if (!(serializationLib == rhs.serializationLib))
       return false;
     if (!(parameters == rhs.parameters))
+      return false;
+    if (__isset.description != rhs.__isset.description)
+      return false;
+    else if (__isset.description && !(description == rhs.description))
+      return false;
+    if (__isset.serializerClass != rhs.__isset.serializerClass)
+      return false;
+    else if (__isset.serializerClass && !(serializerClass == rhs.serializerClass))
+      return false;
+    if (__isset.deserializerClass != rhs.__isset.deserializerClass)
+      return false;
+    else if (__isset.deserializerClass && !(deserializerClass == rhs.deserializerClass))
+      return false;
+    if (__isset.serdeType != rhs.__isset.serdeType)
+      return false;
+    else if (__isset.serdeType && !(serdeType == rhs.serdeType))
       return false;
     return true;
   }
@@ -10893,6 +10988,372 @@ class WMCreateOrDropTriggerToPoolMappingResponse {
 void swap(WMCreateOrDropTriggerToPoolMappingResponse &a, WMCreateOrDropTriggerToPoolMappingResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const WMCreateOrDropTriggerToPoolMappingResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ISchema__isset {
+  _ISchema__isset() : schemaType(false), name(false), dbName(false), compatibility(false), validationLevel(false), canEvolve(false), schemaGroup(false), description(false) {}
+  bool schemaType :1;
+  bool name :1;
+  bool dbName :1;
+  bool compatibility :1;
+  bool validationLevel :1;
+  bool canEvolve :1;
+  bool schemaGroup :1;
+  bool description :1;
+} _ISchema__isset;
+
+class ISchema {
+ public:
+
+  ISchema(const ISchema&);
+  ISchema& operator=(const ISchema&);
+  ISchema() : schemaType((SchemaType::type)0), name(), dbName(), compatibility((SchemaCompatibility::type)0), validationLevel((SchemaValidation::type)0), canEvolve(0), schemaGroup(), description() {
+  }
+
+  virtual ~ISchema() throw();
+  SchemaType::type schemaType;
+  std::string name;
+  std::string dbName;
+  SchemaCompatibility::type compatibility;
+  SchemaValidation::type validationLevel;
+  bool canEvolve;
+  std::string schemaGroup;
+  std::string description;
+
+  _ISchema__isset __isset;
+
+  void __set_schemaType(const SchemaType::type val);
+
+  void __set_name(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_compatibility(const SchemaCompatibility::type val);
+
+  void __set_validationLevel(const SchemaValidation::type val);
+
+  void __set_canEvolve(const bool val);
+
+  void __set_schemaGroup(const std::string& val);
+
+  void __set_description(const std::string& val);
+
+  bool operator == (const ISchema & rhs) const
+  {
+    if (!(schemaType == rhs.schemaType))
+      return false;
+    if (!(name == rhs.name))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(compatibility == rhs.compatibility))
+      return false;
+    if (!(validationLevel == rhs.validationLevel))
+      return false;
+    if (!(canEvolve == rhs.canEvolve))
+      return false;
+    if (__isset.schemaGroup != rhs.__isset.schemaGroup)
+      return false;
+    else if (__isset.schemaGroup && !(schemaGroup == rhs.schemaGroup))
+      return false;
+    if (__isset.description != rhs.__isset.description)
+      return false;
+    else if (__isset.description && !(description == rhs.description))
+      return false;
+    return true;
+  }
+  bool operator != (const ISchema &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ISchema & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ISchema &a, ISchema &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ISchema& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _SchemaVersion__isset {
+  _SchemaVersion__isset() : schemaName(false), version(false), createdAt(false), cols(false), state(false), description(false), schemaText(false), fingerprint(false), name(false), serDe(false) {}
+  bool schemaName :1;
+  bool version :1;
+  bool createdAt :1;
+  bool cols :1;
+  bool state :1;
+  bool description :1;
+  bool schemaText :1;
+  bool fingerprint :1;
+  bool name :1;
+  bool serDe :1;
+} _SchemaVersion__isset;
+
+class SchemaVersion {
+ public:
+
+  SchemaVersion(const SchemaVersion&);
+  SchemaVersion& operator=(const SchemaVersion&);
+  SchemaVersion() : schemaName(), version(0), createdAt(0), state((SchemaVersionState::type)0), description(), schemaText(), fingerprint(), name() {
+  }
+
+  virtual ~SchemaVersion() throw();
+  std::string schemaName;
+  int32_t version;
+  int64_t createdAt;
+  std::vector<FieldSchema>  cols;
+  SchemaVersionState::type state;
+  std::string description;
+  std::string schemaText;
+  std::string fingerprint;
+  std::string name;
+  SerDeInfo serDe;
+
+  _SchemaVersion__isset __isset;
+
+  void __set_schemaName(const std::string& val);
+
+  void __set_version(const int32_t val);
+
+  void __set_createdAt(const int64_t val);
+
+  void __set_cols(const std::vector<FieldSchema> & val);
+
+  void __set_state(const SchemaVersionState::type val);
+
+  void __set_description(const std::string& val);
+
+  void __set_schemaText(const std::string& val);
+
+  void __set_fingerprint(const std::string& val);
+
+  void __set_name(const std::string& val);
+
+  void __set_serDe(const SerDeInfo& val);
+
+  bool operator == (const SchemaVersion & rhs) const
+  {
+    if (!(schemaName == rhs.schemaName))
+      return false;
+    if (!(version == rhs.version))
+      return false;
+    if (!(createdAt == rhs.createdAt))
+      return false;
+    if (!(cols == rhs.cols))
+      return false;
+    if (__isset.state != rhs.__isset.state)
+      return false;
+    else if (__isset.state && !(state == rhs.state))
+      return false;
+    if (__isset.description != rhs.__isset.description)
+      return false;
+    else if (__isset.description && !(description == rhs.description))
+      return false;
+    if (__isset.schemaText != rhs.__isset.schemaText)
+      return false;
+    else if (__isset.schemaText && !(schemaText == rhs.schemaText))
+      return false;
+    if (__isset.fingerprint != rhs.__isset.fingerprint)
+      return false;
+    else if (__isset.fingerprint && !(fingerprint == rhs.fingerprint))
+      return false;
+    if (__isset.name != rhs.__isset.name)
+      return false;
+    else if (__isset.name && !(name == rhs.name))
+      return false;
+    if (__isset.serDe != rhs.__isset.serDe)
+      return false;
+    else if (__isset.serDe && !(serDe == rhs.serDe))
+      return false;
+    return true;
+  }
+  bool operator != (const SchemaVersion &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SchemaVersion & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SchemaVersion &a, SchemaVersion &b);
+
+inline std::ostream& operator<<(std::ostream& out, const SchemaVersion& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _FindSchemasByColsRqst__isset {
+  _FindSchemasByColsRqst__isset() : colName(false), colNamespace(false), type(false) {}
+  bool colName :1;
+  bool colNamespace :1;
+  bool type :1;
+} _FindSchemasByColsRqst__isset;
+
+class FindSchemasByColsRqst {
+ public:
+
+  FindSchemasByColsRqst(const FindSchemasByColsRqst&);
+  FindSchemasByColsRqst& operator=(const FindSchemasByColsRqst&);
+  FindSchemasByColsRqst() : colName(), colNamespace(), type() {
+  }
+
+  virtual ~FindSchemasByColsRqst() throw();
+  std::string colName;
+  std::string colNamespace;
+  std::string type;
+
+  _FindSchemasByColsRqst__isset __isset;
+
+  void __set_colName(const std::string& val);
+
+  void __set_colNamespace(const std::string& val);
+
+  void __set_type(const std::string& val);
+
+  bool operator == (const FindSchemasByColsRqst & rhs) const
+  {
+    if (__isset.colName != rhs.__isset.colName)
+      return false;
+    else if (__isset.colName && !(colName == rhs.colName))
+      return false;
+    if (__isset.colNamespace != rhs.__isset.colNamespace)
+      return false;
+    else if (__isset.colNamespace && !(colNamespace == rhs.colNamespace))
+      return false;
+    if (__isset.type != rhs.__isset.type)
+      return false;
+    else if (__isset.type && !(type == rhs.type))
+      return false;
+    return true;
+  }
+  bool operator != (const FindSchemasByColsRqst &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FindSchemasByColsRqst & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FindSchemasByColsRqst &a, FindSchemasByColsRqst &b);
+
+inline std::ostream& operator<<(std::ostream& out, const FindSchemasByColsRqst& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _FindSchemasByColsRespEntry__isset {
+  _FindSchemasByColsRespEntry__isset() : schemaName(false), version(false) {}
+  bool schemaName :1;
+  bool version :1;
+} _FindSchemasByColsRespEntry__isset;
+
+class FindSchemasByColsRespEntry {
+ public:
+
+  FindSchemasByColsRespEntry(const FindSchemasByColsRespEntry&);
+  FindSchemasByColsRespEntry& operator=(const FindSchemasByColsRespEntry&);
+  FindSchemasByColsRespEntry() : schemaName(), version(0) {
+  }
+
+  virtual ~FindSchemasByColsRespEntry() throw();
+  std::string schemaName;
+  int32_t version;
+
+  _FindSchemasByColsRespEntry__isset __isset;
+
+  void __set_schemaName(const std::string& val);
+
+  void __set_version(const int32_t val);
+
+  bool operator == (const FindSchemasByColsRespEntry & rhs) const
+  {
+    if (!(schemaName == rhs.schemaName))
+      return false;
+    if (!(version == rhs.version))
+      return false;
+    return true;
+  }
+  bool operator != (const FindSchemasByColsRespEntry &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FindSchemasByColsRespEntry & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FindSchemasByColsRespEntry &a, FindSchemasByColsRespEntry &b);
+
+inline std::ostream& operator<<(std::ostream& out, const FindSchemasByColsRespEntry& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _FindSchemasByColsResp__isset {
+  _FindSchemasByColsResp__isset() : schemaVersions(false) {}
+  bool schemaVersions :1;
+} _FindSchemasByColsResp__isset;
+
+class FindSchemasByColsResp {
+ public:
+
+  FindSchemasByColsResp(const FindSchemasByColsResp&);
+  FindSchemasByColsResp& operator=(const FindSchemasByColsResp&);
+  FindSchemasByColsResp() {
+  }
+
+  virtual ~FindSchemasByColsResp() throw();
+  std::vector<FindSchemasByColsRespEntry>  schemaVersions;
+
+  _FindSchemasByColsResp__isset __isset;
+
+  void __set_schemaVersions(const std::vector<FindSchemasByColsRespEntry> & val);
+
+  bool operator == (const FindSchemasByColsResp & rhs) const
+  {
+    if (!(schemaVersions == rhs.schemaVersions))
+      return false;
+    return true;
+  }
+  bool operator != (const FindSchemasByColsResp &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FindSchemasByColsResp & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FindSchemasByColsResp &a, FindSchemasByColsResp &b);
+
+inline std::ostream& operator<<(std::ostream& out, const FindSchemasByColsResp& obj)
 {
   obj.printTo(out);
   return out;

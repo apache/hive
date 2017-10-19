@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.ISchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -64,6 +65,8 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -1049,6 +1052,75 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName,
       String poolPath) throws NoSuchObjectException, InvalidOperationException, MetaException {
+
+  }
+
+  public void createISchema(ISchema schema) throws AlreadyExistsException, MetaException {
+
+  }
+
+  @Override
+  public void alterISchema(String schemaName, ISchema newSchema) throws NoSuchObjectException,
+      MetaException {
+
+  }
+
+  @Override
+  public ISchema getISchema(String schemaName) throws MetaException {
+    return null;
+  }
+
+  public void dropISchema(String schemaName) throws NoSuchObjectException, MetaException {
+
+  }
+
+  @Override
+  public void addSchemaVersion(SchemaVersion schemaVersion) throws
+      AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException {
+
+  }
+
+  @Override
+  public void alterSchemaVersion(String schemaName, int version, SchemaVersion newVersion) throws
+      NoSuchObjectException, MetaException {
+
+  }
+
+  @Override
+  public SchemaVersion getSchemaVersion(String schemaName, int version) throws MetaException {
+    return null;
+  }
+
+  @Override
+  public SchemaVersion getLatestSchemaVersion(String schemaName) throws MetaException {
+    return null;
+  }
+
+  @Override
+  public List<SchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException {
+    return null;
+  }
+
+  @Override
+  public List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
+                                                        String type) throws MetaException {
+    return null;
+  }
+
+  @Override
+  public void dropSchemaVersion(String schemaName, int version) throws NoSuchObjectException,
+      MetaException {
+
+  }
+
+  @Override
+  public SerDeInfo getSerDeInfo(String serDeName) throws MetaException {
+    return null;
+  }
+
+  @Override
+  public void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException {
+
   }
 
   @Override
