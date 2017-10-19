@@ -52,7 +52,10 @@ import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
+import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
+import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
@@ -81,6 +84,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   private final ImmutableMap<Integer, ColumnInfo> hivePartitionColsMap;
   private final ImmutableList<VirtualColumn>      hiveVirtualCols;
   private final int                               noOfNonVirtualCols;
+  private final List<ImmutableBitSet>             keys;
   private final List<RelReferentialConstraint>    referentialConstraints;
   final HiveConf                                  hiveConf;
 
@@ -112,6 +116,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     this.partitionCache = partitionCache;
     this.colStatsCache = colStatsCache;
     this.noColsMissingStats = noColsMissingStats;
+    this.keys = generateKeys();
     this.referentialConstraints = generateReferentialConstraints();
   }
 
@@ -152,13 +157,77 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   }
 
   @Override
-  public boolean isKey(ImmutableBitSet arg0) {
+  public boolean isKey(ImmutableBitSet columns) {
+    for (ImmutableBitSet key : keys) {
+      if (columns.contains(key)) {
+        return true;
+      }
+    }
     return false;
   }
 
   @Override
   public List<RelReferentialConstraint> getReferentialConstraints() {
     return referentialConstraints;
+  }
+
+  private List<ImmutableBitSet> generateKeys() {
+    // First PK
+    final PrimaryKeyInfo pki;
+    try {
+      pki = Hive.get().getReliablePrimaryKeys(
+          hiveTblMetadata.getDbName(), hiveTblMetadata.getTableName());
+    } catch (HiveException e) {
+      throw new RuntimeException(e);
+    }
+    ImmutableList.Builder<ImmutableBitSet> builder = ImmutableList.builder();
+    if (!pki.getColNames().isEmpty()) {
+      ImmutableBitSet.Builder keys = ImmutableBitSet.builder();
+      for (String pkColName : pki.getColNames().values()) {
+        int pkPos;
+        for (pkPos = 0; pkPos < rowType.getFieldNames().size(); pkPos++) {
+          String colName = rowType.getFieldNames().get(pkPos);
+          if (pkColName.equals(colName)) {
+            break;
+          }
+        }
+        if (pkPos == rowType.getFieldNames().size()
+            || pkPos == rowType.getFieldNames().size()) {
+          LOG.error("Column for primary key definition " + pkColName + " not found");
+          return ImmutableList.of();
+        }
+        keys.set(pkPos);
+      }
+      builder.add(keys.build());
+    }
+    // Then UKs
+    final UniqueConstraint uki;
+    try {
+      uki = Hive.get().getReliableUniqueConstraints(
+          hiveTblMetadata.getDbName(), hiveTblMetadata.getTableName());
+    } catch (HiveException e) {
+      throw new RuntimeException(e);
+    }
+    for (List<UniqueConstraintCol> ukCols : uki.getUniqueConstraints().values()) {
+      ImmutableBitSet.Builder keys = ImmutableBitSet.builder();
+      for (UniqueConstraintCol ukCol : ukCols) {
+        int ukPos;
+        for (ukPos = 0; ukPos < rowType.getFieldNames().size(); ukPos++) {
+          String colName = rowType.getFieldNames().get(ukPos);
+          if (ukCol.colName.equals(colName)) {
+            break;
+          }
+        }
+        if (ukPos == rowType.getFieldNames().size()
+            || ukPos == rowType.getFieldNames().size()) {
+          LOG.error("Column for unique constraint definition " + ukCol.colName + " not found");
+          return ImmutableList.of();
+        }
+        keys.set(ukPos);
+      }
+      builder.add(keys.build());
+    }
+    return builder.build();
   }
 
   private List<RelReferentialConstraint> generateReferentialConstraints() {

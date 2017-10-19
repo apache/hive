@@ -54,3 +54,20 @@ SELECT   sum(f.cint), f.ctinyint
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint;
 
+ALTER TABLE alltypesorc ADD CONSTRAINT pk_alltypesorc_1 PRIMARY KEY (ctinyint) DISABLE RELY;
+
+-- COLUMNS ARE UNIQUE, OPTIMIZATION IS NOT TRIGGERED
+explain
+SELECT sum(f.cint), f.ctinyint            
+FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
+GROUP BY f.ctinyint, g.ctinyint;
+
+ALTER TABLE alltypesorc DROP CONSTRAINT pk_alltypesorc_1;
+
+ALTER TABLE alltypesorc ADD CONSTRAINT uk_alltypesorc_1 UNIQUE (ctinyint) DISABLE RELY;
+
+-- COLUMNS ARE UNIQUE, OPTIMIZATION IS NOT TRIGGERED
+explain
+SELECT sum(f.cint), f.ctinyint            
+FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
+GROUP BY f.ctinyint, g.ctinyint;
