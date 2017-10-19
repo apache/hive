@@ -100,6 +100,7 @@ import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.ISchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -129,7 +130,13 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.SchemaCompatibility;
+import org.apache.hadoop.hive.metastore.api.SchemaType;
+import org.apache.hadoop.hive.metastore.api.SchemaValidation;
+import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SerdeType;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -155,6 +162,7 @@ import org.apache.hadoop.hive.metastore.model.MDelegationToken;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
 import org.apache.hadoop.hive.metastore.model.MFunction;
 import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
+import org.apache.hadoop.hive.metastore.model.MISchema;
 import org.apache.hadoop.hive.metastore.model.MIndex;
 import org.apache.hadoop.hive.metastore.model.MMasterKey;
 import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
@@ -169,6 +177,7 @@ import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MResourceUri;
 import org.apache.hadoop.hive.metastore.model.MRole;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
+import org.apache.hadoop.hive.metastore.model.MSchemaVersion;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MStringList;
@@ -1680,15 +1689,22 @@ public class ObjectStore implements RawStore, Configurable {
     if (ms == null) {
       throw new MetaException("Invalid SerDeInfo object");
     }
-    return new SerDeInfo(ms.getName(), ms.getSerializationLib(), convertMap(ms.getParameters()));
+    SerDeInfo serde =
+        new SerDeInfo(ms.getName(), ms.getSerializationLib(), convertMap(ms.getParameters()));
+    if (ms.getDescription() != null) serde.setDescription(ms.getDescription());
+    if (ms.getSerializerClass() != null) serde.setSerializerClass(ms.getSerializerClass());
+    if (ms.getDeserializerClass() != null) serde.setDeserializerClass(ms.getDeserializerClass());
+    if (ms.getSerdeType() > 0) serde.setSerdeType(SerdeType.findByValue(ms.getSerdeType()));
+    return serde;
   }
 
   private MSerDeInfo convertToMSerDeInfo(SerDeInfo ms) throws MetaException {
     if (ms == null) {
       throw new MetaException("Invalid SerDeInfo object");
     }
-    return new MSerDeInfo(ms.getName(), ms.getSerializationLib(), ms
-        .getParameters());
+    return new MSerDeInfo(ms.getName(), ms.getSerializationLib(), ms.getParameters(),
+        ms.getDescription(), ms.getSerializerClass(), ms.getDeserializerClass(),
+        ms.getSerdeType() == null ? 0 : ms.getSerdeType().getValue());
   }
 
   /**
@@ -9462,6 +9478,392 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+  }
+
+  @Override
+  public void createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
+      NoSuchObjectException {
+    boolean committed = false;
+    MISchema mSchema = convertToMISchema(schema);
+    try {
+      openTransaction();
+      if (getMISchema(schema.getName()) != null) {
+        throw new AlreadyExistsException("Schema with name " + schema.getName() + " already exists");
+      }
+      pm.makePersistent(mSchema);
+      committed = commitTransaction();
+    } finally {
+      if (!committed) rollbackTransaction();
+    }
+  }
+
+  @Override
+  public void alterISchema(String schemaName, ISchema newSchema)
+      throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      MISchema oldMSchema = getMISchema(schemaName);
+      if (oldMSchema == null) {
+        throw new NoSuchObjectException("Schema " + schemaName + " does not exist");
+      }
+
+      // Don't support changing name or type
+      oldMSchema.setCompatibility(newSchema.getCompatibility().getValue());
+      oldMSchema.setValidationLevel(newSchema.getValidationLevel().getValue());
+      oldMSchema.setCanEvolve(newSchema.isCanEvolve());
+      if (newSchema.isSetSchemaGroup()) oldMSchema.setSchemaGroup(newSchema.getSchemaGroup());
+      if (newSchema.isSetDescription()) oldMSchema.setDescription(newSchema.getDescription());
+      committed = commitTransaction();
+    } finally {
+      if (!committed) rollbackTransaction();
+    }
+  }
+
+  @Override
+  public ISchema getISchema(String schemaName) throws MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      ISchema schema = convertToISchema(getMISchema(schemaName));
+      committed = commitTransaction();
+      return schema;
+    } finally {
+      if (!committed) rollbackTransaction();
+    }
+  }
+
+  private MISchema getMISchema(String schemaName) {
+    Query query = null;
+    try {
+      schemaName = normalizeIdentifier(schemaName);
+      query = pm.newQuery(MISchema.class, "name == schemaName");
+      query.declareParameters("java.lang.String schemaName");
+      query.setUnique(true);
+      MISchema mSchema = (MISchema)query.execute(schemaName);
+      pm.retrieve(mSchema);
+      return mSchema;
+    } finally {
+      if (query != null) query.closeAll();
+    }
+  }
+
+  @Override
+  public void dropISchema(String schemaName) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      MISchema mSchema = getMISchema(schemaName);
+      if (mSchema != null) {
+        pm.deletePersistentAll(mSchema);
+      } else {
+        throw new NoSuchObjectException("Schema " + schemaName + " does not exist");
+      }
+      committed = commitTransaction();
+    } finally {
+      if (!committed) rollbackTransaction();
+    }
+  }
+
+  @Override
+  public void addSchemaVersion(SchemaVersion schemaVersion)
+      throws AlreadyExistsException, NoSuchObjectException, MetaException {
+    boolean committed = false;
+    MSchemaVersion mSchemaVersion = convertToMSchemaVersion(schemaVersion);
+    try {
+      openTransaction();
+      // Make sure it doesn't already exist
+      if (getMSchemaVersion(schemaVersion.getSchemaName(), schemaVersion.getVersion()) != null) {
+        throw new AlreadyExistsException("Schema name " + schemaVersion.getSchemaName() +
+            " version " + schemaVersion.getVersion() + " already exists");
+      }
+      // Make sure the referenced Schema exists
+      if (getMISchema(schemaVersion.getSchemaName()) == null) {
+        throw new NoSuchObjectException("Schema " + schemaVersion.getSchemaName() + " does not exist");
+      }
+      pm.makePersistent(mSchemaVersion);
+      committed = commitTransaction();
+    } finally {
+      if (!committed) rollbackTransaction();;
+    }
+  }
+
+  @Override
+  public void alterSchemaVersion(String schemaName, int version, SchemaVersion newVersion)
+      throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      MSchemaVersion oldMSchemaVersion = getMSchemaVersion(schemaName, version);
+      if (oldMSchemaVersion == null) {
+        throw new NoSuchObjectException("No schema of name " + schemaName + " with version " +
+            version + " exists");
+      }
+
+      // We only support changing the SerDe mapping and the state.
+      if (newVersion.isSetSerDe()) oldMSchemaVersion.setSerDe(convertToMSerDeInfo(newVersion.getSerDe()));
+      if (newVersion.isSetState()) oldMSchemaVersion.setState(newVersion.getState().getValue());
+      committed = commitTransaction();
+    } finally {
+      if (!committed) commitTransaction();
+    }
+  }
+
+  @Override
+  public SchemaVersion getSchemaVersion(String schemaName, int version) throws MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      SchemaVersion schemaVersion = convertToSchemaVersion(getMSchemaVersion(schemaName, version));
+      committed = commitTransaction();
+      return schemaVersion;
+    } finally {
+      if (!committed) rollbackTransaction();;
+    }
+  }
+
+  private MSchemaVersion getMSchemaVersion(String schemaName, int version) {
+    Query query = null;
+    try {
+      schemaName = normalizeIdentifier(schemaName);
+      query = pm.newQuery(MSchemaVersion.class, "iSchema.name == schemaName && version == schemaVersion");
+      query.declareParameters("java.lang.String schemaName, java.lang.Integer schemaVersion");
+      query.setUnique(true);
+      MSchemaVersion mSchemaVersion = (MSchemaVersion)query.execute(schemaName, version);
+      pm.retrieve(mSchemaVersion);
+      if (mSchemaVersion != null) {
+        pm.retrieveAll(mSchemaVersion.getCols());
+        if (mSchemaVersion.getSerDe() != null) pm.retrieve(mSchemaVersion.getSerDe());
+      }
+      return mSchemaVersion;
+    } finally {
+      if (query != null) query.closeAll();
+    }
+  }
+
+  @Override
+  public SchemaVersion getLatestSchemaVersion(String schemaName) throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      schemaName = normalizeIdentifier(schemaName);
+      query = pm.newQuery(MSchemaVersion.class, "iSchema.name == schemaName");
+      query.declareParameters("java.lang.String schemaName");
+      query.setUnique(true);
+      query.setOrdering("version descending");
+      query.setRange(0, 1);
+      MSchemaVersion mSchemaVersion = (MSchemaVersion)query.execute(schemaName);
+      pm.retrieve(mSchemaVersion);
+      if (mSchemaVersion != null) {
+        pm.retrieveAll(mSchemaVersion.getCols());
+        if (mSchemaVersion.getSerDe() != null) pm.retrieve(mSchemaVersion.getSerDe());
+      }
+      committed = commitTransaction();
+      return mSchemaVersion == null ? null : convertToSchemaVersion(mSchemaVersion);
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public List<SchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      schemaName = normalizeIdentifier(schemaName);
+      query = pm.newQuery(MSchemaVersion.class, "iSchema.name == schemaName");
+      query.declareParameters("java.lang.String schemaName");
+      query.setOrdering("version descending");
+      List<MSchemaVersion> mSchemaVersions = query.setParameters(schemaName).executeList();
+      pm.retrieveAll(mSchemaVersions);
+      if (mSchemaVersions == null || mSchemaVersions.isEmpty()) return null;
+      List<SchemaVersion> schemaVersions = new ArrayList<>(mSchemaVersions.size());
+      for (MSchemaVersion mSchemaVersion : mSchemaVersions) {
+        pm.retrieveAll(mSchemaVersion.getCols());
+        if (mSchemaVersion.getSerDe() != null) pm.retrieve(mSchemaVersion.getSerDe());
+        schemaVersions.add(convertToSchemaVersion(mSchemaVersion));
+      }
+      committed = commitTransaction();
+      return schemaVersions;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
+                                                        String type) throws MetaException {
+    if (colName == null && colNamespace == null) {
+      // Don't allow a query that returns everything, it will blow stuff up.
+      throw new MetaException("You must specify column name or column namespace, else your query " +
+          "may be too large");
+    }
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      if (colName != null) colName = normalizeIdentifier(colName);
+      if (type != null) type = normalizeIdentifier(type);
+      Map<String, String> parameters = new HashMap<>(3);
+      StringBuilder sql = new StringBuilder("select SCHEMA_VERSION_ID from " +
+          "SCHEMA_VERSION, COLUMNS_V2 where SCHEMA_VERSION.CD_ID = COLUMNS_V2.CD_ID ");
+      if (colName != null) {
+        sql.append("and COLUMNS_V2.COLUMN_NAME = :colName ");
+        parameters.put("colName", colName);
+      }
+      if (colNamespace != null) {
+        sql.append("and COLUMNS_V2.COMMENT = :colComment ");
+        parameters.put("colComment", colNamespace);
+      }
+      if (type != null) {
+        sql.append("and COLUMNS_V2.TYPE_NAME = :colType ");
+        parameters.put("colType", type);
+      }
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("getSchemaVersionsByColumns going to execute query " + sql.toString());
+        LOG.debug("With parameters");
+        for (Map.Entry<String, String> p : parameters.entrySet()) {
+          LOG.debug(p.getKey() + " : " + p.getValue());
+        }
+      }
+      query = pm.newQuery("javax.jdo.query.SQL", sql.toString());
+      query.setClass(MSchemaVersion.class);
+      List<MSchemaVersion> mSchemaVersions = query.setNamedParameters(parameters).executeList();
+      if (mSchemaVersions == null || mSchemaVersions.isEmpty()) return Collections.emptyList();
+      pm.retrieveAll(mSchemaVersions);
+      List<SchemaVersion> schemaVersions = new ArrayList<>(mSchemaVersions.size());
+      for (MSchemaVersion mSchemaVersion : mSchemaVersions) {
+        pm.retrieveAll(mSchemaVersion.getCols());
+        if (mSchemaVersion.getSerDe() != null) pm.retrieve(mSchemaVersion.getSerDe());
+        schemaVersions.add(convertToSchemaVersion(mSchemaVersion));
+      }
+      committed = commitTransaction();
+      return schemaVersions;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+
+  }
+
+  @Override
+  public void dropSchemaVersion(String schemaName, int version) throws NoSuchObjectException,
+      MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      MSchemaVersion mSchemaVersion = getMSchemaVersion(schemaName, version);
+      if (mSchemaVersion != null) {
+        pm.deletePersistentAll(mSchemaVersion);
+      } else {
+        throw new NoSuchObjectException("Schema " + schemaName + " of version " + version +
+            "does not exist");
+      }
+      committed = commitTransaction();
+    } finally {
+      if (!committed) rollbackTransaction();
+    }
+  }
+
+  @Override
+  public SerDeInfo getSerDeInfo(String serDeName) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      MSerDeInfo mSerDeInfo = getMSerDeInfo(serDeName);
+      if (mSerDeInfo == null) {
+        throw new NoSuchObjectException("No SerDe named " + serDeName);
+      }
+      SerDeInfo serde = convertToSerDeInfo(mSerDeInfo);
+      committed = commitTransaction();
+      return serde;
+    } finally {
+      if (!committed) rollbackTransaction();;
+    }
+  }
+
+  private MSerDeInfo getMSerDeInfo(String serDeName) throws MetaException {
+    Query query = null;
+    try {
+      query = pm.newQuery(MSerDeInfo.class, "name == serDeName");
+      query.declareParameters("java.lang.String serDeName");
+      query.setUnique(true);
+      MSerDeInfo mSerDeInfo = (MSerDeInfo)query.execute(serDeName);
+      pm.retrieve(mSerDeInfo);
+      return mSerDeInfo;
+    } finally {
+      if (query != null) query.closeAll();
+    }
+  }
+
+  @Override
+  public void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      if (getMSerDeInfo(serde.getName()) != null) {
+        throw new AlreadyExistsException("Serde with name " + serde.getName() + " already exists");
+      }
+      MSerDeInfo mSerde = convertToMSerDeInfo(serde);
+      pm.makePersistent(mSerde);
+      committed = commitTransaction();
+    } finally {
+      if (!committed) rollbackTransaction();
+    }
+
+  }
+
+  private MISchema convertToMISchema(ISchema schema) throws NoSuchObjectException {
+    return new MISchema(schema.getSchemaType().getValue(),
+                        normalizeIdentifier(schema.getName()),
+                        getMDatabase(schema.getDbName()),
+                        schema.getCompatibility().getValue(),
+                        schema.getValidationLevel().getValue(),
+                        schema.isCanEvolve(),
+                        schema.isSetSchemaGroup() ? schema.getSchemaGroup() : null,
+                        schema.isSetDescription() ? schema.getDescription() : null);
+  }
+
+  private ISchema convertToISchema(MISchema mSchema) {
+    if (mSchema == null) return null;
+    ISchema schema = new ISchema(SchemaType.findByValue(mSchema.getSchemaType()),
+                                 mSchema.getName(),
+                                 mSchema.getDb().getName(),
+                                 SchemaCompatibility.findByValue(mSchema.getCompatibility()),
+                                 SchemaValidation.findByValue(mSchema.getValidationLevel()),
+                                 mSchema.getCanEvolve());
+    if (mSchema.getDescription() != null) schema.setDescription(mSchema.getDescription());
+    if (mSchema.getSchemaGroup() != null) schema.setSchemaGroup(mSchema.getSchemaGroup());
+    return schema;
+  }
+
+  private MSchemaVersion convertToMSchemaVersion(SchemaVersion schemaVersion) throws MetaException {
+    return new MSchemaVersion(getMISchema(normalizeIdentifier(schemaVersion.getSchemaName())),
+                              schemaVersion.getVersion(),
+                              schemaVersion.getCreatedAt(),
+                              createNewMColumnDescriptor(convertToMFieldSchemas(schemaVersion.getCols())),
+                              schemaVersion.isSetState() ? schemaVersion.getState().getValue() : 0,
+                              schemaVersion.isSetDescription() ? schemaVersion.getDescription() : null,
+                              schemaVersion.isSetSchemaText() ? schemaVersion.getSchemaText() : null,
+                              schemaVersion.isSetFingerprint() ? schemaVersion.getFingerprint() : null,
+                              schemaVersion.isSetName() ? schemaVersion.getName() : null,
+                              schemaVersion.isSetSerDe() ? convertToMSerDeInfo(schemaVersion.getSerDe()) : null);
+  }
+
+  private SchemaVersion convertToSchemaVersion(MSchemaVersion mSchemaVersion) throws MetaException {
+    if (mSchemaVersion == null) return null;
+    SchemaVersion schemaVersion = new SchemaVersion(mSchemaVersion.getiSchema().getName(),
+                                                    mSchemaVersion.getVersion(),
+                                                    mSchemaVersion.getCreatedAt(),
+                                                    convertToFieldSchemas(mSchemaVersion.getCols().getCols()));
+    if (mSchemaVersion.getState() > 0) schemaVersion.setState(SchemaVersionState.findByValue(mSchemaVersion.getState()));
+    if (mSchemaVersion.getDescription() != null) schemaVersion.setDescription(mSchemaVersion.getDescription());
+    if (mSchemaVersion.getSchemaText() != null) schemaVersion.setSchemaText(mSchemaVersion.getSchemaText());
+    if (mSchemaVersion.getFingerprint() != null) schemaVersion.setFingerprint(mSchemaVersion.getFingerprint());
+    if (mSchemaVersion.getName() != null) schemaVersion.setName(mSchemaVersion.getName());
+    if (mSchemaVersion.getSerDe() != null) schemaVersion.setSerDe(convertToSerDeInfo(mSchemaVersion.getSerDe()));
+    return schemaVersion;
   }
 
   /**

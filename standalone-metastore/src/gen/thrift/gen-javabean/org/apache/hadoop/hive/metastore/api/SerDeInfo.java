@@ -41,6 +41,10 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField SERIALIZATION_LIB_FIELD_DESC = new org.apache.thrift.protocol.TField("serializationLib", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField PARAMETERS_FIELD_DESC = new org.apache.thrift.protocol.TField("parameters", org.apache.thrift.protocol.TType.MAP, (short)3);
+  private static final org.apache.thrift.protocol.TField DESCRIPTION_FIELD_DESC = new org.apache.thrift.protocol.TField("description", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField SERIALIZER_CLASS_FIELD_DESC = new org.apache.thrift.protocol.TField("serializerClass", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField DESERIALIZER_CLASS_FIELD_DESC = new org.apache.thrift.protocol.TField("deserializerClass", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField SERDE_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("serdeType", org.apache.thrift.protocol.TType.I32, (short)7);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -51,12 +55,24 @@ import org.slf4j.LoggerFactory;
   private String name; // required
   private String serializationLib; // required
   private Map<String,String> parameters; // required
+  private String description; // optional
+  private String serializerClass; // optional
+  private String deserializerClass; // optional
+  private SerdeType serdeType; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     NAME((short)1, "name"),
     SERIALIZATION_LIB((short)2, "serializationLib"),
-    PARAMETERS((short)3, "parameters");
+    PARAMETERS((short)3, "parameters"),
+    DESCRIPTION((short)4, "description"),
+    SERIALIZER_CLASS((short)5, "serializerClass"),
+    DESERIALIZER_CLASS((short)6, "deserializerClass"),
+    /**
+     * 
+     * @see SerdeType
+     */
+    SERDE_TYPE((short)7, "serdeType");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +93,14 @@ import org.slf4j.LoggerFactory;
           return SERIALIZATION_LIB;
         case 3: // PARAMETERS
           return PARAMETERS;
+        case 4: // DESCRIPTION
+          return DESCRIPTION;
+        case 5: // SERIALIZER_CLASS
+          return SERIALIZER_CLASS;
+        case 6: // DESERIALIZER_CLASS
+          return DESERIALIZER_CLASS;
+        case 7: // SERDE_TYPE
+          return SERDE_TYPE;
         default:
           return null;
       }
@@ -117,6 +141,7 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
+  private static final _Fields optionals[] = {_Fields.DESCRIPTION,_Fields.SERIALIZER_CLASS,_Fields.DESERIALIZER_CLASS,_Fields.SERDE_TYPE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -128,6 +153,14 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.DESCRIPTION, new org.apache.thrift.meta_data.FieldMetaData("description", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.SERIALIZER_CLASS, new org.apache.thrift.meta_data.FieldMetaData("serializerClass", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.DESERIALIZER_CLASS, new org.apache.thrift.meta_data.FieldMetaData("deserializerClass", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.SERDE_TYPE, new org.apache.thrift.meta_data.FieldMetaData("serdeType", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, SerdeType.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SerDeInfo.class, metaDataMap);
   }
@@ -160,6 +193,18 @@ import org.slf4j.LoggerFactory;
       Map<String,String> __this__parameters = new HashMap<String,String>(other.parameters);
       this.parameters = __this__parameters;
     }
+    if (other.isSetDescription()) {
+      this.description = other.description;
+    }
+    if (other.isSetSerializerClass()) {
+      this.serializerClass = other.serializerClass;
+    }
+    if (other.isSetDeserializerClass()) {
+      this.deserializerClass = other.deserializerClass;
+    }
+    if (other.isSetSerdeType()) {
+      this.serdeType = other.serdeType;
+    }
   }
 
   public SerDeInfo deepCopy() {
@@ -171,6 +216,10 @@ import org.slf4j.LoggerFactory;
     this.name = null;
     this.serializationLib = null;
     this.parameters = null;
+    this.description = null;
+    this.serializerClass = null;
+    this.deserializerClass = null;
+    this.serdeType = null;
   }
 
   public String getName() {
@@ -253,6 +302,106 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getDescription() {
+    return this.description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public void unsetDescription() {
+    this.description = null;
+  }
+
+  /** Returns true if field description is set (has been assigned a value) and false otherwise */
+  public boolean isSetDescription() {
+    return this.description != null;
+  }
+
+  public void setDescriptionIsSet(boolean value) {
+    if (!value) {
+      this.description = null;
+    }
+  }
+
+  public String getSerializerClass() {
+    return this.serializerClass;
+  }
+
+  public void setSerializerClass(String serializerClass) {
+    this.serializerClass = serializerClass;
+  }
+
+  public void unsetSerializerClass() {
+    this.serializerClass = null;
+  }
+
+  /** Returns true if field serializerClass is set (has been assigned a value) and false otherwise */
+  public boolean isSetSerializerClass() {
+    return this.serializerClass != null;
+  }
+
+  public void setSerializerClassIsSet(boolean value) {
+    if (!value) {
+      this.serializerClass = null;
+    }
+  }
+
+  public String getDeserializerClass() {
+    return this.deserializerClass;
+  }
+
+  public void setDeserializerClass(String deserializerClass) {
+    this.deserializerClass = deserializerClass;
+  }
+
+  public void unsetDeserializerClass() {
+    this.deserializerClass = null;
+  }
+
+  /** Returns true if field deserializerClass is set (has been assigned a value) and false otherwise */
+  public boolean isSetDeserializerClass() {
+    return this.deserializerClass != null;
+  }
+
+  public void setDeserializerClassIsSet(boolean value) {
+    if (!value) {
+      this.deserializerClass = null;
+    }
+  }
+
+  /**
+   * 
+   * @see SerdeType
+   */
+  public SerdeType getSerdeType() {
+    return this.serdeType;
+  }
+
+  /**
+   * 
+   * @see SerdeType
+   */
+  public void setSerdeType(SerdeType serdeType) {
+    this.serdeType = serdeType;
+  }
+
+  public void unsetSerdeType() {
+    this.serdeType = null;
+  }
+
+  /** Returns true if field serdeType is set (has been assigned a value) and false otherwise */
+  public boolean isSetSerdeType() {
+    return this.serdeType != null;
+  }
+
+  public void setSerdeTypeIsSet(boolean value) {
+    if (!value) {
+      this.serdeType = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case NAME:
@@ -279,6 +428,38 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case DESCRIPTION:
+      if (value == null) {
+        unsetDescription();
+      } else {
+        setDescription((String)value);
+      }
+      break;
+
+    case SERIALIZER_CLASS:
+      if (value == null) {
+        unsetSerializerClass();
+      } else {
+        setSerializerClass((String)value);
+      }
+      break;
+
+    case DESERIALIZER_CLASS:
+      if (value == null) {
+        unsetDeserializerClass();
+      } else {
+        setDeserializerClass((String)value);
+      }
+      break;
+
+    case SERDE_TYPE:
+      if (value == null) {
+        unsetSerdeType();
+      } else {
+        setSerdeType((SerdeType)value);
+      }
+      break;
+
     }
   }
 
@@ -292,6 +473,18 @@ import org.slf4j.LoggerFactory;
 
     case PARAMETERS:
       return getParameters();
+
+    case DESCRIPTION:
+      return getDescription();
+
+    case SERIALIZER_CLASS:
+      return getSerializerClass();
+
+    case DESERIALIZER_CLASS:
+      return getDeserializerClass();
+
+    case SERDE_TYPE:
+      return getSerdeType();
 
     }
     throw new IllegalStateException();
@@ -310,6 +503,14 @@ import org.slf4j.LoggerFactory;
       return isSetSerializationLib();
     case PARAMETERS:
       return isSetParameters();
+    case DESCRIPTION:
+      return isSetDescription();
+    case SERIALIZER_CLASS:
+      return isSetSerializerClass();
+    case DESERIALIZER_CLASS:
+      return isSetDeserializerClass();
+    case SERDE_TYPE:
+      return isSetSerdeType();
     }
     throw new IllegalStateException();
   }
@@ -354,6 +555,42 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_description = true && this.isSetDescription();
+    boolean that_present_description = true && that.isSetDescription();
+    if (this_present_description || that_present_description) {
+      if (!(this_present_description && that_present_description))
+        return false;
+      if (!this.description.equals(that.description))
+        return false;
+    }
+
+    boolean this_present_serializerClass = true && this.isSetSerializerClass();
+    boolean that_present_serializerClass = true && that.isSetSerializerClass();
+    if (this_present_serializerClass || that_present_serializerClass) {
+      if (!(this_present_serializerClass && that_present_serializerClass))
+        return false;
+      if (!this.serializerClass.equals(that.serializerClass))
+        return false;
+    }
+
+    boolean this_present_deserializerClass = true && this.isSetDeserializerClass();
+    boolean that_present_deserializerClass = true && that.isSetDeserializerClass();
+    if (this_present_deserializerClass || that_present_deserializerClass) {
+      if (!(this_present_deserializerClass && that_present_deserializerClass))
+        return false;
+      if (!this.deserializerClass.equals(that.deserializerClass))
+        return false;
+    }
+
+    boolean this_present_serdeType = true && this.isSetSerdeType();
+    boolean that_present_serdeType = true && that.isSetSerdeType();
+    if (this_present_serdeType || that_present_serdeType) {
+      if (!(this_present_serdeType && that_present_serdeType))
+        return false;
+      if (!this.serdeType.equals(that.serdeType))
+        return false;
+    }
+
     return true;
   }
 
@@ -375,6 +612,26 @@ import org.slf4j.LoggerFactory;
     list.add(present_parameters);
     if (present_parameters)
       list.add(parameters);
+
+    boolean present_description = true && (isSetDescription());
+    list.add(present_description);
+    if (present_description)
+      list.add(description);
+
+    boolean present_serializerClass = true && (isSetSerializerClass());
+    list.add(present_serializerClass);
+    if (present_serializerClass)
+      list.add(serializerClass);
+
+    boolean present_deserializerClass = true && (isSetDeserializerClass());
+    list.add(present_deserializerClass);
+    if (present_deserializerClass)
+      list.add(deserializerClass);
+
+    boolean present_serdeType = true && (isSetSerdeType());
+    list.add(present_serdeType);
+    if (present_serdeType)
+      list.add(serdeType.getValue());
 
     return list.hashCode();
   }
@@ -413,6 +670,46 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetParameters()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.parameters, other.parameters);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetDescription()).compareTo(other.isSetDescription());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDescription()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.description, other.description);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetSerializerClass()).compareTo(other.isSetSerializerClass());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSerializerClass()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.serializerClass, other.serializerClass);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetDeserializerClass()).compareTo(other.isSetDeserializerClass());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDeserializerClass()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.deserializerClass, other.deserializerClass);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetSerdeType()).compareTo(other.isSetSerdeType());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSerdeType()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.serdeType, other.serdeType);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -460,6 +757,46 @@ import org.slf4j.LoggerFactory;
       sb.append(this.parameters);
     }
     first = false;
+    if (isSetDescription()) {
+      if (!first) sb.append(", ");
+      sb.append("description:");
+      if (this.description == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.description);
+      }
+      first = false;
+    }
+    if (isSetSerializerClass()) {
+      if (!first) sb.append(", ");
+      sb.append("serializerClass:");
+      if (this.serializerClass == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.serializerClass);
+      }
+      first = false;
+    }
+    if (isSetDeserializerClass()) {
+      if (!first) sb.append(", ");
+      sb.append("deserializerClass:");
+      if (this.deserializerClass == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.deserializerClass);
+      }
+      first = false;
+    }
+    if (isSetSerdeType()) {
+      if (!first) sb.append(", ");
+      sb.append("serdeType:");
+      if (this.serdeType == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.serdeType);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -539,6 +876,38 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // DESCRIPTION
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.description = iprot.readString();
+              struct.setDescriptionIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // SERIALIZER_CLASS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.serializerClass = iprot.readString();
+              struct.setSerializerClassIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // DESERIALIZER_CLASS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.deserializerClass = iprot.readString();
+              struct.setDeserializerClassIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // SERDE_TYPE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.serdeType = org.apache.hadoop.hive.metastore.api.SerdeType.findByValue(iprot.readI32());
+              struct.setSerdeTypeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -575,6 +944,34 @@ import org.slf4j.LoggerFactory;
         }
         oprot.writeFieldEnd();
       }
+      if (struct.description != null) {
+        if (struct.isSetDescription()) {
+          oprot.writeFieldBegin(DESCRIPTION_FIELD_DESC);
+          oprot.writeString(struct.description);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.serializerClass != null) {
+        if (struct.isSetSerializerClass()) {
+          oprot.writeFieldBegin(SERIALIZER_CLASS_FIELD_DESC);
+          oprot.writeString(struct.serializerClass);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.deserializerClass != null) {
+        if (struct.isSetDeserializerClass()) {
+          oprot.writeFieldBegin(DESERIALIZER_CLASS_FIELD_DESC);
+          oprot.writeString(struct.deserializerClass);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.serdeType != null) {
+        if (struct.isSetSerdeType()) {
+          oprot.writeFieldBegin(SERDE_TYPE_FIELD_DESC);
+          oprot.writeI32(struct.serdeType.getValue());
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -602,7 +999,19 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetParameters()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetDescription()) {
+        optionals.set(3);
+      }
+      if (struct.isSetSerializerClass()) {
+        optionals.set(4);
+      }
+      if (struct.isSetDeserializerClass()) {
+        optionals.set(5);
+      }
+      if (struct.isSetSerdeType()) {
+        optionals.set(6);
+      }
+      oprot.writeBitSet(optionals, 7);
       if (struct.isSetName()) {
         oprot.writeString(struct.name);
       }
@@ -619,12 +1028,24 @@ import org.slf4j.LoggerFactory;
           }
         }
       }
+      if (struct.isSetDescription()) {
+        oprot.writeString(struct.description);
+      }
+      if (struct.isSetSerializerClass()) {
+        oprot.writeString(struct.serializerClass);
+      }
+      if (struct.isSetDeserializerClass()) {
+        oprot.writeString(struct.deserializerClass);
+      }
+      if (struct.isSetSerdeType()) {
+        oprot.writeI32(struct.serdeType.getValue());
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, SerDeInfo struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(7);
       if (incoming.get(0)) {
         struct.name = iprot.readString();
         struct.setNameIsSet(true);
@@ -647,6 +1068,22 @@ import org.slf4j.LoggerFactory;
           }
         }
         struct.parameters = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(struct.parameters); struct.setParametersIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.description = iprot.readString();
+        struct.setDescriptionIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.serializerClass = iprot.readString();
+        struct.setSerializerClassIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.deserializerClass = iprot.readString();
+        struct.setDeserializerClassIsSet(true);
+      }
+      if (incoming.get(6)) {
+        struct.serdeType = org.apache.hadoop.hive.metastore.api.SerdeType.findByValue(iprot.readI32());
+        struct.setSerdeTypeIsSet(true);
       }
     }
   }
