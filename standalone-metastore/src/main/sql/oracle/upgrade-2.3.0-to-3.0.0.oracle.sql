@@ -104,6 +104,40 @@ ALTER TABLE WM_MAPPING ADD CONSTRAINT WM_MAPPING_FK1 FOREIGN KEY (RP_ID) REFEREN
 
 ALTER TABLE WM_MAPPING ADD CONSTRAINT WM_MAPPING_FK2 FOREIGN KEY (POOL_ID) REFERENCES WM_POOL (POOL_ID);
 
+-- Upgrades for Schema Registry objects
+ALTER TABLE "SERDES" ADD "DESCRIPTION" VARCHAR(4000);
+ALTER TABLE "SERDES" ADD "SERIALIZER_CLASS" VARCHAR(4000);
+ALTER TABLE "SERDES" ADD "DESERIALIZER_CLASS" VARCHAR(4000);
+ALTER TABLE "SERDES" ADD "SERDE_TYPE" INTEGER;
+
+CREATE TABLE "I_SCHEMA" (
+  "SCHEMA_ID" number primary key,
+  "SCHEMA_TYPE" number not null,
+  "NAME" varchar2(256) unique,
+  "DB_ID" number references "DBS" ("DB_ID"),
+  "COMPATIBILITY" number not null,
+  "VALIDATION_LEVEL" number not null,
+  "CAN_EVOLVE" number(1) not null,
+  "SCHEMA_GROUP" varchar2(256),
+  "DESCRIPTION" varchar2(4000)
+);
+
+CREATE TABLE "SCHEMA_VERSION" (
+  "SCHEMA_VERSION_ID" number primary key,
+  "SCHEMA_ID" number references "I_SCHEMA" ("SCHEMA_ID"),
+  "VERSION" number not null,
+  "CREATED_AT" number not null,
+  "CD_ID" number references "CDS" ("CD_ID"), 
+  "STATE" number not null,
+  "DESCRIPTION" varchar2(4000),
+  "SCHEMA_TEXT" clob,
+  "FINGERPRINT" varchar2(256),
+  "SCHEMA_VERSION_NAME" varchar2(256),
+  "SERDE_ID" number references "SERDES" ("SERDE_ID"), 
+  UNIQUE ("SCHEMA_ID", "VERSION")
+);
+
+
 UPDATE VERSION SET SCHEMA_VERSION='3.0.0', VERSION_COMMENT='Hive release version 3.0.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 2.3.0 to 3.0.0' AS Status from dual;
 

@@ -24,16 +24,31 @@ public class MSerDeInfo {
   private String name;
   private String serializationLib;
   private Map<String, String> parameters;
+  private String description;
+  private String serializerClass;
+  private String deserializerClass;
+  private int serdeType;
 
   /**
+   *
    * @param name
    * @param serializationLib
    * @param parameters
+   * @param description
+   * @param serializerClass
+   * @param deserializerClass
+   * @param serdeType
    */
-  public MSerDeInfo(String name, String serializationLib, Map<String, String> parameters) {
+  public MSerDeInfo(String name, String serializationLib, Map<String, String> parameters,
+                    String description, String serializerClass, String deserializerClass,
+                    int serdeType) {
     this.name = name;
     this.serializationLib = serializationLib;
     this.parameters = parameters;
+    this.description = description;
+    this.serializerClass = serializerClass;
+    this.deserializerClass = deserializerClass;
+    this.serdeType = serdeType;
   }
 
   /**
@@ -78,4 +93,35 @@ public class MSerDeInfo {
     this.parameters = parameters;
   }
 
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public String getSerializerClass() {
+    return serializerClass;
+  }
+
+  public void setSerializerClass(String serializerClass) {
+    this.serializerClass = serializerClass;
+  }
+
+  public String getDeserializerClass() {
+    return deserializerClass;
+  }
+
+  public void setDeserializerClass(String deserializerClass) {
+    this.deserializerClass = deserializerClass;
+  }
+
+  public int getSerdeType() {
+    return serdeType;
+  }
+
+  public void setSerdeType(int serdeType) {
+    this.serdeType = serdeType;
+  }
 }
