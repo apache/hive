@@ -14,22 +14,21 @@
  */
 package org.apache.hive.storage.jdbc.dao;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hive.storage.jdbc.conf.JdbcStorageConfig;
+import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
+import org.junit.Test;
+
+import java.util.List;
+import java.util.Map;
+
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import org.apache.hadoop.conf.Configuration;
-import org.junit.Test;
-
-import org.apache.hive.storage.jdbc.conf.JdbcStorageConfig;
-import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
-
-import java.util.List;
-import java.util.Map;
-
-public class GenericJdbcDatabaseAccessorTest {
+public class TestGenericJdbcDatabaseAccessor {
 
   @Test
   public void testGetColumnNames_starQuery() throws HiveJdbcDatabaseAccessException {
@@ -191,7 +190,7 @@ public class GenericJdbcDatabaseAccessorTest {
 
   private Configuration buildConfiguration() {
     String scriptPath =
-      GenericJdbcDatabaseAccessorTest.class.getClassLoader().getResource("test_script.sql")
+        TestGenericJdbcDatabaseAccessor.class.getClassLoader().getResource("test_script.sql")
       .getPath();
     Configuration config = new Configuration();
     config.set(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), "H2");

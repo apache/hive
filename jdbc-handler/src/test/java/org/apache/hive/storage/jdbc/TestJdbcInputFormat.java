@@ -14,27 +14,26 @@
  */
 package org.apache.hive.storage.jdbc;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hive.storage.jdbc.dao.DatabaseAccessor;
+import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import java.io.IOException;
+
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.JobConf;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import org.apache.hive.storage.jdbc.dao.DatabaseAccessor;
-import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
-
-import java.io.IOException;
-
 @RunWith(MockitoJUnitRunner.class)
-public class JdbcInputFormatTest {
+public class TestJdbcInputFormat {
 
   @Mock
   private DatabaseAccessor mockDatabaseAccessor;

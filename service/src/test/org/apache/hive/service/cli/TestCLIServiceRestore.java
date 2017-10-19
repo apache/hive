@@ -17,13 +17,11 @@
  */
 package org.apache.hive.service.cli;
 
-
 import org.apache.hadoop.hive.conf.HiveConf;
-
 import org.junit.Assert;
 import org.junit.Test;
 
-public class CLIServiceRestoreTest {
+public class TestCLIServiceRestore {
 
   CLIService service = getService();
 

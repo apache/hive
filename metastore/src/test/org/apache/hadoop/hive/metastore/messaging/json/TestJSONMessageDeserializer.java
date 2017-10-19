@@ -26,9 +26,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-public class JSONMessageDeserializerTest {
+public class TestJSONMessageDeserializer {
 
   public static class MyClass {
     @JsonProperty

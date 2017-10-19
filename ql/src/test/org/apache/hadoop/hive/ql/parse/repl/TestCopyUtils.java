@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
 
-public class CopyUtilsTest {
+public class TestCopyUtils {
   /*
   Distcp currently does not copy a single file in a distributed manner hence we dont care about
   the size of file, if there is only file, we dont want to launch distcp.

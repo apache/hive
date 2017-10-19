@@ -24,7 +24,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
-public final class JavaDataModelTest {
+public final class TestJavaDataModel {
 
   private static final String DATA_MODEL_PROPERTY = "sun.arch.data.model";
 

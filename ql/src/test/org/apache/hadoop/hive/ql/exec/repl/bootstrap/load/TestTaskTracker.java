@@ -15,25 +15,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 
-package org.apache.hadoop.hive.ql.exec.tez;
-
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.FileSplit;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.powermock.modules.junit4.PowerMockRunner;
 
-import static org.apache.hadoop.hive.ql.exec.tez.HiveSplitGenerator.InputSplitComparator;
-import static org.junit.Assert.assertEquals;
+import java.io.Serializable;
 
-public class InputSplitComparatorTest {
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-  private static final String[] EMPTY = new String[]{};
+@RunWith(PowerMockRunner.class)
+  public class TestTaskTracker {
+  @Mock
+  private Task<? extends Serializable> task;
 
   @Test
-  public void testCompare1() throws Exception {
-    FileSplit split1 = new FileSplit(new Path("/abc/def"), 2000L, 500L, EMPTY);
-    FileSplit split2 = new FileSplit(new Path("/abc/def"), 1000L, 500L, EMPTY);
-    InputSplitComparator comparator = new InputSplitComparator();
-    assertEquals(1, comparator.compare(split1, split2));
+  public void taskTrackerCompositionInitializesTheMaxTasksCorrectly() {
+    TaskTracker taskTracker = new TaskTracker(1);
+    assertTrue(taskTracker.canAddMoreTasks());
+    taskTracker.addTask(task);
+    assertFalse(taskTracker.canAddMoreTasks());
+
+    TaskTracker taskTracker2 = new TaskTracker(taskTracker);
+    assertFalse(taskTracker2.canAddMoreTasks());
   }
 }

@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.util.Shell;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
@@ -43,7 +42,7 @@ import java.util.Properties;
 /**
  * Simplify writing HCatalog tests that require a HiveMetaStore.
  */
-public class HCatBaseTest {
+public abstract class HCatBaseTest {
   protected static final Logger LOG = LoggerFactory.getLogger(HCatBaseTest.class);
   public static final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(System.getProperty("user.dir") +
           "/build/test/data/" + HCatBaseTest.class.getCanonicalName() + "-" + System.currentTimeMillis());

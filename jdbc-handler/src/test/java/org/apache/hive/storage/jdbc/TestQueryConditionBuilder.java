@@ -14,23 +14,22 @@
  */
 package org.apache.hive.storage.jdbc;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hive.storage.jdbc.conf.JdbcStorageConfig;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.Scanner;
+
 import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import org.apache.hive.storage.jdbc.conf.JdbcStorageConfig;
-
-import java.io.IOException;
-import java.util.Scanner;
-
-public class QueryConditionBuilderTest {
+public class TestQueryConditionBuilder {
 
   private static String condition1;
   private static String condition2;
@@ -44,7 +43,7 @@ public class QueryConditionBuilderTest {
 
 
   private static String readFileContents(String name) throws IOException {
-    try (Scanner s = new Scanner(QueryConditionBuilderTest.class.getClassLoader().getResourceAsStream(name))) {
+    try (Scanner s = new Scanner(TestQueryConditionBuilder.class.getClassLoader().getResourceAsStream(name))) {
       return s.useDelimiter("\\Z").next();
     }
   }

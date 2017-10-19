@@ -23,7 +23,7 @@ import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;
 
-public class HiveStatementTest {
+public class TestHiveStatement {
 
   @Test
   public void testSetFetchSize1() throws SQLException {

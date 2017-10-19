@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -49,15 +48,15 @@ import static org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler.C
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
-import static org.mockito.Matchers.any;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ PrimaryToReplicaResourceFunction.class, FileSystem.class, ReplCopyTask.class,
                     System.class })
-public class PrimaryToReplicaResourceFunctionTest {
+public class TestPrimaryToReplicaResourceFunction {
 
   private PrimaryToReplicaResourceFunction function;
   @Mock
@@ -68,7 +67,7 @@ public class PrimaryToReplicaResourceFunctionTest {
   @Mock
   private FileSystem mockFs;
   private static Logger logger =
-      LoggerFactory.getLogger(PrimaryToReplicaResourceFunctionTest.class);
+      LoggerFactory.getLogger(TestPrimaryToReplicaResourceFunction.class);
 
   @Before
   public void setup() {
@@ -87,7 +86,7 @@ public class PrimaryToReplicaResourceFunctionTest {
     when(mockFs.getScheme()).thenReturn("hdfs");
     when(mockFs.getUri()).thenReturn(new URI("hdfs", "somehost:9000", null, null, null));
     mockStatic(System.class);
-    when(System.currentTimeMillis()).thenReturn(Long.MAX_VALUE);
+    when(System.nanoTime()).thenReturn(Long.MAX_VALUE);
     when(functionObj.getFunctionName()).thenReturn("someFunctionName");
     mockStatic(ReplCopyTask.class);
     Task mock = mock(Task.class);
@@ -99,7 +98,7 @@ public class PrimaryToReplicaResourceFunctionTest {
 
     assertThat(resourceUri.getUri(),
         is(equalTo(
-            "hdfs://somehost:9000/someBasePath/withADir/replicaDbName/somefunctionname/" + String
+            "hdfs://somehost:9000/someBasePath/withADir/replicadbname/somefunctionname/" + String
                 .valueOf(Long.MAX_VALUE) + "/ab.jar")));
   }
 }

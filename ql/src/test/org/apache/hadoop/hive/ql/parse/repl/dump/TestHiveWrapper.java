@@ -15,32 +15,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
+ 
+package org.apache.hadoop.hive.ql.parse.repl.dump;
 
-import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.Serializable;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-@RunWith(PowerMockRunner.class)
-  public class TaskTrackerTest {
+@RunWith(MockitoJUnitRunner.class)
+public class TestHiveWrapper {
   @Mock
-  private Task<? extends Serializable> task;
+  private HiveWrapper.Tuple.Function<ReplicationSpec> specFunction;
+  @Mock
+  private HiveWrapper.Tuple.Function<Table> tableFunction;
 
   @Test
-  public void taskTrackerCompositionInitializesTheMaxTasksCorrectly() {
-    TaskTracker taskTracker = new TaskTracker(1);
-    assertTrue(taskTracker.canAddMoreTasks());
-    taskTracker.addTask(task);
-    assertFalse(taskTracker.canAddMoreTasks());
-
-    TaskTracker taskTracker2 = new TaskTracker(taskTracker);
-    assertFalse(taskTracker2.canAddMoreTasks());
+  public void replicationIdIsRequestedBeforeObjectDefinition() throws HiveException {
+    new HiveWrapper.Tuple<>(specFunction, tableFunction);
+    InOrder inOrder = Mockito.inOrder(specFunction, tableFunction);
+    inOrder.verify(specFunction).fromMetaStore();
+    inOrder.verify(tableFunction).fromMetaStore();
   }
 }

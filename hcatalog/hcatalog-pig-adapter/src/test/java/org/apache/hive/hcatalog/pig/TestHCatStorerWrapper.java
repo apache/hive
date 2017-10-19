@@ -27,8 +27,8 @@ import java.util.UUID;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 
 import org.apache.hive.hcatalog.HcatTestUtils;
-import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 
+import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 

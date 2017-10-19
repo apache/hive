@@ -17,22 +17,10 @@
  */
 package org.apache.hive.service.cli.thrift;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hive.service.Service;
 import org.apache.hive.service.auth.HiveAuthConstants;
-import org.apache.hive.service.auth.HiveAuthConstants.AuthTypes;
-import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.server.HiveServer2;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -40,7 +28,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ThriftCliServiceMessageSizeTest {
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+public class TestThriftCliServiceMessageSize {
   protected static int port;
   protected static String host = "localhost";
   protected static HiveServer2 hiveServer2;
