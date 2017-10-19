@@ -187,6 +187,7 @@ public class TestHs2Hooks {
     Properties connProp = new Properties();
     connProp.setProperty("user", System.getProperty("user.name"));
     connProp.setProperty("password", "");
+
     HiveConnection connection = new HiveConnection("jdbc:hive2://localhost:10000/default", connProp);
     Statement stmt = connection.createStatement();
     stmt.executeQuery("show databases");
@@ -234,5 +235,40 @@ public class TestHs2Hooks {
     Assert.assertTrue(SemanticAnalysisHook.ipAddress,
         SemanticAnalysisHook.ipAddress.contains("127.0.0.1"));
     Assert.assertEquals("show tables", SemanticAnalysisHook.command);
+
+    stmt.close();
+    connection.close();
+  }
+
+  @Test
+  public void testPostAnalysisHookContexts() throws Throwable {
+    Properties connProp = new Properties();
+    connProp.setProperty("user", System.getProperty("user.name"));
+    connProp.setProperty("password", "");
+
+    HiveConnection connection = new HiveConnection("jdbc:hive2://localhost:10000/default", connProp);
+    Statement stmt = connection.createStatement();
+    stmt.execute("create table testPostAnalysisHookContexts as select '3'");
+    Throwable error = PostExecHook.error;
+    if (error != null) {
+      throw error;
+    }
+    error = PreExecHook.error;
+    if (error != null) {
+      throw error;
+    }
+
+    Assert.assertEquals(HiveOperation.CREATETABLE_AS_SELECT, SemanticAnalysisHook.commandType);
+
+    error = SemanticAnalysisHook.preAnalyzeError;
+    if (error != null) {
+      throw error;
+    }
+    error = SemanticAnalysisHook.postAnalyzeError;
+    if (error != null) {
+      throw error;
+    }
+    stmt.close();
+    connection.close();
   }
 }
