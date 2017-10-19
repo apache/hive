@@ -21,7 +21,7 @@ limitations under the License.
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-ptest</artifactId>
-  <version>1.0</version>
+  <version>3.0</version>
   <packaging>war</packaging>
   <name>hive-ptest</name>
   <properties>

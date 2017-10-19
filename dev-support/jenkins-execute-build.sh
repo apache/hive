@@ -37,7 +37,7 @@ build_ptest_client() {
 
 	git clone --depth 1 ${GIT_CLONE_ARGS}
 	cd hive/testutils/ptest2
-	mvn clean package -DskipTests -Drat.numUnapprovedLicenses=1000 -Dmaven.repo.local=$MVN_REPO_LOCAL
+	mvn clean package -B -DskipTests -Drat.numUnapprovedLicenses=1000 -Dmaven.repo.local=$MVN_REPO_LOCAL
 }
 
 # Call the ptest server to run all tests
