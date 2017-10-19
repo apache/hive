@@ -38,10 +38,11 @@ import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 
 
 public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
-  protected static final String UPGRADE_FILE_PREFIX = "upgrade-";
+  private static final String UPGRADE_FILE_PREFIX = "upgrade-";
   private static final String INIT_FILE_PREFIX = "hive-schema-";
   private static final String VERSION_UPGRADE_LIST = "upgrade.order";
   private static final String PRE_UPGRADE_PREFIX = "pre-";
+  private static final String CREATE_USER_PREFIX = "create-user";
   protected final String dbType;
   private String[] hiveSchemaVersions;
   private final String hiveHome;
@@ -137,6 +138,17 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
     return initScriptName;
   }
 
+  @Override
+  public String getCreateUserScript() throws HiveMetaException {
+    String createScript = CREATE_USER_PREFIX + "." + dbType + SQL_FILE_EXTENSION;
+    // check if the file exists
+    if (!(new File(getMetaStoreScriptDir() + File.separatorChar +
+        createScript).exists())) {
+      throw new HiveMetaException("Unable to find create user file, expected: " + createScript);
+    }
+    return createScript;
+  }
+
   /**
    * Find the directory of metastore scripts
    * @return
@@ -209,7 +221,7 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
       throws HiveMetaException {
     String versionQuery;
     boolean needsQuotedIdentifier =
-        HiveSchemaHelper.getDbCommandParser(connectionInfo.getDbType()).needsQuotedIdentifier();
+        HiveSchemaHelper.getDbCommandParser(connectionInfo.getDbType(), false).needsQuotedIdentifier();
     if (needsQuotedIdentifier) {
       versionQuery = "select t.\"SCHEMA_VERSION\" from \"VERSION\" t";
     } else {

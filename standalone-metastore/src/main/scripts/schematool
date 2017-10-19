@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,29 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-THISSERVICE=metastore
-export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
+bin=`dirname "$0"`
+bin=`cd "$bin"; pwd`
 
-metastore() {
-  echo "$(timestamp): Starting Hive Metastore Server"
-  CLASS=org.apache.hadoop.hive.metastore.HiveMetaStore
-  if $cygwin; then
-    HIVE_LIB=`cygpath -w "$HIVE_LIB"`
-  fi
-  JAR=${HIVE_LIB}/hive-metastore-*.jar
-
-  # hadoop 20 or newer - skip the aux_jars option and hiveconf
-
-  export HADOOP_CLIENT_OPTS=" -Dproc_metastore $HADOOP_CLIENT_OPTS "
-  export HADOOP_OPTS="$HIVE_METASTORE_HADOOP_OPTS $HADOOP_OPTS"
-  exec $HADOOP jar $JAR $CLASS "$@"
-}
-
-metastore_help() {
-  metastore -h
-}
-
-timestamp()
-{
- date +"%Y-%m-%d %T"
-}
+. "$bin"/base --service schemaTool "$@"
