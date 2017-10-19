@@ -58,6 +58,7 @@ public class HiveSemanticAnalyzerHookContextImpl implements HiveSemanticAnalyzer
   public void update(BaseSemanticAnalyzer sem) {
     this.inputs = sem.getInputs();
     this.outputs = sem.getOutputs();
+    this.commandType = sem.getQueryState().getHiveOperation();
   }
 
   @Override
