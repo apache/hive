@@ -1072,16 +1072,26 @@ public final class PrimitiveObjectInspectorUtils {
       try {
         result = Date.valueOf(s);
       } catch (IllegalArgumentException e) {
-        result = null;
+        Timestamp ts = getTimestampFromString(s);
+        if (ts != null) {
+          result = new Date(ts.getTime());
+        } else {
+          result = null;
+        }
       }
       break;
     case CHAR:
     case VARCHAR: {
+      String val = getString(o, oi).trim();
       try {
-        String val = getString(o, oi).trim();
         result = Date.valueOf(val);
       } catch (IllegalArgumentException e) {
-        result = null;
+        Timestamp ts = getTimestampFromString(val);
+        if (ts != null) {
+          result = new Date(ts.getTime());
+        } else {
+          result = null;
+        }
       }
       break;
     }

@@ -205,9 +205,9 @@ STAGE PLANS:
           alias: src
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: null (type: date)
+            expressions: 1970-12-31 (type: date)
             outputColumnNames: _col0
-            Statistics: Num rows: 500 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS TEXTFILE
