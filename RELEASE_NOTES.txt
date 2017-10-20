@@ -1,23 +1,8 @@
 
-Release Notes - Hive - Version 2.3.0
+Release Notes - Hive - Version 2.3.1
 
 ** Sub-task
-    * [HIVE-14170] - Beeline IncrementalRows should buffer rows and incrementally re-calculate width if TableOutputFormat is used
-    * [HIVE-14807] - analyze table compute statistics fails due to presence of Infinity value in double column
-    * [HIVE-15556] - Replicate views
-    * [HIVE-16186] - REPL DUMP shows last event ID of the database even if we use LIMIT option.
-    * [HIVE-16249] - With column stats, mergejoin.q throws NPE
-    * [HIVE-16293] - Column pruner should continue to work when SEL has more than 1 child
-    * [HIVE-16387] - Fix failing test org.apache.hive.jdbc.TestJdbcDriver2.testResultSetMetaData
-    * [HIVE-16440] - Fix failing test columnstats_partlvl_invalid_values when autogather column stats is on
-    * [HIVE-16504] - Addition of binary licenses broke rat check
-    * [HIVE-16535] - Hive fails to build from source code tarball
-    * [HIVE-16537] - Add missing AL files
-    * [HIVE-16542] - make merge that targets acid 2.0 table fail-fast 
-    * [HIVE-16672] - Parquet vectorization doesn't work for tables with partition info
-    * [HIVE-16765] - ParquetFileReader should be closed to avoid resource leak
-    * [HIVE-17071] - Make hive 2.3 depend on storage-api-2.4
-    * [HIVE-17096] - Fix test failures in 2.3 branch
+    * [HIVE-17514] - Use SHA-256 for cookie signer to improve security
 
 
 
@@ -26,52 +11,12 @@ Release Notes - Hive - Version 2.3.0
 
 
 ** Bug
-    * [HIVE-7224] - Set incremental printing to true by default in Beeline
-    * [HIVE-9815] - Metastore column"SERDE_PARAMS"."PARAM_VALUE"  limited to 4000 bytes
-    * [HIVE-14077] - add implicit decimal arithmetic q test, fix issues if found 
-    * [HIVE-14801] - improve TestPartitionNameWhitelistValidation stability
-    * [HIVE-14864] - Distcp is not called from MoveTask when src is a directory
-    * [HIVE-15035] - Clean up Hive licenses for binary distribution
-    * [HIVE-15144] - JSON.org license is now CatX
-    * [HIVE-15249] - HIve 2.1.0 is throwing InvalidObjectException(message:Invalid column type name is too long
-    * [HIVE-15829] - LLAP text cache: disable memory tracking on the writer
-    * [HIVE-15923] - Hive default partition causes errors in get partitions
-    * [HIVE-16007] - When the query does not complie the LogRunnable never stops
-    * [HIVE-16080] - Add parquet to possible values for hive.default.fileformat and hive.default.fileformat.managed
-    * [HIVE-16188] - beeline should block the connection if given invalid database name.
-    * [HIVE-16193] - Hive show compactions not reflecting the status of the application
-    * [HIVE-16219] - metastore notification_log contains serialized message with  non functional fields
-    * [HIVE-16274] - Support tuning of NDV of columns using lower/upper bounds
-    * [HIVE-16287] - Alter table partition rename with location - moves partition back to hive warehouse
-    * [HIVE-16301] - Preparing for 2.3 development.
-    * [HIVE-16305] - Additional Datanucleus ClassLoaderResolverImpl leaks causing HS2 OOM
-    * [HIVE-16308] - PreExecutePrinter and PostExecutePrinter should log to INFO level instead of ERROR
-    * [HIVE-16310] - Get the output operators of Reducesink when vectorization is on
-    * [HIVE-16315] - Describe table doesn't show num of partitions
-    * [HIVE-16318] - LLAP cache: address some issues in 2.2/2.3
-    * [HIVE-16321] - Possible deadlock in metastore with Acid enabled
-    * [HIVE-16336] - Rename hive.spark.use.file.size.for.mapjoin to hive.spark.use.ts.stats.for.mapjoin
-    * [HIVE-16341] - Tez Task Execution Summary has incorrect input record counts on some operators
-    * [HIVE-16366] - Hive 2.3 release planning
-    * [HIVE-16380] - removing global test dependency of jsonassert
-    * [HIVE-16385] - StatsNoJobTask could exit early before all partitions have been processed
-    * [HIVE-16390] - LLAP IO should take job config into account; also LLAP config should load defaults
-    * [HIVE-16399] - create an index for tc_txnid in TXN_COMPONENTS
-    * [HIVE-16403] - LLAP UI shows the wrong number of executors
-    * [HIVE-16459] - Forward channelInactive to RpcDispatcher
-    * [HIVE-16461] - DagUtils checks local resource size on the remote fs
-    * [HIVE-16465] - NullPointer Exception when enable vectorization for Parquet file format
-    * [HIVE-16473] - Hive-on-Tez may fail to write to an HBase table
-    * [HIVE-16519] - Fix exception thrown by checkOutputSpecs
-    * [HIVE-16545] - LLAP: bug in arena size determination logic
-    * [HIVE-16547] - LLAP: may not unlock buffers in some cases
-    * [HIVE-16577] - Syntax error in the metastore init scripts for mssql
-    * [HIVE-16667] - PostgreSQL metastore handling of CLOB types for COLUMNS_V2.TYPE_NAME and other field is incorrect
-    * [HIVE-16674] - Hive metastore JVM dumps core
-    * [HIVE-16761] - LLAP IO: SMB joins fail elevator 
-    * [HIVE-16847] - LLAP queue order issue
-    * [HIVE-16864] - add validation to stream position search in LLAP IO
-    * [HIVE-16915] - partition column count is not determined correctly in LLAP IO non-vectorized wrapper
+    * [HIVE-17562] - ACID 1.0 + ETL strategy should treat empty compacted files as uncovered deltas
+    * [HIVE-17664] - Refactor and add new tests
+    * [HIVE-17665] - Update netty-all to latest 4.0.x.Final
+    * [HIVE-17705] - HIVE-17562 is returning incorrect results
+
+
 
 
 
@@ -79,22 +24,11 @@ Release Notes - Hive - Version 2.3.0
 
 
 ** Improvement
-    * [HIVE-12274] - Increase width of columns used for general configuration in the metastore.
-    * [HIVE-12299] - Hive Column Data Type definition in schema limited to 4000 characters - too small
-    * [HIVE-14145] - Too small length of column 'PARAM_VALUE' in table 'SERDE_PARAMS'
-    * [HIVE-14340] - Add a new hook triggers before query compilation and after query execution
-    * [HIVE-15880] - Allow insert overwrite and truncate table query to use auto.purge table property
-    * [HIVE-16115] - Stop printing progress info from operation logs with beeline progress bar
-    * [HIVE-16164] - Provide mechanism for passing HMS notification ID between transactional and non-transactional listeners.
-    * [HIVE-16933] - ORA-00060: deadlock detected while waiting on commit
+    * [HIVE-17048] - Pass HiveOperation info to HiveSemanticAnalyzerHook through HiveSemanticAnalyzerHookContext
 
 
 
 
-** New Feature
-    * [HIVE-14233] - Improve vectorization for ACID by eliminating row-by-row stitching
-    * [HIVE-15434] - Add UDF to allow interrogation of uniontype values
-    * [HIVE-15691] - Create StrictRegexWriter to work with RegexSerializer for Flume Hive Sink
 
 
 
@@ -111,14 +45,8 @@ Release Notes - Hive - Version 2.3.0
 
 
 ** Task
-    * [HIVE-16260] - Remove parallel edges of semijoin with map joins.
+    * [HIVE-17862] - Update copyright date in NOTICE
 
-
-
-** Test
-    * [HIVE-16288] - Add blobstore tests for ORC and RCFILE file formats
-    * [HIVE-16415] - Add tests covering single inserts of zero rows
-    * [HIVE-16454] - Add blobstore tests for inserting empty into dynamic partition/list bucket tables & inserting cross blobstore tables
 
 
 
