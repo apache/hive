@@ -63,7 +63,7 @@ public class HiveLockObject {
       this.lockTime = StringInternUtils.internIfNotNull(removeDelimiter(lockTime));
       this.lockMode = removeDelimiter(lockMode);
       this.queryStr = StringInternUtils.internIfNotNull(
-          queryStr == null ? null : StringUtils.substring(removeDelimiter(queryStr.trim()), 0,
+          queryStr == null ? null : StringUtils.abbreviate(removeDelimiter(queryStr.trim()),
               conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_QUERY_STRING_MAX_LENGTH)));
     }
 
