@@ -48,7 +48,7 @@ call_ptest_server() {
 
 	build_ptest_client || return 1
 
-	local PTEST_CLASSPATH="$PTEST_BUILD_DIR/hive/testutils/ptest2/target/hive-ptest-1.0-classes.jar:$PTEST_BUILD_DIR/hive/testutils/ptest2/target/lib/*"
+	local PTEST_CLASSPATH="$PTEST_BUILD_DIR/hive/testutils/ptest2/target/hive-ptest-3.0-classes.jar:$PTEST_BUILD_DIR/hive/testutils/ptest2/target/lib/*"
 
 	java -cp "$PTEST_CLASSPATH" org.apache.hive.ptest.api.client.PTestClient --command testStart \
 		--outputDir "$PTEST_BUILD_DIR/hive/testutils/ptest2/target" --password "$JIRA_PASSWORD" "$@"
