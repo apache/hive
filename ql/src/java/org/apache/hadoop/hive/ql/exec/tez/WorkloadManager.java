@@ -17,12 +17,16 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -44,8 +48,6 @@ import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-
 
 /** Workload management entry point for HS2. */
 public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValidator
@@ -60,11 +62,21 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   private final RestrictedConfigChecker restrictedConfig;
   private final QueryAllocationManager allocationManager;
   private final String yarnQueue;
+  // Note: it's not clear that we need to track this - unlike PoolManager we don't have non-pool
+  //       sessions, so the pool itself could internally track the sessions it gave out, since
+  //       calling close on an unopened session is probably harmless.
+  private final IdentityHashMap<TezSessionPoolSession, Boolean> openSessions =
+      new IdentityHashMap<>();
+  private final int amRegistryTimeoutMs;
+
+
   /** Sessions given out (i.e. between get... and return... calls), separated by Hive pool. */
   private final ReentrantReadWriteLock poolsLock = new ReentrantReadWriteLock();
-  private final List<TezSessionPoolSession> openSessions = new LinkedList<>();
   private final Map<String, PoolState> pools = new HashMap<>();
-  private final int amRegistryTimeoutMs;
+  // Used to make sure that waiting getSessions don't block update.
+  private int internalPoolsVersion;
+  private UserPoolMapping userPoolMapping;
+
   private SessionTriggerProvider sessionTriggerProvider;
   private TriggerActionHandler triggerActionHandler;
   private TriggerValidatorRunnable triggerValidatorRunnable;
@@ -73,7 +85,30 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // Add stuff here as WM is implemented.
     private final Object lock = new Object();
     private final List<WmTezSession> sessions = new ArrayList<>();
+    private final Semaphore sessionsClaimed;
+
+    private final String fullName;
+    private final double finalFraction;
+    private double finalFractionRemaining;
+    private final int queryParallelism;
     private final List<Trigger> triggers = new ArrayList<>();
+
+    public PoolState(String fullName, int queryParallelism, double fraction) {
+      this.fullName = fullName;
+      this.queryParallelism = queryParallelism;
+      // A fair semaphore to ensure correct queue order.
+      this.sessionsClaimed = new Semaphore(queryParallelism, true);
+      this.finalFraction = this.finalFractionRemaining = fraction;
+    }
+
+    @Override
+    public String toString() {
+      return "[" + fullName + ", query parallelism " + queryParallelism
+          + ", fraction of the cluster " + finalFraction + ", fraction used by child pools "
+          + (finalFraction - finalFractionRemaining) + ", active sessions " + sessions.size()
+          + "]";
+    }
+
 
     public List<Trigger> getTriggers() {
       return triggers;
@@ -93,14 +128,13 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   }
 
   /** Called once, when HS2 initializes. */
-  public static WorkloadManager create(String yarnQueue, HiveConf conf) {
+  public static WorkloadManager create(String yarnQueue, HiveConf conf, TmpResourcePlan plan) {
     assert INSTANCE == null;
     Token<JobTokenIdentifier> amsToken = createAmsToken();
     // We could derive the expected number of AMs to pass in.
     LlapPluginEndpointClient amComm = new LlapPluginEndpointClientImpl(conf, amsToken, -1);
     QueryAllocationManager qam = new GuaranteedTasksAllocator(conf, amComm);
-    // TODO: Hardcode one session for now; initial policies should be passed in.
-    return (INSTANCE = new WorkloadManager(yarnQueue, conf, 1, qam, amsToken));
+    return (INSTANCE = new WorkloadManager(yarnQueue, conf, qam, amsToken, plan));
   }
 
   private static Token<JobTokenIdentifier> createAmsToken() {
@@ -116,11 +150,13 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   }
 
   @VisibleForTesting
-  WorkloadManager(String yarnQueue, HiveConf conf, int numSessions,
-      QueryAllocationManager qam, Token<JobTokenIdentifier> amsToken) {
+  WorkloadManager(String yarnQueue, HiveConf conf,
+      QueryAllocationManager qam, Token<JobTokenIdentifier> amsToken, TmpResourcePlan plan) {
     this.yarnQueue = yarnQueue;
     this.conf = conf;
-    initializeHivePools();
+    int numSessions = initializeHivePools(plan);
+    LOG.info("Initializing with " + numSessions + " total query parallelism");
+
     this.amRegistryTimeoutMs = (int)HiveConf.getTimeVar(
         conf, ConfVars.HIVE_SERVER2_TEZ_WM_AM_REGISTRY_TIMEOUT, TimeUnit.MILLISECONDS);
     sessions = new TezSessionPool<>(conf, numSessions, true);
@@ -138,32 +174,149 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     startTriggerValidator(conf);
   }
 
-  private void initializeHivePools() {
-    // TODO: real implementation
+  private int initializeHivePools(TmpResourcePlan plan) {
     poolsLock.writeLock().lock();
     try {
       // FIXME: Add Triggers from metastore to poolstate
-      pools.put("llap", new PoolState());
+      // Note: we assume here that plan has been validated beforehand, so we don't verify
+      //       that fractions or query parallelism add up.
+      int totalQueryParallelism = 0;
+      // Use recursion to update parents more conveniently; we don't expect a big tree.
+      for (TmpHivePool pool : plan.getRootPools()) {
+        totalQueryParallelism += addHivePool(pool, null);
+      }
+      this.userPoolMapping = new UserPoolMapping(plan.getMappings(), pools.keySet());
+      internalPoolsVersion = 0; // Initializing for the first time.
+      return totalQueryParallelism;
     } finally {
       poolsLock.writeLock().unlock();
     }
   }
 
+  private final static char POOL_SEPARATOR = '/';
+  private int addHivePool(TmpHivePool pool, PoolState parent) {
+    String fullName = pool.getName();
+    int totalQueryParallelism = pool.getQueryParallelism();
+    double fraction = pool.getResourceFraction();
+    if (parent != null) {
+      fullName = parent.fullName + POOL_SEPARATOR + fullName;
+      fraction = parent.finalFraction * pool.getResourceFraction();
+      parent.finalFractionRemaining -= fraction;
+    }
+    PoolState state = new PoolState(fullName, totalQueryParallelism, fraction);
+    if (pool.getChildren() != null) {
+      for (TmpHivePool child : pool.getChildren()) {
+        totalQueryParallelism += addHivePool(child, state);
+      }
+    }
+    LOG.info("Adding Hive pool: " + state);
+    pools.put(fullName, state);
+    return totalQueryParallelism;
+  }
+
   public TezSessionState getSession(
       TezSessionState session, String userName, HiveConf conf) throws Exception {
     validateConfig(conf);
-    String poolName = mapSessionToPoolName(userName);
-    // TODO: do query parallelism enforcement here based on the policies and pools.
-    while (true) {
-      WmTezSession result = checkSessionForReuse(session);
-      // TODO: when proper AM management is implemented, we should call tryGet... here, because the
-      //       parallelism will be enforced here, and pool would always have a session for us.
-      result = (result == null ? sessions.getSession() : result);
-      result.setQueueName(yarnQueue);
-      result.setPoolName(poolName);
-      if (!ensureAmIsRegistered(result)) continue; // Try another.
-      redistributePoolAllocations(poolName, result, null);
-      return result;
+    WmTezSession result = checkSessionForReuse(session);
+    boolean hasAcquired = false;
+    String poolName = null;
+    while (!hasAcquired) { // This loop handles concurrent plan updates while we are waiting.
+      poolName = userPoolMapping.mapSessionToPoolName(userName);
+      if (poolName == null) {
+        throw new HiveException("Cannot find any pool mapping for user " + userName);
+      }
+      int internalVersion = -1;
+      Semaphore sessionsClaimed = null;
+      poolsLock.readLock().lock();
+      try {
+        PoolState pool = pools.get(poolName);
+        if (pool == null) throw new AssertionError("Pool " + poolName + " not found.");
+        // No need to take the pool lock, semaphore is final.
+        sessionsClaimed = pool.sessionsClaimed;
+        internalVersion = internalPoolsVersion;
+      } finally {
+        poolsLock.readLock().unlock();
+      }
+      // One cannot simply reuse the session if there are other queries waiting; to maintain
+      // fairness, we'll try to take the semaphore instantly, and if that fails we'll return
+      // this session back to the pool and potentially give the user a new session later.
+      if (result != null) {
+        // Handle the special case; the pool may be exactly at capacity w/o queue. In that
+        // case, we still should be able to reuse.
+        boolean isFromTheSamePool = false;
+        String oldPoolName = result.getPoolName();
+        if (poolName.equals(oldPoolName)) {
+          sessionsClaimed.release();
+          isFromTheSamePool = true;
+        }
+        // Note: we call timed acquire because untimed one ignores fairness.
+        hasAcquired = sessionsClaimed.tryAcquire(1, TimeUnit.MILLISECONDS);
+        if (hasAcquired) {
+          poolsLock.readLock().lock();
+          boolean doUnlock = true;
+          try {
+            if (internalVersion == internalPoolsVersion) {
+              if (!isFromTheSamePool) {
+                // Free up the usage in the old pool. TODO: ideally not under lock; not critical.
+                redistributePoolAllocations(oldPoolName, null, result, true);
+              }
+              doUnlock = false; // Do not unlock; see below.
+              break;
+            }
+          } finally {
+            if (doUnlock) {
+              poolsLock.readLock().unlock();
+            }
+          }
+          hasAcquired = false;
+        }
+        // Note: we are short-circuiting session::returnToSessionManager to supply the flag
+        returnAfterUse(result, !isFromTheSamePool);
+        result = null;
+      }
+      // We don't expect frequent updates, so check every second.
+      while (!(hasAcquired = (hasAcquired || sessionsClaimed.tryAcquire(1, TimeUnit.SECONDS)))) {
+        poolsLock.readLock().lock();
+        try {
+          if (internalVersion != internalPoolsVersion) break;
+        } finally {
+          poolsLock.readLock().unlock();
+        }
+      }
+      if (!hasAcquired) continue;
+      // Keep it simple for now - everything between acquiring the semaphore and adding the session
+      // to the pool state is done under read lock, blocking pool updates. It's possible to make
+      // it more granular if needed. The only potentially lengthy operation is waiting for an
+      // expired session to be restarted in the session pool.
+      poolsLock.readLock().lock();
+      if (internalVersion == internalPoolsVersion) break;
+      poolsLock.readLock().unlock();
+      hasAcquired = false;
+    }
+    // We are holding the lock from the end of the loop.
+    try {
+      assert hasAcquired;
+      while (true) {
+        // TODO: ideally, we'd need to implement tryGet and deal with the valid wait from a session
+        //       restarting somehow, as opposed to the invalid case of a session missing from the
+        //       pool due to some bug. Keep a "restarting" counter in the pool?
+        boolean isFromTheSamePool = false;
+        if (result == null) {
+          result = sessions.getSession();
+        } else {
+          // If we are just reusing the session from the same pool, do not adjust allocations.
+          isFromTheSamePool = poolName.equals(result.getPoolName());
+        }
+        result.setQueueName(yarnQueue);
+        result.setPoolName(poolName);
+        if (!ensureAmIsRegistered(result)) continue; // Try another.
+        if (!isFromTheSamePool) {
+          redistributePoolAllocations(poolName, result, null, false);
+        }
+        return result;
+      }
+    } finally {
+      poolsLock.readLock().unlock();
     }
   }
 
@@ -181,12 +334,14 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   }
 
   private void redistributePoolAllocations(
-      String poolName, WmTezSession sessionToAdd, WmTezSession sessionToRemove) {
+      String poolName, WmTezSession sessionToAdd, WmTezSession sessionToRemove,
+      boolean releaseParallelism) {
     List<WmTezSession> sessionsToUpdate = null;
     double totalAlloc = 0;
     assert sessionToAdd == null || poolName.equals(sessionToAdd.getPoolName());
     assert sessionToRemove == null || poolName.equals(sessionToRemove.getPoolName());
     poolsLock.readLock().lock();
+    boolean hasRemoveFailed = false;
     try {
       PoolState pool = pools.get(poolName);
       synchronized (pool.lock) {
@@ -195,12 +350,21 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
           pool.sessions.add(sessionToAdd);
         }
         if (sessionToRemove != null) {
+          // TODO: this assumes that the update process will take the write lock, and make
+          //       everything right w.r.t. semaphores, pool names and other stuff, since we might
+          //       be releasing a different semaphore from the one we acquired if it's across
+          //       the update. If the magic in the update is weak, this may become more involved.
           if (!pool.sessions.remove(sessionToRemove)) {
             LOG.error("Session " + sessionToRemove + " could not be removed from the pool");
+            if (releaseParallelism) {
+              hasRemoveFailed = true;
+            }
+          } else if (releaseParallelism) {
+            pool.sessionsClaimed.release();
           }
           sessionToRemove.setClusterFraction(0);
         }
-        totalAlloc = updatePoolAllocations(pool.sessions);
+        totalAlloc = updatePoolAllocations(pool.sessions, pool.finalFractionRemaining);
         sessionsToUpdate = new ArrayList<>(pool.sessions);
       }
     } finally {
@@ -208,6 +372,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     }
     allocationManager.updateSessionsAsync(totalAlloc, sessionsToUpdate);
     updateSessionsTriggers();
+    if (hasRemoveFailed) {
+      throw new AssertionError("Cannot remove the session from the pool and release "
+          + "the query slot; HS2 may fail to accept queries");
+    }
   }
 
   private WmTezSession checkSessionForReuse(TezSessionState session) throws Exception {
@@ -232,18 +400,13 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     return null;
   }
 
-  private double updatePoolAllocations(List<WmTezSession> sessions) {
+  private double updatePoolAllocations(List<WmTezSession> sessions, double totalFraction) {
     // TODO: real implementation involving in-the-pool policy interface, etc.
-    double allocation = 1.0 / sessions.size();
+    double allocation = totalFraction / sessions.size();
     for (WmTezSession session : sessions) {
       session.setClusterFraction(allocation);
     }
-    return 1.0;
-  }
-
-  private String mapSessionToPoolName(String userName) {
-    // TODO: real implementation, probably calling into another class initialized with policies.
-    return "llap";
+    return totalFraction;
   }
 
   private void validateConfig(HiveConf conf) throws HiveException {
@@ -272,7 +435,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   public void stop() throws Exception {
     List<TezSessionPoolSession> sessionsToClose = null;
     synchronized (openSessions) {
-      sessionsToClose = new ArrayList<TezSessionPoolSession>(openSessions);
+      sessionsToClose = new ArrayList<>(openSessions.keySet());
     }
 
     for (TezSessionPoolSession sessionState : sessionsToClose) {
@@ -302,10 +465,15 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
   @Override
   public void returnAfterUse(TezSessionPoolSession session) throws Exception {
+    returnAfterUse(session, true);
+  }
+
+  private void returnAfterUse(
+      TezSessionPoolSession session, boolean releaseParallelism) throws Exception {
     boolean isInterrupted = Thread.interrupted();
     try {
       WmTezSession wmSession = ensureOwnedSession(session);
-      redistributePoolAllocations(wmSession.getPoolName(), null, wmSession);
+      redistributePoolAllocations(wmSession.getPoolName(), null, wmSession, releaseParallelism);
       sessions.returnSession((WmTezSession) session);
     } finally {
       // Reset the interrupt status.
@@ -314,7 +482,6 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       }
     }
   }
-
 
   /** Closes a running (expired) pool session and reopens it. */
   @Override
@@ -334,7 +501,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   @Override
   public void registerOpenSession(TezSessionPoolSession session) {
     synchronized (openSessions) {
-      openSessions.add(session);
+      openSessions.put(session, null);
     }
     updateSessionsTriggers();
   }
@@ -382,7 +549,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     if (!ensureAmIsRegistered(newSession)) {
       throw new Exception("Session is not usable after reopen");
     }
-    redistributePoolAllocations(oldSession.getPoolName(), newSession, oldSession);
+    // Do not release the parallelism - we are just replacing the session in the same pool.
+    redistributePoolAllocations(oldSession.getPoolName(), newSession, oldSession, false);
     return newSession;
   }
 
@@ -392,7 +560,12 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // We never want to lose pool sessions. Replace it instead; al trigger duck redistribution.
     WmTezSession wmSession = ensureOwnedSession(session);
     closeAndReopenPoolSession(wmSession);
-    redistributePoolAllocations(wmSession.getPoolName(), null, wmSession);
+    redistributePoolAllocations(wmSession.getPoolName(), null, wmSession, true);
+  }
+
+  @VisibleForTesting
+  int getNumSessions() {
+    return sessions.getInitialSize();
   }
 
   @Override
@@ -426,5 +599,79 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       counterNames.add(trigger.getExpression().getCounterLimit().getName());
     }
     return counterNames;
+  }
+
+
+  // TODO: temporary until real WM schema is created.
+  public static class TmpHivePool {
+    private final String name;
+    private final List<TmpHivePool> children;
+    private final int queryParallelism;
+    private final double resourceFraction;
+
+    public TmpHivePool(String name,
+        List<TmpHivePool> children, int queryParallelism, double resourceFraction) {
+      this.name = name;
+      this.children = children;
+      this.queryParallelism = queryParallelism;
+      this.resourceFraction = resourceFraction;
+    }
+
+    public String getName() {
+      return name;
+    }
+    public List<TmpHivePool> getChildren() {
+      return children;
+    }
+    public int getQueryParallelism() {
+      return queryParallelism;
+    }
+    public double getResourceFraction() {
+      return resourceFraction;
+    }
+  }
+
+  public static enum TmpUserMappingType {
+    USER, DEFAULT
+  }
+
+  public static class TmpUserMapping {
+    private final TmpUserMappingType type;
+    private final String name;
+    private final String poolName;
+    private final int priority;
+    public TmpUserMapping(TmpUserMappingType type, String name, String poolName, int priority) {
+      this.type = type;
+      this.name = name;
+      this.poolName = poolName;
+      this.priority = priority;
+    }
+    public TmpUserMappingType getType() {
+      return type;
+    }
+    public String getName() {
+      return name;
+    }
+    public String getPoolName() {
+      return poolName;
+    }
+    public int getPriority() {
+      return priority;
+    }
+  }
+
+  public static class TmpResourcePlan {
+    private final List<TmpHivePool> rootPools;
+    private final List<TmpUserMapping> mappings;
+    public TmpResourcePlan(List<TmpHivePool> rootPools, List<TmpUserMapping> mappings) {
+      this.rootPools = rootPools;
+      this.mappings = mappings;
+    }
+    public List<TmpHivePool> getRootPools() {
+      return rootPools;
+    }
+    public List<TmpUserMapping> getMappings() {
+      return mappings;
+    }
   }
 }

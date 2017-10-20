@@ -73,7 +73,7 @@ public class TestTriggersWorkloadManager extends TestTriggersTezSessionPoolManag
   @Override
   protected void setupTriggers(final List<Trigger> triggers) throws Exception {
     WorkloadManager wm = WorkloadManager.getInstance();
-    WorkloadManager.PoolState poolState = spy(new WorkloadManager.PoolState());
+    WorkloadManager.PoolState poolState = spy(new WorkloadManager.PoolState("llap", 1, 1f));
     when(poolState.getTriggers()).thenReturn(triggers);
     wm.getPools().put("llap", poolState);
   }

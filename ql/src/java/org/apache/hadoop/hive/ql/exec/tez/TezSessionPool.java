@@ -50,6 +50,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       new ConcurrentLinkedQueue<SessionType>();
 
   private final HiveConf initConf;
+  private int initialSize;
 
   // TODO: eventually, this will need to support resize. That would probably require replacement
   //       with a RW lock, a semaphore and linked list.
@@ -71,6 +72,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
   }
 
   void startInitialSessions() throws Exception {
+    initialSize = initialSessions.size();
     if (initialSessions.isEmpty()) return;
     if (amRegistry != null) {
       amRegistry.start();
@@ -239,5 +241,9 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       LOG.warn("AM for " + sessionId + " has disappeared from the registry");
       bySessionId.remove(sessionId);
     }
+  }
+
+  int getInitialSize() {
+    return initialSize;
   }
 }

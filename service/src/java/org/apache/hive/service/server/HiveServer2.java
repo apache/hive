@@ -18,6 +18,13 @@
 
 package org.apache.hive.service.server;
 
+import com.google.common.collect.Lists;
+
+import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpHivePool;
+import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpResourcePlan;
+import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpUserMapping;
+import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpUserMappingType;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -179,7 +186,9 @@ public class HiveServer2 extends CompositeService {
     // Initialize workload management.
     String wmQueue = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE);
     if (wmQueue != null && !wmQueue.isEmpty()) {
-      wm = WorkloadManager.create(wmQueue, hiveConf);
+      wm = WorkloadManager.create(wmQueue, hiveConf, new TmpResourcePlan(
+          Lists.newArrayList(new TmpHivePool("llap", null, 1, 1.0f)),
+          Lists.newArrayList(new TmpUserMapping(TmpUserMappingType.DEFAULT, "", "llap", 0))));
     } else {
       wm = null;
     }
