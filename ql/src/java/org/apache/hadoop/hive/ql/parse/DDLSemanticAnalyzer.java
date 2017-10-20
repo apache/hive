@@ -92,7 +92,6 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
-import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
@@ -598,10 +597,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("column type not found");
     }
 
-    ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tbl.getDbName() + "." + tbl.getTableName(),
-        Arrays.asList(colName), Arrays.asList(colType), partSpec == null);
+    ColumnStatsUpdateWork columnStatsUpdateWork =
+        new ColumnStatsUpdateWork(partName, mapProp, tbl.getDbName(), tbl.getTableName(), colName, colType);
     ColumnStatsUpdateTask cStatsUpdateTask = (ColumnStatsUpdateTask) TaskFactory
-        .get(new ColumnStatsUpdateWork(cStatsDesc, partName, mapProp, SessionState.get().getCurrentDatabase()), conf);
+        .get(columnStatsUpdateWork, conf);
     rootTasks.add(cStatsUpdateTask);
   }
 

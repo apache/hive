@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -77,25 +76,22 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private ColumnStatistics constructColumnStatsFromInput()
       throws SemanticException, MetaException {
 
-    String dbName = work.getCurrentDatabaseName();
-    ColumnStatsDesc desc = work.getColStats();
-    String tableName = desc.getTableName();
+    String dbName = work.dbName();
+    String tableName = work.getTableName();
     String partName = work.getPartName();
-    List<String> colName = desc.getColName();
-    List<String> colType = desc.getColType();
+    String colName = work.getColName();
+    String columnType = work.getColType();
 
     ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
 
     // grammar prohibits more than 1 column so we are guaranteed to have only 1
     // element in this lists.
 
-    statsObj.setColName(colName.get(0));
+    statsObj.setColName(colName);
 
-    statsObj.setColType(colType.get(0));
+    statsObj.setColType(columnType);
 
     ColumnStatisticsData statsData = new ColumnStatisticsData();
-
-    String columnType = colType.get(0);
 
     if (columnType.equalsIgnoreCase("long") || columnType.equalsIgnoreCase("tinyint")
         || columnType.equalsIgnoreCase("smallint") || columnType.equalsIgnoreCase("int")
@@ -267,8 +263,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
     } else {
       throw new SemanticException("Unsupported type");
     }
-    String [] names = Utilities.getDbTableName(dbName, tableName);
-    ColumnStatisticsDesc statsDesc = getColumnStatsDesc(names[0], names[1],
+    ColumnStatisticsDesc statsDesc = getColumnStatsDesc(dbName, tableName,
         partName, partName == null);
     ColumnStatistics colStat = new ColumnStatistics();
     colStat.setStatsDesc(statsDesc);

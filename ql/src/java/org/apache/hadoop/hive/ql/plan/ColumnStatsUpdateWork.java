@@ -34,27 +34,30 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Column Stats Update Work", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ColumnStatsUpdateWork implements Serializable {
   private static final long serialVersionUID = 1L;
-  private ColumnStatsDesc colStats;
-  private String partName;
-  private Map<String, String> mapProp;
-  private String currentDatabaseName;
+  private final String partName;
+  private final Map<String, String> mapProp;
+  private final String dbName;
+  private final String tableName;
+  private final String colName;
+  private final String colType;
 
-  public ColumnStatsUpdateWork(ColumnStatsDesc colStats, String partName,
-      Map<String, String> mapProp, String currentDatabaseName) {
+  public ColumnStatsUpdateWork(String partName,
+      Map<String, String> mapProp,
+      String dbName,
+      String tableName,
+      String colName, 
+      String colType) {
     this.partName = partName;
-    this.colStats = colStats;
     this.mapProp = mapProp;
-    this.currentDatabaseName = currentDatabaseName;
+    this.dbName = dbName;
+    this.tableName = tableName;
+    this.colName = colName;
+    this.colType = colType;
   }
 
   @Override
   public String toString() {
     return null;
-  }
-
-  @Explain(displayName = "Column Stats Desc")
-  public ColumnStatsDesc getColStats() {
-    return colStats;
   }
 
   public String getPartName() {
@@ -65,11 +68,19 @@ public class ColumnStatsUpdateWork implements Serializable {
     return mapProp;
   }
 
-  public String getCurrentDatabaseName() {
-    return currentDatabaseName;
+  public String dbName() {
+    return dbName;
   }
 
-  public void setCurrentDatabaseName(String currentDatabaseName) {
-    this.currentDatabaseName = currentDatabaseName;
+  public String getTableName() {
+    return tableName;
+  }
+
+  public String getColName() {
+    return colName;
+  }
+
+  public String getColType() {
+    return colType;
   }
 }
