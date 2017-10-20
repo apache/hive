@@ -82,13 +82,16 @@ public class JsonReporter extends ScheduledReporter {
 
   private static final FileAttribute<Set<PosixFilePermission>> FILE_ATTRS =
           PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-r--r--"));
+  // Permissions for metric directory
+  private static final FileAttribute<Set<PosixFilePermission>> DIR_ATTRS =
+      PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwxr-xr-x"));
 
   private final MetricRegistry registry;
   private ObjectWriter jsonWriter;
   // Location of JSON file
   private final Path path;
-  // tmpdir is the dirname(path)
-  private final Path tmpDir;
+  // Directory where path resides
+  private final Path metricsDir;
 
   private JsonReporter(MetricRegistry registry, String name, MetricFilter filter,
                        TimeUnit rateUnit, TimeUnit durationUnit, Configuration conf) {
@@ -96,14 +99,25 @@ public class JsonReporter extends ScheduledReporter {
     String pathString = MetastoreConf.getVar(conf, MetastoreConf.ConfVars .METRICS_JSON_FILE_LOCATION);
     path = Paths.get(pathString).toAbsolutePath();
     LOG.info("Reporting metrics to {}", path);
-    // We want to use tmpDir i the same directory as the destination file to support atomic
+    // We want to use metricsDir in the same directory as the destination file to support atomic
     // move of temp file to the destination metrics file
-    tmpDir = path.getParent();
+    metricsDir = path.getParent();
     this.registry = registry;
   }
 
   @Override
   public void start(long period, TimeUnit unit) {
+    // Create metrics directory if it is not present
+    if (!metricsDir.toFile().exists()) {
+      LOG.warn("Metrics directory {} does not exist, creating one", metricsDir);
+      try {
+        // createDirectories creates all non-existent parent directories
+        Files.createDirectories(metricsDir, DIR_ATTRS);
+      } catch (IOException e) {
+        LOG.warn("Failed to initialize JSON reporter: failed to create directory {}: {}", metricsDir, e.getMessage());
+        return;
+      }
+    }
     jsonWriter = new ObjectMapper().registerModule(new MetricsModule(TimeUnit.MILLISECONDS,
         TimeUnit.MILLISECONDS, false)).writerWithDefaultPrettyPrinter();
     super.start(period, unit);
@@ -125,7 +139,7 @@ public class JsonReporter extends ScheduledReporter {
     // Metrics are first dumped to a temp file which is then renamed to the destination
     Path tmpFile = null;
     try {
-      tmpFile = Files.createTempFile(tmpDir, "hmsmetrics", "json", FILE_ATTRS);
+      tmpFile = Files.createTempFile(metricsDir, "hmsmetrics", "json", FILE_ATTRS);
     } catch (IOException e) {
       LOG.error("failed to create temp file for JSON metrics", e);
       return;
@@ -152,7 +166,8 @@ public class JsonReporter extends ScheduledReporter {
       try {
         Files.move(tmpFile, path, StandardCopyOption.REPLACE_EXISTING);
       } catch (IOException e) {
-        LOG.error("Unable to rename temp file {} to {}", tmpFile, path, e);
+        LOG.error("Unable to rename temp file {} to {}", tmpFile, path);
+        LOG.error("Exception during rename", e);
       }
     } finally {
       // If something happened and we were not able to rename the temp file, attempt to remove it
@@ -161,7 +176,7 @@ public class JsonReporter extends ScheduledReporter {
         try {
           Files.delete(tmpFile);
         } catch (Exception e) {
-          LOG.error("failed to delete yemporary metrics file {}", tmpFile, e);
+          LOG.error("failed to delete temporary metrics file " + tmpFile, e);
         }
       }
     }

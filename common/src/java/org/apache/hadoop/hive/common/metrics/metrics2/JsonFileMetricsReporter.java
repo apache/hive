@@ -77,6 +77,9 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
   // Permissions for the metrics file
   private static final FileAttribute<Set<PosixFilePermission>> FILE_ATTRS =
       PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-r--r--"));
+  // Permissions for metric directory
+  private static final FileAttribute<Set<PosixFilePermission>> DIR_ATTRS =
+      PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwxr-xr-x"));
   // Thread name for reporter thread
   private static final String JSON_REPORTER_THREAD_NAME = "json-metric-reporter";
 
@@ -86,8 +89,8 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
   private final long interval;
   // Location of JSON file
   private final Path path;
-  // tmpdir is the dirname(path)
-  private final Path tmpDir;
+  // Directory where path resides
+  private final Path metricsDir;
 
   public JsonFileMetricsReporter(MetricRegistry registry, HiveConf conf) {
     this.metricRegistry = registry;
@@ -99,13 +102,25 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
     String pathString = conf.getVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_LOCATION);
     path = Paths.get(pathString).toAbsolutePath();
     LOGGER.info("Reporting metrics to {}", path);
-    // We want to use tmpDir i the same directory as the destination file to support atomic
+    // We want to use metricsDir in the same directory as the destination file to support atomic
     // move of temp file to the destination metrics file
-    tmpDir = path.getParent();
+    metricsDir = path.getParent();
   }
 
   @Override
   public void start() {
+    // Create metrics directory if it is not present
+    if (!metricsDir.toFile().exists()) {
+      LOGGER.warn("Metrics directory {} does not exist, creating one", metricsDir);
+      try {
+        // createDirectories creates all non-existent parent directories
+        Files.createDirectories(metricsDir, DIR_ATTRS);
+      } catch (IOException e) {
+        LOGGER.error("Failed to create directory {}: {}", metricsDir, e.getMessage());
+        return;
+      }
+    }
+
     executorService = Executors.newScheduledThreadPool(1,
         new ThreadFactoryBuilder().setNameFormat(JSON_REPORTER_THREAD_NAME).build());
     executorService.scheduleWithFixedDelay(this,0, interval, TimeUnit.MILLISECONDS);
@@ -113,7 +128,9 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
 
   @Override
   public void close() {
-    executorService.shutdown();
+    if (executorService != null) {
+      executorService.shutdown();
+    }
   }
 
   @Override
@@ -131,7 +148,7 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
 
       // Metrics are first dumped to a temp file which is then renamed to the destination
       try {
-        tmpFile = Files.createTempFile(tmpDir, "hmetrics", "json", FILE_ATTRS);
+        tmpFile = Files.createTempFile(metricsDir, "hmetrics", "json", FILE_ATTRS);
       } catch (IOException e) {
         LOGGER.error("failed to create temp file for JSON metrics", e);
         return;
@@ -157,8 +174,8 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
       try {
         Files.move(tmpFile, path, StandardCopyOption.REPLACE_EXISTING);
       } catch (Exception e) {
-        LOGGER.error("Unable to rename temp file {} to {}", tmpFile, path, e);
-        return;
+        LOGGER.error("Unable to rename temp file {} to {}", tmpFile, path);
+        LOGGER.error("Exception during rename", e);
       }
     } catch (Throwable t) {
       // catch all errors (throwable and execptions to prevent subsequent tasks from being suppressed)
@@ -170,7 +187,7 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
         try {
           Files.delete(tmpFile);
         } catch (Exception e) {
-          LOGGER.error("failed to delete yemporary metrics file {}", tmpFile, e);
+          LOGGER.error("failed to delete temporary metrics file " +  tmpFile, e);
         }
       }
     }

@@ -35,6 +35,10 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,15 +52,23 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestCodahaleMetrics {
 
+  private static final Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
   private static File jsonReportFile;
   private static MetricRegistry metricRegistry;
   private static final long REPORT_INTERVAL_MS = 100;
 
   @BeforeClass
   public static void setUp() throws Exception {
+    if (!tmpDir.toFile().exists()) {
+      System.out.println("Creating directory " + tmpDir);
+      Files.createDirectories(tmpDir,
+              PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwxr-xr-x")));
+    }
+
     HiveConf conf = new HiveConf();
 
     jsonReportFile = File.createTempFile("TestCodahaleMetrics", ".json");
+    System.out.println("Json metrics saved in " + jsonReportFile.getAbsolutePath());
 
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_CLASS, CodahaleMetrics.class.getCanonicalName());
     conf.setVar(HiveConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES,
