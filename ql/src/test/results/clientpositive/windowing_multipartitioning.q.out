@@ -168,35 +168,35 @@ where s = 'tom allen' or s = 'bob steinbeck'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
-bob steinbeck	11	47244642041
-bob steinbeck	1	47244642041
-bob steinbeck	2	47244642041
-bob steinbeck	7	47244642041
-bob steinbeck	8	47244642041
-bob steinbeck	9	47244642041
-bob steinbeck	6	47244642041
-bob steinbeck	10	47244642041
-bob steinbeck	3	47244642041
-bob steinbeck	4	47244642041
+bob steinbeck	11	4294967344
+bob steinbeck	1	8589934849
+bob steinbeck	2	12884902321
+bob steinbeck	7	17179869870
+bob steinbeck	8	21474837212
+bob steinbeck	9	25769804712
+bob steinbeck	6	30064772008
+bob steinbeck	10	34359739552
+bob steinbeck	3	38654707094
+bob steinbeck	4	42949674515
 bob steinbeck	5	47244642041
-tom allen	9	81604381169
-tom allen	3	81604381169
-tom allen	7	81604381169
-tom allen	16	81604381169
-tom allen	8	81604381169
-tom allen	10	81604381169
-tom allen	15	81604381169
-tom allen	2	81604381169
-tom allen	6	81604381169
-tom allen	18	81604381169
-tom allen	1	81604381169
-tom allen	5	81604381169
-tom allen	19	81604381169
-tom allen	17	81604381169
-tom allen	11	81604381169
-tom allen	4	81604381169
-tom allen	12	81604381169
-tom allen	13	81604381169
+tom allen	9	4294967478
+tom allen	3	8589934816
+tom allen	7	12884902321
+tom allen	16	17179869673
+tom allen	8	21474837072
+tom allen	10	25769804454
+tom allen	15	30064771969
+tom allen	2	34359739365
+tom allen	6	38654706862
+tom allen	18	42949674383
+tom allen	1	47244641842
+tom allen	5	51539609307
+tom allen	19	55834576824
+tom allen	17	60129544192
+tom allen	11	64424511531
+tom allen	4	68719478972
+tom allen	12	73014446496
+tom allen	13	77309413835
 tom allen	14	81604381169
 PREHOOK: query: select s, sum(i) over (partition by s), sum(f) over (partition by si) from over10k where s = 'tom allen' or s = 'bob steinbeck'
 PREHOOK: type: QUERY

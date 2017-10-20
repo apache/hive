@@ -9,8 +9,8 @@ create table over10k(
            d double,
            bo boolean,
            s string,
-	   ts timestamp, 
-           `dec` decimal,  
+           ts timestamp,
+           `dec` decimal,
            bin binary)
        row format delimited
        fields terminated by '|';
@@ -40,3 +40,20 @@ select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from ov
 set hive.cbo.enable=false;
 -- HIVE-9228 
 select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i)) X limit 7;
+
+create table over10k_2
+as
+select t, si, i, b, f, d, bo, s, ts, cast(ts as timestamp with local time zone) as tstz, `dec`, bin
+from over10k;
+
+select ts, i, sum(f) over (partition by i order by ts)
+from over10k_2
+where i = 65536;
+
+select tstz, i, sum(f) over (partition by i order by tstz)
+from over10k_2
+where i = 65536;
+
+select b, i, sum(f) over (partition by i order by b)
+from over10k_2
+where i = 65536;

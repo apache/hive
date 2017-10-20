@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.ql.udf.ptf;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
@@ -428,8 +430,11 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     case INT:
     case LONG:
     case SHORT:
-    case TIMESTAMP:
       return new LongValueBoundaryScanner(start, end, exprDef);
+    case TIMESTAMP:
+      return new TimestampValueBoundaryScanner(start, end, exprDef);
+    case TIMESTAMPLOCALTZ:
+      return new TimestampLocalTZValueBoundaryScanner(start, end, exprDef);
     case DOUBLE:
     case FLOAT:
       return new DoubleValueBoundaryScanner(start, end, exprDef);
@@ -566,6 +571,66 @@ class DateValueBoundaryScanner extends SingleValueBoundaryScanner {
     Date l2 = PrimitiveObjectInspectorUtils.getDate(v2,
         (PrimitiveObjectInspector) expressionDef.getOI());
     return (l1 == null && l2 == null) || (l1 != null && l1.equals(l2));
+  }
+}
+
+class TimestampValueBoundaryScanner extends SingleValueBoundaryScanner {
+  public TimestampValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+    super(start, end,expressionDef);
+  }
+
+  @Override
+  public boolean isDistanceGreater(Object v1, Object v2, int amt) {
+    if (v1 != null && v2 != null) {
+      long l1 = PrimitiveObjectInspectorUtils.getTimestamp(v1,
+          (PrimitiveObjectInspector) expressionDef.getOI()).getTime();
+      long l2 = PrimitiveObjectInspectorUtils.getTimestamp(v2,
+          (PrimitiveObjectInspector) expressionDef.getOI()).getTime();
+      return (double)(l1-l2)/1000 > amt; // TODO: lossy conversion, distance is considered in seconds
+    }
+    return v1 != null || v2 != null; // True if only one value is null
+  }
+
+  @Override
+  public boolean isEqual(Object v1, Object v2) {
+    if (v1 != null && v2 != null) {
+      Timestamp l1 = PrimitiveObjectInspectorUtils.getTimestamp(v1,
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      Timestamp l2 = PrimitiveObjectInspectorUtils.getTimestamp(v2,
+          (PrimitiveObjectInspector) expressionDef.getOI());
+      return l1.equals(l2);
+    }
+    return v1 == null && v2 == null; // True if both are null
+  }
+}
+
+class TimestampLocalTZValueBoundaryScanner extends SingleValueBoundaryScanner {
+  public TimestampLocalTZValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+    super(start, end,expressionDef);
+  }
+
+  @Override
+  public boolean isDistanceGreater(Object v1, Object v2, int amt) {
+    if (v1 != null && v2 != null) {
+      long l1 = PrimitiveObjectInspectorUtils.getTimestampLocalTZ(v1,
+          (PrimitiveObjectInspector) expressionDef.getOI(), null).getEpochSecond();
+      long l2 = PrimitiveObjectInspectorUtils.getTimestampLocalTZ(v2,
+          (PrimitiveObjectInspector) expressionDef.getOI(), null).getEpochSecond();
+      return (l1 -l2) > amt; // TODO: lossy conversion, distance is considered seconds similar to timestamp
+    }
+    return v1 != null || v2 != null; // True if only one value is null
+  }
+
+  @Override
+  public boolean isEqual(Object v1, Object v2) {
+    if (v1 != null && v2 != null) {
+      TimestampTZ l1 = PrimitiveObjectInspectorUtils.getTimestampLocalTZ(v1,
+          (PrimitiveObjectInspector) expressionDef.getOI(), null);
+      TimestampTZ l2 = PrimitiveObjectInspectorUtils.getTimestampLocalTZ(v2,
+          (PrimitiveObjectInspector) expressionDef.getOI(), null);
+      return l1.equals(l2);
+    }
+    return v1 == null && v2 == null; // True if both are null
   }
 }
 

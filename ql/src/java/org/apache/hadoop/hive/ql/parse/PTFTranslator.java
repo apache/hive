@@ -613,6 +613,7 @@ public class PTFTranslator {
     case SHORT:
     case DECIMAL:
     case TIMESTAMP:
+    case TIMESTAMPLOCALTZ:
     case DATE:
     case STRING:
     case VARCHAR:
