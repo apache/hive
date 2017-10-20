@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.cli;
 
 import java.io.File;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.hadoop.hive.cli.control.CliAdapter;
@@ -37,7 +38,18 @@ public class TestTezPerfCliDriver {
 
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {
-    return adapter.getParameters();
+    List<Object[]> parameters = adapter.getParameters();
+    parameters.sort(new C1());
+    return parameters;
+  }
+
+  static class C1 implements Comparator<Object[]> {
+
+    @Override
+    public int compare(Object[] o1, Object[] o2) {
+      return o1[0].toString().compareTo(o2[0].toString());
+    }
+
   }
 
   @ClassRule

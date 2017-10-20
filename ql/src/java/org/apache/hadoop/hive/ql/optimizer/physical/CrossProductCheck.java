@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,8 +181,7 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
       ReduceWork rWork = (ReduceWork) wrk;
       Operator<? extends OperatorDesc> reducer = ((ReduceWork)wrk).getReducer();
       if ( reducer instanceof JoinOperator || reducer instanceof CommonMergeJoinOperator ) {
-        Map<Integer, ExtractReduceSinkInfo.Info> rsInfo =
-            new HashMap<Integer, ExtractReduceSinkInfo.Info>();
+        Map<Integer, ExtractReduceSinkInfo.Info> rsInfo = new TreeMap<Integer, ExtractReduceSinkInfo.Info>();
         for(Map.Entry<Integer, String> e : rWork.getTagToInput().entrySet()) {
           rsInfo.putAll(getReducerInfo(tzWrk, rWork.getName(), e.getValue()));
         }

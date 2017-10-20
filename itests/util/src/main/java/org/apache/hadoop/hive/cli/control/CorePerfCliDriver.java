@@ -86,6 +86,14 @@ public class CorePerfCliDriver extends CliAdapter{
 
   @Override
   public void setUp() {
+    try {
+      qt.clearPostTestEffects();
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
+      fail("Unexpected exception");
+    }
   }
 
   @Override

@@ -36,11 +36,11 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.TreeMap;
 
 /**
  * Check each MapJoin and ShuffleJoin Operator to see if they are performing a cross product.
@@ -92,8 +92,7 @@ public class SparkCrossProductCheck implements PhysicalPlanResolver, Dispatcher 
     for (ReduceWork reduceWork : sparkWork.getAllReduceWork()) {
       Operator<? extends OperatorDesc> reducer = reduceWork.getReducer();
       if (reducer instanceof JoinOperator || reducer instanceof CommonMergeJoinOperator) {
-        Map<Integer, CrossProductCheck.ExtractReduceSinkInfo.Info> rsInfo =
-            new HashMap<Integer, CrossProductCheck.ExtractReduceSinkInfo.Info>();
+        Map<Integer, CrossProductCheck.ExtractReduceSinkInfo.Info> rsInfo = new TreeMap<Integer, CrossProductCheck.ExtractReduceSinkInfo.Info>();
         for (BaseWork parent : sparkWork.getParents(reduceWork)) {
           rsInfo.putAll(new CrossProductCheck.ExtractReduceSinkInfo(null).analyze(parent));
         }

@@ -19,12 +19,12 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -74,8 +74,8 @@ public class TezWork extends AbstractOperatorDesc {
   private static final AtomicInteger counter = new AtomicInteger(1);
   private final String dagId;
   private final String queryName;
-  private final Set<BaseWork> roots = new HashSet<BaseWork>();
-  private final Set<BaseWork> leaves = new HashSet<BaseWork>();
+  private final Set<BaseWork> roots = new LinkedHashSet<BaseWork>();
+  private final Set<BaseWork> leaves = new LinkedHashSet<BaseWork>();
   private final Map<BaseWork, List<BaseWork>> workGraph = new HashMap<BaseWork, List<BaseWork>>();
   private final Map<BaseWork, List<BaseWork>> invertedWorkGraph = new HashMap<BaseWork, List<BaseWork>>();
   private final Map<Pair<BaseWork, BaseWork>, TezEdgeProperty> edgeProperties =
