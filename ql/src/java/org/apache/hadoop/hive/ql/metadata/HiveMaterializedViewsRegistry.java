@@ -41,6 +41,7 @@ import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelDataTypeImpl;
 import org.apache.calcite.rex.RexBuilder;
@@ -339,11 +340,7 @@ public final class HiveMaterializedViewsRegistry {
     else {
       fullyQualifiedTabName = viewTable.getTableName();
     }
-    RelOptHiveTable optTable = new RelOptHiveTable(null, fullyQualifiedTabName,
-        rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<VirtualColumn>(),
-        conf, new HashMap<String, PrunedPartitionList>(),
-        new HashMap<String, ColumnStatsList>(), new AtomicInteger());
-    RelNode rel;
+    RelNode tableRel;
 
     // 3. Build operator
     if (obtainTableType(viewTable) == TableType.DRUID) {
@@ -354,8 +351,16 @@ public final class HiveMaterializedViewsRegistry {
       Set<String> metrics = new HashSet<>();
       List<RelDataType> druidColTypes = new ArrayList<>();
       List<String> druidColNames = new ArrayList<>();
+      //@NOTE this code is very similar to the code at org/apache/hadoop/hive/ql/parse/CalcitePlanner.java:2362
+      //@TODO it will be nice to refactor it
+      RelDataTypeFactory dtFactory = cluster.getRexBuilder().getTypeFactory();
       for (RelDataTypeField field : rowType.getFieldList()) {
-        druidColTypes.add(field.getType());
+        if (DruidTable.DEFAULT_TIMESTAMP_COLUMN.equals(field.getName())) {
+          // Druid's time column is always not null.
+          druidColTypes.add(dtFactory.createTypeWithNullability(field.getType(), false));
+        } else {
+          druidColTypes.add(field.getType());
+        }
         druidColNames.add(field.getName());
         if (field.getName().equals(DruidTable.DEFAULT_TIMESTAMP_COLUMN)) {
           // timestamp
@@ -369,21 +374,28 @@ public final class HiveMaterializedViewsRegistry {
       }
 
       List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
+      rowType = dtFactory.createStructType(druidColTypes, druidColNames);
+      RelOptHiveTable optTable = new RelOptHiveTable(null, fullyQualifiedTabName,
+              rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
+              conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
 
-      final DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
+      DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
           dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
           intervals, null, null);
       final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
           optTable, viewTable.getTableName(), null, false, false);
-      rel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
+      tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
           optTable, druidTable, ImmutableList.<RelNode>of(scan));
     } else {
       // Build Hive Table Scan Rel
-      rel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
+      RelOptHiveTable optTable = new RelOptHiveTable(null, fullyQualifiedTabName,
+              rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
+              conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
+      tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
           viewTable.getTableName(), null, false, false);
     }
 
-    return rel;
+    return tableRel;
   }
 
   private static RelNode parseQuery(HiveConf conf, String viewQuery) {
@@ -413,6 +425,7 @@ public final class HiveMaterializedViewsRegistry {
     return TableType.NATIVE;
   }
 
+  //@TODO this seems to be the same as org.apache.hadoop.hive.ql.parse.CalcitePlanner.TableType.DRUID do we really need both
   private enum TableType {
     DRUID,
     NATIVE
