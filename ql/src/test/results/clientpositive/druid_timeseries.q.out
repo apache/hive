@@ -10,55 +10,83 @@ TBLPROPERTIES ("druid.datasource" = "wikipedia")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@druid_table_1
-PREHOOK: query: DESCRIBE FORMATTED druid_table_1
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@druid_table_1
-POSTHOOK: query: DESCRIBE FORMATTED druid_table_1
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@druid_table_1
-# col_name            	data_type           	comment             
-__time              	timestamp with local time zone	from deserializer   
-robot               	string              	from deserializer   
-namespace           	string              	from deserializer   
-anonymous           	string              	from deserializer   
-unpatrolled         	string              	from deserializer   
-page                	string              	from deserializer   
-language            	string              	from deserializer   
-newpage             	string              	from deserializer   
-user                	string              	from deserializer   
-count               	float               	from deserializer   
-added               	float               	from deserializer   
-delta               	float               	from deserializer   
-variation           	float               	from deserializer   
-deleted             	float               	from deserializer   
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-#### A masked pattern was here ####
-Retention:          	0                   	 
-#### A masked pattern was here ####
-Table Type:         	EXTERNAL_TABLE      	 
-Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"__time\":\"true\",\"added\":\"true\",\"anonymous\":\"true\",\"count\":\"true\",\"deleted\":\"true\",\"delta\":\"true\",\"language\":\"true\",\"namespace\":\"true\",\"newpage\":\"true\",\"page\":\"true\",\"robot\":\"true\",\"unpatrolled\":\"true\",\"user\":\"true\",\"variation\":\"true\"}}
-	EXTERNAL            	TRUE                
-	druid.datasource    	wikipedia           
-	numFiles            	0                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	storage_handler     	org.apache.hadoop.hive.druid.QTestDruidStorageHandler
-	totalSize           	0                   
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.druid.QTestDruidSerDe	 
-InputFormat:        	null                	 
-OutputFormat:       	null                	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
+PREHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1 where `__time` >= '2010-01-01 00:00:00 UTC' AND  `__time` <= '2012-03-01 00:00:00 UTC' OR  added <= 0
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1 where `__time` >= '2010-01-01 00:00:00 UTC' AND  `__time` <= '2012-03-01 00:00:00 UTC' OR  added <= 0
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: druid_table_1
+            filterExpr: (((__time >= 2009-12-31 16:00:00.0 US/Pacific) and (__time <= 2012-02-29 16:00:00.0 US/Pacific)) or (added <= 0)) (type: boolean)
+            properties:
+              druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot","namespace","anonymous","unpatrolled","page","language","newpage","user"],"metrics":["count","added","delta","variation","deleted"],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+              druid.query.type select
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: (((__time >= 2009-12-31 16:00:00.0 US/Pacific) and (__time <= 2012-02-29 16:00:00.0 US/Pacific)) or (added <= 0)) (type: boolean)
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Select Operator
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1 where `__time` <= '2010-01-01 00:00:00 UTC'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1 where `__time` <= '2010-01-01 00:00:00 UTC'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1
+          properties:
+            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"all","aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/2010-01-01T00:00:00.001Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.type timeseries
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: $f0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
 PREHOOK: query: EXPLAIN
 SELECT max(added), sum(variation)
 FROM druid_table_1
@@ -536,4 +564,100 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         ListSink
+
+PREHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1
+          properties:
+            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"all","aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.type timeseries
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: $f0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1 where `__time` <= '2010-01-01 00:00:00 UTC'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1 where `__time` <= '2010-01-01 00:00:00 UTC'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1
+          properties:
+            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"all","aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/2010-01-01T00:00:00.001Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.type timeseries
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: $f0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1 where `__time` >= '2010-01-01 00:00:00'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1 where `__time` >= '2010-01-01 00:00:00'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1
+          properties:
+            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"all","aggregations":[{"type":"count","name":"$f0"}],"intervals":["2010-01-01T08:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.type timeseries
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: $f0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+
+PREHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1 where `__time` <= '2010-01-01 00:00:00' OR  `__time` <= '2012-03-01 00:00:00'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT count(`__time`) from druid_table_1 where `__time` <= '2010-01-01 00:00:00' OR  `__time` <= '2012-03-01 00:00:00'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_1
+          properties:
+            druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"all","aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/2012-03-01T08:00:00.001Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.type timeseries
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: $f0 (type: bigint)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
 
