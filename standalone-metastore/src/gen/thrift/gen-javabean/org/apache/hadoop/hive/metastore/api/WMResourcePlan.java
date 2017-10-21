@@ -39,7 +39,7 @@ public class WMResourcePlan implements org.apache.thrift.TBase<WMResourcePlan, W
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("WMResourcePlan");
 
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField STATUS_FIELD_DESC = new org.apache.thrift.protocol.TField("status", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField STATUS_FIELD_DESC = new org.apache.thrift.protocol.TField("status", org.apache.thrift.protocol.TType.I32, (short)2);
   private static final org.apache.thrift.protocol.TField QUERY_PARALLELISM_FIELD_DESC = new org.apache.thrift.protocol.TField("queryParallelism", org.apache.thrift.protocol.TType.I32, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
@@ -49,12 +49,16 @@ public class WMResourcePlan implements org.apache.thrift.TBase<WMResourcePlan, W
   }
 
   private String name; // required
-  private String status; // optional
+  private WMResourcePlanStatus status; // optional
   private int queryParallelism; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     NAME((short)1, "name"),
+    /**
+     * 
+     * @see WMResourcePlanStatus
+     */
     STATUS((short)2, "status"),
     QUERY_PARALLELISM((short)3, "queryParallelism");
 
@@ -126,7 +130,7 @@ public class WMResourcePlan implements org.apache.thrift.TBase<WMResourcePlan, W
     tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.STATUS, new org.apache.thrift.meta_data.FieldMetaData("status", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, WMResourcePlanStatus.class)));
     tmpMap.put(_Fields.QUERY_PARALLELISM, new org.apache.thrift.meta_data.FieldMetaData("queryParallelism", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -192,11 +196,19 @@ public class WMResourcePlan implements org.apache.thrift.TBase<WMResourcePlan, W
     }
   }
 
-  public String getStatus() {
+  /**
+   * 
+   * @see WMResourcePlanStatus
+   */
+  public WMResourcePlanStatus getStatus() {
     return this.status;
   }
 
-  public void setStatus(String status) {
+  /**
+   * 
+   * @see WMResourcePlanStatus
+   */
+  public void setStatus(WMResourcePlanStatus status) {
     this.status = status;
   }
 
@@ -251,7 +263,7 @@ public class WMResourcePlan implements org.apache.thrift.TBase<WMResourcePlan, W
       if (value == null) {
         unsetStatus();
       } else {
-        setStatus((String)value);
+        setStatus((WMResourcePlanStatus)value);
       }
       break;
 
@@ -353,7 +365,7 @@ public class WMResourcePlan implements org.apache.thrift.TBase<WMResourcePlan, W
     boolean present_status = true && (isSetStatus());
     list.add(present_status);
     if (present_status)
-      list.add(status);
+      list.add(status.getValue());
 
     boolean present_queryParallelism = true && (isSetQueryParallelism());
     list.add(present_queryParallelism);
@@ -502,8 +514,8 @@ public class WMResourcePlan implements org.apache.thrift.TBase<WMResourcePlan, W
             }
             break;
           case 2: // STATUS
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.status = iprot.readString();
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.status = org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus.findByValue(iprot.readI32());
               struct.setStatusIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -538,7 +550,7 @@ public class WMResourcePlan implements org.apache.thrift.TBase<WMResourcePlan, W
       if (struct.status != null) {
         if (struct.isSetStatus()) {
           oprot.writeFieldBegin(STATUS_FIELD_DESC);
-          oprot.writeString(struct.status);
+          oprot.writeI32(struct.status.getValue());
           oprot.writeFieldEnd();
         }
       }
@@ -574,7 +586,7 @@ public class WMResourcePlan implements org.apache.thrift.TBase<WMResourcePlan, W
       }
       oprot.writeBitSet(optionals, 2);
       if (struct.isSetStatus()) {
-        oprot.writeString(struct.status);
+        oprot.writeI32(struct.status.getValue());
       }
       if (struct.isSetQueryParallelism()) {
         oprot.writeI32(struct.queryParallelism);
@@ -588,7 +600,7 @@ public class WMResourcePlan implements org.apache.thrift.TBase<WMResourcePlan, W
       struct.setNameIsSet(true);
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
-        struct.status = iprot.readString();
+        struct.status = org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus.findByValue(iprot.readI32());
         struct.setStatusIsSet(true);
       }
       if (incoming.get(1)) {

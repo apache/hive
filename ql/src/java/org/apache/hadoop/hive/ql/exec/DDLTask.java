@@ -59,7 +59,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
@@ -88,6 +87,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -161,6 +161,7 @@ import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
+import org.apache.hadoop.hive.ql.plan.AlterResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
@@ -170,6 +171,7 @@ import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
+import org.apache.hadoop.hive.ql.plan.CreateResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
@@ -179,6 +181,7 @@ import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
+import org.apache.hadoop.hive.ql.plan.DropResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.GrantDesc;
@@ -212,6 +215,7 @@ import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
 import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
+import org.apache.hadoop.hive.ql.plan.ShowResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
@@ -607,11 +611,89 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (killQueryDesc != null) {
         return killQuery(db, killQueryDesc);
       }
+
+      if (work.getCreateResourcePlanDesc() != null) {
+        return createResourcePlan(db, work.getCreateResourcePlanDesc());
+      }
+
+      if (work.getShowResourcePlanDesc() != null) {
+        return showResourcePlans(db, work.getShowResourcePlanDesc());
+      }
+
+      if (work.getAlterResourcePlanDesc() != null) {
+        return alterResourcePlan(db, work.getAlterResourcePlanDesc());
+      }
+
+      if (work.getDropResourcePlanDesc() != null) {
+        return dropResourcePlan(db, work.getDropResourcePlanDesc());
+      }
     } catch (Throwable e) {
       failed(e);
       return 1;
     }
     assert false;
+    return 0;
+  }
+
+  private int createResourcePlan(Hive db, CreateResourcePlanDesc createResourcePlanDesc)
+      throws HiveException {
+    WMResourcePlan resourcePlan = new WMResourcePlan();
+    resourcePlan.setName(createResourcePlanDesc.getName());
+    if (createResourcePlanDesc.getQueryParallelism() != null) {
+      resourcePlan.setQueryParallelism(createResourcePlanDesc.getQueryParallelism());
+    }
+    db.createResourcePlan(resourcePlan);
+    return 0;
+  }
+
+  private int showResourcePlans(Hive db, ShowResourcePlanDesc showResourcePlanDesc)
+      throws HiveException {
+    // Note: Enhance showResourcePlan to display all the pools, triggers and mappings.
+    DataOutputStream out = getOutputStream(showResourcePlanDesc.getResFile());
+    try {
+      List<WMResourcePlan> resourcePlans;
+      String rpName = showResourcePlanDesc.getResourcePlanName();
+      if (rpName != null) {
+        resourcePlans = Collections.singletonList(db.getResourcePlan(rpName));
+      } else {
+        resourcePlans = db.geAllResourcePlans();
+      }
+      formatter.showResourcePlans(out, resourcePlans);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    } finally {
+      IOUtils.closeStream(out);
+    }
+    return 0;
+  }
+
+  private int alterResourcePlan(Hive db, AlterResourcePlanDesc desc) throws HiveException {
+    if (desc.shouldValidate()) {
+      return db.validateResourcePlan(desc.getRpName()) ? 0 : 1;
+    }
+
+    WMResourcePlan resourcePlan = new WMResourcePlan();
+
+    if (desc.getNewName() != null) {
+      resourcePlan.setName(desc.getNewName());
+    } else {
+      resourcePlan.setName(desc.getRpName());
+    }
+
+    if (desc.getQueryParallelism() != null) {
+      resourcePlan.setQueryParallelism(desc.getQueryParallelism());
+    }
+
+    if (desc.getStatus() != null) {
+      resourcePlan.setStatus(desc.getStatus());
+    }
+
+    db.alterResourcePlan(desc.getRpName(), resourcePlan);
+    return 0;
+  }
+
+  private int dropResourcePlan(Hive db, DropResourcePlanDesc desc) throws HiveException {
+    db.dropResourcePlan(desc.getRpName());
     return 0;
   }
 

@@ -186,6 +186,12 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  ClearFileMetadataResult clear_file_metadata(ClearFileMetadataRequest req)')
   print('  CacheFileMetadataResult cache_file_metadata(CacheFileMetadataRequest req)')
   print('  string get_metastore_db_uuid()')
+  print('  WMCreateResourcePlanResponse create_resource_plan(WMCreateResourcePlanRequest request)')
+  print('  WMGetResourcePlanResponse get_resource_plan(WMGetResourcePlanRequest request)')
+  print('  WMGetAllResourcePlanResponse get_all_resource_plans(WMGetAllResourcePlanRequest request)')
+  print('  WMAlterResourcePlanResponse alter_resource_plan(WMAlterResourcePlanRequest request)')
+  print('  WMValidateResourcePlanResponse validate_resource_plan(WMValidateResourcePlanRequest request)')
+  print('  WMDropResourcePlanResponse drop_resource_plan(WMDropResourcePlanRequest request)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -1226,6 +1232,42 @@ elif cmd == 'get_metastore_db_uuid':
     print('get_metastore_db_uuid requires 0 args')
     sys.exit(1)
   pp.pprint(client.get_metastore_db_uuid())
+
+elif cmd == 'create_resource_plan':
+  if len(args) != 1:
+    print('create_resource_plan requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.create_resource_plan(eval(args[0]),))
+
+elif cmd == 'get_resource_plan':
+  if len(args) != 1:
+    print('get_resource_plan requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_resource_plan(eval(args[0]),))
+
+elif cmd == 'get_all_resource_plans':
+  if len(args) != 1:
+    print('get_all_resource_plans requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_all_resource_plans(eval(args[0]),))
+
+elif cmd == 'alter_resource_plan':
+  if len(args) != 1:
+    print('alter_resource_plan requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.alter_resource_plan(eval(args[0]),))
+
+elif cmd == 'validate_resource_plan':
+  if len(args) != 1:
+    print('validate_resource_plan requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.validate_resource_plan(eval(args[0]),))
+
+elif cmd == 'drop_resource_plan':
+  if len(args) != 1:
+    print('drop_resource_plan requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.drop_resource_plan(eval(args[0]),))
 
 elif cmd == 'getName':
   if len(args) != 0:

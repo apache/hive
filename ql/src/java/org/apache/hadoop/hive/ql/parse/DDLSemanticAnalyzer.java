@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -86,6 +86,7 @@ import org.apache.hadoop.hive.ql.plan.AddPartitionDesc.OnePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
+import org.apache.hadoop.hive.ql.plan.AlterResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
@@ -95,12 +96,14 @@ import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
+import org.apache.hadoop.hive.ql.plan.CreateResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
+import org.apache.hadoop.hive.ql.plan.DropResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -129,6 +132,7 @@ import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
 import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
+import org.apache.hadoop.hive.ql.plan.ShowResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
@@ -542,6 +546,19 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    case HiveParser.TOK_CACHE_METADATA:
      analyzeCacheMetadata(ast);
      break;
+   case HiveParser.TOK_CREATERESOURCEPLAN:
+     analyzeCreateResourcePlan(ast);
+     break;
+   case HiveParser.TOK_SHOWRESOURCEPLAN:
+     ctx.setResFile(ctx.getLocalTmpPath());
+     analyzeShowResourcePlan(ast);
+     break;
+   case HiveParser.TOK_ALTER_RP:
+     analyzeAlterResourcePlan(ast);
+     break;
+   case HiveParser.TOK_DROP_RP:
+     analyzeDropResourcePlan(ast);
+     break;
    default:
       throw new SemanticException("Unsupported command: " + ast);
     }
@@ -819,6 +836,92 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       return partSpecs.size() == counter ? counter : -1;
     }
     return counter;
+  }
+
+  private void analyzeCreateResourcePlan(ASTNode ast) throws SemanticException {
+    if (ast.getChildCount() == 0) {
+      throw new SemanticException("Expected name in CREATE RESOURCE PLAN statement");
+    }
+    String resourcePlanName = unescapeIdentifier(ast.getChild(0).getText());
+    Integer queryParallelism = null;
+    if (ast.getChildCount() > 1) {
+      queryParallelism = Integer.parseInt(ast.getChild(1).getText());
+    }
+    if (ast.getChildCount() > 2) {
+      throw new SemanticException("Invalid token in CREATE RESOURCE PLAN statement");
+    }
+    CreateResourcePlanDesc desc = new CreateResourcePlanDesc(resourcePlanName, queryParallelism);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
+  }
+
+  private void analyzeShowResourcePlan(ASTNode ast) throws SemanticException {
+    String rpName = null;
+    if (ast.getChildCount() > 0) {
+      rpName = unescapeIdentifier(ast.getChild(0).getText());
+    }
+    if (ast.getChildCount() > 1) {
+      throw new SemanticException("Invalid syntax for SHOW RESOURCE PLAN statement");
+    }
+    ShowResourcePlanDesc showResourcePlanDesc = new ShowResourcePlanDesc(rpName, ctx.getResFile());
+    rootTasks.add(TaskFactory.get(
+        new DDLWork(getInputs(), getOutputs(), showResourcePlanDesc), conf));
+    setFetchTask(createFetchTask(showResourcePlanDesc.getSchema()));
+  }
+
+  private void analyzeAlterResourcePlan(ASTNode ast) throws SemanticException {
+    if (ast.getChildCount() == 0) {
+      throw new SemanticException("Expected name in ALTER RESOURCE PLAN statement");
+    }
+    String rpName = unescapeIdentifier(ast.getChild(0).getText());
+    if (ast.getChildCount() < 2) {
+      throw new SemanticException("Invalid syntax for ALTER RESOURCE PLAN statement");
+    }
+    AlterResourcePlanDesc desc;
+    switch (ast.getChild(1).getType()) {
+    case HiveParser.TOK_VALIDATE:
+      desc = AlterResourcePlanDesc.createValidatePlan(rpName);
+      break;
+    case HiveParser.TOK_ACTIVATE:
+      desc = AlterResourcePlanDesc.createChangeStatus(rpName, WMResourcePlanStatus.ACTIVE);
+      break;
+    case HiveParser.TOK_ENABLE:
+      desc = AlterResourcePlanDesc.createChangeStatus(rpName, WMResourcePlanStatus.ENABLED);
+      break;
+    case HiveParser.TOK_DISABLE:
+      desc = AlterResourcePlanDesc.createChangeStatus(rpName, WMResourcePlanStatus.DISABLED);
+      break;
+    case HiveParser.TOK_QUERY_PARALLELISM:
+      if (ast.getChildCount() != 3) {
+        throw new SemanticException(
+            "Expected number for query parallelism in alter resource plan statment");
+      }
+      int queryParallelism = Integer.parseInt(ast.getChild(2).getText());
+      desc = AlterResourcePlanDesc.createChangeParallelism(rpName, queryParallelism);
+      break;
+    case HiveParser.TOK_RENAME:
+      if (ast.getChildCount() != 3) {
+        throw new SemanticException(
+            "Expected new name for rename in alter resource plan statment");
+      }
+      String name = ast.getChild(2).getText();
+      desc = AlterResourcePlanDesc.createRenamePlan(rpName, name);
+      break;
+    default:
+      throw new SemanticException("Unexpected token in alter resource plan statement: "
+          + ast.getChild(1).getType());
+    }
+    rootTasks.add(TaskFactory.get(
+        new DDLWork(getInputs(), getOutputs(), desc), conf));
+  }
+
+  private void analyzeDropResourcePlan(ASTNode ast) throws SemanticException {
+    if (ast.getChildCount() == 0) {
+      throw new SemanticException("Expected name in DROP RESOURCE PLAN statement");
+    }
+    String rpName = unescapeIdentifier(ast.getChild(0).getText());
+    DropResourcePlanDesc desc = new DropResourcePlanDesc(rpName);
+    rootTasks.add(TaskFactory.get(
+        new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
 
   private void analyzeCreateDatabase(ASTNode ast) throws SemanticException {

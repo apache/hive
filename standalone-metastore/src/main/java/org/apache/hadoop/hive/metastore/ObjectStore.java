@@ -28,6 +28,7 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -92,6 +93,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -109,6 +111,8 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
@@ -150,6 +154,8 @@ import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MPartitionEvent;
 import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
+import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
+import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
 import org.apache.hadoop.hive.metastore.model.MResourceUri;
 import org.apache.hadoop.hive.metastore.model.MRole;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
@@ -9459,5 +9465,225 @@ public class ObjectStore implements RawStore, Configurable {
   @VisibleForTesting
   Properties getProp() {
     return prop;
+  }
+
+  @Override
+  public void createResourcePlan(WMResourcePlan resourcePlan) throws MetaException {
+    boolean commited = false;
+    String rpName = normalizeIdentifier(resourcePlan.getName());
+    Integer queryParallelism = resourcePlan.isSetQueryParallelism() ?
+        resourcePlan.getQueryParallelism() : null;
+    MWMResourcePlan rp = new MWMResourcePlan(rpName, queryParallelism, MWMResourcePlan.Status.DISABLED);
+    try {
+      openTransaction();
+      pm.makePersistent(rp);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private WMResourcePlan fromMResourcePlan(MWMResourcePlan mplan) {
+    if (mplan == null) {
+      return null;
+    }
+    WMResourcePlan rp = new WMResourcePlan();
+    rp.setName(mplan.getName());
+    rp.setStatus(WMResourcePlanStatus.valueOf(mplan.getStatus().name()));
+    if (mplan.getQueryParallelism() != null) {
+      rp.setQueryParallelism(mplan.getQueryParallelism());
+    }
+    return rp;
+  }
+
+  @Override
+  public WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
+    WMResourcePlan resourcePlan = null;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      name = normalizeIdentifier(name);
+      query = pm.newQuery(MWMResourcePlan.class, "name == rpname");
+      query.declareParameters("java.lang.String rpname");
+      query.setUnique(true);
+      MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute(name);
+      pm.retrieve(mResourcePlan);
+      resourcePlan = fromMResourcePlan(mResourcePlan);
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    if (resourcePlan == null) {
+      throw new NoSuchObjectException("There is no resource plan named " + name);
+    }
+    return resourcePlan;
+  }
+
+  @Override
+  public List<WMResourcePlan> getAllResourcePlans() throws MetaException {
+    List<WMResourcePlan> resourcePlans = new ArrayList();
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MWMResourcePlan.class);
+      List<MWMResourcePlan> mplans = (List<MWMResourcePlan>) query.execute();
+      pm.retrieveAll(mplans);
+      commited = commitTransaction();
+      if (mplans != null) {
+        for (MWMResourcePlan mplan : mplans) {
+          resourcePlans.add(fromMResourcePlan(mplan));
+        }
+      }
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return resourcePlans;
+  }
+
+  @Override
+  public void alterResourcePlan(String name, WMResourcePlan resourcePlan)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    name = normalizeIdentifier(name);
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MWMResourcePlan.class, "name == rpName");
+      query.declareParameters("java.lang.String rpName");
+      query.setUnique(true);
+      MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute(name);
+      if (mResourcePlan == null) {
+        throw new NoSuchObjectException("Cannot find resource plan: " + name);
+      }
+      if (!resourcePlan.getName().equals(name)) {
+        mResourcePlan.setName(resourcePlan.getName());
+      }
+      if (resourcePlan.isSetQueryParallelism()) {
+        mResourcePlan.setQueryParallelism(resourcePlan.getQueryParallelism());
+      }
+      if (resourcePlan.isSetStatus()) {
+        switchStatus(name, mResourcePlan, resourcePlan.getStatus().name());
+      }
+      try {
+        commited = commitTransaction();
+      } catch (Exception e) {
+        Throwable ex = e;
+        while (ex != null) {
+          if (ex instanceof SQLIntegrityConstraintViolationException) {
+            throw new InvalidOperationException("Resource plan should be unique");
+          }
+          ex = ex.getCause();
+        }
+        throw e;
+      }
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+  }
+
+  private void switchStatus(String name, MWMResourcePlan mResourcePlan, String status)
+      throws InvalidOperationException {
+    Status currentStatus = mResourcePlan.getStatus();
+    Status newStatus = null;
+    try {
+      newStatus = Status.valueOf(status);
+    } catch (IllegalArgumentException e) {
+      throw new InvalidOperationException("Invalid status: " + status);
+    }
+
+    if (newStatus == currentStatus) {
+      return;
+    }
+
+    // No status change for active resource plan, first activate another plan.
+    if (currentStatus == Status.ACTIVE) {
+      throw new InvalidOperationException(
+          "Resource plan " + name + " is active, activate another plan first.");
+    }
+
+    if ((currentStatus == Status.ENABLED && newStatus == Status.DISABLED) ||
+        (currentStatus == Status.DISABLED && newStatus == Status.ENABLED)) {
+      // enabled plan can be disabled and disabled plan enabled.
+      mResourcePlan.setStatus(newStatus);
+    } else if (currentStatus == Status.ENABLED && newStatus == Status.ACTIVE) {
+      // We can activate an enabled resource plan.
+      if (!isResourcePlanValid(mResourcePlan)) {
+        throw new InvalidOperationException("ResourcePlan: " + name + " is invalid.");
+      }
+      // Deactivate currently active resource plan.
+      deactivateActiveResourcePlan();
+      mResourcePlan.setStatus(newStatus);
+    } else if (currentStatus == Status.DISABLED && newStatus == Status.ACTIVE) {
+      throw new InvalidOperationException(
+          "Cannot activate resource plan: " + name + " first enable it");
+    } else {
+      // This should not happen just there in case we add more status.
+      throw new InvalidOperationException("Cannot move resource plan: " + name +
+          " from " + currentStatus + " to " + newStatus);
+    }
+  }
+
+  private void deactivateActiveResourcePlan() {
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MWMResourcePlan.class, "status == \"ACTIVE\"");
+      query.setUnique(true);
+      MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute();
+      // We may not have an active resource plan in the start.
+      if (mResourcePlan != null) {
+        mResourcePlan.setStatus(Status.ENABLED);
+      }
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+  }
+
+  private boolean isResourcePlanValid(MWMResourcePlan mResourcePlan) {
+    return true;
+  }
+
+  @Override
+  public boolean validateResourcePlan(String name)
+      throws NoSuchObjectException, InvalidObjectException, MetaException {
+    name = normalizeIdentifier(name);
+    Query query = null;
+    try {
+      query = pm.newQuery(MWMResourcePlan.class, "name == rpName");
+      query.declareParameters("java.lang.String rpName");
+      query.setUnique(true);
+      MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute(name);
+      if (mResourcePlan == null) {
+        throw new NoSuchObjectException("Cannot find resourcePlan: " + name);
+      }
+      // Validate resource plan.
+      return isResourcePlanValid(mResourcePlan);
+    } finally {
+      rollbackAndCleanup(true, query);
+    }
+  }
+
+  @Override
+  public void dropResourcePlan(String name) throws NoSuchObjectException, MetaException {
+    name = normalizeIdentifier(name);
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MWMResourcePlan.class, "name == resourcePlanName && status != \"ACTIVE\"");
+      query.declareParameters("java.lang.String resourcePlanName");
+      if (query.deletePersistentAll(name) == 0) {
+        throw new NoSuchObjectException("Cannot find resourcePlan: " + name + " or its active");
+      }
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
   }
 }

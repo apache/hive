@@ -86,6 +86,11 @@ public class DDLWork implements Serializable {
 
   private ShowConfDesc showConfDesc;
 
+  private CreateResourcePlanDesc createResourcePlanDesc;
+  private ShowResourcePlanDesc showResourcePlanDesc;
+  private DropResourcePlanDesc dropResourcePlanDesc;
+  private AlterResourcePlanDesc alterResourcePlanDesc;
+
   boolean needLock = false;
 
   /**
@@ -545,6 +550,30 @@ public class DDLWork implements Serializable {
                  KillQueryDesc killQueryDesc) {
     this(inputs, outputs);
     this.killQueryDesc = killQueryDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      CreateResourcePlanDesc createResourcePlanDesc) {
+    this(inputs, outputs);
+    this.createResourcePlanDesc = createResourcePlanDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      ShowResourcePlanDesc showResourcePlanDesc) {
+    this(inputs, outputs);
+    this.showResourcePlanDesc = showResourcePlanDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      DropResourcePlanDesc dropResourcePlanDesc) {
+    this(inputs, outputs);
+    this.setDropResourcePlanDesc(dropResourcePlanDesc);
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      AlterResourcePlanDesc alterResourcePlanDesc) {
+    this(inputs, outputs);
+    this.setAlterResourcePlanDesc(alterResourcePlanDesc);
   }
 
   /**
@@ -1234,5 +1263,39 @@ public class DDLWork implements Serializable {
 
   public void setPreInsertTableDesc(PreInsertTableDesc preInsertTableDesc) {
     this.preInsertTableDesc = preInsertTableDesc;
+  }
+
+  @Explain(displayName = "Create resource plan")
+  public CreateResourcePlanDesc getCreateResourcePlanDesc() {
+    return createResourcePlanDesc;
+  }
+
+  public void setCreateResourcePlanDesc(CreateResourcePlanDesc createResourcePlanDesc) {
+    this.createResourcePlanDesc = createResourcePlanDesc;
+  }
+
+  @Explain(displayName = "Show resource plan")
+  public ShowResourcePlanDesc getShowResourcePlanDesc() {
+    return showResourcePlanDesc;
+  }
+
+  public void setShowResourcePlanDesc(ShowResourcePlanDesc showResourcePlanDesc) {
+    this.showResourcePlanDesc = showResourcePlanDesc;
+  }
+
+  public DropResourcePlanDesc getDropResourcePlanDesc() {
+    return dropResourcePlanDesc;
+  }
+
+  public void setDropResourcePlanDesc(DropResourcePlanDesc dropResourcePlanDesc) {
+    this.dropResourcePlanDesc = dropResourcePlanDesc;
+  }
+
+  public AlterResourcePlanDesc getAlterResourcePlanDesc() {
+    return alterResourcePlanDesc;
+  }
+
+  public void setAlterResourcePlanDesc(AlterResourcePlanDesc alterResourcePlanDesc) {
+    this.alterResourcePlanDesc = alterResourcePlanDesc;
   }
 }

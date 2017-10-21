@@ -405,6 +405,14 @@ TOK_EXPRESSION;
 TOK_DETAIL;
 TOK_BLOCKING;
 TOK_KILL_QUERY;
+TOK_CREATERESOURCEPLAN;
+TOK_SHOWRESOURCEPLAN;
+TOK_ALTER_RP;
+TOK_DROP_RP;
+TOK_VALIDATE;
+TOK_ACTIVATE;
+TOK_QUERY_PARALLELISM;
+TOK_RENAME;
 }
 
 
@@ -577,6 +585,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_WAIT", "WAIT");
     xlateMap.put("KW_KILL", "KILL");
     xlateMap.put("KW_QUERY", "QUERY");
+    xlateMap.put("KW_RESOURCE", "RESOURCE");
+    xlateMap.put("KW_PLAN", "PLAN");
+    xlateMap.put("KW_QUERY_PARALLELISM", "QUERY_PARALLELISM");
+    xlateMap.put("KW_PLANS", "PLANS");
+    xlateMap.put("KW_ACTIVATE", "ACTIVATE");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -915,6 +928,9 @@ ddlStatement
     | showCurrentRole
     | abortTransactionStatement
     | killQueryStatement
+    | createResourcePlanStatement
+    | alterResourcePlanStatement
+    | dropResourcePlanStatement
     ;
 
 ifExists
@@ -966,6 +982,37 @@ orReplace
 @after { popMsg(state); }
     : KW_OR KW_REPLACE
     -> ^(TOK_ORREPLACE)
+    ;
+
+createResourcePlanStatement
+@init { pushMsg("create resource plan statement", state); }
+@after { popMsg(state); }
+    : KW_CREATE KW_RESOURCE KW_PLAN
+        name=identifier
+        (KW_WITH KW_QUERY_PARALLELISM parallelism=Number)?
+    -> ^(TOK_CREATERESOURCEPLAN $name $parallelism?)
+    ;
+
+alterResourcePlanStatement
+@init { pushMsg("alter resource plan statement", state); }
+@after { popMsg(state); }
+    : KW_ALTER KW_RESOURCE KW_PLAN name=identifier (
+          (KW_VALIDATE -> ^(TOK_ALTER_RP $name TOK_VALIDATE))
+        | (KW_ACTIVATE -> ^(TOK_ALTER_RP $name TOK_ACTIVATE))
+        | (KW_ENABLE -> ^(TOK_ALTER_RP $name TOK_ENABLE))
+        | (KW_DISABLE -> ^(TOK_ALTER_RP $name TOK_DISABLE))
+        | (KW_SET KW_QUERY_PARALLELISM EQUAL parallelism=Number
+           -> ^(TOK_ALTER_RP $name TOK_QUERY_PARALLELISM $parallelism))
+        | (KW_RENAME KW_TO newName=identifier
+           -> ^(TOK_ALTER_RP $name TOK_RENAME $newName))
+      )
+    ;
+
+dropResourcePlanStatement
+@init { pushMsg("drop resource plan statement", state); }
+@after { popMsg(state); }
+    : KW_DROP KW_RESOURCE KW_PLAN name=identifier
+    -> ^(TOK_DROP_RP $name)
     ;
 
 createDatabaseStatement
@@ -1595,6 +1642,11 @@ showStatement
     | KW_SHOW KW_COMPACTIONS -> ^(TOK_SHOW_COMPACTIONS)
     | KW_SHOW KW_TRANSACTIONS -> ^(TOK_SHOW_TRANSACTIONS)
     | KW_SHOW KW_CONF StringLiteral -> ^(TOK_SHOWCONF StringLiteral)
+    | KW_SHOW KW_RESOURCE
+      (
+        (KW_PLAN rp_name=identifier -> ^(TOK_SHOWRESOURCEPLAN $rp_name))
+        | (KW_PLANS -> ^(TOK_SHOWRESOURCEPLAN))
+      )
     ;
 
 lockStatement

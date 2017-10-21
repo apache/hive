@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.metadata.formatting;
 
 import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -41,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -543,4 +543,25 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       throw new HiveException(e);
     }
   }
+
+  public void showResourcePlans(DataOutputStream out, List<WMResourcePlan> resourcePlans)
+      throws HiveException {
+    try {
+      for (WMResourcePlan plan : resourcePlans) {
+        out.write(plan.getName().getBytes("UTF-8"));
+        out.write(separator);
+        if (plan.isSetQueryParallelism()) {
+          out.writeBytes(Integer.toString(plan.getQueryParallelism()));
+        } else {
+          out.writeBytes("null");
+        }
+        out.write(separator);
+        out.write(plan.getStatus().name().getBytes("UTF-8"));
+        out.write(terminator);
+      }
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
+  }
+
 }

@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -54,6 +55,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -744,4 +746,18 @@ public interface RawStore extends Configurable {
    * @throws MetaException
    */
   String getMetastoreDbUuid() throws MetaException;
+
+  void createResourcePlan(WMResourcePlan resourcePlan) throws MetaException;
+
+  WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException, MetaException;
+
+  List<WMResourcePlan> getAllResourcePlans() throws MetaException;
+
+  void alterResourcePlan(String name, WMResourcePlan resourcePlan)
+      throws NoSuchObjectException, InvalidOperationException, MetaException;
+
+  boolean validateResourcePlan(String name)
+      throws NoSuchObjectException, InvalidObjectException, MetaException;
+
+  void dropResourcePlan(String name) throws NoSuchObjectException, MetaException;
 }

@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -73,6 +74,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -2238,5 +2240,37 @@ public class CachedStore implements RawStore, Configurable {
   @VisibleForTesting
   void setInitializedForTest() {
     sharedCacheWrapper.updateInitState(null, false);
+  }
+
+  @Override
+  public void createResourcePlan(WMResourcePlan resourcePlan) throws MetaException {
+    rawStore.createResourcePlan(resourcePlan);
+  }
+
+  @Override
+  public WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException, MetaException {
+    return rawStore.getResourcePlan(name);
+  }
+
+  @Override
+  public List<WMResourcePlan> getAllResourcePlans() throws MetaException {
+    return rawStore.getAllResourcePlans();
+  }
+
+  @Override
+  public void alterResourcePlan(String name, WMResourcePlan resourcePlan)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    rawStore.alterResourcePlan(name, resourcePlan);
+  }
+
+  @Override
+  public boolean validateResourcePlan(String name)
+      throws NoSuchObjectException, InvalidObjectException, MetaException {
+    return rawStore.validateResourcePlan(name);
+  }
+
+  @Override
+  public void dropResourcePlan(String name) throws NoSuchObjectException, MetaException {
+    rawStore.dropResourcePlan(name);
   }
 }

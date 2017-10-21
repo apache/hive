@@ -25,8 +25,6 @@ import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -161,8 +159,6 @@ import org.apache.thrift.transport.TTransportFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import static org.apache.commons.lang.StringUtils.join;
 
 import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.fb_status;
@@ -3052,11 +3048,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             throw new RuntimeException(e);
           }
 
-          partFutures.add(threadPool.submit(new Callable() {
-            @Override public Object call() throws Exception {
-              ugi.doAs(new PrivilegedExceptionAction<Object>() {
+          partFutures.add(threadPool.submit(new Callable<Partition>() {
+            @Override public Partition call() throws Exception {
+              ugi.doAs(new PrivilegedExceptionAction<Partition>() {
                 @Override
-                public Object run() throws Exception {
+                public Partition run() throws Exception {
                   try {
                     boolean madeDir = createLocationForAddedPartition(table, part);
                     if (addedPartitions.put(new PartValEqWrapperLite(part), madeDir) != null) {
@@ -3592,14 +3588,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Table tbl = null;
       List<Partition> parts = null;
       boolean mustPurge = false;
-      boolean isExternalTbl = false;
       List<Map<String, String>> transactionalListenerResponses = Lists.newArrayList();
 
       try {
         // We need Partition-s for firing events and for result; DN needs MPartition-s to drop.
         // Great... Maybe we could bypass fetching MPartitions by issuing direct SQL deletes.
         tbl = get_table_core(dbName, tblName);
-        isExternalTbl = isExternal(tbl);
+        isExternal(tbl);
         mustPurge = isMustPurge(envContext, tbl);
         int minCount = 0;
         RequestPartsSpec spec = request.getParts();
@@ -4533,7 +4528,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               }
             }
 
-            @SuppressWarnings("deprecation")
             Deserializer s = MetaStoreUtils.getDeserializer(curConf, tbl, false);
             ret = MetaStoreUtils.getFieldsFromDeserializer(tableName, s);
           } catch (SerDeException e) {
@@ -7383,6 +7377,84 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return getMS().getMetastoreDbUuid();
       } catch (MetaException e) {
         LOG.error("Exception thrown while querying metastore db uuid", e);
+        throw e;
+      }
+    }
+
+
+    @Override
+    public WMCreateResourcePlanResponse create_resource_plan(WMCreateResourcePlanRequest request)
+        throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+      try {
+        getMS().createResourcePlan(request.getResourcePlan());
+        return new WMCreateResourcePlanResponse();
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to persist resource plan", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMGetResourcePlanResponse get_resource_plan(WMGetResourcePlanRequest request)
+        throws NoSuchObjectException, MetaException, TException {
+      try {
+        WMResourcePlan rp = getMS().getResourcePlan(request.getResourcePlanName());
+        WMGetResourcePlanResponse resp = new WMGetResourcePlanResponse();
+        resp.setResourcePlan(rp);
+        return resp;
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to retrieve resource plan", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMGetAllResourcePlanResponse get_all_resource_plans(WMGetAllResourcePlanRequest request)
+        throws MetaException, TException {
+      try {
+        WMGetAllResourcePlanResponse resp = new WMGetAllResourcePlanResponse();
+        resp.setResourcePlans(getMS().getAllResourcePlans());
+        return resp;
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to retrieve resource plans", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMAlterResourcePlanResponse alter_resource_plan(WMAlterResourcePlanRequest request)
+        throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+      try {
+        getMS().alterResourcePlan(request.getResourcePlanName(), request.getResourcePlan());
+        return new WMAlterResourcePlanResponse();
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to alter resource plan", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMValidateResourcePlanResponse validate_resource_plan(WMValidateResourcePlanRequest request)
+        throws NoSuchObjectException, MetaException, TException {
+      try {
+        boolean isValid = getMS().validateResourcePlan(request.getResourcePlanName());
+        WMValidateResourcePlanResponse resp = new WMValidateResourcePlanResponse();
+        resp.setIsValid(isValid);
+        return resp;
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to validate resource plan", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMDropResourcePlanResponse drop_resource_plan(WMDropResourcePlanRequest request)
+        throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+      try {
+        getMS().dropResourcePlan(request.getResourcePlanName());
+        return new WMDropResourcePlanResponse();
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to retrieve resource plans", e);
         throw e;
       }
     }

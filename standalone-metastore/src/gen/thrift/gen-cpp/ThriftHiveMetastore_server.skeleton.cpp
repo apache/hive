@@ -832,6 +832,36 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_metastore_db_uuid\n");
   }
 
+  void create_resource_plan(WMCreateResourcePlanResponse& _return, const WMCreateResourcePlanRequest& request) {
+    // Your implementation goes here
+    printf("create_resource_plan\n");
+  }
+
+  void get_resource_plan(WMGetResourcePlanResponse& _return, const WMGetResourcePlanRequest& request) {
+    // Your implementation goes here
+    printf("get_resource_plan\n");
+  }
+
+  void get_all_resource_plans(WMGetAllResourcePlanResponse& _return, const WMGetAllResourcePlanRequest& request) {
+    // Your implementation goes here
+    printf("get_all_resource_plans\n");
+  }
+
+  void alter_resource_plan(WMAlterResourcePlanResponse& _return, const WMAlterResourcePlanRequest& request) {
+    // Your implementation goes here
+    printf("alter_resource_plan\n");
+  }
+
+  void validate_resource_plan(WMValidateResourcePlanResponse& _return, const WMValidateResourcePlanRequest& request) {
+    // Your implementation goes here
+    printf("validate_resource_plan\n");
+  }
+
+  void drop_resource_plan(WMDropResourcePlanResponse& _return, const WMDropResourcePlanRequest& request) {
+    // Your implementation goes here
+    printf("drop_resource_plan\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

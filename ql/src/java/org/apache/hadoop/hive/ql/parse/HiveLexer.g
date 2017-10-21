@@ -353,6 +353,11 @@ KW_OPERATOR: 'OPERATOR';
 KW_EXPRESSION: 'EXPRESSION';
 KW_DETAIL: 'DETAIL';
 KW_WAIT: 'WAIT';
+KW_RESOURCE: 'RESOURCE';
+KW_PLAN: 'PLAN';
+KW_QUERY_PARALLELISM: 'QUERY_PARALLELISM';
+KW_PLANS: 'PLANS';
+KW_ACTIVATE: 'ACTIVATE';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

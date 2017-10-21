@@ -167,6 +167,16 @@ struct ClientCapability {
 
 extern const std::map<int, const char*> _ClientCapability_VALUES_TO_NAMES;
 
+struct WMResourcePlanStatus {
+  enum type {
+    ACTIVE = 1,
+    ENABLED = 2,
+    DISABLED = 3
+  };
+};
+
+extern const std::map<int, const char*> _WMResourcePlanStatus_VALUES_TO_NAMES;
+
 class Version;
 
 class FieldSchema;
@@ -446,6 +456,30 @@ class WMPool;
 class WMTrigger;
 
 class WMMapping;
+
+class WMCreateResourcePlanRequest;
+
+class WMCreateResourcePlanResponse;
+
+class WMGetResourcePlanRequest;
+
+class WMGetResourcePlanResponse;
+
+class WMGetAllResourcePlanRequest;
+
+class WMGetAllResourcePlanResponse;
+
+class WMAlterResourcePlanRequest;
+
+class WMAlterResourcePlanResponse;
+
+class WMValidateResourcePlanRequest;
+
+class WMValidateResourcePlanResponse;
+
+class WMDropResourcePlanRequest;
+
+class WMDropResourcePlanResponse;
 
 class MetaException;
 
@@ -8461,19 +8495,19 @@ class WMResourcePlan {
 
   WMResourcePlan(const WMResourcePlan&);
   WMResourcePlan& operator=(const WMResourcePlan&);
-  WMResourcePlan() : name(), status(), queryParallelism(0) {
+  WMResourcePlan() : name(), status((WMResourcePlanStatus::type)0), queryParallelism(0) {
   }
 
   virtual ~WMResourcePlan() throw();
   std::string name;
-  std::string status;
+  WMResourcePlanStatus::type status;
   int32_t queryParallelism;
 
   _WMResourcePlan__isset __isset;
 
   void __set_name(const std::string& val);
 
-  void __set_status(const std::string& val);
+  void __set_status(const WMResourcePlanStatus::type val);
 
   void __set_queryParallelism(const int32_t val);
 
@@ -8725,6 +8759,538 @@ class WMMapping {
 void swap(WMMapping &a, WMMapping &b);
 
 inline std::ostream& operator<<(std::ostream& out, const WMMapping& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMCreateResourcePlanRequest__isset {
+  _WMCreateResourcePlanRequest__isset() : resourcePlan(false) {}
+  bool resourcePlan :1;
+} _WMCreateResourcePlanRequest__isset;
+
+class WMCreateResourcePlanRequest {
+ public:
+
+  WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest&);
+  WMCreateResourcePlanRequest& operator=(const WMCreateResourcePlanRequest&);
+  WMCreateResourcePlanRequest() {
+  }
+
+  virtual ~WMCreateResourcePlanRequest() throw();
+  WMResourcePlan resourcePlan;
+
+  _WMCreateResourcePlanRequest__isset __isset;
+
+  void __set_resourcePlan(const WMResourcePlan& val);
+
+  bool operator == (const WMCreateResourcePlanRequest & rhs) const
+  {
+    if (__isset.resourcePlan != rhs.__isset.resourcePlan)
+      return false;
+    else if (__isset.resourcePlan && !(resourcePlan == rhs.resourcePlan))
+      return false;
+    return true;
+  }
+  bool operator != (const WMCreateResourcePlanRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMCreateResourcePlanRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMCreateResourcePlanRequest &a, WMCreateResourcePlanRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMCreateResourcePlanRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class WMCreateResourcePlanResponse {
+ public:
+
+  WMCreateResourcePlanResponse(const WMCreateResourcePlanResponse&);
+  WMCreateResourcePlanResponse& operator=(const WMCreateResourcePlanResponse&);
+  WMCreateResourcePlanResponse() {
+  }
+
+  virtual ~WMCreateResourcePlanResponse() throw();
+
+  bool operator == (const WMCreateResourcePlanResponse & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const WMCreateResourcePlanResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMCreateResourcePlanResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMCreateResourcePlanResponse &a, WMCreateResourcePlanResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMCreateResourcePlanResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMGetResourcePlanRequest__isset {
+  _WMGetResourcePlanRequest__isset() : resourcePlanName(false) {}
+  bool resourcePlanName :1;
+} _WMGetResourcePlanRequest__isset;
+
+class WMGetResourcePlanRequest {
+ public:
+
+  WMGetResourcePlanRequest(const WMGetResourcePlanRequest&);
+  WMGetResourcePlanRequest& operator=(const WMGetResourcePlanRequest&);
+  WMGetResourcePlanRequest() : resourcePlanName() {
+  }
+
+  virtual ~WMGetResourcePlanRequest() throw();
+  std::string resourcePlanName;
+
+  _WMGetResourcePlanRequest__isset __isset;
+
+  void __set_resourcePlanName(const std::string& val);
+
+  bool operator == (const WMGetResourcePlanRequest & rhs) const
+  {
+    if (__isset.resourcePlanName != rhs.__isset.resourcePlanName)
+      return false;
+    else if (__isset.resourcePlanName && !(resourcePlanName == rhs.resourcePlanName))
+      return false;
+    return true;
+  }
+  bool operator != (const WMGetResourcePlanRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMGetResourcePlanRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMGetResourcePlanRequest &a, WMGetResourcePlanRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMGetResourcePlanRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMGetResourcePlanResponse__isset {
+  _WMGetResourcePlanResponse__isset() : resourcePlan(false) {}
+  bool resourcePlan :1;
+} _WMGetResourcePlanResponse__isset;
+
+class WMGetResourcePlanResponse {
+ public:
+
+  WMGetResourcePlanResponse(const WMGetResourcePlanResponse&);
+  WMGetResourcePlanResponse& operator=(const WMGetResourcePlanResponse&);
+  WMGetResourcePlanResponse() {
+  }
+
+  virtual ~WMGetResourcePlanResponse() throw();
+  WMResourcePlan resourcePlan;
+
+  _WMGetResourcePlanResponse__isset __isset;
+
+  void __set_resourcePlan(const WMResourcePlan& val);
+
+  bool operator == (const WMGetResourcePlanResponse & rhs) const
+  {
+    if (__isset.resourcePlan != rhs.__isset.resourcePlan)
+      return false;
+    else if (__isset.resourcePlan && !(resourcePlan == rhs.resourcePlan))
+      return false;
+    return true;
+  }
+  bool operator != (const WMGetResourcePlanResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMGetResourcePlanResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMGetResourcePlanResponse &a, WMGetResourcePlanResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMGetResourcePlanResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class WMGetAllResourcePlanRequest {
+ public:
+
+  WMGetAllResourcePlanRequest(const WMGetAllResourcePlanRequest&);
+  WMGetAllResourcePlanRequest& operator=(const WMGetAllResourcePlanRequest&);
+  WMGetAllResourcePlanRequest() {
+  }
+
+  virtual ~WMGetAllResourcePlanRequest() throw();
+
+  bool operator == (const WMGetAllResourcePlanRequest & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const WMGetAllResourcePlanRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMGetAllResourcePlanRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMGetAllResourcePlanRequest &a, WMGetAllResourcePlanRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMGetAllResourcePlanRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMGetAllResourcePlanResponse__isset {
+  _WMGetAllResourcePlanResponse__isset() : resourcePlans(false) {}
+  bool resourcePlans :1;
+} _WMGetAllResourcePlanResponse__isset;
+
+class WMGetAllResourcePlanResponse {
+ public:
+
+  WMGetAllResourcePlanResponse(const WMGetAllResourcePlanResponse&);
+  WMGetAllResourcePlanResponse& operator=(const WMGetAllResourcePlanResponse&);
+  WMGetAllResourcePlanResponse() {
+  }
+
+  virtual ~WMGetAllResourcePlanResponse() throw();
+  std::vector<WMResourcePlan>  resourcePlans;
+
+  _WMGetAllResourcePlanResponse__isset __isset;
+
+  void __set_resourcePlans(const std::vector<WMResourcePlan> & val);
+
+  bool operator == (const WMGetAllResourcePlanResponse & rhs) const
+  {
+    if (__isset.resourcePlans != rhs.__isset.resourcePlans)
+      return false;
+    else if (__isset.resourcePlans && !(resourcePlans == rhs.resourcePlans))
+      return false;
+    return true;
+  }
+  bool operator != (const WMGetAllResourcePlanResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMGetAllResourcePlanResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMGetAllResourcePlanResponse &a, WMGetAllResourcePlanResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMGetAllResourcePlanResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMAlterResourcePlanRequest__isset {
+  _WMAlterResourcePlanRequest__isset() : resourcePlanName(false), resourcePlan(false) {}
+  bool resourcePlanName :1;
+  bool resourcePlan :1;
+} _WMAlterResourcePlanRequest__isset;
+
+class WMAlterResourcePlanRequest {
+ public:
+
+  WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest&);
+  WMAlterResourcePlanRequest& operator=(const WMAlterResourcePlanRequest&);
+  WMAlterResourcePlanRequest() : resourcePlanName() {
+  }
+
+  virtual ~WMAlterResourcePlanRequest() throw();
+  std::string resourcePlanName;
+  WMResourcePlan resourcePlan;
+
+  _WMAlterResourcePlanRequest__isset __isset;
+
+  void __set_resourcePlanName(const std::string& val);
+
+  void __set_resourcePlan(const WMResourcePlan& val);
+
+  bool operator == (const WMAlterResourcePlanRequest & rhs) const
+  {
+    if (__isset.resourcePlanName != rhs.__isset.resourcePlanName)
+      return false;
+    else if (__isset.resourcePlanName && !(resourcePlanName == rhs.resourcePlanName))
+      return false;
+    if (__isset.resourcePlan != rhs.__isset.resourcePlan)
+      return false;
+    else if (__isset.resourcePlan && !(resourcePlan == rhs.resourcePlan))
+      return false;
+    return true;
+  }
+  bool operator != (const WMAlterResourcePlanRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMAlterResourcePlanRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMAlterResourcePlanRequest &a, WMAlterResourcePlanRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMAlterResourcePlanRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class WMAlterResourcePlanResponse {
+ public:
+
+  WMAlterResourcePlanResponse(const WMAlterResourcePlanResponse&);
+  WMAlterResourcePlanResponse& operator=(const WMAlterResourcePlanResponse&);
+  WMAlterResourcePlanResponse() {
+  }
+
+  virtual ~WMAlterResourcePlanResponse() throw();
+
+  bool operator == (const WMAlterResourcePlanResponse & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const WMAlterResourcePlanResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMAlterResourcePlanResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMAlterResourcePlanResponse &a, WMAlterResourcePlanResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMAlterResourcePlanResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMValidateResourcePlanRequest__isset {
+  _WMValidateResourcePlanRequest__isset() : resourcePlanName(false) {}
+  bool resourcePlanName :1;
+} _WMValidateResourcePlanRequest__isset;
+
+class WMValidateResourcePlanRequest {
+ public:
+
+  WMValidateResourcePlanRequest(const WMValidateResourcePlanRequest&);
+  WMValidateResourcePlanRequest& operator=(const WMValidateResourcePlanRequest&);
+  WMValidateResourcePlanRequest() : resourcePlanName() {
+  }
+
+  virtual ~WMValidateResourcePlanRequest() throw();
+  std::string resourcePlanName;
+
+  _WMValidateResourcePlanRequest__isset __isset;
+
+  void __set_resourcePlanName(const std::string& val);
+
+  bool operator == (const WMValidateResourcePlanRequest & rhs) const
+  {
+    if (__isset.resourcePlanName != rhs.__isset.resourcePlanName)
+      return false;
+    else if (__isset.resourcePlanName && !(resourcePlanName == rhs.resourcePlanName))
+      return false;
+    return true;
+  }
+  bool operator != (const WMValidateResourcePlanRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMValidateResourcePlanRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMValidateResourcePlanRequest &a, WMValidateResourcePlanRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMValidateResourcePlanRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMValidateResourcePlanResponse__isset {
+  _WMValidateResourcePlanResponse__isset() : isValid(false) {}
+  bool isValid :1;
+} _WMValidateResourcePlanResponse__isset;
+
+class WMValidateResourcePlanResponse {
+ public:
+
+  WMValidateResourcePlanResponse(const WMValidateResourcePlanResponse&);
+  WMValidateResourcePlanResponse& operator=(const WMValidateResourcePlanResponse&);
+  WMValidateResourcePlanResponse() : isValid(0) {
+  }
+
+  virtual ~WMValidateResourcePlanResponse() throw();
+  bool isValid;
+
+  _WMValidateResourcePlanResponse__isset __isset;
+
+  void __set_isValid(const bool val);
+
+  bool operator == (const WMValidateResourcePlanResponse & rhs) const
+  {
+    if (__isset.isValid != rhs.__isset.isValid)
+      return false;
+    else if (__isset.isValid && !(isValid == rhs.isValid))
+      return false;
+    return true;
+  }
+  bool operator != (const WMValidateResourcePlanResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMValidateResourcePlanResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMValidateResourcePlanResponse &a, WMValidateResourcePlanResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMValidateResourcePlanResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMDropResourcePlanRequest__isset {
+  _WMDropResourcePlanRequest__isset() : resourcePlanName(false) {}
+  bool resourcePlanName :1;
+} _WMDropResourcePlanRequest__isset;
+
+class WMDropResourcePlanRequest {
+ public:
+
+  WMDropResourcePlanRequest(const WMDropResourcePlanRequest&);
+  WMDropResourcePlanRequest& operator=(const WMDropResourcePlanRequest&);
+  WMDropResourcePlanRequest() : resourcePlanName() {
+  }
+
+  virtual ~WMDropResourcePlanRequest() throw();
+  std::string resourcePlanName;
+
+  _WMDropResourcePlanRequest__isset __isset;
+
+  void __set_resourcePlanName(const std::string& val);
+
+  bool operator == (const WMDropResourcePlanRequest & rhs) const
+  {
+    if (__isset.resourcePlanName != rhs.__isset.resourcePlanName)
+      return false;
+    else if (__isset.resourcePlanName && !(resourcePlanName == rhs.resourcePlanName))
+      return false;
+    return true;
+  }
+  bool operator != (const WMDropResourcePlanRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMDropResourcePlanRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMDropResourcePlanRequest &a, WMDropResourcePlanRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMDropResourcePlanRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class WMDropResourcePlanResponse {
+ public:
+
+  WMDropResourcePlanResponse(const WMDropResourcePlanResponse&);
+  WMDropResourcePlanResponse& operator=(const WMDropResourcePlanResponse&);
+  WMDropResourcePlanResponse() {
+  }
+
+  virtual ~WMDropResourcePlanResponse() throw();
+
+  bool operator == (const WMDropResourcePlanResponse & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const WMDropResourcePlanResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMDropResourcePlanResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMDropResourcePlanResponse &a, WMDropResourcePlanResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMDropResourcePlanResponse& obj)
 {
   obj.printTo(out);
   return out;

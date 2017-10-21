@@ -125,6 +125,14 @@ module ClientCapability
   VALID_VALUES = Set.new([TEST_CAPABILITY, INSERT_ONLY_TABLES]).freeze
 end
 
+module WMResourcePlanStatus
+  ACTIVE = 1
+  ENABLED = 2
+  DISABLED = 3
+  VALUE_MAP = {1 => "ACTIVE", 2 => "ENABLED", 3 => "DISABLED"}
+  VALID_VALUES = Set.new([ACTIVE, ENABLED, DISABLED]).freeze
+end
+
 class Version
   include ::Thrift::Struct, ::Thrift::Struct_Union
   VERSION = 1
@@ -3253,7 +3261,7 @@ class WMResourcePlan
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
-    STATUS => {:type => ::Thrift::Types::STRING, :name => 'status', :optional => true},
+    STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :optional => true, :enum_class => ::WMResourcePlanStatus},
     QUERYPARALLELISM => {:type => ::Thrift::Types::I32, :name => 'queryParallelism', :optional => true}
   }
 
@@ -3261,6 +3269,9 @@ class WMResourcePlan
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field name is unset!') unless @name
+    unless @status.nil? || ::WMResourcePlanStatus::VALID_VALUES.include?(@status)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field status!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -3340,6 +3351,196 @@ class WMMapping
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field resourcePlanName is unset!') unless @resourcePlanName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field entityType is unset!') unless @entityType
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field entityName is unset!') unless @entityName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMCreateResourcePlanRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RESOURCEPLAN = 1
+
+  FIELDS = {
+    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMCreateResourcePlanResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMGetResourcePlanRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RESOURCEPLANNAME = 1
+
+  FIELDS = {
+    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMGetResourcePlanResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RESOURCEPLAN = 1
+
+  FIELDS = {
+    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMGetAllResourcePlanRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMGetAllResourcePlanResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RESOURCEPLANS = 1
+
+  FIELDS = {
+    RESOURCEPLANS => {:type => ::Thrift::Types::LIST, :name => 'resourcePlans', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WMResourcePlan}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMAlterResourcePlanRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RESOURCEPLANNAME = 1
+  RESOURCEPLAN = 2
+
+  FIELDS = {
+    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
+    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMAlterResourcePlanResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMValidateResourcePlanRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RESOURCEPLANNAME = 1
+
+  FIELDS = {
+    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMValidateResourcePlanResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ISVALID = 1
+
+  FIELDS = {
+    ISVALID => {:type => ::Thrift::Types::BOOL, :name => 'isValid', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMDropResourcePlanRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RESOURCEPLANNAME = 1
+
+  FIELDS = {
+    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMDropResourcePlanResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
   end
 
   ::Thrift::Struct.generate_accessors self

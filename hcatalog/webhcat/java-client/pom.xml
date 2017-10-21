@@ -91,7 +91,7 @@
   </dependencies>
   <build>
       <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
-      <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
+      <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
       <plugins>
           <plugin>
               <groupId>org.apache.maven.plugins</groupId>

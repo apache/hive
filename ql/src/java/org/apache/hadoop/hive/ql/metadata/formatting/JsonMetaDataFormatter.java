@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -46,6 +48,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
+import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 
 /**
@@ -413,5 +416,32 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       builder.put("params", params);
     }
     asJson(out, builder.build());
+  }
+
+  @Override
+  public void showResourcePlans(DataOutputStream out, List<WMResourcePlan> resourcePlans)
+      throws HiveException {
+    JsonGenerator generator = null;
+    try {
+      generator = new ObjectMapper().getJsonFactory().createJsonGenerator(out);
+      generator.writeStartArray();
+      for (WMResourcePlan plan : resourcePlans) {
+        generator.writeStartObject();
+        generator.writeStringField("name", plan.getName());
+        generator.writeStringField("status", plan.getStatus().name());
+        if (plan.isSetQueryParallelism()) {
+          generator.writeNumberField("queryParallelism", plan.getQueryParallelism());
+        }
+        generator.writeEndObject();
+      }
+      generator.writeEndArray();
+      generator.close();
+    } catch (IOException e) {
+      throw new HiveException(e);
+    } finally {
+      if (generator != null) {
+        IOUtils.closeQuietly(generator);
+      }
+    }
   }
 }

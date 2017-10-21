@@ -139,7 +139,11 @@ public enum HiveOperation {
   ROLLBACK("ROLLBACK", null, null, true, true),
   SET_AUTOCOMMIT("SET AUTOCOMMIT", null, null, true, false),
   ABORT_TRANSACTIONS("ABORT TRANSACTIONS", null, null, false, false),
-  KILL_QUERY("KILL QUERY", null, null);
+  KILL_QUERY("KILL QUERY", null, null),
+  CREATE_RESOURCEPLAN("CREATE RESOURCEPLAN", null, null, false, false),
+  SHOW_RESOURCEPLAN("SHOW RESOURCEPLAN", null, null, false, false),
+  ALTER_RESOURCEPLAN("ALTER RESOURCEPLAN", null, null, false, false),
+  DROP_RESOURCEPLAN("DROP RESOURCEPLAN", null, null, false, false);
 
   private String operationName;
 

@@ -132,6 +132,11 @@ public enum HiveOperationType {
   SHOW_TRANSACTIONS,
   ABORT_TRANSACTIONS,
   KILL_QUERY,
+  CREATE_RESOURCEPLAN,
+  SHOW_RESOURCEPLAN,
+  ALTER_RESOURCEPLAN,
+  DROP_RESOURCEPLAN,
+
   // ==== Hive command operation types starts here ==== //
   SET,
   RESET,
