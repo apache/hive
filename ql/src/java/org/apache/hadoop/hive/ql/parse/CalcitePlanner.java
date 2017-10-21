@@ -1427,7 +1427,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       this.relOptSchema = relOptSchema;
 
       PerfLogger perfLogger = SessionState.getPerfLogger();
-
       // 1. Gen Calcite Plan
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       try {
@@ -1477,7 +1476,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       calciteGenPlan = HiveRelDecorrelator.decorrelateQuery(calciteGenPlan);
       LOG.debug("Plan after decorrelation:\n" + RelOptUtil.toString(calciteGenPlan));
-
       // 2. Apply pre-join order optimizations
       calcitePreCboPlan = applyPreJoinOrderingTransforms(calciteGenPlan,
               mdProvider.getMetadataProvider(), executorProvider);
@@ -1841,7 +1839,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               rules.toArray(new RelOptRule[rules.size()]));
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, PPD, not null predicates, transitive inference, constant folding");
-
+// it is happening at 1762
       // 4. Push down limit through outer join
       // NOTE: We run this after PPD to support old style join syntax.
       // Ex: select * from R1 left outer join R2 where ((R1.x=R2.x) and R1.y<10) or
@@ -2463,18 +2461,23 @@ public class CalcitePlanner extends SemanticAnalyzer {
           else {
             fullyQualifiedTabName = tabMetaData.getTableName();
           }
-          RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
-                  rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                  partitionCache, colStatsCache, noColsMissingStats);
+
           // Build Druid query
           String address = HiveConf.getVar(conf,
                   HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
           String dataSource = tabMetaData.getParameters().get(Constants.DRUID_DATA_SOURCE);
           Set<String> metrics = new HashSet<>();
+          RexBuilder rexBuilder = cluster.getRexBuilder();
+          RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
           List<RelDataType> druidColTypes = new ArrayList<>();
           List<String> druidColNames = new ArrayList<>();
           for (RelDataTypeField field : rowType.getFieldList()) {
-            druidColTypes.add(field.getType());
+            if (DruidTable.DEFAULT_TIMESTAMP_COLUMN.equals(field.getName())) {
+              // Druid's time column is always not null.
+              druidColTypes.add(dtFactory.createTypeWithNullability(field.getType(), false));
+            } else {
+              druidColTypes.add(field.getType());
+            }
             druidColNames.add(field.getName());
             if (field.getName().equals(DruidTable.DEFAULT_TIMESTAMP_COLUMN)) {
               // timestamp
@@ -2488,10 +2491,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
 
           List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
-
+          rowType = dtFactory.createStructType(druidColTypes, druidColNames);
           DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
                   dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
                   intervals, null, null);
+          RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
+                  rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
+                  partitionCache, colStatsCache, noColsMissingStats);
           final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
                   optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
                   getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
@@ -3457,7 +3463,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ASTNode ref = (ASTNode) nullObASTExpr.getChild(0);
           Map<ASTNode, ExprNodeDesc> astToExprNDescMap = null;
           ExprNodeDesc obExprNDesc = null;
-          
+
           boolean isBothByPos = HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS);
           boolean isObyByPos = isBothByPos
               || HiveConf.getBoolVar(conf, ConfVars.HIVE_ORDERBY_POSITION_ALIAS);
