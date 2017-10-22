@@ -93,7 +93,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private List<String> columnNamesList;
   private List<TypeInfo> columnTypesList;
   private VectorizedRowBatchCtx rbCtx;
-  private List<Integer> indexColumnsWanted;
   private Object[] partitionValues;
   private Path cacheFsPath;
 
@@ -127,8 +126,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       serDeStats = new SerDeStats();
       projectionPusher = new ProjectionPusher();
       initialize(inputSplit, conf);
-      colsToInclude = ColumnProjectionUtils.getReadColumnIDs(conf);
-      rbCtx = Utilities.getVectorizedRowBatchCtx(conf);
     } catch (Throwable e) {
       LOG.error("Failed to create the vectorized reader due to exception " + e);
       throw new RuntimeException(e);
@@ -153,8 +150,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       if (inputSplit != null) {
         initialize(inputSplit, conf);
       }
-      colsToInclude = ColumnProjectionUtils.getReadColumnIDs(conf);
-      rbCtx = Utilities.getVectorizedRowBatchCtx(conf);
       initPartitionValues((FileSplit) oldInputSplit, conf);
     } catch (Throwable e) {
       LOG.error("Failed to create the vectorized reader due to exception " + e);
@@ -176,11 +171,14 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   public void initialize(
     InputSplit oldSplit,
     JobConf configuration) throws IOException, InterruptedException {
+    colsToInclude = ColumnProjectionUtils.getReadColumnIDs(configuration);
+    //initialize the rowbatchContext
+    jobConf = configuration;
+    rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
     // the oldSplit may be null during the split phase
     if (oldSplit == null) {
       return;
     }
-    jobConf = configuration;
     ParquetMetadata footer;
     List<BlockMetaData> blocks;
     ParquetInputSplit split = (ParquetInputSplit) oldSplit;
@@ -254,10 +252,10 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     }
     this.fileSchema = footer.getFileMetaData().getSchema();
 
-    indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
+    colsToInclude = ColumnProjectionUtils.getReadColumnIDs(configuration);
     requestedSchema = DataWritableReadSupport
       .getRequestedSchema(indexAccess, columnNamesList, columnTypesList, fileSchema, configuration);
-
+ 
     Path path = wrapPathForCache(file, cacheKey, configuration, blocks);
     this.reader = new ParquetFileReader(
       configuration, footer.getFileMetaData(), path, blocks, requestedSchema.getColumns());
@@ -433,11 +431,17 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     List<Type> types = requestedSchema.getFields();
     columnReaders = new VectorizedColumnReader[columns.size()];
 
-    if (!ColumnProjectionUtils.isReadAllColumns(jobConf) && !indexColumnsWanted.isEmpty()) {
-      for (int i = 0; i < types.size(); ++i) {
-        columnReaders[i] =
-          buildVectorizedParquetReader(columnTypesList.get(indexColumnsWanted.get(i)), types.get(i),
-            pages, requestedSchema.getColumns(), skipTimestampConversion, 0);
+    if (!ColumnProjectionUtils.isReadAllColumns(jobConf)) {
+      //certain queries like select count(*) from table do not have
+      //any projected columns and still have isReadAllColumns as false
+      //in such cases columnReaders are not needed
+      //However, if colsToInclude is not empty we should initialize each columnReader
+      if(!colsToInclude.isEmpty()) {
+        for (int i = 0; i < types.size(); ++i) {
+          columnReaders[i] =
+              buildVectorizedParquetReader(columnTypesList.get(colsToInclude.get(i)), types.get(i),
+                  pages, requestedSchema.getColumns(), skipTimestampConversion, 0);
+        }
       }
     } else {
       for (int i = 0; i < types.size(); ++i) {
