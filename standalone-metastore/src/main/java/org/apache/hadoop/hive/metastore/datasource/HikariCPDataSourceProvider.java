@@ -75,8 +75,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
 
   @Override
   public boolean supports(Configuration configuration) {
-    String poolingType =
-        MetastoreConf.getVar(configuration,
+    String poolingType = MetastoreConf.getVar(configuration,
             MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();
     if (HIKARI.equals(poolingType)) {
       int hikariPropsNr = DataSourceProvider.getPrefixedProperties(configuration, HIKARI).size();

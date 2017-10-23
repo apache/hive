@@ -3570,7 +3570,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         String driverName = MetastoreConf.getVar(conf, ConfVars.CONNECTION_DRIVER);
         if (driverName == null || driverName.equals("")) {
           String msg = "JDBC driver for transaction db not set in configuration " +
-              "file, need to set " + ConfVars.CONNECTION_DRIVER.varname;
+              "file, need to set " + ConfVars.CONNECTION_DRIVER.getVarname();
           LOG.error(msg);
           throw new RuntimeException(msg);
         }

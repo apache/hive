@@ -173,15 +173,15 @@ public class Metrics {
      */
     // Check our config value first.  I'm explicitly avoiding getting the default value for now,
     // as I don't want our default to override a Hive set value.
-    String reportersToStart = conf.get(MetastoreConf.ConfVars.METRICS_REPORTERS.varname);
+    String reportersToStart = conf.get(MetastoreConf.ConfVars.METRICS_REPORTERS.getVarname());
     if (reportersToStart == null) {
       // Now look in the current Hive config value.  Again, avoiding getting defaults
       reportersToStart =
-          conf.get(MetastoreConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES.hiveName);
+          conf.get(MetastoreConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES.getHiveName());
       if (reportersToStart == null) {
         // Last chance, look in the old Hive config value.  Still avoiding defaults.
         reportersToStart =
-            conf.get(MetastoreConf.ConfVars.HIVE_METRICS_REPORTER.hiveName);
+            conf.get(MetastoreConf.ConfVars.HIVE_METRICS_REPORTER.getHiveName());
         if (reportersToStart == null) {
           // Alright fine, we'll use our defaults
           reportersToStart = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METRICS_REPORTERS);

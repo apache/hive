@@ -81,7 +81,7 @@ public class TestMetrics {
     String jsonFile = System.getProperty("java.io.tmpdir") + System.getProperty("file.separator") +
         "TestMetricsOutput.json";
     Configuration conf = MetastoreConf.newMetastoreConf();
-    conf.set(MetastoreConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES.hiveName,
+    conf.set(MetastoreConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES.getHiveName(),
         "org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter," +
             "org.apache.hadoop.hive.common.metrics.metrics2.JmxMetricsReporter," +
             "org.apache.hadoop.hive.common.metrics.metrics2.ConsoleMetricsReporter," +
@@ -98,7 +98,7 @@ public class TestMetrics {
     String jsonFile = System.getProperty("java.io.tmpdir") + System.getProperty("file.separator") +
         "TestMetricsOutput.json";
     Configuration conf = MetastoreConf.newMetastoreConf();
-    conf.set(MetastoreConf.ConfVars.HIVE_METRICS_REPORTER.hiveName,
+    conf.set(MetastoreConf.ConfVars.HIVE_METRICS_REPORTER.getHiveName(),
         "JSON_FILE,JMX,CONSOLE,HADOOP2");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METRICS_JSON_FILE_LOCATION, jsonFile);
 
