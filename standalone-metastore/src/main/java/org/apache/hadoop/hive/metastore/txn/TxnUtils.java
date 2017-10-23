@@ -236,12 +236,12 @@ public class TxnUtils {
       if (querySize > maxQueryLength * 1024) {
         // Check an edge case where the DIRECT_SQL_MAX_QUERY_LENGTH does not allow one 'IN' clause with single value.
         if (cursor4queryOfInClauses == 1 && cursor4InClauseElements == 0) {
-          throw new IllegalArgumentException("The current " + ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH.varname + " is set too small to have one IN clause with single value!");
+          throw new IllegalArgumentException("The current " + ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH.getVarname() + " is set too small to have one IN clause with single value!");
         }
 
         // Check en edge case to throw Exception if we can not build a single query for 'NOT IN' clause cases as mentioned at the method comments.
         if (notIn) {
-          throw new IllegalArgumentException("The NOT IN list has too many elements for the current " + ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH.varname + "!");
+          throw new IllegalArgumentException("The NOT IN list has too many elements for the current " + ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH.getVarname() + "!");
         }
 
         // Wrap up the current query string since we can not add another "inList" element value.

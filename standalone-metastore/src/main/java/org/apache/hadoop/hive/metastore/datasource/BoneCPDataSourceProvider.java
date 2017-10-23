@@ -80,8 +80,7 @@ public class BoneCPDataSourceProvider implements DataSourceProvider {
 
   @Override
   public boolean supports(Configuration configuration) {
-    String poolingType =
-        MetastoreConf.getVar(configuration,
+    String poolingType = MetastoreConf.getVar(configuration,
             MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();
     if (BONECP.equals(poolingType)) {
       int boneCpPropsNr = DataSourceProvider.getPrefixedProperties(configuration, BONECP).size();

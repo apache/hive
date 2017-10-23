@@ -49,7 +49,7 @@ public class TestMetastoreConf {
   @After
   public void unsetProperties() {
     for (MetastoreConf.ConfVars var : MetastoreConf.dataNucleusAndJdoConfs) {
-      System.getProperties().remove(var.varname);
+      System.getProperties().remove(var.getVarname());
     }
   }
 
@@ -130,8 +130,8 @@ public class TestMetastoreConf {
     Assert.assertTrue(list.contains("c"));
     Assert.assertSame(TestClass1.class,
         MetastoreConf.getClass(conf, ConfVars.CLASS_TEST_ENTRY, TestClass1.class, Runnable.class));
-    Assert.assertEquals("defaultval", MetastoreConf.get(conf, ConfVars.STR_TEST_ENTRY.varname));
-    Assert.assertEquals("defaultval", MetastoreConf.get(conf, ConfVars.STR_TEST_ENTRY.hiveName));
+    Assert.assertEquals("defaultval", MetastoreConf.get(conf, ConfVars.STR_TEST_ENTRY.getVarname()));
+    Assert.assertEquals("defaultval", MetastoreConf.get(conf, ConfVars.STR_TEST_ENTRY.getHiveName()));
     Assert.assertEquals("defaultval", MetastoreConf.getAsString(conf, ConfVars.STR_TEST_ENTRY));
     Assert.assertEquals("42", MetastoreConf.getAsString(conf, ConfVars.LONG_TEST_ENTRY));
     Assert.assertEquals("3.141592654", MetastoreConf.getAsString(conf, ConfVars.DOUBLE_TEST_ENTRY));
@@ -165,8 +165,8 @@ public class TestMetastoreConf {
     Assert.assertTrue(list.contains("e"));
     Assert.assertSame(TestClass2.class,
         MetastoreConf.getClass(conf, ConfVars.CLASS_TEST_ENTRY, TestClass1.class, Runnable.class));
-    Assert.assertEquals("1.8", MetastoreConf.get(conf, ConfVars.DOUBLE_TEST_ENTRY.varname));
-    Assert.assertEquals("1.8", MetastoreConf.get(conf, ConfVars.DOUBLE_TEST_ENTRY.hiveName));
+    Assert.assertEquals("1.8", MetastoreConf.get(conf, ConfVars.DOUBLE_TEST_ENTRY.getVarname()));
+    Assert.assertEquals("1.8", MetastoreConf.get(conf, ConfVars.DOUBLE_TEST_ENTRY.getHiveName()));
     Assert.assertEquals("notthedefault", MetastoreConf.getAsString(conf, ConfVars.STR_TEST_ENTRY));
     Assert.assertEquals("37", MetastoreConf.getAsString(conf, ConfVars.LONG_TEST_ENTRY));
     Assert.assertEquals("1.8", MetastoreConf.getAsString(conf, ConfVars.DOUBLE_TEST_ENTRY));
@@ -243,11 +243,11 @@ public class TestMetastoreConf {
   @Test
   public void valuesSetFromProperties() {
     try {
-      System.setProperty(MetastoreConf.ConfVars.STR_TEST_ENTRY.varname, "from-properties");
+      System.setProperty(MetastoreConf.ConfVars.STR_TEST_ENTRY.getVarname(), "from-properties");
       conf = MetastoreConf.newMetastoreConf();
       Assert.assertEquals("from-properties", MetastoreConf.getVar(conf, ConfVars.STR_TEST_ENTRY));
     } finally {
-      System.getProperties().remove(MetastoreConf.ConfVars.STR_TEST_ENTRY.varname);
+      System.getProperties().remove(MetastoreConf.ConfVars.STR_TEST_ENTRY.getVarname());
     }
   }
 
@@ -289,8 +289,8 @@ public class TestMetastoreConf {
     Assert.assertTrue(list.contains("j"));
     Assert.assertSame(TestClass2.class,
         MetastoreConf.getClass(conf, ConfVars.CLASS_TEST_ENTRY, TestClass1.class, Runnable.class));
-    Assert.assertEquals("3s", MetastoreConf.get(conf, ConfVars.TIME_TEST_ENTRY.varname));
-    Assert.assertEquals("3s", MetastoreConf.get(conf, ConfVars.TIME_TEST_ENTRY.hiveName));
+    Assert.assertEquals("3s", MetastoreConf.get(conf, ConfVars.TIME_TEST_ENTRY.getVarname()));
+    Assert.assertEquals("3s", MetastoreConf.get(conf, ConfVars.TIME_TEST_ENTRY.getHiveName()));
     Assert.assertEquals("hivedefault", MetastoreConf.getAsString(conf, ConfVars.STR_TEST_ENTRY));
     Assert.assertEquals("89", MetastoreConf.getAsString(conf, ConfVars.LONG_TEST_ENTRY));
     Assert.assertEquals("1.9", MetastoreConf.getAsString(conf, ConfVars.DOUBLE_TEST_ENTRY));
@@ -301,52 +301,52 @@ public class TestMetastoreConf {
   public void timeUnits() throws IOException {
     conf = MetastoreConf.newMetastoreConf();
 
-    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.varname, "30s");
+    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.getVarname(), "30s");
     Assert.assertEquals(30, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY,
         TimeUnit.SECONDS));
-    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.varname, "30seconds");
+    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.getVarname(), "30seconds");
     Assert.assertEquals(30, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY,
         TimeUnit.SECONDS));
 
-    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.varname, "30ms");
+    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.getVarname(), "30ms");
     Assert.assertEquals(30, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY,
         TimeUnit.MILLISECONDS));
-    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.varname, "30msec");
+    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.getVarname(), "30msec");
     Assert.assertEquals(30, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY,
         TimeUnit.MILLISECONDS));
 
-    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.varname, "30us");
+    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.getVarname(), "30us");
     Assert.assertEquals(30, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY,
         TimeUnit.MICROSECONDS));
-    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.varname, "30usec");
+    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.getVarname(), "30usec");
     Assert.assertEquals(30, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY,
         TimeUnit.MICROSECONDS));
 
-    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.varname, "30m");
+    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.getVarname(), "30m");
     Assert.assertEquals(30, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY,
         TimeUnit.MINUTES));
-    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.varname, "30minutes");
+    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.getVarname(), "30minutes");
     Assert.assertEquals(30, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY,
         TimeUnit.MINUTES));
 
-    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.varname, "30ns");
+    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.getVarname(), "30ns");
     Assert.assertEquals(30, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY,
         TimeUnit.NANOSECONDS));
-    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.varname, "30nsec");
+    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.getVarname(), "30nsec");
     Assert.assertEquals(30, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY,
         TimeUnit.NANOSECONDS));
 
-    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.varname, "30h");
+    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.getVarname(), "30h");
     Assert.assertEquals(30, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY,
         TimeUnit.HOURS));
-    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.varname, "30hours");
+    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.getVarname(), "30hours");
     Assert.assertEquals(30, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY,
         TimeUnit.HOURS));
 
-    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.varname, "30d");
+    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.getVarname(), "30d");
     Assert.assertEquals(30, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY,
         TimeUnit.DAYS));
-    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.varname, "30days");
+    conf.set(MetastoreConf.ConfVars.TIME_TEST_ENTRY.getVarname(), "30days");
     Assert.assertEquals(30, MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY,
         TimeUnit.DAYS));
   }
@@ -401,9 +401,9 @@ public class TestMetastoreConf {
 
   @Test
   public void unprintable() {
-    Assert.assertTrue(MetastoreConf.isPrintable(ConfVars.STR_TEST_ENTRY.varname));
-    Assert.assertFalse(MetastoreConf.isPrintable(ConfVars.PWD.varname));
-    Assert.assertFalse(MetastoreConf.isPrintable(ConfVars.PWD.hiveName));
+    Assert.assertTrue(MetastoreConf.isPrintable(ConfVars.STR_TEST_ENTRY.getVarname()));
+    Assert.assertFalse(MetastoreConf.isPrintable(ConfVars.PWD.getVarname()));
+    Assert.assertFalse(MetastoreConf.isPrintable(ConfVars.PWD.getHiveName()));
   }
 
   @Test
@@ -426,6 +426,6 @@ public class TestMetastoreConf {
     Assert.assertThat(dump, new StringContains("Key: <test.str> old hive key: <hive.test.str>  value: <defaultval>"));
     Assert.assertThat(dump, new StringEndsWith("Finished MetastoreConf object.\n"));
     // Make sure the hidden keys didn't get published
-    Assert.assertThat(dump, CoreMatchers.not(new StringContains(ConfVars.PWD.varname)));
+    Assert.assertThat(dump, CoreMatchers.not(new StringContains(ConfVars.PWD.getVarname())));
   }
 }
