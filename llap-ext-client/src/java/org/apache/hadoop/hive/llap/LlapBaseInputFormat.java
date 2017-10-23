@@ -30,12 +30,12 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.collections4.ListUtils;
@@ -96,7 +96,8 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   private static final Logger LOG = LoggerFactory.getLogger(LlapBaseInputFormat.class);
 
   private static String driverName = "org.apache.hive.jdbc.HiveDriver";
-  private static final Map<String, Connection> connectionMap = new ConcurrentHashMap<String, Connection>();
+  private static final Object lock = new Object();
+  private static final Map<String, List<Connection>> connectionMap = new HashMap<String, List<Connection>>();
 
   private String url;  // "jdbc:hive2://localhost:10000/default"
   private String user; // "hive",
@@ -222,10 +223,6 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
       handleId = UUID.randomUUID().toString();
       LOG.info("Handle ID not specified - generated handle ID {}", handleId);
     }
-    // Check if the handle has already been used in the registry
-    if (connectionMap.containsKey(handleId)) {
-      throw new IllegalStateException("Handle ID " + handleId + " has already been used. This must be unique.");
-    }
 
     try {
       Class.forName(driverName);
@@ -261,18 +258,22 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
       // Keep connection open to hang on to associated resources (temp tables, locks).
       // Save to connectionMap so it can be closed at user's convenience.
-      Connection putResult = connectionMap.putIfAbsent(handleId, conn);
-      // Hopefully no one has used the same handle ID during the time that we executed the statement.
-      if (putResult != null) {
-        String msg = "Handle ID " + handleId + " has already been used. This must be unique.";
-        LOG.error(msg);
-        conn.close();
-        throw new IllegalStateException(msg);
-      }
+      addConnection(handleId, conn);
     } catch (Exception e) {
       throw new IOException(e);
     }
     return ins.toArray(new InputSplit[ins.size()]);
+  }
+
+  private void addConnection(String handleId, Connection connection) {
+    synchronized (lock) {
+      List<Connection> handleConnections = connectionMap.get(handleId);
+      if (handleConnections == null) {
+        handleConnections = new ArrayList<Connection>();
+        connectionMap.put(handleId, handleConnections);
+      }
+      handleConnections.add(connection);
+    }
   }
 
   /**
@@ -282,16 +283,21 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
    * @throws IOException
    */
   public static void close(String handleId) throws IOException {
-    Connection conn = connectionMap.remove(handleId);
-    if (conn != null) {
-      try {
-        LOG.debug("Closing connection for handle ID {}", handleId);
-        conn.close();
-      } catch (Exception err) {
-        throw new IOException(err);
+    List<Connection> handleConnections;
+    synchronized (lock) {
+      handleConnections = connectionMap.remove(handleId);
+    }
+    if (handleConnections != null) {
+      LOG.debug("Closing {} connections for handle ID {}", handleConnections.size(), handleId);
+      for (Connection conn : handleConnections) {
+        try {
+          conn.close();
+        } catch (Exception err) {
+          LOG.error("Error while closing connection for " + handleId, err);
+        }
       }
     } else {
-      LOG.info("No connection found for handle ID {}", handleId);
+      LOG.debug("No connection found for handle ID {}", handleId);
     }
   }
 
