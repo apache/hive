@@ -1,0 +1,18 @@
+PREHOOK: query: DROP TABLE IF EXISTS insert_camel_case
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS insert_camel_case
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE insert_camel_case (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_camel_case
+POSTHOOK: query: CREATE TABLE insert_camel_case (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@insert_camel_case
+PREHOOK: query: INSERT INTO insert_camel_case(KeY, VALuE) SELECT * FROM src LIMIT 100
+PREHOOK: type: QUERY
+PREHOOK: Output: default@insert_camel_case
+POSTHOOK: query: INSERT INTO insert_camel_case(KeY, VALuE) SELECT * FROM src LIMIT 100
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@insert_camel_case
