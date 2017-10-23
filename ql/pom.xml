@@ -365,6 +365,10 @@
           in hive's use of datanucleus.
         -->
         <exclusion>
+          <groupId>net.hydromatic</groupId>
+          <artifactId>aggdesigner-algorithm</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.hsqldb</groupId>
           <artifactId>hsqldb</artifactId>
         </exclusion>
