@@ -36,6 +36,8 @@ public class TezJsonParser extends DagJsonParser {
         return "MULTICAST";
       case "ONE_TO_ONE_EDGE":
         return "FORWARD";
+      case "XPROD_EDGE":
+        return "XPROD_EDGE";
       default:
         return "UNKNOWN";
     }

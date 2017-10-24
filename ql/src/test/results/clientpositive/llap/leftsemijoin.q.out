@@ -123,7 +123,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
-        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE), Map 5 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Map 3 (XPROD_EDGE), Map 5 (XPROD_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

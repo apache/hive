@@ -28,7 +28,8 @@ public class TezEdgeProperty {
     CONTAINS,//used for union (all?)
     CUSTOM_EDGE,//CO_PARTITION_EDGE
     CUSTOM_SIMPLE_EDGE,//PARTITION_EDGE
-    ONE_TO_ONE_EDGE
+    ONE_TO_ONE_EDGE,
+    XPROD_EDGE
   }
 
   private HiveConf hiveConf;
@@ -107,4 +108,5 @@ public class TezEdgeProperty {
   public void setEdgeType(EdgeType type) {
     this.edgeType = type;
   }
+
 }

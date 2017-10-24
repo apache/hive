@@ -16,7 +16,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 4 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 4 (XPROD_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
         Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE)
         Reducer 5 <- Map 1 (CUSTOM_SIMPLE_EDGE)
@@ -402,7 +402,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 4 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 4 (XPROD_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
         Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE)
         Reducer 5 <- Map 1 (CUSTOM_SIMPLE_EDGE)
@@ -2153,7 +2153,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 5 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 5 (XPROD_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 6 (ONE_TO_ONE_EDGE)
         Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
         Reducer 6 <- Map 4 (SIMPLE_EDGE)
@@ -2863,11 +2863,11 @@ POSTHOOK: Input: default@part
 6	false
 18	false
 45	false
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: explain select p_type, (select p_size from part order by p_size limit 1) = 1 from part
+Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: explain select p_type, (select p_size from part order by p_size limit 1) = 1 from part order by p_type
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select p_type, (select p_size from part order by p_size limit 1) = 1 from part
+POSTHOOK: query: explain select p_type, (select p_size from part order by p_size limit 1) = 1 from part order by p_type
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2878,11 +2878,12 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 6 (CUSTOM_SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE), Reducer 7 (CUSTOM_SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 5 (CUSTOM_SIMPLE_EDGE)
-        Reducer 7 <- Map 4 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 7 (XPROD_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE), Reducer 8 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+        Reducer 6 <- Map 5 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
+        Reducer 8 <- Map 5 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2900,7 +2901,7 @@ STAGE PLANS:
                       value expressions: _col0 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
-        Map 4 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: part
@@ -2950,14 +2951,26 @@ STAGE PLANS:
                   expressions: _col0 (type: string), (_col2 = 1) (type: boolean)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
                     Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+                    value expressions: _col1 (type: boolean)
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: boolean)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 6 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
@@ -2974,7 +2987,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
-        Reducer 6 
+        Reducer 7 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -2990,7 +3003,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       sort order: 
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 7 
+        Reducer 8 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
@@ -3011,42 +3024,42 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: select p_type, (select p_size from part order by p_size limit 1) = 1 from part
+Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: select p_type, (select p_size from part order by p_size limit 1) = 1 from part order by p_type
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: select p_type, (select p_size from part order by p_size limit 1) = 1 from part
+POSTHOOK: query: select p_type, (select p_size from part order by p_size limit 1) = 1 from part order by p_type
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-PROMO PLATED TIN	true
-PROMO PLATED TIN	true
+ECONOMY BRUSHED COPPER	true
+ECONOMY BURNISHED STEEL	true
+ECONOMY PLATED COPPER	true
+ECONOMY POLISHED STEEL	true
+LARGE BRUSHED BRASS	true
 LARGE BRUSHED STEEL	true
-PROMO BURNISHED NICKEL	true
-STANDARD ANODIZED STEEL	true
 LARGE BURNISHED STEEL	true
 MEDIUM ANODIZED COPPER	true
-ECONOMY POLISHED STEEL	true
+MEDIUM BURNISHED BRASS	true
 MEDIUM BURNISHED COPPER	true
-SMALL POLISHED NICKEL	true
-STANDARD PLATED TIN	true
+MEDIUM BURNISHED TIN	true
 MEDIUM BURNISHED TIN	true
 PROMO ANODIZED TIN	true
-MEDIUM BURNISHED BRASS	true
-ECONOMY PLATED COPPER	true
-STANDARD POLISHED STEEL	true
-SMALL BRUSHED BRASS	true
+PROMO BURNISHED NICKEL	true
+PROMO PLATED TIN	true
+PROMO PLATED TIN	true
 PROMO POLISHED STEEL	true
-SMALL PLATED STEEL	true
-ECONOMY BRUSHED COPPER	true
-STANDARD ANODIZED TIN	true
-MEDIUM BURNISHED TIN	true
-STANDARD BURNISHED TIN	true
+SMALL BRUSHED BRASS	true
 SMALL PLATED BRASS	true
-ECONOMY BURNISHED STEEL	true
-LARGE BRUSHED BRASS	true
+SMALL PLATED STEEL	true
+SMALL POLISHED NICKEL	true
+STANDARD ANODIZED STEEL	true
+STANDARD ANODIZED TIN	true
+STANDARD BURNISHED TIN	true
+STANDARD PLATED TIN	true
+STANDARD POLISHED STEEL	true
 Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: EXPLAIN SELECT p_size, p_size IN (
         SELECT MAX(p_size) FROM part p where p.p_type = part.p_type) AND
@@ -3071,7 +3084,7 @@ STAGE PLANS:
         Reducer 11 <- Map 9 (CUSTOM_SIMPLE_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (ONE_TO_ONE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
-        Reducer 4 <- Reducer 10 (CUSTOM_SIMPLE_EDGE), Reducer 3 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Reducer 10 (XPROD_EDGE), Reducer 3 (XPROD_EDGE)
         Reducer 5 <- Reducer 11 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
         Reducer 7 <- Map 6 (SIMPLE_EDGE)
         Reducer 8 <- Map 6 (SIMPLE_EDGE)
@@ -3507,7 +3520,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 10 <- Reducer 9 (SIMPLE_EDGE)
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 7 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 7 (XPROD_EDGE)
         Reducer 3 <- Reducer 10 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE)
         Reducer 5 <- Map 11 (CUSTOM_SIMPLE_EDGE), Reducer 4 (CUSTOM_SIMPLE_EDGE)
@@ -4182,7 +4195,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
-        Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 5 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (XPROD_EDGE), Reducer 5 (XPROD_EDGE)
         Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
         Reducer 7 <- Map 6 (SIMPLE_EDGE)
 #### A masked pattern was here ####

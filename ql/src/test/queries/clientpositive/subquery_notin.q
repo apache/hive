@@ -109,8 +109,8 @@ explain select * from part where p_brand <> 'Brand#14' AND p_size NOT IN (select
 select * from part where p_brand <> 'Brand#14' AND p_size NOT IN (select (p_size*p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340;
 
 --lhs contains non-simple expression
-explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type);
-select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type);
+explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_partkey;
+select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_partkey;
 
 explain select * from part where (p_partkey*p_size) NOT IN (select min(p_partkey) from part group by p_type);
 select * from part where (p_partkey*p_size) NOT IN (select min(p_partkey) from part group by p_type);

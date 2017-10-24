@@ -109,8 +109,8 @@ public class TestTezTask {
         });
 
     when(utils.createEdge(any(JobConf.class), any(Vertex.class), any(Vertex.class),
-            any(TezEdgeProperty.class), any(VertexType.class))).thenAnswer(new Answer<Edge>() {
-
+            any(TezEdgeProperty.class), any(BaseWork.class), any(TezWork.class)))
+            .thenAnswer(new Answer<Edge>() {
           @Override
           public Edge answer(InvocationOnMock invocation) throws Throwable {
             Object[] args = invocation.getArguments();

@@ -3028,6 +3028,8 @@ public class HiveConf extends Configuration {
         0.5f, "The maximum fraction of JVM memory which Tez will reserve for the processor"),
     TEZ_TASK_SCALE_MEMORY_RESERVE_FRACTION("hive.tez.task.scale.memory.reserve.fraction",
         -1f, "The customized fraction of JVM memory which Tez will reserve for the processor"),
+    TEZ_CARTESIAN_PRODUCT_EDGE_ENABLED("hive.tez.cartesian-product.enabled",
+        false, "Use Tez cartesian product edge to speed up cross product"),
     // The default is different on the client and server, so it's null here.
     LLAP_IO_ENABLED("hive.llap.io.enabled", null, "Whether the LLAP IO layer is enabled."),
     LLAP_IO_TRACE_SIZE("hive.llap.io.trace.size", "2Mb",

@@ -92,9 +92,9 @@ public class SparkCrossProductCheck implements PhysicalPlanResolver, Dispatcher 
     for (ReduceWork reduceWork : sparkWork.getAllReduceWork()) {
       Operator<? extends OperatorDesc> reducer = reduceWork.getReducer();
       if (reducer instanceof JoinOperator || reducer instanceof CommonMergeJoinOperator) {
-        Map<Integer, CrossProductCheck.ExtractReduceSinkInfo.Info> rsInfo = new TreeMap<Integer, CrossProductCheck.ExtractReduceSinkInfo.Info>();
+        Map<Integer, CrossProductHandler.ExtractReduceSinkInfo.Info> rsInfo = new TreeMap<Integer, CrossProductHandler.ExtractReduceSinkInfo.Info>();
         for (BaseWork parent : sparkWork.getParents(reduceWork)) {
-          rsInfo.putAll(new CrossProductCheck.ExtractReduceSinkInfo(null).analyze(parent));
+          rsInfo.putAll(new CrossProductHandler.ExtractReduceSinkInfo(null).analyze(parent));
         }
         checkForCrossProduct(reduceWork.getName(), reducer, rsInfo);
       }
@@ -105,7 +105,7 @@ public class SparkCrossProductCheck implements PhysicalPlanResolver, Dispatcher 
     SparkWork sparkWork = sparkTask.getWork();
     for (BaseWork baseWork : sparkWork.getAllWork()) {
       List<String> warnings =
-          new CrossProductCheck.MapJoinCheck(sparkTask.toString()).analyze(baseWork);
+          new CrossProductHandler.MapJoinCheck(sparkTask.toString()).analyze(baseWork);
       for (String w : warnings) {
         warn(w);
       }
@@ -114,12 +114,12 @@ public class SparkCrossProductCheck implements PhysicalPlanResolver, Dispatcher 
 
   private void checkForCrossProduct(String workName,
       Operator<? extends OperatorDesc> reducer,
-      Map<Integer, CrossProductCheck.ExtractReduceSinkInfo.Info> rsInfo) {
+      Map<Integer, CrossProductHandler.ExtractReduceSinkInfo.Info> rsInfo) {
     if (rsInfo.isEmpty()) {
       return;
     }
-    Iterator<CrossProductCheck.ExtractReduceSinkInfo.Info> it = rsInfo.values().iterator();
-    CrossProductCheck.ExtractReduceSinkInfo.Info info = it.next();
+    Iterator<CrossProductHandler.ExtractReduceSinkInfo.Info> it = rsInfo.values().iterator();
+    CrossProductHandler.ExtractReduceSinkInfo.Info info = it.next();
     if (info.keyCols.size() == 0) {
       List<String> iAliases = new ArrayList<String>();
       iAliases.addAll(info.inputAliases);

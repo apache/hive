@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.plan.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -42,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -53,17 +56,6 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.BaseWork;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
-import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.ReduceWork;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /*
@@ -86,13 +78,16 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  * If the keys expr list on the mapJoin Desc is an empty list for any input,
  * this implies a cross product.
  */
-public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
+public class CrossProductHandler implements PhysicalPlanResolver, Dispatcher {
 
   protected static transient final Logger LOG = LoggerFactory
-      .getLogger(CrossProductCheck.class);
+      .getLogger(CrossProductHandler.class);
+  private Boolean cartesianProductEdgeEnabled = null;
 
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
+    cartesianProductEdgeEnabled =
+      HiveConf.getBoolVar(pctx.getConf(), HiveConf.ConfVars.TEZ_CARTESIAN_PRODUCT_EDGE_ENABLED);
     TaskGraphWalker ogw = new TaskGraphWalker(this);
 
     ArrayList<Node> topNodes = new ArrayList<Node>();
@@ -120,10 +115,10 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
       }
 
     } else if (currTask instanceof TezTask) {
-      TezTask tzTask = (TezTask) currTask;
-      TezWork tzWrk = tzTask.getWork();
-      checkMapJoins(tzWrk);
-      checkTezReducer(tzWrk);
+      TezTask tezTask = (TezTask) currTask;
+      TezWork tezWork = tezTask.getWork();
+      checkMapJoins(tezWork);
+      checkTezReducer(tezWork);
     }
     return null;
   }
@@ -152,8 +147,8 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
     }
   }
 
-  private void checkMapJoins(TezWork tzWrk) throws SemanticException {
-    for(BaseWork wrk : tzWrk.getAllWork() ) {
+  private void checkMapJoins(TezWork tezWork) throws SemanticException {
+    for(BaseWork wrk : tezWork.getAllWork() ) {
 
       if ( wrk instanceof MergeJoinWork ) {
         wrk = ((MergeJoinWork)wrk).getMainWork();
@@ -168,10 +163,12 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
     }
   }
 
-  private void checkTezReducer(TezWork tzWrk) throws SemanticException {
-    for(BaseWork wrk : tzWrk.getAllWork() ) {
+  private void checkTezReducer(TezWork tezWork) throws SemanticException {
+    for(BaseWork wrk : tezWork.getAllWork() ) {
+      BaseWork origWrk = null;
 
       if ( wrk instanceof MergeJoinWork ) {
+        origWrk = wrk;
         wrk = ((MergeJoinWork)wrk).getMainWork();
       }
 
@@ -181,11 +178,26 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
       ReduceWork rWork = (ReduceWork) wrk;
       Operator<? extends OperatorDesc> reducer = ((ReduceWork)wrk).getReducer();
       if ( reducer instanceof JoinOperator || reducer instanceof CommonMergeJoinOperator ) {
+        boolean noOuterJoin = ((JoinDesc)reducer.getConf()).isNoOuterJoin();
         Map<Integer, ExtractReduceSinkInfo.Info> rsInfo = new TreeMap<Integer, ExtractReduceSinkInfo.Info>();
         for(Map.Entry<Integer, String> e : rWork.getTagToInput().entrySet()) {
-          rsInfo.putAll(getReducerInfo(tzWrk, rWork.getName(), e.getValue()));
+          rsInfo.putAll(getReducerInfo(tezWork, rWork.getName(), e.getValue()));
         }
-        checkForCrossProduct(rWork.getName(), reducer, rsInfo);
+        if (checkForCrossProduct(rWork.getName(), reducer, rsInfo)
+                && cartesianProductEdgeEnabled && noOuterJoin) {
+          List<BaseWork> parents = tezWork.getParents(null == origWrk ? wrk : origWrk);
+          for (BaseWork p: parents) {
+            TezEdgeProperty prop = tezWork.getEdgeProperty(p, null == origWrk ? wrk : origWrk);
+            LOG.info("Edge Type: "+prop.getEdgeType());
+            if (prop.getEdgeType().equals(EdgeType.CUSTOM_SIMPLE_EDGE)
+                || prop.getEdgeType().equals(EdgeType.CUSTOM_EDGE)) {
+              prop.setEdgeType(EdgeType.XPROD_EDGE);
+              rWork.setNumReduceTasks(-1);
+              rWork.setMaxReduceTasks(-1);
+              rWork.setMinReduceTasks(-1);
+            }
+          }
+        }
       }
     }
   }
@@ -197,17 +209,17 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
     }
     Operator<? extends OperatorDesc> reducer = rWrk.getReducer();
     if ( reducer instanceof JoinOperator|| reducer instanceof CommonMergeJoinOperator ) {
-      BaseWork prntWork = mrWrk.getMapWork();
+      BaseWork parentWork = mrWrk.getMapWork();
       checkForCrossProduct(taskName, reducer,
-          new ExtractReduceSinkInfo(null).analyze(prntWork));
+          new ExtractReduceSinkInfo(null).analyze(parentWork));
     }
   }
 
-  private void checkForCrossProduct(String taskName,
+  private boolean checkForCrossProduct(String taskName,
       Operator<? extends OperatorDesc> reducer,
       Map<Integer, ExtractReduceSinkInfo.Info> rsInfo) {
     if ( rsInfo.isEmpty() ) {
-      return;
+      return false;
     }
     Iterator<ExtractReduceSinkInfo.Info> it = rsInfo.values().iterator();
     ExtractReduceSinkInfo.Info info = it.next();
@@ -224,13 +236,15 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
           iAliases,
           taskName);
       warn(warning);
+      return true;
     }
+    return false;
   }
 
-  private Map<Integer, ExtractReduceSinkInfo.Info> getReducerInfo(TezWork tzWrk, String vertex, String prntVertex)
-      throws SemanticException {
-    BaseWork prntWork = tzWrk.getWorkMap().get(prntVertex);
-    return new ExtractReduceSinkInfo(vertex).analyze(prntWork);
+  private Map<Integer, ExtractReduceSinkInfo.Info> getReducerInfo(TezWork tezWork, String vertex, String prntVertex)
+    throws SemanticException {
+    BaseWork parentWork = tezWork.getWorkMap().get(prntVertex);
+    return new ExtractReduceSinkInfo(vertex).analyze(parentWork);
   }
 
   /*

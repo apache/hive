@@ -477,7 +477,7 @@ public class TezTask extends Task<TezWork> {
         for (BaseWork v: children) {
           // finally we can create the grouped edge
           GroupInputEdge e = utils.createEdge(group, parentConf,
-               workToVertex.get(v), work.getEdgeProperty(w, v), work.getVertexType(v));
+               workToVertex.get(v), work.getEdgeProperty(w, v), v, work);
 
           dag.addEdge(e);
         }
@@ -506,8 +506,7 @@ public class TezTask extends Task<TezWork> {
           Edge e = null;
 
           TezEdgeProperty edgeProp = work.getEdgeProperty(w, v);
-
-          e = utils.createEdge(wxConf, wx, workToVertex.get(v), edgeProp, work.getVertexType(v));
+          e = utils.createEdge(wxConf, wx, workToVertex.get(v), edgeProp, v, work);
           dag.addEdge(e);
         }
       }

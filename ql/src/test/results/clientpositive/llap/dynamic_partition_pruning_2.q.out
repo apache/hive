@@ -566,7 +566,7 @@ bar
 baz
 baz
 baz
-Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
@@ -588,7 +588,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -607,7 +607,7 @@ STAGE PLANS:
                       value expressions: _col0 (type: decimal(10,0))
             Execution mode: llap
             LLAP IO: no inputs
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: d1
@@ -618,25 +618,29 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 
-                          1 
-                        outputColumnNames: _col0
-                        input vertices:
-                          0 Map 1
-                        Statistics: Num rows: 9 Data size: 1080 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 9 Data size: 1080 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0
+                Statistics: Num rows: 9 Data size: 1080 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 9 Data size: 1080 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -644,12 +648,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
 WHERE agg.dim_shops_id = d1.id
-and agg.dim_shops_id = 1
+and agg.dim_shops_id = 1 order by agg.amount
 PREHOOK: type: QUERY
 PREHOOK: Input: default@agg_01
 PREHOOK: Input: default@agg_01@dim_shops_id=1
@@ -659,15 +663,15 @@ POSTHOOK: query: SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
 WHERE agg.dim_shops_id = d1.id
-and agg.dim_shops_id = 1
+and agg.dim_shops_id = 1 order by agg.amount
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@agg_01
 POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@dim_shops
 #### A masked pattern was here ####
 1
-3
 2
+3
 PREHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1

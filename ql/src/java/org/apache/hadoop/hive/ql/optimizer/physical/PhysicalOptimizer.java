@@ -82,7 +82,7 @@ public class PhysicalOptimizer {
     }
 
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_CHECK_CROSS_PRODUCT)) {
-      resolvers.add(new CrossProductCheck());
+      resolvers.add(new CrossProductHandler());
     }
 
     // Vectorization should be the last optimization, because it doesn't modify the plan

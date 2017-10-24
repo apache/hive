@@ -155,8 +155,8 @@ SELECT p_size, (SELECT count(p_size) FROM part p
     WHERE p.p_type = part.p_type) IS NULL from part;
 
 -- scalar, non-corr, non agg
-explain select p_type, (select p_size from part order by p_size limit 1) = 1 from part;
-select p_type, (select p_size from part order by p_size limit 1) = 1 from part;
+explain select p_type, (select p_size from part order by p_size limit 1) = 1 from part order by p_type;
+select p_type, (select p_size from part order by p_size limit 1) = 1 from part order by p_type;
 
 -- in corr, multiple
 EXPLAIN SELECT p_size, p_size IN (

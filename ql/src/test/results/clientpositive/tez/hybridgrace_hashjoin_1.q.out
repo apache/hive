@@ -1215,7 +1215,7 @@ POSTHOOK: Lineage: decimal_mapjoin.cdecimal1 EXPRESSION [(alltypesorc)alltypesor
 POSTHOOK: Lineage: decimal_mapjoin.cdecimal2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: decimal_mapjoin.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: decimal_mapjoin.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 1' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
@@ -1235,7 +1235,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 2 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1250,29 +1250,12 @@ STAGE PLANS:
                       expressions: cdecimal1 (type: decimal(20,10))
                       outputColumnNames: _col0
                       Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 
-                          1 
-                        outputColumnNames: _col0, _col2
-                        input vertices:
-                          1 Map 2
-                        Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: 6981 (type: int), 6981 (type: int), _col0 (type: decimal(20,10)), _col2 (type: decimal(23,14))
-                          outputColumnNames: _col0, _col1, _col2, _col3
-                          Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: decimal(20,10))
             Execution mode: vectorized
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: r
@@ -1289,6 +1272,27 @@ STAGE PLANS:
                         Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: decimal(23,14))
             Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col2
+                Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 6981 (type: int), 6981 (type: int), _col0 (type: decimal(20,10)), _col2 (type: decimal(23,14))
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1296,7 +1300,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 1' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
@@ -1312,8 +1316,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_mapjoin
 #### A masked pattern was here ####
 6981	6981	NULL	NULL
-6981	6981	NULL	-617.56077692307690
-6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
@@ -1321,9 +1323,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
+6981	6981	NULL	-617.56077692307690
+6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
-6981	6981	NULL	-617.56077692307690
-6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
@@ -1331,9 +1333,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
+6981	6981	NULL	-617.56077692307690
+6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
-6981	6981	NULL	-617.56077692307690
-6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
@@ -1341,9 +1343,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
+6981	6981	NULL	-617.56077692307690
+6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
-6981	6981	NULL	-617.56077692307690
-6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
@@ -1351,9 +1353,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
+6981	6981	NULL	-617.56077692307690
+6981	6981	NULL	-617.56077692307690
 6981	6981	5831542.2692483780	NULL
-6981	6981	5831542.2692483780	-617.56077692307690
-6981	6981	5831542.2692483780	-617.56077692307690
 6981	6981	5831542.2692483780	NULL
 6981	6981	5831542.2692483780	NULL
 6981	6981	5831542.2692483780	NULL
@@ -1361,9 +1363,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	5831542.2692483780	NULL
 6981	6981	5831542.2692483780	NULL
 6981	6981	5831542.2692483780	NULL
+6981	6981	5831542.2692483780	-617.56077692307690
+6981	6981	5831542.2692483780	-617.56077692307690
 6981	6981	NULL	NULL
-6981	6981	NULL	-617.56077692307690
-6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
@@ -1371,9 +1373,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
+6981	6981	NULL	-617.56077692307690
+6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
-6981	6981	NULL	-617.56077692307690
-6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
@@ -1381,9 +1383,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
+6981	6981	NULL	-617.56077692307690
+6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
-6981	6981	NULL	-617.56077692307690
-6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
@@ -1391,9 +1393,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
+6981	6981	NULL	-617.56077692307690
+6981	6981	NULL	-617.56077692307690
 6981	6981	-515.6210729730	NULL
-6981	6981	-515.6210729730	-617.56077692307690
-6981	6981	-515.6210729730	-617.56077692307690
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
@@ -1401,9 +1403,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
+6981	6981	-515.6210729730	-617.56077692307690
+6981	6981	-515.6210729730	-617.56077692307690
 6981	6981	-515.6210729730	NULL
-6981	6981	-515.6210729730	-617.56077692307690
-6981	6981	-515.6210729730	-617.56077692307690
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
@@ -1411,7 +1413,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
-Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 1' is a cross product
+6981	6981	-515.6210729730	-617.56077692307690
+6981	6981	-515.6210729730	-617.56077692307690
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
@@ -1431,7 +1435,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 2 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1446,29 +1450,12 @@ STAGE PLANS:
                       expressions: cdecimal1 (type: decimal(20,10))
                       outputColumnNames: _col0
                       Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 
-                          1 
-                        outputColumnNames: _col0, _col2
-                        input vertices:
-                          1 Map 2
-                        Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: 6981 (type: int), 6981 (type: int), _col0 (type: decimal(20,10)), _col2 (type: decimal(23,14))
-                          outputColumnNames: _col0, _col1, _col2, _col3
-                          Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
-                            table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: decimal(20,10))
             Execution mode: vectorized
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: r
@@ -1485,6 +1472,27 @@ STAGE PLANS:
                         Statistics: Num rows: 5 Data size: 551 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: decimal(23,14))
             Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col2
+                Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 6981 (type: int), 6981 (type: int), _col0 (type: decimal(20,10)), _col2 (type: decimal(23,14))
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 25 Data size: 5535 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1492,7 +1500,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Map 1' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT l.cint, r.cint, l.cdecimal1, r.cdecimal2
   FROM decimal_mapjoin l
   JOIN decimal_mapjoin r ON l.cint = r.cint
@@ -1508,8 +1516,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_mapjoin
 #### A masked pattern was here ####
 6981	6981	NULL	NULL
-6981	6981	NULL	-617.56077692307690
-6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
@@ -1517,9 +1523,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
+6981	6981	NULL	-617.56077692307690
+6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
-6981	6981	NULL	-617.56077692307690
-6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
@@ -1527,9 +1533,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
+6981	6981	NULL	-617.56077692307690
+6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
-6981	6981	NULL	-617.56077692307690
-6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
@@ -1537,9 +1543,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
+6981	6981	NULL	-617.56077692307690
+6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
-6981	6981	NULL	-617.56077692307690
-6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
@@ -1547,9 +1553,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
+6981	6981	NULL	-617.56077692307690
+6981	6981	NULL	-617.56077692307690
 6981	6981	5831542.2692483780	NULL
-6981	6981	5831542.2692483780	-617.56077692307690
-6981	6981	5831542.2692483780	-617.56077692307690
 6981	6981	5831542.2692483780	NULL
 6981	6981	5831542.2692483780	NULL
 6981	6981	5831542.2692483780	NULL
@@ -1557,9 +1563,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	5831542.2692483780	NULL
 6981	6981	5831542.2692483780	NULL
 6981	6981	5831542.2692483780	NULL
+6981	6981	5831542.2692483780	-617.56077692307690
+6981	6981	5831542.2692483780	-617.56077692307690
 6981	6981	NULL	NULL
-6981	6981	NULL	-617.56077692307690
-6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
@@ -1567,9 +1573,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
+6981	6981	NULL	-617.56077692307690
+6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
-6981	6981	NULL	-617.56077692307690
-6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
@@ -1577,9 +1583,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
+6981	6981	NULL	-617.56077692307690
+6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
-6981	6981	NULL	-617.56077692307690
-6981	6981	NULL	-617.56077692307690
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
@@ -1587,9 +1593,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
 6981	6981	NULL	NULL
+6981	6981	NULL	-617.56077692307690
+6981	6981	NULL	-617.56077692307690
 6981	6981	-515.6210729730	NULL
-6981	6981	-515.6210729730	-617.56077692307690
-6981	6981	-515.6210729730	-617.56077692307690
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
@@ -1597,9 +1603,9 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
+6981	6981	-515.6210729730	-617.56077692307690
+6981	6981	-515.6210729730	-617.56077692307690
 6981	6981	-515.6210729730	NULL
-6981	6981	-515.6210729730	-617.56077692307690
-6981	6981	-515.6210729730	-617.56077692307690
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
@@ -1607,6 +1613,8 @@ POSTHOOK: Input: default@decimal_mapjoin
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
 6981	6981	-515.6210729730	NULL
+6981	6981	-515.6210729730	-617.56077692307690
+6981	6981	-515.6210729730	-617.56077692307690
 PREHOOK: query: DROP TABLE decimal_mapjoin
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_mapjoin

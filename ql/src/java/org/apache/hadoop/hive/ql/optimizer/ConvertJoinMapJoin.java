@@ -102,6 +102,14 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     MemoryMonitorInfo memoryMonitorInfo = getMemoryMonitorInfo(maxSize, context.conf);
     joinOp.getConf().setMemoryMonitorInfo(memoryMonitorInfo);
 
+    // not use map join in case of cross product
+    boolean cartesianProductEdgeEnabled =
+      HiveConf.getBoolVar(context.conf, HiveConf.ConfVars.TEZ_CARTESIAN_PRODUCT_EDGE_ENABLED);
+    if (cartesianProductEdgeEnabled && !hasOuterJoin(joinOp) && isCrossProduct(joinOp)) {
+      fallbackToMergeJoin(joinOp, context);
+      return null;
+    }
+
     TezBucketJoinProcCtx tezBucketJoinProcCtx = new TezBucketJoinProcCtx(context.conf);
     boolean hiveConvertJoin = context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &
             !context.parseContext.getDisableMapJoin();
@@ -614,6 +622,42 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return false;
   }
 
+  private boolean hasOuterJoin(JoinOperator joinOp) throws SemanticException {
+    boolean hasOuter = false;
+    for (JoinCondDesc joinCondDesc : joinOp.getConf().getConds()) {
+      switch (joinCondDesc.getType()) {
+        case JoinDesc.INNER_JOIN:
+        case JoinDesc.LEFT_SEMI_JOIN:
+        case JoinDesc.UNIQUE_JOIN:
+          hasOuter = false;
+          break;
+
+        case JoinDesc.FULL_OUTER_JOIN:
+        case JoinDesc.LEFT_OUTER_JOIN:
+        case JoinDesc.RIGHT_OUTER_JOIN:
+          hasOuter = true;
+          break;
+
+        default:
+          throw new SemanticException("Unknown join type " + joinCondDesc.getType());
+      }
+    }
+    return hasOuter;
+  }
+
+  private boolean isCrossProduct(JoinOperator joinOp) {
+    ExprNodeDesc[][] joinExprs = joinOp.getConf().getJoinKeys();
+    if (joinExprs != null) {
+      for (ExprNodeDesc[] expr : joinExprs) {
+        if (expr != null && expr.length != 0) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
   /**
    * Obtain big table position for join.
    *
@@ -639,26 +683,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
        * case this for now.
        */
       if (joinOp.getConf().getConds().length > 1) {
-        boolean hasOuter = false;
-        for (JoinCondDesc joinCondDesc : joinOp.getConf().getConds()) {
-          switch (joinCondDesc.getType()) {
-          case JoinDesc.INNER_JOIN:
-          case JoinDesc.LEFT_SEMI_JOIN:
-          case JoinDesc.UNIQUE_JOIN:
-            hasOuter = false;
-            break;
-
-          case JoinDesc.FULL_OUTER_JOIN:
-          case JoinDesc.LEFT_OUTER_JOIN:
-          case JoinDesc.RIGHT_OUTER_JOIN:
-            hasOuter = true;
-            break;
-
-          default:
-            throw new SemanticException("Unknown join type " + joinCondDesc.getType());
-          }
-        }
-        if (hasOuter) {
+        if (hasOuterJoin(joinOp)) {
           return -1;
         }
       }
@@ -1100,14 +1125,19 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
     }
 
+    // we are just converting to a common merge join operator. The shuffle
+    // join in map-reduce case.
+    fallbackToMergeJoin(joinOp, context);
+  }
+
+  private void fallbackToMergeJoin(JoinOperator joinOp, OptimizeTezProcContext context)
+      throws SemanticException {
     int pos = getMapJoinConversionPos(joinOp, context, estimateNumBuckets(joinOp, false),
                   true, Long.MAX_VALUE, false);
     if (pos < 0) {
       LOG.info("Could not get a valid join position. Defaulting to position 0");
       pos = 0;
     }
-    // we are just converting to a common merge join operator. The shuffle
-    // join in map-reduce case.
     LOG.info("Fallback to common merge join operator");
     convertJoinSMBJoin(joinOp, context, pos, 0, false);
   }
