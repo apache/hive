@@ -662,9 +662,9 @@ public class TBinarySortableProtocol extends TProtocol implements
 
   void writeTextBytes(byte[] bytes, int start, int length) throws TException {
     writeRawBytes(nonNullByte, 0, 1);
-    int begin = 0;
+    int begin = start;
     int i = start;
-    for (; i < length; i++) {
+    for (; i < start + length; i++) {
       if (bytes[i] == 0 || bytes[i] == 1) {
         // Write the first part of the array
         if (i > begin) {
