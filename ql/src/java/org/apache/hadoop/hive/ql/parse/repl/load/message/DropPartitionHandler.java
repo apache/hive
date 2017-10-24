@@ -92,7 +92,7 @@ public class DropPartitionHandler extends AbstractMessageHandler {
         PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(type);
         ExprNodeColumnDesc column = new ExprNodeColumnDesc(pti, key, null, true);
         ExprNodeGenericFuncDesc op = DDLSemanticAnalyzer.makeBinaryPredicate(
-            "=", column, new ExprNodeConstantDesc(pti, val));
+            "=", column, new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, val));
         expr = (expr == null) ? op : DDLSemanticAnalyzer.makeBinaryPredicate("and", expr, op);
       }
       if (expr != null) {
