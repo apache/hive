@@ -71,9 +71,6 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     if (useSuper) {
       super.analyzeInternal(tree);
     } else {
-      // TODO: remove when this is enabled everywhere
-      HiveConf.setBoolVar(conf, ConfVars.HIVE_VECTORIZATION_ROW_IDENTIFIER_ENABLED, true);
-
       if (!getTxnMgr().supportsAcid()) {
         throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getMsg());
       }

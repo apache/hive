@@ -2894,10 +2894,8 @@ public class HiveConf extends Configuration {
         "of aggregations that use complex types.\n",
         "For example, AVG uses a complex type (STRUCT) for partial aggregation results" +
         "The default value is true."),
-    HIVE_VECTORIZATION_ROW_IDENTIFIER_ENABLED("hive.vectorized.row.identifier.enabled", false,
-        "This flag should be set to true to enable vectorization\n" +
-        "of ROW__ID.\n" +
-        "The default value is false."),
+    HIVE_VECTORIZATION_ROW_IDENTIFIER_ENABLED("hive.vectorized.row.identifier.enabled", true,
+        "This flag should be set to true to enable vectorization of ROW__ID."),
 
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "
         + "whether to check, convert, and normalize partition value to conform to its column type in "
