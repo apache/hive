@@ -50,7 +50,8 @@ import com.google.common.base.Preconditions;
 public class SparkWork extends AbstractOperatorDesc {
 
   private static final AtomicInteger counter = new AtomicInteger(1);
-  private final String name;
+  private final String dagName;
+  private final String queryId;
 
   private final Set<BaseWork> roots = new LinkedHashSet<BaseWork>();
   private final Set<BaseWork> leaves = new LinkedHashSet<>();
@@ -66,15 +67,19 @@ public class SparkWork extends AbstractOperatorDesc {
 
   private Map<BaseWork, BaseWork> cloneToWork;
 
-  public SparkWork(String name) {
-    this.name = name + ":" + counter.getAndIncrement();
+  public SparkWork(String queryId) {
+    this.queryId = queryId;
+    this.dagName = queryId + ":" + counter.getAndIncrement();
     cloneToWork = new HashMap<BaseWork, BaseWork>();
   }
 
-
   @Explain(displayName = "DagName")
   public String getName() {
-    return name;
+    return this.dagName;
+  }
+
+  public String getQueryId() {
+    return this.queryId;
   }
 
   /**

@@ -61,7 +61,7 @@ public class SparkSessionImpl implements SparkSession {
     this.conf = conf;
     isOpen = true;
     try {
-      hiveSparkClient = HiveSparkClientFactory.createHiveSparkClient(conf);
+      hiveSparkClient = HiveSparkClientFactory.createHiveSparkClient(conf, sessionId);
     } catch (Throwable e) {
       // It's possible that user session is closed while creating Spark client.
       String msg = isOpen ? "Failed to create Spark client for Spark session " + sessionId :

@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobRef;
@@ -349,6 +350,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       SparkPlanGenerator gen =
         new SparkPlanGenerator(jc.sc(), null, localJobConf, localScratchDir, sparkReporter);
       SparkPlan plan = gen.generate(localSparkWork);
+
+      jc.sc().setJobGroup("queryId = " + localSparkWork.getQueryId(), DagUtils.getQueryName(localJobConf));
 
       // Execute generated plan.
       JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();

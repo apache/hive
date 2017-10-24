@@ -79,7 +79,7 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
       synchronized (this) {
         if (!inited) {
           LOG.info("Setting up the session manager.");
-          Map<String, String> conf = HiveSparkClientFactory.initiateSparkConf(hiveConf);
+          Map<String, String> conf = HiveSparkClientFactory.initiateSparkConf(hiveConf, null);
           try {
             SparkClientFactory.initialize(conf);
             inited = true;
