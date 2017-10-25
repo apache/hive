@@ -234,8 +234,8 @@ POSTHOOK: Input: default@part_null
 17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
 45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
 48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
-78487	NULL	Manufacturer#6	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+78487	NULL	Manufacturer#6	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
 Warning: Shuffle Join JOIN[27][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_name from part_null)
