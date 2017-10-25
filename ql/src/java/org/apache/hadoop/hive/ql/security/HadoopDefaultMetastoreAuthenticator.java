@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.ql.security;
 
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
+import org.apache.hadoop.hive.metastore.IHMSHandler;
 
 public class HadoopDefaultMetastoreAuthenticator extends HadoopDefaultAuthenticator
   implements HiveMetastoreAuthenticationProvider {
 
   @Override
-  public void setMetaStoreHandler(HMSHandler handler) {
+  public void setMetaStoreHandler(IHMSHandler handler) {
     setConf(handler.getConf());
   }
 

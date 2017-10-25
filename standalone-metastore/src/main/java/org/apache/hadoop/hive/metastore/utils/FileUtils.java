@@ -363,4 +363,20 @@ public class FileUtils {
     }
     return name.toString();
   }
+
+  /**
+   * Determine if two objects reference the same file system.
+   * @param fs1 first file system
+   * @param fs2 second file system
+   * @return return true if both file system arguments point to same file system
+   */
+  public static boolean equalsFileSystem(FileSystem fs1, FileSystem fs2) {
+    //When file system cache is disabled, you get different FileSystem objects
+    // for same file system, so '==' can't be used in such cases
+    //FileSystem api doesn't have a .equals() function implemented, so using
+    //the uri for comparison. FileSystem already uses uri+Configuration for
+    //equality in its CACHE .
+    //Once equality has been added in HDFS-9159, we should make use of it
+    return fs1.getUri().equals(fs2.getUri());
+  }
 }

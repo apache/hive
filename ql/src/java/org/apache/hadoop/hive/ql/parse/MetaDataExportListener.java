@@ -21,15 +21,15 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStorePreEventListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -58,17 +58,17 @@ public class MetaDataExportListener extends MetaStorePreEventListener {
     String name = tbl.getTableName();
     org.apache.hadoop.hive.ql.metadata.Table mTbl = new org.apache.hadoop.hive.ql.metadata.Table(
         tbl);
-    HMSHandler handler = tableEvent.getHandler();
-    HiveConf hiveconf = handler.getHiveConf();
-    Warehouse wh = new Warehouse(hiveconf);
+    IHMSHandler handler = tableEvent.getHandler();
+    Configuration conf = handler.getConf();
+    Warehouse wh = new Warehouse(conf);
     Path tblPath = new Path(tbl.getSd().getLocation());
     fs = wh.getFs(tblPath);
     Date now = new Date();
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
     String dateString = sdf.format(now);
-    String exportPathString = hiveconf.getVar(HiveConf.ConfVars.METADATA_EXPORT_LOCATION);
-    boolean moveMetadataToTrash = hiveconf
-        .getBoolVar(HiveConf.ConfVars.MOVE_EXPORTED_METADATA_TO_TRASH);
+    String exportPathString = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METADATA_EXPORT_LOCATION);
+    boolean moveMetadataToTrash = MetastoreConf
+        .getBoolVar(conf, MetastoreConf.ConfVars.MOVE_EXPORTED_METADATA_TO_TRASH);
     Path exportPath = null;
     if (exportPathString != null && exportPathString.length() == 0) {
       exportPath = fs.getHomeDirectory();
