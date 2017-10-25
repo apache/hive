@@ -24,6 +24,7 @@ import java.util.TreeMap;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
@@ -31,7 +32,6 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
-import org.apache.orc.impl.OrcAcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -296,9 +296,11 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
    * of these files as part of a single logical bucket file.
    *
    * Also, for unbucketed (non acid) tables, there are no guarantees where data files may be placed.
-   * For example, CTAS+Tez+Union creates subdirs 1/, 2/, etc for each leg of the Union.  Thus the
-   * data file need not be an immediate child of partition dir.  All files for a given writerId are
-   * treated as one logical unit to assign {@link RecordIdentifier}s to them consistently.
+   * For example, CTAS+Tez+Union creates subdirs
+   * {@link AbstractFileMergeOperator#UNION_SUDBIR_PREFIX}_1/,
+   * {@link AbstractFileMergeOperator#UNION_SUDBIR_PREFIX}_2/, etc for each leg of the Union.  Thus
+   * the data file need not be an immediate child of partition dir.  All files for a given writerId
+   * are treated as one logical unit to assign {@link RecordIdentifier}s to them consistently.
    * 
    * For Compaction, where each split includes the whole bucket, this means reading over all the
    * files in order to assign ROW__ID.rowid in one sequence for the entire logical bucket.

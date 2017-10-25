@@ -17,11 +17,17 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -125,9 +131,10 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       }
 
       if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
-        throw new MetaException(newTable.getDbName() + "." + newTable.getTableName() +
+        throw new MetaException(getTableName(newTable) +
             " cannot be declared transactional because it's an external table");
       }
+      validateTableStructure(context.getHandler(), newTable);
       hasValidTransactionalValue = true;
     }
 
@@ -296,5 +303,57 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       return "unknown value " + transactionalProperties +  " for transactional_properties";
     }
     return null; // All checks passed, return null.
+  }
+  private final Pattern ORIGINAL_PATTERN = Pattern.compile("[0-9]+_[0-9]+");
+  /**
+   * @see org.apache.hadoop.hive.ql.exec.Utilities#COPY_KEYWORD
+   */
+  private static final Pattern ORIGINAL_PATTERN_COPY =
+    Pattern.compile("[0-9]+_[0-9]+" + "_copy_" + "[0-9]+");
+
+  /**
+   * It's assumed everywhere that original data files are named according to
+   * {@link #ORIGINAL_PATTERN} or{@link #ORIGINAL_PATTERN_COPY}
+   * This checks that when transaction=true is set and throws if it finds any files that don't
+   * follow convention.
+   */
+  private void validateTableStructure(HiveMetaStore.HMSHandler hmsHandler, Table table)
+    throws MetaException {
+    Path tablePath;
+    try {
+      Warehouse wh = hmsHandler.getWh();
+      if (table.getSd().getLocation() == null || table.getSd().getLocation().isEmpty()) {
+        tablePath = wh.getDefaultTablePath(hmsHandler.getMS().getDatabase(table.getDbName()),
+          table.getTableName());
+      } else {
+        tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
+      }
+      FileSystem fs = wh.getFs(tablePath);
+      //FileSystem fs = FileSystem.get(getConf());
+      RemoteIterator<LocatedFileStatus> iterator = fs.listFiles(tablePath, true);
+      while (iterator.hasNext()) {
+        LocatedFileStatus fileStatus = iterator.next();
+        if (!fileStatus.isFile()) {
+          continue;
+        }
+        boolean validFile =
+          (ORIGINAL_PATTERN.matcher(fileStatus.getPath().getName()).matches() ||
+            ORIGINAL_PATTERN_COPY.matcher(fileStatus.getPath().getName()).matches()
+          );
+        if (!validFile) {
+          throw new IllegalStateException("Unexpected data file name format.  Cannot convert " +
+            getTableName(table) + " to transactional table.  File: " + fileStatus.getPath());
+        }
+      }
+    } catch (IOException|NoSuchObjectException e) {
+      String msg = "Unable to list files for " + getTableName(table);
+      LOG.error(msg, e);
+      MetaException e1 = new MetaException(msg);
+      e1.initCause(e);
+      throw e1;
+    }
+  }
+  private static String getTableName(Table table) {
+    return table.getDbName() + "." + table.getTableName();
   }
 }
