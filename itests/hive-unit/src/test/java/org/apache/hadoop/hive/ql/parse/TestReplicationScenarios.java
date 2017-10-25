@@ -1928,18 +1928,18 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".ptned(v string) PARTITIONED BY (p string)", driver);
     String[] ptn_data = new String[] { "fourteen", "fifteen" };
     String[] ptnVal = new String [] {"has a space, /, and \t tab", "another set of '#@ chars" };
-    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=\"" + ptnVal[0] +"\") values('" + ptn_data[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(p=\"" + ptnVal[0] +"\") values('" + ptn_data[0] + "')", driver);
 
     // Bootstrap dump/load
     String replDbName = dbName + "_dupe";
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
 
-    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=\"" + ptnVal[1] +"\") values('" + ptn_data[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(p=\"" + ptnVal[1] +"\") values('" + ptn_data[1] + "')", driver);
     // Replicate insert event and verify
     Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
-    verifyRun("SELECT p from " + replDbName + ".ptned ORDER BY p", ptnVal, driverMirror);
+    verifyRun("SELECT p from " + replDbName + ".ptned ORDER BY p desc", ptnVal, driverMirror);
 
-    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION(b=\"" + ptnVal[0] + "\")", driver);
+    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION(p=\"" + ptnVal[0] + "\")", driver);
 
     // Replicate drop partition event and verify
     incrementalLoadAndVerify(dbName, incrDump.lastReplId, replDbName);
