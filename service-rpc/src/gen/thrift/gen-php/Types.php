@@ -202,6 +202,7 @@ final class TGetInfoType {
   const CLI_CATALOG_NAME = 10003;
   const CLI_COLLATION_SEQ = 10004;
   const CLI_MAX_IDENTIFIER_LEN = 10005;
+  const CLI_ODBC_KEYWORDS = 10006;
   static public $__names = array(
     0 => 'CLI_MAX_DRIVER_CONNECTIONS',
     1 => 'CLI_MAX_CONCURRENT_ACTIVITIES',
@@ -250,6 +251,7 @@ final class TGetInfoType {
     10003 => 'CLI_CATALOG_NAME',
     10004 => 'CLI_COLLATION_SEQ',
     10005 => 'CLI_MAX_IDENTIFIER_LEN',
+    10006 => 'CLI_ODBC_KEYWORDS',
   );
 }
 

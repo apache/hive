@@ -661,6 +661,7 @@ enum TGetInfoType {
   CLI_CATALOG_NAME =                     10003,
   CLI_COLLATION_SEQ =                    10004,
   CLI_MAX_IDENTIFIER_LEN =               10005,
+  CLI_ODBC_KEYWORDS =                    10006
 }
 
 union TGetInfoValue {

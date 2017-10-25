@@ -18,15 +18,9 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.ql.Context;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.antlr.runtime.tree.CommonTree;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
-import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
-
+import com.google.common.base.Preconditions;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,14 +29,17 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
-
+import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
+import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -50,8 +47,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-
-import com.google.common.base.Preconditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -523,5 +520,21 @@ public final class ParseUtils {
       }
       newChildren.add(selExpr.node());
       return true;
+    }
+
+    public static String getKeywords(Set<String> excludes) {
+      StringBuilder sb = new StringBuilder();
+      for (Field f : HiveLexer.class.getDeclaredFields()) {
+        if (!Modifier.isStatic(f.getModifiers())) continue;
+        String name = f.getName();
+        if (!name.startsWith("KW_")) continue;
+        name = name.substring(3);
+        if (excludes != null && excludes.contains(name)) continue;
+        if (sb.length() > 0) {
+          sb.append(",");
+        }
+        sb.append(name);
+      }
+      return sb.toString();
     }
 }

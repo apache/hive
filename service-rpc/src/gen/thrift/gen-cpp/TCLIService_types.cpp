@@ -204,7 +204,8 @@ int _kTGetInfoTypeValues[] = {
   TGetInfoType::CLI_DESCRIBE_PARAMETER,
   TGetInfoType::CLI_CATALOG_NAME,
   TGetInfoType::CLI_COLLATION_SEQ,
-  TGetInfoType::CLI_MAX_IDENTIFIER_LEN
+  TGetInfoType::CLI_MAX_IDENTIFIER_LEN,
+  TGetInfoType::CLI_ODBC_KEYWORDS
 };
 const char* _kTGetInfoTypeNames[] = {
   "CLI_MAX_DRIVER_CONNECTIONS",
@@ -253,9 +254,10 @@ const char* _kTGetInfoTypeNames[] = {
   "CLI_DESCRIBE_PARAMETER",
   "CLI_CATALOG_NAME",
   "CLI_COLLATION_SEQ",
-  "CLI_MAX_IDENTIFIER_LEN"
+  "CLI_MAX_IDENTIFIER_LEN",
+  "CLI_ODBC_KEYWORDS"
 };
-const std::map<int, const char*> _TGetInfoType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(47, _kTGetInfoTypeValues, _kTGetInfoTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _TGetInfoType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(48, _kTGetInfoTypeValues, _kTGetInfoTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kTFetchOrientationValues[] = {
   TFetchOrientation::FETCH_NEXT,

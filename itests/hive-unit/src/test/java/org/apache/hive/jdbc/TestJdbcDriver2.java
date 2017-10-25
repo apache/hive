@@ -1469,6 +1469,14 @@ public class TestJdbcDriver2 {
     DatabaseMetaData meta = con.getMetaData();
 
     assertEquals("Apache Hive", meta.getDatabaseProductName());
+    String[] keywords = meta.getSQLKeywords().toLowerCase().split(",");
+    // Check a random one. These can change w/Hive versions.
+    boolean found = false;
+    for (String keyword : keywords) {
+     found = "limit".equals(keyword);
+     if (found) break;
+    }
+    assertTrue(found);
     assertEquals(HiveVersionInfo.getVersion(), meta.getDatabaseProductVersion());
     assertEquals(System.getProperty("hive.version"), meta.getDatabaseProductVersion());
     assertTrue("verifying hive version pattern. got " + meta.getDatabaseProductVersion(),
