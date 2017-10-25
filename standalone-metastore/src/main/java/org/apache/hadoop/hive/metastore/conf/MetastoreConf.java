@@ -176,7 +176,8 @@ public class MetastoreConf {
       ConfVars.TRY_DIRECT_SQL_DDL,
       ConfVars.CLIENT_SOCKET_TIMEOUT,
       ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
-      ConfVars.CAPABILITY_CHECK
+      ConfVars.CAPABILITY_CHECK,
+      ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES
   };
 
   static {

@@ -1,0 +1,18 @@
+PREHOOK: query: create table t1 (c1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (c1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+hive.metastore.disallow.incompatible.col.type.changes=true
+metaconf:hive.metastore.disallow.incompatible.col.type.changes=true
+hive.metastore.disallow.incompatible.col.type.changes=false
+metaconf:hive.metastore.disallow.incompatible.col.type.changes=true
+PREHOOK: query: alter table t1 change column c1 c1 smallint
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. The following columns have types incompatible with the existing columns in their respective positions :
+c1
