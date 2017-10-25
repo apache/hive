@@ -311,6 +311,10 @@ public class Operation2Privilege {
     adminPrivOps.add(HiveOperationType.REPLDUMP);
     adminPrivOps.add(HiveOperationType.REPLLOAD);
     adminPrivOps.add(HiveOperationType.KILL_QUERY);
+    adminPrivOps.add(HiveOperationType.CREATE_RESOURCEPLAN);
+    adminPrivOps.add(HiveOperationType.ALTER_RESOURCEPLAN);
+    adminPrivOps.add(HiveOperationType.DROP_RESOURCEPLAN);
+    adminPrivOps.add(HiveOperationType.SHOW_RESOURCEPLAN);
 
     // operations require select priv
     op2Priv.put(HiveOperationType.SHOWCOLUMNS, PrivRequirement.newIOPrivRequirement
@@ -432,8 +436,8 @@ public class Operation2Privilege {
         null));
     op2Priv.put(HiveOperationType.SHOW_GRANT, PrivRequirement.newIOPrivRequirement
 (null, null));
-    op2Priv.put(HiveOperationType.GRANT_ROLE, PrivRequirement.newIOPrivRequirement
-(null, null));
+      op2Priv.put(HiveOperationType.GRANT_ROLE, PrivRequirement.newIOPrivRequirement
+  (null, null));
     op2Priv.put(HiveOperationType.REVOKE_ROLE, PrivRequirement.newIOPrivRequirement
 (null, null));
     op2Priv.put(HiveOperationType.SHOW_ROLES, PrivRequirement.newIOPrivRequirement
@@ -466,7 +470,13 @@ public class Operation2Privilege {
             arr(SQLPrivTypeGrant.SELECT_NOGRANT, SQLPrivTypeGrant.DELETE_NOGRANT), INS_NOGRANT_AR));
     op2Priv.put(HiveOperationType.ABORT_TRANSACTIONS, PrivRequirement.newIOPrivRequirement
       (null, null));
+
+    // Handled via adminPrivOps (see above).
     op2Priv.put(HiveOperationType.KILL_QUERY, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.CREATE_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.ALTER_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.DROP_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SHOW_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));
   }
 
   /**
