@@ -58,7 +58,8 @@ public enum TGetInfoType implements org.apache.thrift.TEnum {
   CLI_DESCRIBE_PARAMETER(10002),
   CLI_CATALOG_NAME(10003),
   CLI_COLLATION_SEQ(10004),
-  CLI_MAX_IDENTIFIER_LEN(10005);
+  CLI_MAX_IDENTIFIER_LEN(10005),
+  CLI_ODBC_KEYWORDS(10006);
 
   private final int value;
 
@@ -173,6 +174,8 @@ public enum TGetInfoType implements org.apache.thrift.TEnum {
         return CLI_COLLATION_SEQ;
       case 10005:
         return CLI_MAX_IDENTIFIER_LEN;
+      case 10006:
+        return CLI_ODBC_KEYWORDS;
       default:
         return null;
     }
