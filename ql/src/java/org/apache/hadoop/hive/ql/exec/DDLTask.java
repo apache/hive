@@ -4429,9 +4429,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // to the  metastore to allow it to do drop a partition or not, depending on a Predicate on the
       // parameter key values.
       for (DropTableDesc.PartSpec partSpec : dropTbl.getPartSpecs()){
+        List<Partition> partitions = new ArrayList<>();
         try {
-          for (Partition p : Iterables.filter(
-              db.getPartitionsByFilter(tbl, partSpec.getPartSpec().getExprString()),
+          db.getPartitionsByExpr(tbl, partSpec.getPartSpec(), conf, partitions);
+          for (Partition p : Iterables.filter(partitions,
               replicationSpec.allowEventReplacementInto())){
             db.dropPartition(tbl.getDbName(),tbl.getTableName(),p.getValues(),true);
           }
