@@ -1894,13 +1894,16 @@ public class TestReplicationScenarios {
     String testName = "dropPartitionEventWithPartitionOnTimestampColumn";
     String dbName = createDB(testName, driver);
     run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b timestamp)", driver);
+    String[] ptn_data = new String[] { "fourteen" };
+    String ptnVal = "2017-10-01 01:00:10.1";
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=\"" + ptnVal +"\") values('" + ptn_data[0] + "')", driver);
 
     // Bootstrap dump/load
     String replDbName = dbName + "_dupe";
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
 
-    String[] ptn_data = new String[] { "fifteen" };
-    String ptnVal = "2017-10-24 00:00:00.0";
+    ptn_data = new String[] { "fifteen" };
+    ptnVal = "2017-10-24 00:00:00.0";
     run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=\"" + ptnVal +"\") values('" + ptn_data[0] + "')", driver);
 
     // Replicate insert event and verify
@@ -1914,6 +1917,35 @@ public class TestReplicationScenarios {
     verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList(ptnVal)), metaStoreClientMirror);
   }
 
+  /**
+   * Verify replication when string partition column value has special chars
+   * @throws IOException
+   */
+  @Test
+  public void testWithStringPartitionSpecialChars() throws IOException {
+    String testName = "testWithStringPartitionSpecialChars";
+    String dbName = createDB(testName, driver);
+    run("CREATE TABLE " + dbName + ".ptned(v string) PARTITIONED BY (p string)", driver);
+    String[] ptn_data = new String[] { "fourteen", "fifteen" };
+    String[] ptnVal = new String [] {"has a space, /, and \t tab", "another set of '#@ chars" };
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=\"" + ptnVal[0] +"\") values('" + ptn_data[0] + "')", driver);
+
+    // Bootstrap dump/load
+    String replDbName = dbName + "_dupe";
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=\"" + ptnVal[1] +"\") values('" + ptn_data[1] + "')", driver);
+    // Replicate insert event and verify
+    Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
+    verifyRun("SELECT p from " + replDbName + ".ptned ORDER BY p", ptnVal, driverMirror);
+
+    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION(b=\"" + ptnVal[0] + "\")", driver);
+
+    // Replicate drop partition event and verify
+    incrementalLoadAndVerify(dbName, incrDump.lastReplId, replDbName);
+    verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList(ptnVal[0])), metaStoreClientMirror);
+  }
+  
   @Test
   public void testRenameTableWithCM() throws IOException {
     String testName = "renameTableWithCM";
