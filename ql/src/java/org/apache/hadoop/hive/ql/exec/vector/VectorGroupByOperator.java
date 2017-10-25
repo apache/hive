@@ -36,18 +36,15 @@ import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc;
-import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc.ProcessingMode;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -777,6 +774,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
     private boolean first;
     private boolean isLastGroupBatch;
+    private boolean hasOutput;
 
     /**
      * The group vector key helper.
@@ -819,6 +817,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     @Override
     public void doProcessBatch(VectorizedRowBatch batch, boolean isFirstGroupingSet,
         boolean[] currentGroupingSetsOverrideIsNulls) throws HiveException {
+      hasOutput = true;
       if (first) {
         // Copy the group key to output batch now.  We'll copy in the aggregates at the end of the group.
         first = false;
@@ -846,6 +845,15 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     public void close(boolean aborted) throws HiveException {
       if (!aborted && !first && !isLastGroupBatch) {
         writeGroupRow(groupAggregators, buffer);
+      }
+      if (!hasOutput && GroupByOperator.shouldEmitSummaryRow(conf)) {
+        VectorHashKeyWrapper kw = keyWrappersBatch.getVectorHashKeyWrappers()[0];
+        int pos = conf.getGroupingSetPosition();
+        if (pos >= 0) {
+          long val = (1 << pos) - 1;
+          keyWrappersBatch.setLongValue(kw, pos, val);
+        }
+        writeSingleRow(kw , groupAggregators);
       }
     }
   }

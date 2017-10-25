@@ -70,7 +70,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
   private ArrayList<ExprNodeDesc> keys;
   private List<Integer> listGroupingSets;
   private boolean groupingSetsPresent;
-  private int groupingSetPosition = -1;
+  private int groupingSetPosition = -1; //  /* in case of grouping sets; groupby1 will output values for every setgroup; this is the index of the column that information will be sent */
   private ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators;
   private ArrayList<java.lang.String> outputColumnNames;
   private float groupByMemoryUsage;
@@ -233,7 +233,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
     }
     return false;
   }
-  
+
   @Explain(displayName = "bucketGroup", displayOnlyOnTrue = true)
   public boolean getBucketGroup() {
     return bucketGroup;
@@ -438,4 +438,5 @@ public class GroupByDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

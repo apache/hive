@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
@@ -66,8 +67,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-
-import com.google.common.math.IntMath;
 
 import javolution.util.FastBitSet;
 
@@ -209,7 +208,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     heartbeatInterval = HiveConf.getIntVar(hconf,
         HiveConf.ConfVars.HIVESENDHEARTBEAT);
     countAfterReport = 0;
-    groupingSetsPresent = conf.isGroupingSetsPresent();
     ObjectInspector rowInspector = inputObjInspectors[0];
 
     // init keyFields
@@ -228,6 +226,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
     // Initialize the constants for the grouping sets, so that they can be re-used for
     // each row
+    groupingSetsPresent = conf.isGroupingSetsPresent();
     if (groupingSetsPresent) {
       groupingSets = conf.getListGroupingSets();
       groupingSetsPosition = conf.getGroupingSetPosition();
@@ -1096,7 +1095,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if (!abort) {
       try {
         // If there is no grouping key and no row came to this operator
-        if (firstRow && (keyFields.length == 0)) {
+        if (firstRow && GroupByOperator.shouldEmitSummaryRow(conf)) {
           firstRow = false;
 
           // There is no grouping key - simulate a null row
@@ -1119,8 +1118,12 @@ public class GroupByOperator extends Operator<GroupByDesc> {
             aggregationEvaluators[ai].aggregate(aggregations[ai], o);
           }
 
-          // create dummy keys - size 0
-          forward(new Object[0], aggregations);
+          Object[] keys=new Object[outputKeyLength];
+          int pos = conf.getGroupingSetPosition();
+          if (pos >= 0 && pos < outputKeyLength) {
+            keys[pos] = new IntWritable((1 << pos) - 1);
+          }
+          forward(keys, aggregations);
         } else {
           flush();
         }
@@ -1179,4 +1182,36 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     return getConf().getMode() == GroupByDesc.Mode.MERGEPARTIAL ||
         getConf().getMode() == GroupByDesc.Mode.COMPLETE;
   }
+
+  public static boolean shouldEmitSummaryRow(GroupByDesc desc) {
+    // exactly one reducer should emit the summary row
+    if (!firstReducer()) {
+      return false;
+    }
+    // empty keyset is basically ()
+    if (desc.getKeys().size() == 0) {
+      return true;
+    }
+    int groupingSetPosition = desc.getGroupingSetPosition();
+    List<Integer> listGroupingSets = desc.getListGroupingSets();
+    // groupingSets are known at map/reducer side; but have to do real processing
+    // hence grouppingSetsPresent is true only at map side
+    if (groupingSetPosition >= 0 && listGroupingSets != null) {
+      Integer emptyGrouping = (1 << groupingSetPosition) - 1;
+      if (listGroupingSets.contains(emptyGrouping)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static boolean firstReducer() {
+    MapredContext ctx = TezContext.get();
+    if (ctx != null && ctx instanceof TezContext) {
+      TezContext tezContext = (TezContext) ctx;
+      return tezContext.getTezProcessorContext().getTaskIndex() == 0;
+    }
+    return true;
+  }
+
 }
