@@ -29,6 +29,8 @@ limitations under the License.
     <log4j2.version>2.6.2</log4j2.version>
     <spring.framework.version>3.2.16.RELEASE</spring.framework.version>
     <jclouds.version>2.0.0</jclouds.version>
+    <checkstyle.conf.dir>${basedir}/../../checkstyle/</checkstyle.conf.dir>
+    <maven.checkstyle.plugin.version>2.12.1</maven.checkstyle.plugin.version>
   </properties>
 
   <repositories>
@@ -163,6 +165,14 @@ limitations under the License.
       <!-- plugins are always listed in sorted order by groupId, artifectId -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
+          <propertyExpansion>basedir=${checkstyle.conf.dir}</propertyExpansion>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
         <configuration>
@@ -229,6 +239,11 @@ limitations under the License.
     <pluginManagement>
       <plugins>
     <!-- plugins are always listed in sorted order by groupId, artifectId -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>${maven.checkstyle.plugin.version}</version>
+        </plugin>
         <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
