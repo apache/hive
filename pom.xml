@@ -55,6 +55,7 @@
     <module>llap-server</module>
     <module>shims</module>
     <module>spark-client</module>
+    <module>kryo-registrator</module>
     <module>storage-api</module>
     <module>testutils</module>
     <module>packaging</module>

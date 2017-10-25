@@ -71,7 +71,7 @@ public class HiveSparkClientFactory {
     String master = sparkConf.get("spark.master");
     if (master.equals("local") || master.startsWith("local[")) {
       // With local spark context, all user sessions share the same spark context.
-      return LocalHiveSparkClient.getInstance(generateSparkConf(sparkConf));
+      return LocalHiveSparkClient.getInstance(generateSparkConf(sparkConf), hiveconf);
     } else {
       return new RemoteHiveSparkClient(hiveconf, sparkConf);
     }
@@ -208,13 +208,20 @@ public class HiveSparkClientFactory {
       }
     }
 
+    final boolean optShuffleSerDe = hiveConf.getBoolVar(
+        HiveConf.ConfVars.SPARK_OPTIMIZE_SHUFFLE_SERDE);
+
     Set<String> classes = Sets.newHashSet(
-      Splitter.on(",").trimResults().omitEmptyStrings().split(
-        Strings.nullToEmpty(sparkConf.get("spark.kryo.classesToRegister"))));
+        Splitter.on(",").trimResults().omitEmptyStrings().split(
+            Strings.nullToEmpty(sparkConf.get("spark.kryo.classesToRegister"))));
     classes.add(Writable.class.getName());
     classes.add(VectorizedRowBatch.class.getName());
-    classes.add(BytesWritable.class.getName());
-    classes.add(HiveKey.class.getName());
+    if (!optShuffleSerDe) {
+      classes.add(HiveKey.class.getName());
+      classes.add(BytesWritable.class.getName());
+    } else {
+      sparkConf.put("spark.kryo.registrator", SparkClientUtilities.HIVE_KRYO_REG_NAME);
+    }
     sparkConf.put("spark.kryo.classesToRegister", Joiner.on(",").join(classes));
 
     // set yarn queue name

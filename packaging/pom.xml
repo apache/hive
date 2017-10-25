@@ -287,6 +287,11 @@
       <artifactId>hive-webhcat-java-client</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-kryo-registrator</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
 </project>

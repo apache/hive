@@ -18,6 +18,7 @@
 package org.apache.hive.spark.client;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHENTICATION;
+import static org.apache.hive.spark.client.SparkClientUtilities.HIVE_KRYO_REG_NAME;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
@@ -440,6 +441,12 @@ class SparkClientImpl implements SparkClient {
           String msg = "Cannot obtain username: " + e;
           throw new IllegalStateException(msg, e);
         }
+      }
+
+      String regStr = conf.get("spark.kryo.registrator");
+      if (HIVE_KRYO_REG_NAME.equals(regStr)) {
+        argv.add("--jars");
+        argv.add(SparkClientUtilities.findKryoRegistratorJar(hiveConf));
       }
 
       argv.add("--properties-file");
