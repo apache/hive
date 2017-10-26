@@ -73,6 +73,11 @@ public class IndexBuilder extends StorageDescriptorBuilder<IndexBuilder> {
     return this;
   }
 
+  public IndexBuilder addIndexParam(String key, String value) {
+    indexParams.put(key, value);
+    return this;
+  }
+
   public IndexBuilder setIndexName(String indexName) {
     this.indexName = indexName;
     return this;

@@ -89,9 +89,8 @@ public class TestOldSchema {
   @Before
   public void setUp() throws Exception {
     Configuration conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setClass(conf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS,
-        MockPartitionExpressionProxy.class, PartitionExpressionProxy.class);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR, false);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     store = new ObjectStore();
     store.setConf(conf);

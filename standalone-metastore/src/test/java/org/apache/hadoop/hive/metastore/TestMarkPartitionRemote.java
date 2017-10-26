@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,14 +18,19 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.junit.Before;
 
-public class TestSetUGIOnBothClientServer extends TestRemoteHiveMetaStore{
+public class TestMarkPartitionRemote extends TestMarkPartition {
 
-  public TestSetUGIOnBothClientServer() {
-    super();
-    isThriftClient = true;
-    // This will turn on setugi on both client and server processes of the test.
-    System.setProperty(ConfVars.METASTORE_EXECUTE_SET_UGI.varname, "true");
+  @Before
+  public void startServer() throws Exception {
+    int port = MetaStoreTestUtils.findFreePort();
+    MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
+    MetastoreConf.setLongVar(conf, ConfVars.THRIFT_CONNECTION_RETRIES, 3);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    MetaStoreTestUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), conf);
   }
 }

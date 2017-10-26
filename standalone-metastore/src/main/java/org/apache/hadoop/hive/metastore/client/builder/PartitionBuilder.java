@@ -53,9 +53,10 @@ public class PartitionBuilder extends StorageDescriptorBuilder<PartitionBuilder>
     return this;
   }
 
-  public PartitionBuilder setDbAndTableName(Table table) {
+  public PartitionBuilder fromTable(Table table) {
     this.dbName = table.getDbName();
     this.tableName = table.getTableName();
+    setCols(table.getSd().getCols());
     return this;
   }
 

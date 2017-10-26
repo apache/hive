@@ -17,8 +17,10 @@
  */
 package org.apache.hadoop.hive.metastore.client.builder;
 
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -46,6 +48,8 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
     tableParams = new HashMap<>();
     createTime = lastAccessTime = (int)(System.currentTimeMillis() / 1000);
     retention = 0;
+    partCols = new ArrayList<>();
+    type = TableType.MANAGED_TABLE.name();
     super.setChild(this);
   }
 
@@ -90,7 +94,6 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
   }
 
   public TableBuilder addPartCol(String name, String type, String comment) {
-    if (partCols == null) partCols = new ArrayList<>();
     partCols.add(new FieldSchema(name, type, comment));
     return this;
   }
@@ -132,6 +135,13 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
 
   public TableBuilder setTemporary(boolean temporary) {
     this.temporary = temporary;
+    return this;
+  }
+
+  public TableBuilder fromIndex(Index index) {
+    dbName = index.getDbName();
+    tableName = index.getIndexTableName();
+    setCols(index.getSd().getCols());
     return this;
   }
 
