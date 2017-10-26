@@ -2183,17 +2183,18 @@ public class HiveConf extends Configuration {
     // whose constructor would not have been called
     HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST(
         "hive.security.authorization.sqlstd.confwhitelist", "",
-        "List of comma separated Java regexes. Configurations parameters that match these\n" +
-        "regexes can be modified by user when SQL standard authorization is enabled.\n" +
+        "A Java regex. Configurations parameters that match this\n" +
+        "regex can be modified by user when SQL standard authorization is enabled.\n" +
         "To get the default value, use the 'set <param>' command.\n" +
         "Note that the hive.conf.restricted.list checks are still enforced after the white list\n" +
         "check"),
 
     HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST_APPEND(
         "hive.security.authorization.sqlstd.confwhitelist.append", "",
-        "List of comma separated Java regexes, to be appended to list set in\n" +
-        "hive.security.authorization.sqlstd.confwhitelist. Using this list instead\n" +
-        "of updating the original list means that you can append to the defaults\n" +
+        "2nd Java regex that it would match in addition to\n" +
+        "hive.security.authorization.sqlstd.confwhitelist.\n" +
+        "Do not include a starting \"|\" in the value. Using this regex instead\n" +
+        "of updating the original regex means that you can append to the default\n" +
         "set by SQL standard authorization instead of replacing it entirely."),
 
     HIVE_CLI_PRINT_HEADER("hive.cli.print.header", false, "Whether to print the names of the columns in query output."),
