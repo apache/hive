@@ -36,6 +36,11 @@
     <!-- intra-proect -->
     <dependency>
       <groupId>org.apache.hive</groupId>
+      <artifactId>hive-classification</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
       <artifactId>hive-shims</artifactId>
       <version>${project.version}</version>
     </dependency>

@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked"})
-public class TCLIServiceConstants {
+@org.apache.hadoop.hive.common.classification.InterfaceAudience.Public @org.apache.hadoop.hive.common.classification.InterfaceStability.Stable public class TCLIServiceConstants {
 
   public static final Set<TTypeId> PRIMITIVE_TYPES = new HashSet<TTypeId>();
   static {

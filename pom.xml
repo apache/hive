@@ -34,6 +34,7 @@
     <module>accumulo-handler</module>
     <module>vector-code-gen</module>
     <module>beeline</module>
+    <module>classification</module>
     <module>cli</module>
     <module>common</module>
     <module>contrib</module>
