@@ -145,14 +145,14 @@ STAGE PLANS:
         Reducer 17 <- Reducer 16 (GROUP, 43)
         Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 30), Map 7 (PARTITION-LEVEL SORT, 30)
         Reducer 20 <- Map 19 (PARTITION-LEVEL SORT, 2), Reducer 23 (PARTITION-LEVEL SORT, 2)
-        Reducer 22 <- Map 13 (PARTITION-LEVEL SORT, 2), Map 21 (PARTITION-LEVEL SORT, 2)
+        Reducer 22 <- Map 21 (PARTITION-LEVEL SORT, 2), Map 24 (PARTITION-LEVEL SORT, 2)
         Reducer 23 <- Reducer 22 (GROUP, 2)
         Reducer 26 <- Map 25 (PARTITION-LEVEL SORT, 16), Map 29 (PARTITION-LEVEL SORT, 16)
         Reducer 27 <- Reducer 26 (PARTITION-LEVEL SORT, 13), Reducer 31 (PARTITION-LEVEL SORT, 13)
         Reducer 28 <- Reducer 27 (GROUP, 13)
         Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 27), Reducer 9 (PARTITION-LEVEL SORT, 27)
         Reducer 31 <- Map 30 (PARTITION-LEVEL SORT, 2), Reducer 34 (PARTITION-LEVEL SORT, 2)
-        Reducer 33 <- Map 13 (PARTITION-LEVEL SORT, 2), Map 32 (PARTITION-LEVEL SORT, 2)
+        Reducer 33 <- Map 32 (PARTITION-LEVEL SORT, 2), Map 35 (PARTITION-LEVEL SORT, 2)
         Reducer 34 <- Reducer 33 (GROUP, 2)
         Reducer 4 <- Reducer 3 (GROUP, 29)
         Reducer 5 <- Reducer 17 (PARTITION-LEVEL SORT, 42), Reducer 28 (PARTITION-LEVEL SORT, 42), Reducer 4 (PARTITION-LEVEL SORT, 42)
@@ -290,6 +290,28 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
+        Map 24 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10') and d_week_seq is not null) (type: boolean)
+                    Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_week_seq (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
         Map 25 
             Map Operator Tree:
                 TableScan
@@ -362,6 +384,28 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
+        Map 35 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((d_date) IN ('1998-01-02', '1998-10-15', '1998-11-10') and d_week_seq is not null) (type: boolean)
+                    Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_week_seq (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
         Map 7 
             Map Operator Tree:
                 TableScan

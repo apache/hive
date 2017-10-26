@@ -1,5 +1,6 @@
 set hive.fetch.task.conversion = none;
 set hive.exec.dynamic.partition.mode = nonstrict;
+set hive.strict.checks.cartesian.product=false;
 
 -- First, create source tables
 DROP TABLE IF EXISTS dummy;
@@ -122,6 +123,27 @@ SELECT t1.s1.f3.f5, t2.s2.f8
 FROM nested_tbl_1 t1 JOIN nested_tbl_1 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == TRUE;
+
+EXPLAIN SELECT t1.s1.f3.f5
+FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+ON t1.s1.f3.f4 = t2.s1.f6 AND t2.s2.f8.f9 == TRUE;
+SELECT t1.s1.f3.f5
+FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+ON t1.s1.f3.f4 = t2.s1.f6 AND t2.s2.f8.f9 == TRUE;
+
+EXPLAIN SELECT t1.s1.f3.f5
+FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+ON t1.s1.f1 <> t2.s2.f8.f9;
+SELECT t1.s1.f3.f5
+FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+ON t1.s1.f1 <> t2.s2.f8.f9;
+
+EXPLAIN SELECT t1.s1.f3.f5
+FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+ON t1.s1.f3.f4 = t2.s1.f6 AND t1.s1.f1 <> t2.s2.f8.f9;
+SELECT t1.s1.f3.f5
+FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+ON t1.s1.f3.f4 = t2.s1.f6 AND t1.s1.f1 <> t2.s2.f8.f9;
 
 -- Testing insert with aliases
 

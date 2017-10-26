@@ -113,6 +113,7 @@ import org.apache.calcite.sql.SqlLiteral;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.SqlWindow;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.Frameworks;
@@ -2121,17 +2122,20 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RexNode nonEquiConds = RelOptUtil.splitJoinCondition(sysFieldList, leftRel, rightRel,
             calciteJoinCond, leftJoinKeys, rightJoinKeys, null, null);
 
-        if (!nonEquiConds.isAlwaysTrue()) {
-          throw new SemanticException("Non equality condition not supported in Semi-Join"
-              + nonEquiConds);
-        }
-
         RelNode[] inputRels = new RelNode[] { leftRel, rightRel };
         final List<Integer> leftKeys = new ArrayList<Integer>();
         final List<Integer> rightKeys = new ArrayList<Integer>();
-        calciteJoinCond = HiveCalciteUtil.projectNonColumnEquiConditions(
-            HiveRelFactories.HIVE_PROJECT_FACTORY, inputRels, leftJoinKeys, rightJoinKeys, 0,
-            leftKeys, rightKeys);
+        RexNode remainingEquiCond = HiveCalciteUtil.projectNonColumnEquiConditions(HiveRelFactories.HIVE_PROJECT_FACTORY,
+            inputRels, leftJoinKeys, rightJoinKeys, 0, leftKeys, rightKeys);
+        // Adjust right input fields in nonEquiConds if previous call modified the input
+        if (inputRels[0] != leftRel) {
+          nonEquiConds = RexUtil.shift(nonEquiConds, leftRel.getRowType().getFieldCount(),
+              inputRels[0].getRowType().getFieldCount() - leftRel.getRowType().getFieldCount());
+        }
+        calciteJoinCond = remainingEquiCond != null ?
+            RexUtil.composeConjunction(cluster.getRexBuilder(),
+                ImmutableList.of(remainingEquiCond, nonEquiConds), false) :
+            nonEquiConds;
         topRel = HiveSemiJoin.getSemiJoin(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
             inputRels[0], inputRels[1], calciteJoinCond, ImmutableIntList.copyOf(leftKeys),
             ImmutableIntList.copyOf(rightKeys));

@@ -605,9 +605,9 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         innerJoin(skip, left, right);
       } else if (type == JoinDesc.LEFT_SEMI_JOIN) {
         if (innerJoin(skip, left, right)) {
-          // if left-semi-join found a match, skipping the rest of the rows in the
-          // rhs table of the semijoin
-          done = true;
+          // if left-semi-join found a match and we do not have any additional predicates,
+          // skipping the rest of the rows in the rhs table of the semijoin
+          done = !needsPostEvaluation;
         }
       } else if (type == JoinDesc.LEFT_OUTER_JOIN ||
           (type == JoinDesc.FULL_OUTER_JOIN && rightNull)) {
@@ -641,6 +641,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
             // This is only executed for outer joins with residual filters
             boolean forward = createForwardJoinObject(skipVectors[numAliases - 1]);
             producedRow |= forward;
+            done = (type == JoinDesc.LEFT_SEMI_JOIN) && forward;
             if (!rightNull &&
                     (type == JoinDesc.RIGHT_OUTER_JOIN || type == JoinDesc.FULL_OUTER_JOIN)) {
               if (forward) {

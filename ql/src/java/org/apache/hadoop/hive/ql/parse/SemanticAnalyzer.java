@@ -2827,15 +2827,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * Parse the join condition. If the condition is a join condition, throw an
-   * error if it is not an equality. Otherwise, break it into left and right
-   * expressions and store in the join tree. If the condition is a join filter,
-   * add it to the filter list of join tree. The join condition can contains
-   * conditions on both the left and tree trees and filters on either.
-   * Currently, we only support equi-joins, so we throw an error if the
-   * condition involves both subtrees and is not a equality. Also, we only
-   * support AND i.e ORs are not supported currently as their semantics are not
-   * very clear, may lead to data explosion and there is no usecase.
+   * Parse the join condition. For equality conjuncts, break them into left and
+   * right expressions and store in the join tree. For other conditions, either
+   * add them to the post-conditions if they apply to more than one input, add
+   * them to the filter conditions of a given input if it applies only on
+   * one of them and should not be pushed, e.g., left outer join with condition
+   * that applies only to left input, or push them below the join if they
+   * apply only to one input and can be pushed, e.g., left outer join with
+   * condition that applies only to right input.
    *
    * @param joinTree
    *          jointree to be populated
@@ -2855,6 +2854,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     switch (joinCond.getToken().getType()) {
     case HiveParser.KW_OR:
+      parseJoinCondPopulateAlias(joinTree, (ASTNode) joinCond.getChild(0),
+          new ArrayList<String>(), new ArrayList<String>(),
+          null, aliasToOpInfo);
+      parseJoinCondPopulateAlias(joinTree, (ASTNode) joinCond.getChild(1),
+          new ArrayList<String>(), new ArrayList<String>(),
+          null, aliasToOpInfo);
       joinTree.addPostJoinFilter(joinCond);
       break;
 
@@ -8148,6 +8153,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     HashMap<Byte, List<ExprNodeDesc>> filterMap =
         new HashMap<Byte, List<ExprNodeDesc>>();
 
+    // Only used for semijoin with residual predicates
+    List<ColumnInfo> topSelectInputColumns = new ArrayList<>();
+
     for (int pos = 0; pos < right.length; ++pos) {
       Operator<?> input = right[pos] == null ? left : right[pos];
       if (input == null) {
@@ -8167,7 +8175,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Byte tag = (byte) rsDesc.getTag();
 
       // check whether this input operator produces output
-      if (omitOpts != null && omitOpts.contains(pos)) {
+      // If it has residual, we do not skip this output,
+      // we will add a Select on top of the join
+      if (omitOpts != null && omitOpts.contains(pos)
+          && join.getPostJoinFilters().size() == 0) {
         exprMap.put(tag, valueDesc);
         filterMap.put(tag, filterDesc);
         rightOps[pos] = input;
@@ -8211,6 +8222,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         valueDesc.add(desc);
         outputColumnNames.add(internalName);
         reversedExprs.put(internalName, tag);
+
+        // Populate semijoin select if needed
+        if (omitOpts == null || !omitOpts.contains(pos)) {
+          topSelectInputColumns.add(info);
+        }
       }
       for (ASTNode cond : join.getFilters().get(tag)) {
         filterDesc.add(genExprNodeDesc(cond, inputRR));
@@ -8232,8 +8248,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     desc.setFilterMap(join.getFilterMap());
     // Add filters that apply to more than one input
     if (join.getPostJoinFilters().size() != 0 &&
-            (!join.getNoOuterJoin() ||
-                    HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PUSH_RESIDUAL_INNER))) {
+            (!join.getNoOuterJoin() || !join.getNoSemiJoin()
+                    || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PUSH_RESIDUAL_INNER))) {
       LOG.debug("Generate JOIN with post-filtering conditions");
       List<ExprNodeDesc> residualFilterExprs = new ArrayList<ExprNodeDesc>();
       for (ASTNode cond : join.getPostJoinFilters()) {
@@ -8256,7 +8272,34 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       desc.setNullSafes(nullsafes);
     }
-    return putOpInsertMap(joinOp, outputRR);
+
+    Operator<?> topOp = putOpInsertMap(joinOp, outputRR);
+    if (omitOpts != null && !omitOpts.isEmpty()
+        && desc.getResidualFilterExprs() != null && !desc.getResidualFilterExprs().isEmpty()) {
+      // Adding a select operator to top of semijoin to ensure projection of only correct columns
+      final List<ExprNodeDesc> topSelectExprs = new ArrayList<>();
+      final List<String> topSelectOutputColNames = new ArrayList<>();
+      final RowResolver topSelectRR = new RowResolver();
+      final Map<String, ExprNodeDesc> topSelectColExprMap = new HashMap<String, ExprNodeDesc>();
+      for (ColumnInfo colInfo : topSelectInputColumns) {
+        ExprNodeColumnDesc columnExpr = new ExprNodeColumnDesc(colInfo);
+        topSelectExprs.add(columnExpr);
+        topSelectOutputColNames.add(colInfo.getInternalName());
+        topSelectColExprMap.put(colInfo.getInternalName(), columnExpr);
+        String[] nm = outputRR.reverseLookup(columnExpr.getColumn());
+        String[] nm2 = outputRR.getAlternateMappings(columnExpr.getColumn());
+        topSelectRR.put(nm[0], nm[1], colInfo);
+        if (nm2 != null) {
+          topSelectRR.addMappingOnly(nm2[0], nm2[1], colInfo);
+        }
+      }
+      final SelectDesc topSelect = new SelectDesc(topSelectExprs, topSelectOutputColNames);
+      topOp = putOpInsertMap(OperatorFactory.getAndMakeChild(topSelect,
+          new RowSchema(topSelectRR.getColumnInfos()), topOp), topSelectRR);
+      topOp.setColumnExprMap(topSelectColExprMap);
+    }
+
+    return topOp;
   }
 
   private ExprNodeDesc[][] genJoinKeys(QBJoinTree joinTree, Operator[] inputs)
@@ -8442,8 +8485,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       srcOps[i] = genJoinReduceSinkChild(qb, joinKeys[i], srcOps[i], srcs, joinTree.getNextTag());
     }
 
-    JoinOperator joinOp = (JoinOperator) genJoinOperatorChildren(joinTree,
-      joinSrcOp, srcOps, omitOpts, joinKeys);
+    Operator<?> topOp = genJoinOperatorChildren(joinTree,
+        joinSrcOp, srcOps, omitOpts, joinKeys);
+    JoinOperator joinOp;
+    if (topOp instanceof JoinOperator) {
+      joinOp = (JoinOperator) topOp;
+    } else {
+      // We might generate a Select operator on top of the join operator for
+      // semijoin
+      joinOp = (JoinOperator) topOp.getParentOperators().get(0);
+    }
     joinOp.getConf().setQBJoinTreeProps(joinTree);
     joinContext.put(joinOp, joinTree);
 
@@ -8453,14 +8504,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // Safety check for postconditions
         throw new SemanticException("Post-filtering conditions should have been added to the JOIN operator");
       }
-      Operator op = joinOp;
       for(ASTNode condn : joinTree.getPostJoinFilters()) {
-        op = genFilterPlan(qb, condn, op, false);
+        topOp = genFilterPlan(qb, condn, topOp, false);
       }
-      return op;
     }
 
-    return joinOp;
+    return topOp;
   }
 
   /**
@@ -8475,7 +8524,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   private Operator insertSelectForSemijoin(ArrayList<ASTNode> fields,
-      Operator input) throws SemanticException {
+      Operator<?> input) throws SemanticException {
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
@@ -8487,13 +8536,38 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // construct the list of columns that need to be projected
     for (int i = 0; i < fields.size(); ++i) {
       ASTNode field = fields.get(i);
-      ExprNodeDesc exprNode = genExprNodeDesc(field, inputRR);
+      String[] nm;
+      String[] nm2;
+      ExprNodeDesc expr = genExprNodeDesc(field, inputRR);
+      if (expr instanceof ExprNodeColumnDesc) {
+        // In most of the cases, this is a column reference
+        ExprNodeColumnDesc columnExpr = (ExprNodeColumnDesc) expr;
+        nm = inputRR.reverseLookup(columnExpr.getColumn());
+        nm2 = inputRR.getAlternateMappings(columnExpr.getColumn());
+      } else if (expr instanceof ExprNodeConstantDesc) {
+        // However, it can be a constant too. In that case, we need to track
+        // the column that it originated from in the input operator so we can
+        // propagate the aliases.
+        ExprNodeConstantDesc constantExpr = (ExprNodeConstantDesc) expr;
+        String inputCol = constantExpr.getFoldedFromCol();
+        nm = inputRR.reverseLookup(inputCol);
+        nm2 = inputRR.getAlternateMappings(inputCol);
+      } else {
+        // We might generate other types that are not recognized, e.g., a field reference
+        // if it is a nested field, but since this is just an additional optimization,
+        // we bail out without introducing the Select + GroupBy below the right input
+        // of the left semijoin
+        return input;
+      }
       String colName = getColumnInternalName(i);
       outputColumnNames.add(colName);
-      ColumnInfo colInfo = new ColumnInfo(colName, exprNode.getTypeInfo(), "", false);
-      outputRR.putExpression(field, colInfo);
-      colList.add(exprNode);
-      colExprMap.put(colName, exprNode);
+      ColumnInfo colInfo = new ColumnInfo(colName, expr.getTypeInfo(), "", false);
+      outputRR.put(nm[0], nm[1], colInfo);
+      if (nm2 != null) {
+        outputRR.addMappingOnly(nm2[0], nm2[1], colInfo);
+      }
+      colList.add(expr);
+      colExprMap.put(colName, expr);
     }
 
     // create selection operator
@@ -8505,43 +8579,55 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
-  private Operator genMapGroupByForSemijoin(QB qb, ArrayList<ASTNode> fields, // the
-      // ASTNode
-      // of
-      // the
-      // join
-      // key
-      // "tab.col"
-      Operator inputOperatorInfo, GroupByDesc.Mode mode)
+  private Operator genMapGroupByForSemijoin(QB qb, ArrayList<ASTNode> fields,
+      Operator<?> input, GroupByDesc.Mode mode)
       throws SemanticException {
 
-    RowResolver groupByInputRowResolver = opParseCtx.get(inputOperatorInfo)
+    RowResolver groupByInputRowResolver = opParseCtx.get(input)
         .getRowResolver();
     RowResolver groupByOutputRowResolver = new RowResolver();
     ArrayList<ExprNodeDesc> groupByKeys = new ArrayList<ExprNodeDesc>();
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     ArrayList<AggregationDesc> aggregations = new ArrayList<AggregationDesc>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
-    qb.getParseInfo();
-
-    groupByOutputRowResolver.setIsExprResolver(true); // join keys should only
-    // be columns but not be
-    // expressions
 
     for (int i = 0; i < fields.size(); ++i) {
       // get the group by keys to ColumnInfo
       ASTNode colName = fields.get(i);
-      ExprNodeDesc grpByExprNode = genExprNodeDesc(colName,
-          groupByInputRowResolver);
+      String[] nm;
+      String[] nm2;
+      ExprNodeDesc grpByExprNode = genExprNodeDesc(colName, groupByInputRowResolver);
+      if (grpByExprNode instanceof ExprNodeColumnDesc) {
+        // In most of the cases, this is a column reference
+        ExprNodeColumnDesc columnExpr = (ExprNodeColumnDesc) grpByExprNode;
+        nm = groupByInputRowResolver.reverseLookup(columnExpr.getColumn());
+        nm2 = groupByInputRowResolver.getAlternateMappings(columnExpr.getColumn());
+      } else if (grpByExprNode instanceof ExprNodeConstantDesc) {
+        // However, it can be a constant too. In that case, we need to track
+        // the column that it originated from in the input operator so we can
+        // propagate the aliases.
+        ExprNodeConstantDesc constantExpr = (ExprNodeConstantDesc) grpByExprNode;
+        String inputCol = constantExpr.getFoldedFromCol();
+        nm = groupByInputRowResolver.reverseLookup(inputCol);
+        nm2 = groupByInputRowResolver.getAlternateMappings(inputCol);
+      } else {
+        // We might generate other types that are not recognized, e.g., a field reference
+        // if it is a nested field, but since this is just an additional optimization,
+        // we bail out without introducing the Select + GroupBy below the right input
+        // of the left semijoin
+        return input;
+      }
       groupByKeys.add(grpByExprNode);
-
       // generate output column names
       String field = getColumnInternalName(i);
       outputColumnNames.add(field);
       ColumnInfo colInfo2 = new ColumnInfo(field, grpByExprNode.getTypeInfo(),
           "", false);
+      groupByOutputRowResolver.put(nm[0], nm[1], colInfo2);
+      if (nm2 != null) {
+        groupByOutputRowResolver.addMappingOnly(nm2[0], nm2[1], colInfo2);
+      }
       groupByOutputRowResolver.putExpression(colName, colInfo2);
-
       // establish mapping from the output column to the input column
       colExprMap.put(field, grpByExprNode);
     }
@@ -8554,7 +8640,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
             false, groupByMemoryUsage, memoryThreshold, null, false, -1, false),
         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
-        inputOperatorInfo), groupByOutputRowResolver);
+        input), groupByOutputRowResolver);
 
     op.setColumnExprMap(colExprMap);
     return op;
