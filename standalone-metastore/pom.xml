@@ -45,6 +45,10 @@
     <test.warehouse.dir>${project.build.directory}/warehouse</test.warehouse.dir>
     <test.warehouse.scheme>file://</test.warehouse.scheme>
 
+    <!-- Plugin versions -->
+    <ant.contrib.version>1.0b3</ant.contrib.version>
+    <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
+
     <!-- Dependency versions -->
     <antlr.version>3.5.2</antlr.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
@@ -69,7 +73,14 @@
     <mockito-all.version>1.10.19</mockito-all.version>
     <protobuf.version>2.5.0</protobuf.version>
     <storage-api.version>3.0.0-SNAPSHOT</storage-api.version>
+
+    <!-- Thrift properties -->
+    <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
+    <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
+    <thrift.args>-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp --gen php --gen py --gen rb</thrift.args>
+
   </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -248,6 +259,40 @@
       <build>
         <plugins>
           <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>generate-thrift-sources</id>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <target>
+                    <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask"
+                             classpathref="maven.plugin.classpath" />
+                    <property name="thrift.args" value="${thrift.args}"/>
+                    <property name="thrift.gen.dir" value="${thrift.gen.dir}"/>
+                    <delete dir="${thrift.gen.dir}"/>
+                    <mkdir dir="${thrift.gen.dir}"/>
+                    <for param="thrift.file">
+                      <path>
+                        <fileset dir="." includes="src/main/thrift/*.thrift" />
+                      </path>
+                      <sequential>
+                        <echo message="Generating Thrift code for @{thrift.file}"/>
+                        <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
+                          <arg line="${thrift.args} -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} " />
+                        </exec>
+                      </sequential>
+                    </for>
+                  </target>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
             <groupId>com.google.code.maven-replacer-plugin</groupId>
             <artifactId>replacer</artifactId>
             <version>1.5.3</version>
@@ -287,6 +332,29 @@
         </includes>
       </resource>
     </resources>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>${maven.antrun.plugin.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>ant-contrib</groupId>
+              <artifactId>ant-contrib</artifactId>
+              <version>${ant.contrib.version}</version>
+              <exclusions>
+                <exclusion>
+                  <groupId>ant</groupId>
+                  <artifactId>ant</artifactId>
+                </exclusion>
+              </exclusions>
+            </dependency>
+          </dependencies>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <!-- plugins are always listed in sorted order by groupId, artifectId -->
       <plugin>
@@ -430,29 +498,6 @@
         <configuration>
           <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>generate-version-annotation</id>
-            <phase>generate-sources</phase>
-            <configuration>
-              <target>
-                <exec executable="bash" failonerror="true">
-                  <arg value="${basedir}/src/main/resources/saveVersion.sh"/>
-                  <arg value="${project.version}"/>
-                  <arg value="${hive.version.shortname}"/>
-                  <arg value="${basedir}/src"/>
-                </exec>
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
