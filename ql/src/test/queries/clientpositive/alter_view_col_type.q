@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 create table at1 (c1 int, c2 varchar(1), c3 varchar(10));
 
 insert into at1 values (1, 'a', 'one');
