@@ -70,6 +70,11 @@ public class TestJdbcWithLocalClusterSpark {
     conf.set("hive.execution.engine", "spark");
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
     conf.set("spark.master", "local-cluster[2,2,1024]");
+    // FIXME: Hadoop3 made the incompatible change for dfs.client.datanode-restart.timeout
+    // while spark2 is still using Hadoop2.
+    // Spark requires Hive to support Hadoop3 first then Spark can start
+    // working on Hadoop3 support. Remove this after Spark supports Hadoop3.
+    conf.set("dfs.client.datanode-restart.timeout", "30");
     return conf;
   }
 

@@ -144,10 +144,10 @@
     <guava.version>14.0.1</guava.version>
     <groovy.version>2.4.11</groovy.version>
     <h2database.version>1.3.166</h2database.version>
-    <hadoop.version>2.8.1</hadoop.version>
+    <hadoop.version>3.0.0-beta1</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hamcrest.version>1.3</hamcrest.version>
-    <hbase.version>1.1.1</hbase.version>
+    <hbase.version>2.0.0-alpha3</hbase.version>
     <!-- required for logging test to avoid including hbase which pulls disruptor transitively -->
     <disruptor.version>3.3.0</disruptor.version>
     <hikaricp.version>2.6.1</hikaricp.version>
@@ -194,7 +194,7 @@
     <slf4j.version>1.7.10</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>3.0.0-SNAPSHOT</storage-api.version>
-    <tez.version>0.9.0</tez.version>
+    <tez.version>0.9.1-SNAPSHOT</tez.version>
     <slider.version>0.92.0-incubating</slider.version>
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>2.0.0</spark.version>
@@ -754,6 +754,10 @@
             <groupId>commmons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>com.codahale.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+          </exclusion>
         </exclusions>
      </dependency>
       <dependency>
@@ -835,10 +839,77 @@
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-hadoop2-compat</artifactId>
         <version>${hbase.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>jsp-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.jruby</groupId>
+            <artifactId>jruby-complete</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.jboss.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jsp-2.1</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jsp-api-2.1</artifactId>
+         </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>servlet-api-2.5</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>servlet-api-2.5</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-core</artifactId>
+         </exclusion>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-json</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-server</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.codahale.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-server</artifactId>
+        <version>${hbase.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hbase</groupId>
+        <artifactId>hbase-mapreduce</artifactId>
         <version>${hbase.version}</version>
       </dependency>
       <dependency>

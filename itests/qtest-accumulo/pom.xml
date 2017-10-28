@@ -40,6 +40,7 @@
     <skip.accumulo.tests>true</skip.accumulo.tests>
     <!-- Must correspond with the Accumulo version specified in the pom -->
     <accumulo-thrift.version>0.9.1</accumulo-thrift.version>
+    <accumulo-htrace.version>3.1.0-incubating</accumulo-htrace.version>
     <test.dfs.mkdir>-mkdir -p</test.dfs.mkdir>
   </properties>
 
@@ -260,23 +261,9 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-common</artifactId>
-      <version>${hbase.version}</version>
-      <scope>test</scope>
-      <classifier>tests</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-hadoop-compat</artifactId>
       <version>${hbase.version}</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-hadoop-compat</artifactId>
-      <version>${hbase.version}</version>
-      <scope>test</scope>
-      <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
@@ -286,14 +273,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-hadoop2-compat</artifactId>
-      <version>${hbase.version}</version>
-      <scope>test</scope>
-      <classifier>tests</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-server</artifactId>
+      <artifactId>hbase-mapreduce</artifactId>
       <version>${hbase.version}</version>
       <scope>test</scope>
     </dependency>
@@ -301,7 +281,12 @@
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-server</artifactId>
       <version>${hbase.version}</version>
-      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.htrace</groupId>
+      <artifactId>htrace-core</artifactId>
+      <version>${accumulo-htrace.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -385,9 +370,15 @@
       </properties>
       <dependencies>
       	<dependency>
-	        <groupId>org.apache.accumulo</groupId>
-	        <artifactId>accumulo-minicluster</artifactId>
-	        <scope>test</scope>
+	  <groupId>org.apache.accumulo</groupId>
+	  <artifactId>accumulo-minicluster</artifactId>
+	  <scope>test</scope>
+          <exclusions>
+            <exclusion>
+              <groupId>commons-beanutils</groupId>
+              <artifactId>commons-beanutils-core</artifactId>
+            </exclusion>
+          </exclusions>
         </dependency>
         <!-- Override the thrift dependency pulled in for metaserver -->
         <dependency>

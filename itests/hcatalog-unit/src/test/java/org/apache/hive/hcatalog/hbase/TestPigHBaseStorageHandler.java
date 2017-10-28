@@ -34,12 +34,16 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -94,10 +98,17 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
   }
 
-  private void populateHBaseTable(String tName) throws IOException {
+  private void populateHBaseTable(String tName, Connection connection) throws IOException {
     List<Put> myPuts = generatePuts(tName);
-    HTable table = new HTable(getHbaseConf(), Bytes.toBytes(tName));
-    table.put(myPuts);
+    Table table = null;
+    try {
+      table = connection.getTable(TableName.valueOf(tName));
+      table.put(myPuts);
+    } finally {
+      if (table != null) {
+        table.close();
+      }
+    }
   }
 
   private List<Put> generatePuts(String tableName) throws IOException {
@@ -107,8 +118,8 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     myPuts = new ArrayList<Put>();
     for (int i = 1; i <=10; i++) {
       Put put = new Put(Bytes.toBytes(i));
-      put.add(FAMILY, QUALIFIER1, 1, Bytes.toBytes("textA-" + i));
-      put.add(FAMILY, QUALIFIER2, 1, Bytes.toBytes("textB-" + i));
+      put.addColumn(FAMILY, QUALIFIER1, 1, Bytes.toBytes("textA-" + i));
+      put.addColumn(FAMILY, QUALIFIER2, 1, Bytes.toBytes("textB-" + i));
       myPuts.add(put);
     }
     return myPuts;
@@ -165,8 +176,22 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
     CommandProcessorResponse responseThree = driver.run(tableQuery);
 
-    HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
-    boolean doesTableExist = hAdmin.tableExists(hbaseTableName);
+    Connection connection = null;
+    Admin hAdmin = null;
+    boolean doesTableExist = false;
+    try {
+      connection = ConnectionFactory.createConnection(getHbaseConf());
+      hAdmin = connection.getAdmin();
+      doesTableExist = hAdmin.tableExists(TableName.valueOf(hbaseTableName));
+    } finally {
+      if (hAdmin != null) {
+        hAdmin.close();
+      }
+      if (connection != null) {
+        connection.close();
+      }
+    }
+
     assertTrue(doesTableExist);
 
     PigServer server = new PigServer(ExecType.LOCAL,hcatConf.getAllProperties());
@@ -220,17 +245,39 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
     CommandProcessorResponse responseThree = driver.run(tableQuery);
 
-    HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
-    boolean doesTableExist = hAdmin.tableExists(hbaseTableName);
-    assertTrue(doesTableExist);
+    Connection connection = null;
+    Admin hAdmin = null;
+    Table table = null;
+    ResultScanner scanner = null;
+    boolean doesTableExist = false;
+    try {
+      connection = ConnectionFactory.createConnection(getHbaseConf());
+      hAdmin = connection.getAdmin();
+      doesTableExist = hAdmin.tableExists(TableName.valueOf(hbaseTableName));
 
-    populateHBaseTable(hbaseTableName);
+      assertTrue(doesTableExist);
 
-    Configuration conf = new Configuration(getHbaseConf());
-    HTable table = new HTable(conf, hbaseTableName);
-    Scan scan = new Scan();
-    scan.addFamily(Bytes.toBytes("testFamily"));
-    ResultScanner scanner = table.getScanner(scan);
+      populateHBaseTable(hbaseTableName, connection);
+
+      table = connection.getTable(TableName.valueOf(hbaseTableName));
+      Scan scan = new Scan();
+      scan.addFamily(Bytes.toBytes("testFamily"));
+      scanner = table.getScanner(scan);
+    } finally {
+      if (scanner != null) {
+        scanner.close();
+      }
+      if (table != null ) {
+        table.close();
+      }
+      if (hAdmin != null) {
+        hAdmin.close();
+      }
+      if (connection != null) {
+        connection.close();
+      }
+    }
+
     int index=1;
 
     PigServer server = new PigServer(ExecType.LOCAL,hcatConf.getAllProperties());
@@ -288,59 +335,80 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
     CommandProcessorResponse responseThree = driver.run(tableQuery);
 
-    HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
-    boolean doesTableExist = hAdmin.tableExists(hbaseTableName);
-    assertTrue(doesTableExist);
+    Connection connection = null;
+    Admin hAdmin = null;
+    Table table = null;
+    ResultScanner scanner = null;
+    boolean doesTableExist = false;
+    try {
+      connection = ConnectionFactory.createConnection(getHbaseConf());
+      hAdmin = connection.getAdmin();
+      doesTableExist = hAdmin.tableExists(TableName.valueOf(hbaseTableName));
+
+      assertTrue(doesTableExist);
 
 
-    createTestDataFile(POPTXT_FILE_NAME);
+      createTestDataFile(POPTXT_FILE_NAME);
 
-    PigServer server = new PigServer(ExecType.LOCAL,hcatConf.getAllProperties());
-    server.registerQuery("A = load '"+POPTXT_FILE_NAME+"' using PigStorage() as (key:int, testqualifier1:float, testqualifier2:chararray);");
-    server.registerQuery("B = filter A by (key > 2) AND (key < 8) ;");
-    server.registerQuery("store B into '"+databaseName.toLowerCase()+"."+tableName.toLowerCase()+"' using  org.apache.hive.hcatalog.pig.HCatStorer();");
-    server.registerQuery("C = load '"+databaseName.toLowerCase()+"."+tableName.toLowerCase()+"' using org.apache.hive.hcatalog.pig.HCatLoader();");
-    // Schema should be same
-    Schema dumpedBSchema = server.dumpSchema("C");
+      PigServer server = new PigServer(ExecType.LOCAL,hcatConf.getAllProperties());
+      server.registerQuery("A = load '"+POPTXT_FILE_NAME+"' using PigStorage() as (key:int, testqualifier1:float, testqualifier2:chararray);");
+      server.registerQuery("B = filter A by (key > 2) AND (key < 8) ;");
+      server.registerQuery("store B into '"+databaseName.toLowerCase()+"."+tableName.toLowerCase()+"' using  org.apache.hive.hcatalog.pig.HCatStorer();");
+      server.registerQuery("C = load '"+databaseName.toLowerCase()+"."+tableName.toLowerCase()+"' using org.apache.hive.hcatalog.pig.HCatLoader();");
+      // Schema should be same
+      Schema dumpedBSchema = server.dumpSchema("C");
 
-    List<FieldSchema> fields = dumpedBSchema.getFields();
-    assertEquals(3, fields.size());
+      List<FieldSchema> fields = dumpedBSchema.getFields();
+      assertEquals(3, fields.size());
 
-    assertEquals(DataType.INTEGER,fields.get(0).type);
-    assertEquals("key",fields.get(0).alias.toLowerCase());
+      assertEquals(DataType.INTEGER,fields.get(0).type);
+      assertEquals("key",fields.get(0).alias.toLowerCase());
 
-    assertEquals( DataType.FLOAT,fields.get(1).type);
-    assertEquals("testQualifier1".toLowerCase(), fields.get(1).alias.toLowerCase());
+      assertEquals( DataType.FLOAT,fields.get(1).type);
+      assertEquals("testQualifier1".toLowerCase(), fields.get(1).alias.toLowerCase());
 
-    assertEquals( DataType.CHARARRAY,fields.get(2).type);
-    assertEquals("testQualifier2".toLowerCase(), fields.get(2).alias.toLowerCase());
+      assertEquals( DataType.CHARARRAY,fields.get(2).type);
+      assertEquals("testQualifier2".toLowerCase(), fields.get(2).alias.toLowerCase());
 
-    //Query the hbase table and check the key is valid and only 5  are present
-    Configuration conf = new Configuration(getHbaseConf());
-    HTable table = new HTable(conf, hbaseTableName);
-    Scan scan = new Scan();
-    scan.addFamily(Bytes.toBytes("testFamily"));
-    byte[] familyNameBytes = Bytes.toBytes("testFamily");
-    ResultScanner scanner = table.getScanner(scan);
-    int index=3;
-    int count=0;
-    for(Result result: scanner) {
-      //key is correct
-      assertEquals(index,Bytes.toInt(result.getRow()));
-      //first column exists
-      assertTrue(result.containsColumn(familyNameBytes,Bytes.toBytes("testQualifier1")));
-      //value is correct
-      assertEquals((index+f),Bytes.toFloat(result.getValue(familyNameBytes,Bytes.toBytes("testQualifier1"))),0);
+      //Query the hbase table and check the key is valid and only 5  are present
+      table = connection.getTable(TableName.valueOf(hbaseTableName));
+      Scan scan = new Scan();
+      scan.addFamily(Bytes.toBytes("testFamily"));
+      byte[] familyNameBytes = Bytes.toBytes("testFamily");
+      scanner = table.getScanner(scan);
+      int index=3;
+      int count=0;
+      for(Result result: scanner) {
+        //key is correct
+        assertEquals(index,Bytes.toInt(result.getRow()));
+        //first column exists
+        assertTrue(result.containsColumn(familyNameBytes,Bytes.toBytes("testQualifier1")));
+        //value is correct
+        assertEquals((index+f),Bytes.toFloat(result.getValue(familyNameBytes,Bytes.toBytes("testQualifier1"))),0);
 
-      //second column exists
-      assertTrue(result.containsColumn(familyNameBytes,Bytes.toBytes("testQualifier2")));
-      //value is correct
-      assertEquals(("textB-"+index).toString(),Bytes.toString(result.getValue(familyNameBytes,Bytes.toBytes("testQualifier2"))));
-      index++;
-      count++;
+        //second column exists
+        assertTrue(result.containsColumn(familyNameBytes,Bytes.toBytes("testQualifier2")));
+        //value is correct
+        assertEquals(("textB-"+index).toString(),Bytes.toString(result.getValue(familyNameBytes,Bytes.toBytes("testQualifier2"))));
+        index++;
+        count++;
+      }
+      // 5 rows should be returned
+      assertEquals(count,5);
+    } finally {
+      if (scanner != null) {
+        scanner.close();
+      }
+      if (table != null ) {
+        table.close();
+      }
+      if (hAdmin != null) {
+        hAdmin.close();
+      }
+      if (connection != null) {
+        connection.close();
+      }
     }
-    // 5 rows should be returned
-    assertEquals(count,5);
 
     //Check if hive returns results correctly
     driver.run(selectQuery);

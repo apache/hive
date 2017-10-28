@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,28 +27,20 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HConnection;
-import org.apache.hadoop.hbase.client.HConnectionManager;
-import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.mapred.TableOutputFormat;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormatBase;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.hbase.security.token.TokenUtil;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
@@ -81,14 +72,14 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.yammer.metrics.core.MetricsRegistry;
+import com.codahale.metrics.MetricRegistry;
 
 /**
  * HBaseStorageHandler provides a HiveStorageHandler implementation for
  * HBase.
  */
 public class HBaseStorageHandler extends DefaultStorageHandler
-  implements HiveMetaHook, HiveStoragePredicateHandler {
+  implements HiveStoragePredicateHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(HBaseStorageHandler.class);
 
@@ -117,169 +108,6 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
   private Configuration jobConf;
   private Configuration hbaseConf;
-  private HBaseAdmin admin;
-
-  private HBaseAdmin getHBaseAdmin() throws MetaException {
-    try {
-      if (admin == null) {
-        admin = new HBaseAdmin(hbaseConf);
-      }
-      return admin;
-    } catch (IOException ioe) {
-      throw new MetaException(StringUtils.stringifyException(ioe));
-    }
-  }
-
-  private String getHBaseTableName(Table tbl) {
-    // Give preference to TBLPROPERTIES over SERDEPROPERTIES
-    // (really we should only use TBLPROPERTIES, so this is just
-    // for backwards compatibility with the original specs).
-    String tableName = tbl.getParameters().get(HBaseSerDe.HBASE_TABLE_NAME);
-    if (tableName == null) {
-      //convert to lower case in case we are getting from serde
-      tableName = tbl.getSd().getSerdeInfo().getParameters().get(
-        HBaseSerDe.HBASE_TABLE_NAME);
-      //standardize to lower case
-      if (tableName != null) {
-        tableName = tableName.toLowerCase();
-      }
-    }
-    if (tableName == null) {
-      tableName = (tbl.getDbName() + "." + tbl.getTableName()).toLowerCase();
-      if (tableName.startsWith(DEFAULT_PREFIX)) {
-        tableName = tableName.substring(DEFAULT_PREFIX.length());
-      }
-    }
-    return tableName;
-  }
-
-  @Override
-  public void preDropTable(Table table) throws MetaException {
-    // nothing to do
-  }
-
-  @Override
-  public void rollbackDropTable(Table table) throws MetaException {
-    // nothing to do
-  }
-
-  @Override
-  public void commitDropTable(
-    Table tbl, boolean deleteData) throws MetaException {
-
-    try {
-      String tableName = getHBaseTableName(tbl);
-      boolean isExternal = MetaStoreUtils.isExternalTable(tbl);
-      if (deleteData && !isExternal) {
-        if (getHBaseAdmin().isTableEnabled(tableName)) {
-          getHBaseAdmin().disableTable(tableName);
-        }
-        getHBaseAdmin().deleteTable(tableName);
-      }
-    } catch (IOException ie) {
-      throw new MetaException(StringUtils.stringifyException(ie));
-    }
-  }
-
-  @Override
-  public void preCreateTable(Table tbl) throws MetaException {
-    boolean isExternal = MetaStoreUtils.isExternalTable(tbl);
-
-    // We'd like to move this to HiveMetaStore for any non-native table, but
-    // first we need to support storing NULL for location on a table
-    if (tbl.getSd().getLocation() != null) {
-      throw new MetaException("LOCATION may not be specified for HBase.");
-    }
-
-    HTable htable = null;
-
-    try {
-      String tableName = getHBaseTableName(tbl);
-      Map<String, String> serdeParam = tbl.getSd().getSerdeInfo().getParameters();
-      String hbaseColumnsMapping = serdeParam.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
-
-      ColumnMappings columnMappings = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping);
-
-      HTableDescriptor tableDesc;
-
-      if (!getHBaseAdmin().tableExists(tableName)) {
-        // if it is not an external table then create one
-        if (!isExternal) {
-          // Create the column descriptors
-          tableDesc = new HTableDescriptor(tableName);
-          Set<String> uniqueColumnFamilies = new HashSet<String>();
-
-          for (ColumnMapping colMap : columnMappings) {
-            if (!colMap.hbaseRowKey && !colMap.hbaseTimestamp) {
-              uniqueColumnFamilies.add(colMap.familyName);
-            }
-          }
-
-          for (String columnFamily : uniqueColumnFamilies) {
-            tableDesc.addFamily(new HColumnDescriptor(Bytes.toBytes(columnFamily)));
-          }
-
-          getHBaseAdmin().createTable(tableDesc);
-        } else {
-          // an external table
-          throw new MetaException("HBase table " + tableName +
-              " doesn't exist while the table is declared as an external table.");
-        }
-
-      } else {
-        if (!isExternal) {
-          throw new MetaException("Table " + tableName + " already exists"
-            + " within HBase; use CREATE EXTERNAL TABLE instead to"
-            + " register it in Hive.");
-        }
-        // make sure the schema mapping is right
-        tableDesc = getHBaseAdmin().getTableDescriptor(Bytes.toBytes(tableName));
-
-        for (ColumnMapping colMap : columnMappings) {
-
-          if (colMap.hbaseRowKey || colMap.hbaseTimestamp) {
-            continue;
-          }
-
-          if (!tableDesc.hasFamily(colMap.familyNameBytes)) {
-            throw new MetaException("Column Family " + colMap.familyName
-                + " is not defined in hbase table " + tableName);
-          }
-        }
-      }
-
-      // ensure the table is online
-      htable = new HTable(hbaseConf, tableDesc.getName());
-    } catch (Exception se) {
-      throw new MetaException(StringUtils.stringifyException(se));
-    } finally {
-      if (htable != null) {
-        IOUtils.closeQuietly(htable);
-      }
-    }
-  }
-
-  @Override
-  public void rollbackCreateTable(Table table) throws MetaException {
-    boolean isExternal = MetaStoreUtils.isExternalTable(table);
-    String tableName = getHBaseTableName(table);
-    try {
-      if (!isExternal && getHBaseAdmin().tableExists(tableName)) {
-        // we have created an HBase table, so we delete it to roll back;
-        if (getHBaseAdmin().isTableEnabled(tableName)) {
-          getHBaseAdmin().disableTable(tableName);
-        }
-        getHBaseAdmin().deleteTable(tableName);
-      }
-    } catch (IOException ie) {
-      throw new MetaException(StringUtils.stringifyException(ie));
-    }
-  }
-
-  @Override
-  public void commitCreateTable(Table table) throws MetaException {
-    // nothing to do
-  }
 
   @Override
   public Configuration getConf() {
@@ -321,7 +149,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
   @Override
   public HiveMetaHook getMetaHook() {
-    return this;
+    return new HBaseMetaHook(hbaseConf);
   }
 
   @Override
@@ -371,12 +199,10 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       jobProperties.put(HBaseSerDe.HBASE_SCAN_BATCH, scanBatch);
     }
 
-    String tableName =
-      tableProperties.getProperty(HBaseSerDe.HBASE_TABLE_NAME);
+    String tableName = tableProperties.getProperty(HBaseSerDe.HBASE_TABLE_NAME);
     if (tableName == null) {
-      tableName =
-        tableProperties.getProperty(hive_metastoreConstants.META_TABLE_NAME);
-        tableName = tableName.toLowerCase();
+      tableName = tableProperties.getProperty(hive_metastoreConstants.META_TABLE_NAME);
+      tableName = tableName.toLowerCase();
       if (tableName.startsWith(DEFAULT_PREFIX)) {
         tableName = tableName.substring(DEFAULT_PREFIX.length());
       }
@@ -432,8 +258,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       }
       try {
         addHBaseDelegationToken(jobConf);
-      }//try
-      catch (IOException e) {
+      } catch (IOException | MetaException e) {
         throw new IllegalStateException("Error while configuring input job properties", e);
       } //input job properties
     }
@@ -480,18 +305,19 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     }
   }
 
-  private void addHBaseDelegationToken(Configuration conf) throws IOException {
+  private void addHBaseDelegationToken(Configuration conf) throws IOException, MetaException {
     if (User.isHBaseSecurityEnabled(conf)) {
-      HConnection conn = HConnectionManager.createConnection(conf);
+      Connection connection = ConnectionFactory.createConnection(hbaseConf);
       try {
         User curUser = User.getCurrent();
         Job job = new Job(conf);
-        TokenUtil.addTokenForJob(conn, curUser, job);
+        TokenUtil.addTokenForJob(connection, curUser, job);
       } catch (InterruptedException e) {
         throw new IOException("Error while obtaining hbase delegation token", e);
-      }
-      finally {
-        conn.close();
+      } finally {
+        if (connection != null) {
+          connection.close();
+        }
       }
     }
   }
@@ -523,8 +349,9 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       }
       if (HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVE_HBASE_SNAPSHOT_NAME) != null) {
         // There is an extra dependency on MetricsRegistry for snapshot IF.
-        TableMapReduceUtil.addDependencyJars(jobConf, MetricsRegistry.class);
+        TableMapReduceUtil.addDependencyJars(jobConf, MetricRegistry.class);
       }
+
       Set<String> merged = new LinkedHashSet<String>(jobConf.getStringCollection("tmpjars"));
 
       Job copy = new Job(jobConf);

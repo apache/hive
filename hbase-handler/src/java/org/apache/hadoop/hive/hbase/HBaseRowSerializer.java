@@ -174,7 +174,7 @@ public class HBaseRowSerializer {
           continue;
         }
 
-        put.add(colMap.familyNameBytes, columnQualifierBytes, bytes);
+        put.addColumn(colMap.familyNameBytes, columnQualifierBytes, bytes);
       }
     } else {
       byte[] bytes;
@@ -198,7 +198,7 @@ public class HBaseRowSerializer {
         return;
       }
 
-      put.add(colMap.familyNameBytes, colMap.qualifierNameBytes, bytes);
+      put.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes, bytes);
     }
   }
 

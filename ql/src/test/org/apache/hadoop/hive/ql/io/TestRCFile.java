@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -101,7 +102,7 @@ public class TestRCFile {
   private final BytesRefArrayWritable patialS = new BytesRefArrayWritable();
   private byte[][] bytesArray;
   private BytesRefArrayWritable s;
-
+  private int numRepeat = 1000;
   @Before
   public void setup() throws Exception {
     conf = new Configuration();
@@ -142,6 +143,8 @@ public class TestRCFile {
       patialS.set(6, new BytesRefWritable("NULL".getBytes("UTF-8")));
       // LazyString has no so-called NULL sequence. The value is empty string if not.
       patialS.set(7, new BytesRefWritable("".getBytes("UTF-8")));
+
+      numRepeat = (int) Math.ceil((double)SequenceFile.SYNC_INTERVAL / (double)bytesArray.length);
 
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
@@ -659,24 +662,24 @@ public class TestRCFile {
   }
 
   private void splitBeforeSync() throws IOException {
-    writeThenReadByRecordReader(600, 1000, 2, 1, null);
+    writeThenReadByRecordReader(600, numRepeat, 2, 1, null);
   }
 
   private void splitRightBeforeSync() throws IOException {
-    writeThenReadByRecordReader(500, 1000, 2, 17750, null);
+    writeThenReadByRecordReader(500, numRepeat, 2, 17750, null);
   }
 
   private void splitInMiddleOfSync() throws IOException {
-    writeThenReadByRecordReader(500, 1000, 2, 17760, null);
+    writeThenReadByRecordReader(500, numRepeat, 2, 17760, null);
 
   }
 
   private void splitRightAfterSync() throws IOException {
-    writeThenReadByRecordReader(500, 1000, 2, 17770, null);
+    writeThenReadByRecordReader(500, numRepeat, 2, 17770, null);
   }
 
   private void splitAfterSync() throws IOException {
-    writeThenReadByRecordReader(500, 1000, 2, 19950, null);
+    writeThenReadByRecordReader(500, numRepeat, 2, 19950, null);
   }
 
   private void writeThenReadByRecordReader(int intervalRecordCount,
@@ -711,7 +714,7 @@ public class TestRCFile {
     jonconf.set("mapred.input.dir", testDir.toString());
     HiveConf.setLongVar(jonconf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, minSplitSize);
     InputSplit[] splits = inputFormat.getSplits(jonconf, splitNumber);
-    assertEquals("splits length should be " + splitNumber, splits.length, splitNumber);
+    assertEquals("splits length should be " + splitNumber, splitNumber, splits.length);
     int readCount = 0;
     for (int i = 0; i < splits.length; i++) {
       int previousReadCount = readCount;

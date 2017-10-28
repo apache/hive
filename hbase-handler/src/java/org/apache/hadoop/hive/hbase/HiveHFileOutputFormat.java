@@ -39,7 +39,7 @@ import org.apache.hadoop.hbase.CellComparator;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.KeyValueUtil;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import org.apache.hadoop.hbase.mapreduce.HFileOutputFormat;
+import org.apache.hadoop.hbase.mapreduce.HFileOutputFormat2;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
@@ -60,15 +60,15 @@ import org.apache.hadoop.util.Progressable;
  * for loading a table with a single column family.
  */
 public class HiveHFileOutputFormat extends
-    HFileOutputFormat implements
-    HiveOutputFormat<ImmutableBytesWritable, KeyValue> {
+    HFileOutputFormat2 implements
+    HiveOutputFormat<ImmutableBytesWritable, Cell> {
 
   public static final String HFILE_FAMILY_PATH = "hfile.family.path";
 
   static final Logger LOG = LoggerFactory.getLogger(HiveHFileOutputFormat.class.getName());
 
   private
-  org.apache.hadoop.mapreduce.RecordWriter<ImmutableBytesWritable, KeyValue>
+  org.apache.hadoop.mapreduce.RecordWriter<ImmutableBytesWritable, Cell>
   getFileWriter(org.apache.hadoop.mapreduce.TaskAttemptContext tac)
   throws IOException {
     try {
@@ -118,7 +118,7 @@ public class HiveHFileOutputFormat extends
     final Path outputdir = FileOutputFormat.getOutputPath(tac);
     final Path taskAttemptOutputdir = new FileOutputCommitter(outputdir, tac).getWorkPath();
     final org.apache.hadoop.mapreduce.RecordWriter<
-      ImmutableBytesWritable, KeyValue> fileWriter = getFileWriter(tac);
+      ImmutableBytesWritable, Cell> fileWriter = getFileWriter(tac);
 
     // Individual columns are going to be pivoted to HBase cells,
     // and for each row, they need to be written out in order
@@ -262,7 +262,7 @@ public class HiveHFileOutputFormat extends
   }
 
   @Override
-  public org.apache.hadoop.mapred.RecordWriter<ImmutableBytesWritable, KeyValue> getRecordWriter(
+  public org.apache.hadoop.mapred.RecordWriter<ImmutableBytesWritable, Cell> getRecordWriter(
       FileSystem ignored, JobConf job, String name, Progressable progress) throws IOException {
     throw new NotImplementedException("This will not be invoked");
   }

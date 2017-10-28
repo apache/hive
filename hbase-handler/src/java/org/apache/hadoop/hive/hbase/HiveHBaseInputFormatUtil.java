@@ -24,13 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
 import org.apache.hadoop.hbase.filter.KeyOnlyFilter;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -41,14 +38,6 @@ import org.apache.hadoop.mapred.JobConf;
  * Util code common between HiveHBaseTableInputFormat and HiveHBaseTableSnapshotInputFormat.
  */
 class HiveHBaseInputFormatUtil {
-
-  /**
-   * Parse {@code jobConf} to create the target {@link HTable} instance.
-   */
-  public static HTable getTable(JobConf jobConf) throws IOException {
-    String hbaseTableName = jobConf.get(HBaseSerDe.HBASE_TABLE_NAME);
-    return new HTable(HBaseConfiguration.create(jobConf), Bytes.toBytes(hbaseTableName));
-  }
 
   /**
    * Parse {@code jobConf} to create a {@link Scan} instance.

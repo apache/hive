@@ -42,6 +42,8 @@ import org.apache.avro.specific.SpecificDatumWriter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellComparator;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -179,7 +181,7 @@ public class TestHBaseSerDe extends TestCase {
     byte [] rowKey = Bytes.toBytes("test-row1");
 
     // Data
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     kvs.add(new KeyValue(rowKey, cfa, qualByte, Bytes.toBytes("123")));
     kvs.add(new KeyValue(rowKey, cfb, qualShort, Bytes.toBytes("456")));
@@ -191,18 +193,18 @@ public class TestHBaseSerDe extends TestCase {
     kvs.add(new KeyValue(rowKey, cfb, qualBool, Bytes.toBytes("true")));
     Collections.sort(kvs, KeyValue.COMPARATOR);
 
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
 
     Put p = new Put(rowKey);
 
-    p.add(cfa, qualByte, Bytes.toBytes("123"));
-    p.add(cfb, qualShort, Bytes.toBytes("456"));
-    p.add(cfc, qualInt, Bytes.toBytes("789"));
-    p.add(cfa, qualLong, Bytes.toBytes("1000"));
-    p.add(cfb, qualFloat, Bytes.toBytes("-0.01"));
-    p.add(cfc, qualDouble, Bytes.toBytes("5.3"));
-    p.add(cfa, qualString, Bytes.toBytes("Hadoop, HBase, and Hive"));
-    p.add(cfb, qualBool, Bytes.toBytes("true"));
+    p.addColumn(cfa, qualByte, Bytes.toBytes("123"));
+    p.addColumn(cfb, qualShort, Bytes.toBytes("456"));
+    p.addColumn(cfc, qualInt, Bytes.toBytes("789"));
+    p.addColumn(cfa, qualLong, Bytes.toBytes("1000"));
+    p.addColumn(cfb, qualFloat, Bytes.toBytes("-0.01"));
+    p.addColumn(cfc, qualDouble, Bytes.toBytes("5.3"));
+    p.addColumn(cfa, qualString, Bytes.toBytes("Hadoop, HBase, and Hive"));
+    p.addColumn(cfb, qualBool, Bytes.toBytes("true"));
 
     Object[] expectedFieldsData = {
       new Text("test-row1"),
@@ -273,7 +275,7 @@ public class TestHBaseSerDe extends TestCase {
     byte [] rowKey = Bytes.toBytes("test-row1");
 
     // Data
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     kvs.add(new KeyValue(rowKey, cfa, qualByte, Bytes.toBytes("123")));
     kvs.add(new KeyValue(rowKey, cfb, qualShort, Bytes.toBytes("456")));
@@ -285,18 +287,18 @@ public class TestHBaseSerDe extends TestCase {
     kvs.add(new KeyValue(rowKey, cfb, qualBool, Bytes.toBytes("true")));
     Collections.sort(kvs, KeyValue.COMPARATOR);
 
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
 
     Put p = new Put(rowKey,putTimestamp);
 
-    p.add(cfa, qualByte, Bytes.toBytes("123"));
-    p.add(cfb, qualShort, Bytes.toBytes("456"));
-    p.add(cfc, qualInt, Bytes.toBytes("789"));
-    p.add(cfa, qualLong, Bytes.toBytes("1000"));
-    p.add(cfb, qualFloat, Bytes.toBytes("-0.01"));
-    p.add(cfc, qualDouble, Bytes.toBytes("5.3"));
-    p.add(cfa, qualString, Bytes.toBytes("Hadoop, HBase, and Hive"));
-    p.add(cfb, qualBool, Bytes.toBytes("true"));
+    p.addColumn(cfa, qualByte, Bytes.toBytes("123"));
+    p.addColumn(cfb, qualShort, Bytes.toBytes("456"));
+    p.addColumn(cfc, qualInt, Bytes.toBytes("789"));
+    p.addColumn(cfa, qualLong, Bytes.toBytes("1000"));
+    p.addColumn(cfb, qualFloat, Bytes.toBytes("-0.01"));
+    p.addColumn(cfc, qualDouble, Bytes.toBytes("5.3"));
+    p.addColumn(cfa, qualString, Bytes.toBytes("Hadoop, HBase, and Hive"));
+    p.addColumn(cfb, qualBool, Bytes.toBytes("true"));
 
     Object[] expectedFieldsData = {
       new Text("test-row1"),
@@ -419,7 +421,7 @@ public class TestHBaseSerDe extends TestCase {
     byte [] rowKey = Bytes.toBytes("test-row-2");
 
     // Data
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     kvs.add(new KeyValue(rowKey, cfa, qualByte, new byte [] { Byte.MIN_VALUE }));
     kvs.add(new KeyValue(rowKey, cfb, qualShort, Bytes.toBytes(Short.MIN_VALUE)));
@@ -431,19 +433,21 @@ public class TestHBaseSerDe extends TestCase {
       "Hadoop, HBase, and Hive Again!")));
     kvs.add(new KeyValue(rowKey, cfb, qualBool, Bytes.toBytes(false)));
 
+//    When using only HBase2, then we could change to this
+//    Collections.sort(kvs, CellComparator.COMPARATOR);
     Collections.sort(kvs, KeyValue.COMPARATOR);
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
 
     Put p = new Put(rowKey);
 
-    p.add(cfa, qualByte, new byte [] { Byte.MIN_VALUE });
-    p.add(cfb, qualShort, Bytes.toBytes(Short.MIN_VALUE));
-    p.add(cfc, qualInt, Bytes.toBytes(Integer.MIN_VALUE));
-    p.add(cfa, qualLong, Bytes.toBytes(Long.MIN_VALUE));
-    p.add(cfb, qualFloat, Bytes.toBytes(Float.MIN_VALUE));
-    p.add(cfc, qualDouble, Bytes.toBytes(Double.MAX_VALUE));
-    p.add(cfa, qualString, Bytes.toBytes("Hadoop, HBase, and Hive Again!"));
-    p.add(cfb, qualBool, Bytes.toBytes(false));
+    p.addColumn(cfa, qualByte, new byte [] { Byte.MIN_VALUE });
+    p.addColumn(cfb, qualShort, Bytes.toBytes(Short.MIN_VALUE));
+    p.addColumn(cfc, qualInt, Bytes.toBytes(Integer.MIN_VALUE));
+    p.addColumn(cfa, qualLong, Bytes.toBytes(Long.MIN_VALUE));
+    p.addColumn(cfb, qualFloat, Bytes.toBytes(Float.MIN_VALUE));
+    p.addColumn(cfc, qualDouble, Bytes.toBytes(Double.MAX_VALUE));
+    p.addColumn(cfa, qualString, Bytes.toBytes("Hadoop, HBase, and Hive Again!"));
+    p.addColumn(cfb, qualBool, Bytes.toBytes(false));
 
     Object[] expectedFieldsData = {
       new Text("test-row-2"),
@@ -557,7 +561,7 @@ public class TestHBaseSerDe extends TestCase {
          Bytes.toBytes(true)}
     };
 
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
     Result [] r = new Result [] {null, null, null};
     Put [] p = new Put [] {null, null, null};
 
@@ -568,11 +572,11 @@ public class TestHBaseSerDe extends TestCase {
       for (int j = 0; j < columnQualifiersAndValues[i].length; j++) {
         kvs.add(new KeyValue(rowKeys[i], columnFamilies[j], columnQualifiersAndValues[i][j],
             columnQualifiersAndValues[i][j]));
-        p[i].add(columnFamilies[j], columnQualifiersAndValues[i][j],
+        p[i].addColumn(columnFamilies[j], columnQualifiersAndValues[i][j],
             columnQualifiersAndValues[i][j]);
       }
 
-      r[i] = new Result(kvs);
+      r[i] = Result.create(kvs);
     }
 
     Object [][] expectedData = {
@@ -701,15 +705,15 @@ public class TestHBaseSerDe extends TestCase {
     };
 
     Put p = new Put(rowKey);
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     for (int j = 0; j < columnQualifiersAndValues.length; j++) {
       kvs.add(new KeyValue(rowKey,
           columnFamilies[j], columnQualifiersAndValues[j], columnQualifiersAndValues[j]));
-      p.add(columnFamilies[j], columnQualifiersAndValues[j], columnQualifiersAndValues[j]);
+      p.addColumn(columnFamilies[j], columnQualifiersAndValues[j], columnQualifiersAndValues[j]);
     }
 
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
 
     Object [] expectedData = {
         new Text("row-key"), new ByteWritable((byte) 123), new ShortWritable((short) 456),
@@ -821,7 +825,7 @@ public class TestHBaseSerDe extends TestCase {
     byte[] rowKey = Bytes.toBytes("test-row1");
 
     // Data
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     byte[] dataA = "This is first test data".getBytes();
     byte[] dataB = "This is second test data".getBytes();
@@ -833,7 +837,7 @@ public class TestHBaseSerDe extends TestCase {
     kvs.add(new KeyValue(rowKey, cfa, qualC, dataC));
     kvs.add(new KeyValue(rowKey, cfa, qualD, dataD));
 
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
 
     Put p = new Put(rowKey);
 
@@ -928,13 +932,13 @@ public class TestHBaseSerDe extends TestCase {
     byte[] rowKey = testStruct.getBytes();
 
     // Data
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     byte[] testData = "This is a test data".getBytes();
 
     kvs.add(new KeyValue(rowKey, cfa, qualStruct, testData));
 
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
 
     Put p = new Put(rowKey);
 
@@ -976,13 +980,13 @@ public class TestHBaseSerDe extends TestCase {
     byte[] rowKey = testStruct.getBytes();
 
     // Data
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     byte[] testData = "This is a test data".getBytes();
 
     kvs.add(new KeyValue(rowKey, cfa, qualStruct, testData));
 
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
 
     byte[] putRowKey = testStruct.getBytesWithDelimiters();
 
@@ -1047,13 +1051,13 @@ public class TestHBaseSerDe extends TestCase {
     byte[] rowKey = Bytes.toBytes("test-row1");
 
     // Data
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     byte[] avroData = getTestAvroBytesFromSchema(RECORD_SCHEMA);
 
     kvs.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
 
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
 
     Put p = new Put(rowKey);
 
@@ -1092,13 +1096,13 @@ public class TestHBaseSerDe extends TestCase {
     byte[] rowKey = Bytes.toBytes("test-row1");
 
     // Data
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     byte[] avroData = getTestAvroBytesFromSchema(RECORD_SCHEMA);
 
     kvs.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
 
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
 
     Put p = new Put(rowKey);
 
@@ -1138,13 +1142,13 @@ public class TestHBaseSerDe extends TestCase {
     byte[] rowKey = Bytes.toBytes("test-row1");
 
     // Data
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     byte[] avroData = getTestAvroBytesFromSchema(RECORD_SCHEMA_EVOLVED);
 
     kvs.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
 
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
 
     Put p = new Put(rowKey);
 
@@ -1183,13 +1187,13 @@ public class TestHBaseSerDe extends TestCase {
     byte[] rowKey = Bytes.toBytes("test-row1");
 
     // Data
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     byte[] avroData = getTestAvroBytesFromClass1(1);
 
     kvs.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
 
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
 
     Put p = new Put(rowKey);
 
@@ -1234,13 +1238,13 @@ public class TestHBaseSerDe extends TestCase {
     byte[] rowKey = Bytes.toBytes("test-row1");
 
     // Data
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     byte[] avroData = getTestAvroBytesFromSchema(RECORD_SCHEMA);
 
     kvs.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
 
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
 
     Put p = new Put(rowKey);
 
@@ -1298,13 +1302,13 @@ public class TestHBaseSerDe extends TestCase {
     byte[] rowKey = Bytes.toBytes("test-row1");
 
     // Data
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     byte[] avroData = getTestAvroBytesFromClass2(1);
 
     kvs.add(new KeyValue(rowKey, cfa, qualAvro, avroData));
 
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
 
     Put p = new Put(rowKey);
 
@@ -1362,7 +1366,7 @@ public class TestHBaseSerDe extends TestCase {
     byte[] rowKey = Bytes.toBytes("test-row1");
 
     // Data
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     byte[] avroDataA = getTestAvroBytesFromSchema(RECORD_SCHEMA);
     byte[] avroDataB = getTestAvroBytesFromClass1(1);
@@ -1372,7 +1376,7 @@ public class TestHBaseSerDe extends TestCase {
     kvs.add(new KeyValue(rowKey, cfa, qualAvroB, avroDataB));
     kvs.add(new KeyValue(rowKey, cfa, qualAvroC, avroDataC));
 
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
 
     Put p = new Put(rowKey);
 
@@ -1426,12 +1430,12 @@ public class TestHBaseSerDe extends TestCase {
     TestStruct testStruct = new TestStruct("A", "B", "C", false, (byte) 0);
     byte[] key = testStruct.getBytes();
     // Data
-    List<KeyValue> kvs = new ArrayList<KeyValue>();
+    List<Cell> kvs = new ArrayList<Cell>();
 
     byte[] testData = testStruct.getBytes();
     kvs.add(new KeyValue(key, cfa, qualStruct, testData));
 
-    Result r = new Result(kvs);
+    Result r = Result.create(kvs);
     byte[] putKey = testStruct.getBytesWithDelimiters();
 
     Put p = new Put(putKey);

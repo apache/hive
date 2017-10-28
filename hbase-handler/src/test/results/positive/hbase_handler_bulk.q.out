@@ -5,14 +5,14 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table hb_target(key int, val string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ('hbase.columns.mapping' = ':key,cf:val')
-tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk')
+tblproperties ('hbase.mapreduce.hfileoutputformat.table.name' = 'positive_hbase_handler_bulk')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hb_target
 POSTHOOK: query: create table hb_target(key int, val string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ('hbase.columns.mapping' = ':key,cf:val')
-tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk')
+tblproperties ('hbase.mapreduce.hfileoutputformat.table.name' = 'positive_hbase_handler_bulk')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hb_target

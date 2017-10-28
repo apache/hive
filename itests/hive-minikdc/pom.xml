@@ -191,10 +191,16 @@
             <artifactId>commons-logging</artifactId>
           </exclusion>
       </exclusions>
-   </dependency>
+    </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-server</artifactId>
+      <version>${hbase.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-mapreduce</artifactId>
       <version>${hbase.version}</version>
       <scope>test</scope>
     </dependency>

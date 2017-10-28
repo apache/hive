@@ -1207,7 +1207,7 @@ public class TestCompactor {
     t.init(stop, looped);
     t.run();
     JobConf job = t.getMrJob();
-    Assert.assertEquals("2048", job.get("mapreduce.map.memory.mb"));  // 2048 comes from tblproperties
+    Assert.assertEquals(2048, job.getMemoryForMapTask());  // 2048 comes from tblproperties
     // Compact ttp1
     stop = new AtomicBoolean(true);
     t = new Worker();
@@ -1217,7 +1217,7 @@ public class TestCompactor {
     t.init(stop, looped);
     t.run();
     job = t.getMrJob();
-    Assert.assertEquals("1024", job.get("mapreduce.map.memory.mb"));  // 1024 is the default value
+    Assert.assertEquals(1024, job.getMemoryForMapTask());  // 1024 is the default value
     // Clean up
     runCleaner(conf);
     rsp = txnHandler.showCompact(new ShowCompactRequest());
@@ -1269,7 +1269,7 @@ public class TestCompactor {
     t.init(stop, looped);
     t.run();
     job = t.getMrJob();
-    Assert.assertEquals("3072", job.get("mapreduce.map.memory.mb"));
+    Assert.assertEquals(3072, job.getMemoryForMapTask());
     Assert.assertTrue(job.get("hive.compactor.table.props").contains("orc.compress.size4:8192"));
   }
 
