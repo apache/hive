@@ -119,7 +119,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
       final boolean compressed, final int destTableId, final boolean multiFileSpray,
       final boolean canBeMerged, final int numFiles, final int totalFiles,
       final ArrayList<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath,
-      Long mmWriteId, boolean isMmCtas) {
+      Long mmWriteId, boolean isMmCtas, boolean isInsertOverwrite) {
 
     this.dirName = dirName;
     this.tableInfo = tableInfo;
@@ -135,6 +135,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.destPath = destPath;
     this.mmWriteId = mmWriteId;
     this.isMmCtas = isMmCtas;
+    this.isInsertOverwrite = isInsertOverwrite;
   }
 
   public FileSinkDesc(final Path dirName, final TableDesc tableInfo,
@@ -156,7 +157,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public Object clone() throws CloneNotSupportedException {
     FileSinkDesc ret = new FileSinkDesc(dirName, tableInfo, compressed,
         destTableId, multiFileSpray, canBeMerged, numFiles, totalFiles,
-        partitionCols, dpCtx, destPath, mmWriteId, isMmCtas);
+        partitionCols, dpCtx, destPath, mmWriteId, isMmCtas, isInsertOverwrite);
     ret.setCompressCodec(compressCodec);
     ret.setCompressType(compressType);
     ret.setGatherStats(gatherStats);

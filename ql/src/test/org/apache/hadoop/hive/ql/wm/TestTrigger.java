@@ -80,6 +80,12 @@ public class TestTrigger {
     assertEquals("counter: TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
     assertFalse(trigger.apply(1000));
     assertTrue(trigger.apply(100000));
+
+    expression = ExpressionFactory.createExpression(new CustomCounterLimit("HDFS_WRITE_OPS",10000));
+    trigger = new ExecutionTrigger("write_heavy", expression, Trigger.Action.KILL_QUERY);
+    assertEquals("counter: HDFS_WRITE_OPS limit: 10000", expression.getCounterLimit().toString());
+    assertFalse(trigger.apply(1000));
+    assertTrue(trigger.apply(100000));
   }
 
   @Test
@@ -164,6 +170,12 @@ public class TestTrigger {
     expected = ExpressionFactory.createExpression(new VertexCounterLimit(VertexCounterLimit.VertexCounter
       .TOTAL_TASKS,10000));
     assertEquals("counter: TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
+    assertEquals(expected, expression);
+    assertEquals(expected.hashCode(), expression.hashCode());
+
+    expression = ExpressionFactory.fromString(" HDFS_WRITE_OPS > 10000");
+    expected = ExpressionFactory.createExpression(new CustomCounterLimit("HDFS_WRITE_OPS",10000));
+    assertEquals("counter: HDFS_WRITE_OPS limit: 10000", expression.getCounterLimit().toString());
     assertEquals(expected, expression);
     assertEquals(expected.hashCode(), expression.hashCode());
   }

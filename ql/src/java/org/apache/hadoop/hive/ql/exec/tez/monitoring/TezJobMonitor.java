@@ -156,6 +156,7 @@ public class TezJobMonitor {
     boolean running = false;
 
     long checkInterval = MIN_CHECK_INTERVAL;
+    TriggerContext triggerContext = null;
     while (true) {
 
       try {
@@ -166,7 +167,7 @@ public class TezJobMonitor {
         status = dagClient.getDAGStatus(EnumSet.of(StatusGetOpts.GET_COUNTERS), checkInterval);
         TezCounters dagCounters = status.getDAGCounters();
         vertexProgressMap = status.getVertexProgress();
-        TriggerContext triggerContext = context.getTriggerContext();
+        triggerContext = context.getTriggerContext();
         if (dagCounters != null && triggerContext != null) {
           Set<String> desiredCounters = triggerContext.getDesiredCounters();
           if (desiredCounters != null && !desiredCounters.isEmpty()) {
@@ -233,6 +234,9 @@ public class TezJobMonitor {
               break;
           }
         }
+        if (triggerContext != null && done) {
+          triggerContext.setQueryCompleted(true);
+        }
       } catch (Exception e) {
         console.printInfo("Exception: " + e.getMessage());
         boolean isInterrupted = hasInterruptedException(e);
@@ -259,8 +263,14 @@ public class TezJobMonitor {
         } else {
           console.printInfo("Retrying...");
         }
+        if (triggerContext != null && done) {
+          triggerContext.setQueryCompleted(true);
+        }
       } finally {
         if (done) {
+          if (triggerContext != null && done) {
+            triggerContext.setQueryCompleted(true);
+          }
           if (rc != 0 && status != null) {
             for (String diag : status.getDiagnostics()) {
               console.printError(diag);

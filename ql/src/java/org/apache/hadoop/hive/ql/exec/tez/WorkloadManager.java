@@ -91,7 +91,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     private final double finalFraction;
     private double finalFractionRemaining;
     private final int queryParallelism;
-    private final List<Trigger> triggers = new ArrayList<>();
+    private List<Trigger> triggers = new ArrayList<>();
 
     public PoolState(String fullName, int queryParallelism, double fraction) {
       this.fullName = fullName;
@@ -109,6 +109,11 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
           + "]";
     }
 
+    @VisibleForTesting
+    // will change in HIVE-17809
+    public void setTriggers(final List<Trigger> triggers) {
+      this.triggers = triggers;
+    }
 
     public List<Trigger> getTriggers() {
       return triggers;

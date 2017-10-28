@@ -209,7 +209,7 @@ public class HadoopJobExecHelper {
     }
     // check for number of created files
     Counters.Counter cntr = ctrs.findCounter(HiveConf.getVar(job, ConfVars.HIVECOUNTERGROUP),
-        Operator.HIVECOUNTERCREATEDFILES);
+        Operator.HIVE_COUNTER_CREATED_FILES);
     long numFiles = cntr != null ? cntr.getValue() : 0;
     long upperLimit = HiveConf.getLongVar(job, HiveConf.ConfVars.MAXCREATEDFILES);
     if (numFiles > upperLimit) {

@@ -95,8 +95,18 @@ public class ExpressionFactory {
         return createExpression(vertexCounterLimit);
       }
     }
-    // unable to create expression at this point, invalid expression
-    throw new IllegalArgumentException("Invalid expression! " + expression);
+
+    // if nothing matches, try creating a custom counter
+    try {
+      counterValue = getCounterValue(counterValueStr, null);
+      if (counterValue < 0) {
+        throw new IllegalArgumentException("Illegal value for counter limit. Expected a positive long value.");
+      }
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid counter value: " + counterValueStr);
+    }
+    CustomCounterLimit customCounterLimit = new CustomCounterLimit(counterName, counterValue);
+    return createExpression(customCounterLimit);
   }
 
   private static long getCounterValue(final String counterValueStr, final Validator validator) throws

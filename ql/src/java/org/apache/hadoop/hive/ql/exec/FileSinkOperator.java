@@ -143,6 +143,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient long cntr = 1;
   protected transient long logEveryNRows = 0;
   protected transient int rowIndex = 0;
+  private transient Path destTablePath;
+  private transient boolean isInsertOverwrite;
+  private transient String counterGroup;
   /**
    * Counters.
    */
@@ -173,6 +176,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     private boolean isMmTable;
     private Long txnId;
     private int stmtId;
+    String dpDir;
 
     public FSPaths(Path specPath, boolean isMmTable) {
       this.isMmTable = isMmTable;
@@ -516,7 +520,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       serializer = (Serializer) conf.getTableInfo().getDeserializerClass().newInstance();
       serializer.initialize(unsetNestedColumnPaths(hconf), conf.getTableInfo().getProperties());
       outputClass = serializer.getSerializedClass();
-
+      destTablePath = conf.getDestPath();
+      isInsertOverwrite = conf.getInsertOverwrite();
+      counterGroup = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP);
       if (LOG.isInfoEnabled()) {
         LOG.info("Using serializer : " + serializer + " and formatter : " + hiveOutputFormat +
             (isCompressed ? " with compression" : ""));
@@ -740,6 +746,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         autoDelete = fs.deleteOnExit(fsp.outPaths[filesIdx]);
       }
 
+      updateDPCounters(fsp, filesIdx);
+
       Utilities.copyTableJobPropertiesToConf(conf.getTableInfo(), jc);
       // only create bucket files only if no dynamic partitions,
       // buckets of dynamic partitions will be created for each newly created partition
@@ -766,13 +774,73 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         fsp.updaters[filesIdx] = HiveFileFormatUtils.getAcidRecordUpdater(jc, conf.getTableInfo(),
             acidBucketNum, conf, fsp.outPaths[filesIdx], inspector, reporter, -1);
       }
+
       if (reporter != null) {
-        reporter.incrCounter(HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP),
-            Operator.HIVECOUNTERCREATEDFILES, 1);
+        reporter.incrCounter(counterGroup, Operator.HIVE_COUNTER_CREATED_FILES, 1);
       }
 
     } catch (IOException e) {
       throw new HiveException(e);
+    }
+  }
+
+  private void updateDPCounters(final FSPaths fsp, final int filesIdx) {
+    // There are 2 cases where we increment CREATED_DYNAMIC_PARTITIONS counters
+    // 1) Insert overwrite (all partitions are newly created)
+    // 2) Insert into table which creates new partitions (some new partitions)
+
+    if (bDynParts && destTablePath != null && fsp.dpDir != null) {
+      Path destPartPath = new Path(destTablePath, fsp.dpDir);
+      // For MM tables, directory structure is
+      // <table-dir>/<partition-dir>/<delta-dir>/
+
+      // For Non-MM tables, directory structure is
+      // <table-dir>/<staging-dir>/<partition-dir>
+
+      // if UNION ALL insert, for non-mm tables subquery creates another subdirectory at the end for each union queries
+      // <table-dir>/<staging-dir>/<partition-dir>/<union-dir>
+
+      // for non-MM tables, the final destination partition directory is created during move task via rename
+      // for MM tables, the final destination partition directory is created by the tasks themselves
+      try {
+        if (conf.isMmTable()) {
+          createDpDir(destPartPath);
+        } else {
+          // outPath will be
+          // non-union case: <table-dir>/<staging-dir>/<partition-dir>/<taskid>
+          // union case: <table-dir>/<staging-dir>/<partition-dir>/<union-dir>/<taskid>
+          Path dpStagingDir = fsp.outPaths[filesIdx].getParent();
+          if (isUnionDp) {
+            dpStagingDir = dpStagingDir.getParent();
+          }
+          if (isInsertOverwrite) {
+            createDpDir(dpStagingDir);
+          } else {
+            createDpDirCheckSrc(dpStagingDir, destPartPath);
+          }
+        }
+      } catch (IOException e) {
+        LOG.warn("Skipping to increment CREATED_DYNAMIC_PARTITIONS counter.Exception: {}", e.getMessage());
+      }
+    }
+  }
+
+  private void createDpDirCheckSrc(final Path dpStagingPath, final Path dpFinalPath) throws IOException {
+    if (!fs.exists(dpStagingPath) && !fs.exists(dpFinalPath)) {
+      fs.mkdirs(dpStagingPath);
+      // move task will create dp final path
+      if (reporter != null) {
+        reporter.incrCounter(counterGroup, Operator.HIVE_COUNTER_CREATED_DYNAMIC_PARTITIONS, 1);
+      }
+    }
+  }
+
+  private void createDpDir(final Path dpPath) throws IOException {
+    if (!fs.exists(dpPath)) {
+      fs.mkdirs(dpPath);
+      if (reporter != null) {
+        reporter.incrCounter(counterGroup, Operator.HIVE_COUNTER_CREATED_DYNAMIC_PARTITIONS, 1);
+      }
     }
   }
 
@@ -1030,6 +1098,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         + dirName + ", childSpec " + unionPath + ": tmpPath " + fsp2.getTmpPath()
         + ", task path " + fsp2.getTaskOutputTempPath());
     }
+    if (bDynParts) {
+      fsp2.dpDir = dirName;
+    }
     if(!conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED)) {
       createBucketFiles(fsp2);
       valToPaths.put(dirName, fsp2);
@@ -1103,6 +1174,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       if (fsp2 == null) {
         // check # of dp
+        // TODO: add an option to skip this if number of partitions checks is done by Triggers via
+        // CREATED_DYNAMIC_PARTITION counter
         if (valToPaths.size() > maxPartitions) {
           // we cannot proceed and need to tell the hive client that retries won't succeed either
           throw new HiveFatalException(
@@ -1148,6 +1221,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           createBucketForFileIdx(fsp2, 0);
           valToPaths.put(pathKey, fsp2);
         }
+
       }
       fp = fsp2;
     } else {

@@ -16,9 +16,6 @@
 
 package org.apache.hive.jdbc;
 
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
@@ -73,8 +70,6 @@ public class TestTriggersWorkloadManager extends TestTriggersTezSessionPoolManag
   @Override
   protected void setupTriggers(final List<Trigger> triggers) throws Exception {
     WorkloadManager wm = WorkloadManager.getInstance();
-    WorkloadManager.PoolState poolState = spy(new WorkloadManager.PoolState("llap", 1, 1f));
-    when(poolState.getTriggers()).thenReturn(triggers);
-    wm.getPools().put("llap", poolState);
+    wm.getPools().get("llap").setTriggers(triggers);
   }
 }

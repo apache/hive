@@ -30,10 +30,12 @@ public class TriggerContext {
   private Map<String, Long> currentCounters = new HashMap<>();
   private String queryId;
   private long queryStartTime;
+  private boolean queryCompleted;
 
   public TriggerContext(final long queryStartTime, final String queryId) {
     this.queryStartTime = queryStartTime;
     this.queryId = queryId;
+    this.queryCompleted = false;
   }
 
   public String getQueryId() {
@@ -70,5 +72,13 @@ public class TriggerContext {
 
   public long getElapsedTime() {
     return System.currentTimeMillis() - queryStartTime;
+  }
+
+  public boolean isQueryCompleted() {
+    return queryCompleted;
+  }
+
+  public void setQueryCompleted(final boolean queryCompleted) {
+    this.queryCompleted = queryCompleted;
   }
 }

@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -75,6 +76,7 @@ public class TestTriggersTezSessionPoolManager {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     conf.setVar(ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES, "default");
+    conf.setTimeVar(ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL_MS, 100, TimeUnit.MILLISECONDS);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS, true);
     conf.setBoolVar(ConfVars.TEZ_EXEC_SUMMARY, true);
     conf.setBoolVar(ConfVars.HIVE_STRICT_CHECKS_CARTESIAN, false);
@@ -169,6 +171,125 @@ public class TestTriggersTezSessionPoolManager {
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
     runQueryWithTrigger(query, getConfigs(), "Query was cancelled");
+  }
+
+  @Test(timeout = 60000)
+  public void testTriggerCustomReadOps() throws Exception {
+    Expression expression = ExpressionFactory.fromString("HDFS_READ_OPS > 50");
+    Trigger trigger = new ExecutionTrigger("high_read_ops", expression, Trigger.Action.KILL_QUERY);
+    setupTriggers(Lists.newArrayList(trigger));
+    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
+      " t2 on t1.under_col>=t2.under_col";
+    runQueryWithTrigger(query, getConfigs(), "Query was cancelled");
+  }
+
+  @Test(timeout = 120000)
+  public void testTriggerCustomCreatedFiles() throws Exception {
+    List<String> cmds = getConfigs();
+
+    Expression expression = ExpressionFactory.fromString("CREATED_FILES > 5");
+    Trigger trigger = new ExecutionTrigger("high_read_ops", expression, Trigger.Action.KILL_QUERY);
+    setupTriggers(Lists.newArrayList(trigger));
+    String query = "create table testtab2 as select * from " + tableName;
+    runQueryWithTrigger(query, cmds, "Query was cancelled");
+
+    // partitioned insert
+    expression = ExpressionFactory.fromString("CREATED_FILES > 10");
+    trigger = new ExecutionTrigger("high_read_ops", expression, Trigger.Action.KILL_QUERY);
+    setupTriggers(Lists.newArrayList(trigger));
+    cmds.add("drop table src3");
+    cmds.add("create table src3 (key int) partitioned by (value string)");
+    query = "insert overwrite table src3 partition (value) select sleep(under_col, 10), value from " + tableName +
+      " where under_col < 100";
+    runQueryWithTrigger(query, cmds, "Query was cancelled");
+  }
+
+  @Test(timeout = 240000)
+  public void testTriggerCustomCreatedDynamicPartitions() throws Exception {
+    List<String> cmds = getConfigs();
+    cmds.add("drop table src2");
+    cmds.add("create table src2 (key int) partitioned by (value string)");
+
+    // query will get cancelled before creating 57 partitions
+    String query =
+      "insert overwrite table src2 partition (value) select * from " + tableName + " where under_col < 100";
+    Expression expression = ExpressionFactory.fromString("CREATED_DYNAMIC_PARTITIONS > 20");
+    Trigger trigger = new ExecutionTrigger("high_read_ops", expression, Trigger.Action.KILL_QUERY);
+    setupTriggers(Lists.newArrayList(trigger));
+    runQueryWithTrigger(query, cmds, "Query was cancelled");
+
+    cmds = getConfigs();
+    // let it create 57 partitions without any triggers
+    query = "insert overwrite table src2 partition (value) select under_col, value from " + tableName +
+      " where under_col < 100";
+    setupTriggers(Lists.newArrayList());
+    runQueryWithTrigger(query, cmds, null);
+
+    // query will try to add 64 more partitions to already existing 57 partitions but will get cancelled for violation
+    query = "insert into table src2 partition (value) select * from " + tableName + " where under_col < 200";
+    expression = ExpressionFactory.fromString("CREATED_DYNAMIC_PARTITIONS > 30");
+    trigger = new ExecutionTrigger("high_read_ops", expression, Trigger.Action.KILL_QUERY);
+    setupTriggers(Lists.newArrayList(trigger));
+    runQueryWithTrigger(query, cmds, "Query was cancelled");
+
+    // let it create 64 more partitions (total 57 + 64 = 121) without any triggers
+    query = "insert into table src2 partition (value) select * from " + tableName + " where under_col < 200";
+    setupTriggers(Lists.newArrayList());
+    runQueryWithTrigger(query, cmds, null);
+
+    // re-run insert into but this time no new partitions will be created, so there will be no violation
+    query = "insert into table src2 partition (value) select * from " + tableName + " where under_col < 200";
+    expression = ExpressionFactory.fromString("CREATED_DYNAMIC_PARTITIONS > 10");
+    trigger = new ExecutionTrigger("high_read_ops", expression, Trigger.Action.KILL_QUERY);
+    setupTriggers(Lists.newArrayList(trigger));
+    runQueryWithTrigger(query, cmds, null);
+  }
+
+  @Test(timeout = 60000)
+  public void testTriggerCustomCreatedDynamicPartitionsMultiInsert() throws Exception {
+    List<String> cmds = getConfigs();
+    cmds.add("drop table src2");
+    cmds.add("drop table src3");
+    cmds.add("create table src2 (key int) partitioned by (value string)");
+    cmds.add("create table src3 (key int) partitioned by (value string)");
+
+    String query =
+      "from " + tableName +
+        " insert overwrite table src2 partition (value) select * where under_col < 100 " +
+        " insert overwrite table src3 partition (value) select * where under_col >= 100 and under_col < 200";
+    Expression expression = ExpressionFactory.fromString("CREATED_DYNAMIC_PARTITIONS > 70");
+    Trigger trigger = new ExecutionTrigger("high_partitions", expression, Trigger.Action.KILL_QUERY);
+    setupTriggers(Lists.newArrayList(trigger));
+    runQueryWithTrigger(query, cmds, "Query was cancelled");
+  }
+
+  @Test(timeout = 60000)
+  public void testTriggerCustomCreatedDynamicPartitionsUnionAll() throws Exception {
+    List<String> cmds = getConfigs();
+    cmds.add("drop table src2");
+    cmds.add("create table src2 (key int) partitioned by (value string)");
+
+    // query will get cancelled before creating 57 partitions
+    String query =
+      "insert overwrite table src2 partition (value) " +
+        "select temps.* from (" +
+        "select * from " + tableName + " where under_col < 100 " +
+        "union all " +
+        "select * from " + tableName + " where under_col >= 100 and under_col < 200) temps";
+    Expression expression = ExpressionFactory.fromString("CREATED_DYNAMIC_PARTITIONS > 70");
+    Trigger trigger = new ExecutionTrigger("high_partitions", expression, Trigger.Action.KILL_QUERY);
+    setupTriggers(Lists.newArrayList(trigger));
+    runQueryWithTrigger(query, cmds, "Query was cancelled");
+  }
+
+  @Test(timeout = 60000)
+  public void testTriggerCustomNonExistent() throws Exception {
+    Expression expression = ExpressionFactory.fromString("OPEN_FILES > 50");
+    Trigger trigger = new ExecutionTrigger("non_existent", expression, Trigger.Action.KILL_QUERY);
+    setupTriggers(Lists.newArrayList(trigger));
+    String query =
+      "select l.under_col, l.value from " + tableName + " l join " + tableName + " r on l.under_col>=r.under_col";
+    runQueryWithTrigger(query, null, null);
   }
 
   @Test(timeout = 60000)

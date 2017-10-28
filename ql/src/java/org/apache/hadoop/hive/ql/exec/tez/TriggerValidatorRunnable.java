@@ -46,15 +46,17 @@ public class TriggerValidatorRunnable implements Runnable {
       final List<Trigger> triggers = sessionTriggerProvider.getActiveTriggers();
       for (TezSessionState s : sessions) {
         TriggerContext triggerContext = s.getTriggerContext();
-        if (triggerContext != null) {
+        if (triggerContext != null && !triggerContext.isQueryCompleted()) {
           Map<String, Long> currentCounters = triggerContext.getCurrentCounters();
           for (Trigger t : triggers) {
             String desiredCounter = t.getExpression().getCounterLimit().getName();
             // there could be interval where desired counter value is not populated by the time we make this check
             if (currentCounters.containsKey(desiredCounter)) {
-              if (t.apply(currentCounters.get(desiredCounter))) {
+              long currentCounterValue = currentCounters.get(desiredCounter);
+              if (t.apply(currentCounterValue)) {
                 String queryId = s.getTriggerContext().getQueryId();
-                LOG.info("Query {} violated trigger {}. Going to apply action {}", queryId, t, t.getAction());
+                LOG.info("Query {} violated trigger {}. Current counter value: {}. Going to apply action {}", queryId,
+                  t, currentCounterValue, t.getAction());
                 violatedSessions.put(s, t.getAction());
               }
             }

@@ -71,8 +71,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   private static final long serialVersionUID = 1L;
 
-  public static final String HIVECOUNTERCREATEDFILES = "CREATED_FILES";
-  public static final String HIVECOUNTERFATAL = "FATAL_ERROR";
+  public static final String HIVE_COUNTER_CREATED_FILES = "CREATED_FILES";
+  public static final String HIVE_COUNTER_CREATED_DYNAMIC_PARTITIONS = "CREATED_DYNAMIC_PARTITIONS";
+  public static final String HIVE_COUNTER_FATAL = "FATAL_ERROR";
   public static final String CONTEXT_NAME_KEY = "__hive.context.name";
 
   private transient Configuration configuration;

@@ -7225,10 +7225,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       SortBucketRSCtx rsCtx, DynamicPartitionCtx dpCtx, ListBucketingCtx lbCtx,
       RowSchema fsRS, boolean canBeMerged, Table dest_tab, Long mmWriteId, boolean isMmCtas,
       Integer dest_type) throws SemanticException {
+    boolean isInsertOverwrite = false;
+    switch (dest_type) {
+      case QBMetaData.DEST_PARTITION:
+        //fall through
+      case QBMetaData.DEST_TABLE:
+        //INSERT [OVERWRITE] path
+        String destTableFullName = dest_tab.getCompleteName().replace('@', '.');
+        Map<String, ASTNode> iowMap = qb.getParseInfo().getInsertOverwriteTables();
+        if (iowMap.containsKey(destTableFullName)) {
+          isInsertOverwrite = true;
+        }
+        break;
+      case QBMetaData.DEST_LOCAL_FILE:
+      case QBMetaData.DEST_DFS_FILE:
+        //CTAS path or insert into file/directory
+        break;
+      default:
+        throw new IllegalStateException("Unexpected dest_type=" + dest_tab);
+    }
     FileSinkDesc fileSinkDesc = new FileSinkDesc(queryTmpdir, table_desc,
         conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT), currentTableId, rsCtx.isMultiFileSpray(),
         canBeMerged, rsCtx.getNumFiles(), rsCtx.getTotalFiles(), rsCtx.getPartnCols(), dpCtx,
-        dest_path, mmWriteId, isMmCtas);
+        dest_path, mmWriteId, isMmCtas, isInsertOverwrite);
 
     boolean isHiveServerQuery = SessionState.get().isHiveServerQuery();
     fileSinkDesc.setHiveServerQuery(isHiveServerQuery);
@@ -7247,24 +7266,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       AcidUtils.Operation wt = updating(dest) ? AcidUtils.Operation.UPDATE :
           (deleting(dest) ? AcidUtils.Operation.DELETE : AcidUtils.Operation.INSERT);
       fileSinkDesc.setWriteType(wt);
-
-      switch (dest_type) {
-        case QBMetaData.DEST_PARTITION:
-          //fall through
-        case QBMetaData.DEST_TABLE:
-          //INSERT [OVERWRITE] path
-          String destTableFullName = dest_tab.getCompleteName().replace('@', '.');
-          Map<String, ASTNode> iowMap = qb.getParseInfo().getInsertOverwriteTables();
-          if (iowMap.containsKey(destTableFullName)) {
-            fileSinkDesc.setInsertOverwrite(true);
-          }
-          break;
-        case QBMetaData.DEST_DFS_FILE:
-          //CTAS path
-          break;
-        default:
-          throw new IllegalStateException("Unexpected dest_type=" + dest_tab);
-      }
       acidFileSinks.add(fileSinkDesc);
     }
 
