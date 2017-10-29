@@ -30,15 +30,18 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 public class FuncRandNoSeed extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int outputCol;
-  private Random random;
+  private final Random random;
 
-  public FuncRandNoSeed(int outputCol) {
-    this.outputCol = outputCol;
+  public FuncRandNoSeed(int outputColumnNum) {
+    super(outputColumnNum);
     random = new Random();
   }
 
   public FuncRandNoSeed() {
+    super();
+
+    // Dummy final assignments.
+    random = null;
   }
 
   @Override
@@ -48,7 +51,7 @@ public class FuncRandNoSeed extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputCol];
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     int n = batch.size;
     double[] outputVector = outputColVector.vector;
@@ -73,32 +76,6 @@ public class FuncRandNoSeed extends VectorExpression {
  }
 
   @Override
-  public int getOutputColumn() {
-    return outputCol;
-  }
-
-  public int getOutputCol() {
-    return outputCol;
-  }
-
-  public void setOutputCol(int outputCol) {
-    this.outputCol = outputCol;
-  }
-
-  public Random getRandom() {
-    return random;
-  }
-
-  public void setRandom(Random random) {
-    this.random = random;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "double";
-  }
-
-  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())
         .setMode(
@@ -108,5 +85,10 @@ public class FuncRandNoSeed extends VectorExpression {
             VectorExpressionDescriptor.ArgumentType.NONE)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.NONE).build();
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return null;
   }
 }

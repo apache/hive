@@ -24,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
@@ -60,6 +62,14 @@ public class GenericUDAFMax extends AbstractGenericUDAFResolver {
   }
 
   @UDFType(distinctLike=true)
+  @VectorizedUDAFs({
+    VectorUDAFMaxLong.class,
+    VectorUDAFMaxDouble.class,
+    VectorUDAFMaxDecimal.class,
+    VectorUDAFMaxDecimal64.class,
+    VectorUDAFMaxTimestamp.class,
+    VectorUDAFMaxIntervalDayTime.class,
+    VectorUDAFMaxString.class})
   public static class GenericUDAFMaxEvaluator extends GenericUDAFEvaluator {
 
     private transient ObjectInspector inputOI;

@@ -23,6 +23,9 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.*;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -64,6 +67,9 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
   /**
    * GenericUDAFBloomFilterEvaluator - Evaluator class for BloomFilter
    */
+  @VectorizedUDAFs({
+    VectorUDAFBloomFilter.class,
+    VectorUDAFBloomFilterMerge.class})
   public static class GenericUDAFBloomFilterEvaluator extends GenericUDAFEvaluator {
     // Source operator to get the number of entries
     private SelectOperator sourceOperator;

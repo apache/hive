@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -75,9 +76,11 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     this.desc = joinOp.getConf();
     if (desc.getVectorMode() && HiveConf.getBoolVar(
         hconf, HiveConf.ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED)) {
-      VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) desc.getVectorDesc();
-      useFastContainer = vectorDesc != null && vectorDesc.getHashTableImplementationType() ==
-          VectorMapJoinDesc.HashTableImplementationType.FAST;
+      if (joinOp instanceof VectorizationOperator) {
+        VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) ((VectorizationOperator) joinOp).getVectorDesc();
+        useFastContainer = vectorDesc != null && vectorDesc.getHashTableImplementationType() ==
+            VectorMapJoinDesc.HashTableImplementationType.FAST;
+      }
     }
   }
 

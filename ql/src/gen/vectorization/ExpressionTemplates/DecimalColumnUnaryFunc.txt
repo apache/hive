@@ -32,17 +32,18 @@ import java.util.Arrays;
 public class <ClassName> extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private int outputColumn;
+  private final int colNum;
 
-  public <ClassName>(int colNum, int outputColumn) {
-    this();
+  public <ClassName>(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
-  
+
   public <ClassName>() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   @Override
@@ -53,7 +54,7 @@ public class <ClassName> extends VectorExpression {
     }
 
     DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[colNum];
-    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumn];
+    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -109,18 +110,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-  
-  @Override
-  public String getOutputType() {
-    return outputType;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 
   @Override

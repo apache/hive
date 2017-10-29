@@ -32,16 +32,18 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 public class CastStringToIntervalYearMonth extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int inputColumn;
-  private int outputColumn;
+  private final int inputColumn;
 
   public CastStringToIntervalYearMonth() {
+    super();
 
+    // Dummy final assignments.
+    inputColumn = -1;
   }
 
-  public CastStringToIntervalYearMonth(int inputColumn, int outputColumn) {
+  public CastStringToIntervalYearMonth(int inputColumn, int outputColumnNum) {
+    super(outputColumnNum);
     this.inputColumn = inputColumn;
-    this.outputColumn = outputColumn;
   }
 
   @Override
@@ -54,7 +56,7 @@ public class CastStringToIntervalYearMonth extends VectorExpression {
     BytesColumnVector inV = (BytesColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
 
     if (n == 0) {
 
@@ -124,30 +126,8 @@ public class CastStringToIntervalYearMonth extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public int getInputColumn() {
-    return inputColumn;
-  }
-
-  public void setInputColumn(int inputColumn) {
-    this.inputColumn = inputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumn;
+    return getColumnParamString(0, inputColumn);
   }
 
   @Override

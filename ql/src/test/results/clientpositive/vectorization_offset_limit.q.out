@@ -40,7 +40,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -86,12 +87,11 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsNotNull(col 0) -> boolean
+                  predicateExpression: SelectColumnIsNotNull(col 0:tinyint)
               predicate: ctinyint is not null (type: boolean)
               Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -100,7 +100,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 5, 1]
+                    projectedOutputColumnNums: [0, 5, 1]
                 Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: tinyint), _col1 (type: double)
@@ -117,7 +117,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

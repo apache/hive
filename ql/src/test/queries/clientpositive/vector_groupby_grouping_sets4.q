@@ -18,14 +18,14 @@ LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_text;
 CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text;
 
 -- This tests that cubes and rollups work fine inside sub-queries.
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a;
 
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by cube(a, b) ) subq1
 join
@@ -42,7 +42,7 @@ set hive.new.job.grouping.set.cardinality=2;
 
 -- Since 4 grouping sets would be generated for each sub-query, an additional MR job should be created
 -- for each of them
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join

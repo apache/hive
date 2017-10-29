@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.DecimalUtil;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
@@ -37,17 +38,10 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage.GenericUDAFAverageEvaluatorDecimal;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 import com.google.common.base.Preconditions;
 
@@ -101,22 +95,11 @@ public class <ClassName> extends VectorAggregateExpression {
       }
     }
 
-#IF PARTIAL2
-    transient private Object[] partialResult;
-    transient private LongWritable resultCount;
-    transient private HiveDecimalWritable resultSum;
-    transient private HiveDecimalWritable resultInput;
-    transient private StructObjectInspector soi;
-#ENDIF PARTIAL2
 #IF FINAL
     transient private HiveDecimalWritable tempDecWritable;
-    transient private HiveDecimalWritable fullResult;
-    transient private ObjectInspector oi;
 #ENDIF FINAL
 
-    private transient int countOffset;
-    private transient int sumOffset;
-    private transient int inputOffset;
+    DecimalTypeInfo outputDecimalTypeInfo;
 
     /**
      * The scale of the SUM in the partial output
@@ -128,73 +111,28 @@ public class <ClassName> extends VectorAggregateExpression {
      */
     private int sumPrecision;
 
-    /**
-     * the scale of the input expression
-     */
-    private int inputScale;
+  // This constructor is used to momentarily create the object so match can be called.
+  public <ClassName>() {
+    super();
+  }
 
-    /**
-     * the precision of the input expression
-     */
-    private int inputPrecision;
-
-    public <ClassName>(VectorExpression inputExpression,
-        GenericUDAFEvaluator.Mode mode) {
-      super(inputExpression, mode);
+  public <ClassName>(VectorAggregationDesc vecAggrDesc) {
+    super(vecAggrDesc);
 #IF PARTIAL2
-      Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.PARTIAL2);
+    Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.PARTIAL2);
 #ENDIF PARTIAL2
 #IF FINAL
-      Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.FINAL);
+    Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.FINAL);
 #ENDIF FINAL
-    }
+    init();
+  }
 
     private void init() {
-#IF PARTIAL2
-      partialResult = new Object[3];
-      resultCount = new LongWritable();
-      resultSum = new HiveDecimalWritable();
-      resultInput = new HiveDecimalWritable(0L);
-      partialResult[0] = resultCount;
-      partialResult[1] = resultSum;
-      partialResult[2] = resultInput;
-#ENDIF PARTIAL2
+      outputDecimalTypeInfo = (DecimalTypeInfo) outputTypeInfo;
+      sumScale = outputDecimalTypeInfo.scale();
+      sumPrecision = outputDecimalTypeInfo.precision();
 #IF FINAL
       tempDecWritable = new HiveDecimalWritable();
-      fullResult = new HiveDecimalWritable();
-#ENDIF FINAL
-    }
-
-#IF PARTIAL2
-    private void initPartialResultInspector() {
-#ENDIF PARTIAL2
-#IF FINAL
-    private void initFullResultInspector() {
-#ENDIF FINAL
-
-      // the output type of the vectorized partial aggregate must match the
-      // expected type for the row-mode aggregation
-      // For decimal, the type is "same number of integer digits and 4 more decimal digits"
-
-      DecimalTypeInfo decTypeInfo =
-          GenericUDAFAverageEvaluatorDecimal.deriveResultDecimalTypeInfo(
-               inputPrecision, inputScale, mode);
-      this.sumScale = decTypeInfo.scale();
-      this.sumPrecision = decTypeInfo.precision();
-
-#IF PARTIAL2
-      List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
-      foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-      foi.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(decTypeInfo));
-      foi.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(decTypeInfo));
-      List<String> fname = new ArrayList<String>();
-      fname.add("count");
-      fname.add("sum");
-      fname.add("input");
-      soi = ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
-#ENDIF PARTIAL2
-#IF FINAL
-      oi = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(decTypeInfo);
 #ENDIF FINAL
     }
 
@@ -222,11 +160,13 @@ public class <ClassName> extends VectorAggregateExpression {
       inputExpression.evaluate(batch);
 
       StructColumnVector inputStructColVector =
-          (StructColumnVector) batch.cols[this.inputExpression.getOutputColumn()];
+          (StructColumnVector) batch.cols[
+              this.inputExpression.getOutputColumnNum()];
+
       ColumnVector[] fields = inputStructColVector.fields;
 
-      long[] countVector = ((LongColumnVector) fields[countOffset]).vector;
-      HiveDecimalWritable[] sumVector = ((DecimalColumnVector) fields[sumOffset]).vector;
+      long[] countVector = ((LongColumnVector) fields[AVERAGE_COUNT_FIELD_INDEX]).vector;
+      HiveDecimalWritable[] sumVector = ((DecimalColumnVector) fields[AVERAGE_SUM_FIELD_INDEX]).vector;
 
       if (inputStructColVector.noNulls) {
         if (inputStructColVector.isRepeating) {
@@ -409,11 +349,13 @@ public class <ClassName> extends VectorAggregateExpression {
       inputExpression.evaluate(batch);
 
       StructColumnVector inputStructColVector =
-          (StructColumnVector) batch.cols[this.inputExpression.getOutputColumn()];
+          (StructColumnVector) batch.cols[
+              this.inputExpression.getOutputColumnNum()];
+
       ColumnVector[] fields = inputStructColVector.fields;
 
-      long[] countVector = ((LongColumnVector) fields[countOffset]).vector;
-      HiveDecimalWritable[] sumVector = ((DecimalColumnVector) fields[sumOffset]).vector;
+      long[] countVector = ((LongColumnVector) fields[AVERAGE_COUNT_FIELD_INDEX]).vector;
+      HiveDecimalWritable[] sumVector = ((DecimalColumnVector) fields[AVERAGE_SUM_FIELD_INDEX]).vector;
 
       int batchSize = batch.size;
 
@@ -525,41 +467,6 @@ public class <ClassName> extends VectorAggregateExpression {
       myAgg.reset();
     }
 
-    @Override
-    public Object evaluateOutput(
-        AggregationBuffer agg) throws HiveException {
-      Aggregation myagg = (Aggregation) agg;
-      // !isSet checks for overflow.
-      if (myagg.isNull || !myagg.mergeSum.isSet()) {
-        return null;
-      }
-      else {
-        Preconditions.checkState(myagg.mergeCount > 0);
-#IF PARTIAL2
-        resultCount.set (myagg.mergeCount);
-        resultSum.set(myagg.mergeSum);
-        return partialResult;
-#ENDIF PARTIAL2
-#IF FINAL
-        tempDecWritable.setFromLong (myagg.mergeCount);
-        fullResult.set(myagg.mergeSum);
-        fullResult.mutateDivide(tempDecWritable);
-        fullResult.mutateEnforcePrecisionScale(sumPrecision, sumScale);
-        return fullResult;
-#ENDIF FINAL
-      }
-    }
-
-  @Override
-    public ObjectInspector getOutputObjectInspector() {
-#IF PARTIAL2
-    return soi;
-#ENDIF PARTIAL2
-#IF FINAL
-    return oi;
-#ENDIF FINAL
-  }
-
   @Override
   public long getAggregationBufferFixedSize() {
     JavaDataModel model = JavaDataModel.get();
@@ -570,27 +477,75 @@ public class <ClassName> extends VectorAggregateExpression {
   }
 
   @Override
-  public void init(AggregationDesc desc) throws HiveException {
-    init();
+  public boolean matches(String name, ColumnVector.Type inputColVectorType,
+      ColumnVector.Type outputColVectorType, Mode mode) {
 
-    ExprNodeDesc inputExpr = desc.getParameters().get(0);
-
-     StructTypeInfo partialStructTypeInfo = (StructTypeInfo) inputExpr.getTypeInfo();
-
-    ArrayList<String> fieldNames =  partialStructTypeInfo.getAllStructFieldNames();
-    countOffset = fieldNames.indexOf("count");
-    sumOffset = fieldNames.indexOf("sum");
-    inputOffset = fieldNames.indexOf("input");
-
-    DecimalTypeInfo tiInput = (DecimalTypeInfo) partialStructTypeInfo.getAllStructFieldTypeInfos().get(sumOffset);
-    this.inputScale = tiInput.scale();
-    this.inputPrecision = tiInput.precision();
-
+    /*
+     * Variance input is STRUCT.
 #IF PARTIAL2
-    initPartialResultInspector();
+     * Output is STRUCT.
+     *
+     * Mode PARTIAL2.
 #ENDIF PARTIAL2
 #IF FINAL
-    initFullResultInspector();
+     * Output is DECIMAL.
+     *
+     * Mode FINAL.
+#ENDIF FINAL
+     */
+    return
+        name.equals("avg") &&
+        inputColVectorType == ColumnVector.Type.STRUCT &&
+#IF PARTIAL2
+        outputColVectorType == ColumnVector.Type.STRUCT &&
+        mode == Mode.PARTIAL2;
+#ENDIF PARTIAL2
+#IF FINAL
+        outputColVectorType == ColumnVector.Type.DECIMAL &&
+        mode == Mode.FINAL;
+#ENDIF FINAL
+  }
+
+  @Override
+  public void assignRowColumn(VectorizedRowBatch batch, int batchIndex, int columnNum,
+      AggregationBuffer agg) throws HiveException {
+
+#IF PARTIAL2
+    StructColumnVector outputColVector = (StructColumnVector) batch.cols[columnNum];
+#ENDIF PARTIAL2
+#IF FINAL
+    DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[columnNum];
+#ENDIF FINAL
+
+    Aggregation myagg = (Aggregation) agg;
+    if (myagg.isNull || myagg.mergeCount == 0) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[batchIndex] = true;
+      return;
+    }
+    outputColVector.isNull[batchIndex] = false;
+
+#IF PARTIAL2
+    ColumnVector[] fields = outputColVector.fields;
+    ((LongColumnVector) fields[AVERAGE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.mergeCount;
+    ((DecimalColumnVector) fields[AVERAGE_SUM_FIELD_INDEX]).vector[batchIndex].set(myagg.mergeSum);
+
+    ColumnVector sourceColVector = (ColumnVector) fields[AVERAGE_SOURCE_FIELD_INDEX];
+    sourceColVector.isRepeating = true;
+    sourceColVector.noNulls = false;
+    sourceColVector.isNull[0] = true;
+
+#ENDIF PARTIAL2
+#IF FINAL
+    tempDecWritable.setFromLong (myagg.mergeCount);
+    HiveDecimalWritable result = outputColVector.vector[batchIndex];
+    result.set(myagg.mergeSum);
+    result.mutateDivide(tempDecWritable);
+    result.mutateEnforcePrecisionScale(sumPrecision, sumScale);
+    if (!result.isSet()) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[batchIndex] = true;
+    }
 #ENDIF FINAL
   }
 }

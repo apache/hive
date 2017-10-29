@@ -33,12 +33,11 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 1651260 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0) -> boolean, SelectColumnIsNotNull(col 1) -> boolean) -> boolean
+                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:double))
               predicate: (cdouble is not null and cint is not null) (type: boolean)
               Statistics: Num rows: 12288 Data size: 1651260 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -47,7 +46,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [2, 3]
+                    projectedOutputColumnNums: [2, 3]
                 Statistics: Num rows: 12288 Data size: 1651260 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 10
@@ -69,7 +68,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

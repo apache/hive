@@ -30,8 +30,8 @@ import org.apache.hadoop.io.Text;
 public class StringInitCap extends StringUnaryUDF {
   private static final long serialVersionUID = 1L;
 
-  public StringInitCap(int colNum, int outputColumn) {
-    super(colNum, outputColumn, new IUDFUnaryString() {
+  public StringInitCap(int colNum, int outputColumnNum) {
+    super(colNum, outputColumnNum, new IUDFUnaryString() {
 
       Text t = new Text();
 

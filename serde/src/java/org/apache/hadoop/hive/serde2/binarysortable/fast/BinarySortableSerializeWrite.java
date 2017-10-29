@@ -61,7 +61,7 @@ public final class BinarySortableSerializeWrite implements SerializeWrite {
   private int level;
 
   private TimestampWritable tempTimestampWritable;
-
+  private HiveDecimalWritable hiveDecimalWritable;
   private byte[] decimalBytesScratch;
 
   public BinarySortableSerializeWrite(boolean[] columnSortOrderIsDesc,
@@ -312,6 +312,15 @@ public final class BinarySortableSerializeWrite implements SerializeWrite {
    * NOTE: The scale parameter is for text serialization (e.g. HiveDecimal.toFormatString) that
    * creates trailing zeroes output decimals.
    */
+  @Override
+  public void writeDecimal64(long decimal64Long, int scale) throws IOException {
+    if (hiveDecimalWritable == null) {
+      hiveDecimalWritable = new HiveDecimalWritable();
+    }
+    hiveDecimalWritable.deserialize64(decimal64Long, scale);
+    writeHiveDecimal(hiveDecimalWritable, scale);
+  }
+
   @Override
   public void writeHiveDecimal(HiveDecimal dec, int scale) throws IOException {
     beginElement();

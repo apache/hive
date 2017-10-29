@@ -31,19 +31,21 @@ public class ColOrCol extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum1;
-  private int colNum2;
-  private int outputColumn;
+  private final int colNum1;
+  private final int colNum2;
 
-  public ColOrCol(int colNum1, int colNum2, int outputColumn) {
-    this();
+  public ColOrCol(int colNum1, int colNum2, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
-    this.outputColumn = outputColumn;
   }
 
   public ColOrCol() {
     super();
+
+    // Dummy final assignments.
+    colNum1 = -1;
+    colNum2 = -1;
   }
 
   @Override
@@ -60,7 +62,7 @@ public class ColOrCol extends VectorExpression {
     long[] vector1 = inputColVector1.vector;
     long[] vector2 = inputColVector2.vector;
 
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
     long[] outputVector = outV.vector;
     if (n <= 0) {
       // Nothing to do
@@ -287,38 +289,8 @@ public class ColOrCol extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  public int getColNum1() {
-    return colNum1;
-  }
-
-  public void setColNum1(int colNum1) {
-    this.colNum1 = colNum1;
-  }
-
-  public int getColNum2() {
-    return colNum2;
-  }
-
-  public void setColNum2(int colNum2) {
-    this.colNum2 = colNum2;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum1 + ", col " + colNum2;
+    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

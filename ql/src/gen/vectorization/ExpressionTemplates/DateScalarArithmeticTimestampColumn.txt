@@ -46,20 +46,25 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private Timestamp value;
-  private int outputColumn;
-  private DateTimeMath dtm = new DateTimeMath();
+  private final Timestamp value;
+  private final int colNum;
 
-  public <ClassName>(long value, int colNum, int outputColumn) {
-    this.colNum = colNum;
+  private transient final DateTimeMath dtm = new DateTimeMath();
+
+  public <ClassName>(long value, int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     // Scalar input #1 is type date (days).  For the math we convert it to a timestamp.
     this.value = new Timestamp(0);
     this.value.setTime(DateWritable.daysToMillis((int) value));
-    this.outputColumn = outputColumn;
+    this.colNum = colNum;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    value = null;
+    colNum = -1;
   }
 
   @Override
@@ -78,7 +83,7 @@ public class <ClassName> extends VectorExpression {
     <InputColumnVectorType2> inputColVector2 = (<InputColumnVectorType2>) batch.cols[colNum];
 
     // Output is type <ReturnType>.
-    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumn];
+    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
 
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector2.isNull;
@@ -136,18 +141,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "<ReturnType>";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "val " + value + ", col " + + colNum;
+    return "val " + value + ", " + getColumnParamString(1, colNum);
   }
 
   @Override

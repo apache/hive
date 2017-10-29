@@ -130,14 +130,13 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 349784 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                   Select Operator
                     expressions: s (type: string)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [8]
+                        projectedOutputColumnNums: [8]
                     Statistics: Num rows: 2000 Data size: 349784 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
@@ -152,7 +151,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -162,7 +162,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -173,7 +172,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 Statistics: Num rows: 2000 Data size: 349784 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false

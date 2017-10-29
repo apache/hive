@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 // Single-Column String hash table import.
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashMap;
 
@@ -86,9 +87,9 @@ public class VectorMapJoinInnerStringOperator extends VectorMapJoinInnerGenerate
     super(ctx);
   }
 
-  public VectorMapJoinInnerStringOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
+  public VectorMapJoinInnerStringOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
   }
 
   //---------------------------------------------------------------------------

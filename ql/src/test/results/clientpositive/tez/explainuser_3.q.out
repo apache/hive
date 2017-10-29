@@ -191,7 +191,7 @@ POSTHOOK: type: QUERY
 Stage-2
   Stats-Aggr Operator
     Stage-0
-      Map 1
+      Map 1 vectorized
       TableScan [TS_0] (rows=500 width=10)
         default@src,src,Tbl:COMPLETE,Col:COMPLETE
 

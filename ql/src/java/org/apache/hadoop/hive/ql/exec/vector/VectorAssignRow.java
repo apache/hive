@@ -819,8 +819,16 @@ public class VectorAssignRow {
               VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
               return;
             }
-            ((DecimalColumnVector) columnVector).set(
-                batchIndex, hiveDecimal);
+            if (columnVector instanceof Decimal64ColumnVector) {
+              Decimal64ColumnVector dec64ColVector = (Decimal64ColumnVector) columnVector;
+              dec64ColVector.set(batchIndex, hiveDecimal);
+              if (dec64ColVector.isNull[batchIndex]) {
+                return;
+              }
+            } else {
+              ((DecimalColumnVector) columnVector).set(
+                  batchIndex, hiveDecimal);
+            }
           }
           break;
         case INTERVAL_YEAR_MONTH:

@@ -21,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
@@ -58,6 +60,14 @@ public class GenericUDAFMin extends AbstractGenericUDAFResolver {
   }
 
   @UDFType(distinctLike=true)
+  @VectorizedUDAFs({
+    VectorUDAFMinLong.class,
+    VectorUDAFMinDouble.class,
+    VectorUDAFMinDecimal.class,
+    VectorUDAFMinDecimal64.class,
+    VectorUDAFMinTimestamp.class,
+    VectorUDAFMinIntervalDayTime.class,
+    VectorUDAFMinString.class})
   public static class GenericUDAFMinEvaluator extends GenericUDAFEvaluator {
 
     private transient ObjectInspector inputOI;

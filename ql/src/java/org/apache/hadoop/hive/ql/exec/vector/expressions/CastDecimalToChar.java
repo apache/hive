@@ -32,8 +32,8 @@ public class CastDecimalToChar extends CastDecimalToString implements TruncStrin
     super();
   }
 
-  public CastDecimalToChar(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public CastDecimalToChar(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   @Override
@@ -42,11 +42,6 @@ public class CastDecimalToChar extends CastDecimalToString implements TruncStrin
   }
 
   @Override
-  public String getOutputType() {
-    return "Char";
-  }
-  
-    @Override
   public int getMaxLength() {
     return maxLength;
   }
@@ -58,6 +53,6 @@ public class CastDecimalToChar extends CastDecimalToString implements TruncStrin
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumn + ", maxLength " + maxLength;
+    return getColumnParamString(0, inputColumn) + ", maxLength " + maxLength;
   }
 }

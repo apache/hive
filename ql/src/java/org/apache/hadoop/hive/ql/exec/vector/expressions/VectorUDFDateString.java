@@ -40,7 +40,7 @@ public class VectorUDFDateString extends CastStringToDate {
 
   }
 
-  public VectorUDFDateString(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public VectorUDFDateString(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 }

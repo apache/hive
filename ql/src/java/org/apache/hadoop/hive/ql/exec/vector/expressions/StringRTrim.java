@@ -23,8 +23,8 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 public class StringRTrim extends StringUnaryUDFDirect {
   private static final long serialVersionUID = 1L;
 
-  public StringRTrim(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public StringRTrim(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   public StringRTrim() {

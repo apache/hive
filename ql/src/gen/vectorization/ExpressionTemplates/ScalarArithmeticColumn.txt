@@ -40,17 +40,21 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private <OperandType1> value;
-  private int outputColumn;
+  private final <OperandType1> value;
+  private final int colNum;
 
-  public <ClassName>(<OperandType1> value, int colNum, int outputColumn) {
+  public <ClassName>(<OperandType1> value, int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
     this.value = value;
-    this.outputColumn = outputColumn;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    value = 0;
+    colNum = -1;
   }
 
   @Override
@@ -66,7 +70,7 @@ public class <ClassName> extends VectorExpression {
     }
 
     <InputColumnVectorType> inputColVector = (<InputColumnVectorType>) batch.cols[colNum];
-    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumn];
+    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -111,43 +115,13 @@ public class <ClassName> extends VectorExpression {
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
     }
-    
+
     NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-  
-  @Override
-  public String getOutputType() {
-    return "<ReturnType>";
-  }
-  
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public <OperandType1> getValue() {
-    return value;
-  }
-
-  public void setValue(<OperandType1> value) {
-    this.value = value;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "val " + value + ", col " + + colNum;
+    return "val " + value + ", " + getColumnParamString(1, colNum);
   }
 
   @Override

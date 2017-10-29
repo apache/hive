@@ -31,8 +31,8 @@ public class IfExprStringGroupColumnCharScalar extends IfExprStringGroupColumnSt
 
   private static final long serialVersionUID = 1L;
 
-  public IfExprStringGroupColumnCharScalar(int arg1Column, int arg2Column, HiveChar arg3Scalar, int outputColumn) {
-    super(arg1Column, arg2Column, arg3Scalar.getValue().getBytes(), outputColumn);
+  public IfExprStringGroupColumnCharScalar(int arg1Column, int arg2Column, HiveChar arg3Scalar, int outputColumnNum) {
+    super(arg1Column, arg2Column, arg3Scalar.getValue().getBytes(), outputColumnNum);
   }
 
   public IfExprStringGroupColumnCharScalar() {

@@ -34,17 +34,21 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum1;
-  private int colNum2;
-  private int outputColumn;
+  private final int colNum1;
+  private final int colNum2;
 
-  public <ClassName>(int colNum1, int colNum2, int outputColumn) {
+  public <ClassName>(int colNum1, int colNum2, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
-    this.outputColumn = outputColumn;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    colNum1 = -1;
+    colNum2 = -1;
   }
 
   @Override
@@ -56,7 +60,7 @@ public class <ClassName> extends VectorExpression {
 
     <InputColumnVectorType1> inputColVector1 = (<InputColumnVectorType1>) batch.cols[colNum1];
     TimestampColumnVector inputColVector2 = (TimestampColumnVector) batch.cols[colNum2];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     int n = batch.size;
     <OperandType>[] vector1 = inputColVector1.vector;
@@ -129,18 +133,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum1 + ", col " + + colNum2;
+    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

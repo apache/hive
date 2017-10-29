@@ -124,14 +124,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-NULL	NULL	None	NULL	NULL	NULL
-98	NULL	None	NULL	NULL	NULL
-99	0	Alice	NULL	NULL	NULL
 100	1	Bob	NULL	NULL	NULL
-99	2	Mat	102	2	Del
-99	2	Mat	103	2	Ema
 101	2	Car	102	2	Del
 101	2	Car	103	2	Ema
+98	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+NULL	NULL	None	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
@@ -234,12 +234,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-NULL	NULL	None	NULL	NULL	NULL
+100	1	Bob	NULL	NULL	NULL
+101	2	Car	102	2	Del
 98	NULL	None	NULL	NULL	NULL
 99	0	Alice	NULL	NULL	NULL
 99	2	Mat	NULL	NULL	NULL
-100	1	Bob	NULL	NULL	NULL
-101	2	Car	102	2	Del
+NULL	NULL	None	NULL	NULL	NULL
 Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
@@ -338,12 +338,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-NULL	NULL	None	NULL	NULL	NULL
+100	1	Bob	102	2	Del
+101	2	Car	102	2	Del
 98	NULL	None	NULL	NULL	NULL
 99	0	Alice	NULL	NULL	NULL
 99	2	Mat	NULL	NULL	NULL
-100	1	Bob	102	2	Del
-101	2	Car	102	2	Del
+NULL	NULL	None	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
@@ -432,12 +432,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
 NULL	NULL	NULL	104	3	Fli
 NULL	NULL	NULL	105	NULL	None
-99	2	Mat	102	2	Del
-101	2	Car	102	2	Del
-99	2	Mat	103	2	Ema
-101	2	Car	103	2	Ema
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
@@ -529,18 +529,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-NULL	NULL	None	NULL	NULL	NULL
+100	1	Bob	102	2	Del
+100	1	Bob	103	2	Ema
+100	1	Bob	104	3	Fli
+100	1	Bob	105	NULL	None
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	104	3	Fli
+101	2	Car	105	NULL	None
 98	NULL	None	NULL	NULL	NULL
 99	0	Alice	NULL	NULL	NULL
 99	2	Mat	NULL	NULL	NULL
-100	1	Bob	102	2	Del
-100	1	Bob	105	NULL	None
-100	1	Bob	104	3	Fli
-100	1	Bob	103	2	Ema
-101	2	Car	102	2	Del
-101	2	Car	105	NULL	None
-101	2	Car	104	3	Fli
-101	2	Car	103	2	Ema
+NULL	NULL	None	NULL	NULL	NULL
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
@@ -638,19 +638,19 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-NULL	NULL	None	102	2	Del
+100	1	Bob	102	2	Del
+100	1	Bob	103	2	Ema
+100	1	Bob	104	3	Fli
+100	1	Bob	105	NULL	None
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	104	3	Fli
+101	2	Car	105	NULL	None
 98	NULL	None	102	2	Del
 99	0	Alice	102	2	Del
 99	2	Mat	102	2	Del
 99	2	Mat	103	2	Ema
-100	1	Bob	102	2	Del
-100	1	Bob	105	NULL	None
-100	1	Bob	104	3	Fli
-100	1	Bob	103	2	Ema
-101	2	Car	102	2	Del
-101	2	Car	105	NULL	None
-101	2	Car	104	3	Fli
-101	2	Car	103	2	Ema
+NULL	NULL	None	102	2	Del
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
@@ -744,19 +744,19 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-NULL	NULL	None	NULL	NULL	NULL
+100	1	Bob	102	2	Del
+100	1	Bob	103	2	Ema
+100	1	Bob	104	3	Fli
+100	1	Bob	105	NULL	None
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	104	3	Fli
+101	2	Car	105	NULL	None
 98	NULL	None	NULL	NULL	NULL
 99	0	Alice	NULL	NULL	NULL
 99	2	Mat	102	2	Del
 99	2	Mat	103	2	Ema
-100	1	Bob	102	2	Del
-100	1	Bob	105	NULL	None
-100	1	Bob	104	3	Fli
-100	1	Bob	103	2	Ema
-101	2	Car	102	2	Del
-101	2	Car	105	NULL	None
-101	2	Car	104	3	Fli
-101	2	Car	103	2	Ema
+NULL	NULL	None	NULL	NULL	NULL
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
@@ -850,14 +850,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-NULL	NULL	None	102	2	Del
+100	1	Bob	102	2	Del
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
 98	NULL	None	102	2	Del
 99	0	Alice	102	2	Del
 99	2	Mat	102	2	Del
 99	2	Mat	103	2	Ema
-100	1	Bob	102	2	Del
-101	2	Car	102	2	Del
-101	2	Car	103	2	Ema
+NULL	NULL	None	102	2	Del
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
@@ -955,13 +955,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-NULL	NULL	None	NULL	NULL	NULL
-98	NULL	None	NULL	NULL	NULL
-99	0	Alice	NULL	NULL	NULL
-99	2	Mat	102	2	Del
 100	1	Bob	NULL	NULL	NULL
 101	2	Car	102	2	Del
 101	2	Car	103	2	Ema
+98	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+99	2	Mat	102	2	Del
+NULL	NULL	None	NULL	NULL	NULL
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
@@ -1059,19 +1059,19 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-NULL	NULL	None	102	2	Del
-101	2	Car	102	2	Del
 100	1	Bob	102	2	Del
-99	2	Mat	102	2	Del
-99	0	Alice	102	2	Del
-98	NULL	None	102	2	Del
-101	2	Car	103	2	Ema
 100	1	Bob	103	2	Ema
-99	2	Mat	103	2	Ema
-101	2	Car	104	3	Fli
 100	1	Bob	104	3	Fli
-101	2	Car	105	NULL	None
 100	1	Bob	105	NULL	None
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	104	3	Fli
+101	2	Car	105	NULL	None
+98	NULL	None	102	2	Del
+99	0	Alice	102	2	Del
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+NULL	NULL	None	102	2	Del
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
@@ -1165,16 +1165,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-101	2	Car	102	2	Del
 100	1	Bob	102	2	Del
-99	2	Mat	102	2	Del
-101	2	Car	103	2	Ema
 100	1	Bob	103	2	Ema
-99	2	Mat	103	2	Ema
-101	2	Car	104	3	Fli
 100	1	Bob	104	3	Fli
-101	2	Car	105	NULL	None
 100	1	Bob	105	NULL	None
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	104	3	Fli
+101	2	Car	105	NULL	None
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
@@ -1268,16 +1268,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-NULL	NULL	None	102	2	Del
-101	2	Car	102	2	Del
 100	1	Bob	102	2	Del
-99	2	Mat	102	2	Del
-99	0	Alice	102	2	Del
-98	NULL	None	102	2	Del
+101	2	Car	102	2	Del
 101	2	Car	103	2	Ema
+98	NULL	None	102	2	Del
+99	0	Alice	102	2	Del
+99	2	Mat	102	2	Del
 99	2	Mat	103	2	Ema
 NULL	NULL	NULL	104	3	Fli
 NULL	NULL	NULL	105	NULL	None
+NULL	NULL	None	102	2	Del
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
@@ -1375,9 +1375,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-99	2	Mat	102	2	Del
 101	2	Car	102	2	Del
 101	2	Car	103	2	Ema
+99	2	Mat	102	2	Del
 NULL	NULL	NULL	104	3	Fli
 NULL	NULL	NULL	105	NULL	None
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
@@ -1482,11 +1482,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-NULL	NULL	None	102	2	Del
-98	NULL	None	102	2	Del
-99	0	Alice	102	2	Del
-99	2	Mat	102	2	Del
-99	2	Mat	103	2	Ema
 100	1	Bob	102	2	Del
 100	1	Bob	103	2	Ema
 100	1	Bob	104	3	Fli
@@ -1495,6 +1490,11 @@ NULL	NULL	None	102	2	Del
 101	2	Car	103	2	Ema
 101	2	Car	104	3	Fli
 101	2	Car	105	NULL	None
+98	NULL	None	102	2	Del
+99	0	Alice	102	2	Del
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+NULL	NULL	None	102	2	Del
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
@@ -1593,11 +1593,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-NULL	NULL	None	NULL	NULL	NULL
-98	NULL	None	NULL	NULL	NULL
-99	0	Alice	NULL	NULL	NULL
-99	2	Mat	102	2	Del
-99	2	Mat	103	2	Ema
 100	1	Bob	102	2	Del
 100	1	Bob	103	2	Ema
 100	1	Bob	104	3	Fli
@@ -1606,6 +1601,11 @@ NULL	NULL	None	NULL	NULL	NULL
 101	2	Car	103	2	Ema
 101	2	Car	104	3	Fli
 101	2	Car	105	NULL	None
+98	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+NULL	NULL	None	NULL	NULL	NULL
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
@@ -1704,16 +1704,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-NULL	NULL	None	102	2	Del
+100	1	Bob	102	2	Del
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
 98	NULL	None	102	2	Del
 99	0	Alice	102	2	Del
 99	2	Mat	102	2	Del
 99	2	Mat	103	2	Ema
-100	1	Bob	102	2	Del
-101	2	Car	102	2	Del
-101	2	Car	103	2	Ema
 NULL	NULL	NULL	104	3	Fli
 NULL	NULL	NULL	105	NULL	None
+NULL	NULL	None	102	2	Del
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
@@ -1818,12 +1818,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
-NULL	NULL	NULL	105	NULL	None
-NULL	NULL	None	NULL	NULL	NULL
-98	NULL	None	NULL	NULL	NULL
-99	0	Alice	NULL	NULL	NULL
 100	1	Bob	NULL	NULL	NULL
-99	2	Mat	102	2	Del
 101	2	Car	102	2	Del
 101	2	Car	103	2	Ema
+98	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+99	2	Mat	102	2	Del
 NULL	NULL	NULL	104	3	Fli
+NULL	NULL	NULL	105	NULL	None
+NULL	NULL	None	NULL	NULL	NULL

@@ -32,9 +32,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Output: default@test_vector_bround
 POSTHOOK: Lineage: test_vector_bround.v0 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: test_vector_bround.v1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: explain vectorization select bround(v0), bround(v1, 1) from test_vector_bround
+PREHOOK: query: explain vectorization detail
+select bround(v0), bround(v1, 1) from test_vector_bround
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization select bround(v0), bround(v1, 1) from test_vector_bround
+POSTHOOK: query: explain vectorization detail
+select bround(v0), bround(v1, 1) from test_vector_bround
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -51,12 +53,23 @@ STAGE PLANS:
           TableScan
             alias: test_vector_bround
             Statistics: Num rows: 8 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:v0:double, 1:v1:double, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: bround(v0) (type: double), bround(v1, 1) (type: double)
               outputColumnNames: _col0, _col1
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumnNums: [3, 4]
+                  selectExpressions: FuncBRoundDoubleToDouble(col 0:double) -> 3:double, BRoundWithNumDigitsDoubleToDouble(col 1, decimalPlaces 1) -> 4:double
               Statistics: Num rows: 8 Data size: 128 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
+                File Sink Vectorization:
+                    className: VectorFileSinkOperator
+                    native: false
                 Statistics: Num rows: 8 Data size: 128 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -66,11 +79,18 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 2
+              includeColumns: [0, 1]
+              dataColumns: v0:double, v1:double
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [double, double]
 
   Stage: Stage-0
     Fetch Operator

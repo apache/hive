@@ -95,7 +95,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -189,7 +190,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -199,7 +201,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -517,7 +518,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -691,7 +691,7 @@ POSTHOOK: Input: default@alltypes_parquet
 7	626923679	-15839	25	7.0	10077.151640330823
 8	1070764888	-15778	1034	8.0	9562.355155774725
 9	626923679	-13629	25	9.0	10157.217948808622
-NULL	1073418988	-16379	3115	NaN	305051.4870777435
+NULL	1073418988	-16379	3115	NULL	305051.4870777435
 PREHOOK: query: explain vectorization select *
   from alltypes_parquet
   where cint = 528534767
@@ -741,7 +741,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -835,7 +836,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -845,7 +847,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1211,7 +1212,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1385,4 +1385,4 @@ POSTHOOK: Input: default@alltypes_orc
 7	626923679	-15839	25	7.0	10077.151640330823
 8	1070764888	-15778	1034	8.0	9562.355155774725
 9	626923679	-13629	25	9.0	10157.217948808622
-NULL	1073418988	-16379	3115	NaN	305051.4870777435
+NULL	1073418988	-16379	3115	NULL	305051.4870777435

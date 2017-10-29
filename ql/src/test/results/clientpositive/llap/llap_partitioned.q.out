@@ -1606,14 +1606,18 @@ PREHOOK: query: drop table llap_temp_table
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table llap_temp_table
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 SELECT oft.ctinyint, oft.cint, oft.cchar1, oft.cvchar1 FROM orc_llap_part oft
   INNER JOIN orc_llap_dim_part od ON oft.ctinyint = od.ctinyint
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail
 SELECT oft.ctinyint, oft.cint, oft.cchar1, oft.cvchar1 FROM orc_llap_part oft
   INNER JOIN orc_llap_dim_part od ON oft.ctinyint = od.ctinyint
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1631,12 +1635,23 @@ STAGE PLANS:
                 TableScan
                   alias: oft
                   Statistics: Num rows: 12288 Data size: 13243096 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:csmallint:smallint, 1:cint:int, 2:cbigint:bigint, 3:cfloat:float, 4:cdouble:double, 5:cstring1:string, 6:cchar1:char(255), 7:cvchar1:varchar(255), 8:cboolean1:boolean, 9:cboolean2:boolean, 10:ctinyint:tinyint, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
                     keys:
                       0 ctinyint (type: tinyint)
                       1 ctinyint (type: tinyint)
+                    Map Join Vectorization:
+                        bigTableKeyColumnNums: [10]
+                        bigTableRetainedColumnNums: [1, 6, 7, 10]
+                        bigTableValueColumnNums: [1, 6, 7, 10]
+                        className: VectorMapJoinInnerBigOnlyLongOperator
+                        native: true
+                        nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                        projectedOutputColumnNums: [1, 6, 7, 10]
                     outputColumnNames: _col1, _col6, _col7, _col10
                     input vertices:
                       1 Map 2
@@ -1644,9 +1659,16 @@ STAGE PLANS:
                     Select Operator
                       expressions: _col10 (type: tinyint), _col1 (type: int), _col6 (type: char(255)), _col7 (type: varchar(255))
                       outputColumnNames: _col0, _col1, _col2, _col3
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [10, 1, 6, 7]
                       Statistics: Num rows: 960 Data size: 240494 Basic stats: COMPLETE Column stats: PARTIAL
                       File Output Operator
                         compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
                         Statistics: Num rows: 960 Data size: 240494 Basic stats: COMPLETE Column stats: PARTIAL
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1654,33 +1676,88 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 10
+                    includeColumns: [1, 6, 7]
+                    dataColumns: csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cchar1:char(255), cvchar1:varchar(255), cboolean1:boolean, cboolean2:boolean
+                    partitionColumnCount: 1
+                    partitionColumns: ctinyint:tinyint
+                    scratchColumnTypeNames: []
         Map 2 
             Map Operator Tree:
                 TableScan
                   alias: od
                   Statistics: Num rows: 10 Data size: 2640 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:csmallint:smallint, 1:cint:int, 2:cbigint:bigint, 3:cfloat:float, 4:cdouble:double, 5:cstring1:string, 6:cchar1:char(255), 7:cvchar1:varchar(255), 8:cboolean1:boolean, 9:cboolean2:boolean, 10:ctinyint:tinyint, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: ctinyint (type: tinyint)
                     sort order: +
                     Map-reduce partition columns: ctinyint (type: tinyint)
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkLongOperator
+                        keyColumnNums: [10]
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumnNums: []
                     Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [10]
                     Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
+                      Group By Vectorization:
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 10:tinyint
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: []
                       keys: _col0 (type: tinyint)
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                       Dynamic Partitioning Event Operator
                         Target column: ctinyint (tinyint)
+                        App Master Event Vectorization:
+                            className: VectorAppMasterEventOperator
+                            native: true
                         Target Input: oft
                         Partition key expr: ctinyint
                         Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                         Target Vertex: Map 1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 10
+                    includeColumns: []
+                    dataColumns: csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cchar1:char(255), cvchar1:varchar(255), cboolean1:boolean, cboolean2:boolean
+                    partitionColumnCount: 1
+                    partitionColumns: ctinyint:tinyint
+                    scratchColumnTypeNames: []
 
   Stage: Stage-0
     Fetch Operator
@@ -1984,6 +2061,129 @@ POSTHOOK: Lineage: llap_temp_table.cchar1 SIMPLE [(orc_llap_part)oft.FieldSchema
 POSTHOOK: Lineage: llap_temp_table.cint SIMPLE [(orc_llap_part)oft.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: llap_temp_table.ctinyint SIMPLE [(orc_llap_part)oft.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: llap_temp_table.cvchar1 SIMPLE [(orc_llap_part)oft.FieldSchema(name:cvchar1, type:varchar(255), comment:null), ]
+PREHOOK: query: explain vectorization detail
+select sum(hash(*)) from llap_temp_table
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select sum(hash(*)) from llap_temp_table
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: llap_temp_table
+                  Statistics: Num rows: 1509 Data size: 984410 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:cint:int, 2:cchar1:char(255), 3:cvchar1:varchar(255), 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: ctinyint (type: tinyint), cint (type: int), cchar1 (type: char(255)), cvchar1 (type: varchar(255))
+                    outputColumnNames: ctinyint, cint, cchar1, cvchar1
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3]
+                    Statistics: Num rows: 1509 Data size: 984410 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: sum(hash(ctinyint,cint,cchar1,cvchar1))
+                      Group By Vectorization:
+                          aggregators: VectorUDAFSumLong(VectorUDFAdaptor(hash(ctinyint,cint,cchar1,cvchar1)) -> 5:int) -> bigint
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 694 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkEmptyKeyOperator
+                            keyColumnNums: []
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [0]
+                        Statistics: Num rows: 1 Data size: 694 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    includeColumns: [0, 1, 2, 3]
+                    dataColumns: ctinyint:tinyint, cint:int, cchar1:char(255), cvchar1:varchar(255)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 694 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 694 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table

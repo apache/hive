@@ -63,12 +63,12 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprAndExpr(children: FilterLongColGreaterLongScalar(col 3, val -23) -> boolean, FilterExprOrExpr(children: FilterDoubleColNotEqualDoubleScalar(col 5, val 988888.0) -> boolean, FilterDecimalColGreaterDecimalScalar(col 12, val -863.257)(children: CastLongToDecimal(col 2) -> 12:decimal(13,3)) -> boolean) -> boolean, FilterExprOrExpr(children: FilterLongColGreaterEqualLongScalar(col 0, val 33) -> boolean, FilterLongColGreaterEqualLongColumn(col 1, col 3)(children: col 1) -> boolean, FilterDoubleColEqualDoubleColumn(col 4, col 5)(children: col 4) -> boolean) -> boolean) -> boolean
+                  predicateExpression: FilterExprAndExpr(children: FilterLongColGreaterLongScalar(col 3:bigint, val -23), FilterExprOrExpr(children: FilterDoubleColNotEqualDoubleScalar(col 5:double, val 988888.0), FilterDecimalColGreaterDecimalScalar(col 13:decimal(13,3), val -863.257)(children: CastLongToDecimal(col 2:int) -> 13:decimal(13,3))), FilterExprOrExpr(children: FilterLongColGreaterEqualLongScalar(col 0:tinyint, val 33), FilterLongColGreaterEqualLongColumn(col 1:bigint, col 3:bigint)(children: col 1:smallint), FilterDoubleColEqualDoubleColumn(col 4:double, col 5:double)(children: col 4:float)))
               predicate: (((cdouble <> 988888.0) or (CAST( cint AS decimal(13,3)) > -863.257)) and ((ctinyint >= 33) or (UDFToLong(csmallint) >= cbigint) or (UDFToDouble(cfloat) = cdouble)) and (cbigint > -23)) (type: boolean)
               Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -77,8 +77,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [4, 6, 2, 8, 5, 3, 14, 15, 13, 16, 18, 19, 21, 17]
-                    selectExpressions: DoubleColDivideDoubleColumn(col 4, col 13)(children: col 4, CastLongToDouble(col 0) -> 13:double) -> 14:double, LongColModuloLongColumn(col 2, col 3)(children: col 2) -> 15:long, DoubleColUnaryMinus(col 5) -> 13:double, DoubleColAddDoubleColumn(col 5, col 17)(children: DoubleColDivideDoubleColumn(col 4, col 16)(children: col 4, CastLongToDouble(col 0) -> 16:double) -> 17:double) -> 16:double, DoubleColDivideDoubleColumn(col 5, col 17)(children: CastLongToDouble(col 2) -> 17:double) -> 18:double, DoubleColUnaryMinus(col 17)(children: DoubleColUnaryMinus(col 5) -> 17:double) -> 19:double, DecimalScalarModuloDecimalColumn(val 9763215.5639, col 20)(children: CastLongToDecimal(col 3) -> 20:decimal(19,0)) -> 21:decimal(11,4), DoubleScalarAddDoubleColumn(val 2563.58, col 22)(children: DoubleColUnaryMinus(col 17)(children: DoubleColUnaryMinus(col 5) -> 17:double) -> 22:double) -> 17:double
+                    projectedOutputColumnNums: [4, 6, 2, 8, 5, 3, 15, 16, 14, 17, 19, 20, 22, 18]
+                    selectExpressions: DoubleColDivideDoubleColumn(col 4:double, col 14:double)(children: col 4:float, CastLongToDouble(col 0:tinyint) -> 14:double) -> 15:double, LongColModuloLongColumn(col 2:bigint, col 3:bigint)(children: col 2:int) -> 16:bigint, DoubleColUnaryMinus(col 5:double) -> 14:double, DoubleColAddDoubleColumn(col 5:double, col 18:double)(children: DoubleColDivideDoubleColumn(col 4:double, col 17:double)(children: col 4:float, CastLongToDouble(col 0:tinyint) -> 17:double) -> 18:double) -> 17:double, DoubleColDivideDoubleColumn(col 5:double, col 18:double)(children: CastLongToDouble(col 2:int) -> 18:double) -> 19:double, DoubleColUnaryMinus(col 18:double)(children: DoubleColUnaryMinus(col 5:double) -> 18:double) -> 20:double, DecimalScalarModuloDecimalColumn(val 9763215.5639, col 21:decimal(19,0))(children: CastLongToDecimal(col 3:bigint) -> 21:decimal(19,0)) -> 22:decimal(11,4), DoubleScalarAddDoubleColumn(val 2563.58, col 23:double)(children: DoubleColUnaryMinus(col 18:double)(children: DoubleColUnaryMinus(col 5:double) -> 18:double) -> 23:double) -> 18:double
                 Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col5 (type: bigint), _col0 (type: float)
@@ -94,7 +94,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -104,7 +105,7 @@ STAGE PLANS:
               includeColumns: [0, 1, 2, 3, 4, 5, 6, 8]
               dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
               partitionColumnCount: 0
-              scratchColumnTypeNames: decimal(13,3), double, double, bigint, double, double, double, double, decimal(19,0), decimal(11,4), double
+              scratchColumnTypeNames: [decimal(13,3), double, double, bigint, double, double, double, double, decimal(19,0), decimal(11,4), double]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

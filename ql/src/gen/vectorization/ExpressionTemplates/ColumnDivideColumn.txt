@@ -32,17 +32,21 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum1;
-  private int colNum2;
-  private int outputColumn;
+  private final int colNum1;
+  private final int colNum2;
 
-  public <ClassName>(int colNum1, int colNum2, int outputColumn) {
+  public <ClassName>(int colNum1, int colNum2, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
-    this.outputColumn = outputColumn;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    colNum1 = -1;
+    colNum2 = -1;
   }
 
   @Override
@@ -54,7 +58,7 @@ public class <ClassName> extends VectorExpression {
 
     <InputColumnVectorType1> inputColVector1 = (<InputColumnVectorType1>) batch.cols[colNum1];
     <InputColumnVectorType2> inputColVector2 = (<InputColumnVectorType2>) batch.cols[colNum2];
-    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumn];
+    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     int n = batch.size;
     <OperandType1>[] vector1 = inputColVector1.vector;
@@ -154,38 +158,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "<ReturnType>";
-  }
-
-  public int getColNum1() {
-    return colNum1;
-  }
-
-  public void setColNum1(int colNum1) {
-    this.colNum1 = colNum1;
-  }
-
-  public int getColNum2() {
-    return colNum2;
-  }
-
-  public void setColNum2(int colNum2) {
-    this.colNum2 = colNum2;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum1 + ", col " + + colNum2;
+    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

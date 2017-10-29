@@ -84,14 +84,14 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: a (type: int), b (type: string)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 1]
+                  projectedOutputColumnNums: [0, 1]
               Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int), _col1 (type: string)
@@ -106,7 +106,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -116,6 +117,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: a:int, b:string
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -178,14 +180,14 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: a (type: int), b (type: string)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 1]
+                  projectedOutputColumnNums: [0, 1]
               Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int), _col1 (type: string)
@@ -200,7 +202,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -210,6 +213,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: a:int, b:string
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -272,14 +276,14 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: a (type: int), b (type: string)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 1]
+                  projectedOutputColumnNums: [0, 1]
               Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col1 (type: string), _col0 (type: int)
@@ -294,7 +298,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -304,6 +309,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: a:int, b:string
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -366,14 +372,14 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: a (type: int), b (type: string)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 1]
+                  projectedOutputColumnNums: [0, 1]
               Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col1 (type: string), _col0 (type: int)
@@ -388,7 +394,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -398,6 +405,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: a:int, b:string
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -460,14 +468,14 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: a (type: int), b (type: string)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 1]
+                  projectedOutputColumnNums: [0, 1]
               Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int), _col1 (type: string)
@@ -482,7 +490,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -492,6 +501,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: a:int, b:string
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -554,14 +564,14 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: a (type: int), b (type: string)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 1]
+                  projectedOutputColumnNums: [0, 1]
               Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int), _col1 (type: string)
@@ -576,7 +586,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -586,6 +597,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: a:int, b:string
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -648,14 +660,14 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: a (type: int), b (type: string)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 1]
+                  projectedOutputColumnNums: [0, 1]
               Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col1 (type: string), _col0 (type: int)
@@ -670,7 +682,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -680,6 +693,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: a:int, b:string
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -742,14 +756,14 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: a (type: int), b (type: string)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 1]
+                  projectedOutputColumnNums: [0, 1]
               Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col1 (type: string), _col0 (type: int)
@@ -764,7 +778,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -774,6 +789,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: a:int, b:string
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -836,14 +852,14 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: a (type: int), b (type: string)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 1]
+                  projectedOutputColumnNums: [0, 1]
               Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int), _col1 (type: string)
@@ -858,7 +874,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -868,6 +885,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: a:int, b:string
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -930,14 +948,14 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: a (type: int), b (type: string)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 1]
+                  projectedOutputColumnNums: [0, 1]
               Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col1 (type: string), _col0 (type: int)
@@ -952,7 +970,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -962,6 +981,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: a:int, b:string
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -1024,14 +1044,14 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: a (type: int), b (type: string)
               outputColumnNames: _col0, _col1
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 1]
+                  projectedOutputColumnNums: [0, 1]
               Statistics: Num rows: 6 Data size: 22 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col1 (type: string), _col0 (type: int)
@@ -1046,7 +1066,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -1056,6 +1077,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: a:int, b:string
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

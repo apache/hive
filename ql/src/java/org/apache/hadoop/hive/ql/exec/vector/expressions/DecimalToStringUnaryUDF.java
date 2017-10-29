@@ -29,16 +29,18 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 abstract public class DecimalToStringUnaryUDF extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  int inputColumn;
-  int outputColumn;
+  protected final int inputColumn;
 
-  public DecimalToStringUnaryUDF(int inputColumn, int outputColumn) {
+  public DecimalToStringUnaryUDF(int inputColumn, int outputColumnNum) {
+    super(outputColumnNum);
     this.inputColumn = inputColumn;
-    this.outputColumn = outputColumn;
   }
 
   public DecimalToStringUnaryUDF() {
     super();
+
+    // Dummy final assignments.
+    inputColumn = -1;
   }
 
   abstract protected void func(BytesColumnVector outV, DecimalColumnVector inV, int i);
@@ -53,7 +55,7 @@ abstract public class DecimalToStringUnaryUDF extends VectorExpression {
     DecimalColumnVector inV = (DecimalColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
-    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
+    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumnNum];
     outV.initBuffer();
 
     if (n == 0) {
@@ -110,32 +112,9 @@ abstract public class DecimalToStringUnaryUDF extends VectorExpression {
     }
   }
 
-
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public int getInputColumn() {
-    return inputColumn;
-  }
-
-  public void setInputColumn(int inputColumn) {
-    this.inputColumn = inputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "String";
-  }
-
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumn;
+    return getColumnParamString(0, inputColumn);
   }
 
   @Override

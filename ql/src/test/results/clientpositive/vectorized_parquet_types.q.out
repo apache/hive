@@ -140,15 +140,14 @@ STAGE PLANS:
             Statistics: Num rows: 22 Data size: 242 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
             Select Operator
               expressions: cint (type: int), ctinyint (type: tinyint), csmallint (type: smallint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), t (type: timestamp), cchar (type: char(5)), cvarchar (type: varchar(10)), hex(cbinary) (type: string), cdecimal (type: decimal(4,2))
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 10]
-                  selectExpressions: VectorUDFAdaptor(hex(cbinary)) -> 11:string
+                  projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 10]
+                  selectExpressions: VectorUDFAdaptor(hex(cbinary)) -> 12:string
               Statistics: Num rows: 22 Data size: 242 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -164,7 +163,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
           allNative: false
           usesVectorUDFAdaptor: true
@@ -231,15 +231,14 @@ STAGE PLANS:
             Statistics: Num rows: 22 Data size: 242 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
             Select Operator
               expressions: cchar (type: char(5)), length(cchar) (type: int), cvarchar (type: varchar(10)), length(cvarchar) (type: int), cdecimal (type: decimal(4,2)), sign(cdecimal) (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [7, 11, 8, 12, 10, 13]
-                  selectExpressions: StringLength(col 7) -> 11:Long, StringLength(col 8) -> 12:Long, FuncSignDecimalToLong(col 10) -> 13:int
+                  projectedOutputColumnNums: [7, 12, 8, 13, 10, 14]
+                  selectExpressions: StringLength(col 7:char(5)) -> 12:int, StringLength(col 8:varchar(10)) -> 13:int, FuncSignDecimalToLong(col 10:decimal(4,2)) -> 14:int
               Statistics: Num rows: 22 Data size: 242 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -255,7 +254,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -339,26 +339,24 @@ STAGE PLANS:
             Statistics: Num rows: 22 Data size: 242 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
             Select Operator
               expressions: cint (type: int), ctinyint (type: tinyint), csmallint (type: smallint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cdecimal (type: decimal(4,2))
               outputColumnNames: cint, ctinyint, csmallint, cfloat, cdouble, cstring1, cdecimal
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [0, 1, 2, 3, 4, 5, 10]
+                  projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 10]
               Statistics: Num rows: 22 Data size: 242 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: max(cint), min(csmallint), count(cstring1), avg(cfloat), stddev_pop(cdouble), max(cdecimal)
                 Group By Vectorization:
-                    aggregators: VectorUDAFMaxLong(col 0) -> int, VectorUDAFMinLong(col 2) -> smallint, VectorUDAFCount(col 5) -> bigint, VectorUDAFAvgDouble(col 3) -> struct<count:bigint,sum:double,input:double>, VectorUDAFStdPopDouble(col 4) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFMaxDecimal(col 10) -> decimal(4,2)
+                    aggregators: VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFMinLong(col 2:smallint) -> smallint, VectorUDAFCount(col 5:string) -> bigint, VectorUDAFAvgDouble(col 3:float) -> struct<count:bigint,sum:double,input:float>, VectorUDAFVarDouble(col 4:double) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop, VectorUDAFMaxDecimal(col 10:decimal(4,2)) -> decimal(4,2)
                     className: VectorGroupByOperator
                     groupByMode: HASH
-                    vectorOutput: true
-                    keyExpressions: col 1
+                    keyExpressions: col 1:tinyint
                     native: false
                     vectorProcessingMode: HASH
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
                 keys: ctinyint (type: tinyint)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -378,7 +376,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -390,12 +389,6 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: max(VALUE._col0), min(VALUE._col1), count(VALUE._col2), avg(VALUE._col3), stddev_pop(VALUE._col4), max(VALUE._col5)
-          Group By Vectorization:
-              groupByMode: MERGEPARTIAL
-              vectorOutput: false
-              native: false
-              vectorProcessingMode: NONE
-              projectedOutputColumns: null
           keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -413,7 +406,6 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6]
             Reduce Output Operator
               key expressions: _col0 (type: tinyint)
               sort order: +
@@ -428,7 +420,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -146,26 +147,39 @@ public final class OperatorFactory {
 
   public static <T extends OperatorDesc> Operator<T> getVectorOperator(
     Class<? extends Operator<?>> opClass, CompilationOpContext cContext, T conf,
-        VectorizationContext vContext) throws HiveException {
+        VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+
+    Constructor<? extends Operator<?>> constructor;
     try {
-      VectorDesc vectorDesc = ((AbstractOperatorDesc) conf).getVectorDesc();
+      constructor = opClass.getDeclaredConstructor(
+          CompilationOpContext.class, OperatorDesc.class,
+          VectorizationContext.class, VectorDesc.class);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new HiveException(
+          "Constructor " + opClass.getSimpleName() +
+          "(CompilationOpContext, OperatorDesc, VectorizationContext, VectorDesc) not found", e);
+    }
+    try {
       vectorDesc.setVectorOp(opClass);
-      Operator<T> op = (Operator<T>) opClass.getDeclaredConstructor(
-          CompilationOpContext.class, VectorizationContext.class, OperatorDesc.class)
-          .newInstance(cContext, vContext, conf);
+      Operator<T> op = (Operator<T>) constructor.newInstance(
+          cContext, conf, vContext, vectorDesc);
       return op;
     } catch (Exception e) {
       e.printStackTrace();
-      throw new HiveException(e);
+      throw new HiveException(
+          "Error encountered calling constructor " + opClass.getSimpleName() +
+          "(CompilationOpContext, OperatorDesc, VectorizationContext, VectorDesc)", e);
     }
   }
 
   public static <T extends OperatorDesc> Operator<T> getVectorOperator(
-      CompilationOpContext cContext, T conf, VectorizationContext vContext) throws HiveException {
+      CompilationOpContext cContext, T conf, VectorizationContext vContext, VectorDesc vectorDesc)
+          throws HiveException {
     Class<T> descClass = (Class<T>) conf.getClass();
     Class<?> opClass = vectorOpvec.get(descClass);
     if (opClass != null) {
-      return getVectorOperator(vectorOpvec.get(descClass), cContext, conf, vContext);
+      return getVectorOperator(vectorOpvec.get(descClass), cContext, conf, vContext, vectorDesc);
     }
     throw new HiveException("No vector operator for descriptor class " + descClass.getName());
   }

@@ -2899,6 +2899,19 @@ public class HiveConf extends Configuration {
     HIVE_VECTORIZATION_ROW_IDENTIFIER_ENABLED("hive.vectorized.row.identifier.enabled", true,
         "This flag should be set to true to enable vectorization of ROW__ID."),
 
+    HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED(
+        "hive.vectorized.input.format.supports.enabled",
+        "decimal_64",
+        "Which vectorized input format support features are enabled for vectorization.\n" +
+        "That is, if a VectorizedInputFormat input format does support \"decimal_64\" for example\n" +
+        "this variable must enable that to be used in vectorization"),
+
+    HIVE_TEST_VECTORIZATION_ENABLED_OVERRIDE("hive.test.vectorized.execution.enabled.override",
+        "none", new StringSet("none", "enable", "disable"),
+        "internal use only, used to override the hive.vectorized.execution.enabled setting and\n" +
+        "turn off vectorization.  The default is false, or course",
+        true),
+
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "
         + "whether to check, convert, and normalize partition value to conform to its column type in "
         + "partition operations including but not limited to insert, such as alter, describe etc."),
@@ -3639,6 +3652,10 @@ public class HiveConf extends Configuration {
 
     ConfVars(String varname, Object defaultVal, Validator validator, String description) {
       this(varname, defaultVal, validator, description, true, false, null);
+    }
+
+    ConfVars(String varname, Object defaultVal, Validator validator, String description, boolean excluded) {
+      this(varname, defaultVal, validator, description, true, excluded, null);
     }
 
     ConfVars(String varname, Object defaultVal, Validator validator, String description,

@@ -284,22 +284,22 @@ public class MapJoinTestConfig {
       case INNER:
         operator =
             new VectorMapJoinInnerLongOperator(new CompilationOpContext(),
-                vContext, mapJoinDesc);
+                mapJoinDesc, vContext, vectorDesc);
         break;
       case INNER_BIG_ONLY:
         operator =
             new VectorMapJoinInnerBigOnlyLongOperator(new CompilationOpContext(),
-                vContext, mapJoinDesc);
+                mapJoinDesc, vContext, vectorDesc);
         break;
       case LEFT_SEMI:
         operator =
             new VectorMapJoinLeftSemiLongOperator(new CompilationOpContext(),
-                vContext, mapJoinDesc);
+                mapJoinDesc, vContext, vectorDesc);
         break;
       case OUTER:
         operator =
             new VectorMapJoinOuterLongOperator(new CompilationOpContext(),
-                vContext, mapJoinDesc);
+                mapJoinDesc, vContext, vectorDesc);
         break;
       default:
         throw new RuntimeException("unknown operator variation " + VectorMapJoinVariation);
@@ -310,22 +310,22 @@ public class MapJoinTestConfig {
       case INNER:
         operator =
             new VectorMapJoinInnerStringOperator(new CompilationOpContext(),
-                vContext, mapJoinDesc);
+                mapJoinDesc, vContext, vectorDesc);
         break;
       case INNER_BIG_ONLY:
         operator =
             new VectorMapJoinInnerBigOnlyStringOperator(new CompilationOpContext(),
-                vContext, mapJoinDesc);
+                mapJoinDesc, vContext, vectorDesc);
         break;
       case LEFT_SEMI:
         operator =
             new VectorMapJoinLeftSemiStringOperator(new CompilationOpContext(),
-                vContext, mapJoinDesc);
+                mapJoinDesc, vContext, vectorDesc);
         break;
       case OUTER:
         operator =
             new VectorMapJoinOuterStringOperator(new CompilationOpContext(),
-                vContext, mapJoinDesc);
+                mapJoinDesc, vContext, vectorDesc);
         break;
       default:
         throw new RuntimeException("unknown operator variation " + VectorMapJoinVariation);
@@ -336,22 +336,22 @@ public class MapJoinTestConfig {
       case INNER:
         operator =
             new VectorMapJoinInnerMultiKeyOperator(new CompilationOpContext(),
-                vContext, mapJoinDesc);
+                mapJoinDesc, vContext, vectorDesc);
         break;
       case INNER_BIG_ONLY:
         operator =
             new VectorMapJoinInnerBigOnlyMultiKeyOperator(new CompilationOpContext(),
-                vContext, mapJoinDesc);
+                mapJoinDesc, vContext, vectorDesc);
         break;
       case LEFT_SEMI:
         operator =
             new VectorMapJoinLeftSemiMultiKeyOperator(new CompilationOpContext(),
-                vContext, mapJoinDesc);
+                mapJoinDesc, vContext, vectorDesc);
         break;
       case OUTER:
         operator =
             new VectorMapJoinOuterMultiKeyOperator(new CompilationOpContext(),
-                vContext, mapJoinDesc);
+                mapJoinDesc, vContext, vectorDesc);
         break;
       default:
         throw new RuntimeException("unknown operator variation " + VectorMapJoinVariation);
@@ -541,12 +541,17 @@ public class MapJoinTestConfig {
       }
 
       // This is what the Vectorizer class does.
+      VectorMapJoinDesc vectorMapJoinDesc = new VectorMapJoinDesc();
       List<ExprNodeDesc> bigTableFilters = mapJoinDesc.getFilters().get(bigTablePos);
       boolean isOuterAndFiltered = (!mapJoinDesc.isNoOuterJoin() && bigTableFilters.size() > 0);
       if (!isOuterAndFiltered) {
-        operator = new VectorMapJoinOperator(new CompilationOpContext(), vContext, mapJoinDesc);
+        operator = new VectorMapJoinOperator(
+            new CompilationOpContext(), mapJoinDesc,
+            vContext, vectorMapJoinDesc);
       } else {
-        operator = new VectorMapJoinOuterFilteredOperator(new CompilationOpContext(), vContext, mapJoinDesc);
+        operator = new VectorMapJoinOuterFilteredOperator(
+            new CompilationOpContext(), mapJoinDesc,
+            vContext, vectorMapJoinDesc);
       }
     }
 
@@ -563,6 +568,8 @@ public class MapJoinTestConfig {
           throws SerDeException, IOException, HiveException {
 
     VectorMapJoinDesc vectorDesc = MapJoinTestConfig.createVectorMapJoinDesc(testDesc);
+
+    // UNDONE
     mapJoinDesc.setVectorDesc(vectorDesc);
 
     vectorDesc.setHashTableImplementationType(hashTableImplementationType);

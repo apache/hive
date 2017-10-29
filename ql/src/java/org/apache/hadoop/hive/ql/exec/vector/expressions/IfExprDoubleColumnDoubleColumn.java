@@ -36,6 +36,7 @@ public class IfExprDoubleColumnDoubleColumn extends IfExprConditionalFilter {
   }
 
   public IfExprDoubleColumnDoubleColumn() {
+    super();
   }
 
   @Override
@@ -48,7 +49,7 @@ public class IfExprDoubleColumnDoubleColumn extends IfExprConditionalFilter {
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
     DoubleColumnVector arg2ColVector = (DoubleColumnVector) batch.cols[arg2Column];
     DoubleColumnVector arg3ColVector = (DoubleColumnVector) batch.cols[arg3Column];
-    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumn];
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = arg2ColVector.noNulls && arg3ColVector.noNulls;
@@ -123,13 +124,9 @@ public class IfExprDoubleColumnDoubleColumn extends IfExprConditionalFilter {
   }
 
   @Override
-  public String getOutputType() {
-    return "double";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", col "+ arg2Column + ", col "+ arg3Column;
+    return getColumnParamString(0, arg1Column) + ", " + getColumnParamString(1, arg2Column) +
+        getColumnParamString(2, arg3Column);
   }
 
   @Override

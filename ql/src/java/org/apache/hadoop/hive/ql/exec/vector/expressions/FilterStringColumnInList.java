@@ -153,19 +153,8 @@ public class FilterStringColumnInList extends VectorExpression implements IStrin
     }
   }
 
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
   public void setInputColumn(int inputCol) {
     this.inputCol = inputCol;
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return -1;
   }
 
   @Override

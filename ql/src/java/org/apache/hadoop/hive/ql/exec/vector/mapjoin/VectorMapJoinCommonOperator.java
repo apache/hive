@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorDeserializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
@@ -57,6 +58,7 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinInfo;
@@ -68,7 +70,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 import com.google.common.annotations.VisibleForTesting;
-
 import com.google.common.base.Preconditions;
 
 /**
@@ -78,7 +79,8 @@ import com.google.common.base.Preconditions;
  *
  * It is used by both inner and outer joins.
  */
-public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implements VectorizationContextRegion {
+public abstract class VectorMapJoinCommonOperator extends MapJoinOperator
+    implements VectorizationOperator, VectorizationContextRegion {
   private static final long serialVersionUID = 1L;
 
   //------------------------------------------------------------------------------------------------
@@ -221,14 +223,14 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     super(ctx);
   }
 
-  public VectorMapJoinCommonOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+  public VectorMapJoinCommonOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
     super(ctx);
 
     MapJoinDesc desc = (MapJoinDesc) conf;
     this.conf = desc;
-    vectorDesc = (VectorMapJoinDesc) desc.getVectorDesc();
-    vectorMapJoinInfo = vectorDesc.getVectorMapJoinInfo();
+    this.vectorDesc = (VectorMapJoinDesc) vectorDesc;
+    vectorMapJoinInfo = this.vectorDesc.getVectorMapJoinInfo();
     Preconditions.checkState(vectorMapJoinInfo != null);
 
     this.vContext = vContext;
@@ -365,7 +367,6 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
    */
   @Override
   protected HashTableLoader getHashTableLoader(Configuration hconf) {
-    VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) conf.getVectorDesc();
     HashTableImplementationType hashTableImplementationType = vectorDesc.getHashTableImplementationType();
     HashTableLoader hashTableLoader;
     switch (vectorDesc.getHashTableImplementationType()) {
@@ -388,6 +389,10 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
+    VectorExpression.doTransientInit(bigTableFilterExpressions);
+    VectorExpression.doTransientInit(bigTableKeyExpressions);
+    VectorExpression.doTransientInit(bigTableValueExpressions);
+    VectorExpression.doTransientInit(bigTableValueExpressions);
 
     /*
      * Get configuration parameters.
@@ -469,7 +474,6 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   private void setUpHashTable() {
 
-    VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) conf.getVectorDesc();
     HashTableImplementationType hashTableImplementationType = vectorDesc.getHashTableImplementationType();
     switch (vectorDesc.getHashTableImplementationType()) {
     case OPTIMIZED:
@@ -592,7 +596,17 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   }
 
   @Override
-  public VectorizationContext getOuputVectorizationContext() {
+  public VectorizationContext getInputVectorizationContext() {
+    return vContext;
+  }
+
+  @Override
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
+  }
+
+  @Override
+  public VectorizationContext getOutputVectorizationContext() {
     return vOutContext;
   }
 }

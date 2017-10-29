@@ -34,6 +34,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * An abstract class for LIKE and REGEXP expressions. LIKE and REGEXP expression share similar
@@ -43,17 +44,32 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
+  private final int colNum;
+
   private String pattern;
-  transient Checker checker = null;
+
+  // Transient members initialized by transientInit method.
+  transient Checker checker;
+
+  public AbstractFilterStringColLikeStringScalar(int colNum, String pattern) {
+    super();
+    this.colNum = colNum;
+    this.pattern = pattern;
+  }
 
   public AbstractFilterStringColLikeStringScalar() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    pattern = null;
   }
 
-  public AbstractFilterStringColLikeStringScalar(int colNum, String pattern) {
-    this.colNum = colNum;
-    this.pattern = pattern;
+  @Override
+  public void transientInit() throws HiveException {
+    super.transientInit();
+
+    checker = createChecker(pattern);
   }
 
   protected abstract List<CheckerFactory> getCheckerFactories();
@@ -75,10 +91,6 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
-
-    if (checker == null) {
-      checker = createChecker(pattern);
-    }
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
@@ -178,16 +190,6 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
          */
       }
     }
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
   }
 
   /**
@@ -486,14 +488,6 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
     }
   }
 
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
   public String getPattern() {
     return pattern;
   }
@@ -504,7 +498,7 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", pattern " + pattern;
+    return getColumnParamString(0, colNum) + ", pattern " + pattern;
   }
 
   @Override

@@ -101,25 +101,23 @@ STAGE PLANS:
                   Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4]
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [3]
+                        projectedOutputColumnNums: [3]
                     Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 3) -> bigint
+                          aggregators: VectorUDAFSumLong(col 3:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -136,7 +134,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -146,7 +145,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -154,13 +152,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0) -> bigint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -274,25 +271,23 @@ STAGE PLANS:
                   Statistics: Num rows: 200 Data size: 12640 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [3]
+                        projectedOutputColumnNums: [3]
                     Statistics: Num rows: 200 Data size: 12640 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 3) -> bigint
+                          aggregators: VectorUDAFSumLong(col 3:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -309,7 +304,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -319,7 +315,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -327,13 +322,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0) -> bigint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -447,25 +441,23 @@ STAGE PLANS:
                   Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4]
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [3]
+                        projectedOutputColumnNums: [3]
                     Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 3) -> bigint
+                          aggregators: VectorUDAFSumLong(col 3:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -482,7 +474,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -492,7 +485,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -500,13 +492,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0) -> bigint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -607,25 +598,23 @@ STAGE PLANS:
                   Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [3]
+                        projectedOutputColumnNums: [3]
                     Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 3) -> bigint
+                          aggregators: VectorUDAFSumLong(col 3:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -642,7 +631,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -652,7 +642,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -660,13 +649,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0) -> bigint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -767,25 +755,23 @@ STAGE PLANS:
                   Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4]
                   Select Operator
                     expressions: inv_quantity_on_hand (type: int)
                     outputColumnNames: inv_quantity_on_hand
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [3]
+                        projectedOutputColumnNums: [3]
                     Statistics: Num rows: 200 Data size: 3940 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(inv_quantity_on_hand)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 3) -> bigint
+                          aggregators: VectorUDAFSumLong(col 3:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -802,7 +788,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -812,7 +799,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -820,13 +806,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0) -> bigint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE

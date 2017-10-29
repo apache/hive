@@ -36,21 +36,25 @@ public class IfExprIntervalDayTimeScalarScalar extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int arg1Column;
-  private HiveIntervalDayTime arg2Scalar;
-  private HiveIntervalDayTime arg3Scalar;
-  private int outputColumn;
+  private final int arg1Column;
+  private final HiveIntervalDayTime arg2Scalar;
+  private final HiveIntervalDayTime arg3Scalar;
 
-  public IfExprIntervalDayTimeScalarScalar(int arg1Column, HiveIntervalDayTime arg2Scalar, HiveIntervalDayTime arg3Scalar,
-      int outputColumn) {
+  public IfExprIntervalDayTimeScalarScalar(int arg1Column, HiveIntervalDayTime arg2Scalar,
+      HiveIntervalDayTime arg3Scalar, int outputColumnNum) {
+    super(outputColumnNum);
     this.arg1Column = arg1Column;
     this.arg2Scalar = arg2Scalar;
     this.arg3Scalar = arg3Scalar;
-    this.outputColumn = outputColumn;
   }
 
   public IfExprIntervalDayTimeScalarScalar() {
     super();
+
+    // Dummy final assignments.
+    arg1Column = -1;
+    arg2Scalar = null;
+    arg3Scalar = null;
   }
 
   @Override
@@ -61,7 +65,7 @@ public class IfExprIntervalDayTimeScalarScalar extends VectorExpression {
     }
 
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
-    IntervalDayTimeColumnVector outputColVector = (IntervalDayTimeColumnVector) batch.cols[outputColumn];
+    IntervalDayTimeColumnVector outputColVector = (IntervalDayTimeColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = false; // output is a scalar which we know is non null
@@ -110,18 +114,8 @@ public class IfExprIntervalDayTimeScalarScalar extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "timestamp";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", val "+ arg2Scalar + ", val "+ arg3Scalar;
+    return getColumnParamString(0, arg1Column) + ", val "+ arg2Scalar + ", val "+ arg3Scalar;
   }
 
   @Override

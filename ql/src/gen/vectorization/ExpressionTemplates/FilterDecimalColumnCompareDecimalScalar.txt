@@ -38,11 +38,17 @@ public class <ClassName> extends VectorExpression {
   private HiveDecimal value;
 
   public <ClassName>(int colNum, HiveDecimal value) {
+    super();
     this.colNum = colNum;
     this.value = value;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    value = null;
   }
 
   @Override
@@ -135,18 +141,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + value.toString();
+    return getColumnParamString(0, colNum) + ", val " + value.toString();
   }
 
   @Override

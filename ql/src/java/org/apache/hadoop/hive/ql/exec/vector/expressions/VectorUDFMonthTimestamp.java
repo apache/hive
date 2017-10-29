@@ -30,8 +30,8 @@ public final class VectorUDFMonthTimestamp extends VectorUDFTimestampFieldTimest
 
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFMonthTimestamp(int colNum, int outputColumn) {
-    super(Calendar.MONTH, colNum, outputColumn);
+  public VectorUDFMonthTimestamp(int colNum, int outputColumnNum) {
+    super(Calendar.MONTH, colNum, outputColumnNum);
   }
 
   public VectorUDFMonthTimestamp() {

@@ -88,15 +88,15 @@ STAGE PLANS:
       Map Operator Tree:
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4]
+                vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsNotNull(col 0) -> boolean
+                  predicateExpression: SelectColumnIsNotNull(col 0:int)
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 4, 1]
+                    projectedOutputColumnNums: [0, 4, 1]
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
@@ -107,7 +107,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -118,6 +119,7 @@ STAGE PLANS:
               dataColumns: cint:int, cbigint:bigint, cfloat:float, cdouble:double
               partitionColumnCount: 1
               partitionColumns: csmallint:smallint
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -181,6 +183,70 @@ POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cbigint EXPRESSION 
 POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cdouble EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cfloat EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: explain vectorization only detail
+update orc_llap_acid_fast set cbigint = 2 where cint = 1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+update orc_llap_acid_fast set cbigint = 2 where cint = 1
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterLongColEqualLongScalar(col 0:int, val 1)
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [5, 2, 3, 4]
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Execution mode: vectorized
+      LLAP IO: may be used (ACID table)
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 4
+              includeColumns: [0, 2, 3]
+              dataColumns: cint:int, cbigint:bigint, cfloat:float, cdouble:double
+              neededVirtualColumns: [ROWID]
+              partitionColumnCount: 1
+              partitionColumns: csmallint:smallint
+              scratchColumnTypeNames: [bigint]
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+
+  Stage: Stage-0
+
+  Stage: Stage-2
+
 PREHOOK: query: update orc_llap_acid_fast set cbigint = 2 where cint = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap_acid_fast
@@ -221,15 +287,15 @@ STAGE PLANS:
       Map Operator Tree:
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4]
+                vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsNotNull(col 0) -> boolean
+                  predicateExpression: SelectColumnIsNotNull(col 0:int)
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 4, 1]
+                    projectedOutputColumnNums: [0, 4, 1]
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
@@ -240,7 +306,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -251,6 +318,7 @@ STAGE PLANS:
               dataColumns: cint:int, cbigint:bigint, cfloat:float, cdouble:double
               partitionColumnCount: 1
               partitionColumns: csmallint:smallint
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

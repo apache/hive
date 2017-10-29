@@ -28,8 +28,8 @@ public class CastLongToVarChar extends CastLongToString implements TruncStringOu
     super();
   }
 
-  public CastLongToVarChar(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public CastLongToVarChar(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   @Override
@@ -38,11 +38,6 @@ public class CastLongToVarChar extends CastLongToString implements TruncStringOu
   }
 
   @Override
-  public String getOutputType() {
-    return "VarChar";
-  }
-  
-    @Override
   public int getMaxLength() {
     return maxLength;
   }
@@ -54,6 +49,6 @@ public class CastLongToVarChar extends CastLongToString implements TruncStringOu
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumn + ", maxLength " + maxLength;
+    return getColumnParamString(0, inputColumn) + ", maxLength " + maxLength;
   }
 }

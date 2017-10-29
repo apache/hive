@@ -30,7 +30,8 @@ public class AbstractOperatorDesc implements OperatorDesc {
 
   protected boolean vectorMode = false;
 
-  // Extra parameters only for vectorization.
+  // Reference to vectorization description needed for EXPLAIN VECTORIZATION, hash table loading,
+  // etc.
   protected VectorDesc vectorDesc;
 
   protected Statistics statistics;

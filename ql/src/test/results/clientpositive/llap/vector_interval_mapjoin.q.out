@@ -203,12 +203,11 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 266280 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12) -> boolean, SelectColumnIsNotNull(col 10) -> boolean, SelectColumnIsNotNull(col 8) -> boolean) -> boolean
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12:date), SelectColumnIsNotNull(col 10:timestamp), SelectColumnIsNotNull(col 8:string))
                     predicate: (dt is not null and s is not null and ts is not null) (type: boolean)
                     Statistics: Num rows: 850 Data size: 226338 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -217,8 +216,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [8, 14]
-                          selectExpressions: DateColSubtractDateColumn(col 12, col 13)(children: CastTimestampToDate(col 10) -> 13:date) -> 14:timestamp
+                          projectedOutputColumnNums: [8, 15]
+                          selectExpressions: DateColSubtractDateColumn(col 12:date, col 14:date)(children: CastTimestampToDate(col 10:timestamp) -> 14:date) -> 15:interval_day_time
                       Statistics: Num rows: 850 Data size: 226338 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
@@ -240,7 +239,7 @@ STAGE PLANS:
                           Select Vectorization:
                               className: VectorSelectOperator
                               native: true
-                              projectedOutputColumns: [8, 8, 14]
+                              projectedOutputColumnNums: [8, 8, 15]
                           Statistics: Num rows: 935 Data size: 248971 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator
                             compressed: false
@@ -257,7 +256,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -269,12 +269,11 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 266280 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12) -> boolean, SelectColumnIsNotNull(col 10) -> boolean, SelectColumnIsNotNull(col 8) -> boolean) -> boolean
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 12:date), SelectColumnIsNotNull(col 10:timestamp), SelectColumnIsNotNull(col 8:string))
                     predicate: (dt is not null and s is not null and ts is not null) (type: boolean)
                     Statistics: Num rows: 850 Data size: 226338 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -283,8 +282,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [8, 14]
-                          selectExpressions: DateColSubtractDateColumn(col 12, col 13)(children: CastTimestampToDate(col 10) -> 13:date) -> 14:timestamp
+                          projectedOutputColumnNums: [8, 15]
+                          selectExpressions: DateColSubtractDateColumn(col 12:date, col 14:date)(children: CastTimestampToDate(col 10:timestamp) -> 14:date) -> 15:interval_day_time
                       Statistics: Num rows: 850 Data size: 226338 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: interval_day_time)
@@ -300,7 +299,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false

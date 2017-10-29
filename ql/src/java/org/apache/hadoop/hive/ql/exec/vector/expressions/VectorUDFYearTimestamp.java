@@ -28,8 +28,8 @@ public final class VectorUDFYearTimestamp extends VectorUDFTimestampFieldTimesta
 
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFYearTimestamp(int colNum, int outputColumn) {
-    super(Calendar.YEAR, colNum, outputColumn);
+  public VectorUDFYearTimestamp(int colNum, int outputColumnNum) {
+    super(Calendar.YEAR, colNum, outputColumnNum);
   }
 
   public VectorUDFYearTimestamp() {

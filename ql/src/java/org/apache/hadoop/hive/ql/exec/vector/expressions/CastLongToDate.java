@@ -22,6 +22,8 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 import java.sql.Date;
 
@@ -32,16 +34,15 @@ public class CastLongToDate extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private int inputColumn;
-  private int outputColumn;
   private transient Date date = new Date(0);
 
   public CastLongToDate() {
     super();
   }
 
-  public CastLongToDate(int inputColumn, int outputColumn) {
+  public CastLongToDate(int inputColumn, int outputColumnNum) {
+    super(outputColumnNum);
     this.inputColumn = inputColumn;
-    this.outputColumn = outputColumn;
   }
 
   @Override
@@ -54,7 +55,7 @@ public class CastLongToDate extends VectorExpression {
     LongColumnVector inV = (LongColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
 
     if (n == 0) {
 
@@ -62,40 +63,20 @@ public class CastLongToDate extends VectorExpression {
       return;
     }
 
-    switch (inputTypes[0]) {
+    PrimitiveCategory primitiveCategory =
+        ((PrimitiveTypeInfo) inputTypeInfos[0]).getPrimitiveCategory();
+    switch (primitiveCategory) {
       case DATE:
         inV.copySelected(batch.selectedInUse, batch.selected, batch.size, outV);
         break;
       default:
-        throw new Error("Unsupported input type " + inputTypes[0].name());
+        throw new Error("Unsupported input type " + primitiveCategory.name());
     }
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public int getInputColumn() {
-    return inputColumn;
-  }
-
-  public void setInputColumn(int inputColumn) {
-    this.inputColumn = inputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "date";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumn;
+    return getColumnParamString(0, inputColumn);
   }
 
   @Override

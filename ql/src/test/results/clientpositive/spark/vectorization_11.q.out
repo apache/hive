@@ -48,12 +48,12 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringGroupColumn(col 7, col 6) -> boolean, FilterExprAndExpr(children: SelectColumnIsNull(col 8) -> boolean, FilterStringColLikeStringScalar(col 6, pattern %a) -> boolean) -> boolean) -> boolean
+                        predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringGroupColumn(col 7:string, col 6:string), FilterExprAndExpr(children: SelectColumnIsNull(col 8:timestamp), FilterStringColLikeStringScalar(col 6:string, pattern %a)))
                     predicate: ((cstring2 = cstring1) or (ctimestamp1 is null and (cstring1 like '%a'))) (type: boolean)
                     Statistics: Num rows: 9216 Data size: 1981473 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -62,8 +62,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [6, 10, 5, 8, 12, 13, 14, 16, 15]
-                          selectExpressions: LongScalarMultiplyLongColumn(val -3728, col 1)(children: col 1) -> 12:long, DoubleColSubtractDoubleScalar(col 5, val 9763215.5639) -> 13:double, DoubleColUnaryMinus(col 5) -> 14:double, DoubleColAddDoubleScalar(col 15, val 6981.0)(children: DoubleColUnaryMinus(col 5) -> 15:double) -> 16:double, DoubleColMultiplyDoubleScalar(col 5, val -5638.15) -> 15:double
+                          projectedOutputColumnNums: [6, 10, 5, 8, 13, 14, 15, 17, 16]
+                          selectExpressions: LongScalarMultiplyLongColumn(val -3728, col 1:int)(children: col 1:smallint) -> 13:int, DoubleColSubtractDoubleScalar(col 5:double, val 9763215.5639) -> 14:double, DoubleColUnaryMinus(col 5:double) -> 15:double, DoubleColAddDoubleScalar(col 16:double, val 6981.0)(children: DoubleColUnaryMinus(col 5:double) -> 16:double) -> 17:double, DoubleColMultiplyDoubleScalar(col 5:double, val -5638.15) -> 16:double
                       Statistics: Num rows: 9216 Data size: 1981473 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -79,7 +79,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -89,7 +90,7 @@ STAGE PLANS:
                     includeColumns: [1, 5, 6, 7, 8, 10]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: bigint, double, double, double, double
+                    scratchColumnTypeNames: [bigint, double, double, double, double]
 
   Stage: Stage-0
     Fetch Operator

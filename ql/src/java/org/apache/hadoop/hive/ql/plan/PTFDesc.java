@@ -138,11 +138,11 @@ public class PTFDesc extends AbstractOperatorDesc {
 
     private VectorizationCondition[] nativeConditions;
 
-    public PTFOperatorExplainVectorization(PTFDesc PTFDesc, VectorDesc vectorDesc) {
+    public PTFOperatorExplainVectorization(PTFDesc PTFDesc, VectorPTFDesc vectorPTFDesc) {
       // VectorPTFOperator is native vectorized.
-      super(vectorDesc, true);
+      super(vectorPTFDesc, true);
       this.PTFDesc = PTFDesc;
-      vectorPTFDesc = (VectorPTFDesc) vectorDesc;
+      this.vectorPTFDesc = vectorPTFDesc;
       vectorPTFInfo = vectorPTFDesc.getVectorPTFInfo();
     }
 
@@ -221,9 +221,10 @@ public class PTFDesc extends AbstractOperatorDesc {
 
   @Explain(vectorization = Vectorization.OPERATOR, displayName = "PTF Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public PTFOperatorExplainVectorization getPTFVectorization() {
-    if (vectorDesc == null) {
+    VectorPTFDesc vectorPTFDesc = (VectorPTFDesc) getVectorDesc();
+    if (vectorPTFDesc == null) {
       return null;
     }
-    return new PTFOperatorExplainVectorization(this, vectorDesc);
+    return new PTFOperatorExplainVectorization(this, vectorPTFDesc);
   }
 }

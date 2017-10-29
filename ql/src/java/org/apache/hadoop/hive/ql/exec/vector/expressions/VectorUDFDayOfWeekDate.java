@@ -28,8 +28,8 @@ public final class VectorUDFDayOfWeekDate extends VectorUDFTimestampFieldDate {
 
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFDayOfWeekDate(int colNum, int outputColumn) {
-    super(Calendar.DAY_OF_WEEK, colNum, outputColumn);
+  public VectorUDFDayOfWeekDate(int colNum, int outputColumnNum) {
+    super(Calendar.DAY_OF_WEEK, colNum, outputColumnNum);
   }
 
   public VectorUDFDayOfWeekDate() {

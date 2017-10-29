@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionConversion;
@@ -86,6 +87,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
   private T deserializeRead;
 
   private TypeInfo[] sourceTypeInfos;
+  protected DataTypePhysicalVariation[] dataTypePhysicalVariations;
 
   private byte[] inputBytes;
 
@@ -97,6 +99,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     this();
     this.deserializeRead = deserializeRead;
     sourceTypeInfos = deserializeRead.typeInfos();
+    dataTypePhysicalVariations = deserializeRead.getDataTypePhysicalVariations();
   }
 
   // Not public since we must have the deserialize read object.
@@ -109,6 +112,8 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     private PrimitiveCategory primitiveCategory;
                   //The data type primitive category of the column being deserialized.
+
+    private DataTypePhysicalVariation dataTypePhysicalVariation;
 
     private int maxLength;
                   // For the CHAR and VARCHAR data types, the maximum character length of
@@ -130,9 +135,11 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     private ObjectInspector objectInspector;
 
-    public Field(PrimitiveCategory primitiveCategory, int maxLength) {
+    public Field(PrimitiveCategory primitiveCategory, DataTypePhysicalVariation dataTypePhysicalVariation,
+        int maxLength) {
       this.category = Category.PRIMITIVE;
       this.primitiveCategory = primitiveCategory;
+      this.dataTypePhysicalVariation = dataTypePhysicalVariation;
       this.maxLength = maxLength;
       this.isConvert = false;
       this.conversionWritable = null;
@@ -145,6 +152,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       this.category = category;
       this.objectInspector = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo);
       this.primitiveCategory = null;
+      this.dataTypePhysicalVariation = null;
       this.maxLength = 0;
       this.isConvert = false;
       this.conversionWritable = null;
@@ -157,6 +165,10 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     public PrimitiveCategory getPrimitiveCategory() {
       return primitiveCategory;
+    }
+
+    public DataTypePhysicalVariation getDataTypePhysicalVariation() {
+      return dataTypePhysicalVariation;
     }
 
     public int getMaxLength() {
@@ -220,7 +232,8 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     topLevelFields = new Field[count];
   }
 
-  private Field allocatePrimitiveField(TypeInfo sourceTypeInfo) {
+  private Field allocatePrimitiveField(TypeInfo sourceTypeInfo,
+      DataTypePhysicalVariation dataTypePhysicalVariation) {
     final PrimitiveTypeInfo sourcePrimitiveTypeInfo = (PrimitiveTypeInfo) sourceTypeInfo;
     final PrimitiveCategory sourcePrimitiveCategory = sourcePrimitiveTypeInfo.getPrimitiveCategory();
     final int maxLength;
@@ -236,7 +249,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       maxLength = 0;
       break;
     }
-    return new Field(sourcePrimitiveCategory, maxLength);
+    return new Field(sourcePrimitiveCategory, dataTypePhysicalVariation, maxLength);
   }
 
   private Field allocateComplexField(TypeInfo sourceTypeInfo) {
@@ -247,7 +260,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         final ListTypeInfo listTypeInfo = (ListTypeInfo) sourceTypeInfo;
         final ListComplexTypeHelper listHelper =
             new ListComplexTypeHelper(
-                allocateField(listTypeInfo.getListElementTypeInfo()));
+                allocateField(listTypeInfo.getListElementTypeInfo(), DataTypePhysicalVariation.NONE));
         return new Field(category, listHelper, sourceTypeInfo);
       }
     case MAP:
@@ -255,8 +268,8 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         final MapTypeInfo mapTypeInfo = (MapTypeInfo) sourceTypeInfo;
         final MapComplexTypeHelper mapHelper =
             new MapComplexTypeHelper(
-                allocateField(mapTypeInfo.getMapKeyTypeInfo()),
-                allocateField(mapTypeInfo.getMapValueTypeInfo()));
+                allocateField(mapTypeInfo.getMapKeyTypeInfo(), DataTypePhysicalVariation.NONE),
+                allocateField(mapTypeInfo.getMapValueTypeInfo(), DataTypePhysicalVariation.NONE));
         return new Field(category, mapHelper, sourceTypeInfo);
       }
     case STRUCT:
@@ -266,7 +279,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         final int count = fieldTypeInfoList.size();
         final Field[] fields = new Field[count];
         for (int i = 0; i < count; i++) {
-          fields[i] = allocateField(fieldTypeInfoList.get(i));
+          fields[i] = allocateField(fieldTypeInfoList.get(i), DataTypePhysicalVariation.NONE);
         }
         final StructComplexTypeHelper structHelper =
             new StructComplexTypeHelper(fields);
@@ -279,7 +292,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         final int count = fieldTypeInfoList.size();
         final Field[] fields = new Field[count];
         for (int i = 0; i < count; i++) {
-          fields[i] = allocateField(fieldTypeInfoList.get(i));
+          fields[i] = allocateField(fieldTypeInfoList.get(i), DataTypePhysicalVariation.NONE);
         }
         final UnionComplexTypeHelper unionHelper =
             new UnionComplexTypeHelper(fields);
@@ -290,10 +303,10 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     }
   }
 
-  private Field allocateField(TypeInfo sourceTypeInfo) {
+  private Field allocateField(TypeInfo sourceTypeInfo, DataTypePhysicalVariation dataTypePhysicalVariation) {
     switch (sourceTypeInfo.getCategory()) {
     case PRIMITIVE:
-      return allocatePrimitiveField(sourceTypeInfo);
+      return allocatePrimitiveField(sourceTypeInfo, dataTypePhysicalVariation);
     case LIST:
     case MAP:
     case STRUCT:
@@ -307,11 +320,12 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
   /*
    * Initialize one column's source deserializtion information.
    */
-  private void initTopLevelField(int logicalColumnIndex, int projectionColumnNum, TypeInfo sourceTypeInfo) {
+  private void initTopLevelField(int logicalColumnIndex, int projectionColumnNum,
+      TypeInfo sourceTypeInfo, DataTypePhysicalVariation dataTypePhysicalVariation) {
 
     projectionColumnNums[logicalColumnIndex] = projectionColumnNum;
 
-    topLevelFields[logicalColumnIndex] = allocateField(sourceTypeInfo);
+    topLevelFields[logicalColumnIndex] = allocateField(sourceTypeInfo, dataTypePhysicalVariation);
   }
 
   /*
@@ -339,7 +353,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     for (int i = 0; i < count; i++) {
       int outputColumn = outputColumns[i];
-      initTopLevelField(i, outputColumn, sourceTypeInfos[i]);
+      initTopLevelField(i, outputColumn, sourceTypeInfos[i], dataTypePhysicalVariations[i]);
     }
   }
 
@@ -353,7 +367,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     for (int i = 0; i < count; i++) {
       int outputColumn = outputColumns.get(i);
-      initTopLevelField(i, outputColumn, sourceTypeInfos[i]);
+      initTopLevelField(i, outputColumn, sourceTypeInfos[i], dataTypePhysicalVariations[i]);
     }
   }
 
@@ -367,7 +381,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     for (int i = 0; i < count; i++) {
       int outputColumn = startColumn + i;
-      initTopLevelField(i, outputColumn, sourceTypeInfos[i]);
+      initTopLevelField(i, outputColumn, sourceTypeInfos[i], dataTypePhysicalVariations[i]);
     }
   }
 
@@ -393,7 +407,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
       } else {
 
-        initTopLevelField(i, i, sourceTypeInfos[i]);
+        initTopLevelField(i, i, sourceTypeInfos[i], dataTypePhysicalVariations[i]);
         includedIndices[includedCount++] = i;
       }
     }
@@ -452,12 +466,12 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
           if (VectorPartitionConversion.isImplicitVectorColumnConversion(sourceTypeInfo, targetTypeInfo)) {
 
             // Do implicit conversion from source type to target type.
-            initTopLevelField(i, i, sourceTypeInfo);
+            initTopLevelField(i, i, sourceTypeInfo, dataTypePhysicalVariations[i]);
 
           } else {
 
             // Do formal conversion...
-            initTopLevelField(i, i, sourceTypeInfo);
+            initTopLevelField(i, i, sourceTypeInfo, dataTypePhysicalVariations[i]);
 
             // UNDONE: No for List and Map; Yes for Struct and Union when field count different...
             addTopLevelConversion(i);
@@ -467,7 +481,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         } else {
 
           // No conversion.
-          initTopLevelField(i, i, sourceTypeInfo);
+          initTopLevelField(i, i, sourceTypeInfo, dataTypePhysicalVariations[i]);
 
         }
 
@@ -642,9 +656,13 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       }
       break;
     case DECIMAL:
-      // The DecimalColumnVector set method will quickly copy the deserialized decimal writable fields.
-      ((DecimalColumnVector) colVector).set(
-          batchIndex, deserializeRead.currentHiveDecimalWritable);
+      if (field.getDataTypePhysicalVariation() == DataTypePhysicalVariation.DECIMAL_64) {
+        ((Decimal64ColumnVector) colVector).vector[batchIndex] = deserializeRead.currentDecimal64;
+      } else {
+        // The DecimalColumnVector set method will quickly copy the deserialized decimal writable fields.
+        ((DecimalColumnVector) colVector).set(
+            batchIndex, deserializeRead.currentHiveDecimalWritable);
+      }
       break;
     case INTERVAL_YEAR_MONTH:
       ((LongColumnVector) colVector).vector[batchIndex] =

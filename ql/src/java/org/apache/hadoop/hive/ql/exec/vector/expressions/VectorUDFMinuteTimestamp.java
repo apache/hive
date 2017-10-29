@@ -28,8 +28,8 @@ public final class VectorUDFMinuteTimestamp extends VectorUDFTimestampFieldTimes
 
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFMinuteTimestamp(int colNum, int outputColumn) {
-    super(Calendar.MINUTE, colNum, outputColumn);
+  public VectorUDFMinuteTimestamp(int colNum, int outputColumnNum) {
+    super(Calendar.MINUTE, colNum, outputColumnNum);
   }
 
   public VectorUDFMinuteTimestamp() {

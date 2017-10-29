@@ -34,8 +34,8 @@ public class <ClassName> extends <BaseClassName> {
 
   private static final long serialVersionUID = 1L;
 
-  public <ClassName>(Timestamp value, int colNum, int outputColumn) {
-    super(TimestampColumnVector.<GetTimestampLongDoubleMethod>(value), colNum, outputColumn);
+  public <ClassName>(Timestamp value, int colNum, int outputColumnNum) {
+    super(TimestampColumnVector.<GetTimestampLongDoubleMethod>(value), colNum, outputColumnNum);
   }
 
   public <ClassName>() {

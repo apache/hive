@@ -65,7 +65,8 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                projectedColumnNums: [0, 1]
+                projectedColumns: [i:int, type:string]
             Reduce Output Operator
               key expressions: type (type: string), i (type: int)
               sort order: ++
@@ -80,7 +81,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -90,6 +92,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: i:int, type:string
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

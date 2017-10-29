@@ -16,9 +16,18 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.expressions;
+package org.apache.hadoop.hive.ql.exec.vector;
 
-// used to set the double precision constant argument to function (e.g. a constant base)
-public interface ISetDoubleArg {
-  void setArg(double d);
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
+
+/**
+ * VectorizationOperator required interface implemented by vectorized operators
+ * to return the vectorization context and description.
+ */
+public interface VectorizationOperator {
+
+  VectorizationContext getInputVectorizationContext();
+
+  VectorDesc getVectorDesc();
+
 }

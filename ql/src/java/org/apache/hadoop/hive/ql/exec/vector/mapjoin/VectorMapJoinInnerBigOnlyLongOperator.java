@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHash
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 // Single-Column Long hash table import.
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashMultiSet;
 
@@ -91,9 +92,9 @@ public class VectorMapJoinInnerBigOnlyLongOperator extends VectorMapJoinInnerBig
     super(ctx);
   }
 
-  public VectorMapJoinInnerBigOnlyLongOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
+  public VectorMapJoinInnerBigOnlyLongOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
   }
 
   //---------------------------------------------------------------------------

@@ -326,6 +326,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   @SuppressWarnings("unchecked")
   public final void initialize(Configuration hconf, ObjectInspector[] inputOIs)
       throws HiveException {
+    // String className = this.getClass().getName();
+
     this.done = false;
     if (state == State.INIT) {
       return;
@@ -344,7 +346,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       inputObjInspectors = inputOIs;
     }
 
-    // initialize structure to maintain child op info. operator tree changes
     // while initializing so this need to be done here instead of constructor
     childOperatorsArray = new Operator[childOperators.size()];
     for (int i = 0; i < childOperatorsArray.length; i++) {

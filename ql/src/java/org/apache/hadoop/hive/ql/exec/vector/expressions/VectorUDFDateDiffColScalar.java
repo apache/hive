@@ -26,6 +26,8 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
 
 import java.nio.charset.StandardCharsets;
@@ -37,20 +39,21 @@ import java.text.SimpleDateFormat;
 public class VectorUDFDateDiffColScalar extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private int outputColumn;
+  private final int colNum;
+
   private long longValue;
   private Timestamp timestampValue;
   private byte[] bytesValue;
-  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private transient final Text text = new Text();
-  private int baseDate;
-  private transient Date date = new Date(0);
 
-  public VectorUDFDateDiffColScalar(int colNum, Object object, int outputColumn) {
-    super();
+  private transient final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+  private transient final Text text = new Text();
+  private transient final Date date = new Date(0);
+
+  private int baseDate;
+
+  public VectorUDFDateDiffColScalar(int colNum, Object object, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
 
     if (object instanceof Long) {
       this.longValue = (Long) object;
@@ -65,6 +68,9 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
 
   public VectorUDFDateDiffColScalar() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   @Override
@@ -74,7 +80,7 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
     ColumnVector inputCol = batch.cols[this.colNum];
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputCol.isRepeating ? 1 : batch.size;
@@ -89,7 +95,8 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
     /* true for all algebraic UDFs with no state */
     outV.isRepeating = inputCol.isRepeating;
 
-    switch (inputTypes[1]) {
+    PrimitiveCategory primitiveCategory1 = ((PrimitiveTypeInfo) inputTypeInfos[1]).getPrimitiveCategory();
+    switch (primitiveCategory1) {
       case DATE:
         baseDate = (int) longValue;
         break;
@@ -121,10 +128,11 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
           return;
         }
     default:
-        throw new Error("Invalid input type #1: " + inputTypes[1].name());
+        throw new Error("Invalid input type #1: " + primitiveCategory1.name());
     }
 
-    switch (inputTypes[0]) {
+    PrimitiveCategory primitiveCategory0 = ((PrimitiveTypeInfo) inputTypeInfos[0]).getPrimitiveCategory();
+    switch (primitiveCategory0) {
       case DATE:
         if (inputCol.noNulls) {
           outV.noNulls = true;
@@ -235,7 +243,7 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
         }
         break;
     default:
-      throw new Error("Invalid input type #0: " + inputTypes[0].name());
+      throw new Error("Invalid input type #0: " + primitiveCategory0.name());
     }
   }
 
@@ -261,27 +269,6 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
       output.isNull[i] = true;
     }
   }
-  @Override
-  public int getOutputColumn() {
-    return this.outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
 
   public long getLongValue() {
     return longValue;
@@ -301,7 +288,7 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + displayUtf8Bytes(bytesValue);
+    return getColumnParamString(0, colNum) + ", val " + displayUtf8Bytes(bytesValue);
   }
 
   @Override

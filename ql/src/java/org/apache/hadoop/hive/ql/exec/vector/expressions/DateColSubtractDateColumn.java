@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 
@@ -33,22 +35,25 @@ public class DateColSubtractDateColumn extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum1;
-  private int colNum2;
-  private int outputColumn;
-  private Timestamp scratchTimestamp1;
-  private Timestamp scratchTimestamp2;
-  private DateTimeMath dtm = new DateTimeMath();
+  private final int colNum1;
+  private final int colNum2;
 
-  public DateColSubtractDateColumn(int colNum1, int colNum2, int outputColumn) {
+  private transient final Timestamp scratchTimestamp1 = new Timestamp(0);
+  private transient final Timestamp scratchTimestamp2 = new Timestamp(0);
+  private transient final DateTimeMath dtm = new DateTimeMath();
+
+  public DateColSubtractDateColumn(int colNum1, int colNum2, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
-    this.outputColumn = outputColumn;
-    scratchTimestamp1 = new Timestamp(0);
-    scratchTimestamp2 = new Timestamp(0);
   }
 
   public DateColSubtractDateColumn() {
+    super();
+
+    // Dummy final assignments.
+    colNum1 = -1;
+    colNum2 = -1;
   }
 
   @Override
@@ -65,7 +70,7 @@ public class DateColSubtractDateColumn extends VectorExpression {
     LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[colNum2];
 
     // Output is type interval_day_time.
-    IntervalDayTimeColumnVector outputColVector = (IntervalDayTimeColumnVector) batch.cols[outputColumn];
+    IntervalDayTimeColumnVector outputColVector = (IntervalDayTimeColumnVector) batch.cols[outputColumnNum];
 
     int[] sel = batch.selected;
     int n = batch.size;
@@ -158,18 +163,8 @@ public class DateColSubtractDateColumn extends VectorExpression {
     NullUtil.setNullDataEntriesIntervalDayTime(outputColVector, batch.selectedInUse, sel, n);
   }
 
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "timestamp";
-  }
-
   public String vectorExpressionParameters() {
-    return "col " + colNum1 + ", col " + colNum2;
+    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

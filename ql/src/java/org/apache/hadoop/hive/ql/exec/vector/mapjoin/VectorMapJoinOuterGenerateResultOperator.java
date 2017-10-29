@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin;
 
 import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -32,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHash
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTableResult;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.serde2.WriteBuffers.ByteSegmentRef;
 
 /**
@@ -121,9 +123,9 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
     super(ctx);
   }
 
-  public VectorMapJoinOuterGenerateResultOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
+  public VectorMapJoinOuterGenerateResultOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
   }
 
   /*

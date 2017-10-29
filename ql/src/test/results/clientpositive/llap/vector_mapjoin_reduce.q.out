@@ -33,23 +33,21 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 1) -> boolean
+                        predicateExpression: SelectColumnIsNotNull(col 1:int)
                     predicate: l_partkey is not null (type: boolean)
                     Statistics: Num rows: 100 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
-                          keyExpressions: col 1
+                          keyExpressions: col 1:int
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: []
+                          projectedOutputColumnNums: []
                       keys: l_partkey (type: int)
                       mode: hash
                       outputColumnNames: _col0
@@ -68,7 +66,9 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -80,12 +80,11 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3, val 1) -> boolean, SelectColumnIsNotNull(col 1) -> boolean, SelectColumnIsNotNull(col 0) -> boolean) -> boolean
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 0:int))
                     predicate: ((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null) (type: boolean)
                     Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -94,7 +93,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 1, 2]
+                          projectedOutputColumnNums: [0, 1, 2]
                       Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
@@ -111,7 +110,9 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -123,12 +124,11 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 9200 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 14, val AIR) -> boolean, SelectColumnIsNotNull(col 0) -> boolean) -> boolean
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 14:string, val AIR), SelectColumnIsNotNull(col 0:int))
                     predicate: ((l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
                     Statistics: Num rows: 14 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -137,17 +137,16 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       Statistics: Num rows: 14 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            vectorOutput: true
-                            keyExpressions: col 0
+                            keyExpressions: col 0:int
                             native: false
                             vectorProcessingMode: HASH
-                            projectedOutputColumns: []
+                            projectedOutputColumnNums: []
                         keys: _col0 (type: int)
                         mode: hash
                         outputColumnNames: _col0
@@ -166,7 +165,9 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -176,7 +177,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -185,11 +185,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
-                    keyExpressions: col 0
+                    keyExpressions: col 0:int
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumns: []
+                    projectedOutputColumnNums: []
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -228,7 +227,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 2]
+                          projectedOutputColumnNums: [0, 2]
                       Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -306,23 +305,21 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 1) -> boolean
+                        predicateExpression: SelectColumnIsNotNull(col 1:int)
                     predicate: l_partkey is not null (type: boolean)
                     Statistics: Num rows: 100 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
-                          keyExpressions: col 1
+                          keyExpressions: col 1:int
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: []
+                          projectedOutputColumnNums: []
                       keys: l_partkey (type: int)
                       mode: hash
                       outputColumnNames: _col0
@@ -341,7 +338,9 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -353,12 +352,11 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3, val 1) -> boolean, SelectColumnIsNotNull(col 1) -> boolean) -> boolean
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 1:int))
                     predicate: ((l_linenumber = 1) and l_partkey is not null) (type: boolean)
                     Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -367,8 +365,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 1, 2, 16]
-                          selectExpressions: ConstantVectorExpression(val 1) -> 16:long
+                          projectedOutputColumnNums: [0, 1, 2, 17]
+                          selectExpressions: ConstantVectorExpression(val 1) -> 17:int
                       Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
@@ -385,7 +383,9 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -397,12 +397,11 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 9600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 14, val AIR) -> boolean, FilterLongColEqualLongColumn(col 3, col 3) -> boolean) -> boolean
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 14:string, val AIR), FilterLongColEqualLongColumn(col 3:int, col 3:int))
                     predicate: ((l_linenumber = l_linenumber) and (l_shipmode = 'AIR')) (type: boolean)
                     Statistics: Num rows: 7 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -411,17 +410,16 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 3]
+                          projectedOutputColumnNums: [0, 3]
                       Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            vectorOutput: true
-                            keyExpressions: col 0, col 3
+                            keyExpressions: col 0:int, col 3:int
                             native: false
                             vectorProcessingMode: HASH
-                            projectedOutputColumns: []
+                            projectedOutputColumnNums: []
                         keys: _col0 (type: int), _col1 (type: int)
                         mode: hash
                         outputColumnNames: _col0, _col1
@@ -440,7 +438,9 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -450,7 +450,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -459,11 +458,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
-                    keyExpressions: col 0
+                    keyExpressions: col 0:int
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumns: []
+                    projectedOutputColumnNums: []
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -502,7 +500,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 2]
+                          projectedOutputColumnNums: [0, 2]
                       Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false

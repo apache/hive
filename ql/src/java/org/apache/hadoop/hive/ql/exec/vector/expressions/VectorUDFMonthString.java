@@ -26,8 +26,8 @@ public final class VectorUDFMonthString extends VectorUDFTimestampFieldString {
 
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFMonthString(int colNum, int outputColumn) {
-    super(colNum, outputColumn, 5, 2);
+  public VectorUDFMonthString(int colNum, int outputColumnNum) {
+    super(colNum, outputColumnNum, 5, 2);
   }
 
   public VectorUDFMonthString() {

@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorSelectDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -41,11 +42,12 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Select operator implementation.
  */
-public class VectorSelectOperator extends Operator<SelectDesc> implements
-    VectorizationContextRegion {
+public class VectorSelectOperator extends Operator<SelectDesc>
+    implements VectorizationOperator, VectorizationContextRegion {
 
   private static final long serialVersionUID = 1L;
 
+  private VectorizationContext vContext;
   private VectorSelectDesc vectorDesc;
 
   private VectorExpression[] vExpressions = null;
@@ -57,20 +59,24 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
   // Create a new outgoing vectorization context because column name map will change.
   private VectorizationContext vOutContext;
 
-  public VectorSelectOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+  public VectorSelectOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc)
+          throws HiveException {
     this(ctx);
     this.conf = (SelectDesc) conf;
-    vectorDesc = (VectorSelectDesc) this.conf.getVectorDesc();
-    vExpressions = vectorDesc.getSelectExpressions();
-    projectedOutputColumns = vectorDesc.getProjectedOutputColumns();
+    this.vContext = vContext;
+    this.vectorDesc = (VectorSelectDesc) vectorDesc;
+    vExpressions = this.vectorDesc.getSelectExpressions();
+    projectedOutputColumns = this.vectorDesc.getProjectedOutputColumns();
 
     /**
      * Create a new vectorization context to create a new projection, but keep
      * same output column manager must be inherited to track the scratch the columns.
+     * Some of which may be the input columns for this operator.
      */
     vOutContext = new VectorizationContext(getName(), vContext);
 
+    // NOTE: We keep the TypeInfo and dataTypePhysicalVariation arrays.
     vOutContext.resetProjectionColumns();
     List<String> outputColumnNames = this.conf.getOutputColumnNames();
     for (int i=0; i < projectedOutputColumns.length; ++i) {
@@ -90,12 +96,18 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
   }
 
   @Override
+  public VectorizationContext getInputVectorizationContext() {
+    return vContext;
+  }
+
+  @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
       return;
     }
+    VectorExpression.doTransientInit(vExpressions);
 
     List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
 
@@ -166,7 +178,7 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
   }
 
   @Override
-  public VectorizationContext getOuputVectorizationContext() {
+  public VectorizationContext getOutputVectorizationContext() {
     return vOutContext;
   }
 
@@ -182,6 +194,11 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
 
   static public String getOperatorName() {
     return "SEL";
+  }
+
+  @Override
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
   }
 
 }

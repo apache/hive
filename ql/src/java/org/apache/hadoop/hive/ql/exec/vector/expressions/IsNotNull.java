@@ -28,17 +28,19 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 public class IsNotNull extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  private int colNum;
-  private int outputColumn;
 
-  public IsNotNull(int colNum, int outputColumn) {
-    this();
+  private final int colNum;
+
+  public IsNotNull(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
 
   public IsNotNull() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   @Override
@@ -52,7 +54,7 @@ public class IsNotNull extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     int n = batch.size;
-    long[] outputVector = ((LongColumnVector) batch.cols[outputColumn]).vector;
+    long[] outputVector = ((LongColumnVector) batch.cols[outputColumnNum]).vector;
 
     if (n <= 0) {
       // Nothing to do
@@ -60,17 +62,17 @@ public class IsNotNull extends VectorExpression {
     }
 
     // output never has nulls for this operator
-    batch.cols[outputColumn].noNulls = true;
+    batch.cols[outputColumnNum].noNulls = true;
     if (inputColVector.noNulls) {
       outputVector[0] = 1;
-      batch.cols[outputColumn].isRepeating = true;
+      batch.cols[outputColumnNum].isRepeating = true;
     } else if (inputColVector.isRepeating) {
       // All must be selected otherwise size would be zero
       // Selection property will not change.
       outputVector[0] = nullPos[0] ? 0 : 1;
-      batch.cols[outputColumn].isRepeating = true;
+      batch.cols[outputColumnNum].isRepeating = true;
     } else {
-      batch.cols[outputColumn].isRepeating = false;
+      batch.cols[outputColumnNum].isRepeating = false;
       if (batch.selectedInUse) {
         for (int j = 0; j != n; j++) {
           int i = sel[j];
@@ -85,30 +87,8 @@ public class IsNotNull extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 
   @Override

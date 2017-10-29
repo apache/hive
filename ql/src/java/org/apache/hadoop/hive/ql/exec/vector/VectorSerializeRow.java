@@ -376,8 +376,13 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
       break;
     case DECIMAL:
       {
-        final DecimalColumnVector decimalColVector = (DecimalColumnVector) colVector;
-        serializeWrite.writeHiveDecimal(decimalColVector.vector[adjustedBatchIndex], decimalColVector.scale);
+        if (colVector instanceof Decimal64ColumnVector) {
+          final Decimal64ColumnVector decimal64ColVector = (Decimal64ColumnVector) colVector;
+          serializeWrite.writeDecimal64(decimal64ColVector.vector[adjustedBatchIndex], decimal64ColVector.scale);
+        } else {
+          final DecimalColumnVector decimalColVector = (DecimalColumnVector) colVector;
+          serializeWrite.writeHiveDecimal(decimalColVector.vector[adjustedBatchIndex], decimalColVector.scale);
+        }
       }
       break;
     case INTERVAL_YEAR_MONTH:

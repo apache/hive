@@ -134,18 +134,7 @@ public class FilterStructColumnInList extends FilterStringColumnInList implement
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
- 
-  }
 
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return -1;
   }
 
   @Override
@@ -173,7 +162,7 @@ public class FilterStructColumnInList extends FilterStringColumnInList implement
     structColumnMap = new int[structExpressions.length];
     for (int i = 0; i < structColumnMap.length; i++) {
       VectorExpression ve = structExpressions[i];
-      structColumnMap[i] = ve.getOutputColumn();
+      structColumnMap[i] = ve.getOutputColumnNum();
     }
     this.fieldVectorColumnTypes = fieldVectorColumnTypes;
   }

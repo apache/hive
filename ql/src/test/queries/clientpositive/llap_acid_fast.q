@@ -38,6 +38,8 @@ by csmallint, cint;
 
 insert into table orc_llap_acid_fast partition (csmallint = 1) values (1, 1, 1, 1);
 
+explain vectorization only detail
+update orc_llap_acid_fast set cbigint = 2 where cint = 1;
 update orc_llap_acid_fast set cbigint = 2 where cint = 1;
 
 explain vectorization only detail

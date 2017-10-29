@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
@@ -54,6 +55,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPTFDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPTFDesc.SupportedFunctionType;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -70,12 +72,13 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  * This class is native vectorized PTF operator class.
  */
 public class VectorPTFOperator extends Operator<PTFDesc>
-    implements VectorizationContextRegion {
+    implements VectorizationOperator, VectorizationContextRegion {
 
   private static final long serialVersionUID = 1L;
   private static final String CLASS_NAME = VectorPTFOperator.class.getName();
   private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
+  private VectorizationContext vContext;
   private VectorPTFDesc vectorDesc;
 
   /**
@@ -83,8 +86,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
    * it decision process and useful for execution.
    */
   private VectorPTFInfo vectorPTFInfo;
-
-  private VectorizationContext vContext;
 
   // This is the vectorized row batch description of the output of the native vectorized PTF
   // operator.  It is based on the incoming vectorization context.  Its projection may include
@@ -166,24 +167,24 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     super(ctx);
   }
 
-  public VectorPTFOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+  public VectorPTFOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
     this(ctx);
 
     LOG.info("VectorPTF constructor");
 
     PTFDesc desc = (PTFDesc) conf;
     this.conf = desc;
-    vectorDesc = (VectorPTFDesc) desc.getVectorDesc();
-    vectorPTFInfo = vectorDesc.getVectorPTFInfo();
+    this.vectorDesc = (VectorPTFDesc) vectorDesc;
+    vectorPTFInfo = this.vectorDesc.getVectorPTFInfo();
     this.vContext = vContext;
 
-    reducerBatchTypeInfos = vectorDesc.getReducerBatchTypeInfos();
+    reducerBatchTypeInfos = this.vectorDesc.getReducerBatchTypeInfos();
 
-    isPartitionOrderBy = vectorDesc.getIsPartitionOrderBy();
+    isPartitionOrderBy = this.vectorDesc.getIsPartitionOrderBy();
 
-    outputColumnNames = vectorDesc.getOutputColumnNames();
-    outputTypeInfos = vectorDesc.getOutputTypeInfos();
+    outputColumnNames = this.vectorDesc.getOutputColumnNames();
+    outputTypeInfos = this.vectorDesc.getOutputTypeInfos();
     outputProjectionColumnMap = vectorPTFInfo.getOutputColumnMap();
 
     /*
@@ -193,18 +194,18 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     vOutContext = new VectorizationContext(getName(), this.vContext);
     setupVOutContext();
 
-    evaluatorFunctionNames = vectorDesc.getEvaluatorFunctionNames();
+    evaluatorFunctionNames = this.vectorDesc.getEvaluatorFunctionNames();
     evaluatorCount = evaluatorFunctionNames.length;
-    evaluatorWindowFrameDefs = vectorDesc.getEvaluatorWindowFrameDefs();
+    evaluatorWindowFrameDefs = this.vectorDesc.getEvaluatorWindowFrameDefs();
     evaluatorInputExpressions = vectorPTFInfo.getEvaluatorInputExpressions();
     evaluatorInputColumnVectorTypes = vectorPTFInfo.getEvaluatorInputColumnVectorTypes();
 
-    orderExprNodeDescs = vectorDesc.getOrderExprNodeDescs();
+    orderExprNodeDescs = this.vectorDesc.getOrderExprNodeDescs();
     orderColumnMap = vectorPTFInfo.getOrderColumnMap();
     orderColumnVectorTypes = vectorPTFInfo.getOrderColumnVectorTypes();
     orderExpressions = vectorPTFInfo.getOrderExpressions();
 
-    partitionExprNodeDescs = vectorDesc.getPartitionExprNodeDescs();
+    partitionExprNodeDescs = this.vectorDesc.getPartitionExprNodeDescs();
     partitionColumnMap = vectorPTFInfo.getPartitionColumnMap();
     partitionColumnVectorTypes = vectorPTFInfo.getPartitionColumnVectorTypes();
     partitionExpressions = vectorPTFInfo.getPartitionExpressions();
@@ -226,6 +227,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
       int outputColumn = outputProjectionColumnMap[i];
       vOutContext.addProjectionColumn(columnName, outputColumn);
     }
+    vOutContext.setInitialTypeInfos(Arrays.asList(outputTypeInfos));
   }
 
   /*
@@ -573,7 +575,17 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   }
 
   @Override
-  public VectorizationContext getOuputVectorizationContext() {
+  public VectorizationContext getOutputVectorizationContext() {
     return vOutContext;
+  }
+
+  @Override
+  public VectorizationContext getInputVectorizationContext() {
+    return vContext;
+  }
+
+  @Override
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
   }
 }

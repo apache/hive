@@ -35,17 +35,21 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private <HiveOperandType> value;
-  private int outputColumn;
+  private final int colNum;
+  private final <HiveOperandType> value;
 
-  public <ClassName>(int colNum, <HiveOperandType> value, int outputColumn) {
+  public <ClassName>(int colNum, <HiveOperandType> value, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
     this.value = value;
-    this.outputColumn = outputColumn;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    value = null;
   }
 
   @Override
@@ -58,7 +62,7 @@ public class <ClassName> extends VectorExpression {
      // Input #1 is type <OperandType>.
     <InputColumnVectorType> inputColVector1 = (<InputColumnVectorType>) batch.cols[colNum];
 
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
 
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector1.isNull;
@@ -123,18 +127,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + value.toString();
+    return getColumnParamString(0, colNum) + ", val " + value.toString();
   }
 
   @Override

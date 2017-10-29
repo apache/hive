@@ -34,15 +34,21 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private HiveDecimal value;
+  private final HiveDecimal value;
+  private final int colNum;
 
   public <ClassName>(HiveDecimal value, int colNum) {
-    this.colNum = colNum;
+    super();
     this.value = value;
+    this.colNum = colNum;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    value = null;
+    colNum = -1;
   }
 
   @Override
@@ -135,18 +141,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "val " + value.toString() + ", col " + + colNum;
+    return "val " + value.toString() + ", " + getColumnParamString(1, colNum);
   }
 
   @Override

@@ -37,8 +37,8 @@ public final class VectorUDFUnixTimeStampString extends VectorUDFTimestampFieldS
   private transient final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   private transient final Calendar calendar = Calendar.getInstance();
 
-  public VectorUDFUnixTimeStampString(int colNum, int outputColumn) {
-    super(colNum, outputColumn, -1, -1);
+  public VectorUDFUnixTimeStampString(int colNum, int outputColumnNum) {
+    super(colNum, outputColumnNum, -1, -1);
   }
 
   public VectorUDFUnixTimeStampString() {

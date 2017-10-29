@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.ql.exec.SparkHashTableSinkOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorSparkHashTableSinkDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -34,11 +36,13 @@ import com.google.common.annotations.VisibleForTesting;
  *
  * Copied from VectorFileSinkOperator
  */
-public class VectorSparkHashTableSinkOperator extends SparkHashTableSinkOperator {
+public class VectorSparkHashTableSinkOperator extends SparkHashTableSinkOperator
+    implements VectorizationOperator {
 
   private static final long serialVersionUID = 1L;
 
   private VectorizationContext vContext;
+  private VectorSparkHashTableSinkDesc vectorDesc;
 
   // The above members are initialized by the constructor and must not be
   // transient.
@@ -61,10 +65,17 @@ public class VectorSparkHashTableSinkOperator extends SparkHashTableSinkOperator
   }
 
   public VectorSparkHashTableSinkOperator(
-      CompilationOpContext ctx, VectorizationContext vContext, OperatorDesc conf) {
+      CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) {
     this(ctx);
-    this.vContext = vContext;
     this.conf = (SparkHashTableSinkDesc) conf;
+    this.vContext = vContext;
+    this.vectorDesc = (VectorSparkHashTableSinkDesc) vectorDesc;
+  }
+
+  @Override
+  public VectorizationContext getInputVectorizationContext() {
+    return vContext;
   }
 
   @Override
@@ -103,5 +114,10 @@ public class VectorSparkHashTableSinkOperator extends SparkHashTableSinkOperator
         super.process(singleRow, tag);
       }
     }
+  }
+
+  @Override
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
   }
 }

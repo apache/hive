@@ -21,12 +21,15 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
@@ -36,7 +39,6 @@ public class ConstantVectorExpression extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int outputColumn;
   protected long longValue = 0;
   private double doubleValue = 0;
   private byte[] bytesValue = null;
@@ -45,70 +47,82 @@ public class ConstantVectorExpression extends VectorExpression {
   private HiveIntervalDayTime intervalDayTimeValue = null;
   private boolean isNullValue = false;
 
-  private ColumnVector.Type type;
+  private final ColumnVector.Type type;
   private int bytesValueLength = 0;
 
   public ConstantVectorExpression() {
     super();
+
+    // Dummy final assignments.
+    type = null;
   }
 
-  ConstantVectorExpression(int outputColumn, String typeString) {
-    this();
-    this.outputColumn = outputColumn;
-    setTypeString(typeString);
+  ConstantVectorExpression(int outputColumnNum, TypeInfo outputTypeInfo) throws HiveException {
+    super(outputColumnNum);
+
+    this.outputTypeInfo = outputTypeInfo;
+    outputDataTypePhysicalVariation = DataTypePhysicalVariation.NONE;
+
+    type = VectorizationContext.getColumnVectorTypeFromTypeInfo(outputTypeInfo);
   }
 
-  public ConstantVectorExpression(int outputColumn, long value) {
-    this(outputColumn, "long");
+  public ConstantVectorExpression(int outputColumnNum, long value, TypeInfo outputTypeInfo) throws HiveException {
+    this(outputColumnNum, outputTypeInfo);
     this.longValue = value;
   }
 
-  public ConstantVectorExpression(int outputColumn, double value) {
-    this(outputColumn, "double");
+  public ConstantVectorExpression(int outputColumnNum, double value, TypeInfo outputTypeInfo) throws HiveException {
+    this(outputColumnNum, outputTypeInfo);
     this.doubleValue = value;
   }
 
-  public ConstantVectorExpression(int outputColumn, byte[] value) {
-    this(outputColumn, "string");
+  public ConstantVectorExpression(int outputColumnNum, byte[] value, TypeInfo outputTypeInfo) throws HiveException {
+    this(outputColumnNum, outputTypeInfo);
     setBytesValue(value);
   }
 
-  public ConstantVectorExpression(int outputColumn, HiveChar value, String typeName) {
-    this(outputColumn, typeName);
+  public ConstantVectorExpression(int outputColumnNum, HiveChar value, TypeInfo outputTypeInfo)
+      throws HiveException {
+    this(outputColumnNum, outputTypeInfo);
     setBytesValue(value.getStrippedValue().getBytes());
   }
 
-  public ConstantVectorExpression(int outputColumn, HiveVarchar value, String typeName) {
-    this(outputColumn, typeName);
+  public ConstantVectorExpression(int outputColumnNum, HiveVarchar value, TypeInfo outputTypeInfo)
+      throws HiveException {
+    this(outputColumnNum, outputTypeInfo);
     setBytesValue(value.getValue().getBytes());
   }
 
   // Include type name for precision/scale.
-  public ConstantVectorExpression(int outputColumn, HiveDecimal value, String typeName) {
-    this(outputColumn, typeName);
+  public ConstantVectorExpression(int outputColumnNum, HiveDecimal value, TypeInfo outputTypeInfo)
+      throws HiveException {
+    this(outputColumnNum, outputTypeInfo);
     setDecimalValue(value);
   }
 
-  public ConstantVectorExpression(int outputColumn, Timestamp value) {
-    this(outputColumn, "timestamp");
+  public ConstantVectorExpression(int outputColumnNum, Timestamp value, TypeInfo outputTypeInfo)
+      throws HiveException {
+    this(outputColumnNum, outputTypeInfo);
     setTimestampValue(value);
   }
 
-  public ConstantVectorExpression(int outputColumn, HiveIntervalDayTime value) {
-    this(outputColumn, "interval_day_time");
+  public ConstantVectorExpression(int outputColumnNum, HiveIntervalDayTime value, TypeInfo outputTypeInfo)
+      throws HiveException {
+    this(outputColumnNum, outputTypeInfo);
     setIntervalDayTimeValue(value);
   }
 
   /*
    * Support for null constant object
    */
-  public ConstantVectorExpression(int outputColumn, String typeString, boolean isNull) {
-    this(outputColumn, typeString);
+  public ConstantVectorExpression(int outputColumnNum, TypeInfo outputTypeInfo, boolean isNull)
+      throws HiveException {
+    this(outputColumnNum, outputTypeInfo);
     isNullValue = isNull;
   }
 
   private void evaluateLong(VectorizedRowBatch vrg) {
-    LongColumnVector cv = (LongColumnVector) vrg.cols[outputColumn];
+    LongColumnVector cv = (LongColumnVector) vrg.cols[outputColumnNum];
     cv.isRepeating = true;
     cv.noNulls = !isNullValue;
     if (!isNullValue) {
@@ -119,7 +133,7 @@ public class ConstantVectorExpression extends VectorExpression {
   }
 
   private void evaluateDouble(VectorizedRowBatch vrg) {
-    DoubleColumnVector cv = (DoubleColumnVector) vrg.cols[outputColumn];
+    DoubleColumnVector cv = (DoubleColumnVector) vrg.cols[outputColumnNum];
     cv.isRepeating = true;
     cv.noNulls = !isNullValue;
     if (!isNullValue) {
@@ -130,7 +144,7 @@ public class ConstantVectorExpression extends VectorExpression {
   }
 
   private void evaluateBytes(VectorizedRowBatch vrg) {
-    BytesColumnVector cv = (BytesColumnVector) vrg.cols[outputColumn];
+    BytesColumnVector cv = (BytesColumnVector) vrg.cols[outputColumnNum];
     cv.isRepeating = true;
     cv.noNulls = !isNullValue;
     cv.initBuffer();
@@ -142,7 +156,7 @@ public class ConstantVectorExpression extends VectorExpression {
   }
 
   private void evaluateDecimal(VectorizedRowBatch vrg) {
-    DecimalColumnVector dcv = (DecimalColumnVector) vrg.cols[outputColumn];
+    DecimalColumnVector dcv = (DecimalColumnVector) vrg.cols[outputColumnNum];
     dcv.isRepeating = true;
     dcv.noNulls = !isNullValue;
     if (!isNullValue) {
@@ -153,7 +167,7 @@ public class ConstantVectorExpression extends VectorExpression {
   }
 
   private void evaluateTimestamp(VectorizedRowBatch vrg) {
-    TimestampColumnVector dcv = (TimestampColumnVector) vrg.cols[outputColumn];
+    TimestampColumnVector dcv = (TimestampColumnVector) vrg.cols[outputColumnNum];
     dcv.isRepeating = true;
     dcv.noNulls = !isNullValue;
     if (!isNullValue) {
@@ -164,7 +178,7 @@ public class ConstantVectorExpression extends VectorExpression {
   }
 
   private void evaluateIntervalDayTime(VectorizedRowBatch vrg) {
-    IntervalDayTimeColumnVector dcv = (IntervalDayTimeColumnVector) vrg.cols[outputColumn];
+    IntervalDayTimeColumnVector dcv = (IntervalDayTimeColumnVector) vrg.cols[outputColumnNum];
     dcv.isRepeating = true;
     dcv.noNulls = !isNullValue;
     if (!isNullValue) {
@@ -196,11 +210,6 @@ public class ConstantVectorExpression extends VectorExpression {
       evaluateIntervalDayTime(vrg);
       break;
     }
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
   }
 
   public long getLongValue() {
@@ -250,22 +259,6 @@ public class ConstantVectorExpression extends VectorExpression {
 
   public HiveIntervalDayTime getIntervalDayTimeValue() {
     return intervalDayTimeValue;
-  }
-
-  public String getTypeString() {
-    return getOutputType();
-  }
-
-  private void setTypeString(String typeString) {
-    this.outputType = typeString;
-
-    String typeName = VectorizationContext.mapTypeNameSynonyms(outputType);
-    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
-    this.type = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
   }
 
   @Override

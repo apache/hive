@@ -34,16 +34,15 @@ public class DoubleColumnInList extends VectorExpression implements IDoubleInExp
   private static final long serialVersionUID = 1L;
 
   private int colNum;
-  private int outputColumn;
   private double[] inListValues;
 
   // The set object containing the IN list. This is optimized for lookup
   // of the data type of the column.
   private transient CuckooSetDouble inSet;
 
-  public DoubleColumnInList(int colNum, int outputColumn) {
+  public DoubleColumnInList(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
 
   public DoubleColumnInList() {
@@ -64,7 +63,7 @@ public class DoubleColumnInList extends VectorExpression implements IDoubleInExp
     }
 
     DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[colNum];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     boolean[] outNulls = outputColVector.isNull;
@@ -127,39 +126,13 @@ public class DoubleColumnInList extends VectorExpression implements IDoubleInExp
     }
   }
 
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public double[] getInListValues() {
-    return this.inListValues;
-  }
-
   public void setInListValues(double[] a) {
     this.inListValues = a;
   }
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", values " + Arrays.toString(inListValues);
+    return getColumnParamString(0, colNum) + ", values " + Arrays.toString(inListValues);
   }
 
   @Override

@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -127,6 +128,12 @@ public class VectorizedBatchUtil {
   }
 
   public static ColumnVector createColumnVector(String typeName) {
+    return createColumnVector(typeName, DataTypePhysicalVariation.NONE);
+  }
+
+  public static ColumnVector createColumnVector(String typeName,
+      DataTypePhysicalVariation dataTypePhysicalVariation) {
+
     typeName = typeName.toLowerCase();
 
     // Allow undecorated CHAR and VARCHAR to support scratch column type names.
@@ -135,10 +142,15 @@ public class VectorizedBatchUtil {
     }
 
     TypeInfo typeInfo = (TypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(typeName);
-    return createColumnVector(typeInfo);
+    return createColumnVector(typeInfo, dataTypePhysicalVariation);
   }
 
   public static ColumnVector createColumnVector(TypeInfo typeInfo) {
+    return createColumnVector(typeInfo, DataTypePhysicalVariation.NONE);
+  }
+
+  public static ColumnVector createColumnVector(TypeInfo typeInfo,
+      DataTypePhysicalVariation dataTypePhysicalVariation) {
     switch(typeInfo.getCategory()) {
     case PRIMITIVE:
       {
@@ -166,8 +178,13 @@ public class VectorizedBatchUtil {
             return new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
           case DECIMAL:
             DecimalTypeInfo tInfo = (DecimalTypeInfo) primitiveTypeInfo;
-            return new DecimalColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
-                tInfo.precision(), tInfo.scale());
+            if (dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
+              return new Decimal64ColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+                  tInfo.precision(), tInfo.scale());
+            } else {
+              return new DecimalColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+                  tInfo.precision(), tInfo.scale());
+            }
           default:
             throw new RuntimeException("Vectorizaton is not supported for datatype:"
                 + primitiveTypeInfo.getPrimitiveCategory());
@@ -592,6 +609,11 @@ public class VectorizedBatchUtil {
       return new DecimalColumnVector(decColVector.vector.length,
           decColVector.precision,
           decColVector.scale);
+    } else if (source instanceof Decimal64ColumnVector) {
+        Decimal64ColumnVector dec64ColVector = (Decimal64ColumnVector) source;
+        return new DecimalColumnVector(dec64ColVector.vector.length,
+            dec64ColVector.precision,
+            dec64ColVector.scale);
     } else if (source instanceof TimestampColumnVector) {
       return new TimestampColumnVector(((TimestampColumnVector) source).getLength());
     } else if (source instanceof IntervalDayTimeColumnVector) {

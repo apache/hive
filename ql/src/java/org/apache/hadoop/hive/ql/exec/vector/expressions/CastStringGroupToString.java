@@ -29,8 +29,8 @@ public class CastStringGroupToString extends StringUnaryUDFDirect {
     super();
   }
 
-  public CastStringGroupToString(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public CastStringGroupToString(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   @Override

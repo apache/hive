@@ -36,24 +36,26 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum1;
-  private int colNum2;
-  private int outputColumn;
-  private HiveIntervalYearMonth scratchIntervalYearMonth1;
-  private Date scratchDate2;
-  private Date outputDate;
-  private DateTimeMath dtm = new DateTimeMath();
+  private final int colNum1;
+  private final int colNum2;
 
-  public <ClassName>(int colNum1, int colNum2, int outputColumn) {
+  private transient final HiveIntervalYearMonth scratchIntervalYearMonth1 = new HiveIntervalYearMonth();
+  private transient final Date scratchDate2 = new Date(0);
+  private transient final Date outputDate = new Date(0);
+  private transient final DateTimeMath dtm = new DateTimeMath();
+
+  public <ClassName>(int colNum1, int colNum2, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
-    this.outputColumn = outputColumn;
-    scratchIntervalYearMonth1 = new HiveIntervalYearMonth();
-    scratchDate2 = new Date(0);
-    outputDate = new Date(0);
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    colNum1 = -1;
+    colNum2 = -1;
   }
 
   @Override
@@ -70,7 +72,7 @@ public class <ClassName> extends VectorExpression {
     LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[colNum2];
 
     // Output is type date.
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
 
     int[] sel = batch.selected;
     int n = batch.size;
@@ -170,18 +172,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum1 + ", col " + + colNum2;
+    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

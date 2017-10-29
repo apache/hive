@@ -18,13 +18,20 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStd.GenericUDAFStdEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStdSample.GenericUDAFStdSampleEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVarianceSample.GenericUDAFVarianceSampleEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -51,6 +58,98 @@ import org.apache.hadoop.util.StringUtils;
 public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
 
   static final Logger LOG = LoggerFactory.getLogger(GenericUDAFVariance.class.getName());
+
+  public static enum VarianceKind {
+    NONE,
+    VARIANCE,
+    VARIANCE_SAMPLE,
+    STANDARD_DEVIATION,
+    STANDARD_DEVIATION_SAMPLE;
+
+    public static final Map<String,VarianceKind> nameMap = new HashMap<String,VarianceKind>();
+    static
+    {
+      nameMap.put("variance", VARIANCE);
+      nameMap.put("var_pop", VARIANCE);
+
+      nameMap.put("var_samp", VARIANCE_SAMPLE);
+
+      nameMap.put("std", STANDARD_DEVIATION);
+      nameMap.put("stddev", STANDARD_DEVIATION);
+      nameMap.put("stddev_pop", STANDARD_DEVIATION);
+
+      nameMap.put("stddev_samp", STANDARD_DEVIATION_SAMPLE);
+    }
+  };
+
+  public static boolean isVarianceFamilyName(String name) {
+    return (VarianceKind.nameMap.get(name) != null);
+  }
+
+  public static boolean isVarianceNull(long count, VarianceKind varianceKind) {
+    switch (varianceKind) {
+    case VARIANCE:
+    case STANDARD_DEVIATION:
+      return (count == 0);
+    case VARIANCE_SAMPLE:
+    case STANDARD_DEVIATION_SAMPLE:
+      return (count <= 1);
+    default:
+      throw new RuntimeException("Unexpected variance kind " + varianceKind);
+    }
+  }
+
+  /*
+   * Use when calculating intermediate variance and count > 1.
+   *
+   * NOTE: count has been incremented; sum included value.
+   */
+  public static double calculateIntermediate(
+      long count, double sum, double value, double variance) {
+    double t = count * value - sum;
+    variance += (t * t) / ((double) count * (count - 1));
+    return variance;
+  }
+
+  /*
+   * Use when merging variance and partialCount > 0 and mergeCount > 0.
+   *
+   * NOTE: mergeCount and mergeSum do not include partialCount and partialSum yet.
+   */
+  public static double calculateMerge(
+      long partialCount, long mergeCount, double partialSum, double mergeSum,
+      double partialVariance, double mergeVariance) {
+
+    final double doublePartialCount = (double) partialCount;
+    final double doubleMergeCount = (double) mergeCount;
+
+    double t = (doublePartialCount / doubleMergeCount) * mergeSum - partialSum;
+    mergeVariance +=
+        partialVariance + ((doubleMergeCount / doublePartialCount) /
+            (doubleMergeCount + doublePartialCount)) * t * t;
+    return mergeVariance;
+  }
+
+  /*
+   * Calculate the variance family {VARIANCE, VARIANCE_SAMPLE, STANDARD_DEVIATION, or
+   * STANDARD_DEVIATION_STAMPLE) result when count > 1.  Public so vectorization code can
+   * use it, etc.
+   */
+  public static double calculateVarianceFamilyResult(double variance, long count,
+      VarianceKind varianceKind) {
+    switch (varianceKind) {
+    case VARIANCE:
+      return GenericUDAFVarianceEvaluator.calculateVarianceResult(variance, count);
+    case VARIANCE_SAMPLE:
+      return GenericUDAFVarianceSampleEvaluator.calculateVarianceSampleResult(variance, count);
+    case STANDARD_DEVIATION:
+      return GenericUDAFStdEvaluator.calculateStdResult(variance, count);
+    case STANDARD_DEVIATION_SAMPLE:
+      return GenericUDAFStdSampleEvaluator.calculateStdSampleResult(variance, count);
+    default:
+      throw new RuntimeException("Unexpected variance kind " + varianceKind);
+    }
+  }
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
@@ -103,6 +202,12 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
    * Numer. Math, 58 (1991) pp. 583--590
    *
    */
+  @VectorizedUDAFs({
+    VectorUDAFVarLong.class, VectorUDAFVarLongComplete.class,
+    VectorUDAFVarDouble.class, VectorUDAFVarDoubleComplete.class,
+    VectorUDAFVarDecimal.class, VectorUDAFVarDecimalComplete.class,
+    VectorUDAFVarTimestamp.class, VectorUDAFVarTimestampComplete.class,
+    VectorUDAFVarPartial2.class, VectorUDAFVarFinal.class})
   public static class GenericUDAFVarianceEvaluator extends GenericUDAFEvaluator {
 
     // For PARTIAL1 and COMPLETE
@@ -210,8 +315,8 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
           myagg.count++;
           myagg.sum += v;
           if(myagg.count > 1) {
-            double t = myagg.count*v - myagg.sum;
-            myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+            myagg.variance = calculateIntermediate(
+                myagg.count, myagg.sum, v, myagg.variance);
           }
         } catch (NumberFormatException e) {
           if (!warned) {
@@ -251,6 +356,7 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
           myagg.variance = sumFieldOI.get(partialVariance);
           myagg.count = countFieldOI.get(partialCount);
           myagg.sum = sumFieldOI.get(partialSum);
+          return;
         }
 
         if (m != 0 && n != 0) {
@@ -259,12 +365,23 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
           double a = myagg.sum;
           double b = sumFieldOI.get(partialSum);
 
+          myagg.variance =
+              calculateMerge(
+                  /* partialCount */ m, /* mergeCount */ n,
+                  /* partialSum */ b, /* mergeSum */ a,
+                  sumFieldOI.get(partialVariance), myagg.variance);
+
           myagg.count += m;
           myagg.sum += b;
-          double t = (m/(double)n)*a - b;
-          myagg.variance += sumFieldOI.get(partialVariance) + ((n/(double)m)/((double)n+m)) * t * t;
         }
       }
+    }
+
+    /*
+     * Calculate the variance result when count > 1.  Public so vectorization code can use it, etc.
+     */
+    public static double calculateVarianceResult(double variance, long count) {
+      return variance / count;
     }
 
     @Override
@@ -275,7 +392,8 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
         return null;
       } else {
         if (myagg.count > 1) {
-          getResult().set(myagg.variance / (myagg.count));
+          getResult().set(
+              calculateVarianceResult(myagg.variance, myagg.count));
         } else { // for one element the variance is always 0
           getResult().set(0);
         }

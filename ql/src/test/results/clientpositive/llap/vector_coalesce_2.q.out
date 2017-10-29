@@ -53,12 +53,6 @@ STAGE PLANS:
                     Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(_col1)
-                      Group By Vectorization:
-                          groupByMode: HASH
-                          vectorOutput: false
-                          native: false
-                          vectorProcessingMode: NONE
-                          projectedOutputColumns: null
                       keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
@@ -76,12 +70,6 @@ STAGE PLANS:
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
-                Group By Vectorization:
-                    groupByMode: MERGEPARTIAL
-                    vectorOutput: false
-                    native: false
-                    vectorProcessingMode: NONE
-                    projectedOutputColumns: null
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
@@ -215,27 +203,25 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1]
                   Select Operator
                     expressions: str2 (type: string), UDFToInteger(COALESCE(str1,0)) (type: int)
                     outputColumnNames: _col0, _col1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [1, 4]
-                        selectExpressions: CastStringToLong(col 3)(children: VectorCoalesce(columns [0, 2])(children: col 0, ConstantVectorExpression(val 0) -> 2:string) -> 3:string) -> 4:int
+                        projectedOutputColumnNums: [1, 5]
+                        selectExpressions: CastStringToLong(col 4:string)(children: VectorCoalesce(columns [0, 3])(children: col 0:string, ConstantVectorExpression(val 0) -> 3:string) -> 4:string) -> 5:int
                     Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 4) -> bigint
+                          aggregators: VectorUDAFSumLong(col 5:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
-                          keyExpressions: col 1
+                          keyExpressions: col 1:string
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
@@ -255,7 +241,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -265,7 +252,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -273,14 +259,13 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 1) -> bigint
+                    aggregators: VectorUDAFSumLong(col 1:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
-                    keyExpressions: col 0
+                    keyExpressions: col 0:string
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
@@ -291,8 +276,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumns: [0, 2]
-                      selectExpressions: RoundWithNumDigitsDoubleToDouble(col 3, decimalPlaces 2)(children: DoubleColDivideDoubleScalar(col 2, val 60.0)(children: CastLongToDouble(col 1) -> 2:double) -> 3:double) -> 2:double
+                      projectedOutputColumnNums: [0, 2]
+                      selectExpressions: RoundWithNumDigitsDoubleToDouble(col 3, decimalPlaces 2)(children: DoubleColDivideDoubleScalar(col 2:double, val 60.0)(children: CastLongToDouble(col 1:bigint) -> 2:double) -> 3:double) -> 2:double
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
@@ -355,15 +340,14 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1]
                   Select Operator
                     expressions: COALESCE(str1,0) (type: string)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [3]
-                        selectExpressions: VectorCoalesce(columns [0, 2])(children: col 0, ConstantVectorExpression(val 0) -> 2:string) -> 3:string
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: VectorCoalesce(columns [0, 3])(children: col 0:string, ConstantVectorExpression(val 0) -> 3:string) -> 4:string
                     Statistics: Num rows: 4 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -380,7 +364,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false

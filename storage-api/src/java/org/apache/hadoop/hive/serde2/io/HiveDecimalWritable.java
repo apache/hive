@@ -759,6 +759,12 @@ public final class HiveDecimalWritable extends FastHiveDecimal
 
   @HiveDecimalWritableVersionV2
   public void mutateAdd(HiveDecimal dec) {
+    if (dec == null) {
+
+      // Can't add NULL.
+      isSet = false;
+      return;
+    }
     if (!isSet) {
       return;
     }
@@ -778,6 +784,12 @@ public final class HiveDecimalWritable extends FastHiveDecimal
 
   @HiveDecimalWritableVersionV2
   public void mutateSubtract(HiveDecimal dec) {
+    if (dec == null) {
+
+      // Can't subtract NULL.
+      isSet = false;
+      return;
+    }
     if (!isSet) {
       return;
     }
@@ -797,6 +809,12 @@ public final class HiveDecimalWritable extends FastHiveDecimal
 
   @HiveDecimalWritableVersionV2
   public void mutateMultiply(HiveDecimal dec) {
+    if (dec == null) {
+
+      // Can't multiply NULL.
+      isSet = false;
+      return;
+    }
     if (!isSet) {
       return;
     }
@@ -816,6 +834,12 @@ public final class HiveDecimalWritable extends FastHiveDecimal
 
   @HiveDecimalWritableVersionV2
   public void mutateDivide(HiveDecimal dec) {
+    if (dec == null) {
+
+      // Can't divide NULL.
+      isSet = false;
+      return;
+    }
     if (!isSet) {
       return;
     }
@@ -836,6 +860,12 @@ public final class HiveDecimalWritable extends FastHiveDecimal
 
   @HiveDecimalWritableVersionV2
   public void mutateRemainder(HiveDecimal dec) {
+    if (dec == null) {
+
+      // Can't do remainder on NULL.
+      isSet = false;
+      return;
+    }
     if (!isSet) {
       return;
     }

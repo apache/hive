@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 
@@ -31,8 +32,13 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
   DoubleColSubtractLongScalar.class, DoubleColSubtractDoubleScalar.class,
   LongScalarSubtractLongColumn.class, LongScalarSubtractDoubleColumn.class,
   DoubleScalarSubtractLongColumn.class, DoubleScalarSubtractDoubleColumn.class,
+
   DecimalColSubtractDecimalColumn.class, DecimalColSubtractDecimalScalar.class,
   DecimalScalarSubtractDecimalColumn.class,
+
+  Decimal64ColSubtractDecimal64Column.class, Decimal64ColSubtractDecimal64Scalar.class,
+  Decimal64ScalarSubtractDecimal64Column.class,
+
   IntervalYearMonthColSubtractIntervalYearMonthColumn.class,
   IntervalYearMonthColSubtractIntervalYearMonthScalar.class,
   IntervalYearMonthScalarSubtractIntervalYearMonthColumn.class,
@@ -64,6 +70,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
   TimestampScalarSubtractIntervalYearMonthColumn.class,
   TimestampColSubtractIntervalYearMonthScalar.class,
 })
+@VectorizedExpressionsSupportDecimal64()
 public class GenericUDFOPMinus extends GenericUDFBaseArithmetic {
 
   public GenericUDFOPMinus() {

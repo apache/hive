@@ -34,17 +34,21 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private <OperandType> value;
-  private int outputColumn;
+  private final int colNum;
+  private final <OperandType> value;
 
-  public <ClassName>(int colNum, Timestamp value, int outputColumn) {
+  public <ClassName>(int colNum, Timestamp value, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
     this.value = TimestampColumnVector.<GetTimestampLongDoubleMethod>(value);
-    this.outputColumn = outputColumn;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    value = 0;
   }
 
   @Override
@@ -55,7 +59,7 @@ public class <ClassName> extends VectorExpression {
     }
 
     <InputColumnVectorType1> inputColVector1 = (<InputColumnVectorType1>) batch.cols[colNum];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector1.isNull;
     boolean[] outNulls = outputColVector.isNull;
@@ -120,18 +124,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + value;
+    return getColumnParamString(0, colNum) + ", val " + value;
   }
 
   @Override

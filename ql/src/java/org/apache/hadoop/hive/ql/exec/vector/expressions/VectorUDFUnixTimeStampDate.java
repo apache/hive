@@ -36,9 +36,9 @@ public final class VectorUDFUnixTimeStampDate extends VectorUDFTimestampFieldDat
     return dateWritable.getTimeInSeconds();
   }
 
-  public VectorUDFUnixTimeStampDate(int colNum, int outputColumn) {
+  public VectorUDFUnixTimeStampDate(int colNum, int outputColumnNum) {
     /* not a real field */
-    super(-1, colNum, outputColumn);
+    super(-1, colNum, outputColumnNum);
     dateWritable = new DateWritable();
   }
 

@@ -75,12 +75,11 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsNotNull(col 0) -> boolean
+                  predicateExpression: SelectColumnIsNotNull(col 0:int)
               predicate: b is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -89,7 +88,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
@@ -109,10 +108,9 @@ STAGE PLANS:
                         aggregators: VectorUDAFCountStar(*) -> bigint
                         className: VectorGroupByOperator
                         groupByMode: HASH
-                        vectorOutput: true
                         native: false
                         vectorProcessingMode: HASH
-                        projectedOutputColumns: [0]
+                        projectedOutputColumnNums: [0]
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -129,7 +127,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -143,12 +142,6 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          Group By Vectorization:
-              groupByMode: MERGEPARTIAL
-              vectorOutput: false
-              native: false
-              vectorProcessingMode: NONE
-              projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

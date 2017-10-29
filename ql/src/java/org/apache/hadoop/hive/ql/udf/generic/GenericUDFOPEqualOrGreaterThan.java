@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterEqualLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColGreaterEqualLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarGreaterEqualLongColumn;
@@ -59,6 +60,9 @@ import org.apache.hadoop.io.Text;
   FilterDecimalColGreaterEqualDecimalColumn.class, FilterDecimalColGreaterEqualDecimalScalar.class,
   FilterDecimalScalarGreaterEqualDecimalColumn.class,
 
+  FilterDecimal64ColGreaterEqualDecimal64Column.class, FilterDecimal64ColGreaterEqualDecimal64Scalar.class,
+  FilterDecimal64ScalarGreaterEqualDecimal64Column.class,
+
   TimestampColGreaterEqualTimestampColumn.class,
   TimestampColGreaterEqualTimestampScalar.class, TimestampScalarGreaterEqualTimestampColumn.class,
   TimestampColGreaterEqualLongColumn.class,
@@ -91,6 +95,7 @@ import org.apache.hadoop.io.Text;
   DateColGreaterEqualDateScalar.class,FilterDateColGreaterEqualDateScalar.class,
   DateScalarGreaterEqualDateColumn.class,FilterDateScalarGreaterEqualDateColumn.class,
   })
+@VectorizedExpressionsSupportDecimal64()
 @NDV(maxNdv = 2)
 public class GenericUDFOPEqualOrGreaterThan extends GenericUDFBaseCompare {
   public GenericUDFOPEqualOrGreaterThan(){

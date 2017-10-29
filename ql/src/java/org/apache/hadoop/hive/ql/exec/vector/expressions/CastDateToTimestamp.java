@@ -28,16 +28,17 @@ public class CastDateToTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private int colNum;
-  private int outputColumn;
 
-  public CastDateToTimestamp(int colNum, int outputColumn) {
-    this();
+  public CastDateToTimestamp(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
 
   public CastDateToTimestamp() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   private void setDays(TimestampColumnVector timestampColVector, long[] vector, int elementNum) {
@@ -53,7 +54,7 @@ public class CastDateToTimestamp extends VectorExpression {
     }
 
     LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
-    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumn];
+    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -103,18 +104,8 @@ public class CastDateToTimestamp extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "timestamp";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 
   @Override

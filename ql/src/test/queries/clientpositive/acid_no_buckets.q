@@ -121,7 +121,8 @@ select ds, hr, key, value from srcpart_acidv where cast(key as integer) in(413,4
 
 analyze table srcpart_acidv PARTITION(ds, hr) compute statistics;
 analyze table srcpart_acidv PARTITION(ds, hr) compute statistics for columns;
-explain update srcpart_acidv set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11';
+explain vectorization only detail
+update srcpart_acidv set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11';
 update srcpart_acidv set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11';
 select ds, hr, key, value from srcpart_acidv where value like '%updated' order by ds, hr, cast(key as integer);
 
@@ -130,7 +131,8 @@ select ds, hr, key, value from srcpart_acidv where cast(key as integer) > 1000 o
 
 analyze table srcpart_acidv PARTITION(ds, hr) compute statistics;
 analyze table srcpart_acidv PARTITION(ds, hr) compute statistics for columns;
-explain delete from srcpart_acidv where key in( '1001', '213', '43');
+explain vectorization only detail
+delete from srcpart_acidv where key in( '1001', '213', '43');
 --delete some rows from initial load, some that were updated and some that were inserted
 delete from srcpart_acidv where key in( '1001', '213', '43');
 
@@ -144,6 +146,12 @@ select count(*) from srcpart_acidv;
 --update should match 1 rows in 1 partition
 --delete should drop everything from 1 partition
 --insert should do nothing
+explain vectorization only detail
+merge into srcpart_acidv t using (select distinct ds, hr, key, value from srcpart_acidv) s
+on s.ds=t.ds and s.hr=t.hr and s.key=t.key and s.value=t.value
+when matched and s.ds='2008-04-08' and s.hr=='11' and s.key='44' then update set value=concat(s.value,'updated by merge')
+when matched and s.ds='2008-04-08' and s.hr=='12' then delete
+when not matched then insert values('this','should','not','be there');
 merge into srcpart_acidv t using (select distinct ds, hr, key, value from srcpart_acidv) s
 on s.ds=t.ds and s.hr=t.hr and s.key=t.key and s.value=t.value
 when matched and s.ds='2008-04-08' and s.hr=='11' and s.key='44' then update set value=concat(s.value,'updated by merge')
@@ -170,7 +178,8 @@ select ds, hr, key, value from srcpart_acidvb where cast(key as integer) in(413,
 
 analyze table srcpart_acidvb PARTITION(ds, hr) compute statistics;
 analyze table srcpart_acidvb PARTITION(ds, hr) compute statistics for columns;
-explain update srcpart_acidvb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11';
+explain vectorization only detail
+update srcpart_acidvb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11';
 update srcpart_acidvb set value = concat(value, 'updated') where cast(key as integer) in(413,43) and hr='11';
 select ds, hr, key, value from srcpart_acidvb where value like '%updated' order by ds, hr, cast(key as integer);
 
@@ -179,7 +188,8 @@ select ds, hr, key, value from srcpart_acidvb where cast(key as integer) > 1000 
 
 analyze table srcpart_acidvb PARTITION(ds, hr) compute statistics;
 analyze table srcpart_acidvb PARTITION(ds, hr) compute statistics for columns;
-explain delete from srcpart_acidvb where key in( '1001', '213', '43');
+explain vectorization only detail
+delete from srcpart_acidvb where key in( '1001', '213', '43');
 --delete some rows from initial load, some that were updated and some that were inserted
 delete from srcpart_acidvb where key in( '1001', '213', '43');
 
@@ -194,6 +204,12 @@ select count(*) from srcpart_acidvb;
 --update should match 1 rows in 1 partition
 --delete should drop everything from 1 partition
 --insert should do nothing
+explain vectorization only detail
+merge into srcpart_acidvb t using (select distinct ds, hr, key, value from srcpart_acidvb) s
+on s.ds=t.ds and s.hr=t.hr and s.key=t.key and s.value=t.value
+when matched and s.ds='2008-04-08' and s.hr=='11' and s.key='44' then update set value=concat(s.value,'updated by merge')
+when matched and s.ds='2008-04-08' and s.hr=='12' then delete
+when not matched then insert values('this','should','not','be there');
 merge into srcpart_acidvb t using (select distinct ds, hr, key, value from srcpart_acidvb) s
 on s.ds=t.ds and s.hr=t.hr and s.key=t.key and s.value=t.value
 when matched and s.ds='2008-04-08' and s.hr=='11' and s.key='44' then update set value=concat(s.value,'updated by merge')

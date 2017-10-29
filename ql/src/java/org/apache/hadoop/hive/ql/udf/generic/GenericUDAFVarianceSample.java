@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -74,8 +76,22 @@ public class GenericUDAFVarianceSample extends GenericUDAFVariance {
    * Compute the sample variance by extending GenericUDAFVarianceEvaluator and
    * overriding the terminate() method of the evaluator.
    */
+  @VectorizedUDAFs({
+    VectorUDAFVarLong.class, VectorUDAFVarLongComplete.class,
+    VectorUDAFVarDouble.class, VectorUDAFVarDoubleComplete.class,
+    VectorUDAFVarDecimal.class, VectorUDAFVarDecimalComplete.class,
+    VectorUDAFVarTimestamp.class, VectorUDAFVarTimestampComplete.class,
+    VectorUDAFVarPartial2.class, VectorUDAFVarFinal.class})
   public static class GenericUDAFVarianceSampleEvaluator extends
       GenericUDAFVarianceEvaluator {
+
+    /*
+     * Calculate the variance sample result when count > 1.  Public so vectorization code can
+     * use it, etc.
+     */
+    public static double calculateVarianceSampleResult(double variance, long count) {
+      return variance / (count - 1);
+    }
 
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
@@ -84,7 +100,8 @@ public class GenericUDAFVarianceSample extends GenericUDAFVariance {
       if (myagg.count <= 1) {
         return null;
       } else {
-        getResult().set(myagg.variance / (myagg.count - 1));
+        getResult().set(
+            calculateVarianceSampleResult(myagg.variance, myagg.count));
         return getResult();
       }
     }

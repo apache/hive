@@ -21,6 +21,8 @@ import java.util.HashSet;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
@@ -84,6 +86,10 @@ public class GenericUDAFCount implements GenericUDAFResolver2 {
    * GenericUDAFCountEvaluator.
    *
    */
+  @VectorizedUDAFs({
+    VectorUDAFCount.class,
+    VectorUDAFCountMerge.class,
+    VectorUDAFCountStar.class})
   public static class GenericUDAFCountEvaluator extends GenericUDAFEvaluator {
     private boolean isWindowing = false;
     private boolean countAllColumns = false;

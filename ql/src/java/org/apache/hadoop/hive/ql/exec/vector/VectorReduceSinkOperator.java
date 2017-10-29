@@ -24,15 +24,19 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 import com.google.common.annotations.VisibleForTesting;
 
-public class VectorReduceSinkOperator extends ReduceSinkOperator {
+public class VectorReduceSinkOperator extends ReduceSinkOperator
+    implements VectorizationOperator {
 
   private static final long serialVersionUID = 1L;
 
   private VectorizationContext vContext;
+  private VectorReduceSinkDesc vectorDesc;
 
   // The above members are initialized by the constructor and must not be
   // transient.
@@ -45,11 +49,13 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
   protected transient Object[] singleRow;
 
   public VectorReduceSinkOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+      OperatorDesc conf, VectorizationContext vContext, VectorDesc vectorDesc)
+          throws HiveException {
     this(ctx);
     ReduceSinkDesc desc = (ReduceSinkDesc) conf;
     this.conf = desc;
     this.vContext = vContext;
+    this.vectorDesc = (VectorReduceSinkDesc) vectorDesc;
   }
 
   /** Kryo ctor. */
@@ -60,6 +66,11 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
 
   public VectorReduceSinkOperator(CompilationOpContext ctx) {
     super(ctx);
+  }
+
+  @Override
+  public VectorizationContext getInputVectorizationContext() {
+    return vContext;
   }
 
   @Override
@@ -104,5 +115,10 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
         super.process(singleRow, tag);
       }
     }
+  }
+
+  @Override
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
   }
 }

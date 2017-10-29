@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
 
 /**
@@ -38,14 +39,14 @@ import org.junit.Test;
 public class TestConstantVectorExpression {
 
   @Test
-  public void testConstantExpression() {
-    ConstantVectorExpression longCve = new ConstantVectorExpression(0, 17);
-    ConstantVectorExpression doubleCve = new ConstantVectorExpression(1, 17.34);
+  public void testConstantExpression() throws Exception {
+    ConstantVectorExpression longCve = new ConstantVectorExpression(0, 17, TypeInfoFactory.longTypeInfo);
+    ConstantVectorExpression doubleCve = new ConstantVectorExpression(1, 17.34, TypeInfoFactory.doubleTypeInfo);
     String str = "alpha";
-    ConstantVectorExpression bytesCve = new ConstantVectorExpression(2, str.getBytes());
+    ConstantVectorExpression bytesCve = new ConstantVectorExpression(2, str.getBytes(), TypeInfoFactory.stringTypeInfo);
     HiveDecimal decVal = HiveDecimal.create("25.8");
-    ConstantVectorExpression decimalCve = new ConstantVectorExpression(3, decVal, "decimal");
-    ConstantVectorExpression nullCve = new ConstantVectorExpression(4, "string", true);
+    ConstantVectorExpression decimalCve = new ConstantVectorExpression(3, decVal, TypeInfoFactory.decimalTypeInfo);
+    ConstantVectorExpression nullCve = new ConstantVectorExpression(4, TypeInfoFactory.stringTypeInfo, true);
 
     int size = 20;
     VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(size, 5, 0);
@@ -97,9 +98,8 @@ public class TestConstantVectorExpression {
     for (int i = 0; i != k; i++) {
       if (o1[i] != o2[i]) {
         return false;
-      } 
+      }
     }
     return true;
   }
-
 }

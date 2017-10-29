@@ -77,18 +77,19 @@ public class LimitDesc extends AbstractOperatorDesc {
 
   public class LimitOperatorExplainVectorization extends OperatorExplainVectorization {
 
-    public LimitOperatorExplainVectorization(LimitDesc limitDesc, VectorDesc vectorDesc) {
+    public LimitOperatorExplainVectorization(LimitDesc limitDesc, VectorLimitDesc vectorLimitDesc) {
       // Native vectorization supported.
-      super(vectorDesc, true);
+      super(vectorLimitDesc, true);
     }
   }
 
   @Explain(vectorization = Vectorization.OPERATOR, displayName = "Limit Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public LimitOperatorExplainVectorization getLimitVectorization() {
-    if (vectorDesc == null) {
+    VectorLimitDesc vectorLimitDesc = (VectorLimitDesc) getVectorDesc();
+    if (vectorLimitDesc == null) {
       return null;
     }
-    return new LimitOperatorExplainVectorization(this, vectorDesc);
+    return new LimitOperatorExplainVectorization(this, vectorLimitDesc);
   }
 
   @Override

@@ -35,20 +35,25 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int arg1Column;
-  private <OperandType2> arg2Scalar;
-  private <OperandType3> arg3Scalar;
-  private int outputColumn;
+  private final int arg1Column;
+  private final <OperandType2> arg2Scalar;
+  private final <OperandType3> arg3Scalar;
 
   public <ClassName>(int arg1Column, <OperandType2> arg2Scalar, <OperandType3> arg3Scalar,
-      int outputColumn) {
+      int outputColumnNum) {
+    super(outputColumnNum);
     this.arg1Column = arg1Column;
     this.arg2Scalar = arg2Scalar;
     this.arg3Scalar = arg3Scalar;
-    this.outputColumn = outputColumn;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    arg1Column = -1;
+    arg2Scalar = 0;
+    arg3Scalar = 0;
   }
 
   @Override
@@ -59,7 +64,7 @@ public class <ClassName> extends VectorExpression {
     }
 
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
-    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumn];
+    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = false; // output is a scalar which we know is non null
@@ -109,46 +114,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "<ReturnType>";
-  }
-
-  public int getArg1Column() {
-    return arg1Column;
-  }
-
-  public void setArg1Column(int colNum) {
-    this.arg1Column = colNum;
-  }
-
-  public <OperandType2> getArg2Scalar() {
-    return arg2Scalar;
-  }
-
-  public void setArg2Scalar(<OperandType2> value) {
-    this.arg2Scalar = value;
-  }
-
-  public <OperandType3> getArg3Scalar() {
-    return arg3Scalar;
-  }
-
-  public void setArg3Scalar(<OperandType3> value) {
-    this.arg3Scalar = value;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", val "+ arg2Scalar + ", val "+ arg3Scalar;
+    return getColumnParamString(0, arg1Column) + ", val "+ arg2Scalar + ", val "+ arg3Scalar;
   }
 
   @Override

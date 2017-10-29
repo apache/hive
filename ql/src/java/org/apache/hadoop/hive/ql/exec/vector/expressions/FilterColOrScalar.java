@@ -24,15 +24,20 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 public class FilterColOrScalar extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
-  private long value;
-  private int colNum;
+
+  private final int colNum;
+  private final long value;
 
   public FilterColOrScalar() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    value = 0;
   }
 
   public FilterColOrScalar(int colNum, long scalarVal) {
-    this();
+    super();
     this.colNum = colNum;
     this.value = scalarVal;
   }
@@ -47,34 +52,8 @@ public class FilterColOrScalar extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public double getValue() {
-    return value;
-  }
-
-  public void setValue(long value) {
-    this.value = value;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + value;
+    return getColumnParamString(0, colNum) + ", val " + value;
   }
 
   @Override

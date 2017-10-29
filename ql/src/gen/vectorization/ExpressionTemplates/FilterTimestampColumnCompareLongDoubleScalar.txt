@@ -33,15 +33,21 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private <OperandType> value;
+  private final int colNum;
+  private final <OperandType> value;
 
   public <ClassName>(int colNum, <OperandType> value) {
+    super();
     this.colNum = colNum;
     this.value = value;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    value = 0;
   }
 
   @Override
@@ -132,26 +138,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + value;
+    return getColumnParamString(0, colNum) + ", val " + value;
   }
 
   @Override

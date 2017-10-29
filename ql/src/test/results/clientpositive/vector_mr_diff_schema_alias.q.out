@@ -370,7 +370,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -407,7 +408,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

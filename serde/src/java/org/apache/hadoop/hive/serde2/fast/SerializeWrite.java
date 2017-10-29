@@ -154,6 +154,8 @@ public interface SerializeWrite {
    * NOTE: The scale parameter is for text serialization (e.g. HiveDecimal.toFormatString) that
    * creates trailing zeroes output decimals.
    */
+  void writeDecimal64(long decimal64Long, int scale) throws IOException;
+
   void writeHiveDecimal(HiveDecimal dec, int scale) throws IOException;
   void writeHiveDecimal(HiveDecimalWritable decWritable, int scale) throws IOException;
 

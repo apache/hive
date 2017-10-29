@@ -80,14 +80,14 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 586 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:a:int, 2:b:string, 3:c:int, 4:part:int, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 4, 1, 2]
+                        projectedOutputColumnNums: [0, 4, 1, 2]
                     Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
@@ -103,7 +103,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -114,6 +115,7 @@ STAGE PLANS:
                     dataColumns: insert_num:int, a:int, b:string, c:int
                     partitionColumnCount: 1
                     partitionColumns: part:int
+                    scratchColumnTypeNames: []
 
   Stage: Stage-0
     Fetch Operator
@@ -233,14 +235,14 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 674 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:a:int, 2:b:string, 3:c:int, 4:d:string, 5:part:int, 6:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 5, 1, 2]
+                        projectedOutputColumnNums: [0, 5, 1, 2]
                     Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
@@ -256,7 +258,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -267,6 +270,7 @@ STAGE PLANS:
                     dataColumns: insert_num:int, a:int, b:string, c:int, d:string
                     partitionColumnCount: 1
                     partitionColumns: part:int
+                    scratchColumnTypeNames: []
 
   Stage: Stage-0
     Fetch Operator
@@ -444,14 +448,14 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 3190 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:double, 2:c2:double, 3:c3:double, 4:b:string, 5:part:int, 6:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: double), c2 (type: double), c3 (type: double), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 5, 1, 2, 3, 4]
+                        projectedOutputColumnNums: [0, 5, 1, 2, 3, 4]
                     Statistics: Num rows: 5 Data size: 1080 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
@@ -467,7 +471,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -478,6 +483,7 @@ STAGE PLANS:
                     dataColumns: insert_num:int, c1:double, c2:double, c3:double, b:string
                     partitionColumnCount: 1
                     partitionColumns: part:int
+                    scratchColumnTypeNames: []
 
   Stage: Stage-0
     Fetch Operator
@@ -592,14 +598,14 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 12449 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:char(50), 3:c3:char(15), 4:c4:varchar(50), 5:c5:varchar(15), 6:c6:string, 7:c7:char(50), 8:c8:char(15), 9:c9:varchar(50), 10:c10:varchar(15), 11:b:string, 12:part:int, 13:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: string), c2 (type: char(50)), c3 (type: char(15)), c4 (type: varchar(50)), c5 (type: varchar(15)), c6 (type: string), c7 (type: char(50)), c8 (type: char(15)), c9 (type: varchar(50)), c10 (type: varchar(15)), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                        projectedOutputColumnNums: [0, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                     Statistics: Num rows: 6 Data size: 8952 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
@@ -615,7 +621,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -626,6 +633,7 @@ STAGE PLANS:
                     dataColumns: insert_num:int, c1:string, c2:char(50), c3:char(15), c4:varchar(50), c5:varchar(15), c6:string, c7:char(50), c8:char(15), c9:varchar(50), c10:varchar(15), b:string
                     partitionColumnCount: 1
                     partitionColumns: part:int
+                    scratchColumnTypeNames: []
 
   Stage: Stage-0
     Fetch Operator
@@ -809,14 +817,14 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 19151 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:string, 5:c5:char(50), 6:c6:char(50), 7:c7:char(50), 8:c8:char(50), 9:c9:char(5), 10:c10:char(5), 11:c11:char(5), 12:c12:char(5), 13:c13:varchar(50), 14:c14:varchar(50), 15:c15:varchar(50), 16:c16:varchar(50), 17:c17:varchar(5), 18:c18:varchar(5), 19:c19:varchar(5), 20:c20:varchar(5), 21:b:string, 22:part:int, 23:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: string), c5 (type: char(50)), c6 (type: char(50)), c7 (type: char(50)), c8 (type: char(50)), c9 (type: char(5)), c10 (type: char(5)), c11 (type: char(5)), c12 (type: char(5)), c13 (type: varchar(50)), c14 (type: varchar(50)), c15 (type: varchar(50)), c16 (type: varchar(50)), c17 (type: varchar(5)), c18 (type: varchar(5)), c19 (type: varchar(5)), c20 (type: varchar(5)), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 22, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+                        projectedOutputColumnNums: [0, 22, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
                     Statistics: Num rows: 6 Data size: 16272 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
@@ -832,7 +840,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -843,6 +852,7 @@ STAGE PLANS:
                     dataColumns: insert_num:int, c1:string, c2:string, c3:string, c4:string, c5:char(50), c6:char(50), c7:char(50), c8:char(50), c9:char(5), c10:char(5), c11:char(5), c12:char(5), c13:varchar(50), c14:varchar(50), c15:varchar(50), c16:varchar(50), c17:varchar(5), c18:varchar(5), c19:varchar(5), c20:varchar(5), b:string
                     partitionColumnCount: 1
                     partitionColumns: part:int
+                    scratchColumnTypeNames: []
 
   Stage: Stage-0
     Fetch Operator
@@ -1016,14 +1026,14 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 17080 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:char(50), 5:c5:char(50), 6:c6:char(50), 7:c7:char(7), 8:c8:char(7), 9:c9:char(7), 10:c10:varchar(50), 11:c11:varchar(50), 12:c12:varchar(50), 13:c13:varchar(7), 14:c14:varchar(7), 15:c15:varchar(7), 16:b:string, 17:part:int, 18:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: char(50)), c5 (type: char(50)), c6 (type: char(50)), c7 (type: char(7)), c8 (type: char(7)), c9 (type: char(7)), c10 (type: varchar(50)), c11 (type: varchar(50)), c12 (type: varchar(50)), c13 (type: varchar(7)), c14 (type: varchar(7)), c15 (type: varchar(7)), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 17, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                        projectedOutputColumnNums: [0, 17, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
                     Statistics: Num rows: 6 Data size: 12564 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
@@ -1039,7 +1049,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1050,6 +1061,7 @@ STAGE PLANS:
                     dataColumns: insert_num:int, c1:string, c2:string, c3:string, c4:char(50), c5:char(50), c6:char(50), c7:char(7), c8:char(7), c9:char(7), c10:varchar(50), c11:varchar(50), c12:varchar(50), c13:varchar(7), c14:varchar(7), c15:varchar(7), b:string
                     partitionColumnCount: 1
                     partitionColumns: part:int
+                    scratchColumnTypeNames: []
 
   Stage: Stage-0
     Fetch Operator
@@ -1209,14 +1221,14 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 15466 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:char(50), 2:c2:char(9), 3:c3:varchar(50), 4:c4:char(9), 5:c5:varchar(50), 6:c6:varchar(9), 7:c7:string, 8:c8:char(50), 9:c9:char(9), 10:c10:string, 11:b:string, 12:part:int, 13:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: char(50)), c2 (type: char(9)), c3 (type: varchar(50)), c4 (type: char(9)), c5 (type: varchar(50)), c6 (type: varchar(9)), c7 (type: string), c8 (type: char(50)), c9 (type: char(9)), c10 (type: string), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                        projectedOutputColumnNums: [0, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                     Statistics: Num rows: 6 Data size: 8808 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
@@ -1232,7 +1244,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1243,6 +1256,7 @@ STAGE PLANS:
                     dataColumns: insert_num:int, c1:char(50), c2:char(9), c3:varchar(50), c4:char(9), c5:varchar(50), c6:varchar(9), c7:string, c8:char(50), c9:char(9), c10:string, b:string
                     partitionColumnCount: 1
                     partitionColumns: part:int
+                    scratchColumnTypeNames: []
 
   Stage: Stage-0
     Fetch Operator
@@ -1430,14 +1444,14 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 5739 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:smallint, 2:c2:int, 3:c3:bigint, 4:c4:decimal(38,18), 5:c5:float, 6:c6:double, 7:c7:int, 8:c8:bigint, 9:c9:decimal(38,18), 10:c10:float, 11:c11:double, 12:c12:bigint, 13:c13:decimal(38,18), 14:c14:float, 15:c15:double, 16:c16:decimal(38,18), 17:c17:float, 18:c18:double, 19:b:string, 20:part:int, 21:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: smallint), c2 (type: int), c3 (type: bigint), c4 (type: decimal(38,18)), c5 (type: float), c6 (type: double), c7 (type: int), c8 (type: bigint), c9 (type: decimal(38,18)), c10 (type: float), c11 (type: double), c12 (type: bigint), c13 (type: decimal(38,18)), c14 (type: float), c15 (type: double), c16 (type: decimal(38,18)), c17 (type: float), c18 (type: double), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 20, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+                        projectedOutputColumnNums: [0, 20, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
                     Statistics: Num rows: 6 Data size: 4344 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
@@ -1453,7 +1467,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1464,6 +1479,7 @@ STAGE PLANS:
                     dataColumns: insert_num:int, c1:smallint, c2:int, c3:bigint, c4:decimal(38,18), c5:float, c6:double, c7:int, c8:bigint, c9:decimal(38,18), c10:float, c11:double, c12:bigint, c13:decimal(38,18), c14:float, c15:double, c16:decimal(38,18), c17:float, c18:double, b:string
                     partitionColumnCount: 1
                     partitionColumns: part:int
+                    scratchColumnTypeNames: []
 
   Stage: Stage-0
     Fetch Operator
@@ -1593,14 +1609,14 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 2771 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:float, 2:c2:double, 3:c3:double, 4:b:string, 5:part:int, 6:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: float), c2 (type: double), c3 (type: double), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 5, 1, 2, 3, 4]
+                        projectedOutputColumnNums: [0, 5, 1, 2, 3, 4]
                     Statistics: Num rows: 6 Data size: 1272 Basic stats: COMPLETE Column stats: PARTIAL
                     File Output Operator
                       compressed: false
@@ -1616,7 +1632,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1627,6 +1644,7 @@ STAGE PLANS:
                     dataColumns: insert_num:int, c1:float, c2:double, c3:double, b:string
                     partitionColumnCount: 1
                     partitionColumns: part:int
+                    scratchColumnTypeNames: []
 
   Stage: Stage-0
     Fetch Operator

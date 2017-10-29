@@ -668,12 +668,11 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterLongColumnInList(col 0, values [0, 11323]) -> boolean
+                  predicateExpression: FilterLongColumnInList(col 0:date, values [0, 11323])
               predicate: (dt1) IN (1970-01-01, 2001-01-01) (type: boolean)
               Statistics: Num rows: 2 Data size: 149 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -682,7 +681,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 Statistics: Num rows: 2 Data size: 149 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -698,7 +697,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

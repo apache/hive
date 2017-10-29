@@ -32,20 +32,23 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
  * operate directly on the input and set the output.
  */
 public abstract class FuncDecimalToLong extends VectorExpression {
+
   private static final long serialVersionUID = 1L;
-  int inputColumn;
-  int outputColumn;
+  private final int inputColumn;
 
   private transient boolean integerPrimitiveCategoryKnown = false;
   protected transient PrimitiveCategory integerPrimitiveCategory;
 
-  public FuncDecimalToLong(int inputColumn, int outputColumn) {
+  public FuncDecimalToLong(int inputColumn, int outputColumnNum) {
+    super(outputColumnNum);
     this.inputColumn = inputColumn;
-    this.outputColumn = outputColumn;
   }
 
   public FuncDecimalToLong() {
     super();
+
+    // Dummy final assignments.
+    inputColumn = -1;
   }
 
   abstract protected void func(LongColumnVector outV, DecimalColumnVector inV, int i);
@@ -58,16 +61,14 @@ public abstract class FuncDecimalToLong extends VectorExpression {
     }
 
     if (!integerPrimitiveCategoryKnown) {
-      String typeName = getOutputType().toLowerCase();
-      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
-      integerPrimitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+      integerPrimitiveCategory = ((PrimitiveTypeInfo) outputTypeInfo).getPrimitiveCategory();
       integerPrimitiveCategoryKnown = true;
     }
 
     DecimalColumnVector inV = (DecimalColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
 
     if (n == 0) {
 
@@ -124,15 +125,9 @@ public abstract class FuncDecimalToLong extends VectorExpression {
     }
   }
 
-
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumn;
+    return getColumnParamString(0, inputColumn);
   }
 
   @Override

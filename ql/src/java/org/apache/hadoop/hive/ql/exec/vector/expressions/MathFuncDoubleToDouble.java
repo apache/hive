@@ -32,20 +32,24 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * and expand the template to generate needed classes.
  */
 public abstract class MathFuncDoubleToDouble extends VectorExpression {
+
   private static final long serialVersionUID = 1L;
 
-  protected int colNum;
-  private int outputColumn;
+  protected final int colNum;
 
   // Subclasses must override this with a function that implements the desired logic.
   protected abstract double func(double d);
 
-  public MathFuncDoubleToDouble(int colNum, int outputColumn) {
+  public MathFuncDoubleToDouble(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
 
   public MathFuncDoubleToDouble() {
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   @Override
@@ -56,7 +60,7 @@ public abstract class MathFuncDoubleToDouble extends VectorExpression {
     }
 
     DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[colNum];
-    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumn];
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -113,29 +117,7 @@ public abstract class MathFuncDoubleToDouble extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "double";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 }

@@ -33,8 +33,8 @@ public class CastDoubleToDecimal extends FuncDoubleToDecimal {
     super();
   }
 
-  public CastDoubleToDecimal(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public CastDoubleToDecimal(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   @Override

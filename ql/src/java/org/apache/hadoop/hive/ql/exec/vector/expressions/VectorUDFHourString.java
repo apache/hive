@@ -26,8 +26,8 @@ public final class VectorUDFHourString extends VectorUDFTimestampFieldString {
 
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFHourString(int colNum, int outputColumn) {
-    super(colNum, outputColumn, 11, 2);
+  public VectorUDFHourString(int colNum, int outputColumnNum) {
+    super(colNum, outputColumnNum, 11, 2);
   }
 
   public VectorUDFHourString() {

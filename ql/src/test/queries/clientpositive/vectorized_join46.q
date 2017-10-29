@@ -3,6 +3,8 @@ set hive.auto.convert.join=true;
 set hive.strict.checks.cartesian.product=false;
 set hive.join.emit.interval=2;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE test1 (key INT, value INT, col_1 STRING);
 INSERT INTO test1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
     (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car');

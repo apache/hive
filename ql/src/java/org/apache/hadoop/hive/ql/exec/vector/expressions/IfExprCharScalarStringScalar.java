@@ -33,16 +33,12 @@ public class IfExprCharScalarStringScalar extends IfExprStringScalarStringScalar
   private static final long serialVersionUID = 1L;
 
   public IfExprCharScalarStringScalar(
-      int arg1Column, HiveChar arg2Scalar, byte[] arg3Scalar, int outputColumn) {
-    super(arg1Column, arg2Scalar.getValue().getBytes(), arg3Scalar, outputColumn);
+      int arg1Column, HiveChar arg2Scalar, byte[] arg3Scalar, int outputColumnNum) {
+    super(arg1Column, arg2Scalar.getValue().getBytes(), arg3Scalar, outputColumnNum);
   }
 
   public IfExprCharScalarStringScalar() {
-  }
-
-  @Override
-  public String getOutputType() {
-    return "String";
+    super();
   }
 
   @Override

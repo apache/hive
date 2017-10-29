@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromObjectIterables;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
+import org.apache.hadoop.hive.ql.plan.VectorLimitDesc;
 import org.junit.Test;
 
 /**
@@ -64,7 +65,9 @@ public class TestVectorLimitOperator {
 
     // Create limit desc with limit value
     LimitDesc ld = new LimitDesc(limit);
-    VectorLimitOperator lo = new VectorLimitOperator(new CompilationOpContext(), null, ld);
+    VectorLimitDesc vectorDesc = new VectorLimitDesc();
+    VectorLimitOperator lo = new VectorLimitOperator(
+        new CompilationOpContext(), ld, null, vectorDesc);
     lo.initialize(new Configuration(), null);
 
     // Process the batch

@@ -20,18 +20,21 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
-public class PosModLongToLong extends MathFuncLongToLong
-    implements ISetLongArg {
+public class PosModLongToLong extends MathFuncLongToLong {
   private static final long serialVersionUID = 1L;
-  private long divisor;
 
-  public PosModLongToLong(int inputCol, long scalarVal, int outputCol) {
-    super(inputCol, outputCol);
+  private final long divisor;
+
+  public PosModLongToLong(int inputCol, long scalarVal, int outputColumnNum) {
+    super(inputCol, outputColumnNum);
     this.divisor = scalarVal;
   }
 
   public PosModLongToLong() {
     super();
+
+    // Dummy final assignments.
+    divisor = 0;
   }
 
   @Override
@@ -39,19 +42,6 @@ public class PosModLongToLong extends MathFuncLongToLong
 
     // return positive modulo
     return ((v % divisor) + divisor) % divisor;
-  }
-
-  @Override
-  public void setArg(long arg) {
-    this.divisor = arg;
-  }
-
-  public void setDivisor(long v) {
-    this.divisor = v;
-  }
-
-  public long getDivisor() {
-    return divisor;
   }
 
   @Override

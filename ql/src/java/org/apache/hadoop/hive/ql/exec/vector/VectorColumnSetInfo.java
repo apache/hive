@@ -105,6 +105,7 @@ public class VectorColumnSetInfo {
 
     switch (columnVectorType) {
     case LONG:
+    case DECIMAL_64:
       longIndices[addLongIndex] = addKeyIndex;
       columnTypeSpecificIndices[addKeyIndex] = addLongIndex++;
       break;

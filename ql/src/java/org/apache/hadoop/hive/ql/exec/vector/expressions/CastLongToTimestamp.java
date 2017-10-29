@@ -25,17 +25,18 @@ import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 public class CastLongToTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private int outputColumn;
+  private final int colNum;
 
-  public CastLongToTimestamp(int colNum, int outputColumn) {
-    this();
+  public CastLongToTimestamp(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
 
   public CastLongToTimestamp() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   private void setSeconds(TimestampColumnVector timestampColVector, long[] vector, int elementNum) {
@@ -51,7 +52,7 @@ public class CastLongToTimestamp extends VectorExpression {
     }
 
     LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
-    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumn];
+    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -101,18 +102,8 @@ public class CastLongToTimestamp extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "timestamp";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 
   @Override

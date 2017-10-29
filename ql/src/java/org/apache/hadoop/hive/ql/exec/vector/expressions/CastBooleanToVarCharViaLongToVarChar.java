@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 
-public class CastBooleanToVarCharViaLongToVarChar extends CastBooleanToStringViaLongToString implements TruncStringOutput {
+public class CastBooleanToVarCharViaLongToVarChar extends CastBooleanToStringViaLongToString
+    implements TruncStringOutput {
+
   private static final long serialVersionUID = 1L;
   private int maxLength; // Must be manually set with setMaxLength.
 
-  public CastBooleanToVarCharViaLongToVarChar(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public CastBooleanToVarCharViaLongToVarChar(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   public CastBooleanToVarCharViaLongToVarChar() {
@@ -38,11 +40,6 @@ public class CastBooleanToVarCharViaLongToVarChar extends CastBooleanToStringVia
   }
 
   @Override
-  public String getOutputType() {
-    return "Char";
-  }
-  
-    @Override
   public int getMaxLength() {
     return maxLength;
   }
@@ -54,6 +51,6 @@ public class CastBooleanToVarCharViaLongToVarChar extends CastBooleanToStringVia
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumn + ", maxLength " + maxLength;
+    return getColumnParamString(0, inputColumn) + ", maxLength " + maxLength;
   }
 }

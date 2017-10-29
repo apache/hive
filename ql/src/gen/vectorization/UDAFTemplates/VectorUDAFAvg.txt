@@ -25,19 +25,17 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 import com.google.common.base.Preconditions;
 
@@ -87,63 +85,24 @@ public class <ClassName> extends VectorAggregateExpression {
       }
     }
 
-#IF PARTIAL1
-    transient private Object[] partialResult;
-    transient private LongWritable resultCount;
-    transient private DoubleWritable resultSum;
-    transient private <CamelCaseValueType>Writable resultInput;
-    transient private StructObjectInspector soi;
-#ENDIF PARTIAL1
-#IF COMPLETE
-    transient private DoubleWritable fullResult;
-    transient private ObjectInspector oi;
-#ENDIF COMPLETE
+  // This constructor is used to momentarily create the object so match can be called.
+  public <ClassName>() {
+    super();
+  }
 
-    public <ClassName>(VectorExpression inputExpression, GenericUDAFEvaluator.Mode mode) {
-      super(inputExpression, mode);
+  public <ClassName>(VectorAggregationDesc vecAggrDesc) {
+    super(vecAggrDesc);
 #IF PARTIAL1
       Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.PARTIAL1);
 #ENDIF PARTIAL1
 #IF COMPLETE
       Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.COMPLETE);
 #ENDIF COMPLETE
-    }
+    init();
+  }
 
     private void init() {
-#IF PARTIAL1
-      partialResult = new Object[3];
-      resultCount = new LongWritable();
-      resultSum = new DoubleWritable();
-      resultInput = new <CamelCaseValueType>Writable();
-      partialResult[0] = resultCount;
-      partialResult[1] = resultSum;
-      partialResult[2] = resultInput;
-      initPartialResultInspector();
-#ENDIF PARTIAL1
-#IF COMPLETE
-      fullResult = new DoubleWritable();
-      initFullResultInspector();
-#ENDIF COMPLETE
     }
-
-#IF PARTIAL1
-    private void initPartialResultInspector() {
-        List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writable<CamelCaseValueType>ObjectInspector);
-        List<String> fname = new ArrayList<String>();
-        fname.add("count");
-        fname.add("sum");
-        fname.add("input");
-        soi = ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
-    }
-#ENDIF PARTIAL1
-#IF COMPLETE
-    private void initFullResultInspector() {
-      oi = PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
-    }
-#ENDIF COMPLETE
 
     private Aggregation getCurrentAggregationBuffer(
         VectorAggregationBufferRow[] aggregationBufferSets,
@@ -168,8 +127,10 @@ public class <ClassName> extends VectorAggregateExpression {
 
       inputExpression.evaluate(batch);
 
-       <InputColumnVectorType> inputVector = ( <InputColumnVectorType>)batch.
-        cols[this.inputExpression.getOutputColumn()];
+       <InputColumnVectorType> inputVector =
+           (<InputColumnVectorType>) batch.cols[
+               this.inputExpression.getOutputColumnNum()];
+
       <ValueType>[] vector = inputVector.vector;
 
       if (inputVector.noNulls) {
@@ -345,7 +306,8 @@ public class <ClassName> extends VectorAggregateExpression {
       inputExpression.evaluate(batch);
 
       <InputColumnVectorType> inputVector =
-          (<InputColumnVectorType>)batch.cols[this.inputExpression.getOutputColumn()];
+          (<InputColumnVectorType>) batch.cols[
+              this.inputExpression.getOutputColumnNum()];
 
       int batchSize = batch.size;
 
@@ -470,36 +432,6 @@ public class <ClassName> extends VectorAggregateExpression {
       myAgg.reset();
     }
 
-    @Override
-    public Object evaluateOutput(
-        AggregationBuffer agg) throws HiveException {
-      Aggregation myagg = (Aggregation) agg;
-      if (myagg.isNull) {
-        return null;
-      } else {
-        Preconditions.checkState(myagg.count > 0);
-#IF PARTIAL1
-        resultCount.set (myagg.count);
-        resultSum.set (myagg.sum);
-        return partialResult;
-#ENDIF PARTIAL1
-#IF COMPLETE
-        fullResult.set (myagg.sum / myagg.count);
-        return fullResult;
-#ENDIF COMPLETE
-      }
-    }
-
-  @Override
-  public ObjectInspector getOutputObjectInspector() {
-#IF PARTIAL1
-    return soi;
-#ENDIF PARTIAL1
-#IF COMPLETE
-    return oi;
-#ENDIF COMPLETE
-  }
-
   @Override
   public long getAggregationBufferFixedSize() {
     JavaDataModel model = JavaDataModel.get();
@@ -510,7 +442,68 @@ public class <ClassName> extends VectorAggregateExpression {
   }
 
   @Override
-  public void init(AggregationDesc desc) throws HiveException {
-    init();
+  public boolean matches(String name, ColumnVector.Type inputColVectorType,
+      ColumnVector.Type outputColVectorType, Mode mode) {
+
+    /*
+     * Average input is <UpperCaseColumnVectorType>.
+#IF PARTIAL1
+     * Output is STRUCT.
+     *
+     * Mode PARTIAL1.
+#ENDIF PARTIAL1
+#IF COMPLETE
+     * Output is DOUBLE.
+     *
+     * Mode COMPLETE.
+#ENDIF COMPLETE
+     */
+    return
+        name.equals("avg") &&
+        inputColVectorType == ColumnVector.Type.<UpperCaseColumnVectorType> &&
+#IF PARTIAL1
+        outputColVectorType == ColumnVector.Type.STRUCT &&
+        mode == Mode.PARTIAL1;
+#ENDIF PARTIAL1
+#IF COMPLETE
+        outputColVectorType == ColumnVector.Type.DOUBLE &&
+        mode == Mode.COMPLETE;
+#ENDIF COMPLETE
+  }
+
+  @Override
+  public void assignRowColumn(VectorizedRowBatch batch, int batchIndex, int columnNum,
+      AggregationBuffer agg) throws HiveException {
+
+#IF PARTIAL1
+    StructColumnVector outputColVector = (StructColumnVector) batch.cols[columnNum];
+#ENDIF PARTIAL1
+#IF COMPLETE
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[columnNum];
+#ENDIF COMPLETE
+
+    Aggregation myagg = (Aggregation) agg;
+    if (myagg.isNull) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[batchIndex] = true;
+      return;
+    }
+    Preconditions.checkState(myagg.count > 0);
+    outputColVector.isNull[batchIndex] = false;
+
+#IF PARTIAL1
+    ColumnVector[] fields = outputColVector.fields;
+    ((LongColumnVector) fields[AVERAGE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.count;
+    ((DoubleColumnVector) fields[AVERAGE_SUM_FIELD_INDEX]).vector[batchIndex] = myagg.sum;
+
+    ColumnVector sourceColVector = (ColumnVector) fields[AVERAGE_SOURCE_FIELD_INDEX];
+    sourceColVector.isRepeating = true;
+    sourceColVector.noNulls = false;
+    sourceColVector.isNull[0] = true;
+
+#ENDIF PARTIAL1
+#IF COMPLETE
+    outputColVector.vector[batchIndex] = myagg.sum / myagg.count;
+#ENDIF COMPLETE
   }
 }

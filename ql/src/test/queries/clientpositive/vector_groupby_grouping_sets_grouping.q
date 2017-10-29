@@ -12,7 +12,7 @@ CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text;
 
 -- SORT_QUERY_RESULTS
 
-explain
+explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1
 group by rollup(key, value);
@@ -21,7 +21,7 @@ select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1
 group by rollup(key, value);
 
-explain
+explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1
 group by cube(key, value);
@@ -30,7 +30,7 @@ select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1
 group by cube(key, value);
 
-explain
+explain vectorization detail
 select key, value
 from T1
 group by cube(key, value)
@@ -41,7 +41,7 @@ from T1
 group by cube(key, value)
 having grouping(key) = 1;
 
-explain
+explain vectorization detail
 select key, value, grouping(key)+grouping(value) as x
 from T1
 group by cube(key, value)
@@ -56,7 +56,7 @@ order by x desc, case when x = 1 then key end;
 
 set hive.cbo.enable=false;
 
-explain
+explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1
 group by rollup(key, value);
@@ -65,7 +65,7 @@ select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1
 group by rollup(key, value);
 
-explain
+explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1
 group by cube(key, value);
@@ -74,7 +74,7 @@ select key, value, `grouping__id`, grouping(key), grouping(value)
 from T1
 group by cube(key, value);
 
-explain
+explain vectorization detail
 select key, value
 from T1
 group by cube(key, value)
@@ -85,7 +85,7 @@ from T1
 group by cube(key, value)
 having grouping(key) = 1;
 
-explain
+explain vectorization detail
 select key, value, grouping(key)+grouping(value) as x
 from T1
 group by cube(key, value)
@@ -98,7 +98,7 @@ group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end;
 
-explain
+explain vectorization detail
 select key, value, `grouping__id`, grouping(key, value)
 from T1
 group by cube(key, value);
@@ -107,7 +107,7 @@ select key, value, `grouping__id`, grouping(key, value)
 from T1
 group by cube(key, value);
 
-explain
+explain vectorization detail
 select key, value, `grouping__id`, grouping(value, key)
 from T1
 group by cube(key, value);
@@ -116,7 +116,7 @@ select key, value, `grouping__id`, grouping(value, key)
 from T1
 group by cube(key, value);
 
-explain
+explain vectorization detail
 select key, value, `grouping__id`, grouping(key, value)
 from T1
 group by rollup(key, value);
@@ -125,7 +125,7 @@ select key, value, `grouping__id`, grouping(key, value)
 from T1
 group by rollup(key, value);
 
-explain
+explain vectorization detail
 select key, value, `grouping__id`, grouping(value, key)
 from T1
 group by rollup(key, value);

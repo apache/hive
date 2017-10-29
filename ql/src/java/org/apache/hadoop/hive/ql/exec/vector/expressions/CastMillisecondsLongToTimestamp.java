@@ -26,12 +26,10 @@ public class CastMillisecondsLongToTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private int colNum;
-  private int outputColumn;
 
-  public CastMillisecondsLongToTimestamp(int colNum, int outputColumn) {
-    this();
+  public CastMillisecondsLongToTimestamp(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
 
   public CastMillisecondsLongToTimestamp() {
@@ -52,7 +50,7 @@ public class CastMillisecondsLongToTimestamp extends VectorExpression {
     }
 
     LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
-    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumn];
+    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -102,18 +100,8 @@ public class CastMillisecondsLongToTimestamp extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "timestamp";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 
   @Override

@@ -43,27 +43,25 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 940 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1]
                   Select Operator
                     expressions: key (type: string), CASE WHEN (bool) THEN (1) WHEN ((not bool)) THEN (0) ELSE (null) END (type: int)
                     outputColumnNames: _col0, _col1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 5]
-                        selectExpressions: IfExprLongScalarLongColumn(col 1, val 1, col 4)(children: IfExprColumnNull(col 2, col 3, null)(children: NotCol(col 1) -> 2:boolean, ConstantVectorExpression(val 0) -> 3:long) -> 4:int) -> 5:long
+                        projectedOutputColumnNums: [0, 6]
+                        selectExpressions: IfExprLongScalarLongColumn(col 1:boolean, val 1, col 5:int)(children: IfExprColumnNull(col 3:boolean, col 4:int, null)(children: NotCol(col 1:boolean) -> 3:boolean, ConstantVectorExpression(val 0) -> 4:int) -> 5:int) -> 6:int
                     Statistics: Num rows: 5 Data size: 940 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(col 5) -> bigint
+                          aggregators: VectorUDAFCount(col 6:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
-                          keyExpressions: col 0
+                          keyExpressions: col 0:string
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
@@ -83,7 +81,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -93,7 +92,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -101,14 +99,13 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 1) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 1:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
-                    keyExpressions: col 0
+                    keyExpressions: col 0:string
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1

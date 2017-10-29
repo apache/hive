@@ -31,9 +31,11 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 public class StringSubstrColStart extends VectorExpression {
   private static final long serialVersionUID = 1L;
+
+  private final int colNum;
+
   private int startIdx;
-  private int colNum;
-  private int outputColumn;
+
   private transient static byte[] EMPTY_STRING;
 
   // Populating the Empty string bytes. Putting it as static since it should be immutable and can
@@ -46,8 +48,8 @@ public class StringSubstrColStart extends VectorExpression {
     }
   }
 
-  public StringSubstrColStart(int colNum, int startIdx, int outputColumn) {
-    this();
+  public StringSubstrColStart(int colNum, int startIdx, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
 
     /* Switch from a 1-based start offset (the Hive end user convention) to a 0-based start offset
@@ -65,11 +67,14 @@ public class StringSubstrColStart extends VectorExpression {
       // start index of -n means give the last n characters of the string
       this.startIdx = startIdx;
     }
-    this.outputColumn = outputColumn;
   }
 
   public StringSubstrColStart() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    startIdx = -1;
   }
 
   /**
@@ -120,7 +125,7 @@ public class StringSubstrColStart extends VectorExpression {
     }
 
     BytesColumnVector inV = (BytesColumnVector) batch.cols[colNum];
-    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
+    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumnNum];
 
     int n = batch.size;
 
@@ -215,38 +220,8 @@ public class StringSubstrColStart extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "string";
-  }
-
-  public int getStartIdx() {
-    return startIdx;
-  }
-
-  public void setStartIdx(int startIdx) {
-    this.startIdx = startIdx;
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", start " + startIdx;
+    return getColumnParamString(0, colNum) + ", start " + startIdx;
   }
 
   @Override

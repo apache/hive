@@ -25,6 +25,9 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hive.common.util.DateUtils;
 
 import com.google.common.base.Preconditions;
@@ -36,20 +39,32 @@ public abstract class VectorUDFTimestampFieldTimestamp extends VectorExpression 
 
   private static final long serialVersionUID = 1L;
 
-  protected int colNum;
-  protected int outputColumn;
-  protected int field;
+  protected final int colNum;
+  protected final int field;
+
   protected transient final Calendar calendar = Calendar.getInstance();
 
-  public VectorUDFTimestampFieldTimestamp(int field, int colNum, int outputColumn) {
-    this();
+  public VectorUDFTimestampFieldTimestamp(int field, int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
     this.field = field;
   }
 
   public VectorUDFTimestampFieldTimestamp() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    field = -1;
+  }
+
+  public void initCalendar() {
+  }
+
+  @Override
+  public void transientInit() throws HiveException {
+    super.transientInit();
+    initCalendar();
   }
 
   protected long getTimestampField(TimestampColumnVector timestampColVector, int elementNum) {
@@ -60,13 +75,14 @@ public abstract class VectorUDFTimestampFieldTimestamp extends VectorExpression 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
-    Preconditions.checkState(inputTypes[0] == VectorExpression.Type.TIMESTAMP);
+    Preconditions.checkState(
+        ((PrimitiveTypeInfo) inputTypeInfos[0]).getPrimitiveCategory() == PrimitiveCategory.TIMESTAMP);
 
     if (childExpressions != null) {
         super.evaluateChildren(batch);
       }
 
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
     ColumnVector inputColVec = batch.cols[this.colNum];
 
     /* every line below this is identical for evaluateLong & evaluateString */
@@ -119,41 +135,11 @@ public abstract class VectorUDFTimestampFieldTimestamp extends VectorExpression 
     }
   }
 
-  @Override
-  public int getOutputColumn() {
-    return this.outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public int getField() {
-    return field;
-  }
-
-  public void setField(int field) {
-    this.field = field;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
   public String vectorExpressionParameters() {
     if (field == -1) {
-      return "col " + colNum;
+      return getColumnParamString(0, colNum);
     } else {
-      return "col " + colNum + ", field " + DateUtils.getFieldName(field);
+      return getColumnParamString(0, colNum) + ", field " + DateUtils.getFieldName(field);
     }
   }
 

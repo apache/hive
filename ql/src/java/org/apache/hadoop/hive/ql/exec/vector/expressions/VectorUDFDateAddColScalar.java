@@ -24,7 +24,10 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.DateParser;
 
@@ -33,23 +36,38 @@ import java.sql.Date;
 public class VectorUDFDateAddColScalar extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private int outputColumn;
-  private int numDays;
+  private final int colNum;
+  private final int numDays;
+
   protected boolean isPositive = true;
+
   private transient final Text text = new Text();
   private transient final DateParser dateParser = new DateParser();
   private transient final Date date = new Date(0);
 
-  public VectorUDFDateAddColScalar(int colNum, long numDays, int outputColumn) {
-    super();
+  // Transient members initialized by transientInit method.
+  private transient PrimitiveCategory primitiveCategory;
+
+  public VectorUDFDateAddColScalar(int colNum, long numDays, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
     this.numDays = (int) numDays;
-    this.outputColumn = outputColumn;
   }
 
   public VectorUDFDateAddColScalar() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    numDays = 0;
+  }
+
+  @Override
+  public void transientInit() throws HiveException {
+    super.transientInit();
+
+    primitiveCategory =
+        ((PrimitiveTypeInfo) inputTypeInfos[0]).getPrimitiveCategory();
   }
 
   @Override
@@ -59,7 +77,7 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
     ColumnVector inputCol = batch.cols[this.colNum];
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputCol.isRepeating ? 1 : batch.size;
@@ -74,7 +92,7 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
     /* true for all algebraic UDFs with no state */
     outV.isRepeating = inputCol.isRepeating;
 
-    switch (inputTypes[0]) {
+    switch (primitiveCategory) {
       case DATE:
         if (inputCol.noNulls) {
           outV.noNulls = true;
@@ -185,7 +203,7 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
         }
         break;
       default:
-          throw new Error("Unsupported input type " + inputTypes[0].name());
+          throw new Error("Unsupported input type " + primitiveCategory.name());
     }
   }
 
@@ -231,38 +249,8 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return this.outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "date";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public int getNumDays() {
-    return numDays;
-  }
-
-  public void setNumDay(int numDays) {
-    this.numDays = numDays;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + numDays;
+    return getColumnParamString(0, colNum) + ", val " + numDays;
   }
 
   @Override

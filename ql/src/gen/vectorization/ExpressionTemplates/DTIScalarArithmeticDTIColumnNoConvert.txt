@@ -36,8 +36,8 @@ public class <ClassName> extends LongScalar<OperatorName>LongColumn {
 
   private static final long serialVersionUID = 1L;
 
-  public <ClassName>(long value, int colNum, int outputColumn) {
-    super(value, colNum, outputColumn);
+  public <ClassName>(long value, int colNum, int outputColumnNum) {
+    super(value, colNum, outputColumnNum);
   }
 
   public <ClassName>() {

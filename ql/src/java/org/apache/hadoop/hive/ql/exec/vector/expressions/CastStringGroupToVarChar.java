@@ -24,8 +24,8 @@ public class CastStringGroupToVarChar extends StringUnaryUDFDirect implements Tr
   private static final long serialVersionUID = 1L;
   private int maxLength; // Must be manually set with setMaxLength.
 
-  public CastStringGroupToVarChar(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public CastStringGroupToVarChar(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   public CastStringGroupToVarChar() {
@@ -38,12 +38,8 @@ public class CastStringGroupToVarChar extends StringUnaryUDFDirect implements Tr
   protected void func(BytesColumnVector outV, byte[][] vector, int[] start, int[] length, int i) {
     StringExpr.truncate(outV, i, vector[i], start[i], length[i], maxLength);
   }
+
   @Override
-  public String getOutputType() {
-    return "VarChar";
-  }
-  
-    @Override
   public int getMaxLength() {
     return maxLength;
   }
@@ -55,6 +51,6 @@ public class CastStringGroupToVarChar extends StringUnaryUDFDirect implements Tr
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumn + ", maxLength " + maxLength;
+    return getColumnParamString(0, inputColumn) + ", maxLength " + maxLength;
   }
 }

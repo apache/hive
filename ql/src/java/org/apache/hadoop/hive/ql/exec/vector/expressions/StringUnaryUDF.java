@@ -37,21 +37,25 @@ public class StringUnaryUDF extends VectorExpression {
   }
 
   private static final long serialVersionUID = 1L;
-  private int colNum;
-  private int outputColumn;
-  private IUDFUnaryString func;
-  private transient final Text s;
 
-  StringUnaryUDF(int colNum, int outputColumn, IUDFUnaryString func) {
-    this();
+  private final int colNum;
+  private final IUDFUnaryString func;
+
+  private Text s;
+
+  StringUnaryUDF(int colNum, int outputColumnNum, IUDFUnaryString func) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
     this.func = func;
+    s = new Text();
   }
 
   public StringUnaryUDF() {
     super();
-    s = new Text();
+
+    // Dummy final assignments.
+    colNum = -1;
+    func = null;
   }
 
   @Override
@@ -67,7 +71,7 @@ public class StringUnaryUDF extends VectorExpression {
     byte[][] vector = inputColVector.vector;
     int [] start = inputColVector.start;
     int [] length = inputColVector.length;
-    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
+    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumnNum];
     outV.initBuffer();
     Text t;
 
@@ -165,38 +169,8 @@ public class StringUnaryUDF extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "String";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public IUDFUnaryString getFunc() {
-    return func;
-  }
-
-  public void setFunc(IUDFUnaryString func) {
-    this.func = func;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 
   @Override

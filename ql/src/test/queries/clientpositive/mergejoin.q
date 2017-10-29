@@ -14,7 +14,7 @@ set hive.tez.bigtable.minsize.semijoin.reduction=1;
 
 -- SORT_QUERY_RESULTS
 
-explain
+explain vectorization detail
 select * from src a join src1 b on a.key = b.key;
 
 select * from src a join src1 b on a.key = b.key;
@@ -42,7 +42,7 @@ CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (
 insert overwrite table tab partition (ds='2008-04-08')
 select key,value from srcbucket_mapjoin;
 
-explain
+explain vectorization detail
 select count(*)
 from tab a join tab_part b on a.key = b.key;
 
@@ -52,52 +52,56 @@ set hive.join.emit.interval=2;
 
 select * from tab a join tab_part b on a.key = b.key;
 
-explain
+explain vectorization detail
 select count(*)
 from tab a left outer join tab_part b on a.key = b.key;
 
 select count(*)
 from tab a left outer join tab_part b on a.key = b.key;
 
-explain
+explain vectorization detail
 select count (*)
 from tab a right outer join tab_part b on a.key = b.key;
 
 select count (*)
 from tab a right outer join tab_part b on a.key = b.key;
 
-explain
+explain vectorization detail
 select count(*)
 from tab a full outer join tab_part b on a.key = b.key;
 
 select count(*)
 from tab a full outer join tab_part b on a.key = b.key;
 
-explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value;
+explain vectorization detail
+select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value;
 select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value;
 
-explain select count(*) from tab a join tab_part b on a.value = b.value;
+explain vectorization detail
+select count(*) from tab a join tab_part b on a.value = b.value;
 select count(*) from tab a join tab_part b on a.value = b.value;
 
-explain
+explain vectorization detail
 select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
 UNION  ALL
 select s2.key as key, s2.value as value from tab s2
 ) a join tab_part b on (a.key = b.key);
 
-explain select count(*) from tab a join tab_part b on a.value = b.value;
+explain vectorization detail
+select count(*) from tab a join tab_part b on a.value = b.value;
 select count(*) from tab a join tab_part b on a.value = b.value;
 
-explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value;
+explain vectorization detail
+select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value;
 select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value;
 
-explain
+explain vectorization detail
 select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
 UNION  ALL
 select s2.key as key, s2.value as value from tab s2
 ) a join tab_part b on (a.key = b.key);
 
-explain
+explain  vectorization detail
 select count(*) from
 (select rt1.id from
 (select t1.key as id, t1.value as od from tab t1 order by id, od) rt1) vt1

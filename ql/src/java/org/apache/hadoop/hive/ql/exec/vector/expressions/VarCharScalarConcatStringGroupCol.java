@@ -28,8 +28,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 public class VarCharScalarConcatStringGroupCol extends StringScalarConcatStringGroupCol {
   private static final long serialVersionUID = 1L;
 
-  public VarCharScalarConcatStringGroupCol(HiveVarchar value, int colNum, int outputColumn) {
-    super(value.getValue().getBytes(), colNum, outputColumn);
+  public VarCharScalarConcatStringGroupCol(HiveVarchar value, int colNum, int outputColumnNum) {
+    super(value.getValue().getBytes(), colNum, outputColumnNum);
   }
 
   public VarCharScalarConcatStringGroupCol() {

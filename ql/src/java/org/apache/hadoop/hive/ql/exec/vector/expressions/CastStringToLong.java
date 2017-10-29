@@ -18,10 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.lazy.LazyByte;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
@@ -42,19 +44,27 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 public class CastStringToLong extends VectorExpression {
   private static final long serialVersionUID = 1L;
   int inputColumn;
-  int outputColumn;
 
-  private transient boolean integerPrimitiveCategoryKnown = false;
+  // Transient members initialized by transientInit method.
   protected transient PrimitiveCategory integerPrimitiveCategory;
 
-  public CastStringToLong(int inputColumn, int outputColumn) {
-    super();
+  public CastStringToLong(int inputColumn, int outputColumnNum) {
+    super(outputColumnNum);
     this.inputColumn = inputColumn;
-    this.outputColumn = outputColumn;
   }
 
   public CastStringToLong() {
     super();
+
+    // Dummy final assignments.
+    inputColumn = -1;
+  }
+
+  @Override
+  public void transientInit() throws HiveException {
+    super.transientInit();
+
+    integerPrimitiveCategory = ((PrimitiveTypeInfo) outputTypeInfo).getPrimitiveCategory();
   }
 
   /**
@@ -164,13 +174,6 @@ public class CastStringToLong extends VectorExpression {
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
-    if (!integerPrimitiveCategoryKnown) {
-      String typeName = getOutputType().toLowerCase();
-      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
-      integerPrimitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
-      integerPrimitiveCategoryKnown = true;
-    }
-
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -178,7 +181,7 @@ public class CastStringToLong extends VectorExpression {
     BytesColumnVector inV = (BytesColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
 
     if (n == 0) {
 
@@ -236,25 +239,8 @@ public class CastStringToLong extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public int getInputColumn() {
-    return inputColumn;
-  }
-
-  public void setInputColumn(int inputColumn) {
-    this.inputColumn = inputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumn;
+    return getColumnParamString(0, inputColumn);
   }
 
   @Override

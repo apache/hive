@@ -33,18 +33,21 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 public abstract class MathFuncLongToLong extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  protected int colNum;
-  private int outputColumn;
+  protected final int colNum;
 
   // Subclasses must override this with a function that implements the desired logic.
   protected abstract long func(long d);
 
-  public MathFuncLongToLong(int colNum, int outputColumn) {
+  public MathFuncLongToLong(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
 
   public MathFuncLongToLong() {
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   @Override
@@ -55,7 +58,7 @@ public abstract class MathFuncLongToLong extends VectorExpression {
     }
 
     LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -105,29 +108,7 @@ public abstract class MathFuncLongToLong extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 }

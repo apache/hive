@@ -252,24 +252,22 @@ STAGE PLANS:
             Statistics: Num rows: 1000 Data size: 241204 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
             Select Operator
               expressions: ss_ticket_number (type: int)
               outputColumnNames: ss_ticket_number
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [9]
+                  projectedOutputColumnNums: [9]
               Statistics: Num rows: 1000 Data size: 241204 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
                     groupByMode: HASH
-                    vectorOutput: true
-                    keyExpressions: col 9
+                    keyExpressions: col 9:int
                     native: false
                     vectorProcessingMode: HASH
-                    projectedOutputColumns: []
+                    projectedOutputColumnNums: []
                 keys: ss_ticket_number (type: int)
                 mode: hash
                 outputColumnNames: _col0
@@ -289,7 +287,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -300,12 +299,6 @@ STAGE PLANS:
           enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
-          Group By Vectorization:
-              groupByMode: MERGEPARTIAL
-              vectorOutput: false
-              native: false
-              vectorProcessingMode: NONE
-              projectedOutputColumns: null
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
@@ -323,7 +316,6 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0]
             Reduce Output Operator
               key expressions: _col0 (type: int)
               sort order: +
@@ -338,7 +330,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -451,24 +444,22 @@ STAGE PLANS:
             Statistics: Num rows: 1000 Data size: 241204 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
             Select Operator
               expressions: ss_ticket_number (type: int)
               outputColumnNames: ss_ticket_number
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [9]
+                  projectedOutputColumnNums: [9]
               Statistics: Num rows: 1000 Data size: 241204 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
                     groupByMode: HASH
-                    vectorOutput: true
-                    keyExpressions: col 9
+                    keyExpressions: col 9:int
                     native: false
                     vectorProcessingMode: HASH
-                    projectedOutputColumns: []
+                    projectedOutputColumnNums: []
                 keys: ss_ticket_number (type: int)
                 mode: hash
                 outputColumnNames: _col0
@@ -487,7 +478,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -498,24 +490,12 @@ STAGE PLANS:
           enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
-          Group By Vectorization:
-              groupByMode: MERGEPARTIAL
-              vectorOutput: false
-              native: false
-              vectorProcessingMode: NONE
-              projectedOutputColumns: null
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 500 Data size: 120602 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             aggregations: min(_col0)
-            Group By Vectorization:
-                groupByMode: COMPLETE
-                vectorOutput: false
-                native: false
-                vectorProcessingMode: NONE
-                projectedOutputColumns: null
             keys: _col0 (type: int)
             mode: complete
             outputColumnNames: _col0, _col1
@@ -537,7 +517,6 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0]
             Reduce Output Operator
               key expressions: _col0 (type: int)
               sort order: +
@@ -551,7 +530,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -731,12 +711,11 @@ STAGE PLANS:
             Statistics: Num rows: 1000 Data size: 241204 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterLongColEqualLongScalar(col 9, val 1) -> boolean
+                  predicateExpression: FilterLongColEqualLongScalar(col 9:int, val 1)
               predicate: (ss_ticket_number = 1) (type: boolean)
               Statistics: Num rows: 500 Data size: 120602 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -745,19 +724,18 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [2, 10, 12, 23]
+                    projectedOutputColumnNums: [2, 10, 12, 23]
                 Statistics: Num rows: 500 Data size: 120602 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: min(ss_quantity), max(ss_net_profit), max(ss_wholesale_cost_decimal)
                   Group By Vectorization:
-                      aggregators: VectorUDAFMinLong(col 10) -> int, VectorUDAFMaxDouble(col 23) -> double, VectorUDAFMaxDecimal(col 12) -> decimal(38,18)
+                      aggregators: VectorUDAFMinLong(col 10:int) -> int, VectorUDAFMaxDouble(col 23:double) -> double, VectorUDAFMaxDecimal(col 12:decimal(38,18)) -> decimal(38,18)
                       className: VectorGroupByOperator
                       groupByMode: HASH
-                      vectorOutput: true
-                      keyExpressions: col 2
+                      keyExpressions: col 2:int
                       native: false
                       vectorProcessingMode: HASH
-                      projectedOutputColumns: [0, 1, 2]
+                      projectedOutputColumnNums: [0, 1, 2]
                   keys: ss_item_sk (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
@@ -777,7 +755,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -789,12 +768,6 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: min(VALUE._col0), max(VALUE._col1), max(VALUE._col2)
-          Group By Vectorization:
-              groupByMode: MERGEPARTIAL
-              vectorOutput: false
-              native: false
-              vectorProcessingMode: NONE
-              projectedOutputColumns: null
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
@@ -805,12 +778,6 @@ STAGE PLANS:
             Statistics: Num rows: 250 Data size: 60301 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: sum(_col1), sum(_col2), avg(_col2), sum(_col3), avg(_col3), sum(_col4), avg(_col4)
-              Group By Vectorization:
-                  groupByMode: HASH
-                  vectorOutput: false
-                  native: false
-                  vectorProcessingMode: NONE
-                  projectedOutputColumns: null
               keys: 1 (type: int)
               mode: hash
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
@@ -828,7 +795,6 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7]
             Reduce Output Operator
               key expressions: _col0 (type: int)
               sort order: +
@@ -844,7 +810,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -856,12 +823,6 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0), sum(VALUE._col1), avg(VALUE._col2), sum(VALUE._col3), avg(VALUE._col4), sum(VALUE._col5), avg(VALUE._col6)
-          Group By Vectorization:
-              groupByMode: MERGEPARTIAL
-              vectorOutput: false
-              native: false
-              vectorProcessingMode: NONE
-              projectedOutputColumns: null
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
@@ -955,26 +916,24 @@ STAGE PLANS:
             Statistics: Num rows: 1000 Data size: 241204 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
             Select Operator
               expressions: ss_item_sk (type: int), ss_ticket_number (type: int), ss_quantity (type: int), ss_wholesale_cost_decimal (type: decimal(38,18)), ss_net_profit (type: double)
               outputColumnNames: ss_item_sk, ss_ticket_number, ss_quantity, ss_wholesale_cost_decimal, ss_net_profit
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [2, 9, 10, 12, 23]
+                  projectedOutputColumnNums: [2, 9, 10, 12, 23]
               Statistics: Num rows: 1000 Data size: 241204 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: min(ss_quantity), max(ss_net_profit), max(ss_wholesale_cost_decimal)
                 Group By Vectorization:
-                    aggregators: VectorUDAFMinLong(col 10) -> int, VectorUDAFMaxDouble(col 23) -> double, VectorUDAFMaxDecimal(col 12) -> decimal(38,18)
+                    aggregators: VectorUDAFMinLong(col 10:int) -> int, VectorUDAFMaxDouble(col 23:double) -> double, VectorUDAFMaxDecimal(col 12:decimal(38,18)) -> decimal(38,18)
                     className: VectorGroupByOperator
                     groupByMode: HASH
-                    vectorOutput: true
-                    keyExpressions: col 9, col 2
+                    keyExpressions: col 9:int, col 2:int
                     native: false
                     vectorProcessingMode: HASH
-                    projectedOutputColumns: [0, 1, 2]
+                    projectedOutputColumnNums: [0, 1, 2]
                 keys: ss_ticket_number (type: int), ss_item_sk (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
@@ -994,7 +953,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -1006,12 +966,6 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: min(VALUE._col0), max(VALUE._col1), max(VALUE._col2)
-          Group By Vectorization:
-              groupByMode: MERGEPARTIAL
-              vectorOutput: false
-              native: false
-              vectorProcessingMode: NONE
-              projectedOutputColumns: null
           keys: KEY._col0 (type: int), KEY._col1 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
@@ -1022,12 +976,6 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 120602 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: sum(_col2), avg(_col2), sum(_col3), avg(_col3), sum(_col4), avg(_col4)
-              Group By Vectorization:
-                  groupByMode: COMPLETE
-                  vectorOutput: false
-                  native: false
-                  vectorProcessingMode: NONE
-                  projectedOutputColumns: null
               keys: _col1 (type: int), _col0 (type: int)
               mode: complete
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
@@ -1049,7 +997,6 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7]
             Reduce Output Operator
               key expressions: _col0 (type: int), _col1 (type: int)
               sort order: ++
@@ -1064,7 +1011,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

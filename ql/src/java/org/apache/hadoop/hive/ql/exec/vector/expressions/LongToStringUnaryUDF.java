@@ -29,16 +29,19 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 abstract public class LongToStringUnaryUDF extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  int inputColumn;
-  int outputColumn;
 
-  public LongToStringUnaryUDF(int inputColumn, int outputColumn) {
+  protected final int inputColumn;
+
+  public LongToStringUnaryUDF(int inputColumn, int outputColumnNum) {
+    super(outputColumnNum);
     this.inputColumn = inputColumn;
-    this.outputColumn = outputColumn;
   }
 
   public LongToStringUnaryUDF() {
     super();
+
+    // Dummy final assignments.
+    inputColumn = -1;
   }
 
   abstract protected void func(BytesColumnVector outV, long[] vector, int i);
@@ -54,7 +57,7 @@ abstract public class LongToStringUnaryUDF extends VectorExpression {
     int[] sel = batch.selected;
     int n = batch.size;
     long[] vector = inputColVector.vector;
-    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
+    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumnNum];
     outV.initBuffer();
 
     if (n == 0) {
@@ -111,32 +114,9 @@ abstract public class LongToStringUnaryUDF extends VectorExpression {
     }
   }
 
-
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public int getInputColumn() {
-    return inputColumn;
-  }
-
-  public void setInputColumn(int inputColumn) {
-    this.inputColumn = inputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "String";
-  }
-
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumn;
+    return getColumnParamString(0, inputColumn);
   }
 
   @Override

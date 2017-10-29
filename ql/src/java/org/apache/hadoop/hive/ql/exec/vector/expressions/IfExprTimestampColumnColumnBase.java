@@ -35,6 +35,7 @@ public abstract class IfExprTimestampColumnColumnBase extends IfExprConditionalF
   }
 
   public IfExprTimestampColumnColumnBase() {
+    super();
   }
 
   @Override
@@ -46,7 +47,7 @@ public abstract class IfExprTimestampColumnColumnBase extends IfExprConditionalF
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
     TimestampColumnVector arg2ColVector = (TimestampColumnVector) batch.cols[arg2Column];
     TimestampColumnVector arg3ColVector = (TimestampColumnVector) batch.cols[arg3Column];
-    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumn];
+    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = arg2ColVector.noNulls && arg3ColVector.noNulls;
@@ -118,12 +119,8 @@ public abstract class IfExprTimestampColumnColumnBase extends IfExprConditionalF
   }
 
   @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", col "+ arg2Column + ", col "+ arg3Column;
+    return getColumnParamString(0, arg1Column) + ", " + getColumnParamString(1, arg2Column) +
+        getColumnParamString(2, arg3Column);
   }
 }

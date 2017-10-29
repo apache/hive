@@ -68,7 +68,8 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumns: [t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary]
             Reduce Output Operator
               key expressions: f (type: float), t (type: tinyint)
               sort order: ++
@@ -84,7 +85,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -92,8 +94,9 @@ STAGE PLANS:
           rowBatchContext:
               dataColumnCount: 11
               includeColumns: [0, 4, 7]
-              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -278,7 +281,8 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumns: [t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary]
             Reduce Output Operator
               key expressions: ts (type: timestamp), i (type: int), s (type: string)
               sort order: ++-
@@ -293,7 +297,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -301,8 +306,9 @@ STAGE PLANS:
           rowBatchContext:
               dataColumnCount: 11
               includeColumns: [2, 7, 8]
-              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -487,7 +493,8 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumns: [t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary]
             Reduce Output Operator
               key expressions: bo (type: boolean), b (type: bigint), s (type: string)
               sort order: +++
@@ -502,7 +509,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -510,8 +518,9 @@ STAGE PLANS:
           rowBatchContext:
               dataColumnCount: 11
               includeColumns: [3, 6, 7]
-              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -696,7 +705,8 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumns: [t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary]
             Reduce Output Operator
               key expressions: dec (type: decimal(4,2)), f (type: float)
               sort order: ++
@@ -712,7 +722,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -720,8 +731,9 @@ STAGE PLANS:
           rowBatchContext:
               dataColumnCount: 11
               includeColumns: [4, 7, 9]
-              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -982,7 +994,8 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                projectedColumnNums: [0, 1]
+                projectedColumns: [_col1:timestamp, _col2:decimal(4,2)]
             Reduce Output Operator
               key expressions: _col1 (type: timestamp), _col2 (type: decimal(4,2))
               sort order: ++
@@ -997,7 +1010,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -1007,6 +1021,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: _col1:timestamp, _col2:decimal(4,2)
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -1200,7 +1215,8 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                projectedColumnNums: [0, 1]
+                projectedColumns: [_col1:timestamp, _col2:decimal(4,2)]
             Reduce Output Operator
               key expressions: _col1 (type: timestamp)
               sort order: +
@@ -1216,7 +1232,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -1226,6 +1243,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: _col1:timestamp, _col2:decimal(4,2)
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -1421,7 +1439,8 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
+                projectedColumnNums: [0, 1]
+                projectedColumns: [_col2:timestamp, _col3:decimal(4,2)]
             Reduce Output Operator
               key expressions: _col2 (type: timestamp), _col3 (type: decimal(4,2))
               sort order: ++
@@ -1436,7 +1455,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -1446,6 +1466,7 @@ STAGE PLANS:
               includeColumns: [0, 1]
               dataColumns: _col2:timestamp, _col3:decimal(4,2)
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

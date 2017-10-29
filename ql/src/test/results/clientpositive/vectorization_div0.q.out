@@ -21,15 +21,14 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
             Select Operator
               expressions: (cdouble / 0.0) (type: double)
               outputColumnNames: _col0
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [12]
-                  selectExpressions: DoubleColDivideDoubleScalar(col 5, val 0.0) -> 12:double
+                  projectedOutputColumnNums: [13]
+                  selectExpressions: DoubleColDivideDoubleScalar(col 5:double, val 0.0) -> 13:double
               Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 100
@@ -51,7 +50,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -196,12 +196,11 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprAndExpr(children: FilterLongColGreaterLongScalar(col 3, val 0) -> boolean, FilterLongColLessLongScalar(col 3, val 100000000) -> boolean) -> boolean
+                  predicateExpression: FilterExprAndExpr(children: FilterLongColGreaterLongScalar(col 3:bigint, val 0), FilterLongColLessLongScalar(col 3:bigint, val 100000000))
               predicate: ((cbigint < 100000000) and (cbigint > 0)) (type: boolean)
               Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -210,8 +209,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [12, 15, 17]
-                    selectExpressions: LongColSubtractLongScalar(col 3, val 988888) -> 12:long, DoubleColDivideDoubleColumn(col 5, col 14)(children: CastLongToDouble(col 13)(children: LongColSubtractLongScalar(col 3, val 988888) -> 13:long) -> 14:double) -> 15:double, DecimalScalarDivideDecimalColumn(val 1.2, col 16)(children: CastLongToDecimal(col 13)(children: LongColSubtractLongScalar(col 3, val 988888) -> 13:long) -> 16:decimal(19,0)) -> 17:decimal(22,21)
+                    projectedOutputColumnNums: [13, 16, 18]
+                    selectExpressions: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 13:bigint, DoubleColDivideDoubleColumn(col 5:double, col 15:double)(children: CastLongToDouble(col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 14:bigint) -> 15:double) -> 16:double, DecimalScalarDivideDecimalColumn(val 1.2, col 17:decimal(19,0))(children: CastLongToDecimal(col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 14:bigint) -> 17:decimal(19,0)) -> 18:decimal(22,21)
                 Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: bigint), _col1 (type: double)
@@ -228,7 +227,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -394,12 +394,11 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprAndExpr(children: FilterDoubleColGreaterEqualDoubleScalar(col 5, val -500.0) -> boolean, FilterDoubleColLessDoubleScalar(col 5, val -199.0) -> boolean) -> boolean
+                  predicateExpression: FilterExprAndExpr(children: FilterDoubleColGreaterEqualDoubleScalar(col 5:double, val -500.0), FilterDoubleColLessDoubleScalar(col 5:double, val -199.0))
               predicate: ((cdouble < -199.0) and (cdouble >= -500.0)) (type: boolean)
               Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -408,8 +407,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [12, 15, 16, 14, 17]
-                    selectExpressions: DoubleColAddDoubleScalar(col 5, val 200.0) -> 12:double, DoubleColDivideDoubleColumn(col 13, col 14)(children: CastLongToDouble(col 3) -> 13:double, DoubleColAddDoubleScalar(col 5, val 200.0) -> 14:double) -> 15:double, DoubleColDivideDoubleColumn(col 13, col 14)(children: DoubleColAddDoubleScalar(col 5, val 200.0) -> 13:double, DoubleColAddDoubleScalar(col 5, val 200.0) -> 14:double) -> 16:double, DoubleScalarDivideDoubleColumn(val 3.0, col 13)(children: DoubleColAddDoubleScalar(col 5, val 200.0) -> 13:double) -> 14:double, DoubleScalarDivideDoubleColumn(val 1.2, col 13)(children: DoubleColAddDoubleScalar(col 5, val 200.0) -> 13:double) -> 17:double
+                    projectedOutputColumnNums: [13, 16, 17, 15, 18]
+                    selectExpressions: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 13:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: CastLongToDouble(col 3:bigint) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 16:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 17:double, DoubleScalarDivideDoubleColumn(val 3.0, col 14:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double) -> 15:double, DoubleScalarDivideDoubleColumn(val 1.2, col 14:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double) -> 18:double
                 Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: double), _col1 (type: double)
@@ -426,7 +425,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

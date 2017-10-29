@@ -28,12 +28,10 @@ public class CastDoubleToTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private int colNum;
-  private int outputColumn;
 
-  public CastDoubleToTimestamp(int colNum, int outputColumn) {
-    this();
+  public CastDoubleToTimestamp(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
 
   public CastDoubleToTimestamp() {
@@ -54,7 +52,7 @@ public class CastDoubleToTimestamp extends VectorExpression {
     }
 
     DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[colNum];
-    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumn];
+    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -104,18 +102,8 @@ public class CastDoubleToTimestamp extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "timestamp";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 
   @Override

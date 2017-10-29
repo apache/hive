@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorSparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
@@ -34,11 +36,13 @@ import com.google.common.annotations.VisibleForTesting;
  * Vectorized version for SparkPartitionPruningSinkOperator.
  * Forked from VectorAppMasterEventOperator.
  **/
-public class VectorSparkPartitionPruningSinkOperator extends SparkPartitionPruningSinkOperator {
+public class VectorSparkPartitionPruningSinkOperator extends SparkPartitionPruningSinkOperator
+    implements VectorizationOperator {
 
   private static final long serialVersionUID = 1L;
 
   private VectorizationContext vContext;
+  private VectorSparkPartitionPruningSinkDesc vectorDesc;
 
   protected transient boolean firstBatch;
 
@@ -46,11 +50,12 @@ public class VectorSparkPartitionPruningSinkOperator extends SparkPartitionPruni
 
   protected transient Object[] singleRow;
 
-  public VectorSparkPartitionPruningSinkOperator(CompilationOpContext ctx,
-      VectorizationContext context, OperatorDesc conf) {
+  public VectorSparkPartitionPruningSinkOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext context, VectorDesc vectorDesc) {
     this(ctx);
     this.conf = (SparkPartitionPruningSinkDesc) conf;
     this.vContext = context;
+    this.vectorDesc = (VectorSparkPartitionPruningSinkDesc) vectorDesc;
   }
 
   /** Kryo ctor. */
@@ -61,6 +66,11 @@ public class VectorSparkPartitionPruningSinkOperator extends SparkPartitionPruni
 
   public VectorSparkPartitionPruningSinkOperator(CompilationOpContext ctx) {
     super(ctx);
+  }
+
+  @Override
+  public VectorizationContext getInputVectorizationContext() {
+    return vContext;
   }
 
   @Override
@@ -96,5 +106,10 @@ public class VectorSparkPartitionPruningSinkOperator extends SparkPartitionPruni
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  @Override
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
   }
 }

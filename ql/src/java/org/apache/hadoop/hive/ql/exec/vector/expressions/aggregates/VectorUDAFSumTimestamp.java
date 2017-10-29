@@ -18,24 +18,17 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates;
 
-import java.sql.Timestamp;
-
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.AggregationDesc;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 
 /**
 * VectorUDAFSumTimestamp. Vectorized implementation for SUM aggregates.
@@ -81,14 +74,17 @@ public class VectorUDAFSumTimestamp extends VectorAggregateExpression {
       }
     }
 
-    transient private DoubleWritable result;
+    // This constructor is used to momentarily create the object so match can be called.
+    public VectorUDAFSumTimestamp() {
+      super();
+    }
 
-    public VectorUDAFSumTimestamp(VectorExpression inputExpression, GenericUDAFEvaluator.Mode mode) {
-      super(inputExpression, mode);
+    public VectorUDAFSumTimestamp(VectorAggregationDesc vecAggrDesc) {
+      super(vecAggrDesc);
+      init();
     }
 
     private void init() {
-      result = new DoubleWritable();
     }
 
     private Aggregation getCurrentAggregationBuffer(
@@ -115,7 +111,7 @@ public class VectorUDAFSumTimestamp extends VectorAggregateExpression {
       inputExpression.evaluate(batch);
 
       TimestampColumnVector inputVector =
-          (TimestampColumnVector)batch.cols[this.inputExpression.getOutputColumn()];
+          (TimestampColumnVector)batch.cols[this.inputExpression.getOutputColumnNum()];
 
       if (inputVector.noNulls) {
         if (inputVector.isRepeating) {
@@ -290,7 +286,7 @@ public class VectorUDAFSumTimestamp extends VectorAggregateExpression {
       inputExpression.evaluate(batch);
 
       TimestampColumnVector inputVector =
-          (TimestampColumnVector)batch.cols[this.inputExpression.getOutputColumn()];
+          (TimestampColumnVector)batch.cols[this.inputExpression.getOutputColumnNum()];
 
       int batchSize = batch.size;
 
@@ -402,23 +398,6 @@ public class VectorUDAFSumTimestamp extends VectorAggregateExpression {
       myAgg.reset();
     }
 
-    @Override
-    public Object evaluateOutput(AggregationBuffer agg) throws HiveException {
-      Aggregation myagg = (Aggregation) agg;
-      if (myagg.isNull) {
-        return null;
-      }
-      else {
-        result.set(myagg.sum);
-        return result;
-      }
-    }
-
-    @Override
-    public ObjectInspector getOutputObjectInspector() {
-      return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
-    }
-
   @Override
   public long getAggregationBufferFixedSize() {
       JavaDataModel model = JavaDataModel.get();
@@ -428,7 +407,35 @@ public class VectorUDAFSumTimestamp extends VectorAggregateExpression {
   }
 
   @Override
-  public void init(AggregationDesc desc) throws HiveException {
-    init();
+  public boolean matches(String name, ColumnVector.Type inputColVectorType,
+      ColumnVector.Type outputColVectorType, Mode mode) {
+
+    /*
+     * Sum input TIMESTAMP and output DOUBLE.
+     *
+     * Just modes (PARTIAL1, COMPLETE).
+     */
+    return
+        name.equals("sum") &&
+        inputColVectorType == ColumnVector.Type.TIMESTAMP &&
+        outputColVectorType == ColumnVector.Type.DOUBLE &&
+        (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE);
+  }
+
+  @Override
+  public void assignRowColumn(VectorizedRowBatch batch, int batchIndex, int columnNum,
+      AggregationBuffer agg) throws HiveException {
+
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[columnNum];
+
+    Aggregation myagg = (Aggregation) agg;
+    if (myagg.isNull) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[batchIndex] = true;
+      return;
+    }
+    outputColVector.isNull[batchIndex] = false;
+
+    outputColVector.vector[batchIndex] = myagg.sum;
   }
 }

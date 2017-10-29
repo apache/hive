@@ -32,8 +32,8 @@ public class CastDecimalToLong extends FuncDecimalToLong {
     super();
   }
 
-  public CastDecimalToLong(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public CastDecimalToLong(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   @Override

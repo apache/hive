@@ -34,7 +34,7 @@ select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble desc lim
 
 SET hive.llap.io.enabled=true;
 
-explain
+explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap where cint is not null order
 by csmallint, cint;
 select cint, csmallint, cbigint from orc_llap where cint is not null order
@@ -42,9 +42,11 @@ by csmallint, cint;
 
 insert into table orc_llap partition (csmallint = 1) values (1, 1, 1, 1);
 
+explain vectorization only detail
 update orc_llap set cbigint = 2 where cint = 1;
+-- update orc_llap set cbigint = 2 where cint = 1;
 
-explain
+explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap where cint is not null order
 by csmallint, cint;
 select cint, csmallint, cbigint from orc_llap where cint is not null order

@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkInfo;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -94,9 +95,9 @@ public class VectorReduceSinkEmptyKeyOperator extends VectorReduceSinkCommonOper
     super(ctx);
   }
 
-  public VectorReduceSinkEmptyKeyOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
+  public VectorReduceSinkEmptyKeyOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
 
     LOG.info("VectorReduceSinkEmptyKeyOperator constructor vectorReduceSinkInfo " + vectorReduceSinkInfo);
 

@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkInfo;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -121,23 +122,23 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
     super(ctx);
   }
 
-  public VectorReduceSinkObjectHashOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
+  public VectorReduceSinkObjectHashOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
 
     LOG.info("VectorReduceSinkObjectHashOperator constructor vectorReduceSinkInfo " + vectorReduceSinkInfo);
 
     // This the is Object Hash class variation.
     Preconditions.checkState(!vectorReduceSinkInfo.getUseUniformHash());
 
-    isEmptyBuckets = vectorDesc.getIsEmptyBuckets();
+    isEmptyBuckets = this.vectorDesc.getIsEmptyBuckets();
     if (!isEmptyBuckets) {
       reduceSinkBucketColumnMap = vectorReduceSinkInfo.getReduceSinkBucketColumnMap();
       reduceSinkBucketTypeInfos = vectorReduceSinkInfo.getReduceSinkBucketTypeInfos();
       reduceSinkBucketExpressions = vectorReduceSinkInfo.getReduceSinkBucketExpressions();
     }
 
-    isEmptyPartitions = vectorDesc.getIsEmptyPartitions();
+    isEmptyPartitions = this.vectorDesc.getIsEmptyPartitions();
     if (!isEmptyPartitions) {
       reduceSinkPartitionColumnMap = vectorReduceSinkInfo.getReduceSinkPartitionColumnMap();
       reduceSinkPartitionTypeInfos = vectorReduceSinkInfo.getReduceSinkPartitionTypeInfos();
@@ -160,6 +161,8 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
+    VectorExpression.doTransientInit(reduceSinkBucketExpressions);
+    VectorExpression.doTransientInit(reduceSinkPartitionExpressions);
 
     if (!isEmptyKey) {
 

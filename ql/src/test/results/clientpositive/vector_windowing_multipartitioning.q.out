@@ -68,7 +68,8 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumns: [t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary]
             Reduce Output Operator
               key expressions: s (type: string), si (type: smallint)
               sort order: ++
@@ -84,7 +85,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -92,8 +94,9 @@ STAGE PLANS:
           rowBatchContext:
               dataColumnCount: 11
               includeColumns: [1, 3, 7]
-              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -10189,12 +10192,13 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumns: [t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7, val tom allen) -> boolean, FilterStringGroupColEqualStringScalar(col 7, val bob steinbeck) -> boolean) -> boolean
+                  predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7:string, val tom allen), FilterStringGroupColEqualStringScalar(col 7:string, val bob steinbeck))
               predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
               Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
@@ -10212,7 +10216,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -10220,8 +10225,9 @@ STAGE PLANS:
           rowBatchContext:
               dataColumnCount: 11
               includeColumns: [3, 7, 8, 9]
-              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -10269,7 +10275,8 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3]
+                projectedColumnNums: [0, 1, 2, 3]
+                projectedColumns: [rank_window_0:int, _col3:bigint, _col7:string, _col8:timestamp]
             Reduce Output Operator
               key expressions: _col7 (type: string), _col8 (type: timestamp)
               sort order: +-
@@ -10285,7 +10292,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -10295,6 +10303,7 @@ STAGE PLANS:
               includeColumns: [0, 1, 2, 3]
               dataColumns: rank_window_0:int, _col3:bigint, _col7:string, _col8:timestamp
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -10414,12 +10423,13 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumns: [t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7, val tom allen) -> boolean, FilterStringGroupColEqualStringScalar(col 7, val bob steinbeck) -> boolean) -> boolean
+                  predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7:string, val tom allen), FilterStringGroupColEqualStringScalar(col 7:string, val bob steinbeck))
               predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
               Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
@@ -10437,7 +10447,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -10445,8 +10456,9 @@ STAGE PLANS:
           rowBatchContext:
               dataColumnCount: 11
               includeColumns: [1, 2, 4, 7]
-              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -10493,7 +10505,8 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3]
+                projectedColumnNums: [0, 1, 2, 3]
+                projectedColumns: [sum_window_0:bigint, _col1:smallint, _col4:float, _col7:string]
             Reduce Output Operator
               key expressions: _col1 (type: smallint)
               sort order: +
@@ -10509,7 +10522,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -10519,6 +10533,7 @@ STAGE PLANS:
               includeColumns: [0, 1, 2, 3]
               dataColumns: sum_window_0:bigint, _col1:smallint, _col4:float, _col7:string
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -10632,12 +10647,13 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumns: [t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7, val tom allen) -> boolean, FilterStringGroupColEqualStringScalar(col 7, val bob steinbeck) -> boolean) -> boolean
+                  predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7:string, val tom allen), FilterStringGroupColEqualStringScalar(col 7:string, val bob steinbeck))
               predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
               Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
@@ -10655,7 +10671,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -10663,8 +10680,9 @@ STAGE PLANS:
           rowBatchContext:
               dataColumnCount: 11
               includeColumns: [1, 6, 7, 10]
-              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -10712,7 +10730,8 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3]
+                projectedColumnNums: [0, 1, 2, 3]
+                projectedColumns: [rank_window_0:int, _col1:smallint, _col7:string, _col10:binary]
             Reduce Output Operator
               key expressions: _col1 (type: smallint), _col10 (type: binary)
               sort order: +-
@@ -10728,7 +10747,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -10738,6 +10758,7 @@ STAGE PLANS:
               includeColumns: [0, 1, 2, 3]
               dataColumns: rank_window_0:int, _col1:smallint, _col7:string, _col10:binary
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -10852,12 +10873,13 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumns: [t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7, val tom allen) -> boolean, FilterStringGroupColEqualStringScalar(col 7, val bob steinbeck) -> boolean) -> boolean
+                  predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7:string, val tom allen), FilterStringGroupColEqualStringScalar(col 7:string, val bob steinbeck))
               predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
               Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
@@ -10875,7 +10897,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -10883,8 +10906,9 @@ STAGE PLANS:
           rowBatchContext:
               dataColumnCount: 11
               includeColumns: [2, 4, 7]
-              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -10931,7 +10955,8 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2]
+                projectedColumnNums: [0, 1, 2]
+                projectedColumns: [sum_window_0:double, _col4:float, _col7:string]
             Reduce Output Operator
               key expressions: 0 (type: int), _col4 (type: float)
               sort order: ++
@@ -10947,7 +10972,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -10957,7 +10983,7 @@ STAGE PLANS:
               includeColumns: [0, 1, 2]
               dataColumns: sum_window_0:double, _col4:float, _col7:string
               partitionColumnCount: 0
-              scratchColumnTypeNames: bigint, bigint
+              scratchColumnTypeNames: [bigint, bigint]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -11081,12 +11107,13 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                projectedColumns: [t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7, val tom allen) -> boolean, FilterStringGroupColEqualStringScalar(col 7, val bob steinbeck) -> boolean) -> boolean
+                  predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7:string, val tom allen), FilterStringGroupColEqualStringScalar(col 7:string, val bob steinbeck))
               predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
               Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
@@ -11104,7 +11131,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -11112,8 +11140,9 @@ STAGE PLANS:
           rowBatchContext:
               dataColumnCount: 11
               includeColumns: [1, 4, 7, 9]
-              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+              dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -11161,7 +11190,8 @@ STAGE PLANS:
           TableScan
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3]
+                projectedColumnNums: [0, 1, 2, 3]
+                projectedColumns: [rank_window_0:int, _col1:smallint, _col4:float, _col7:string]
             Reduce Output Operator
               key expressions: _col1 (type: smallint), _col4 (type: float)
               sort order: ++
@@ -11177,7 +11207,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -11187,6 +11218,7 @@ STAGE PLANS:
               includeColumns: [0, 1, 2, 3]
               dataColumns: rank_window_0:int, _col1:smallint, _col4:float, _col7:string
               partitionColumnCount: 0
+              scratchColumnTypeNames: []
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

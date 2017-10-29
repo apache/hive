@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -41,15 +43,20 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,12 +71,13 @@ import com.google.common.base.Preconditions;
  * stores the aggregate operators' intermediate states. Emits row mode output.
  *
  */
-public class VectorGroupByOperator extends Operator<GroupByDesc> implements
-    VectorizationContextRegion {
+public class VectorGroupByOperator extends Operator<GroupByDesc>
+    implements VectorizationOperator, VectorizationContextRegion {
 
   private static final Logger LOG = LoggerFactory.getLogger(
       VectorGroupByOperator.class.getName());
 
+  private VectorizationContext vContext;
   private VectorGroupByDesc vectorDesc;
 
   /**
@@ -77,7 +85,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
    * the algorithm of how to compute the aggregation. state is kept in the
    * aggregation buffers and is our responsibility to match the proper state for each key.
    */
-  private VectorAggregateExpression[] aggregators;
+  private VectorAggregationDesc[] vecAggrDescs;
 
   /**
    * Key vector expressions.
@@ -85,7 +93,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   private VectorExpression[] keyExpressions;
   private int outputKeyLength;
 
-  private boolean isVectorOutput;
+  private TypeInfo[] outputTypeInfos;
+  private DataTypePhysicalVariation[] outputDataTypePhysicalVariations;
 
   // Create a new outgoing vectorization context because column name map will change.
   private VectorizationContext vOutContext = null;
@@ -94,8 +103,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   // transient.
   //---------------------------------------------------------------------------
 
-  private transient VectorExpressionWriter[] keyOutputWriters;
-
+  private transient VectorAggregateExpression[] aggregators;
   /**
    * The aggregation buffers to use for the current batch.
    */
@@ -111,8 +119,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
   private transient VectorizedRowBatch outputBatch;
   private transient VectorizedRowBatchCtx vrbCtx;
-
-  private transient VectorAssignRow vectorAssignRow;
 
   /*
    * Grouping sets members.
@@ -865,18 +871,42 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
   private static final long serialVersionUID = 1L;
 
-  public VectorGroupByOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+  public VectorGroupByOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
     this(ctx);
     GroupByDesc desc = (GroupByDesc) conf;
     this.conf = desc;
-    vectorDesc = (VectorGroupByDesc) desc.getVectorDesc();
-    keyExpressions = vectorDesc.getKeyExpressions();
-    aggregators = vectorDesc.getAggregators();
-    isVectorOutput = vectorDesc.isVectorOutput();
+    this.vContext = vContext;
+    this.vectorDesc = (VectorGroupByDesc) vectorDesc;
+    keyExpressions = this.vectorDesc.getKeyExpressions();
+    vecAggrDescs = this.vectorDesc.getVecAggrDescs();
+
+    // Grouping id should be pruned, which is the last of key columns
+    // see ColumnPrunerGroupByProc
+    outputKeyLength =
+        this.conf.pruneGroupingSetId() ? keyExpressions.length - 1 : keyExpressions.length;
+
+    final int aggregationCount = vecAggrDescs.length;
+    final int outputCount = outputKeyLength + aggregationCount;
+
+    outputTypeInfos = new TypeInfo[outputCount];
+    outputDataTypePhysicalVariations = new DataTypePhysicalVariation[outputCount];
+    for (int i = 0; i < outputKeyLength; i++) {
+      VectorExpression keyExpression = keyExpressions[i];
+      outputTypeInfos[i] = keyExpression.getOutputTypeInfo();
+      outputDataTypePhysicalVariations[i] = keyExpression.getOutputDataTypePhysicalVariation();
+    }
+    for (int i = 0; i < aggregationCount; i++) {
+      VectorAggregationDesc vecAggrDesc = vecAggrDescs[i];
+      outputTypeInfos[i + outputKeyLength] = vecAggrDesc.getOutputTypeInfo();
+      outputDataTypePhysicalVariations[i + outputKeyLength] =
+          vecAggrDesc.getOutputDataTypePhysicalVariation();
+    }
 
     vOutContext = new VectorizationContext(getName(), desc.getOutputColumnNames(),
         /* vContextEnvironment */ vContext);
+    vOutContext.setInitialTypeInfos(Arrays.asList(outputTypeInfos));
+    vOutContext.setInitialDataTypePhysicalVariations(Arrays.asList(outputDataTypePhysicalVariations));
   }
 
   /** Kryo ctor. */
@@ -887,6 +917,11 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
   public VectorGroupByOperator(CompilationOpContext ctx) {
     super(ctx);
+  }
+
+  @Override
+  public VectorizationContext getInputVectorizationContext() {
+    return vContext;
   }
 
   private void setupGroupingSets() {
@@ -936,6 +971,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
+    VectorExpression.doTransientInit(keyExpressions);
 
     List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
 
@@ -943,23 +979,43 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     try {
 
       List<String> outputFieldNames = conf.getOutputColumnNames();
-
-      // grouping id should be pruned, which is the last of key columns
-      // see ColumnPrunerGroupByProc
-      outputKeyLength =
-          conf.pruneGroupingSetId() ? keyExpressions.length - 1 : keyExpressions.length;
-
-      keyOutputWriters = new VectorExpressionWriter[outputKeyLength];
+      final int outputCount = outputFieldNames.size();
 
       for(int i = 0; i < outputKeyLength; ++i) {
-        keyOutputWriters[i] = VectorExpressionWriterFactory.
+        VectorExpressionWriter vew = VectorExpressionWriterFactory.
             genVectorExpressionWritable(keysDesc.get(i));
-        objectInspectors.add(keyOutputWriters[i].getObjectInspector());
+        ObjectInspector oi = vew.getObjectInspector();
+        objectInspectors.add(oi);
       }
 
-      for (int i = 0; i < aggregators.length; ++i) {
-        aggregators[i].init(conf.getAggregators().get(i));
-        ObjectInspector objInsp = aggregators[i].getOutputObjectInspector();
+      final int aggregateCount = vecAggrDescs.length;
+      aggregators = new VectorAggregateExpression[aggregateCount];
+      for (int i = 0; i < aggregateCount; ++i) {
+        VectorAggregationDesc vecAggrDesc = vecAggrDescs[i];
+
+        Class<? extends VectorAggregateExpression> vecAggrClass = vecAggrDesc.getVecAggrClass();
+
+        Constructor<? extends VectorAggregateExpression> ctor = null;
+        try {
+          ctor = vecAggrClass.getConstructor(VectorAggregationDesc.class);
+        } catch (Exception e) {
+          throw new HiveException("Constructor " + vecAggrClass.getSimpleName() +
+              "(VectorAggregationDesc) not available");
+        }
+        VectorAggregateExpression vecAggrExpr = null;
+        try {
+          vecAggrExpr = ctor.newInstance(vecAggrDesc);
+        } catch (Exception e) {
+
+           throw new HiveException("Failed to create " + vecAggrClass.getSimpleName() +
+               "(VectorAggregationDesc) object ", e);
+        }
+        VectorExpression.doTransientInit(vecAggrExpr.getInputExpression());
+        aggregators[i] = vecAggrExpr;
+
+        ObjectInspector objInsp =
+            TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
+                vecAggrDesc.getOutputTypeInfo());
         Preconditions.checkState(objInsp != null);
         objectInspectors.add(objInsp);
       }
@@ -968,16 +1024,21 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
       aggregationBatchInfo = new VectorAggregationBufferBatch();
       aggregationBatchInfo.compileAggregationBatchInfo(aggregators);
 
-      LOG.info("VectorGroupByOperator is vector output {}", isVectorOutput);
       outputObjInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
           outputFieldNames, objectInspectors);
-      if (isVectorOutput) {
-        vrbCtx = new VectorizedRowBatchCtx();
-        vrbCtx.init((StructObjectInspector) outputObjInspector, vOutContext.getScratchColumnTypeNames());
-        outputBatch = vrbCtx.createVectorizedRowBatch();
-        vectorAssignRow = new VectorAssignRow();
-        vectorAssignRow.init((StructObjectInspector) outputObjInspector, vOutContext.getProjectedColumns());
-      }
+
+      vrbCtx = new VectorizedRowBatchCtx(
+          outputFieldNames.toArray(new String[0]),
+          outputTypeInfos,
+          outputDataTypePhysicalVariations,
+          /* dataColumnNums */ null,
+          /* partitionColumnCount */ 0,
+          /* virtualColumnCount */ 0,
+          /* neededVirtualColumns */ null,
+          vOutContext.getScratchColumnTypeNames(),
+          vOutContext.getScratchDataTypePhysicalVariations());
+
+      outputBatch = vrbCtx.createVectorizedRowBatch();
 
     } catch (HiveException he) {
       throw he;
@@ -1064,31 +1125,21 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
    */
   private void writeSingleRow(VectorHashKeyWrapper kw, VectorAggregationBufferRow agg)
       throws HiveException {
-    int fi = 0;
-    if (!isVectorOutput) {
-      // Output row.
-      for (int i = 0; i < outputKeyLength; ++i) {
-        forwardCache[fi++] = keyWrappersBatch.getWritableKeyValue (
-            kw, i, keyOutputWriters[i]);
-      }
-      for (int i = 0; i < aggregators.length; ++i) {
-        forwardCache[fi++] = aggregators[i].evaluateOutput(agg.getAggregationBuffer(i));
-      }
-      forward(forwardCache, outputObjInspector, false);
-    } else {
-      // Output keys and aggregates into the output batch.
-      for (int i = 0; i < outputKeyLength; ++i) {
-        vectorAssignRow.assignRowColumn(outputBatch, outputBatch.size, fi++,
-                keyWrappersBatch.getWritableKeyValue (kw, i, keyOutputWriters[i]));
-      }
-      for (int i = 0; i < aggregators.length; ++i) {
-        vectorAssignRow.assignRowColumn(outputBatch, outputBatch.size, fi++,
-                aggregators[i].evaluateOutput(agg.getAggregationBuffer(i)));
-      }
-      ++outputBatch.size;
-      if (outputBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {
-        flushOutput();
-      }
+
+    int colNum = 0;
+    final int batchIndex = outputBatch.size;
+
+    // Output keys and aggregates into the output batch.
+    for (int i = 0; i < outputKeyLength; ++i) {
+      keyWrappersBatch.assignRowColumn(outputBatch, batchIndex, colNum++, kw);
+    }
+    for (int i = 0; i < aggregators.length; ++i) {
+      aggregators[i].assignRowColumn(outputBatch, batchIndex, colNum++,
+          agg.getAggregationBuffer(i));
+    }
+    ++outputBatch.size;
+    if (outputBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {
+      flushOutput();
     }
   }
 
@@ -1101,10 +1152,12 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
    */
   private void writeGroupRow(VectorAggregationBufferRow agg, DataOutputBuffer buffer)
       throws HiveException {
-    int fi = outputKeyLength;   // Start after group keys.
+    int colNum = outputKeyLength;   // Start after group keys.
+    final int batchIndex = outputBatch.size;
+
     for (int i = 0; i < aggregators.length; ++i) {
-      vectorAssignRow.assignRowColumn(outputBatch, outputBatch.size, fi++,
-              aggregators[i].evaluateOutput(agg.getAggregationBuffer(i)));
+      aggregators[i].assignRowColumn(outputBatch, batchIndex, colNum++,
+          agg.getAggregationBuffer(i));
     }
     ++outputBatch.size;
     if (outputBatch.size == VectorizedRowBatch.DEFAULT_SIZE) {
@@ -1121,7 +1174,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   @Override
   public void closeOp(boolean aborted) throws HiveException {
     processingMode.close(aborted);
-    if (!aborted && isVectorOutput && outputBatch.size > 0) {
+    if (!aborted && outputBatch.size > 0) {
       flushOutput();
     }
   }
@@ -1143,7 +1196,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   }
 
   @Override
-  public VectorizationContext getOuputVectorizationContext() {
+  public VectorizationContext getOutputVectorizationContext() {
     return vOutContext;
   }
 
@@ -1161,4 +1214,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     return "GBY";
   }
 
+  @Override
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
+  }
 }

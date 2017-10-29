@@ -25,19 +25,20 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 public class VectorElt extends VectorExpression {
-
   private static final long serialVersionUID = 1L;
-  private int [] inputColumns;
-  private int outputColumn;
 
-  public VectorElt(int [] inputColumns, int outputColumn) {
-    this();
+  private final int[] inputColumns;
+
+  public VectorElt(int [] inputColumns, int outputColumnNum) {
+    super(outputColumnNum);
     this.inputColumns = inputColumns;
-    this.outputColumn = outputColumn;
   }
 
   public VectorElt() {
     super();
+
+    // Dummy final assignments.
+    inputColumns = null;
   }
 
   @Override
@@ -49,7 +50,7 @@ public class VectorElt extends VectorExpression {
 
     int[] sel = batch.selected;
     int n = batch.size;
-    BytesColumnVector outputVector = (BytesColumnVector) batch.cols[outputColumn];
+    BytesColumnVector outputVector = (BytesColumnVector) batch.cols[outputColumnNum];
     if (n <= 0) {
       return;
     }
@@ -106,28 +107,6 @@ public class VectorElt extends VectorExpression {
         }
       }
     }
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return outputType;
-  }
-
-  public int [] getInputColumns() {
-    return inputColumns;
-  }
-
-  public void setInputColumns(int [] inputColumns) {
-    this.inputColumns = inputColumns;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
   }
 
   @Override

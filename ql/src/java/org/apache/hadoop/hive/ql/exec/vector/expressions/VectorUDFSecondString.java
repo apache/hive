@@ -26,8 +26,8 @@ public final class VectorUDFSecondString extends VectorUDFTimestampFieldString {
 
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFSecondString(int colNum, int outputColumn) {
-    super(colNum, outputColumn, 17, 2);
+  public VectorUDFSecondString(int colNum, int outputColumnNum) {
+    super(colNum, outputColumnNum, 17, 2);
   }
 
   public VectorUDFSecondString() {

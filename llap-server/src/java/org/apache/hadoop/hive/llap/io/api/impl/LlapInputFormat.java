@@ -202,8 +202,8 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       virtualColumns = new VirtualColumn[0];
     }
     return new VectorizedRowBatchCtx(colNames.toArray(new String[colNames.size()]),
-        colTypes.toArray(new TypeInfo[colTypes.size()]), null, partitionColumnCount,
-        virtualColumns, new String[0]);
+        colTypes.toArray(new TypeInfo[colTypes.size()]), null, null, partitionColumnCount,
+        virtualColumns.length, virtualColumns, new String[0], null);
   }
 
   static TableScanOperator findTsOp(MapWork mapWork) throws HiveException {

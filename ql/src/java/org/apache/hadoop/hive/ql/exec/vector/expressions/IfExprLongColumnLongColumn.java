@@ -35,6 +35,7 @@ public class IfExprLongColumnLongColumn extends IfExprConditionalFilter {
   }
 
   public IfExprLongColumnLongColumn() {
+    super();
   }
 
   @Override
@@ -47,7 +48,7 @@ public class IfExprLongColumnLongColumn extends IfExprConditionalFilter {
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
     LongColumnVector arg2ColVector = (LongColumnVector) batch.cols[arg2Column];
     LongColumnVector arg3ColVector = (LongColumnVector) batch.cols[arg3Column];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = arg2ColVector.noNulls && arg3ColVector.noNulls;
@@ -122,13 +123,9 @@ public class IfExprLongColumnLongColumn extends IfExprConditionalFilter {
   }
 
   @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", col "+ arg2Column + ", col "+ arg3Column;
+    return getColumnParamString(0, arg1Column) + ", " + getColumnParamString(1, arg2Column) +
+        ", " + getColumnParamString(1, arg3Column);
   }
 
   @Override

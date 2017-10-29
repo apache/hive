@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerialize
  */
 public class StructColumnInList extends StringColumnInList implements IStructInExpr {
   private static final long serialVersionUID = 1L;
+
   private VectorExpression[] structExpressions;
   private ColumnVector.Type[] fieldVectorColumnTypes;
   private int[] structColumnMap;
@@ -57,8 +58,8 @@ public class StructColumnInList extends StringColumnInList implements IStructInE
   /**
    * After construction you must call setInListValues() to add the values to the IN set.
    */
-  public StructColumnInList(int outputColumn) {
-    super(-1, outputColumn);
+  public StructColumnInList(int outputColumnNum) {
+    super(-1, outputColumnNum);
   }
 
   @Override
@@ -137,12 +138,6 @@ public class StructColumnInList extends StringColumnInList implements IStructInE
     }
    }
 
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
   @Override
   public Descriptor getDescriptor() {
 
@@ -156,7 +151,7 @@ public class StructColumnInList extends StringColumnInList implements IStructInE
 
     // Tell our super class FilterStringColumnInList it will be evaluating our scratch
     // BytesColumnVector.
-    super.setInputColumn(scratchBytesColumn);
+    inputCol = scratchBytesColumn;
     this.scratchBytesColumn = scratchBytesColumn;
   }
 
@@ -169,7 +164,7 @@ public class StructColumnInList extends StringColumnInList implements IStructInE
     structColumnMap = new int[structExpressions.length];
     for (int i = 0; i < structColumnMap.length; i++) {
       VectorExpression ve = structExpressions[i];
-      structColumnMap[i] = ve.getOutputColumn();
+      structColumnMap[i] = ve.getOutputColumnNum();
     }
     this.fieldVectorColumnTypes = fieldVectorColumnTypes;
   }

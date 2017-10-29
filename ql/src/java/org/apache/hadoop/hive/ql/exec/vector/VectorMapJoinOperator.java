@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.slf4j.Logger;
@@ -86,10 +87,10 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
   }
 
 
-  public VectorMapJoinOperator (CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+  public VectorMapJoinOperator (CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
 
-    super(ctx, vContext, conf);
+    super(ctx, conf, vContext, vectorDesc);
 
     MapJoinDesc desc = (MapJoinDesc) conf;
 
@@ -107,6 +108,10 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
 
   @Override
   public void initializeOp(Configuration hconf) throws HiveException {
+    VectorExpression.doTransientInit(bigTableFilterExpressions);
+    VectorExpression.doTransientInit(keyExpressions);
+    VectorExpression.doTransientInit(bigTableValueExpressions);
+
     // Use a final variable to properly parameterize the processVectorInspector closure.
     // Using a member variable in the closure will not do the right thing...
     final int parameterizePosBigTable = conf.getPosBigTable();
@@ -174,7 +179,7 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
           int rowIndex = inBatch.selectedInUse ? inBatch.selected[batchIndex] : batchIndex;
           return valueWriters[writerIndex].writeValue(inBatch.cols[columnIndex], rowIndex);
         }
-      }.initVectorExpr(vectorExpr.getOutputColumn(), i);
+      }.initVectorExpr(vectorExpr.getOutputColumnNum(), i);
       vectorNodeEvaluators.add(eval);
     }
     // Now replace the old evaluators with our own

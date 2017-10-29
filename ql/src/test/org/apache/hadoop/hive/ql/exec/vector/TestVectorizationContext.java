@@ -275,19 +275,19 @@ public class TestVectorizationContext {
     VectorExpression childExpr1 = ve.getChildExpressions()[0];
     VectorExpression childExpr2 = ve.getChildExpressions()[1];
     System.out.println(ve.toString());
-    assertEquals(6, ve.getOutputColumn());
+    assertEquals(6, ve.getOutputColumnNum());
 
     assertTrue(childExpr1 instanceof LongColSubtractLongColumn);
     assertEquals(1, childExpr1.getChildExpressions().length);
     assertTrue(childExpr1.getChildExpressions()[0] instanceof LongColAddLongColumn);
-    assertEquals(7, childExpr1.getOutputColumn());
-    assertEquals(6, childExpr1.getChildExpressions()[0].getOutputColumn());
+    assertEquals(7, childExpr1.getOutputColumnNum());
+    assertEquals(6, childExpr1.getChildExpressions()[0].getOutputColumnNum());
 
     assertTrue(childExpr2 instanceof LongColMultiplyLongColumn);
     assertEquals(1, childExpr2.getChildExpressions().length);
     assertTrue(childExpr2.getChildExpressions()[0] instanceof LongColModuloLongColumn);
-    assertEquals(8, childExpr2.getOutputColumn());
-    assertEquals(6, childExpr2.getChildExpressions()[0].getOutputColumn());
+    assertEquals(8, childExpr2.getOutputColumnNum());
+    assertEquals(6, childExpr2.getChildExpressions()[0].getOutputColumnNum());
   }
 
   @Test
@@ -448,7 +448,7 @@ public class TestVectorizationContext {
 
     VectorExpression ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
 
-    assertTrue(ve.getOutputType().equalsIgnoreCase("double"));
+    assertTrue(ve.getOutputTypeInfo().equals(TypeInfoFactory.doubleTypeInfo));
   }
 
   @Test
@@ -628,9 +628,7 @@ public class TestVectorizationContext {
     assertEquals(veAnd.getClass(), ColAndCol.class);
     assertEquals(1, veAnd.getChildExpressions().length);
     assertEquals(veAnd.getChildExpressions()[0].getClass(), LongColGreaterLongScalar.class);
-    assertEquals(2, ((ColAndCol) veAnd).getColNum1());
-    assertEquals(1, ((ColAndCol) veAnd).getColNum2());
-    assertEquals(3, ((ColAndCol) veAnd).getOutputColumn());
+    assertEquals(3, ((ColAndCol) veAnd).getOutputColumnNum());
 
     //OR
     GenericUDFOPOr orUdf = new GenericUDFOPOr();
@@ -653,9 +651,7 @@ public class TestVectorizationContext {
     assertEquals(veOr.getClass(), ColOrCol.class);
     assertEquals(1, veAnd.getChildExpressions().length);
     assertEquals(veAnd.getChildExpressions()[0].getClass(), LongColGreaterLongScalar.class);
-    assertEquals(2, ((ColOrCol) veOr).getColNum1());
-    assertEquals(1, ((ColOrCol) veOr).getColNum2());
-    assertEquals(3, ((ColOrCol) veOr).getOutputColumn());
+    assertEquals(3, ((ColOrCol) veOr).getOutputColumnNum());
   }
 
   @Test
@@ -727,13 +723,11 @@ public class TestVectorizationContext {
 
     assertEquals(ve.getClass(), SelectColumnIsNull.class);
     assertEquals(ve.getChildExpressions()[0].getClass(), LongColGreaterLongScalar.class);
-    assertEquals(2, ve.getChildExpressions()[0].getOutputColumn());
-    assertEquals(2, ((SelectColumnIsNull) ve).getColNum());
+    assertEquals(2, ve.getChildExpressions()[0].getOutputColumnNum());
 
     ve = vc.getVectorExpression(isNullExpr, VectorExpressionDescriptor.Mode.PROJECTION);
     assertEquals(ve.getClass(), IsNull.class);
-    assertEquals(2, ((IsNull) ve).getColNum());
-    assertEquals(3, ve.getOutputColumn());
+    assertEquals(3, ve.getOutputColumnNum());
     assertEquals(ve.getChildExpressions()[0].getClass(), LongColGreaterLongScalar.class);
   }
 
@@ -767,12 +761,10 @@ public class TestVectorizationContext {
     VectorExpression ve = vc.getVectorExpression(isNotNullExpr, VectorExpressionDescriptor.Mode.FILTER);
 
     assertEquals(ve.getClass(), SelectColumnIsNotNull.class);
-    assertEquals(2, ((SelectColumnIsNotNull) ve).getColNum());
     assertEquals(ve.getChildExpressions()[0].getClass(), LongColGreaterLongScalar.class);
 
     ve = vc.getVectorExpression(isNotNullExpr, VectorExpressionDescriptor.Mode.PROJECTION);
     assertEquals(ve.getClass(), IsNotNull.class);
-    assertEquals(2, ((IsNotNull) ve).getColNum());
     assertEquals(ve.getChildExpressions()[0].getClass(), LongColGreaterLongScalar.class);
   }
 
@@ -905,7 +897,8 @@ public class TestVectorizationContext {
 
   @Test
   public void testBooleanColumnCompareBooleanScalar() throws HiveException {
-    ExprNodeGenericFuncDesc colEqualScalar = new ExprNodeGenericFuncDesc();
+    ExprNodeGenericFuncDesc colEqualScalar =
+        new ExprNodeGenericFuncDesc();
     GenericUDFOPEqual gudf = new GenericUDFOPEqual();
     colEqualScalar.setGenericUDF(gudf);
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(2);
@@ -918,6 +911,7 @@ public class TestVectorizationContext {
     children.add(constDesc);
 
     colEqualScalar.setChildren(children);
+    colEqualScalar.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
 
     List<String> columns = new ArrayList<String>();
     columns.add("a");
@@ -945,8 +939,7 @@ public class TestVectorizationContext {
     VectorExpression ve = vc.getVectorExpression(stringUnary);
 
     assertEquals(StringLower.class, ve.getClass());
-    assertEquals(1, ((StringLower) ve).getColNum());
-    assertEquals(2, ((StringLower) ve).getOutputColumn());
+    assertEquals(2, ((StringLower) ve).getOutputColumnNum());
 
     vc = new VectorizationContext("name", columns);
 
@@ -961,12 +954,10 @@ public class TestVectorizationContext {
     ve = vc.getVectorExpression(anotherUnary);
     VectorExpression childVe = ve.getChildExpressions()[0];
     assertEquals(StringLower.class, childVe.getClass());
-    assertEquals(1, ((StringLower) childVe).getColNum());
-    assertEquals(2, ((StringLower) childVe).getOutputColumn());
+    assertEquals(2, ((StringLower) childVe).getOutputColumnNum());
 
     assertEquals(StringLTrim.class, ve.getClass());
-    assertEquals(2, ((StringLTrim) ve).getInputColumn());
-    assertEquals(3, ((StringLTrim) ve).getOutputColumn());
+    assertEquals(3, ((StringLTrim) ve).getOutputColumnNum());
   }
 
   @Test

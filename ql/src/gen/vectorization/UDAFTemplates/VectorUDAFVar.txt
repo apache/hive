@@ -25,19 +25,20 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance.VarianceKind;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 import com.google.common.base.Preconditions;
 
@@ -83,8 +84,9 @@ public class <ClassName> extends VectorAggregateExpression {
           sum += value;
           count++;
           if (count > 1) {
-            double t = count * value - sum;
-            variance += (t * t) / ((double) count * (count - 1));
+            variance =
+                GenericUDAFVariance.calculateIntermediate(
+                    count, sum, value, variance);
           }
         }
       }
@@ -103,67 +105,32 @@ public class <ClassName> extends VectorAggregateExpression {
       }
     }
 
-#IF PARTIAL1
-    transient private LongWritable resultCount;
-    transient private DoubleWritable resultSum;
-    transient private DoubleWritable resultVariance;
-    transient private Object[] partialResult;
-
-    transient private ObjectInspector soi;
-#ENDIF PARTIAL1
 #IF COMPLETE
-    transient private DoubleWritable fullResult;
-
-    transient private ObjectInspector oi;
+    transient private VarianceKind varianceKind = VarianceKind.NONE;
 #ENDIF COMPLETE
 
-    public <ClassName>(VectorExpression inputExpression, GenericUDAFEvaluator.Mode mode) {
-      super(inputExpression, mode);
+  // This constructor is used to momentarily create the object so match can be called.
+  public <ClassName>() {
+    super();
+  }
+
+  public <ClassName>(VectorAggregationDesc vecAggrDesc) {
+    super(vecAggrDesc);
 #IF PARTIAL1
-      Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.PARTIAL1);
+    Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.PARTIAL1);
 #ENDIF PARTIAL1
 #IF COMPLETE
-      Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.COMPLETE);
+    Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.COMPLETE);
 #ENDIF COMPLETE
-    }
+    init();
+  }
 
     private void init() {
-#IF PARTIAL1
-      partialResult = new Object[3];
-      resultCount = new LongWritable();
-      resultSum = new DoubleWritable();
-      resultVariance = new DoubleWritable();
-      partialResult[0] = resultCount;
-      partialResult[1] = resultSum;
-      partialResult[2] = resultVariance;
-      initPartialResultInspector();
-#ENDIF PARTIAL1
 #IF COMPLETE
-      fullResult = new DoubleWritable();
-      initFullResultInspector();
+      String aggregateName = vecAggrDesc.getAggrDesc().getGenericUDAFName();
+      varianceKind = VarianceKind.nameMap.get(aggregateName);
 #ENDIF COMPLETE
     }
-
-#IF PARTIAL1
-  private void initPartialResultInspector() {
-        List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-
-        List<String> fname = new ArrayList<String>();
-        fname.add("count");
-        fname.add("sum");
-        fname.add("variance");
-
-        soi = ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
-    }
-#ENDIF PARTIAL1
-#IF COMPLETE
-    private void initFullResultInspector() {
-      oi = PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
-    }
-#ENDIF COMPLETE
 
     private Aggregation getCurrentAggregationBuffer(
         VectorAggregationBufferRow[] aggregationBufferSets,
@@ -183,8 +150,9 @@ public class <ClassName> extends VectorAggregateExpression {
 
       inputExpression.evaluate(batch);
 
-      <InputColumnVectorType> inputVector = (<InputColumnVectorType>)batch.
-        cols[this.inputExpression.getOutputColumn()];
+      <InputColumnVectorType> inputVector =
+          (<InputColumnVectorType>) batch.cols[
+              this.inputExpression.getOutputColumnNum()];
 
       int batchSize = batch.size;
 
@@ -328,8 +296,9 @@ public class <ClassName> extends VectorAggregateExpression {
 
       inputExpression.evaluate(batch);
 
-      <InputColumnVectorType> inputVector = (<InputColumnVectorType>)batch.
-        cols[this.inputExpression.getOutputColumn()];
+      <InputColumnVectorType> inputVector =
+          (<InputColumnVectorType>) batch.cols[
+              this.inputExpression.getOutputColumnNum()];
 
       int batchSize = batch.size;
 
@@ -473,55 +442,6 @@ public class <ClassName> extends VectorAggregateExpression {
       myAgg.reset();
     }
 
-    @Override
-    public Object evaluateOutput(
-        AggregationBuffer agg) throws HiveException {
-      Aggregation myagg = (Aggregation) agg;
-      if (myagg.isNull) {
-        return null;
-       } else {
-#IF PARTIAL1
-        resultCount.set (myagg.count);
-        resultSum.set (myagg.sum);
-        resultVariance.set (myagg.variance);
-        return partialResult;
-#ENDIF PARTIAL1
-#IF COMPLETE
-        if (myagg.count == 0) {
-          return null;   // SQL standard - return null for zero elements
-        } else if (myagg.count > 1) {
-#IF VARIANCE
-          fullResult.set(myagg.variance / (myagg.count));
-#ENDIF VARIANCE
-#IF VARIANCE_SAMPLE
-          fullResult.set(myagg.variance / (myagg.count - 1));
-#ENDIF VARIANCE_SAMPLE
-#IF STD
-          fullResult.set(Math.sqrt(myagg.variance / (myagg.count)));
-#ENDIF STD
-#IF STD_SAMPLE
-          fullResult.set(Math.sqrt(myagg.variance / (myagg.count - 1)));
-#ENDIF STD_SAMPLE
-        } else {
-
-          // For one element the variance is always 0.
-          fullResult.set(0);
-        }
-        return fullResult;
-#ENDIF COMPLETE
-      }
-    }
-
-  @Override
-  public ObjectInspector getOutputObjectInspector() {
-#IF PARTIAL1
-    return soi;
-#ENDIF PARTIAL1
-#IF COMPLETE
-    return oi;
-#ENDIF COMPLETE
-  }
-
   @Override
   public long getAggregationBufferFixedSize() {
       JavaDataModel model = JavaDataModel.get();
@@ -533,8 +453,81 @@ public class <ClassName> extends VectorAggregateExpression {
   }
 
   @Override
-  public void init(AggregationDesc desc) throws HiveException {
-    init();
+  public boolean matches(String name, ColumnVector.Type inputColVectorType,
+      ColumnVector.Type outputColVectorType, Mode mode) {
+
+    /*
+     * Variance input is <UpperCaseColumnVectorType>.
+#IF PARTIAL1
+     * Output is STRUCT.
+     *
+     * Mode PARTIAL1.
+#ENDIF PARTIAL1
+#IF COMPLETE
+     * Output is DOUBLE.
+     *
+     * Mode COMPLETE.
+#ENDIF COMPLETE
+     */
+    return
+        GenericUDAFVariance.isVarianceFamilyName(name) &&
+        inputColVectorType == ColumnVector.Type.<UpperCaseColumnVectorType> &&
+#IF PARTIAL1
+        outputColVectorType == ColumnVector.Type.STRUCT &&
+        mode == Mode.PARTIAL1;
+#ENDIF PARTIAL1
+#IF COMPLETE
+        outputColVectorType == ColumnVector.Type.DOUBLE &&
+        mode == Mode.COMPLETE;
+#ENDIF COMPLETE
+  }
+
+  @Override
+  public void assignRowColumn(VectorizedRowBatch batch, int batchIndex, int columnNum,
+      AggregationBuffer agg) throws HiveException {
+
+#IF PARTIAL1
+    StructColumnVector outputColVector = (StructColumnVector) batch.cols[columnNum];
+
+    Aggregation myagg = (Aggregation) agg;
+    if (myagg.isNull) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[batchIndex] = true;
+      return;
+    }
+    outputColVector.isNull[batchIndex] = false;
+
+    ColumnVector[] fields = outputColVector.fields;
+    ((LongColumnVector) fields[VARIANCE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.count;
+    ((DoubleColumnVector) fields[VARIANCE_SUM_FIELD_INDEX]).vector[batchIndex] = myagg.sum;
+    ((DoubleColumnVector) fields[VARIANCE_VARIANCE_FIELD_INDEX]).vector[batchIndex] = myagg.variance;
+#ENDIF PARTIAL1
+#IF COMPLETE
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[columnNum];
+
+    Aggregation myagg = (Aggregation) agg;
+    if (GenericUDAFVariance.isVarianceNull(myagg.count, varianceKind)) {
+
+      // SQL standard - return null for zero (or 1 for sample) elements
+      outputColVector.noNulls = false;
+      outputColVector.isNull[batchIndex] = true;
+      return;
+    }
+    outputColVector.isNull[batchIndex] = false;
+
+    final double result;
+    if (myagg.count > 1) {
+
+      // Use the common variance family result calculation method.
+      result = GenericUDAFVariance.calculateVarianceFamilyResult(
+          myagg.variance, myagg.count, varianceKind);
+    } else {
+
+      // For one element the variance is always 0.
+      result = 0.0;
+    }
+    outputColVector.vector[batchIndex] = result;
+#ENDIF COMPLETE
   }
 }
 

@@ -150,7 +150,6 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.distinctColumnIndices = distinctColumnIndices;
     this.setNumBuckets(-1);
     this.setBucketCols(null);
-    this.vectorDesc = null;
   }
 
   @Override
@@ -180,10 +179,6 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     desc.reduceTraits = reduceTraits.clone();
     desc.setDeduplicated(isDeduplicated);
     desc.setHasOrderBy(hasOrderBy);
-    if (vectorDesc != null) {
-      throw new RuntimeException("Clone with vectorization desc not supported");
-    }
-    desc.vectorDesc = null;
     desc.outputName = outputName;
     return desc;
   }
@@ -504,15 +499,16 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
     private final ReduceSinkDesc reduceSinkDesc;
     private final VectorReduceSinkDesc vectorReduceSinkDesc;
-    private final VectorReduceSinkInfo vectorReduceSinkInfo; 
+    private final VectorReduceSinkInfo vectorReduceSinkInfo;
 
     private VectorizationCondition[] nativeConditions;
 
-    public ReduceSinkOperatorExplainVectorization(ReduceSinkDesc reduceSinkDesc, VectorDesc vectorDesc) {
+    public ReduceSinkOperatorExplainVectorization(ReduceSinkDesc reduceSinkDesc,
+        VectorReduceSinkDesc vectorReduceSinkDesc) {
       // VectorReduceSinkOperator is not native vectorized.
-      super(vectorDesc, ((VectorReduceSinkDesc) vectorDesc).reduceSinkKeyType()!= ReduceSinkKeyType.NONE);
+      super(vectorReduceSinkDesc, vectorReduceSinkDesc.reduceSinkKeyType()!= ReduceSinkKeyType.NONE);
       this.reduceSinkDesc = reduceSinkDesc;
-      vectorReduceSinkDesc = (VectorReduceSinkDesc) vectorDesc;
+      this.vectorReduceSinkDesc = vectorReduceSinkDesc;
       vectorReduceSinkInfo = vectorReduceSinkDesc.getVectorReduceSinkInfo();
     }
 
@@ -532,8 +528,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       return vectorExpressionsToStringList(vectorReduceSinkInfo.getReduceSinkValueExpressions());
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "keyColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getKeyColumns() {
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "keyColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getKeyColumnNums() {
       if (!isNative) {
         return null;
       }
@@ -545,8 +541,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       return Arrays.toString(keyColumnMap);
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "valueColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getValueColumns() {
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "valueColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getValueColumnNums() {
       if (!isNative) {
         return null;
       }
@@ -558,8 +554,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       return Arrays.toString(valueColumnMap);
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "bucketColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getBucketColumns() {
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "bucketColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getBucketColumnNums() {
       if (!isNative) {
         return null;
       }
@@ -571,8 +567,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       return Arrays.toString(bucketColumnMap);
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "partitionColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getPartitionColumns() {
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "partitionColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getPartitionColumnNums() {
       if (!isNative) {
         return null;
       }
@@ -644,10 +640,11 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   @Explain(vectorization = Vectorization.OPERATOR, displayName = "Reduce Sink Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public ReduceSinkOperatorExplainVectorization getReduceSinkVectorization() {
-    if (vectorDesc == null) {
+    VectorReduceSinkDesc vectorReduceSinkDesc = (VectorReduceSinkDesc) getVectorDesc();
+    if (vectorReduceSinkDesc == null) {
       return null;
     }
-    return new ReduceSinkOperatorExplainVectorization(this, vectorDesc);
+    return new ReduceSinkOperatorExplainVectorization(this, vectorReduceSinkDesc);
   }
 
   @Override

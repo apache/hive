@@ -30,12 +30,15 @@ import java.util.Stack;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport.Support;
 import org.apache.hadoop.hive.ql.parse.RuntimeValuesInfo;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.physical.VectorizerReason;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
@@ -82,6 +85,10 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   protected VectorizedRowBatchCtx vectorizedRowBatchCtx;
 
   protected boolean useVectorizedInputFileFormat;
+
+  protected Set<Support> inputFormatSupportSet;
+  protected Set<Support> supportSetInUse;
+  protected List<String> supportRemovedReasons;
 
   private VectorizerReason notVectorizedReason;
 
@@ -239,14 +246,6 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     return notVectorizedReason;
   }
 
-  public void setGroupByVectorOutput(boolean groupByVectorOutput) {
-    this.groupByVectorOutput = groupByVectorOutput;
-  }
-
-  public boolean getGroupByVectorOutput() {
-    return groupByVectorOutput;
-  }
-
   public void setUsesVectorUDFAdaptor(boolean usesVectorUDFAdaptor) {
     this.usesVectorUDFAdaptor = usesVectorUDFAdaptor;
   }
@@ -269,6 +268,23 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
     public BaseExplainVectorization(BaseWork baseWork) {
       this.baseWork = baseWork;
+    }
+
+    public static List<String> getColumnAndTypes(
+        int[] projectionColumns,
+        String[] columnNames, TypeInfo[] typeInfos,
+        DataTypePhysicalVariation[] dataTypePhysicalVariations) {
+      final int size = columnNames.length;
+      List<String> result = new ArrayList<String>(size);
+      for (int i = 0; i < size; i++) {
+        String displayString = projectionColumns[i] + ":" + columnNames[i] + ":" + typeInfos[i];
+        if (dataTypePhysicalVariations != null &&
+            dataTypePhysicalVariations[i] != DataTypePhysicalVariation.NONE) {
+          displayString += "/" + dataTypePhysicalVariations[i].toString();
+        }
+        result.add(displayString);
+      }
+      return result;
     }
 
     @Explain(vectorization = Vectorization.SUMMARY, displayName = "enabled", explainLevels = { Level.DEFAULT, Level.EXTENDED })
@@ -294,14 +310,6 @@ public abstract class BaseWork extends AbstractOperatorDesc {
         return "Unknown";
       }
       return notVectorizedReason.toString();
-    }
-
-    @Explain(vectorization = Vectorization.SUMMARY, displayName = "groupByVectorOutput", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public Boolean groupByRowOutputCascade() {
-      if (!baseWork.getVectorMode()) {
-        return null;
-      }
-      return baseWork.getGroupByVectorOutput();
     }
 
     @Explain(vectorization = Vectorization.SUMMARY, displayName = "allNative", explainLevels = { Level.DEFAULT, Level.EXTENDED })
@@ -331,10 +339,18 @@ public abstract class BaseWork extends AbstractOperatorDesc {
       private List<String> getColumns(int startIndex, int count) {
         String[] rowColumnNames = vectorizedRowBatchCtx.getRowColumnNames();
         TypeInfo[] rowColumnTypeInfos = vectorizedRowBatchCtx.getRowColumnTypeInfos();
+        DataTypePhysicalVariation[]  dataTypePhysicalVariations =
+            vectorizedRowBatchCtx.getRowdataTypePhysicalVariations();
+
         List<String> result = new ArrayList<String>(count);
         final int end = startIndex + count;
         for (int i = startIndex; i < end; i++) {
-          result.add(rowColumnNames[i] + ":" + rowColumnTypeInfos[i]);
+          String displayString = rowColumnNames[i] + ":" + rowColumnTypeInfos[i];
+          if (dataTypePhysicalVariations != null &&
+              dataTypePhysicalVariations[i] != DataTypePhysicalVariation.NONE) {
+            displayString += "/" + dataTypePhysicalVariations[i].toString();
+          }
+          result.add(displayString);
         }
         return result;
       }
@@ -369,8 +385,28 @@ public abstract class BaseWork extends AbstractOperatorDesc {
       }
 
       @Explain(vectorization = Vectorization.DETAIL, displayName = "scratchColumnTypeNames", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-      public List<String> getScratchColumnTypeNames() {
-        return Arrays.asList(vectorizedRowBatchCtx.getScratchColumnTypeNames());
+      public String getScratchColumnTypeNames() {
+        String[] scratchColumnTypeNames = vectorizedRowBatchCtx.getScratchColumnTypeNames();
+        DataTypePhysicalVariation[] scratchDataTypePhysicalVariations = vectorizedRowBatchCtx.getScratchDataTypePhysicalVariations();
+        final int size = scratchColumnTypeNames.length;
+        List<String> result = new ArrayList<String>(size);
+        for (int i = 0; i < size; i++) {
+          String displayString = scratchColumnTypeNames[i];
+          if (scratchDataTypePhysicalVariations != null && scratchDataTypePhysicalVariations[i] != DataTypePhysicalVariation.NONE) {
+            displayString += "/" + scratchDataTypePhysicalVariations[i].toString();
+          }
+          result.add(displayString);
+        }
+        return result.toString();
+      }
+
+      @Explain(vectorization = Vectorization.DETAIL, displayName = "neededVirtualColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+      public String getNeededVirtualColumns() {
+        VirtualColumn[] neededVirtualColumns = vectorizedRowBatchCtx.getNeededVirtualColumns();
+        if (neededVirtualColumns == null || neededVirtualColumns.length == 0) {
+          return null;
+        }
+        return Arrays.toString(neededVirtualColumns);
       }
 
     }

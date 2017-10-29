@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 
@@ -35,21 +36,25 @@ public class DateColSubtractDateScalar extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private Timestamp value;
-  private int outputColumn;
-  private Timestamp scratchTimestamp1;
-  private DateTimeMath dtm = new DateTimeMath();
+  private final int colNum;
+  private final Timestamp value;
 
-  public DateColSubtractDateScalar(int colNum, long value, int outputColumn) {
+  private transient final Timestamp scratchTimestamp1 = new Timestamp(0);
+  private transient final DateTimeMath dtm = new DateTimeMath();
+
+  public DateColSubtractDateScalar(int colNum, long value, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
     this.value = new Timestamp(0);
     this.value.setTime(DateWritable.daysToMillis((int) value));
-    this.outputColumn = outputColumn;
-    scratchTimestamp1 = new Timestamp(0);
   }
 
   public DateColSubtractDateScalar() {
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    value = null;
   }
 
   @Override
@@ -63,7 +68,7 @@ public class DateColSubtractDateScalar extends VectorExpression {
     LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[colNum];
 
     // Output is type HiveIntervalDayTime.
-    IntervalDayTimeColumnVector outputColVector = (IntervalDayTimeColumnVector) batch.cols[outputColumn];
+    IntervalDayTimeColumnVector outputColVector = (IntervalDayTimeColumnVector) batch.cols[outputColumnNum];
 
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector1.isNull;
@@ -122,18 +127,8 @@ public class DateColSubtractDateScalar extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "timestamp";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + value;
+    return getColumnParamString(0, colNum) + ", val " + value;
   }
 
   @Override

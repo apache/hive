@@ -66,12 +66,12 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterStringGroupColLessEqualStringScalar(col 7, val 10) -> boolean, FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 12, col 5)(children: CastLongToDouble(col 0) -> 12:double) -> boolean, FilterDecimalScalarGreaterEqualDecimalColumn(val -5638.15, col 13)(children: CastLongToDecimal(col 0) -> 13:decimal(6,2)) -> boolean) -> boolean, FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 5, val 6981.0) -> boolean, FilterExprOrExpr(children: FilterDecimalColEqualDecimalScalar(col 14, val 9763215.5639)(children: CastLongToDecimal(col 1) -> 14:decimal(11,4)) -> boolean, FilterStringColLikeStringScalar(col 6, pattern %a) -> boolean) -> boolean) -> boolean) -> boolean
+                        predicateExpression: FilterExprOrExpr(children: FilterStringGroupColLessEqualStringScalar(col 7:string, val 10), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 0:tinyint) -> 13:double), FilterDecimalScalarGreaterEqualDecimalColumn(val -5638.15, col 14:decimal(6,2))(children: CastLongToDecimal(col 0:tinyint) -> 14:decimal(6,2))), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 5:double, val 6981.0), FilterExprOrExpr(children: FilterDecimalColEqualDecimalScalar(col 15:decimal(11,4), val 9763215.5639)(children: CastLongToDecimal(col 1:smallint) -> 15:decimal(11,4)), FilterStringColLikeStringScalar(col 6:string, pattern %a))))
                     predicate: (((UDFToDouble(ctinyint) > cdouble) and (-5638.15 >= CAST( ctinyint AS decimal(6,2)))) or ((cdouble > 6981.0) and ((CAST( csmallint AS decimal(11,4)) = 9763215.5639) or (cstring1 like '%a'))) or (cstring2 <= '10')) (type: boolean)
                     Statistics: Num rows: 9557 Data size: 2054789 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -80,8 +80,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [5, 8, 0, 10, 6, 12, 16, 15, 17, 19, 20, 18, 22, 23, 25]
-                          selectExpressions: DoubleColUnaryMinus(col 5) -> 12:double, DoubleColAddDoubleColumn(col 5, col 15)(children: CastLongToDouble(col 1) -> 15:double) -> 16:double, DoubleColModuloDoubleScalar(col 17, val 33.0)(children: DoubleColAddDoubleColumn(col 5, col 15)(children: CastLongToDouble(col 1) -> 15:double) -> 17:double) -> 15:double, DoubleColUnaryMinus(col 5) -> 17:double, DoubleColModuloDoubleColumn(col 18, col 5)(children: CastLongToDouble(col 0) -> 18:double) -> 19:double, LongColModuloLongColumn(col 0, col 1)(children: col 0) -> 20:long, DoubleColUnaryMinus(col 5) -> 18:double, LongColMultiplyLongColumn(col 3, col 21)(children: col 21) -> 22:long, DoubleScalarSubtractDoubleColumn(val 9763215.5639, col 24)(children: DoubleColAddDoubleColumn(col 5, col 23)(children: CastLongToDouble(col 1) -> 23:double) -> 24:double) -> 23:double, DoubleColUnaryMinus(col 24)(children: DoubleColUnaryMinus(col 5) -> 24:double) -> 25:double
+                          projectedOutputColumnNums: [5, 8, 0, 10, 6, 13, 17, 16, 18, 20, 21, 19, 23, 24, 26]
+                          selectExpressions: DoubleColUnaryMinus(col 5:double) -> 13:double, DoubleColAddDoubleColumn(col 5:double, col 16:double)(children: CastLongToDouble(col 1:smallint) -> 16:double) -> 17:double, DoubleColModuloDoubleScalar(col 18:double, val 33.0)(children: DoubleColAddDoubleColumn(col 5:double, col 16:double)(children: CastLongToDouble(col 1:smallint) -> 16:double) -> 18:double) -> 16:double, DoubleColUnaryMinus(col 5:double) -> 18:double, DoubleColModuloDoubleColumn(col 19:double, col 5:double)(children: CastLongToDouble(col 0:tinyint) -> 19:double) -> 20:double, LongColModuloLongColumn(col 0:smallint, col 1:smallint)(children: col 0:tinyint) -> 21:smallint, DoubleColUnaryMinus(col 5:double) -> 19:double, LongColMultiplyLongColumn(col 3:bigint, col 22:bigint)(children: col 22:smallint) -> 23:bigint, DoubleScalarSubtractDoubleColumn(val 9763215.5639, col 25:double)(children: DoubleColAddDoubleColumn(col 5:double, col 24:double)(children: CastLongToDouble(col 1:smallint) -> 24:double) -> 25:double) -> 24:double, DoubleColUnaryMinus(col 25:double)(children: DoubleColUnaryMinus(col 5:double) -> 25:double) -> 26:double
                       Statistics: Num rows: 9557 Data size: 2054789 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -97,7 +97,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -107,7 +108,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 3, 5, 6, 7, 8, 10]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: double, decimal(6,2), decimal(11,4), double, double, double, double, double, bigint, bigint, bigint, double, double, double
+                    scratchColumnTypeNames: [double, decimal(6,2), decimal(11,4), double, double, double, double, double, bigint, bigint, bigint, double, double, double]
 
   Stage: Stage-0
     Fetch Operator

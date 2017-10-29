@@ -536,18 +536,19 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public class FileSinkOperatorExplainVectorization extends OperatorExplainVectorization {
 
-    public FileSinkOperatorExplainVectorization(VectorDesc vectorDesc) {
+    public FileSinkOperatorExplainVectorization(VectorFileSinkDesc vectorFileSinkDesc) {
       // Native vectorization not supported.
-      super(vectorDesc, false);
+      super(vectorFileSinkDesc, false);
     }
   }
 
   @Explain(vectorization = Vectorization.OPERATOR, displayName = "File Sink Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public FileSinkOperatorExplainVectorization getFileSinkVectorization() {
-    if (vectorDesc == null) {
+    VectorFileSinkDesc vectorFileSinkDesc = (VectorFileSinkDesc) getVectorDesc();
+    if (vectorFileSinkDesc == null) {
       return null;
     }
-    return new FileSinkOperatorExplainVectorization(vectorDesc);
+    return new FileSinkOperatorExplainVectorization(vectorFileSinkDesc);
   }
 
   public void setInsertOverwrite(boolean isInsertOverwrite) {

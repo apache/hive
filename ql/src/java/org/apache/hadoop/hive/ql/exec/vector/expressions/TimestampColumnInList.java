@@ -32,24 +32,27 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 public class TimestampColumnInList extends VectorExpression implements ITimestampInExpr {
   private static final long serialVersionUID = 1L;
-  private int inputCol;
+
+  private final int inputCol;
+
   private Timestamp[] inListValues;
-  private int outputColumn;
 
   // The set object containing the IN list.
   private transient HashSet<Timestamp> inSet;
 
   public TimestampColumnInList() {
     super();
-    inSet = null;
+
+    // Dummy final assignments.
+    inputCol = -1;
   }
 
   /**
    * After construction you must call setInListValues() to add the values to the IN set.
    */
-  public TimestampColumnInList(int colNum, int outputColumn) {
+  public TimestampColumnInList(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.inputCol = colNum;
-    this.outputColumn = outputColumn;
     inSet = null;
   }
 
@@ -68,7 +71,7 @@ public class TimestampColumnInList extends VectorExpression implements ITimestam
     }
 
     TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputCol];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     boolean[] outNulls = outputColVector.isNull;
@@ -130,17 +133,6 @@ public class TimestampColumnInList extends VectorExpression implements ITimestam
     }
   }
 
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
   @Override
   public Descriptor getDescriptor() {
 
@@ -154,6 +146,6 @@ public class TimestampColumnInList extends VectorExpression implements ITimestam
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputCol + ", values " + Arrays.toString(inListValues);
+    return getColumnParamString(0, inputCol) + ", values " + Arrays.toString(inListValues);
   }
 }

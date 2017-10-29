@@ -25,17 +25,19 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 public class OctetLength extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  private int colNum;
-  private int outputColumn;
 
-  public OctetLength(int colNum, int outputColumn) {
-    this();
+  private final int colNum;
+
+  public OctetLength(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
 
   public OctetLength() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   // Calculate the length of the UTF-8 strings in input vector and place results in output vector.
@@ -47,7 +49,7 @@ public class OctetLength extends VectorExpression {
     }
 
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     int n = batch.size;
     int [] length = inputColVector.length;
@@ -109,30 +111,8 @@ public class OctetLength extends VectorExpression {
     }
   }
 
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "Long";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 
   @Override

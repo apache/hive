@@ -65,12 +65,12 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: SelectColumnIsNotNull(col 7) -> boolean, FilterDoubleColLessEqualDoubleScalar(col 12, val 10.0)(children: CastTimestampToDouble(col 8) -> 12:double) -> boolean, FilterDoubleColNotEqualDoubleScalar(col 12, val 16.0)(children: CastTimestampToDouble(col 9) -> 12:double) -> boolean) -> boolean, FilterDoubleColLessDoubleScalar(col 4, val -6432.0) -> boolean, FilterExprAndExpr(children: SelectColumnIsNotNull(col 10) -> boolean, FilterDoubleColEqualDoubleScalar(col 5, val 988888.0) -> boolean) -> boolean) -> boolean
+                  predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: SelectColumnIsNotNull(col 7:string), FilterDoubleColLessEqualDoubleScalar(col 13:double, val 10.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 13:double, val 16.0)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double)), FilterDoubleColLessDoubleScalar(col 4:float, val -6432.0), FilterExprAndExpr(children: SelectColumnIsNotNull(col 10:boolean), FilterDoubleColEqualDoubleScalar(col 5:double, val 988888.0)))
               predicate: ((cboolean1 is not null and (cdouble = 988888.0)) or (cfloat < -6432) or (cstring2 is not null and (UDFToDouble(ctimestamp1) <= 10.0) and (UDFToDouble(ctimestamp2) <> 16.0))) (type: boolean)
               Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -79,8 +79,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [8, 5, 10, 6, 4, 12, 13, 14, 16, 18, 15, 17, 19, 21]
-                    selectExpressions: DoubleColUnaryMinus(col 5) -> 12:double, DoubleScalarSubtractDoubleColumn(val -5638.15, col 5) -> 13:double, DoubleColMultiplyDoubleScalar(col 5, val -257.0) -> 14:double, DoubleColAddDoubleColumn(col 15, col 4)(children: CastLongToFloatViaLongToDouble(col 2) -> 15:double) -> 16:double, DoubleColAddDoubleColumn(col 15, col 17)(children: DoubleColUnaryMinus(col 5) -> 15:double, CastLongToDouble(col 3) -> 17:double) -> 18:double, DoubleColUnaryMinus(col 5) -> 15:double, DoubleScalarSubtractDoubleColumn(val -1.3890000581741333, col 4) -> 17:double, DoubleColUnaryMinus(col 4) -> 19:double, DoubleColAddDoubleColumn(col 20, col 22)(children: DoubleScalarSubtractDoubleColumn(val -5638.15, col 5) -> 20:double, col 22) -> 21:double
+                    projectedOutputColumnNums: [8, 5, 10, 6, 4, 13, 14, 15, 17, 19, 16, 18, 20, 22]
+                    selectExpressions: DoubleColUnaryMinus(col 5:double) -> 13:double, DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 14:double, DoubleColMultiplyDoubleScalar(col 5:double, val -257.0) -> 15:double, DoubleColAddDoubleColumn(col 16:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 16:float) -> 17:float, DoubleColAddDoubleColumn(col 16:double, col 18:double)(children: DoubleColUnaryMinus(col 5:double) -> 16:double, CastLongToDouble(col 3:bigint) -> 18:double) -> 19:double, DoubleColUnaryMinus(col 5:double) -> 16:double, DoubleScalarSubtractDoubleColumn(val -1.3890000581741333, col 4:float) -> 18:float, DoubleColUnaryMinus(col 4:float) -> 20:float, DoubleColAddDoubleColumn(col 21:double, col 23:double)(children: DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 21:double, col 23:float) -> 22:double
                 Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: timestamp), _col1 (type: double), _col2 (type: boolean), _col3 (type: string), _col4 (type: float), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: float), _col13 (type: double)
@@ -96,7 +96,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -106,7 +107,7 @@ STAGE PLANS:
               includeColumns: [2, 3, 4, 5, 6, 7, 8, 9, 10]
               dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
               partitionColumnCount: 0
-              scratchColumnTypeNames: double, double, double, double, double, double, double, double, double, double, double
+              scratchColumnTypeNames: [double, double, double, double, double, double, double, double, double, double, double]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -272,12 +273,11 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: SelectColumnIsNotNull(col 7) -> boolean, FilterDoubleColLessEqualDoubleScalar(col 12, val 12.503)(children: CastTimestampToDouble(col 8) -> 12:double) -> boolean, FilterDoubleColNotEqualDoubleScalar(col 12, val 11.998)(children: CastTimestampToDouble(col 9) -> 12:double) -> boolean) -> boolean, FilterDoubleColLessDoubleScalar(col 4, val -6432.0) -> boolean, FilterExprAndExpr(children: SelectColumnIsNotNull(col 10) -> boolean, FilterDoubleColEqualDoubleScalar(col 5, val 988888.0) -> boolean) -> boolean) -> boolean
+                  predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: SelectColumnIsNotNull(col 7:string), FilterDoubleColLessEqualDoubleScalar(col 13:double, val 12.503)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 13:double, val 11.998)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double)), FilterDoubleColLessDoubleScalar(col 4:float, val -6432.0), FilterExprAndExpr(children: SelectColumnIsNotNull(col 10:boolean), FilterDoubleColEqualDoubleScalar(col 5:double, val 988888.0)))
               predicate: ((cboolean1 is not null and (cdouble = 988888.0)) or (cfloat < -6432) or (cstring2 is not null and (UDFToDouble(ctimestamp1) <= 12.503) and (UDFToDouble(ctimestamp2) <> 11.998))) (type: boolean)
               Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -286,8 +286,8 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [8, 5, 10, 6, 4, 12, 13, 14, 16, 18, 15, 17, 19, 21]
-                    selectExpressions: DoubleColUnaryMinus(col 5) -> 12:double, DoubleScalarSubtractDoubleColumn(val -5638.15, col 5) -> 13:double, DoubleColMultiplyDoubleScalar(col 5, val -257.0) -> 14:double, DoubleColAddDoubleColumn(col 15, col 4)(children: CastLongToFloatViaLongToDouble(col 2) -> 15:double) -> 16:double, DoubleColAddDoubleColumn(col 15, col 17)(children: DoubleColUnaryMinus(col 5) -> 15:double, CastLongToDouble(col 3) -> 17:double) -> 18:double, DoubleColUnaryMinus(col 5) -> 15:double, DoubleScalarSubtractDoubleColumn(val -1.3890000581741333, col 4) -> 17:double, DoubleColUnaryMinus(col 4) -> 19:double, DoubleColAddDoubleColumn(col 20, col 22)(children: DoubleScalarSubtractDoubleColumn(val -5638.15, col 5) -> 20:double, col 22) -> 21:double
+                    projectedOutputColumnNums: [8, 5, 10, 6, 4, 13, 14, 15, 17, 19, 16, 18, 20, 22]
+                    selectExpressions: DoubleColUnaryMinus(col 5:double) -> 13:double, DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 14:double, DoubleColMultiplyDoubleScalar(col 5:double, val -257.0) -> 15:double, DoubleColAddDoubleColumn(col 16:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 16:float) -> 17:float, DoubleColAddDoubleColumn(col 16:double, col 18:double)(children: DoubleColUnaryMinus(col 5:double) -> 16:double, CastLongToDouble(col 3:bigint) -> 18:double) -> 19:double, DoubleColUnaryMinus(col 5:double) -> 16:double, DoubleScalarSubtractDoubleColumn(val -1.3890000581741333, col 4:float) -> 18:float, DoubleColUnaryMinus(col 4:float) -> 20:float, DoubleColAddDoubleColumn(col 21:double, col 23:double)(children: DoubleScalarSubtractDoubleColumn(val -5638.15, col 5:double) -> 21:double, col 23:float) -> 22:double
                 Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: timestamp), _col1 (type: double), _col2 (type: boolean), _col3 (type: string), _col4 (type: float), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: float), _col13 (type: double)
@@ -303,7 +303,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

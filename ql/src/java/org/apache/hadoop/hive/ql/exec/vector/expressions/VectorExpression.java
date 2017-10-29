@@ -20,60 +20,237 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * Base class for expressions.
+ * Base class for vector expressions.
+ *
+ * A vector expression is a vectorized execution tree that evaluates the same result as a (row-mode)
+ * ExprNodeDesc tree describes.
+ *
+ * A vector expression has 0, 1, or more parameters and an optional output column.  These are
+ * normally passed to the vector expression object' constructor.  A few special case classes accept
+ * extra parameters via set* method.
+ *
+ * A ExprNodeColumnDesc vectorizes to the IdentityExpression class where the input column number
+ * parameter is the same as the output column number.
+ *
+ * A ExprNodeGenericFuncDesc's generic function can vectorize to many different vectorized objects
+ * depending on the parameter expression kinds (column, constant, etc) and data types.  Each
+ * vectorized class implements the getDecription which indicates the particular expression kind
+ * and data type specialization that class is designed for.  The Description is used by the
+ * VectorizationContext class in matching the right vectorized class.
+ *
+ * The constructor parameters need to be in the same order as the generic function because
+ * the VectorizationContext class automates parameter generation and object construction.
+ *
+ * Type information is remembered for the input parameters and the output type.
+ *
+ * A vector expression has optional children vector expressions when 1 or more parameters need
+ * to be calculated into vector scratch columns.  Columns and constants do not need children
+ * expressions.
  */
 public abstract class VectorExpression implements Serializable {
-  public enum Type {
-    STRING, CHAR, VARCHAR, TIMESTAMP, DATE, LONG, DOUBLE, DECIMAL,
-    INTERVAL_YEAR_MONTH, INTERVAL_DAY_TIME, BINARY, OTHER;
-    private static Map<String, Type> types = ImmutableMap.<String, Type>builder()
-        .put("string", STRING)
-        .put("char", CHAR)
-        .put("varchar", VARCHAR)
-        .put("timestamp", TIMESTAMP)
-        .put("date", DATE)
-        .put("long", LONG)
-        .put("double", DOUBLE)
-        .put("decimal", DECIMAL)
-        .put("interval_year_month", INTERVAL_YEAR_MONTH)
-        .put("interval_day_time", INTERVAL_DAY_TIME)
-        .put("binary", BINARY)
-        .build();
 
-    public static Type getValue(String name) {
-      String nameLower = name.toLowerCase();
-      if (types.containsKey(nameLower)) {
-        return types.get(nameLower);
-      }
-      return OTHER;
+  private static final long serialVersionUID = 1L;
+
+  /**
+   * Child expressions for parameters -- but only those that need to be computed.
+   *
+   * NOTE: Columns and constants are not included in the children.  That is: column numbers and
+   * scalar values are passed via the constructor and remembered by the individual vector expression
+   * classes. They are not represented in the children.
+   */
+  protected VectorExpression [] childExpressions;
+
+  /**
+   * ALL input parameter type information is here including those for (non-computed) columns and
+   * scalar values.
+   *
+   * The vectorExpressionParameters() method is used to get the displayable string for the
+   * parameters used by EXPLAIN, logging, etc.
+   */
+  protected TypeInfo[] inputTypeInfos;
+  protected DataTypePhysicalVariation[] inputDataTypePhysicalVariations;
+
+  /**
+   * Output column number and type information of the vector expression.
+   */
+  protected final int outputColumnNum;
+
+  protected TypeInfo outputTypeInfo;
+  protected DataTypePhysicalVariation outputDataTypePhysicalVariation;
+
+  /*
+   * Use this constructor when there is NO output column.
+   */
+  public VectorExpression() {
+
+    // Initially, no children or inputs; set later with setInput* methods.
+    childExpressions = null;
+    inputTypeInfos = null;
+    inputDataTypePhysicalVariations = null;
+
+    // No output type information.
+    outputColumnNum = -1;
+    outputTypeInfo = null;
+    outputDataTypePhysicalVariation = null;
+  }
+
+  /*
+   * Use this constructor when there is an output column.
+   */
+  public VectorExpression(int outputColumnNum) {
+
+    // By default, no children or inputs.
+    childExpressions = null;
+    inputTypeInfos = null;
+    inputDataTypePhysicalVariations = null;
+
+    this.outputColumnNum = outputColumnNum;
+
+    // Set later with setOutput* methods.
+    outputTypeInfo = null;
+    outputDataTypePhysicalVariation = null;
+  }
+
+  //------------------------------------------------------------------------------------------------
+
+  /**
+   * Initialize the child expressions.
+   */
+  public void setChildExpressions(VectorExpression[] childExpressions) {
+    this.childExpressions = childExpressions;
+  }
+
+  public VectorExpression[] getChildExpressions() {
+    return childExpressions;
+  }
+
+  //------------------------------------------------------------------------------------------------
+
+  public void setInputTypeInfos(TypeInfo ...inputTypeInfos) {
+    this.inputTypeInfos = inputTypeInfos;
+  }
+
+  public TypeInfo[] getInputTypeInfos() {
+    return inputTypeInfos;
+  }
+
+  public void setInputDataTypePhysicalVariations(
+      DataTypePhysicalVariation ...inputDataTypePhysicalVariations) {
+    this.inputDataTypePhysicalVariations = inputDataTypePhysicalVariations;
+  }
+
+  public DataTypePhysicalVariation[] getInputDataTypePhysicalVariations() {
+    return inputDataTypePhysicalVariations;
+  }
+
+  /*
+   * Return a short string with the parameters of the vector expression that will be
+   * shown in EXPLAIN output, etc.
+   */
+  public abstract String vectorExpressionParameters();
+
+  //------------------------------------------------------------------------------------------------
+
+  public void transientInit() throws HiveException {
+    // Do nothing by default.
+  }
+
+  public static void doTransientInit(VectorExpression vecExpr) throws HiveException {
+    if (vecExpr == null) {
+      return;
+    }
+    doTransientInitRecurse(vecExpr);
+  }
+
+  public static void doTransientInit(VectorExpression[] vecExprs) throws HiveException {
+    if (vecExprs == null) {
+      return;
+    }
+    for (VectorExpression vecExpr : vecExprs) {
+      doTransientInitRecurse(vecExpr);
     }
   }
 
-  private static final long serialVersionUID = 1L;
-  /**
-   * Child expressions are evaluated post order.
-   */
-  protected VectorExpression [] childExpressions = null;
+  private static void doTransientInitRecurse(VectorExpression vecExpr) throws HiveException {
+
+    // Well, don't recurse but make sure all children are initialized.
+    vecExpr.transientInit();
+    List<VectorExpression> newChildren = new ArrayList<VectorExpression>();
+    VectorExpression[] children = vecExpr.getChildExpressions();
+    if (children != null) {
+      Collections.addAll(newChildren, children);
+    }
+    while (!newChildren.isEmpty()) {
+      VectorExpression childVecExpr = newChildren.remove(0);
+      children = childVecExpr.getChildExpressions();
+      if (children != null) {
+        Collections.addAll(newChildren, children);
+      }
+      childVecExpr.transientInit();
+    }
+  }
+
+  //------------------------------------------------------------------------------------------------
 
   /**
-   * More detailed input types, such as date and timestamp.
+   * Returns the index of the output column in the array
+   * of column vectors. If not applicable, -1 is returned.
+   * @return Index of the output column
    */
-  protected Type [] inputTypes;
+  public int getOutputColumnNum() {
+    return outputColumnNum;
+  }
 
   /**
-   * Output type of the expression.
+   * Returns type of the output column.
    */
-  protected String outputType;
+  public TypeInfo getOutputTypeInfo() {
+    return outputTypeInfo;
+  }
 
+  /**
+   * Set type of the output column.
+   */
+  public void setOutputTypeInfo(TypeInfo outputTypeInfo) {
+    this.outputTypeInfo = outputTypeInfo;
+  }
+
+  /**
+   * Set data type read variation.
+   */
+  public void setOutputDataTypePhysicalVariation(DataTypePhysicalVariation outputDataTypePhysicalVariation) {
+    this.outputDataTypePhysicalVariation = outputDataTypePhysicalVariation;
+  }
+
+  public DataTypePhysicalVariation getOutputDataTypePhysicalVariation() {
+    return outputDataTypePhysicalVariation;
+  }
+
+  public ColumnVector.Type getOutputColumnVectorType() throws HiveException {
+    return
+        VectorizationContext.getColumnVectorTypeFromTypeInfo(
+            outputTypeInfo, outputDataTypePhysicalVariation);
+  }
   /**
    * This is the primary method to implement expression logic.
    * @param batch
@@ -86,39 +263,6 @@ public abstract class VectorExpression implements Serializable {
         child.init(conf);
       }
     }
-  }
-
-  /**
-   * Returns the index of the output column in the array
-   * of column vectors. If not applicable, -1 is returned.
-   * @return Index of the output column
-   */
-  public abstract int getOutputColumn();
-
-  /**
-   * Returns type of the output column.
-   */
-  public String getOutputType() {
-    return outputType;
-  }
-
-  /**
-   * Set type of the output column.
-   */
-  public void setOutputType(String type) {
-    this.outputType = type;
-  }
-
-  /**
-   * Initialize the child expressions.
-   */
-  public void setChildExpressions(VectorExpression [] ve) {
-
-    childExpressions = ve;
-  }
-
-  public VectorExpression[] getChildExpressions() {
-    return childExpressions;
   }
 
   public abstract VectorExpressionDescriptor.Descriptor getDescriptor();
@@ -135,23 +279,39 @@ public abstract class VectorExpression implements Serializable {
     }
   }
 
-  /**
-   * Set more detailed types to distinguish certain types that is represented in same
-   * {@link org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.ArgumentType}s. For example, date and
-   * timestamp will be in {@link org.apache.hadoop.hive.ql.exec.vector.LongColumnVector} but they need to be
-   * distinguished.
-   * @param inputTypes
-   */
-  public void setInputTypes(Type ... inputTypes) {
-    this.inputTypes = inputTypes;
+  protected String getColumnParamString(int typeNum, int columnNum) {
+    return "col " + columnNum + ":" + getParamTypeString(typeNum);
   }
 
-  public Type [] getInputTypes() {
-    return inputTypes;
+  protected String getLongValueParamString(int typeNum, long value) {
+    return "val " + value + ":" + getParamTypeString(typeNum);
   }
 
-  public String vectorExpressionParameters() {
-    return null;
+  protected String getDoubleValueParamString(int typeNum, double value) {
+    return "val " + value + ":" + getParamTypeString(typeNum);
+  }
+
+  protected String getParamTypeString(int typeNum) {
+    if (inputTypeInfos == null || inputDataTypePhysicalVariations == null) {
+      fake++;
+    }
+    if (typeNum >= inputTypeInfos.length || typeNum >= inputDataTypePhysicalVariations.length) {
+      fake++;
+    }
+    return getTypeName(inputTypeInfos[typeNum], inputDataTypePhysicalVariations[typeNum]);
+  }
+
+  static int fake;
+
+  public static String getTypeName(TypeInfo typeInfo, DataTypePhysicalVariation dataTypePhysicalVariation) {
+    if (typeInfo == null) {
+      fake++;
+    }
+    if (dataTypePhysicalVariation != null && dataTypePhysicalVariation != DataTypePhysicalVariation.NONE) {
+      return typeInfo.toString() + "/" + dataTypePhysicalVariation;
+    } else {
+      return typeInfo.toString();
+    }
   }
 
   @Override
@@ -177,14 +337,14 @@ public abstract class VectorExpression implements Serializable {
         }
         b.append(")");
       }
-      b.append(" -> ");
-      int outputColumn = getOutputColumn();
-      if (outputColumn != -1) {
-        b.append(outputColumn);
+
+      if (outputColumnNum != -1) {
+        b.append(" -> ");
+        b.append(outputColumnNum);
         b.append(":");
+        b.append(getTypeName(outputTypeInfo, outputDataTypePhysicalVariation));
       }
-      b.append(getOutputType());
-    }
+     }
 
     return b.toString();
   }

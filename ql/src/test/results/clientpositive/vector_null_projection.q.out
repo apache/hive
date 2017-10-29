@@ -110,12 +110,6 @@ STAGE PLANS:
                 Select Operator
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    Group By Vectorization:
-                        groupByMode: HASH
-                        vectorOutput: false
-                        native: false
-                        vectorProcessingMode: NONE
-                        projectedOutputColumns: null
                     keys: null (type: void)
                     mode: hash
                     outputColumnNames: _col0
@@ -135,12 +129,6 @@ STAGE PLANS:
                 Select Operator
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    Group By Vectorization:
-                        groupByMode: HASH
-                        vectorOutput: false
-                        native: false
-                        vectorProcessingMode: NONE
-                        projectedOutputColumns: null
                     keys: null (type: void)
                     mode: hash
                     outputColumnNames: _col0
@@ -159,12 +147,6 @@ STAGE PLANS:
           enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
-          Group By Vectorization:
-              groupByMode: MERGEPARTIAL
-              vectorOutput: false
-              native: false
-              vectorProcessingMode: NONE
-              projectedOutputColumns: null
           keys: KEY._col0 (type: void)
           mode: mergepartial
           outputColumnNames: _col0

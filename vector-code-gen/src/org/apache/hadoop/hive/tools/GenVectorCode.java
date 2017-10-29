@@ -258,6 +258,15 @@ public class GenVectorCode extends Task {
       {"ColumnDivideColumnDecimal", "Divide"},
       {"ColumnDivideColumnDecimal", "Modulo"},
 
+      {"Decimal64ColumnArithmeticDecimal64Scalar", "Add", "+"},
+      {"Decimal64ColumnArithmeticDecimal64Scalar", "Subtract", "-"},
+
+      {"Decimal64ScalarArithmeticDecimal64Column", "Add", "+"},
+      {"Decimal64ScalarArithmeticDecimal64Column", "Subtract", "-"},
+
+      {"Decimal64ColumnArithmeticDecimal64Column", "Add", "+"},
+      {"Decimal64ColumnArithmeticDecimal64Column", "Subtract", "-"},
+
       {"ColumnCompareScalar", "Equal", "long", "double", "=="},
       {"ColumnCompareScalar", "Equal", "double", "double", "=="},
       {"ColumnCompareScalar", "NotEqual", "long", "double", "!="},
@@ -714,6 +723,28 @@ public class GenVectorCode extends Task {
       {"FilterDecimalColumnCompareDecimalColumn", "Greater", ">"},
       {"FilterDecimalColumnCompareDecimalColumn", "GreaterEqual", ">="},
 
+      // Decimal64
+      {"FilterDecimal64ColumnCompareDecimal64Scalar", "Equal"},
+      {"FilterDecimal64ColumnCompareDecimal64Scalar", "NotEqual"},
+      {"FilterDecimal64ColumnCompareDecimal64Scalar", "Less"},
+      {"FilterDecimal64ColumnCompareDecimal64Scalar", "LessEqual"},
+      {"FilterDecimal64ColumnCompareDecimal64Scalar", "Greater"},
+      {"FilterDecimal64ColumnCompareDecimal64Scalar", "GreaterEqual"},
+
+      {"FilterDecimal64ScalarCompareDecimal64Column", "Equal"},
+      {"FilterDecimal64ScalarCompareDecimal64Column", "NotEqual"},
+      {"FilterDecimal64ScalarCompareDecimal64Column", "Less"},
+      {"FilterDecimal64ScalarCompareDecimal64Column", "LessEqual"},
+      {"FilterDecimal64ScalarCompareDecimal64Column", "Greater"},
+      {"FilterDecimal64ScalarCompareDecimal64Column", "GreaterEqual"},
+
+      {"FilterDecimal64ColumnCompareDecimal64Column", "Equal"},
+      {"FilterDecimal64ColumnCompareDecimal64Column", "NotEqual"},
+      {"FilterDecimal64ColumnCompareDecimal64Column", "Less"},
+      {"FilterDecimal64ColumnCompareDecimal64Column", "LessEqual"},
+      {"FilterDecimal64ColumnCompareDecimal64Column", "Greater"},
+      {"FilterDecimal64ColumnCompareDecimal64Column", "GreaterEqual"},
+
 
       {"StringGroupScalarCompareStringGroupColumnBase", "Equal", "=="},
       {"StringGroupScalarCompareStringGroupColumnBase", "NotEqual", "!="},
@@ -998,6 +1029,11 @@ public class GenVectorCode extends Task {
       {"VectorUDAFMinMaxDecimal", "VectorUDAFMinDecimal", ">", "min",
           "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: decimal)"},
 
+      {"VectorUDAFMinMaxDecimal64", "VectorUDAFMaxDecimal64", "Max", "max",
+          "_FUNC_(expr) - Returns the maximum value of expr (vectorized, type: decimal64)"},
+      {"VectorUDAFMinMaxDecimal64", "VectorUDAFMinDecimal64", "Min", "min",
+          "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: decimal64)"},
+
       {"VectorUDAFMinMaxString", "VectorUDAFMinString", "<", "min",
           "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: string)"},
       {"VectorUDAFMinMaxString", "VectorUDAFMaxString", ">", "max",
@@ -1027,6 +1063,9 @@ public class GenVectorCode extends Task {
       {"VectorUDAFAvgDecimal", "VectorUDAFAvgDecimal", "PARTIAL1"},
       {"VectorUDAFAvgDecimal", "VectorUDAFAvgDecimalComplete", "COMPLETE"},
 
+      {"VectorUDAFAvgDecimal64ToDecimal", "VectorUDAFAvgDecimal64ToDecimal", "PARTIAL1"},
+      {"VectorUDAFAvgDecimal64ToDecimal", "VectorUDAFAvgDecimal64ToDecimalComplete", "COMPLETE"},
+
       {"VectorUDAFAvgTimestamp", "VectorUDAFAvgTimestamp", "PARTIAL1"},
       {"VectorUDAFAvgTimestamp", "VectorUDAFAvgTimestampComplete", "COMPLETE"},
 
@@ -1044,113 +1083,36 @@ public class GenVectorCode extends Task {
 
       // template, <ClassName>, <ValueType>, <VarianceFormula>, <DescriptionName>,
       // <DescriptionValue>
-      {"VectorUDAFVar", "VectorUDAFVarPopLong", "long", "PARTIAL1", "myagg.variance / myagg.count",
-          "variance, var_pop",
-          "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, long)"},
-      {"VectorUDAFVar", "VectorUDAFVarPopLongComplete", "long", "COMPLETE,VARIANCE", "myagg.variance / myagg.count",
-        "variance, var_pop",
-        "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, long)"},
-      {"VectorUDAFVar", "VectorUDAFVarPopDouble", "double", "PARTIAL1", "myagg.variance / myagg.count",
-          "variance, var_pop",
-          "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, double)"},
-      {"VectorUDAFVar", "VectorUDAFVarPopDoubleComplete", "double", "COMPLETE,VARIANCE", "myagg.variance / myagg.count",
-        "variance, var_pop",
-        "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, double)"},
-      {"VectorUDAFVarDecimal", "VectorUDAFVarPopDecimal", "PARTIAL1", "myagg.variance / myagg.count",
-          "variance, var_pop",
+      {"VectorUDAFVar", "VectorUDAFVarLong", "long", "PARTIAL1",
+          "variance, var_pop, var_samp, std, stddev, stddev_pop, stddev_samp",
+          "_FUNC_(x) - Returns one of the variance family of a set of numbers (vectorized, long)"},
+      {"VectorUDAFVar", "VectorUDAFVarLongComplete", "long", "COMPLETE",
+          "variance, var_pop, var_samp, std, stddev, stddev_pop, stddev_samp",
+          "_FUNC_(x) - Returns one of the variance family of a set of numbers (vectorized, long)"},
+      {"VectorUDAFVar", "VectorUDAFVarDouble", "double", "PARTIAL1",
+          "variance, var_pop, var_samp, std, stddev, stddev_pop, stddev_samp",
+          "_FUNC_(x) - Returns one of the variance family of a set of numbers (vectorized, double)"},
+      {"VectorUDAFVar", "VectorUDAFVarDoubleComplete", "double", "COMPLETE",
+          "variance, var_pop, var_samp, std, stddev, stddev_pop, stddev_samp",
+          "_FUNC_(x) - Returns one of the variance family of a set of numbers (vectorized, double)"},
+
+      {"VectorUDAFVarDecimal", "VectorUDAFVarDecimal", "PARTIAL1",
+          "variance, var_pop, var_samp, std, stddev, stddev_pop, stddev_samp",
           "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, decimal)"},
-      {"VectorUDAFVarDecimal", "VectorUDAFVarPopDecimalComplete", "COMPLETE,VARIANCE", "myagg.variance / myagg.count",
-        "variance, var_pop",
+      {"VectorUDAFVarDecimal", "VectorUDAFVarDecimalComplete", "COMPLETE",
+        "variance, var_pop, var_samp, std, stddev, stddev_pop, stddev_samp",
         "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, timestamp)"},
-      {"VectorUDAFVarTimestamp", "VectorUDAFVarPopTimestamp", "PARTIAL1", "myagg.variance / myagg.count",
-        "variance, var_pop",
+
+      {"VectorUDAFVarTimestamp", "VectorUDAFVarTimestamp", "PARTIAL1",
+        "variance, var_pop, var_samp, std, stddev, stddev_pop, stddev_samp",
         "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, timestamp)"},
-      {"VectorUDAFVarTimestamp", "VectorUDAFVarPopTimestampComplete", "COMPLETE,VARIANCE", "myagg.variance / myagg.count",
-        "variance, var_pop",
+      {"VectorUDAFVarTimestamp", "VectorUDAFVarTimestampComplete", "COMPLETE",
+        "variance, var_pop, var_samp, std, stddev, stddev_pop, stddev_samp",
         "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, decimal)"},
-
-      {"VectorUDAFVar", "VectorUDAFVarSampLong", "long", "PARTIAL1", "myagg.variance / (myagg.count-1.0)",
-          "var_samp",
-          "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, long)"},
-      {"VectorUDAFVar", "VectorUDAFVarSampLongComplete", "long", "COMPLETE,VARIANCE_SAMPLE", "myagg.variance / (myagg.count-1.0)",
-        "var_samp",
-        "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, long)"},
-      {"VectorUDAFVar", "VectorUDAFVarSampDouble", "double", "PARTIAL1", "myagg.variance / (myagg.count-1.0)",
-          "var_samp",
-          "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, double)"},
-      {"VectorUDAFVar", "VectorUDAFVarSampDoubleComplete", "double", "COMPLETE,VARIANCE_SAMPLE", "myagg.variance / (myagg.count-1.0)",
-        "var_samp",
-        "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, double)"},
-      {"VectorUDAFVarDecimal", "VectorUDAFVarSampDecimal", "PARTIAL1", "myagg.variance / (myagg.count-1.0)",
-          "var_samp",
-          "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, decimal)"},
-      {"VectorUDAFVarDecimal", "VectorUDAFVarSampDecimalComplete", "COMPLETE,VARIANCE_SAMPLE", "myagg.variance / (myagg.count-1.0)",
-        "var_samp",
-        "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, decimal)"},
-      {"VectorUDAFVarTimestamp", "VectorUDAFVarSampTimestamp", "PARTIAL1", "myagg.variance / (myagg.count-1.0)",
-        "var_samp",
-        "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, timestamp)"},
-      {"VectorUDAFVarTimestamp", "VectorUDAFVarSampTimestampComplete", "COMPLETE,VARIANCE_SAMPLE", "myagg.variance / (myagg.count-1.0)",
-        "var_samp",
-        "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, timestamp)"},
-
-      {"VectorUDAFVar", "VectorUDAFStdPopLong", "long", "PARTIAL1",
-          "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
-          "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, long)"},
-      {"VectorUDAFVar", "VectorUDAFStdPopLongComplete", "long", "COMPLETE,STD",
-        "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
-        "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, long)"},
-      {"VectorUDAFVar", "VectorUDAFStdPopDouble", "double", "PARTIAL1",
-          "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
-          "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, double)"},
-      {"VectorUDAFVar", "VectorUDAFStdPopDoubleComplete", "double", "COMPLETE,STD",
-        "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
-        "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, double)"},
-      {"VectorUDAFVarDecimal", "VectorUDAFStdPopDecimal", "PARTIAL1",
-          "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
-          "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, decimal)"},
-      {"VectorUDAFVarDecimal", "VectorUDAFStdPopDecimalComplete", "COMPLETE,STD",
-        "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
-        "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, decimal)"},
-      {"VectorUDAFVarTimestamp", "VectorUDAFStdPopTimestamp", "PARTIAL1",
-        "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
-        "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, timestamp)"},
-      {"VectorUDAFVarTimestamp", "VectorUDAFStdPopTimestampComplete", "COMPLETE,STD",
-        "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
-        "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, timestamp)"},
-
-      {"VectorUDAFVar", "VectorUDAFStdSampLong", "long", "PARTIAL1",
-          "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
-          "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, long)"},
-      {"VectorUDAFVar", "VectorUDAFStdSampLongComplete", "long", "COMPLETE,STD_SAMPLE",
-        "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
-        "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, long)"},
-      {"VectorUDAFVar", "VectorUDAFStdSampDouble", "double", "PARTIAL1",
-          "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
-          "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, double)"},
-      {"VectorUDAFVar", "VectorUDAFStdSampDoubleComplete", "double", "COMPLETE,STD_SAMPLE",
-        "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
-        "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, double)"},
-      {"VectorUDAFVarDecimal", "VectorUDAFStdSampDecimal", "PARTIAL1",
-          "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
-          "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, decimal)"},
-      {"VectorUDAFVarDecimal", "VectorUDAFStdSampDecimalComplete", "COMPLETE,STD_SAMPLE",
-        "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
-        "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, decimal)"},
-      {"VectorUDAFVarTimestamp", "VectorUDAFStdSampTimestamp", "PARTIAL1",
-        "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
-        "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, timestamp)"},
-      {"VectorUDAFVarTimestamp", "VectorUDAFStdSampTimestampComplete", "COMPLETE,STD_SAMPLE",
-        "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
-        "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, timestamp)"},
 
       //template, <ClassName>, <ValueType>, <IfDefined>
       {"VectorUDAFVarMerge", "VectorUDAFVarPartial2", "PARTIAL2"},
-
-      {"VectorUDAFVarMerge", "VectorUDAFVarPopFinal", "FINAL,VARIANCE"},
-      {"VectorUDAFVarMerge", "VectorUDAFVarSampFinal", "FINAL,VARIANCE_SAMPLE"},
-      {"VectorUDAFVarMerge", "VectorUDAFStdPopFinal", "FINAL,STD"},
-      {"VectorUDAFVarMerge", "VectorUDAFStdSampFinal", "FINAL,STD_SAMPLE"},
+      {"VectorUDAFVarMerge", "VectorUDAFVarFinal", "FINAL"},
     };
 
 
@@ -1286,6 +1248,12 @@ public class GenVectorCode extends Task {
         generateColumnCompareColumn(tdesc);
       } else if (tdesc[0].equals("ColumnArithmeticColumn") || tdesc[0].equals("ColumnDivideColumn")) {
         generateColumnArithmeticColumn(tdesc);
+      } else if (tdesc[0].equals("Decimal64ColumnArithmeticDecimal64Scalar")) {
+        generateDecimal64ColumnArithmeticDecimal64Scalar(tdesc);
+      } else if (tdesc[0].equals("Decimal64ScalarArithmeticDecimal64Column")) {
+        generateDecimal64ScalarArithmeticDecimal64Column(tdesc);
+      } else if (tdesc[0].equals("Decimal64ColumnArithmeticDecimal64Column")) {
+        generateDecimal64ColumnArithmeticDecimal64Column(tdesc);
       } else if (tdesc[0].equals("ColumnUnaryMinus")) {
         generateColumnUnaryMinus(tdesc);
       } else if (tdesc[0].equals("ColumnUnaryFunc")) {
@@ -1298,6 +1266,8 @@ public class GenVectorCode extends Task {
         generateVectorUDAFMinMaxString(tdesc);
       } else if (tdesc[0].equals("VectorUDAFMinMaxDecimal")) {
         generateVectorUDAFMinMaxObject(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFMinMaxDecimal64")) {
+        generateVectorUDAFMinMaxDecimal64(tdesc);
       } else if (tdesc[0].equals("VectorUDAFMinMaxTimestamp")) {
         generateVectorUDAFMinMaxObject(tdesc);
       } else if (tdesc[0].equals("VectorUDAFMinMaxIntervalDayTime")) {
@@ -1309,6 +1279,8 @@ public class GenVectorCode extends Task {
       } else if (tdesc[0].equals("VectorUDAFAvgMerge")) {
         generateVectorUDAFAvgMerge(tdesc);
       } else if (tdesc[0].equals("VectorUDAFAvgDecimal")) {
+        generateVectorUDAFAvgObject(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFAvgDecimal64ToDecimal")) {
         generateVectorUDAFAvgObject(tdesc);
       } else if (tdesc[0].equals("VectorUDAFAvgTimestamp")) {
         generateVectorUDAFAvgObject(tdesc);
@@ -1370,6 +1342,12 @@ public class GenVectorCode extends Task {
         generateFilterDecimalScalarCompareDecimalColumn(tdesc);
       } else if (tdesc[0].equals("FilterDecimalColumnCompareDecimalColumn")) {
         generateFilterDecimalColumnCompareDecimalColumn(tdesc);
+      } else if (tdesc[0].equals("FilterDecimal64ColumnCompareDecimal64Scalar")) {
+        generateFilterDecimal64ColumnCompareDecimal64Scalar(tdesc);
+      } else if (tdesc[0].equals("FilterDecimal64ScalarCompareDecimal64Column")) {
+        generateFilterDecimal64ScalarCompareDecimal64Column(tdesc);
+      } else if (tdesc[0].equals("FilterDecimal64ColumnCompareDecimal64Column")) {
+        generateFilterDecimal64ColumnCompareDecimal64Column(tdesc);
       } else if (tdesc[0].equals("FilterDTIScalarCompareColumn")) {
         generateFilterDTIScalarCompareColumn(tdesc);
       } else if (tdesc[0].equals("FilterDTIColumnCompareScalar")) {
@@ -1614,6 +1592,7 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<ValueType>", valueType);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
     templateString = templateString.replaceAll("<InputColumnVectorType>", columnType);
+    templateString = templateString.replaceAll("<UpperCaseColumnVectorType>", valueType.toUpperCase());
     templateString = templateString.replaceAll("<DescriptionName>", descName);
     templateString = templateString.replaceAll("<DescriptionValue>", descValue);
     templateString = templateString.replaceAll("<OutputType>", writableType);
@@ -1656,6 +1635,26 @@ public class GenVectorCode extends Task {
           className, templateString);
     }
 
+  private void generateVectorUDAFMinMaxDecimal64(String[] tdesc) throws Exception {
+    String className = tdesc[1];
+    String camelDescName = tdesc[2];
+    String descName = tdesc[3];
+    String descValue = tdesc[4];
+
+    String baseClassName = "VectorUDAF" + camelDescName + "Long";
+
+    File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
+
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
+    templateString = templateString.replaceAll("<DescriptionName>", descName);
+    templateString = templateString.replaceAll("<DescriptionValue>", descValue);
+
+    writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
+        className, templateString);
+  }
+
   private void generateVectorUDAFSum(String[] tdesc) throws Exception {
   //template, <ClassName>, <ValueType>, <OutputType>, <OutputTypeInspector>
     String className = tdesc[1];
@@ -1669,6 +1668,7 @@ public class GenVectorCode extends Task {
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<ValueType>", valueType);
+    templateString = templateString.replaceAll("<UpperCaseColumnVectorType>", valueType.toUpperCase());
     templateString = templateString.replaceAll("<InputColumnVectorType>", columnType);
     templateString = templateString.replaceAll("<OutputType>", writableType);
     templateString = templateString.replaceAll("<OutputTypeInspector>", inspectorType);
@@ -1689,6 +1689,7 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<ValueType>", valueType);
     templateString = templateString.replaceAll("<CamelCaseValueType>", camelValueCaseType);
+    templateString = templateString.replaceAll("<UpperCaseColumnVectorType>", valueType.toUpperCase());
     templateString = templateString.replaceAll("<InputColumnVectorType>", columnType);
 
     templateString = evaluateIfDefined(templateString, ifDefined);
@@ -1731,9 +1732,8 @@ public class GenVectorCode extends Task {
     String className = tdesc[1];
     String valueType = tdesc[2];
     String ifDefined = tdesc[3];
-    String varianceFormula = tdesc[4];
-    String descriptionName = tdesc[5];
-    String descriptionValue = tdesc[6];
+    String descriptionName = tdesc[4];
+    String descriptionValue = tdesc[5];
     String columnType = getColumnVectorType(valueType);
 
     File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
@@ -1742,7 +1742,7 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<ValueType>", valueType);
     templateString = templateString.replaceAll("<InputColumnVectorType>", columnType);
-    templateString = templateString.replaceAll("<VarianceFormula>", varianceFormula);
+    templateString = templateString.replaceAll("<UpperCaseColumnVectorType>", valueType.toUpperCase());
     templateString = templateString.replaceAll("<DescriptionName>", descriptionName);
     templateString = templateString.replaceAll("<DescriptionValue>", descriptionValue);
 
@@ -1755,15 +1755,13 @@ public class GenVectorCode extends Task {
   private void generateVectorUDAFVarObject(String[] tdesc) throws Exception {
     String className = tdesc[1];
     String ifDefined = tdesc[2];
-    String varianceFormula = tdesc[3];
-    String descriptionName = tdesc[4];
-    String descriptionValue = tdesc[5];
+    String descriptionName = tdesc[3];
+    String descriptionValue = tdesc[4];
 
     File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
 
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
-    templateString = templateString.replaceAll("<VarianceFormula>", varianceFormula);
     templateString = templateString.replaceAll("<DescriptionName>", descriptionName);
     templateString = templateString.replaceAll("<DescriptionValue>", descriptionValue);
 
@@ -2267,6 +2265,40 @@ public class GenVectorCode extends Task {
         + "Col" + operatorName + getCamelCaseType(operandType2) + "Column";
     String returnType = getArithmeticReturnType(operandType1, operandType2);
     generateColumnArithmeticOperatorColumn(tdesc, returnType, className);
+  }
+
+  private void generateDecimal64ColumnArithmeticDecimal64Scalar(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "Decimal64Col" + operatorName + "Decimal64Scalar";
+    generateDecimal64ColumnArithmetic(tdesc, className);
+  }
+
+  private void generateDecimal64ScalarArithmeticDecimal64Column(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "Decimal64Scalar" + operatorName + "Decimal64Column";
+    generateDecimal64ColumnArithmetic(tdesc, className);
+  }
+
+  private void generateDecimal64ColumnArithmeticDecimal64Column(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "Decimal64Col" + operatorName + "Decimal64Column";
+    generateDecimal64ColumnArithmetic(tdesc, className);
+  }
+
+  private void generateDecimal64ColumnArithmetic(String[] tdesc, String className)
+      throws IOException {
+
+    String operatorSymbol = tdesc[2];
+
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
   }
 
   private void generateFilterColumnCompareScalar(String[] tdesc) throws Exception {
@@ -2925,6 +2957,41 @@ public class GenVectorCode extends Task {
     // Expand, and write result
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateFilterDecimal64ColumnCompareDecimal64Scalar(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "FilterDecimal64Col" + operatorName + "Decimal64Scalar";
+    String baseClassName = "FilterLongCol" + operatorName + "LongScalar";
+    generateDecimal64ColumnCompare(tdesc, className, baseClassName);
+  }
+
+  private void generateFilterDecimal64ScalarCompareDecimal64Column(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "FilterDecimal64Scalar" + operatorName + "Decimal64Column";
+    String baseClassName = "FilterLongScalar" + operatorName + "LongColumn";
+    generateDecimal64ColumnCompare(tdesc, className, baseClassName);
+  }
+
+  private void generateFilterDecimal64ColumnCompareDecimal64Column(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "FilterDecimal64Col" + operatorName + "Decimal64Column";
+    String baseClassName = "FilterLongCol" + operatorName + "LongColumn";
+    generateDecimal64ColumnCompare(tdesc, className, baseClassName);
+  }
+
+  private void generateDecimal64ColumnCompare(String[] tdesc, String className, String baseClassName)
+      throws IOException {
+
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<BaseClassName>", baseClassName);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }

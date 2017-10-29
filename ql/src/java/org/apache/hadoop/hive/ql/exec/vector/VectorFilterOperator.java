@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorFilterDesc;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -35,11 +36,15 @@ import com.google.common.annotations.VisibleForTesting;
 /**
  * Filter operator implementation.
  **/
-public class VectorFilterOperator extends FilterOperator {
+public class VectorFilterOperator extends FilterOperator
+    implements VectorizationOperator{
 
   private static final long serialVersionUID = 1L;
 
-  private VectorExpression conditionEvaluator = null;
+  private VectorizationContext vContext;
+  private VectorFilterDesc vectorDesc;
+
+  private VectorExpression predicateExpression = null;
 
   // Temporary selected vector
   private transient int[] temporarySelected;
@@ -48,11 +53,14 @@ public class VectorFilterOperator extends FilterOperator {
   // and 0 if condition needs to be computed.
   transient private int filterMode = 0;
 
-  public VectorFilterOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
+  public VectorFilterOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc)
+          throws HiveException {
     this(ctx);
     this.conf = (FilterDesc) conf;
-    conditionEvaluator = ((VectorFilterDesc) this.conf.getVectorDesc()).getPredicateExpression();
+    this.vContext = vContext;
+    this.vectorDesc = (VectorFilterDesc) vectorDesc;
+    predicateExpression = this.vectorDesc.getPredicateExpression();
   }
 
   /** Kryo ctor. */
@@ -65,20 +73,25 @@ public class VectorFilterOperator extends FilterOperator {
     super(ctx);
   }
 
+  @Override
+  public VectorizationContext getInputVectorizationContext() {
+    return vContext;
+  }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
+    VectorExpression.doTransientInit(predicateExpression);
     try {
       heartbeatInterval = HiveConf.getIntVar(hconf,
           HiveConf.ConfVars.HIVESENDHEARTBEAT);
 
-      conditionEvaluator.init(hconf);
+      predicateExpression.init(hconf);
     } catch (Throwable e) {
       throw new HiveException(e);
     }
-    if (conditionEvaluator instanceof ConstantVectorExpression) {
-      ConstantVectorExpression cve = (ConstantVectorExpression) this.conditionEvaluator;
+    if (predicateExpression instanceof ConstantVectorExpression) {
+      ConstantVectorExpression cve = (ConstantVectorExpression) this.predicateExpression;
       if (cve.getLongValue() == 1) {
         filterMode = 1;
       } else {
@@ -90,7 +103,7 @@ public class VectorFilterOperator extends FilterOperator {
   }
 
   public void setFilterCondition(VectorExpression expr) {
-    this.conditionEvaluator = expr;
+    this.predicateExpression = expr;
   }
 
   @Override
@@ -109,7 +122,7 @@ public class VectorFilterOperator extends FilterOperator {
     //Evaluate the predicate expression
     switch (filterMode) {
       case 0:
-        conditionEvaluator.evaluate(vrg);
+        predicateExpression.evaluate(vrg);
         break;
       case -1:
         // All will be filtered out
@@ -133,11 +146,12 @@ public class VectorFilterOperator extends FilterOperator {
     return "FIL";
   }
 
-  public VectorExpression getConditionEvaluator() {
-    return conditionEvaluator;
+  public VectorExpression getPredicateExpression() {
+    return predicateExpression;
   }
 
-  public void setConditionEvaluator(VectorExpression conditionEvaluator) {
-    this.conditionEvaluator = conditionEvaluator;
+  @Override
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
   }
 }

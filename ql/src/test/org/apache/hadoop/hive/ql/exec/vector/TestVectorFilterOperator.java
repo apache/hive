@@ -97,13 +97,14 @@ public class TestVectorFilterOperator {
     columns.add("col1");
     FilterDesc fdesc = new FilterDesc();
     fdesc.setPredicate(col1Expr);
+    VectorFilterDesc vectorDesc = new VectorFilterDesc();
 
-    Operator<? extends OperatorDesc> filterOp = 
+    Operator<? extends OperatorDesc> filterOp =
         OperatorFactory.get(new CompilationOpContext(), fdesc);
 
     VectorizationContext vc = new VectorizationContext("name", columns);
 
-    return (VectorFilterOperator) Vectorizer.vectorizeFilterOperator(filterOp, vc);
+    return (VectorFilterOperator) Vectorizer.vectorizeFilterOperator(filterOp, vc, vectorDesc);
   }
 
   @Test
@@ -120,7 +121,7 @@ public class TestVectorFilterOperator {
 
     VectorizedRowBatch vrg = fdr.getNext();
 
-    vfo.getConditionEvaluator().evaluate(vrg);
+    vfo.getPredicateExpression().evaluate(vrg);
 
     //Verify
     int rows = 0;

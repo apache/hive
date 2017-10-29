@@ -54,12 +54,11 @@ STAGE PLANS:
                   Statistics: Num rows: 3073 Data size: 363126 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColGreaterLongScalar(col 0, val 0) -> boolean
+                        predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 0)
                     predicate: (cint > 0) (type: boolean)
                     Statistics: Num rows: 3073 Data size: 23976 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
@@ -68,7 +67,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 4]
+                          projectedOutputColumnNums: [0, 4]
                       Statistics: Num rows: 3073 Data size: 23976 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
@@ -84,7 +83,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -94,7 +94,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -105,7 +104,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1]
+                    projectedOutputColumnNums: [0, 1]
                 Statistics: Num rows: 3073 Data size: 23976 Basic stats: COMPLETE Column stats: PARTIAL
                 Limit
                   Number of rows: 10
@@ -177,12 +176,11 @@ STAGE PLANS:
                   Statistics: Num rows: 3073 Data size: 888298 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColGreaterLongScalar(col 0, val 0) -> boolean
+                        predicateExpression: FilterLongColGreaterLongScalar(col 0:int, val 0)
                     predicate: (cint > 0) (type: boolean)
                     Statistics: Num rows: 3073 Data size: 888298 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -191,7 +189,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 1]
+                          projectedOutputColumnNums: [0, 1]
                       Statistics: Num rows: 3073 Data size: 888298 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: string)
@@ -206,7 +204,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -216,7 +215,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -227,7 +225,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1]
+                    projectedOutputColumnNums: [0, 1]
                 Statistics: Num rows: 3073 Data size: 888298 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 10

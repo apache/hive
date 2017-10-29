@@ -26,17 +26,21 @@ public class LongColNotEqualLongScalar extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private long value;
-  private int outputColumn;
+  private final int colNum;
+  private final long value;
 
-  public LongColNotEqualLongScalar(int colNum, long value, int outputColumn) {
+  public LongColNotEqualLongScalar(int colNum, long value, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
     this.value = value;
-    this.outputColumn = outputColumn;
   }
 
   public LongColNotEqualLongScalar() {
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    value = 0;
   }
 
   @Override
@@ -47,7 +51,7 @@ public class LongColNotEqualLongScalar extends VectorExpression {
     }
 
     LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     boolean[] outNulls = outputColVector.isNull;
@@ -106,38 +110,8 @@ public class LongColNotEqualLongScalar extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public long getValue() {
-    return value;
-  }
-
-  public void setValue(long value) {
-    this.value = value;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + value;
+    return getColumnParamString(0, colNum) + ", val " + value;
   }
 
   @Override

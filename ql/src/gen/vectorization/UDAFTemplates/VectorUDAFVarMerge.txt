@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
@@ -34,14 +35,10 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance.VarianceKind;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 import com.google.common.base.Preconditions;
 
@@ -69,32 +66,28 @@ public class <ClassName> extends VectorAggregateExpression {
       transient private boolean isNull = true;
 
       public void merge(long partialCount, double partialSum, double partialVariance) {
-        final long origMergeCount;
+
         if (isNull || mergeCount == 0) {
+
           // Just copy the information since there is nothing so far.
-          origMergeCount = 0;
           mergeCount = partialCount;
           mergeSum = partialSum;
           mergeVariance = partialVariance;
           isNull = false;
-        } else {
-          origMergeCount = mergeCount;
+          return;
         }
 
-        if (partialCount > 0 && origMergeCount > 0) {
+        if (partialCount > 0 && mergeCount > 0) {
 
-          // Merge the two partials
-
-          mergeCount += partialCount;
-          final double origMergeSum = mergeSum;
-          mergeSum += partialSum;
-
-          final double doublePartialCount = (double) partialCount;
-          final double doubleOrigMergeCount = (double) origMergeCount;
-          double t = (doublePartialCount / doubleOrigMergeCount) * origMergeSum - partialSum;
+          // Merge the two partials.
           mergeVariance +=
-              partialVariance + ((doubleOrigMergeCount / doublePartialCount) /
-                  (doubleOrigMergeCount + doublePartialCount)) * t * t;
+              GenericUDAFVariance.calculateMerge(
+                  partialCount, mergeCount, partialSum, mergeSum,
+                  partialVariance, mergeVariance);
+
+          // Update these after calculation.
+          mergeCount += partialCount;
+          mergeSum += partialSum;
         }
       }
 
@@ -112,67 +105,32 @@ public class <ClassName> extends VectorAggregateExpression {
       }
     }
 
-#IF PARTIAL2
-    transient private Object[] partialResult;
-    transient private LongWritable resultCount;
-    transient private DoubleWritable resultSum;
-    transient private DoubleWritable resultVariance;
-    transient private StructObjectInspector soi;
-#ENDIF PARTIAL2
 #IF FINAL
-    transient private DoubleWritable fullResult;
-    transient private ObjectInspector oi;
+    transient private VarianceKind varianceKind = VarianceKind.NONE;
 #ENDIF FINAL
 
-    private transient int countOffset;
-    private transient int sumOffset;
-    private transient int varianceOffset;
+  // This constructor is used to momentarily create the object so match can be called.
+  public <ClassName>() {
+    super();
+  }
 
-    public <ClassName>(VectorExpression inputExpression, GenericUDAFEvaluator.Mode mode) {
-      super(inputExpression, mode);
+  public <ClassName>(VectorAggregationDesc vecAggrDesc) {
+    super(vecAggrDesc);
 #IF PARTIAL2
-      Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.PARTIAL2);
+    Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.PARTIAL2);
 #ENDIF PARTIAL2
 #IF FINAL
-      Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.FINAL);
+    Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.FINAL);
 #ENDIF FINAL
-    }
+    init();
+  }
 
     private void init() {
-#IF PARTIAL2
-      partialResult = new Object[3];
-      resultCount = new LongWritable();
-      resultSum = new DoubleWritable();
-      resultVariance = new DoubleWritable();
-      partialResult[0] = resultCount;
-      partialResult[1] = resultSum;
-      partialResult[2] = resultVariance;
-      initPartialResultInspector();
-#ENDIF PARTIAL2
 #IF FINAL
-      fullResult = new DoubleWritable();
-      initFullResultInspector();
+      String aggregateName = vecAggrDesc.getAggrDesc().getGenericUDAFName();
+      varianceKind = VarianceKind.nameMap.get(aggregateName);
 #ENDIF FINAL
     }
-
-#IF PARTIAL2
-    private void initPartialResultInspector() {
-        List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
-        foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-        foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-        List<String> fname = new ArrayList<String>();
-        fname.add("count");
-        fname.add("sum");
-        fname.add("variance");
-        soi = ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
-    }
-#ENDIF PARTIAL2
-#IF FINAL
-    private void initFullResultInspector() {
-      oi = PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
-    }
-#ENDIF FINAL
 
     private Aggregation getCurrentAggregationBuffer(
         VectorAggregationBufferRow[] aggregationBufferSets,
@@ -198,12 +156,14 @@ public class <ClassName> extends VectorAggregateExpression {
       inputExpression.evaluate(batch);
 
       StructColumnVector inputStructColVector =
-          (StructColumnVector) batch.cols[this.inputExpression.getOutputColumn()];
+          (StructColumnVector) batch.cols[
+              this.inputExpression.getOutputColumnNum()];
+
       ColumnVector[] fields = inputStructColVector.fields;
 
-      long[] countVector = ((LongColumnVector) fields[countOffset]).vector;
-      double[] sumVector = ((DoubleColumnVector) fields[sumOffset]).vector;
-      double[] varianceVector = ((DoubleColumnVector) fields[varianceOffset]).vector;
+      long[] countVector = ((LongColumnVector) fields[VARIANCE_COUNT_FIELD_INDEX]).vector;
+      double[] sumVector = ((DoubleColumnVector) fields[VARIANCE_SUM_FIELD_INDEX]).vector;
+      double[] varianceVector = ((DoubleColumnVector) fields[VARIANCE_VARIANCE_FIELD_INDEX]).vector;
 
       if (inputStructColVector.noNulls) {
         if (inputStructColVector.isRepeating) {
@@ -393,12 +353,14 @@ public class <ClassName> extends VectorAggregateExpression {
       inputExpression.evaluate(batch);
 
       StructColumnVector inputStructColVector =
-          (StructColumnVector) batch.cols[this.inputExpression.getOutputColumn()];
+          (StructColumnVector) batch.cols[
+              this.inputExpression.getOutputColumnNum()];
+
       ColumnVector[] fields = inputStructColVector.fields;
 
-      long[] countVector = ((LongColumnVector) fields[countOffset]).vector;
-      double[] sumVector = ((DoubleColumnVector) fields[sumOffset]).vector;
-      double[] varianceVector = ((DoubleColumnVector) fields[varianceOffset]).vector;
+      long[] countVector = ((LongColumnVector) fields[VARIANCE_COUNT_FIELD_INDEX]).vector;
+      double[] sumVector = ((DoubleColumnVector) fields[VARIANCE_SUM_FIELD_INDEX]).vector;
+      double[] varianceVector = ((DoubleColumnVector) fields[VARIANCE_VARIANCE_FIELD_INDEX]).vector;
 
       int batchSize = batch.size;
 
@@ -499,56 +461,6 @@ public class <ClassName> extends VectorAggregateExpression {
       myAgg.reset();
     }
 
-    @Override
-    public Object evaluateOutput(
-        AggregationBuffer agg) throws HiveException {
-      Aggregation myagg = (Aggregation) agg;
-      if (myagg.isNull) {
-        return null;
-      } else {
-#IF PARTIAL2
-        resultCount.set (myagg.mergeCount);
-        resultSum.set (myagg.mergeSum);
-        resultVariance.set (myagg.mergeVariance);
-        return partialResult;
-#ENDIF PARTIAL2
-#IF FINAL
-       if (myagg.mergeCount == 0) {
-          return null;   // SQL standard - return null for zero elements
-        } else if (myagg.mergeCount > 1) {
-#IF VARIANCE
-          fullResult.set(myagg.mergeVariance / (myagg.mergeCount));
-#ENDIF VARIANCE
-#IF VARIANCE_SAMPLE
-          fullResult.set(myagg.mergeVariance / (myagg.mergeCount - 1));
-#ENDIF VARIANCE_SAMPLE
-#IF STD
-          fullResult.set(Math.sqrt(myagg.mergeVariance / (myagg.mergeCount)));
-#ENDIF STD
-#IF STD_SAMPLE
-          fullResult.set(Math.sqrt(myagg.mergeVariance / (myagg.mergeCount - 1)));
-#ENDIF STD_SAMPLE
-        } else {
-
-          // For one element the variance is always 0.
-          fullResult.set(0);
-        }
-
-        return fullResult;
-#ENDIF FINAL
-      }
-    }
-
-  @Override
-  public ObjectInspector getOutputObjectInspector() {
-#IF PARTIAL2
-    return soi;
-#ENDIF PARTIAL2
-#IF FINAL
-    return oi;
-#ENDIF FINAL
-  }
-
   @Override
   public long getAggregationBufferFixedSize() {
     JavaDataModel model = JavaDataModel.get();
@@ -559,15 +471,80 @@ public class <ClassName> extends VectorAggregateExpression {
   }
 
   @Override
-  public void init(AggregationDesc desc) throws HiveException {
-    init();
+  public boolean matches(String name, ColumnVector.Type inputColVectorType,
+      ColumnVector.Type outputColVectorType, Mode mode) {
 
-    ExprNodeDesc inputExpr = desc.getParameters().get(0);
-    StructTypeInfo partialStructTypeInfo = (StructTypeInfo) inputExpr.getTypeInfo();
+    /*
+     * Variance input is STRUCT.
+#IF PARTIAL2
+     * Output is STRUCT.
+     *
+     * Mode PARTIAL2.
+#ENDIF PARTIAL2
+#IF FINAL
+     * Output is DOUBLE.
+     *
+     * Mode FINAL.
+#ENDIF FINAL
+     */
+    return
+        GenericUDAFVariance.isVarianceFamilyName(name) &&
+        inputColVectorType == ColumnVector.Type.STRUCT &&
+#IF PARTIAL2
+        outputColVectorType == ColumnVector.Type.STRUCT &&
+        mode == Mode.PARTIAL2;
+#ENDIF PARTIAL2
+#IF FINAL
+        outputColVectorType == ColumnVector.Type.DOUBLE &&
+        mode == Mode.FINAL;
+#ENDIF FINAL
+  }
 
-    ArrayList<String> fieldNames =  partialStructTypeInfo.getAllStructFieldNames();
-    countOffset = fieldNames.indexOf("count");
-    sumOffset = fieldNames.indexOf("sum");
-    varianceOffset = fieldNames.indexOf("variance");
+  @Override
+  public void assignRowColumn(VectorizedRowBatch batch, int batchIndex, int columnNum,
+      AggregationBuffer agg) throws HiveException {
+
+#IF PARTIAL2
+    StructColumnVector outputColVector = (StructColumnVector) batch.cols[columnNum];
+
+    Aggregation myagg = (Aggregation) agg;
+    if (myagg.isNull) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[batchIndex] = true;
+      return;
+    }
+    outputColVector.isNull[batchIndex] = false;
+
+    ColumnVector[] fields = outputColVector.fields;
+    ((LongColumnVector) fields[VARIANCE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.mergeCount;
+    ((DoubleColumnVector) fields[VARIANCE_SUM_FIELD_INDEX]).vector[batchIndex] = myagg.mergeSum;
+    ((DoubleColumnVector) fields[VARIANCE_VARIANCE_FIELD_INDEX]).vector[batchIndex] = myagg.mergeVariance;
+#ENDIF PARTIAL2
+#IF FINAL
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[columnNum];
+
+    Aggregation myagg = (Aggregation) agg;
+    if (GenericUDAFVariance.isVarianceNull(myagg.mergeCount, varianceKind)) {
+
+      // SQL standard - return null for zero (or 1 for sample) elements
+      outputColVector.noNulls = false;
+      outputColVector.isNull[batchIndex] = true;
+      return;
+    }
+    outputColVector.isNull[batchIndex] = false;
+
+    final double result;
+    if (myagg.mergeCount > 1) {
+
+      // Use the common variance family result calculation method.
+      result = GenericUDAFVariance.calculateVarianceFamilyResult(
+          myagg.mergeVariance, myagg.mergeCount, varianceKind);
+    } else {
+
+      // For one element the variance is always 0.
+      result = 0.0;
+    }
+    outputColVector.vector[batchIndex] = result;
+#ENDIF FINAL
   }
 }

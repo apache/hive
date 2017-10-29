@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -33,12 +31,10 @@ public class CastTimestampToDate extends FuncTimestampToLong {
 
   public CastTimestampToDate() {
     super();
-    this.outputType = "date";
   }
 
-  public CastTimestampToDate(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
-    this.outputType = "date";
+  public CastTimestampToDate(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   @Override

@@ -169,12 +169,11 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsNotNull(col 1) -> boolean
+                  predicateExpression: SelectColumnIsNotNull(col 1:char(10))
               predicate: c2 is not null (type: boolean)
               Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -183,7 +182,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1]
+                    projectedOutputColumnNums: [0, 1]
                 Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
@@ -212,7 +211,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -300,12 +300,11 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 324 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsNotNull(col 1) -> boolean
+                  predicateExpression: SelectColumnIsNotNull(col 1:char(20))
               predicate: c2 is not null (type: boolean)
               Statistics: Num rows: 3 Data size: 324 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -314,7 +313,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1]
+                    projectedOutputColumnNums: [0, 1]
                 Statistics: Num rows: 3 Data size: 324 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
@@ -343,7 +342,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -433,12 +433,11 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsNotNull(col 1) -> boolean
+                  predicateExpression: SelectColumnIsNotNull(col 1:char(10))
               predicate: c2 is not null (type: boolean)
               Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -447,7 +446,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1]
+                    projectedOutputColumnNums: [0, 1]
                 Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
@@ -476,7 +475,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

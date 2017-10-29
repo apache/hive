@@ -24,7 +24,10 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.DateParser;
 
@@ -34,23 +37,38 @@ import java.sql.Date;
 public class VectorUDFDateAddColCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int colNum1;
-  private int colNum2;
-  private int outputColumn;
+  private final int colNum1;
+  private final int colNum2;
+
   protected boolean isPositive = true;
+
   private transient final Text text = new Text();
   private transient final Date date = new Date(0);
   private transient final DateParser dateParser = new DateParser();
 
-  public VectorUDFDateAddColCol(int colNum1, int colNum2, int outputColumn) {
-    this();
+  // Transient members initialized by transientInit method.
+  private transient PrimitiveCategory primitiveCategory;
+
+  public VectorUDFDateAddColCol(int colNum1, int colNum2, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
-    this.outputColumn = outputColumn;
   }
 
   public VectorUDFDateAddColCol() {
     super();
+
+    // Dummy final assignments.
+    colNum1 = -1;
+    colNum2 = -1;
+  }
+
+  @Override
+  public void transientInit() throws HiveException {
+    super.transientInit();
+
+    primitiveCategory =
+        ((PrimitiveTypeInfo) inputTypeInfos[0]).getPrimitiveCategory();
   }
 
   @Override
@@ -66,7 +84,7 @@ public class VectorUDFDateAddColCol extends VectorExpression {
     int n = batch.size;
     long[] vector2 = inputColVector2.vector;
 
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
     long[] outputVector = outV.vector;
     if (n <= 0) {
       // Nothing to do
@@ -76,7 +94,7 @@ public class VectorUDFDateAddColCol extends VectorExpression {
     // Handle null
     NullUtil.propagateNullsColCol(inputColVector1, inputColVector2, outV, batch.selected, batch.size, batch.selectedInUse);
 
-    switch (inputTypes[0]) {
+    switch (primitiveCategory) {
       case DATE:
         // Now disregard null in second pass.
         if ((inputColVector1.isRepeating) && (inputColVector2.isRepeating)) {
@@ -136,7 +154,7 @@ public class VectorUDFDateAddColCol extends VectorExpression {
         }
         break;
       default:
-        throw new Error("Unsupported input type " + inputTypes[0].name());
+        throw new Error("Unsupported input type " + primitiveCategory.name());
     }
   }
 
@@ -186,38 +204,8 @@ public class VectorUDFDateAddColCol extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return this.outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "date";
-  }
-
-  public int getColNum1() {
-    return colNum1;
-  }
-
-  public void setColNum1(int colNum1) {
-    this.colNum1 = colNum1;
-  }
-
-  public int getColNum2() {
-    return colNum2;
-  }
-
-  public void setColNum2(int colNum2) {
-    this.colNum2 = colNum2;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum1 + ", col " + colNum2;
+    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

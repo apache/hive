@@ -61,7 +61,7 @@ public abstract class VectorPTFEvaluatorBase {
       inputColumnNum = -1;
       this.inputVecExpr = null;
     } else {
-      inputColumnNum = inputVecExpr.getOutputColumn();
+      inputColumnNum = inputVecExpr.getOutputColumnNum();
       if (inputVecExpr instanceof IdentityExpression) {
         this.inputVecExpr = null;
       } else {

@@ -39,8 +39,7 @@ import java.util.regex.Pattern;
  */
 public class StringColumnInList extends VectorExpression implements IStringInExpr {
   private static final long serialVersionUID = 1L;
-  private int inputCol;
-  private int outputColumn;
+  protected int inputCol;
   private byte[][] inListValues;
 
   // The set object containing the IN list. This is optimized for lookup
@@ -49,15 +48,14 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
 
   public StringColumnInList() {
     super();
-    inSet = null;
   }
 
   /**
    * After construction you must call setInListValues() to add the values to the IN set.
    */
-  public StringColumnInList(int colNum, int outputColumn) {
+  public StringColumnInList(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.inputCol = colNum;
-    this.outputColumn = outputColumn;
     inSet = null;
   }
 
@@ -74,7 +72,7 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
     }
 
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputCol];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     int n = batch.size;
@@ -134,42 +132,11 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
     }
   }
 
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  public void setInputColumn(int inputCol) {
-    this.inputCol = inputCol;
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return this.outputColumn;
-  }
-
-  public void setOutputColumn(int value) {
-    this.outputColumn = value;
-  }
-
-  public int getInputCol() {
-    return inputCol;
-  }
-
-  public void setInputCol(int colNum) {
-    this.inputCol = colNum;
-  }
-
   @Override
   public Descriptor getDescriptor() {
 
     // This VectorExpression (IN) is a special case, so don't return a descriptor.
     return null;
-  }
-
-  public byte[][] getInListValues() {
-    return this.inListValues;
   }
 
   public void setInListValues(byte [][] a) {
@@ -178,6 +145,6 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputCol + ", values " + Arrays.toString(inListValues);
+    return getColumnParamString(0, inputCol) + ", values " + Arrays.toString(inListValues);
   }
 }

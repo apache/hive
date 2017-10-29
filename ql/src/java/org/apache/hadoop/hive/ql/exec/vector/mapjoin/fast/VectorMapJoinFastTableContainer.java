@@ -94,6 +94,8 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
   private VectorMapJoinFastHashTable createHashTable(int newThreshold) {
 
     boolean isOuterJoin = !desc.isNoOuterJoin();
+
+    // UNDONE
     VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) desc.getVectorDesc();
     HashTableImplementationType hashTableImplementationType = vectorDesc.getHashTableImplementationType();
     HashTableKind hashTableKind = vectorDesc.getHashTableKind();

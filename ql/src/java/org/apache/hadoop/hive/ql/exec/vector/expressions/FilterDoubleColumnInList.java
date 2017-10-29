@@ -18,15 +18,18 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFLike;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.Text;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,8 +39,10 @@ import java.util.regex.Pattern;
  */
 public class FilterDoubleColumnInList extends VectorExpression implements IDoubleInExpr {
   private static final long serialVersionUID = 1L;
-  private int inputCol;
+  private final int inputCol;
   private double[] inListValues;
+
+  // Transient members initialized by transientInit method.
 
   // The set object containing the IN list. This is optimized for lookup
   // of the data type of the column.
@@ -45,7 +50,9 @@ public class FilterDoubleColumnInList extends VectorExpression implements IDoubl
 
   public FilterDoubleColumnInList() {
     super();
-    inSet = null;
+
+    // Dummy final assignments.
+    inputCol = -1;
   }
 
   /**
@@ -53,7 +60,14 @@ public class FilterDoubleColumnInList extends VectorExpression implements IDoubl
    */
   public FilterDoubleColumnInList(int colNum) {
     this.inputCol = colNum;
-    inSet = null;
+  }
+
+  @Override
+  public void transientInit() throws HiveException {
+    super.transientInit();
+
+    inSet = new CuckooSetDouble(inListValues.length);
+    inSet.load(inListValues);
   }
 
   @Override
@@ -61,11 +75,6 @@ public class FilterDoubleColumnInList extends VectorExpression implements IDoubl
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
-    }
-
-    if (inSet == null) {
-      inSet = new CuckooSetDouble(inListValues.length);
-      inSet.load(inListValues);
     }
 
     DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[inputCol];
@@ -152,17 +161,6 @@ public class FilterDoubleColumnInList extends VectorExpression implements IDoubl
     }
   }
 
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
   @Override
   public Descriptor getDescriptor() {
 
@@ -180,7 +178,7 @@ public class FilterDoubleColumnInList extends VectorExpression implements IDoubl
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputCol + ", values " + Arrays.toString(inListValues);
+    return getColumnParamString(0, inputCol) + ", values " + Arrays.toString(inListValues);
   }
 
 }

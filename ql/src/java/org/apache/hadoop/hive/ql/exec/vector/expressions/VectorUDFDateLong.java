@@ -37,7 +37,7 @@ public class VectorUDFDateLong extends CastLongToDate {
     super();
   }
 
-  public VectorUDFDateLong(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public VectorUDFDateLong(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 }

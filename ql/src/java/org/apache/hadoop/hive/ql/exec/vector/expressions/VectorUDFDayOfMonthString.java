@@ -26,8 +26,8 @@ public final class VectorUDFDayOfMonthString extends VectorUDFTimestampFieldStri
 
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFDayOfMonthString(int colNum, int outputColumn) {
-    super(colNum, outputColumn, 8, 2);
+  public VectorUDFDayOfMonthString(int colNum, int outputColumnNum) {
+    super(colNum, outputColumnNum, 8, 2);
   }
 
   public VectorUDFDayOfMonthString() {

@@ -77,6 +77,8 @@ public class VectorExpressionDescriptor {
     INTERVAL_DAY_TIME       (0x200),
     BINARY                  (0x400),
     STRUCT                  (0x800),
+    DECIMAL_64              (0x1000),
+    INT_DECIMAL_64_FAMILY   (INT_FAMILY.value | DECIMAL_64.value),
     DATETIME_FAMILY         (DATE.value | TIMESTAMP.value),
     INTERVAL_FAMILY         (INTERVAL_YEAR_MONTH.value | INTERVAL_DAY_TIME.value),
     INT_INTERVAL_YEAR_MONTH     (INT_FAMILY.value | INTERVAL_YEAR_MONTH.value),

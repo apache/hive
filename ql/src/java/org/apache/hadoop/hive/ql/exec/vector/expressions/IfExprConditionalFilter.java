@@ -31,13 +31,11 @@ public class IfExprConditionalFilter extends VectorExpression {
   protected int arg1Column = -1;
   protected int arg2Column = -1;
   protected int arg3Column = -1;
-  protected int outputColumn = -1;
   protected int arg2ColumnTmp = -1;
 
-  public IfExprConditionalFilter() {
-  }
-
-  public IfExprConditionalFilter(int arg1Column, int arg2Column, int arg3Column, int outputColumn) {
+  public IfExprConditionalFilter(int arg1Column, int arg2Column, int arg3Column,
+      int outputColumnNum) {
+    super(outputColumnNum);
     this.arg1Column = arg1Column;
     if(arg2Column == -1){
       this.arg2Column = arg3Column;
@@ -47,7 +45,10 @@ public class IfExprConditionalFilter extends VectorExpression {
       this.arg3Column = arg3Column;
       this.arg2ColumnTmp = arg2Column;
     }
-    this.outputColumn = outputColumn;
+  }
+
+  public IfExprConditionalFilter() {
+    super();
   }
 
   /**
@@ -85,7 +86,7 @@ public class IfExprConditionalFilter extends VectorExpression {
       if (childExpressions != null && childExpressions.length == 2) {
         // If the length is 2, it has two situations:If(expr1,expr2,null) or
         // If(expr1,null,expr3) distinguished by the indexes.
-        if (childExpressions[1].getOutputColumn() == arg2ColumnTmp) {
+        if (childExpressions[1].getOutputColumnNum() == arg2ColumnTmp) {
           // Evaluate the expr2 expression.
           childExpressions[1].evaluate(batch);
         } else {
@@ -154,7 +155,7 @@ public class IfExprConditionalFilter extends VectorExpression {
                                                     boolean prevSelectInUse) {
     batch.size = prevSize;
     batch.selectedInUse = prevSelectInUse;
-    int colNum = ve.getOutputColumn();
+    int colNum = ve.getOutputColumnNum();
     // Evaluate the conditional expression.
     ve.evaluate(batch);
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[colNum];
@@ -180,13 +181,13 @@ public class IfExprConditionalFilter extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    throw new UnsupportedOperationException("Undefined descriptor");
   }
 
   @Override
-  public VectorExpressionDescriptor.Descriptor getDescriptor() {
-    throw new UnsupportedOperationException("Undefined descriptor");
+  public String vectorExpressionParameters() {
+    return null;
   }
 }
 

@@ -33,21 +33,20 @@ public class LongColumnInList extends VectorExpression implements ILongInExpr {
   private static final long serialVersionUID = 1L;
 
   private int colNum;
-  private int outputColumn;
   private long[] inListValues;
 
   // The set object containing the IN list. This is optimized for lookup
   // of the data type of the column.
   private transient CuckooSetLong inSet;
 
-  public LongColumnInList(int colNum, int outputColumn) {
+  public LongColumnInList(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
+    inSet = null;
   }
 
   public LongColumnInList() {
     super();
-    inSet = null;
   }
 
   @Override
@@ -63,7 +62,7 @@ public class LongColumnInList extends VectorExpression implements ILongInExpr {
     }
 
     LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     boolean[] outNulls = outputColVector.isNull;
@@ -124,32 +123,6 @@ public class LongColumnInList extends VectorExpression implements ILongInExpr {
         }
       }
     }
-  }
-
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public long[] getInListValues() {
-    return this.inListValues;
   }
 
   public void setInListValues(long [] a) {

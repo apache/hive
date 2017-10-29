@@ -31,20 +31,20 @@ import java.util.Arrays;
 public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private int outputColumn;
+  private final int colNum;
   private int decimalPlaces;
 
-  public FuncRoundWithNumDigitsDecimalToDecimal(int colNum, int scalarValue, int outputColumn) {
-    this();
+  public FuncRoundWithNumDigitsDecimalToDecimal(int colNum, int scalarValue, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
     this.decimalPlaces = scalarValue;
-    this.outputType = "decimal";
   }
-  
+
   public FuncRoundWithNumDigitsDecimalToDecimal() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   @Override
@@ -55,7 +55,7 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
     }
 
     DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[colNum];
-    DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumn];
+    DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -110,18 +110,8 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
     }
   }
 
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-  
-  @Override
-  public String getOutputType() {
-    return outputType;
-  }
-
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", decimalPlaces " + decimalPlaces;
+    return getColumnParamString(0, colNum) + ", decimalPlaces " + decimalPlaces;
   }
 
   @Override

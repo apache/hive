@@ -24,16 +24,15 @@ STAGE PLANS:
       Map Operator Tree:
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsNull(col 5) -> boolean
+                  predicateExpression: SelectColumnIsNull(col 5:double)
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [6, 2, 4, 1, 16]
-                    selectExpressions: VectorCoalesce(columns [12, 6, 13, 14, 15])(children: ConstantVectorExpression(val null) -> 12:string, col 6, CastLongToString(col 2) -> 13:String, VectorUDFAdaptor(null(cfloat)) -> 14:string, CastLongToString(col 1) -> 15:String) -> 16:string
+                    projectedOutputColumnNums: [6, 2, 4, 1, 17]
+                    selectExpressions: VectorCoalesce(columns [13, 6, 14, 15, 16])(children: ConstantVectorExpression(val null) -> 13:string, col 6:string, CastLongToString(col 2:int) -> 14:string, VectorUDFAdaptor(null(cfloat)) -> 15:string, CastLongToString(col 1:smallint) -> 16:string) -> 17:string
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
@@ -43,7 +42,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: true
@@ -109,16 +109,15 @@ STAGE PLANS:
       Map Operator Tree:
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsNull(col 0) -> boolean
+                  predicateExpression: SelectColumnIsNull(col 0:tinyint)
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [5, 2, 15]
-                    selectExpressions: VectorCoalesce(columns [12, 14, 13])(children: ConstantVectorExpression(val null) -> 12:double, DoubleColAddDoubleColumn(col 5, col 13)(children: FuncLog2LongToDouble(col 2) -> 13:double) -> 14:double, ConstantVectorExpression(val 0.0) -> 13:double) -> 15:double
+                    projectedOutputColumnNums: [5, 2, 16]
+                    selectExpressions: VectorCoalesce(columns [13, 15, 14])(children: ConstantVectorExpression(val null) -> 13:double, DoubleColAddDoubleColumn(col 5:double, col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 15:double, ConstantVectorExpression(val 0.0) -> 14:double) -> 16:double
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
@@ -128,7 +127,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -194,16 +194,15 @@ STAGE PLANS:
       Map Operator Tree:
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNull(col 4) -> boolean, SelectColumnIsNull(col 3) -> boolean) -> boolean
+                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNull(col 4:float), SelectColumnIsNull(col 3:bigint))
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [12, 13, 14]
-                    selectExpressions: ConstantVectorExpression(val null) -> 12:float, ConstantVectorExpression(val null) -> 13:bigint, ConstantVectorExpression(val 0.0) -> 14:double
+                    projectedOutputColumnNums: [13, 14, 15]
+                    selectExpressions: ConstantVectorExpression(val null) -> 13:float, ConstantVectorExpression(val null) -> 14:bigint, ConstantVectorExpression(val 0.0) -> 15:float
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
@@ -214,7 +213,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -275,16 +275,15 @@ STAGE PLANS:
       Map Operator Tree:
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprOrExpr(children: SelectColumnIsNotNull(col 8) -> boolean, SelectColumnIsNotNull(col 9) -> boolean) -> boolean
+                  predicateExpression: FilterExprOrExpr(children: SelectColumnIsNotNull(col 8:timestamp), SelectColumnIsNotNull(col 9:timestamp))
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [8, 9, 12]
-                    selectExpressions: VectorCoalesce(columns [8, 9])(children: col 8, col 9) -> 12:timestamp
+                    projectedOutputColumnNums: [8, 9, 13]
+                    selectExpressions: VectorCoalesce(columns [8, 9])(children: col 8:timestamp, col 9:timestamp) -> 13:timestamp
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
@@ -294,7 +293,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -360,16 +360,15 @@ STAGE PLANS:
       Map Operator Tree:
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNull(col 4) -> boolean, SelectColumnIsNull(col 3) -> boolean) -> boolean
+                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNull(col 4:float), SelectColumnIsNull(col 3:bigint))
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [12, 13, 14]
-                    selectExpressions: ConstantVectorExpression(val null) -> 12:float, ConstantVectorExpression(val null) -> 13:bigint, ConstantVectorExpression(val null) -> 14:float
+                    projectedOutputColumnNums: [13, 14, 15]
+                    selectExpressions: ConstantVectorExpression(val null) -> 13:float, ConstantVectorExpression(val null) -> 14:bigint, ConstantVectorExpression(val null) -> 15:float
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
@@ -380,7 +379,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -439,16 +439,15 @@ STAGE PLANS:
       Map Operator Tree:
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsNull(col 3) -> boolean
+                  predicateExpression: SelectColumnIsNull(col 3:bigint)
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [12, 0, 14]
-                    selectExpressions: ConstantVectorExpression(val null) -> 12:bigint, VectorCoalesce(columns [13, 0])(children: ConstantVectorExpression(val null) -> 13:bigint, col 0) -> 14:bigint
+                    projectedOutputColumnNums: [13, 0, 15]
+                    selectExpressions: ConstantVectorExpression(val null) -> 13:bigint, VectorCoalesce(columns [14, 0])(children: ConstantVectorExpression(val null) -> 14:bigint, col 0:tinyint) -> 15:bigint
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
@@ -459,7 +458,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

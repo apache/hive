@@ -54,12 +54,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 36700 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 1, val 418) -> boolean, FilterLongColEqualLongScalar(col 1, val 12205) -> boolean, FilterLongColEqualLongScalar(col 1, val 10583) -> boolean) -> boolean
+                        predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 1:smallint, val 418), FilterLongColEqualLongScalar(col 1:smallint, val 12205), FilterLongColEqualLongScalar(col 1:smallint, val 10583))
                     predicate: ((csmallint = 10583) or (csmallint = 12205) or (csmallint = 418)) (type: boolean)
                     Statistics: Num rows: 6 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -68,8 +67,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [1, 15, 16]
-                          selectExpressions: IfExprStringScalarStringGroupColumn(col 12, val a, col 14)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, IfExprStringScalarStringScalar(col 13, val b, val c)(children: LongColEqualLongScalar(col 1, val 12205) -> 13:long) -> 14:String) -> 15:String, IfExprStringScalarStringGroupColumn(col 12, val a, col 14)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, IfExprStringScalarStringScalar(col 13, val b, val c)(children: LongColEqualLongScalar(col 1, val 12205) -> 13:long) -> 14:String) -> 16:String
+                          projectedOutputColumnNums: [1, 16, 17]
+                          selectExpressions: IfExprStringScalarStringGroupColumn(col 13:boolean, val acol 15:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 13:boolean, IfExprStringScalarStringScalar(col 14:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 14:boolean) -> 15:string) -> 16:string, IfExprStringScalarStringGroupColumn(col 13:boolean, val acol 15:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 13:boolean, IfExprStringScalarStringScalar(col 14:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 14:boolean) -> 15:string) -> 17:string
                       Statistics: Num rows: 6 Data size: 2228 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -86,7 +85,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -196,12 +196,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 36700 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 1, val 418) -> boolean, FilterLongColEqualLongScalar(col 1, val 12205) -> boolean, FilterLongColEqualLongScalar(col 1, val 10583) -> boolean) -> boolean
+                        predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 1:smallint, val 418), FilterLongColEqualLongScalar(col 1:smallint, val 12205), FilterLongColEqualLongScalar(col 1:smallint, val 10583))
                     predicate: ((csmallint = 10583) or (csmallint = 12205) or (csmallint = 418)) (type: boolean)
                     Statistics: Num rows: 6 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -210,8 +209,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [1, 16, 19]
-                          selectExpressions: IfExprStringScalarStringGroupColumn(col 12, val a, col 15)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, IfExprColumnNull(col 13, col 14, null)(children: LongColEqualLongScalar(col 1, val 12205) -> 13:long, ConstantVectorExpression(val b) -> 14:string) -> 15:string) -> 16:String, IfExprStringScalarStringGroupColumn(col 12, val a, col 18)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, IfExprNullColumn(col 17, null, col 15)(children: LongColEqualLongScalar(col 1, val 12205) -> 17:long, ConstantVectorExpression(val c) -> 15:string) -> 18:string) -> 19:String
+                          projectedOutputColumnNums: [1, 17, 20]
+                          selectExpressions: IfExprStringScalarStringGroupColumn(col 13:boolean, val acol 16:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 13:boolean, IfExprColumnNull(col 14:boolean, col 15:string, null)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 14:boolean, ConstantVectorExpression(val b) -> 15:string) -> 16:string) -> 17:string, IfExprStringScalarStringGroupColumn(col 13:boolean, val acol 19:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 13:boolean, IfExprNullColumn(col 18:boolean, null, col 16)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 18:boolean, ConstantVectorExpression(val c) -> 16:string) -> 19:string) -> 20:string
                       Statistics: Num rows: 6 Data size: 2228 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -228,7 +227,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -275,26 +275,24 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Select Operator
                     expressions: CASE WHEN (((cint % 2) = 0)) THEN (1) ELSE (0) END (type: int), CASE WHEN (((cint % 2) = 1)) THEN (1) ELSE (0) END (type: int)
                     outputColumnNames: _col0, _col1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [12, 13]
-                        selectExpressions: IfExprLongScalarLongScalar(col 13, val 1, val 0)(children: LongColEqualLongScalar(col 12, val 0)(children: LongColModuloLongScalar(col 2, val 2) -> 12:long) -> 13:long) -> 12:long, IfExprLongScalarLongScalar(col 14, val 1, val 0)(children: LongColEqualLongScalar(col 13, val 1)(children: LongColModuloLongScalar(col 2, val 2) -> 13:long) -> 14:long) -> 13:long
+                        projectedOutputColumnNums: [13, 14]
+                        selectExpressions: IfExprLongScalarLongScalar(col 14:boolean, val 1, val 0)(children: LongColEqualLongScalar(col 13:int, val 0)(children: LongColModuloLongScalar(col 2:int, val 2) -> 13:int) -> 14:boolean) -> 13:int, IfExprLongScalarLongScalar(col 15:boolean, val 1, val 0)(children: LongColEqualLongScalar(col 14:int, val 1)(children: LongColModuloLongScalar(col 2:int, val 2) -> 14:int) -> 15:boolean) -> 14:int
                     Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col0), sum(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 12) -> bigint, VectorUDAFSumLong(col 13) -> bigint
+                          aggregators: VectorUDAFSumLong(col 13:int) -> bigint, VectorUDAFSumLong(col 14:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0, 1]
+                          projectedOutputColumnNums: [0, 1]
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -311,7 +309,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -321,7 +320,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -329,13 +327,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0), sum(VALUE._col1)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0) -> bigint, VectorUDAFSumLong(col 1) -> bigint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint, VectorUDAFSumLong(col 1:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0, 1]
+                    projectedOutputColumnNums: [0, 1]
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -406,26 +403,24 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Select Operator
                     expressions: CASE WHEN (((cint % 2) = 0)) THEN (cint) ELSE (0) END (type: int), CASE WHEN (((cint % 2) = 1)) THEN (cint) ELSE (0) END (type: int)
                     outputColumnNames: _col0, _col1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [12, 13]
-                        selectExpressions: IfExprLongColumnLongScalar(col 13, col 2, val 0)(children: LongColEqualLongScalar(col 12, val 0)(children: LongColModuloLongScalar(col 2, val 2) -> 12:long) -> 13:long) -> 12:long, IfExprLongColumnLongScalar(col 14, col 2, val 0)(children: LongColEqualLongScalar(col 13, val 1)(children: LongColModuloLongScalar(col 2, val 2) -> 13:long) -> 14:long) -> 13:long
+                        projectedOutputColumnNums: [13, 14]
+                        selectExpressions: IfExprLongColumnLongScalar(col 14:boolean, col 2:int, val 0)(children: LongColEqualLongScalar(col 13:int, val 0)(children: LongColModuloLongScalar(col 2:int, val 2) -> 13:int) -> 14:boolean) -> 13:int, IfExprLongColumnLongScalar(col 15:boolean, col 2:int, val 0)(children: LongColEqualLongScalar(col 14:int, val 1)(children: LongColModuloLongScalar(col 2:int, val 2) -> 14:int) -> 15:boolean) -> 14:int
                     Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col0), sum(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 12) -> bigint, VectorUDAFSumLong(col 13) -> bigint
+                          aggregators: VectorUDAFSumLong(col 13:int) -> bigint, VectorUDAFSumLong(col 14:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0, 1]
+                          projectedOutputColumnNums: [0, 1]
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -442,7 +437,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -452,7 +448,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -460,13 +455,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(VALUE._col0), sum(VALUE._col1)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 0) -> bigint, VectorUDAFSumLong(col 1) -> bigint
+                    aggregators: VectorUDAFSumLong(col 0:bigint) -> bigint, VectorUDAFSumLong(col 1:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0, 1]
+                    projectedOutputColumnNums: [0, 1]
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE

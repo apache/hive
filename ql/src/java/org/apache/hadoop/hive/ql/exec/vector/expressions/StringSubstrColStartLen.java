@@ -33,11 +33,13 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 public class StringSubstrColStartLen extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  private int startIdx;
-  private int colNum;
-  private int length;
-  private int outputColumn;
-  private transient final int[] offsetArray;
+
+  private final int colNum;
+
+  private final int startIdx;
+  private final int length;
+  private final int[] offsetArray;
+
   private transient static byte[] EMPTY_STRING;
 
   // Populating the Empty string bytes. Putting it as static since it should be immutable and can be
@@ -50,9 +52,10 @@ public class StringSubstrColStartLen extends VectorExpression {
     }
   }
 
-  public StringSubstrColStartLen(int colNum, int startIdx, int length, int outputColumn) {
-    this();
+  public StringSubstrColStartLen(int colNum, int startIdx, int length, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
+    offsetArray = new int[2];
 
     /* Switch from a 1-based start offset (the Hive end user convention) to a 0-based start offset
      * (the internal convention).
@@ -71,12 +74,16 @@ public class StringSubstrColStartLen extends VectorExpression {
     }
 
     this.length = length;
-    this.outputColumn = outputColumn;
   }
 
   public StringSubstrColStartLen() {
     super();
-    offsetArray = new int[2];
+
+    // Dummy final assignments.
+    colNum = -1;
+    startIdx = -1;
+    length = 0;
+    offsetArray = null;
   }
 
   /**
@@ -139,7 +146,7 @@ public class StringSubstrColStartLen extends VectorExpression {
     }
 
     BytesColumnVector inV = (BytesColumnVector) batch.cols[colNum];
-    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
+    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumnNum];
 
     int n = batch.size;
 
@@ -234,46 +241,8 @@ public class StringSubstrColStartLen extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "string";
-  }
-
-  public int getStartIdx() {
-    return startIdx;
-  }
-
-  public void setStartIdx(int startIdx) {
-    this.startIdx = startIdx;
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public int getLength() {
-    return length;
-  }
-
-  public void setLength(int length) {
-    this.length = length;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", start " + startIdx + ", length " + length;
+    return getColumnParamString(0, colNum) + ", start " + startIdx + ", length " + length;
   }
 
   @Override

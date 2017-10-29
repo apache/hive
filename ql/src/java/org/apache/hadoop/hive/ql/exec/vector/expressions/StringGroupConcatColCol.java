@@ -29,19 +29,22 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 public class StringGroupConcatColCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  private int colNum1;
-  private int colNum2;
-  private int outputColumn;
 
-  public StringGroupConcatColCol(int colNum1, int colNum2, int outputColumn) {
-    this();
+  private final int colNum1;
+  private final int colNum2;
+
+  public StringGroupConcatColCol(int colNum1, int colNum2, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
-    this.outputColumn = outputColumn;
   }
 
   public StringGroupConcatColCol() {
     super();
+
+    // Dummy final assignments.
+    colNum1 = -1;
+    colNum2 = -1;
   }
 
   @Override
@@ -53,7 +56,7 @@ public class StringGroupConcatColCol extends VectorExpression {
 
     BytesColumnVector inV1 = (BytesColumnVector) batch.cols[colNum1];
     BytesColumnVector inV2 = (BytesColumnVector) batch.cols[colNum2];
-    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
+    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     int n = batch.size;
     byte[][] vector1 = inV1.vector;
@@ -410,38 +413,8 @@ public class StringGroupConcatColCol extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "String_Family";
-  }
-
-  public int getColNum1() {
-    return colNum1;
-  }
-
-  public void setColNum1(int colNum1) {
-    this.colNum1 = colNum1;
-  }
-
-  public int getColNum2() {
-    return colNum2;
-  }
-
-  public void setColNum2(int colNum2) {
-    this.colNum2 = colNum2;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum1 + ", col " + colNum2;
+    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
   }
 
   @Override

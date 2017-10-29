@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -74,8 +76,23 @@ public class GenericUDAFStdSample extends GenericUDAFVariance {
    * GenericUDAFVarianceEvaluator and overriding the terminate() method of the
    * evaluator.
    */
+  @VectorizedUDAFs({
+    VectorUDAFVarLong.class, VectorUDAFVarLongComplete.class,
+    VectorUDAFVarDouble.class, VectorUDAFVarDoubleComplete.class,
+    VectorUDAFVarDecimal.class, VectorUDAFVarDecimalComplete.class,
+    VectorUDAFVarTimestamp.class, VectorUDAFVarTimestampComplete.class,
+    VectorUDAFVarPartial2.class, VectorUDAFVarFinal.class})
   public static class GenericUDAFStdSampleEvaluator extends
       GenericUDAFVarianceEvaluator {
+
+
+    /*
+     * Calculate the std result when count > 1.  Public so vectorization code can
+     * use it, etc.
+     */
+    public static double calculateStdSampleResult(double variance, long count) {
+      return Math.sqrt(variance / (count - 1));
+    }
 
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
@@ -84,7 +101,8 @@ public class GenericUDAFStdSample extends GenericUDAFVariance {
       if (myagg.count <= 1) { // SQL standard - return null for zero or one elements
         return null;
       } else {
-        getResult().set(Math.sqrt(myagg.variance / (myagg.count - 1)));
+        getResult().set(
+            calculateStdSampleResult(myagg.variance, myagg.count));
         return getResult();
       }
     }

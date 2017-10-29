@@ -23,15 +23,20 @@ import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorLimitDesc;
 
 import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Limit operator implementation Limits the number of rows to be passed on.
  **/
-public class VectorLimitOperator extends LimitOperator  {
+public class VectorLimitOperator extends LimitOperator implements VectorizationOperator {
 
   private static final long serialVersionUID = 1L;
+
+  private VectorizationContext vContext;
+  private VectorLimitDesc vectorDesc;
 
   /** Kryo ctor. */
   @VisibleForTesting
@@ -44,9 +49,17 @@ public class VectorLimitOperator extends LimitOperator  {
   }
 
   public VectorLimitOperator(
-      CompilationOpContext ctx, VectorizationContext vContext, OperatorDesc conf) {
+      CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) {
     this(ctx);
     this.conf = (LimitDesc) conf;
+    this.vContext = vContext;
+    this.vectorDesc = (VectorLimitDesc) vectorDesc;
+  }
+
+  @Override
+  public VectorizationContext getInputVectorizationContext() {
+    return vContext;
   }
 
   @Override
@@ -78,5 +91,10 @@ public class VectorLimitOperator extends LimitOperator  {
       forward(row, inputObjInspectors[tag], true);
       currCount += batch.size;
     }
+  }
+
+  @Override
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
   }
 }

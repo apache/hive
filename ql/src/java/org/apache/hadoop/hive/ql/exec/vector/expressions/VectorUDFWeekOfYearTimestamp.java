@@ -28,17 +28,16 @@ public final class VectorUDFWeekOfYearTimestamp extends VectorUDFTimestampFieldT
 
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFWeekOfYearTimestamp(int colNum, int outputColumn) {
-    super(Calendar.WEEK_OF_YEAR, colNum, outputColumn);
-    initCalendar();
+  public VectorUDFWeekOfYearTimestamp(int colNum, int outputColumnNum) {
+    super(Calendar.WEEK_OF_YEAR, colNum, outputColumnNum);
   }
 
   public VectorUDFWeekOfYearTimestamp() {
     super();
-    initCalendar();
   }
 
-  private void initCalendar() {
+  @Override
+  public void initCalendar() {
     /* code copied over from UDFWeekOfYear implementation */
     calendar.setFirstDayOfWeek(Calendar.MONDAY);
     calendar.setMinimalDaysInFirstWeek(4);

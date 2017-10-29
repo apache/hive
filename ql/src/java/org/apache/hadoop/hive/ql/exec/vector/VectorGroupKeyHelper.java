@@ -45,12 +45,12 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
 
     // Inspect the output type of each key expression.  And, remember the output columns.
     outputColumnNums = new int[keyCount];
-    for(int i=0; i < keyCount; ++i) {
-      String typeName = VectorizationContext.mapTypeNameSynonyms(keyExpressions[i].getOutputType());
-      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+    for(int i = 0; i < keyCount; ++i) {
+      VectorExpression keyExpression = keyExpressions[i];
+      TypeInfo typeInfo = keyExpression.getOutputTypeInfo();
       Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
       addKey(columnVectorType);
-      outputColumnNums[i] = keyExpressions[i].getOutputColumn();
+      outputColumnNums[i] = keyExpression.getOutputColumnNum();
     }
     finishAdding();
   }

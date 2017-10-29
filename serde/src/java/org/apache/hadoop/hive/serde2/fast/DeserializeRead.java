@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.serde2.fast;
 
 import java.io.IOException;
+import java.util.Arrays;
 
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
@@ -50,12 +52,15 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
  */
 public abstract class DeserializeRead {
 
-  protected TypeInfo[] typeInfos;
+  protected final TypeInfo[] typeInfos;
 
-  protected boolean useExternalBuffer;
+  // NOTE: Currently, read variations only apply to top level data types...
+  protected DataTypePhysicalVariation[] dataTypePhysicalVariations;
 
-  protected Category[] categories;
-  protected PrimitiveCategory[] primitiveCategories;
+  protected final boolean useExternalBuffer;
+
+  protected final Category[] categories;
+  protected final PrimitiveCategory[] primitiveCategories;
 
   /*
    * This class is used to read one field at a time.  Simple fields like long, double, int are read
@@ -135,13 +140,23 @@ public abstract class DeserializeRead {
    *   }
    *
    * @param typeInfos
+   * @param dataTypePhysicalVariations
+   *                            Specify for each corresponding TypeInfo a read variation. Can be
+   *                            null.  dataTypePhysicalVariation.NONE is then assumed.
    * @param useExternalBuffer   Specify true when the caller is prepared to provide a bytes buffer
    *                            to receive a string/char/varchar/binary field that needs format
    *                            conversion.
    */
-  public DeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer) {
+  public DeserializeRead(TypeInfo[] typeInfos, DataTypePhysicalVariation[] dataTypePhysicalVariations,
+      boolean useExternalBuffer) {
     this.typeInfos = typeInfos;
     final int count = typeInfos.length;
+    if (dataTypePhysicalVariations != null) {
+      this.dataTypePhysicalVariations = dataTypePhysicalVariations;
+    } else {
+      this.dataTypePhysicalVariations = new DataTypePhysicalVariation[count];
+      Arrays.fill(this.dataTypePhysicalVariations, DataTypePhysicalVariation.NONE);
+    }
     categories = new Category[count];
     primitiveCategories = new PrimitiveCategory[count];
     for (int i = 0; i < count; i++) {
@@ -154,13 +169,21 @@ public abstract class DeserializeRead {
         primitiveCategories[i] = primitiveCategory;
       }
       allocateCurrentWritable(typeInfo);
-
-      this.useExternalBuffer = useExternalBuffer;
     }
+    this.useExternalBuffer = useExternalBuffer;
+  }
+
+  public DeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer) {
+    this(typeInfos, null, useExternalBuffer);
   }
 
   // Don't allow for public.
   protected DeserializeRead() {
+    // Initialize to satisfy compiler finals.
+    typeInfos = null;
+    useExternalBuffer = false;
+    categories = null;
+    primitiveCategories = null;
   }
 
   /*
@@ -168,6 +191,13 @@ public abstract class DeserializeRead {
    */
   public TypeInfo[] typeInfos() {
     return typeInfos;
+  }
+
+  /*
+   * Get optional read variations for fields.
+   */
+  public DataTypePhysicalVariation[] getDataTypePhysicalVariations() {
+    return dataTypePhysicalVariations;
   }
 
   /*
@@ -334,4 +364,9 @@ public abstract class DeserializeRead {
    * DECIMAL.
    */
   public HiveDecimalWritable currentHiveDecimalWritable;
+
+  /*
+   * DECIMAL_64.
+   */
+  public long currentDecimal64;
 }

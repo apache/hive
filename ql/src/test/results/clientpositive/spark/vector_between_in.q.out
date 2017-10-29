@@ -38,12 +38,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnInList(col 3, values [-67, -171]) -> boolean
+                        predicateExpression: FilterLongColumnInList(col 3:date, values [-67, -171])
                     predicate: (cdate) IN (1969-10-26, 1969-07-14) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -52,7 +51,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [3]
+                          projectedOutputColumnNums: [3]
                       Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
@@ -66,7 +65,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -76,7 +76,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -87,7 +86,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -132,19 +131,18 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsFalse(col 4)(children: LongColumnInList(col 3, values [-67, -171, 20]) -> 4:boolean) -> boolean
+                        predicateExpression: SelectColumnIsFalse(col 5:boolean)(children: LongColumnInList(col 3, values [-67, -171, 20]) -> 5:boolean)
                     predicate: (not (cdate) IN (1969-10-26, 1969-07-14, 1970-01-21)) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: []
+                          projectedOutputColumnNums: []
                       Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
@@ -152,10 +150,9 @@ STAGE PLANS:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            vectorOutput: true
                             native: false
                             vectorProcessingMode: HASH
-                            projectedOutputColumns: [0]
+                            projectedOutputColumnNums: [0]
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -171,7 +168,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -181,7 +179,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -189,13 +186,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -242,12 +238,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDecimalColumnInList(col 1, values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> boolean
+                        predicateExpression: FilterDecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, 881.0135135135, -3367.6517567568])
                     predicate: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -256,7 +251,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [1]
+                          projectedOutputColumnNums: [1]
                       Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(20,10))
@@ -270,7 +265,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -280,7 +276,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -291,7 +286,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -336,19 +331,18 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsFalse(col 4)(children: DecimalColumnInList(col 1, values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 4:boolean) -> boolean
+                        predicateExpression: SelectColumnIsFalse(col 5:boolean)(children: DecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 5:boolean)
                     predicate: (not (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568)) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: []
+                          projectedOutputColumnNums: []
                       Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
@@ -356,10 +350,9 @@ STAGE PLANS:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            vectorOutput: true
                             native: false
                             vectorProcessingMode: HASH
-                            projectedOutputColumns: [0]
+                            projectedOutputColumnNums: [0]
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -375,7 +368,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -385,7 +379,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -393,13 +386,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -446,12 +438,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnBetween(col 3, left -2, right 1) -> boolean
+                        predicateExpression: FilterLongColumnBetween(col 3:date, left -2, right 1)
                     predicate: cdate BETWEEN 1969-12-30 AND 1970-01-02 (type: boolean)
                     Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -460,7 +451,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [3]
+                          projectedOutputColumnNums: [3]
                       Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
@@ -474,7 +465,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -484,7 +476,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -495,7 +486,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -540,12 +531,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnNotBetween(col 3, left -610, right 608) -> boolean
+                        predicateExpression: FilterLongColumnNotBetween(col 3:date, left -610, right 608)
                     predicate: cdate NOT BETWEEN 1968-05-01 AND 1971-09-01 (type: boolean)
                     Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -554,7 +544,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [3]
+                          projectedOutputColumnNums: [3]
                       Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
@@ -568,7 +558,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -578,7 +569,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -589,7 +579,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -634,12 +624,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDecimalColumnBetween(col 1, left -20, right 45.9918918919) -> boolean
+                        predicateExpression: FilterDecimalColumnBetween(col 1:decimal(20,10), left -20, right 45.9918918919)
                     predicate: cdecimal1 BETWEEN -20 AND 45.9918918919 (type: boolean)
                     Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -648,7 +637,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [1]
+                          projectedOutputColumnNums: [1]
                       Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(20,10))
@@ -662,7 +651,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -672,7 +662,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -683,7 +672,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -728,19 +717,18 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDecimalColumnNotBetween(col 1, left -2000, right 4390.1351351351) -> boolean
+                        predicateExpression: FilterDecimalColumnNotBetween(col 1:decimal(20,10), left -2000, right 4390.1351351351)
                     predicate: cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 (type: boolean)
                     Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: []
+                          projectedOutputColumnNums: []
                       Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
@@ -748,10 +736,9 @@ STAGE PLANS:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            vectorOutput: true
                             native: false
                             vectorProcessingMode: HASH
-                            projectedOutputColumns: [0]
+                            projectedOutputColumnNums: [0]
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -767,7 +754,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -777,7 +765,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -785,13 +772,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -1084,15 +1070,14 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3]
                   Select Operator
                     expressions: (cdate) IN (1969-10-26, 1969-07-14) (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [4]
-                        selectExpressions: LongColumnInList(col 3, values [-67, -171]) -> 4:boolean
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: LongColumnInList(col 3, values [-67, -171]) -> 5:boolean
                     Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1100,11 +1085,10 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
-                          keyExpressions: col 4
+                          keyExpressions: col 5:boolean
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       keys: _col0 (type: boolean)
                       mode: hash
                       outputColumnNames: _col0, _col1
@@ -1123,7 +1107,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1133,7 +1118,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1141,14 +1125,13 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 1) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 1:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
-                    keyExpressions: col 0
+                    keyExpressions: col 0:boolean
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
@@ -1167,7 +1150,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1178,7 +1160,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1]
+                    projectedOutputColumnNums: [0, 1]
                 Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -1224,15 +1206,14 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3]
                   Select Operator
                     expressions: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [4]
-                        selectExpressions: DecimalColumnInList(col 1, values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 4:boolean
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: DecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 5:boolean
                     Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1240,11 +1221,10 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
-                          keyExpressions: col 4
+                          keyExpressions: col 5:boolean
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       keys: _col0 (type: boolean)
                       mode: hash
                       outputColumnNames: _col0, _col1
@@ -1263,7 +1243,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1273,7 +1254,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1281,14 +1261,13 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 1) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 1:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
-                    keyExpressions: col 0
+                    keyExpressions: col 0:boolean
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
@@ -1307,7 +1286,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1318,7 +1296,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1]
+                    projectedOutputColumnNums: [0, 1]
                 Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -1364,15 +1342,14 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3]
                   Select Operator
                     expressions: cdate BETWEEN 1969-12-30 AND 1970-01-02 (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [4]
-                        selectExpressions: VectorUDFAdaptor(cdate BETWEEN 1969-12-30 AND 1970-01-02) -> 4:boolean
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: VectorUDFAdaptor(cdate BETWEEN 1969-12-30 AND 1970-01-02) -> 5:boolean
                     Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1380,11 +1357,10 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
-                          keyExpressions: col 4
+                          keyExpressions: col 5:boolean
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       keys: _col0 (type: boolean)
                       mode: hash
                       outputColumnNames: _col0, _col1
@@ -1403,7 +1379,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: true
@@ -1413,7 +1390,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1421,14 +1397,13 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 1) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 1:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
-                    keyExpressions: col 0
+                    keyExpressions: col 0:boolean
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
@@ -1447,7 +1422,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1458,7 +1432,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1]
+                    projectedOutputColumnNums: [0, 1]
                 Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -1504,15 +1478,14 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3]
                   Select Operator
                     expressions: cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [4]
-                        selectExpressions: VectorUDFAdaptor(cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351) -> 4:boolean
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: VectorUDFAdaptor(cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351) -> 5:boolean
                     Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1520,11 +1493,10 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
-                          keyExpressions: col 4
+                          keyExpressions: col 5:boolean
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       keys: _col0 (type: boolean)
                       mode: hash
                       outputColumnNames: _col0, _col1
@@ -1543,7 +1515,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: true
@@ -1553,7 +1526,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1561,14 +1533,13 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 1) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 1:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
-                    keyExpressions: col 0
+                    keyExpressions: col 0:boolean
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
@@ -1587,7 +1558,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1598,7 +1568,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1]
+                    projectedOutputColumnNums: [0, 1]
                 Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false

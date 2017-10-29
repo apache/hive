@@ -30,19 +30,22 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 public class StringScalarConcatStringGroupCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  private int colNum;
-  private int outputColumn;
-  private byte[] value;
 
-  public StringScalarConcatStringGroupCol(byte[] value, int colNum, int outputColumn) {
-    this();
+  private final int colNum;
+  private final byte[] value;
+
+  public StringScalarConcatStringGroupCol(byte[] value, int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
     this.value = value;
   }
 
   public StringScalarConcatStringGroupCol() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    value = null;
   }
 
   @Override
@@ -53,7 +56,7 @@ public class StringScalarConcatStringGroupCol extends VectorExpression {
       }
 
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
-    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
+    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     int n = batch.size;
     byte[][] vector = inputColVector.vector;
@@ -121,38 +124,8 @@ public class StringScalarConcatStringGroupCol extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "String_Family";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public byte[] getValue() {
-    return value;
-  }
-
-  public void setValue(byte[] value) {
-    this.value = value;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "val " + displayUtf8Bytes(value) + ", col " + colNum;
+    return "val " + displayUtf8Bytes(value) + ", " + getColumnParamString(1, colNum);
   }
 
   @Override

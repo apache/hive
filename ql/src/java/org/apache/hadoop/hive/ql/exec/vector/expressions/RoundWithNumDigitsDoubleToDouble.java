@@ -23,14 +23,13 @@ import org.apache.hadoop.hive.ql.udf.generic.RoundUtils;
 import org.apache.hadoop.io.IntWritable;
 
 // Vectorized implementation of ROUND(Col, N) function
-public class RoundWithNumDigitsDoubleToDouble extends MathFuncDoubleToDouble
-    implements ISetLongArg {
+public class RoundWithNumDigitsDoubleToDouble extends MathFuncDoubleToDouble {
   private static final long serialVersionUID = 1L;
 
   private IntWritable decimalPlaces;
 
-  public RoundWithNumDigitsDoubleToDouble(int colNum, long scalarVal, int outputColumn) {
-    super(colNum, outputColumn);
+  public RoundWithNumDigitsDoubleToDouble(int colNum, long scalarVal, int outputColumnNum) {
+    super(colNum, outputColumnNum);
     this.decimalPlaces = new IntWritable();
     decimalPlaces.set((int) scalarVal);
   }
@@ -51,11 +50,6 @@ public class RoundWithNumDigitsDoubleToDouble extends MathFuncDoubleToDouble
 
   public IntWritable getDecimalPlaces() {
     return this.decimalPlaces;
-  }
-
-  @Override
-  public void setArg(long l) {
-    this.decimalPlaces.set((int) l);
   }
 
   @Override

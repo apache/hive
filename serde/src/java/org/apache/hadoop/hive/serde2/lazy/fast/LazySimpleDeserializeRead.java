@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
@@ -83,10 +84,11 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     public final Category complexCategory;
 
     public final TypeInfo typeInfo;
+    public final DataTypePhysicalVariation dataTypePhysicalVariation;
 
     public ComplexTypeHelper complexTypeHelper;
 
-    public Field(TypeInfo typeInfo) {
+    public Field(TypeInfo typeInfo, DataTypePhysicalVariation dataTypePhysicalVariation) {
       Category category = typeInfo.getCategory();
       if (category == Category.PRIMITIVE) {
         isPrimitive = true;
@@ -99,8 +101,13 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
       }
 
       this.typeInfo = typeInfo;
- 
+      this.dataTypePhysicalVariation = dataTypePhysicalVariation;
+
       complexTypeHelper = null;
+    }
+
+    public Field(TypeInfo typeInfo) {
+      this(typeInfo, DataTypePhysicalVariation.NONE);
     }
   }
 
@@ -300,9 +307,10 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     return depth;
   }
 
-  public LazySimpleDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer,
+  public LazySimpleDeserializeRead(TypeInfo[] typeInfos,
+      DataTypePhysicalVariation[] dataTypePhysicalVariations, boolean useExternalBuffer,
       LazySerDeParameters lazyParams) {
-    super(typeInfos, useExternalBuffer);
+    super(typeInfos, dataTypePhysicalVariations, useExternalBuffer);
 
     final int count = typeInfos.length;
     fieldCount = count;
@@ -310,7 +318,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     fields = new Field[count];
     Field field;
     for (int i = 0; i < count; i++) {
-      field = new Field(typeInfos[i]);
+      field = new Field(typeInfos[i], this.dataTypePhysicalVariations[i]);
       if (!field.isPrimitive) {
         depth = Math.max(depth, addComplexTypeHelper(field, 0));
       }
@@ -341,6 +349,11 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     timestampParser = new TimestampParser();
 
     internalBufferLen = -1;
+  }
+
+  public LazySimpleDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer,
+      LazySerDeParameters lazyParams) {
+    this(typeInfos, null, useExternalBuffer, lazyParams);
   }
 
   /*
@@ -833,16 +846,19 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
               int scale = decimalTypeInfo.getScale();
 
               decimalIsNull = !currentHiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
-            }
-            if (decimalIsNull) {
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("Data not in the HiveDecimal data type range so converted to null. Given data is :"
-                  + new String(bytes, fieldStart, fieldLength, StandardCharsets.UTF_8));
+              if (!decimalIsNull) {
+                if (field.dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
+                  currentDecimal64 = currentHiveDecimalWritable.serialize64(scale);
+                }
+                return true;
               }
-              return false;
+            }
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Data not in the HiveDecimal data type range so converted to null. Given data is :"
+                  + new String(bytes, fieldStart, fieldLength, StandardCharsets.UTF_8));
             }
           }
-          return true;
+          return false;
 
         default:
           throw new Error("Unexpected primitive category " + field.primitiveCategory);

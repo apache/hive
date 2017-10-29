@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+
 /**
  * VectorTableScanDesc.
  *
@@ -30,16 +33,45 @@ public class VectorTableScanDesc extends AbstractVectorDesc  {
 
   private static final long serialVersionUID = 1L;
 
-  private int[] projectedOutputColumns;
+  private int[] projectedColumns;
+  private String[] projectedColumnNames;
+  private TypeInfo[] projectedColumnTypeInfos;
+  private DataTypePhysicalVariation[] projectedColumnDataTypePhysicalVariation;
 
   public VectorTableScanDesc() {
   }
 
-  public void setProjectedOutputColumns(int[] projectedOutputColumns) {
-    this.projectedOutputColumns = projectedOutputColumns;
+  public void setProjectedColumns(int[] projectedColumns) {
+    this.projectedColumns = projectedColumns;
   }
 
-  public int[] getProjectedOutputColumns() {
-    return projectedOutputColumns;
+  public int[] getProjectedColumns() {
+    return projectedColumns;
+  }
+
+  public void setProjectedColumnNames(String[] projectedColumnNames) {
+    this.projectedColumnNames = projectedColumnNames;
+  }
+
+  public String[] getProjectedColumnNames() {
+    return projectedColumnNames;
+  }
+
+  public void setProjectedColumnTypeInfos(TypeInfo[] projectedColumnTypeInfos) {
+    this.projectedColumnTypeInfos = projectedColumnTypeInfos;
+  }
+
+  public TypeInfo[] getProjectedColumnTypeInfos() {
+    return projectedColumnTypeInfos;
+  }
+
+  public void setProjectedColumnDataTypePhysicalVariations(
+      DataTypePhysicalVariation[] projectedColumnDataTypePhysicalVariation) {
+    this.projectedColumnDataTypePhysicalVariation =
+        projectedColumnDataTypePhysicalVariation;
+  }
+
+  public DataTypePhysicalVariation[] getProjectedColumnDataTypePhysicalVariations() {
+    return projectedColumnDataTypePhysicalVariation;
   }
 }

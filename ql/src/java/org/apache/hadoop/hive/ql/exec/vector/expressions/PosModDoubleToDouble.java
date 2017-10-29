@@ -20,18 +20,21 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
-public class PosModDoubleToDouble extends MathFuncDoubleToDouble
-    implements ISetDoubleArg {
+public class PosModDoubleToDouble extends MathFuncDoubleToDouble {
   private static final long serialVersionUID = 1L;
-  private double divisor;
 
-  public PosModDoubleToDouble(int inputCol, double scalarVal, int outputCol) {
-    super(inputCol, outputCol);
+  private final double divisor;
+
+  public PosModDoubleToDouble(int inputCol, double scalarVal, int outputColumnNum) {
+    super(inputCol, outputColumnNum);
     this.divisor = scalarVal;
   }
 
   public PosModDoubleToDouble() {
     super();
+
+    // Dummy final assignments.
+    divisor = 0;
   }
 
   @Override
@@ -39,19 +42,6 @@ public class PosModDoubleToDouble extends MathFuncDoubleToDouble
 
     // return positive modulo
     return ((v % divisor) + divisor) % divisor;
-  }
-
-  @Override
-  public void setArg(double arg) {
-    this.divisor = arg;
-  }
-
-  public void setDivisor(double v) {
-    this.divisor = v;
-  }
-
-  public double getDivisor() {
-    return divisor;
   }
 
   @Override

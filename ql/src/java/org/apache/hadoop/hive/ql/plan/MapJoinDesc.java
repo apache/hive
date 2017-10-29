@@ -83,15 +83,11 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   private boolean isDynamicPartitionHashJoin = false;
 
   public MapJoinDesc() {
-    vectorDesc = null;
     bigTableBucketNumMapping = new LinkedHashMap<String, Integer>();
   }
 
   public MapJoinDesc(MapJoinDesc clone) {
     super(clone);
-    if (clone.vectorDesc != null) {
-      vectorDesc = (VectorDesc) clone.vectorDesc.clone();
-    }
     this.keys = clone.keys;
     this.keyTblDesc = clone.keyTblDesc;
     this.valueTblDescs = clone.valueTblDescs;
@@ -117,7 +113,6 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     final Map<Byte, List<ExprNodeDesc>> filters, boolean noOuterJoin, String dumpFilePrefix,
     final MemoryMonitorInfo memoryMonitorInfo, final long inMemoryDataSize) {
     super(values, outputColumnNames, noOuterJoin, conds, filters, null, memoryMonitorInfo);
-    vectorDesc = null;
     this.keys = keys;
     this.keyTblDesc = keyTblDesc;
     this.valueTblDescs = valueTblDescs;
@@ -403,11 +398,12 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
     private VectorizationCondition[] nativeConditions;
 
-    public MapJoinOperatorExplainVectorization(MapJoinDesc mapJoinDesc, VectorDesc vectorDesc) {
+    public MapJoinOperatorExplainVectorization(MapJoinDesc mapJoinDesc,
+        VectorMapJoinDesc vectorMapJoinDesc) {
       // VectorMapJoinOperator is not native vectorized.
-      super(vectorDesc, ((VectorMapJoinDesc) vectorDesc).getHashTableImplementationType() != HashTableImplementationType.NONE);
+      super(vectorMapJoinDesc, vectorMapJoinDesc.getHashTableImplementationType() != HashTableImplementationType.NONE);
       this.mapJoinDesc = mapJoinDesc;
-      vectorMapJoinDesc = (VectorMapJoinDesc) vectorDesc;
+      this.vectorMapJoinDesc = vectorMapJoinDesc;
       vectorMapJoinInfo = vectorMapJoinDesc.getVectorMapJoinInfo();
     }
 
@@ -490,8 +486,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       return vectorExpressionsToStringList(vectorMapJoinInfo.getBigTableKeyExpressions());
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableKeyColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getBigTableKeyColumns() {
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableKeyColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getBigTableKeyColumnNums() {
       if (!isNative) {
         return null;
       }
@@ -510,8 +506,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       return vectorExpressionsToStringList(vectorMapJoinInfo.getBigTableValueExpressions());
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableValueColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getBigTableValueColumns() {
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableValueColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getBigTableValueColumnNums() {
       if (!isNative) {
         return null;
       }
@@ -530,8 +526,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       return outputColumnsToStringList(vectorMapJoinInfo.getSmallTableMapping());
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "projectedOutputColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getProjectedOutputColumns() {
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "projectedOutputColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getProjectedOutputColumnNums() {
       if (!isNative) {
         return null;
       }
@@ -546,8 +542,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       return columnMappingToStringList(vectorMapJoinInfo.getBigTableOuterKeyMapping());
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableRetainedColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getBigTableRetainedColumns() {
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableRetainedColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getBigTableRetainedColumnNums() {
       if (!isNative) {
         return null;
       }
@@ -562,10 +558,11 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   @Explain(vectorization = Vectorization.OPERATOR, displayName = "Map Join Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public MapJoinOperatorExplainVectorization getMapJoinVectorization() {
-    if (vectorDesc == null || this instanceof SMBJoinDesc) {
+    VectorMapJoinDesc vectorMapJoinDesc = (VectorMapJoinDesc) getVectorDesc();
+    if (vectorMapJoinDesc == null || this instanceof SMBJoinDesc) {
       return null;
     }
-    return new MapJoinOperatorExplainVectorization(this, vectorDesc);
+    return new MapJoinOperatorExplainVectorization(this, vectorMapJoinDesc);
   }
 
   public class SMBJoinOperatorExplainVectorization extends OperatorExplainVectorization {
@@ -573,21 +570,23 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     private final SMBJoinDesc smbJoinDesc;
     private final VectorSMBJoinDesc vectorSMBJoinDesc;
 
-    public SMBJoinOperatorExplainVectorization(SMBJoinDesc smbJoinDesc, VectorDesc vectorDesc) {
+    public SMBJoinOperatorExplainVectorization(SMBJoinDesc smbJoinDesc,
+        VectorSMBJoinDesc vectorSMBJoinDesc) {
       // Native vectorization NOT supported.
-      super(vectorDesc, false);
+      super(vectorSMBJoinDesc, false);
       this.smbJoinDesc = smbJoinDesc;
-      vectorSMBJoinDesc = (VectorSMBJoinDesc) vectorDesc;
+      this.vectorSMBJoinDesc = vectorSMBJoinDesc;
     }
   }
 
   // Handle dual nature.
   @Explain(vectorization = Vectorization.OPERATOR, displayName = "SMB Map Join Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public SMBJoinOperatorExplainVectorization getSMBJoinVectorization() {
-    if (vectorDesc == null || !(this instanceof SMBJoinDesc)) {
+    VectorSMBJoinDesc vectorSMBJoinDesc = (VectorSMBJoinDesc) getVectorDesc();
+    if (vectorSMBJoinDesc == null || !(this instanceof SMBJoinDesc)) {
       return null;
     }
-    return new SMBJoinOperatorExplainVectorization((SMBJoinDesc) this, vectorDesc);
+    return new SMBJoinOperatorExplainVectorization((SMBJoinDesc) this, vectorSMBJoinDesc);
   }
 
   @Override

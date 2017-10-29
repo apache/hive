@@ -345,9 +345,15 @@ public class VectorExtractRow {
             return primitiveWritable;
           }
         case DECIMAL:
-          // The HiveDecimalWritable set method will quickly copy the deserialized decimal writable fields.
-          ((HiveDecimalWritable) primitiveWritable).set(
-              ((DecimalColumnVector) colVector).vector[adjustedIndex]);
+          if (colVector instanceof Decimal64ColumnVector) {
+            Decimal64ColumnVector dec32ColVector = (Decimal64ColumnVector) colVector;
+            ((HiveDecimalWritable) primitiveWritable).deserialize64(
+                dec32ColVector.vector[adjustedIndex], dec32ColVector.scale);
+          } else {
+            // The HiveDecimalWritable set method will quickly copy the deserialized decimal writable fields.
+            ((HiveDecimalWritable) primitiveWritable).set(
+                ((DecimalColumnVector) colVector).vector[adjustedIndex]);
+          }
           return primitiveWritable;
         case INTERVAL_YEAR_MONTH:
           ((HiveIntervalYearMonthWritable) primitiveWritable).set(

@@ -263,14 +263,14 @@ STAGE PLANS:
                   Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: cint (type: int)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [2]
+                        projectedOutputColumnNums: [2]
                     Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
@@ -283,7 +283,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -293,6 +294,7 @@ STAGE PLANS:
                     includeColumns: [2]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
+                    scratchColumnTypeNames: []
             Local Work:
               Map Reduce Local Work
         Map 4 
@@ -302,14 +304,14 @@ STAGE PLANS:
                   Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: cbigint (type: bigint)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [3]
+                        projectedOutputColumnNums: [3]
                     Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
@@ -322,7 +324,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -332,6 +335,7 @@ STAGE PLANS:
                     includeColumns: [3]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
+                    scratchColumnTypeNames: []
             Local Work:
               Map Reduce Local Work
 
@@ -348,14 +352,14 @@ STAGE PLANS:
                   Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: cint (type: int), cbigint (type: bigint)
                     outputColumnNames: _col0, _col1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [2, 3]
+                        projectedOutputColumnNums: [2, 3]
                     Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
@@ -364,13 +368,13 @@ STAGE PLANS:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
                       Map Join Vectorization:
-                          bigTableKeyColumns: [2]
-                          bigTableRetainedColumns: [3]
-                          bigTableValueColumns: [3]
+                          bigTableKeyColumnNums: [2]
+                          bigTableRetainedColumnNums: [3]
+                          bigTableValueColumnNums: [3]
                           className: VectorMapJoinOuterLongOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                          projectedOutputColumns: [3]
+                          projectedOutputColumnNums: [3]
                       outputColumnNames: _col1
                       input vertices:
                         1 Map 3
@@ -382,13 +386,13 @@ STAGE PLANS:
                           0 _col1 (type: bigint)
                           1 _col0 (type: bigint)
                         Map Join Vectorization:
-                            bigTableKeyColumns: [3]
-                            bigTableRetainedColumns: [3]
-                            bigTableValueColumns: [3]
+                            bigTableKeyColumnNums: [3]
+                            bigTableRetainedColumnNums: [3]
+                            bigTableValueColumnNums: [3]
                             className: VectorMapJoinOuterLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumns: [3]
+                            projectedOutputColumnNums: [3]
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
@@ -396,13 +400,12 @@ STAGE PLANS:
                         Group By Operator
                           aggregations: count(), sum(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFCountStar(*) -> bigint, VectorUDAFSumLong(col 3) -> bigint
+                              aggregators: VectorUDAFCountStar(*) -> bigint, VectorUDAFSumLong(col 3:bigint) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              vectorOutput: true
                               native: false
                               vectorProcessingMode: HASH
-                              projectedOutputColumns: [0, 1]
+                              projectedOutputColumnNums: [0, 1]
                           mode: hash
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
@@ -410,17 +413,18 @@ STAGE PLANS:
                             sort order: 
                             Reduce Sink Vectorization:
                                 className: VectorReduceSinkEmptyKeyOperator
-                                keyColumns: []
+                                keyColumnNums: []
                                 native: true
                                 nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                                valueColumns: [0, 1]
+                                valueColumnNums: [0, 1]
                             Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint), _col1 (type: bigint)
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -430,6 +434,7 @@ STAGE PLANS:
                     includeColumns: [2, 3]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
+                    scratchColumnTypeNames: []
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -439,7 +444,6 @@ STAGE PLANS:
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
                 reduceColumnNullOrder: 
                 reduceColumnSortOrder: 
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -447,17 +451,17 @@ STAGE PLANS:
                     dataColumnCount: 2
                     dataColumns: VALUE._col0:bigint, VALUE._col1:bigint
                     partitionColumnCount: 0
+                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0), sum(VALUE._col1)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 0) -> bigint, VectorUDAFSumLong(col 1) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint, VectorUDAFSumLong(col 1:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0, 1]
+                    projectedOutputColumnNums: [0, 1]
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE

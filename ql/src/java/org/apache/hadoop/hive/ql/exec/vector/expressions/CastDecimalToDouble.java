@@ -29,8 +29,8 @@ public class CastDecimalToDouble extends FuncDecimalToDouble {
     super();
   }
 
-  public CastDecimalToDouble(int inputCol, int outputCol) {
-    super(inputCol, outputCol);
+  public CastDecimalToDouble(int inputCol, int outputColumnNum) {
+    super(inputCol, outputColumnNum);
   }
 
   protected void func(DoubleColumnVector outV, DecimalColumnVector inV, int i) {

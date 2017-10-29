@@ -146,11 +146,12 @@ public class SelectDesc extends AbstractOperatorDesc {
     private final SelectDesc selectDesc;
     private final VectorSelectDesc vectorSelectDesc;
 
-    public SelectOperatorExplainVectorization(SelectDesc selectDesc, VectorDesc vectorDesc) {
+    public SelectOperatorExplainVectorization(SelectDesc selectDesc,
+        VectorSelectDesc vectorSelectDesc) {
       // Native vectorization supported.
-      super(vectorDesc, true);
+      super(vectorSelectDesc, true);
       this.selectDesc = selectDesc;
-      vectorSelectDesc = (VectorSelectDesc) vectorDesc;
+      this.vectorSelectDesc = vectorSelectDesc;
     }
 
     @Explain(vectorization = Vectorization.OPERATOR, displayName = "selectExpressions", explainLevels = { Level.DEFAULT, Level.EXTENDED })
@@ -158,18 +159,19 @@ public class SelectDesc extends AbstractOperatorDesc {
       return vectorExpressionsToStringList(vectorSelectDesc.getSelectExpressions());
     }
 
-    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "projectedOutputColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getProjectedOutputColumns() {
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "projectedOutputColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getProjectedOutputColumnNums() {
       return Arrays.toString(vectorSelectDesc.getProjectedOutputColumns());
     }
   }
 
   @Explain(vectorization = Vectorization.OPERATOR, displayName = "Select Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public SelectOperatorExplainVectorization getSelectVectorization() {
-    if (vectorDesc == null) {
+    VectorSelectDesc vectorSelectDesc = (VectorSelectDesc) getVectorDesc();
+    if (vectorSelectDesc == null) {
       return null;
     }
-    return new SelectOperatorExplainVectorization(this, vectorDesc);
+    return new SelectOperatorExplainVectorization(this, vectorSelectDesc);
   }
 
   @Override

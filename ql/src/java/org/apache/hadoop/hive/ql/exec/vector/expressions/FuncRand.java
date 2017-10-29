@@ -30,15 +30,18 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 public class FuncRand extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int outputCol;
-  private Random random;
+  private final Random random;
 
-  public FuncRand(long seed, int outputCol) {
-    this.outputCol = outputCol;
+  public FuncRand(long seed, int outputColumnNum) {
+    super(outputColumnNum);
     this.random = new Random(seed);
   }
 
   public FuncRand() {
+    super();
+
+    // Dummy final assignments.
+    random = null;
   }
 
   @Override
@@ -48,7 +51,7 @@ public class FuncRand extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputCol];
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     int n = batch.size;
     double[] outputVector = outputColVector.vector;
@@ -58,11 +61,6 @@ public class FuncRand extends VectorExpression {
     // return immediately if batch is empty
     if (n == 0) {
       return;
-    }
-
-    // For no-seed case, create new random number generator locally.
-    if (random == null) {
-      random = new Random();
     }
 
     if (batch.selectedInUse) {
@@ -78,29 +76,9 @@ public class FuncRand extends VectorExpression {
  }
 
   @Override
-  public int getOutputColumn() {
-    return outputCol;
-  }
-
-  public int getOutputCol() {
-    return outputCol;
-  }
-
-  public void setOutputCol(int outputCol) {
-    this.outputCol = outputCol;
-  }
-
-  public Random getRandom() {
-    return random;
-  }
-
-  public void setRandom(Random random) {
-    this.random = random;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "double";
+  public String vectorExpressionParameters() {
+    // No input parameters.
+    return null;
   }
 
   @Override

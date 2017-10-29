@@ -18,10 +18,14 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.sql.Timestamp;
+
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.util.DateTimeMath;
 
 /**
  * Superclass to support vectorized functions that take a long
@@ -31,18 +35,28 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 public abstract class FuncLongToString extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int inputCol;
-  private int outputCol;
-  protected transient byte[] bytes;
+  private final int inputColumn;
 
-  FuncLongToString(int inputCol, int outputCol) {
-    this.inputCol = inputCol;
-    this.outputCol = outputCol;
-    bytes = new byte[64];    // staging area for results, to avoid new() calls
+  // Transient members initialized by transientInit method.
+  protected byte[] bytes;
+
+  FuncLongToString(int inputColumn, int outputColumnNum) {
+    super(outputColumnNum);
+    this.inputColumn = inputColumn;
   }
 
   FuncLongToString() {
-    bytes = new byte[64];
+    super();
+
+    // Dummy final assignments.
+    inputColumn = -1;
+  }
+
+  @Override
+  public void transientInit() throws HiveException {
+    super.transientInit();
+
+    bytes = new byte[64];    // staging area for results, to avoid new() calls
   }
 
   @Override
@@ -52,11 +66,11 @@ public abstract class FuncLongToString extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputCol];
+    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
     long[] vector = inputColVector.vector;
-    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputCol];
+    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumnNum];
     outV.initBuffer();
 
     if (n == 0) {
@@ -118,34 +132,8 @@ public abstract class FuncLongToString extends VectorExpression {
   abstract void prepareResult(int i, long[] vector, BytesColumnVector outV);
 
   @Override
-  public int getOutputColumn() {
-    return outputCol;
-  }
-
-  public int getOutputCol() {
-    return outputCol;
-  }
-
-  public void setOutputCol(int outputCol) {
-    this.outputCol = outputCol;
-  }
-
-  public int getInputCol() {
-    return inputCol;
-  }
-
-  public void setInputCol(int inputCol) {
-    this.inputCol = inputCol;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "String";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + inputCol;
+    return getColumnParamString(0, inputColumn);
   }
 
   @Override

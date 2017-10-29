@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
 
 import java.sql.Date;
@@ -35,20 +37,21 @@ import java.text.SimpleDateFormat;
 public class VectorUDFDateDiffScalarCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private int outputColumn;
+  private final int colNum;
+
   private long longValue;
   private Timestamp timestampValue = null;
   private byte[] stringValue;
-  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private transient final Text text = new Text();
-  private int baseDate;
-  private transient Date date = new Date(0);
 
-  public VectorUDFDateDiffScalarCol(Object object, int colNum, int outputColumn) {
-    super();
+  private transient final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+  private transient final Text text = new Text();
+  private transient final Date date = new Date(0);
+
+  private int baseDate;
+
+  public VectorUDFDateDiffScalarCol(Object object, int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
 
     if (object instanceof Long) {
       this.longValue = (Long) object;
@@ -63,6 +66,9 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
 
   public VectorUDFDateDiffScalarCol() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   @Override
@@ -72,7 +78,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
     ColumnVector inputCol = batch.cols[this.colNum];
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputCol.isRepeating ? 1 : batch.size;
@@ -87,7 +93,9 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
     /* true for all algebraic UDFs with no state */
     outV.isRepeating = inputCol.isRepeating;
 
-    switch (inputTypes[0]) {
+    PrimitiveCategory primitiveCategory0 =
+        ((PrimitiveTypeInfo) inputTypeInfos[0]).getPrimitiveCategory();
+    switch (primitiveCategory0) {
       case DATE:
         baseDate = (int) longValue;
         break;
@@ -119,10 +127,12 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
           return;
         }
       default:
-        throw new Error("Unsupported input type " + inputTypes[0].name());
+        throw new Error("Unsupported input type " + primitiveCategory0.name());
     }
 
-    switch (inputTypes[1]) {
+    PrimitiveCategory primitiveCategory1 =
+        ((PrimitiveTypeInfo) inputTypeInfos[1]).getPrimitiveCategory();
+    switch (primitiveCategory1) {
       case DATE:
         if (inputCol.noNulls) {
           outV.noNulls = true;
@@ -233,7 +243,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
         }
         break;
       default:
-        throw new Error("Unsupported input type " + inputTypes[1].name());
+        throw new Error("Unsupported input type " + primitiveCategory1.name());
     }
   }
 
@@ -259,47 +269,10 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
       output.isNull[i] = true;
     }
   }
-  @Override
-  public int getOutputColumn() {
-    return this.outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public long getLongValue() {
-    return longValue;
-  }
-
-  public void setLongValue(int longValue) {
-    this.longValue = longValue;
-  }
-
-  public byte[] getStringValue() {
-    return stringValue;
-  }
-
-  public void setStringValue(byte[] stringValue) {
-    this.stringValue = stringValue;
-  }
 
   @Override
   public String vectorExpressionParameters() {
-    return "val " + stringValue + ", col " + colNum;
+    return "val " + stringValue + ", " + getColumnParamString(1, colNum);
   }
 
   @Override

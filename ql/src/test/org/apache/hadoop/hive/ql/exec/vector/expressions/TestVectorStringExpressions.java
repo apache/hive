@@ -4209,6 +4209,7 @@ public class TestVectorStringExpressions {
     batch = makeStringBatchMixedCharSize();
     pattern = new Text(mixPercentPattern);
     FilterStringColLikeStringScalar expr = new FilterStringColLikeStringScalar(0, mixPercentPattern);
+    expr.transientInit();
     expr.evaluate(batch);
 
     // verify that the beginning entry is the only one that matches
@@ -4263,36 +4264,42 @@ public class TestVectorStringExpressions {
 
     // BEGIN pattern
     expr = new FilterStringColLikeStringScalar(0, "abc%".getBytes());
+    expr.transientInit();
     expr.evaluate(vrb);
     Assert.assertEquals(FilterStringColLikeStringScalar.BeginChecker.class,
         expr.checker.getClass());
 
     // END pattern
     expr = new FilterStringColLikeStringScalar(0, "%abc".getBytes("UTF-8"));
+    expr.transientInit();
     expr.evaluate(vrb);
     Assert.assertEquals(FilterStringColLikeStringScalar.EndChecker.class,
         expr.checker.getClass());
 
     // MIDDLE pattern
     expr = new FilterStringColLikeStringScalar(0, "%abc%".getBytes());
+    expr.transientInit();
     expr.evaluate(vrb);
     Assert.assertEquals(FilterStringColLikeStringScalar.MiddleChecker.class,
         expr.checker.getClass());
 
     // CHAIN pattern
     expr = new FilterStringColLikeStringScalar(0, "%abc%de".getBytes());
+    expr.transientInit();
     expr.evaluate(vrb);
     Assert.assertEquals(FilterStringColLikeStringScalar.ChainedChecker.class,
         expr.checker.getClass());
 
     // COMPLEX pattern
     expr = new FilterStringColLikeStringScalar(0, "%abc_%de".getBytes());
+    expr.transientInit();
     expr.evaluate(vrb);
     Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
         expr.checker.getClass());
 
     // NONE pattern
     expr = new FilterStringColLikeStringScalar(0, "abc".getBytes());
+    expr.transientInit();
     expr.evaluate(vrb);
     Assert.assertEquals(FilterStringColLikeStringScalar.NoneChecker.class,
         expr.checker.getClass());
@@ -4306,12 +4313,14 @@ public class TestVectorStringExpressions {
     // verify that a multi byte LIKE expression matches a matching string
     batch = makeStringBatchMixedCharSize();
     expr = new FilterStringColLikeStringScalar(0, ('%' + new String(multiByte) + '%').getBytes(StandardCharsets.UTF_8));
+    expr.transientInit();
     expr.evaluate(batch);
     Assert.assertEquals(1, batch.size);
 
     // verify that a multi byte LIKE expression doesn't match a non-matching string
     batch = makeStringBatchMixedCharSize();
     expr = new FilterStringColLikeStringScalar(0, ('%' + new String(multiByte) + 'x').getBytes(StandardCharsets.UTF_8));
+    expr.transientInit();
     expr.evaluate(batch);
     Assert.assertEquals(0, batch.size);
   }
@@ -4401,6 +4410,7 @@ public class TestVectorStringExpressions {
     UDFLike udf = new UDFLike();
     for (String pattern : patterns) {
       VectorExpression expr = new FilterStringColLikeStringScalar(0, pattern.getBytes("utf-8"));
+      expr.transientInit();
       VectorizedRowBatch batch = VectorizedRowGroupGenUtil.getVectorizedRowBatch(1, 1, 1);
       batch.cols[0] = new BytesColumnVector(1);
       BytesColumnVector bcv = (BytesColumnVector) batch.cols[0];
@@ -5537,6 +5547,7 @@ public class TestVectorStringExpressions {
   public void testRegex() throws HiveException {
     VectorizedRowBatch b = makeStringBatch();
     FilterStringColRegExpStringScalar expr = new FilterStringColRegExpStringScalar(0, "a.*".getBytes());
+    expr.transientInit();
     b.size = 5;
     b.selectedInUse = false;
     BytesColumnVector v = (BytesColumnVector) b.cols[0];

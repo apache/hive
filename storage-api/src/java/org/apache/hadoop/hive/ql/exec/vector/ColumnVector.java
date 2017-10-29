@@ -41,6 +41,7 @@ public abstract class ColumnVector {
     DOUBLE,
     BYTES,
     DECIMAL,
+    DECIMAL_64,
     TIMESTAMP,
     INTERVAL_DAY_TIME,
     STRUCT,

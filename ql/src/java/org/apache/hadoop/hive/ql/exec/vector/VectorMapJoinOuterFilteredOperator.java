@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -35,8 +36,6 @@ import com.google.common.annotations.VisibleForTesting;
 public class VectorMapJoinOuterFilteredOperator extends VectorMapJoinBaseOperator {
 
   private static final long serialVersionUID = 1L;
-
-  private VectorizationContext vContext;
 
   // The above members are initialized by the constructor and must not be
   // transient.
@@ -59,11 +58,9 @@ public class VectorMapJoinOuterFilteredOperator extends VectorMapJoinBaseOperato
     super(ctx);
   }
 
-  public VectorMapJoinOuterFilteredOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
-
-    this.vContext = vContext;
+  public VectorMapJoinOuterFilteredOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
   }
 
   @Override

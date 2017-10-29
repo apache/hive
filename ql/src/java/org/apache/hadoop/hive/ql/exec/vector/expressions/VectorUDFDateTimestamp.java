@@ -38,7 +38,7 @@ public class VectorUDFDateTimestamp extends CastTimestampToDate {
     super();
   }
 
-  public VectorUDFDateTimestamp(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public VectorUDFDateTimestamp(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 }

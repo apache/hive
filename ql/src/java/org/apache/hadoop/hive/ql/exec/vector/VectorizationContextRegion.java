@@ -19,11 +19,11 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 /**
- * VectorizationContextRegion optional interface implemented by vectorized operators 
+ * VectorizationContextRegion optional interface implemented by vectorized operators
  * that are changing the vectorization context (region boundary operators)
  */
 public interface VectorizationContextRegion {
 
-  VectorizationContext getOuputVectorizationContext();
+  VectorizationContext getOutputVectorizationContext();
 
 }

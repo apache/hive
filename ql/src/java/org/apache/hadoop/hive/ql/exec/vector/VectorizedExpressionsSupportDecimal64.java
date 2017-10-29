@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.expressions;
+package org.apache.hadoop.hive.ql.exec.vector;
 
-/* Used to set the long constant argument to function
- * (e.g. a constant number of digits to round to)
- */
-public interface ISetLongArg {
-  void setArg(long l);
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+@Retention(RetentionPolicy.RUNTIME)
+public @interface VectorizedExpressionsSupportDecimal64 {
 }

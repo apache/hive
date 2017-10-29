@@ -26,13 +26,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.TableSample;
+import org.apache.hadoop.hive.ql.plan.BaseWork.BaseExplainVectorization;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * Table Scan Descriptor Currently, data is only read from a base source as part
@@ -427,25 +430,45 @@ public class TableScanDesc extends AbstractOperatorDesc {
     private final TableScanDesc tableScanDesc;
     private final VectorTableScanDesc vectorTableScanDesc;
 
-    public TableScanOperatorExplainVectorization(TableScanDesc tableScanDesc, VectorDesc vectorDesc) {
+    public TableScanOperatorExplainVectorization(TableScanDesc tableScanDesc,
+        VectorTableScanDesc vectorTableScanDesc) {
       // Native vectorization supported.
-      super(vectorDesc, true);
+      super(vectorTableScanDesc, true);
       this.tableScanDesc = tableScanDesc;
-      vectorTableScanDesc = (VectorTableScanDesc) vectorDesc;
+      this.vectorTableScanDesc = vectorTableScanDesc;
     }
 
-    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "projectedOutputColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getProjectedOutputColumns() {
-      return Arrays.toString(vectorTableScanDesc.getProjectedOutputColumns());
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "vectorizationSchemaColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getSchemaColumns() {
+      String[] projectedColumnNames = vectorTableScanDesc.getProjectedColumnNames();
+      TypeInfo[] projectedColumnTypeInfos = vectorTableScanDesc.getProjectedColumnTypeInfos();
+
+      // We currently include all data, partition, and any vectorization available
+      // virtual columns in the VRB.
+      final int size = projectedColumnNames.length;
+      int[] projectionColumns = new int[size];
+      for (int i = 0; i < size; i++) {
+        projectionColumns[i] = i;
+      }
+
+      DataTypePhysicalVariation[] projectedColumnDataTypePhysicalVariations =
+          vectorTableScanDesc.getProjectedColumnDataTypePhysicalVariations();
+
+      return BaseExplainVectorization.getColumnAndTypes(
+          projectionColumns,
+          projectedColumnNames,
+          projectedColumnTypeInfos,
+          projectedColumnDataTypePhysicalVariations).toString();
     }
   }
 
   @Explain(vectorization = Vectorization.OPERATOR, displayName = "TableScan Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public TableScanOperatorExplainVectorization getTableScanVectorization() {
-    if (vectorDesc == null) {
+    VectorTableScanDesc vectorTableScanDesc = (VectorTableScanDesc) getVectorDesc();
+    if (vectorTableScanDesc == null) {
       return null;
     }
-    return new TableScanOperatorExplainVectorization(this, vectorDesc);
+    return new TableScanOperatorExplainVectorization(this, vectorTableScanDesc);
   }
 
   public void setVectorized(boolean vectorized) {

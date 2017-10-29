@@ -36,19 +36,25 @@ public abstract class IfExprTimestampScalarColumnBase extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int arg1Column, arg3Column;
+  private final int arg1Column;
   private Timestamp arg2Scalar;
-  private int outputColumn;
+  private final int arg3Column;
 
   public IfExprTimestampScalarColumnBase(int arg1Column, Timestamp arg2Scalar, int arg3Column,
-      int outputColumn) {
+      int outputColumnNum) {
+    super(outputColumnNum);
     this.arg1Column = arg1Column;
     this.arg2Scalar = arg2Scalar;
     this.arg3Column = arg3Column;
-    this.outputColumn = outputColumn;
   }
 
   public IfExprTimestampScalarColumnBase() {
+    super();
+
+    // Dummy final assignments.
+    arg1Column = -1;
+    arg2Scalar = null;
+    arg3Column = -1;
   }
 
   @Override
@@ -60,7 +66,7 @@ public abstract class IfExprTimestampScalarColumnBase extends VectorExpression {
 
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
     TimestampColumnVector arg3ColVector = (TimestampColumnVector) batch.cols[arg3Column];
-    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumn];
+    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = arg3ColVector.noNulls; // nulls can only come from arg3 column vector
@@ -123,18 +129,9 @@ public abstract class IfExprTimestampScalarColumnBase extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "timestamp";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", val "+ arg2Scalar + ", col "+ arg3Column;
+    return getColumnParamString(0, arg1Column) + ", val "+ arg2Scalar + ", " +
+        getColumnParamString(2, arg3Column);
   }
 
 }

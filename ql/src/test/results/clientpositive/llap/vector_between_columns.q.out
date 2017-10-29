@@ -91,14 +91,13 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1]
                   Select Operator
                     expressions: rnum (type: int), cint (type: int)
                     outputColumnNames: _col0, _col1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 1]
+                        projectedOutputColumnNums: [0, 1]
                     Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       sort order: 
@@ -113,7 +112,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -125,14 +125,13 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1]
                   Select Operator
                     expressions: rnum (type: int), csint (type: smallint)
                     outputColumnNames: _col0, _col1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 1]
+                        projectedOutputColumnNums: [0, 1]
                     Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       sort order: 
@@ -147,7 +146,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -249,14 +249,13 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1]
                   Select Operator
                     expressions: rnum (type: int), cint (type: int)
                     outputColumnNames: _col0, _col1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 1]
+                        projectedOutputColumnNums: [0, 1]
                     Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       sort order: 
@@ -271,7 +270,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -283,14 +283,13 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1]
                   Select Operator
                     expressions: rnum (type: int), csint (type: smallint)
                     outputColumnNames: _col0, _col1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 1]
+                        projectedOutputColumnNums: [0, 1]
                     Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       sort order: 
@@ -305,7 +304,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false

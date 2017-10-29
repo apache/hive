@@ -30,6 +30,10 @@ public class IfExprColumnNull extends IfExprConditionalFilter {
     super(arg1Column, arg2Column, -1, outputColumn);
   }
 
+  public IfExprColumnNull() {
+    super();
+  }
+
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
@@ -38,7 +42,7 @@ public class IfExprColumnNull extends IfExprConditionalFilter {
     }
     final LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
     final ColumnVector arg2ColVector = batch.cols[arg2Column];
-    final ColumnVector outputColVector = batch.cols[outputColumn];
+    final ColumnVector outputColVector = batch.cols[outputColumnNum];
 
     final int[] sel = batch.selected;
     final int n = batch.size;
@@ -87,7 +91,7 @@ public class IfExprColumnNull extends IfExprConditionalFilter {
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", col "+ arg2Column + ", null";
+    return getColumnParamString(0, arg1Column) + ", " + getColumnParamString(1, arg2Column) + ", null";
   }
 
 }

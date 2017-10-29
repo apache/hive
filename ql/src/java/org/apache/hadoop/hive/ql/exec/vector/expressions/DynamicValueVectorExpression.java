@@ -24,6 +24,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DynamicValue;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -40,11 +41,12 @@ public class DynamicValueVectorExpression extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  DynamicValue dynamicValue;
-  TypeInfo typeInfo;
+  private final DynamicValue dynamicValue;
+  private final TypeInfo typeInfo;
+  private final ColumnVector.Type type;
+
   transient private boolean initialized = false;
 
-  private int outputColumn;
   protected long longValue = 0;
   private double doubleValue = 0;
   private byte[] bytesValue = null;
@@ -53,23 +55,27 @@ public class DynamicValueVectorExpression extends VectorExpression {
   private HiveIntervalDayTime intervalDayTimeValue = null;
   private boolean isNullValue = false;
 
-  private ColumnVector.Type type;
   private int bytesValueLength = 0;
 
   public DynamicValueVectorExpression() {
     super();
+
+    // Dummy final assignments.
+    type = null;
+    dynamicValue = null;
+    typeInfo = null;
   }
 
-  public DynamicValueVectorExpression(int outputColumn, TypeInfo typeInfo, DynamicValue dynamicValue) {
-    this();
-    this.outputColumn = outputColumn;
+  public DynamicValueVectorExpression(int outputColumnNum, TypeInfo typeInfo,
+      DynamicValue dynamicValue) throws HiveException {
+    super(outputColumnNum);
     this.type = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
     this.dynamicValue = dynamicValue;
     this.typeInfo = typeInfo;
   }
 
   private void evaluateLong(VectorizedRowBatch vrg) {
-    LongColumnVector cv = (LongColumnVector) vrg.cols[outputColumn];
+    LongColumnVector cv = (LongColumnVector) vrg.cols[outputColumnNum];
     cv.isRepeating = true;
     cv.noNulls = !isNullValue;
     if (!isNullValue) {
@@ -81,7 +87,7 @@ public class DynamicValueVectorExpression extends VectorExpression {
   }
 
   private void evaluateDouble(VectorizedRowBatch vrg) {
-    DoubleColumnVector cv = (DoubleColumnVector) vrg.cols[outputColumn];
+    DoubleColumnVector cv = (DoubleColumnVector) vrg.cols[outputColumnNum];
     cv.isRepeating = true;
     cv.noNulls = !isNullValue;
     if (!isNullValue) {
@@ -93,7 +99,7 @@ public class DynamicValueVectorExpression extends VectorExpression {
   }
 
   private void evaluateBytes(VectorizedRowBatch vrg) {
-    BytesColumnVector cv = (BytesColumnVector) vrg.cols[outputColumn];
+    BytesColumnVector cv = (BytesColumnVector) vrg.cols[outputColumnNum];
     cv.isRepeating = true;
     cv.noNulls = !isNullValue;
     cv.initBuffer();
@@ -106,7 +112,7 @@ public class DynamicValueVectorExpression extends VectorExpression {
   }
 
   private void evaluateDecimal(VectorizedRowBatch vrg) {
-    DecimalColumnVector dcv = (DecimalColumnVector) vrg.cols[outputColumn];
+    DecimalColumnVector dcv = (DecimalColumnVector) vrg.cols[outputColumnNum];
     dcv.isRepeating = true;
     dcv.noNulls = !isNullValue;
     if (!isNullValue) {
@@ -118,7 +124,7 @@ public class DynamicValueVectorExpression extends VectorExpression {
   }
 
   private void evaluateTimestamp(VectorizedRowBatch vrg) {
-    TimestampColumnVector dcv = (TimestampColumnVector) vrg.cols[outputColumn];
+    TimestampColumnVector dcv = (TimestampColumnVector) vrg.cols[outputColumnNum];
     dcv.isRepeating = true;
     dcv.noNulls = !isNullValue;
     if (!isNullValue) {
@@ -130,7 +136,7 @@ public class DynamicValueVectorExpression extends VectorExpression {
   }
 
   private void evaluateIntervalDayTime(VectorizedRowBatch vrg) {
-    IntervalDayTimeColumnVector dcv = (IntervalDayTimeColumnVector) vrg.cols[outputColumn];
+    IntervalDayTimeColumnVector dcv = (IntervalDayTimeColumnVector) vrg.cols[outputColumnNum];
     dcv.isRepeating = true;
     dcv.noNulls = !isNullValue;
     if (!isNullValue) {
@@ -229,11 +235,6 @@ public class DynamicValueVectorExpression extends VectorExpression {
     }
   }
 
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
   public long getLongValue() {
     return longValue;
   }
@@ -284,11 +285,7 @@ public class DynamicValueVectorExpression extends VectorExpression {
   }
 
   public String getTypeString() {
-    return getOutputType();
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
+    return outputTypeInfo.toString();
   }
 
   @Override
@@ -296,19 +293,8 @@ public class DynamicValueVectorExpression extends VectorExpression {
     return (new VectorExpressionDescriptor.Builder()).build();
   }
 
-  public DynamicValue getDynamicValue() {
-    return dynamicValue;
-  }
-
-  public void setDynamicValue(DynamicValue dynamicValue) {
-    this.dynamicValue = dynamicValue;
-  }
-
-  public TypeInfo getTypeInfo() {
-    return typeInfo;
-  }
-
-  public void setTypeInfo(TypeInfo typeInfo) {
-    this.typeInfo = typeInfo;
+  @Override
+  public String vectorExpressionParameters() {
+    return null;
   }
 }

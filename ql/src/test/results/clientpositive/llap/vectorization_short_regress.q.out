@@ -95,12 +95,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2601650 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterLongScalarEqualLongColumn(val 762, col 3) -> boolean, FilterExprAndExpr(children: FilterDoubleColLessDoubleColumn(col 12, col 4)(children: CastLongToFloatViaLongToDouble(col 1) -> 12:double) -> boolean, FilterDoubleColGreaterDoubleScalar(col 12, val -5.0)(children: CastTimestampToDouble(col 9) -> 12:double) -> boolean, FilterDoubleColNotEqualDoubleColumn(col 5, col 12)(children: CastLongToDouble(col 2) -> 12:double) -> boolean) -> boolean, FilterStringGroupColEqualStringScalar(col 6, val a) -> boolean, FilterExprAndExpr(children: FilterDecimalColLessEqualDecimalScalar(col 13, val -1.389)(children: CastLongToDecimal(col 3) -> 13:decimal(22,3)) -> boolean, FilterStringGroupColNotEqualStringScalar(col 7, val a) -> boolean, FilterDecimalScalarNotEqualDecimalColumn(val 79.553, col 14)(children: CastLongToDecimal(col 2) -> 14:decimal(13,3)) -> boolean, FilterLongColNotEqualLongColumn(col 11, col 10) -> boolean) -> boolean) -> boolean
+                        predicateExpression: FilterExprOrExpr(children: FilterLongScalarEqualLongColumn(val 762, col 3:bigint), FilterExprAndExpr(children: FilterDoubleColLessDoubleColumn(col 13:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 1:smallint) -> 13:float), FilterDoubleColGreaterDoubleScalar(col 13:double, val -5.0)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleColumn(col 5:double, col 13:double)(children: CastLongToDouble(col 2:int) -> 13:double)), FilterStringGroupColEqualStringScalar(col 6:string, val a), FilterExprAndExpr(children: FilterDecimalColLessEqualDecimalScalar(col 14:decimal(22,3), val -1.389)(children: CastLongToDecimal(col 3:bigint) -> 14:decimal(22,3)), FilterStringGroupColNotEqualStringScalar(col 7:string, val a), FilterDecimalScalarNotEqualDecimalColumn(val 79.553, col 15:decimal(13,3))(children: CastLongToDecimal(col 2:int) -> 15:decimal(13,3)), FilterLongColNotEqualLongColumn(col 11:boolean, col 10:boolean)))
                     predicate: (((CAST( cbigint AS decimal(22,3)) <= -1.389) and (cstring2 <> 'a') and (79.553 <> CAST( cint AS decimal(13,3))) and (cboolean2 <> cboolean1)) or ((UDFToFloat(csmallint) < cfloat) and (UDFToDouble(ctimestamp2) > -5.0) and (cdouble <> UDFToDouble(cint))) or (762 = cbigint) or (cstring1 = 'a')) (type: boolean)
                     Statistics: Num rows: 5465 Data size: 1157230 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -109,18 +108,17 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 1, 2, 4, 5]
+                          projectedOutputColumnNums: [0, 1, 2, 4, 5]
                       Statistics: Num rows: 5465 Data size: 1157230 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: avg(cint), sum(cdouble), stddev_pop(cint), stddev_samp(csmallint), var_samp(cint), avg(cfloat), stddev_samp(cint), min(ctinyint), count(csmallint)
                         Group By Vectorization:
-                            aggregators: VectorUDAFAvgLong(col 2) -> struct<count:bigint,sum:double,input:bigint>, VectorUDAFSumDouble(col 5) -> double, VectorUDAFStdPopLong(col 2) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFStdSampLong(col 1) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFVarSampLong(col 2) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFAvgDouble(col 4) -> struct<count:bigint,sum:double,input:double>, VectorUDAFStdSampLong(col 2) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFMinLong(col 0) -> tinyint, VectorUDAFCount(col 1) -> bigint
+                            aggregators: VectorUDAFAvgLong(col 2:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFVarLong(col 2:int) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop, VectorUDAFVarLong(col 1:smallint) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_samp, VectorUDAFVarLong(col 2:int) -> struct<count:bigint,sum:double,variance:double> aggregation: var_samp, VectorUDAFAvgDouble(col 4:float) -> struct<count:bigint,sum:double,input:float>, VectorUDAFVarLong(col 2:int) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_samp, VectorUDAFMinLong(col 0:tinyint) -> tinyint, VectorUDAFCount(col 1:smallint) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            vectorOutput: true
                             native: false
                             vectorProcessingMode: HASH
-                            projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                         Statistics: Num rows: 1 Data size: 492 Basic stats: COMPLETE Column stats: COMPLETE
@@ -137,7 +135,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -147,7 +146,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -155,13 +153,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: avg(VALUE._col0), sum(VALUE._col1), stddev_pop(VALUE._col2), stddev_samp(VALUE._col3), var_samp(VALUE._col4), avg(VALUE._col5), stddev_samp(VALUE._col6), min(VALUE._col7), count(VALUE._col8)
                 Group By Vectorization:
-                    aggregators: VectorUDAFAvgFinal(col 0) -> double, VectorUDAFSumDouble(col 1) -> double, VectorUDAFStdPopFinal(col 2) -> double, VectorUDAFStdSampFinal(col 3) -> double, VectorUDAFVarSampFinal(col 4) -> double, VectorUDAFAvgFinal(col 5) -> double, VectorUDAFStdSampFinal(col 6) -> double, VectorUDAFMinLong(col 7) -> tinyint, VectorUDAFCountMerge(col 8) -> bigint
+                    aggregators: VectorUDAFAvgFinal(col 0:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFSumDouble(col 1:double) -> double, VectorUDAFVarFinal(col 2:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_pop, VectorUDAFVarFinal(col 3:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_samp, VectorUDAFVarFinal(col 4:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_samp, VectorUDAFAvgFinal(col 5:struct<count:bigint,sum:double,input:float>) -> double, VectorUDAFVarFinal(col 6:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_samp, VectorUDAFMinLong(col 7:tinyint) -> tinyint, VectorUDAFCountMerge(col 8:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
@@ -171,8 +168,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumns: [0, 9, 11, 10, 14, 1, 12, 2, 15, 3, 13, 17, 16, 4, 5, 18, 20, 21, 6, 19, 22, 7, 8, 24, 25]
-                      selectExpressions: DoubleColAddDoubleScalar(col 0, val -3728.0) -> 9:double, DoubleColUnaryMinus(col 10)(children: DoubleColAddDoubleScalar(col 0, val -3728.0) -> 10:double) -> 11:double, DoubleColUnaryMinus(col 12)(children: DoubleColUnaryMinus(col 10)(children: DoubleColAddDoubleScalar(col 0, val -3728.0) -> 10:double) -> 12:double) -> 10:double, DoubleColMultiplyDoubleColumn(col 12, col 13)(children: DoubleColUnaryMinus(col 13)(children: DoubleColUnaryMinus(col 12)(children: DoubleColAddDoubleScalar(col 0, val -3728.0) -> 12:double) -> 13:double) -> 12:double, DoubleColAddDoubleScalar(col 0, val -3728.0) -> 13:double) -> 14:double, DoubleColUnaryMinus(col 0) -> 12:double, DoubleColMultiplyDoubleColumn(col 16, col 13)(children: DoubleColMultiplyDoubleColumn(col 13, col 15)(children: DoubleColUnaryMinus(col 15)(children: DoubleColUnaryMinus(col 13)(children: DoubleColAddDoubleScalar(col 0, val -3728.0) -> 13:double) -> 15:double) -> 13:double, DoubleColAddDoubleScalar(col 0, val -3728.0) -> 15:double) -> 16:double, DoubleColUnaryMinus(col 15)(children: DoubleColUnaryMinus(col 13)(children: DoubleColAddDoubleScalar(col 0, val -3728.0) -> 13:double) -> 15:double) -> 13:double) -> 15:double, DoubleColUnaryMinus(col 2) -> 13:double, DoubleColSubtractDoubleColumn(col 2, col 16)(children: DoubleColUnaryMinus(col 17)(children: DoubleColUnaryMinus(col 16)(children: DoubleColAddDoubleScalar(col 0, val -3728.0) -> 16:double) -> 17:double) -> 16:double) -> 17:double, DoubleColMultiplyDoubleColumn(col 18, col 2)(children: DoubleColSubtractDoubleColumn(col 2, col 16)(children: DoubleColUnaryMinus(col 18)(children: DoubleColUnaryMinus(col 16)(children: DoubleColAddDoubleScalar(col 0, val -3728.0) -> 16:double) -> 18:double) -> 16:double) -> 18:double) -> 16:double, DoubleScalarSubtractDoubleColumn(val 10.175, col 4) -> 18:double, DoubleColUnaryMinus(col 19)(children: DoubleScalarSubtractDoubleColumn(val 10.175, col 4) -> 19:double) -> 20:double, DoubleColDivideDoubleScalar(col 19, val -563.0)(children: DoubleColUnaryMinus(col 2) -> 19:double) -> 21:double, DoubleColUnaryMinus(col 22)(children: DoubleColDivideDoubleScalar(col 19, val -563.0)(children: DoubleColUnaryMinus(col 2) -> 19:double) -> 22:double) -> 19:double, DoubleColDivideDoubleColumn(col 0, col 1) -> 22:double, DoubleColDivideDoubleColumn(col 23, col 25)(children: CastLongToDouble(col 7) -> 23:double, DoubleColDivideDoubleScalar(col 24, val -563.0)(children: DoubleColUnaryMinus(col 2) -> 24:double) -> 25:double) -> 24:double, DoubleColUnaryMinus(col 23)(children: DoubleColDivideDoubleColumn(col 0, col 1) -> 23:double) -> 25:double
+                      projectedOutputColumnNums: [0, 9, 11, 10, 14, 1, 12, 2, 15, 3, 13, 17, 16, 4, 5, 18, 20, 21, 6, 19, 22, 7, 8, 24, 25]
+                      selectExpressions: DoubleColAddDoubleScalar(col 0:double, val -3728.0) -> 9:double, DoubleColUnaryMinus(col 10:double)(children: DoubleColAddDoubleScalar(col 0:double, val -3728.0) -> 10:double) -> 11:double, DoubleColUnaryMinus(col 12:double)(children: DoubleColUnaryMinus(col 10:double)(children: DoubleColAddDoubleScalar(col 0:double, val -3728.0) -> 10:double) -> 12:double) -> 10:double, DoubleColMultiplyDoubleColumn(col 12:double, col 13:double)(children: DoubleColUnaryMinus(col 13:double)(children: DoubleColUnaryMinus(col 12:double)(children: DoubleColAddDoubleScalar(col 0:double, val -3728.0) -> 12:double) -> 13:double) -> 12:double, DoubleColAddDoubleScalar(col 0:double, val -3728.0) -> 13:double) -> 14:double, DoubleColUnaryMinus(col 0:double) -> 12:double, DoubleColMultiplyDoubleColumn(col 16:double, col 13:double)(children: DoubleColMultiplyDoubleColumn(col 13:double, col 15:double)(children: DoubleColUnaryMinus(col 15:double)(children: DoubleColUnaryMinus(col 13:double)(children: DoubleColAddDoubleScalar(col 0:double, val -3728.0) -> 13:double) -> 15:double) -> 13:double, DoubleColAddDoubleScalar(col 0:double, val -3728.0) -> 15:double) -> 16:double, DoubleColUnaryMinus(col 15:double)(children: DoubleColUnaryMinus(col 13:double)(children: DoubleColAddDoubleScalar(col 0:double, val -3728.0) -> 13:double) -> 15:double) -> 13:double) -> 15:double, DoubleColUnaryMinus(col 2:double) -> 13:double, DoubleColSubtractDoubleColumn(col 2:double, col 16:double)(children: DoubleColUnaryMinus(col 17:double)(children: DoubleColUnaryMinus(col 16:double)(children: DoubleColAddDoubleScalar(col 0:double, val -3728.0) -> 16:double) -> 17:double) -> 16:double) -> 17:double, DoubleColMultiplyDoubleColumn(col 18:double, col 2:double)(children: DoubleColSubtractDoubleColumn(col 2:double, col 16:double)(children: DoubleColUnaryMinus(col 18:double)(children: DoubleColUnaryMinus(col 16:double)(children: DoubleColAddDoubleScalar(col 0:double, val -3728.0) -> 16:double) -> 18:double) -> 16:double) -> 18:double) -> 16:double, DoubleScalarSubtractDoubleColumn(val 10.175, col 4:double) -> 18:double, DoubleColUnaryMinus(col 19:double)(children: DoubleScalarSubtractDoubleColumn(val 10.175, col 4:double) -> 19:double) -> 20:double, DoubleColDivideDoubleScalar(col 19:double, val -563.0)(children: DoubleColUnaryMinus(col 2:double) -> 19:double) -> 21:double, DoubleColUnaryMinus(col 22:double)(children: DoubleColDivideDoubleScalar(col 19:double, val -563.0)(children: DoubleColUnaryMinus(col 2:double) -> 19:double) -> 22:double) -> 19:double, DoubleColDivideDoubleColumn(col 0:double, col 1:double) -> 22:double, DoubleColDivideDoubleColumn(col 23:double, col 25:double)(children: CastLongToDouble(col 7:tinyint) -> 23:double, DoubleColDivideDoubleScalar(col 24:double, val -563.0)(children: DoubleColUnaryMinus(col 2:double) -> 24:double) -> 25:double) -> 24:double, DoubleColUnaryMinus(col 23:double)(children: DoubleColDivideDoubleColumn(col 0:double, col 1:double) -> 23:double) -> 25:double
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -359,12 +356,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2036734 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongColLessEqualLongScalar(col 3, val 197) -> boolean, FilterLongColLessLongColumn(col 2, col 3)(children: col 2) -> boolean) -> boolean, FilterExprAndExpr(children: FilterDoubleColGreaterEqualDoubleScalar(col 5, val -26.28) -> boolean, FilterDoubleColGreaterDoubleColumn(col 12, col 5)(children: CastLongToDouble(col 1) -> 12:double) -> boolean) -> boolean, FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 12, col 4)(children: CastLongToFloatViaLongToDouble(col 0) -> 12:double) -> boolean, FilterStringColRegExpStringScalar(col 6, pattern .*ss.*) -> boolean) -> boolean, FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 4, val 79.5530014038086) -> boolean, FilterStringColLikeStringScalar(col 7, pattern 10%) -> boolean) -> boolean) -> boolean
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongColLessEqualLongScalar(col 3:bigint, val 197), FilterLongColLessLongColumn(col 2:bigint, col 3:bigint)(children: col 2:int)), FilterExprAndExpr(children: FilterDoubleColGreaterEqualDoubleScalar(col 5:double, val -26.28), FilterDoubleColGreaterDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 1:smallint) -> 13:double)), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 13:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 0:tinyint) -> 13:float), FilterStringColRegExpStringScalar(col 6:string, pattern .*ss.*)), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 4:float, val 79.5530014038086), FilterStringColLikeStringScalar(col 7:string, pattern 10%)))
                     predicate: (((UDFToFloat(ctinyint) > cfloat) and cstring1 regexp '.*ss.*') or ((cbigint <= 197) and (UDFToLong(cint) < cbigint)) or ((cdouble >= -26.28) and (UDFToDouble(csmallint) > cdouble)) or ((cfloat > 79.553) and (cstring2 like '10%'))) (type: boolean)
                     Statistics: Num rows: 6826 Data size: 1131534 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -373,18 +369,17 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 1, 2, 3, 5]
+                          projectedOutputColumnNums: [0, 1, 2, 3, 5]
                       Statistics: Num rows: 6826 Data size: 1131534 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: max(cint), var_pop(cbigint), stddev_pop(csmallint), max(cdouble), avg(ctinyint), min(cint), min(cdouble), stddev_samp(csmallint), var_samp(cint)
                         Group By Vectorization:
-                            aggregators: VectorUDAFMaxLong(col 2) -> int, VectorUDAFVarPopLong(col 3) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFStdPopLong(col 1) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFMaxDouble(col 5) -> double, VectorUDAFAvgLong(col 0) -> struct<count:bigint,sum:double,input:bigint>, VectorUDAFMinLong(col 2) -> int, VectorUDAFMinDouble(col 5) -> double, VectorUDAFStdSampLong(col 1) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFVarSampLong(col 2) -> struct<count:bigint,sum:double,variance:double>
+                            aggregators: VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFVarLong(col 3:bigint) -> struct<count:bigint,sum:double,variance:double> aggregation: var_pop, VectorUDAFVarLong(col 1:smallint) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop, VectorUDAFMaxDouble(col 5:double) -> double, VectorUDAFAvgLong(col 0:tinyint) -> struct<count:bigint,sum:double,input:tinyint>, VectorUDAFMinLong(col 2:int) -> int, VectorUDAFMinDouble(col 5:double) -> double, VectorUDAFVarLong(col 1:smallint) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_samp, VectorUDAFVarLong(col 2:int) -> struct<count:bigint,sum:double,variance:double> aggregation: var_samp
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            vectorOutput: true
                             native: false
                             vectorProcessingMode: HASH
-                            projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                         Statistics: Num rows: 1 Data size: 420 Basic stats: COMPLETE Column stats: COMPLETE
@@ -401,7 +396,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -411,7 +407,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -419,13 +414,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: max(VALUE._col0), var_pop(VALUE._col1), stddev_pop(VALUE._col2), max(VALUE._col3), avg(VALUE._col4), min(VALUE._col5), min(VALUE._col6), stddev_samp(VALUE._col7), var_samp(VALUE._col8)
                 Group By Vectorization:
-                    aggregators: VectorUDAFMaxLong(col 0) -> int, VectorUDAFVarPopFinal(col 1) -> double, VectorUDAFStdPopFinal(col 2) -> double, VectorUDAFMaxDouble(col 3) -> double, VectorUDAFAvgFinal(col 4) -> double, VectorUDAFMinLong(col 5) -> int, VectorUDAFMinDouble(col 6) -> double, VectorUDAFStdSampFinal(col 7) -> double, VectorUDAFVarSampFinal(col 8) -> double
+                    aggregators: VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFVarFinal(col 1:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_pop, VectorUDAFVarFinal(col 2:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_pop, VectorUDAFMaxDouble(col 3:double) -> double, VectorUDAFAvgFinal(col 4:struct<count:bigint,sum:double,input:tinyint>) -> double, VectorUDAFMinLong(col 5:int) -> int, VectorUDAFMinDouble(col 6:double) -> double, VectorUDAFVarFinal(col 7:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_samp, VectorUDAFVarFinal(col 8:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_samp
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
@@ -435,8 +429,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumns: [0, 10, 11, 1, 13, 2, 14, 9, 15, 3, 4, 16, 5, 19, 17, 6, 18, 7, 20, 12, 21, 23, 8]
-                      selectExpressions: DoubleColDivideDoubleScalar(col 9, val -3728.0)(children: CastLongToDouble(col 0) -> 9:double) -> 10:double, LongColMultiplyLongScalar(col 0, val -3728) -> 11:long, LongColUnaryMinus(col 12)(children: LongColMultiplyLongScalar(col 0, val -3728) -> 12:long) -> 13:long, LongScalarModuloLongColumn(val -563, col 12)(children: LongColMultiplyLongScalar(col 0, val -3728) -> 12:long) -> 14:long, DoubleColDivideDoubleColumn(col 1, col 2) -> 9:double, DoubleColUnaryMinus(col 2) -> 15:double, DoubleColSubtractDoubleScalar(col 2, val 10.175) -> 16:double, DoubleColModuloDoubleColumn(col 17, col 18)(children: CastLongToDouble(col 12)(children: LongColMultiplyLongScalar(col 0, val -3728) -> 12:long) -> 17:double, DoubleColSubtractDoubleScalar(col 2, val 10.175) -> 18:double) -> 19:double, DoubleColUnaryMinus(col 3) -> 17:double, DoubleColModuloDoubleScalar(col 3, val -26.28) -> 18:double, DoubleColUnaryMinus(col 21)(children: DoubleColDivideDoubleScalar(col 20, val -3728.0)(children: CastLongToDouble(col 0) -> 20:double) -> 21:double) -> 20:double, LongColModuloLongColumn(col 22, col 23)(children: LongColUnaryMinus(col 12)(children: LongColMultiplyLongScalar(col 0, val -3728) -> 12:long) -> 22:long, LongScalarModuloLongColumn(val -563, col 12)(children: LongColMultiplyLongScalar(col 0, val -3728) -> 12:long) -> 23:long) -> 12:long, DoubleColSubtractDoubleColumn(col 24, col 4)(children: DoubleColDivideDoubleScalar(col 21, val -3728.0)(children: CastLongToDouble(col 0) -> 21:double) -> 24:double) -> 21:double, LongColUnaryMinus(col 22)(children: LongColMultiplyLongScalar(col 0, val -3728) -> 22:long) -> 23:long
+                      projectedOutputColumnNums: [0, 10, 11, 1, 13, 2, 14, 9, 15, 3, 4, 16, 5, 19, 17, 6, 18, 7, 20, 12, 21, 23, 8]
+                      selectExpressions: DoubleColDivideDoubleScalar(col 9:double, val -3728.0)(children: CastLongToDouble(col 0:int) -> 9:double) -> 10:double, LongColMultiplyLongScalar(col 0:int, val -3728) -> 11:int, LongColUnaryMinus(col 12:int)(children: LongColMultiplyLongScalar(col 0:int, val -3728) -> 12:int) -> 13:int, LongScalarModuloLongColumn(val -563, col 12:int)(children: LongColMultiplyLongScalar(col 0:int, val -3728) -> 12:int) -> 14:int, DoubleColDivideDoubleColumn(col 1:double, col 2:double) -> 9:double, DoubleColUnaryMinus(col 2:double) -> 15:double, DoubleColSubtractDoubleScalar(col 2:double, val 10.175) -> 16:double, DoubleColModuloDoubleColumn(col 17:double, col 18:double)(children: CastLongToDouble(col 12:int)(children: LongColMultiplyLongScalar(col 0:int, val -3728) -> 12:int) -> 17:double, DoubleColSubtractDoubleScalar(col 2:double, val 10.175) -> 18:double) -> 19:double, DoubleColUnaryMinus(col 3:double) -> 17:double, DoubleColModuloDoubleScalar(col 3:double, val -26.28) -> 18:double, DoubleColUnaryMinus(col 21:double)(children: DoubleColDivideDoubleScalar(col 20:double, val -3728.0)(children: CastLongToDouble(col 0:int) -> 20:double) -> 21:double) -> 20:double, LongColModuloLongColumn(col 22:int, col 23:int)(children: LongColUnaryMinus(col 12:int)(children: LongColMultiplyLongScalar(col 0:int, val -3728) -> 12:int) -> 22:int, LongScalarModuloLongColumn(val -563, col 12:int)(children: LongColMultiplyLongScalar(col 0:int, val -3728) -> 12:int) -> 23:int) -> 12:int, DoubleColSubtractDoubleColumn(col 24:double, col 4:double)(children: DoubleColDivideDoubleScalar(col 21:double, val -3728.0)(children: CastLongToDouble(col 0:int) -> 21:double) -> 24:double) -> 21:double, LongColUnaryMinus(col 22:int)(children: LongColMultiplyLongScalar(col 0:int, val -3728) -> 22:int) -> 23:int
                   Statistics: Num rows: 1 Data size: 156 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -615,12 +609,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 3093170 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterTimestampColEqualTimestampColumn(col 8, col 9) -> boolean, FilterDoubleScalarEqualDoubleColumn(val 762.0, col 4) -> boolean, FilterStringGroupColEqualStringScalar(col 6, val ss) -> boolean, FilterExprAndExpr(children: FilterLongColLessEqualLongColumn(col 1, col 3)(children: col 1) -> boolean, FilterLongScalarEqualLongColumn(val 1, col 11) -> boolean) -> boolean, FilterExprAndExpr(children: SelectColumnIsNotNull(col 10) -> boolean, SelectColumnIsNotNull(col 9) -> boolean, FilterStringGroupColGreaterStringScalar(col 7, val a) -> boolean) -> boolean) -> boolean
+                        predicateExpression: FilterExprOrExpr(children: FilterTimestampColEqualTimestampColumn(col 8:timestamp, col 9:timestamp), FilterDoubleScalarEqualDoubleColumn(val 762.0, col 4:float), FilterStringGroupColEqualStringScalar(col 6:string, val ss), FilterExprAndExpr(children: FilterLongColLessEqualLongColumn(col 1:bigint, col 3:bigint)(children: col 1:smallint), FilterLongScalarEqualLongColumn(val 1, col 11:boolean)), FilterExprAndExpr(children: SelectColumnIsNotNull(col 10:boolean), SelectColumnIsNotNull(col 9:timestamp), FilterStringGroupColGreaterStringScalar(col 7:string, val a)))
                     predicate: (((UDFToLong(csmallint) <= cbigint) and (1 = cboolean2)) or (762 = cfloat) or (cboolean1 is not null and ctimestamp2 is not null and (cstring2 > 'a')) or (cstring1 = 'ss') or (ctimestamp1 = ctimestamp2)) (type: boolean)
                     Statistics: Num rows: 11346 Data size: 2856120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -629,18 +622,17 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 1, 2, 3, 5]
+                          projectedOutputColumnNums: [0, 1, 2, 3, 5]
                       Statistics: Num rows: 11346 Data size: 2856120 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: var_pop(cbigint), count(), max(ctinyint), stddev_pop(csmallint), max(cint), stddev_samp(cdouble), count(ctinyint), avg(ctinyint)
                         Group By Vectorization:
-                            aggregators: VectorUDAFVarPopLong(col 3) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFCountStar(*) -> bigint, VectorUDAFMaxLong(col 0) -> tinyint, VectorUDAFStdPopLong(col 1) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFMaxLong(col 2) -> int, VectorUDAFStdSampDouble(col 5) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFCount(col 0) -> bigint, VectorUDAFAvgLong(col 0) -> struct<count:bigint,sum:double,input:bigint>
+                            aggregators: VectorUDAFVarLong(col 3:bigint) -> struct<count:bigint,sum:double,variance:double> aggregation: var_pop, VectorUDAFCountStar(*) -> bigint, VectorUDAFMaxLong(col 0:tinyint) -> tinyint, VectorUDAFVarLong(col 1:smallint) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFVarDouble(col 5:double) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_samp, VectorUDAFCount(col 0:tinyint) -> bigint, VectorUDAFAvgLong(col 0:tinyint) -> struct<count:bigint,sum:double,input:tinyint>
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            vectorOutput: true
                             native: false
                             vectorProcessingMode: HASH
-                            projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7]
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7]
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                         Statistics: Num rows: 1 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
@@ -657,7 +649,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -667,7 +660,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -675,13 +667,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: var_pop(VALUE._col0), count(VALUE._col1), max(VALUE._col2), stddev_pop(VALUE._col3), max(VALUE._col4), stddev_samp(VALUE._col5), count(VALUE._col6), avg(VALUE._col7)
                 Group By Vectorization:
-                    aggregators: VectorUDAFVarPopFinal(col 0) -> double, VectorUDAFCountMerge(col 1) -> bigint, VectorUDAFMaxLong(col 2) -> tinyint, VectorUDAFStdPopFinal(col 3) -> double, VectorUDAFMaxLong(col 4) -> int, VectorUDAFStdSampFinal(col 5) -> double, VectorUDAFCountMerge(col 6) -> bigint, VectorUDAFAvgFinal(col 7) -> double
+                    aggregators: VectorUDAFVarFinal(col 0:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_pop, VectorUDAFCountMerge(col 1:bigint) -> bigint, VectorUDAFMaxLong(col 2:tinyint) -> tinyint, VectorUDAFVarFinal(col 3:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_pop, VectorUDAFMaxLong(col 4:int) -> int, VectorUDAFVarFinal(col 5:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_samp, VectorUDAFCountMerge(col 6:bigint) -> bigint, VectorUDAFAvgFinal(col 7:struct<count:bigint,sum:double,input:tinyint>) -> double
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7]
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                 Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
@@ -691,8 +682,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumns: [0, 8, 10, 1, 12, 2, 14, 13, 15, 1, 16, 3, 9, 19, 4, 18, 22, 5, 23, 6, 7, 24]
-                      selectExpressions: DoubleColUnaryMinus(col 0) -> 8:double, DoubleColSubtractDoubleColumn(col 0, col 9)(children: DoubleColUnaryMinus(col 0) -> 9:double) -> 10:double, DecimalColModuloDecimalScalar(col 11, val 79.553)(children: CastLongToDecimal(col 1) -> 11:decimal(19,0)) -> 12:decimal(5,3), DoubleColSubtractDoubleColumn(col 9, col 13)(children: CastLongToDouble(col 1) -> 9:double, DoubleColUnaryMinus(col 0) -> 13:double) -> 14:double, DoubleColUnaryMinus(col 9)(children: DoubleColUnaryMinus(col 0) -> 9:double) -> 13:double, DoubleScalarModuloDoubleColumn(val -1.0, col 9)(children: DoubleColUnaryMinus(col 0) -> 9:double) -> 15:double, LongColUnaryMinus(col 1) -> 16:long, DoubleColUnaryMinus(col 17)(children: DoubleColUnaryMinus(col 9)(children: DoubleColUnaryMinus(col 0) -> 9:double) -> 17:double) -> 9:double, LongScalarMultiplyLongColumn(val 762, col 18)(children: LongColUnaryMinus(col 1) -> 18:long) -> 19:long, LongColAddLongColumn(col 2, col 20)(children: col 2, LongScalarMultiplyLongColumn(val 762, col 18)(children: LongColUnaryMinus(col 1) -> 18:long) -> 20:long) -> 18:long, DoubleColAddDoubleColumn(col 17, col 21)(children: DoubleColUnaryMinus(col 0) -> 17:double, CastLongToDouble(col 4) -> 21:double) -> 22:double, LongColModuloLongColumn(col 20, col 1)(children: LongColUnaryMinus(col 1) -> 20:long) -> 23:long, LongScalarModuloLongColumn(val -3728, col 20)(children: LongColAddLongColumn(col 2, col 24)(children: col 2, LongScalarMultiplyLongColumn(val 762, col 20)(children: LongColUnaryMinus(col 1) -> 20:long) -> 24:long) -> 20:long) -> 24:long
+                      projectedOutputColumnNums: [0, 8, 10, 1, 12, 2, 14, 13, 15, 1, 16, 3, 9, 19, 4, 18, 22, 5, 23, 6, 7, 24]
+                      selectExpressions: DoubleColUnaryMinus(col 0:double) -> 8:double, DoubleColSubtractDoubleColumn(col 0:double, col 9:double)(children: DoubleColUnaryMinus(col 0:double) -> 9:double) -> 10:double, DecimalColModuloDecimalScalar(col 11:decimal(19,0), val 79.553)(children: CastLongToDecimal(col 1:bigint) -> 11:decimal(19,0)) -> 12:decimal(5,3), DoubleColSubtractDoubleColumn(col 9:double, col 13:double)(children: CastLongToDouble(col 1:bigint) -> 9:double, DoubleColUnaryMinus(col 0:double) -> 13:double) -> 14:double, DoubleColUnaryMinus(col 9:double)(children: DoubleColUnaryMinus(col 0:double) -> 9:double) -> 13:double, DoubleScalarModuloDoubleColumn(val -1.0, col 9:double)(children: DoubleColUnaryMinus(col 0:double) -> 9:double) -> 15:double, LongColUnaryMinus(col 1:bigint) -> 16:bigint, DoubleColUnaryMinus(col 17:double)(children: DoubleColUnaryMinus(col 9:double)(children: DoubleColUnaryMinus(col 0:double) -> 9:double) -> 17:double) -> 9:double, LongScalarMultiplyLongColumn(val 762, col 18:bigint)(children: LongColUnaryMinus(col 1:bigint) -> 18:bigint) -> 19:bigint, LongColAddLongColumn(col 2:bigint, col 20:bigint)(children: col 2:tinyint, LongScalarMultiplyLongColumn(val 762, col 18:bigint)(children: LongColUnaryMinus(col 1:bigint) -> 18:bigint) -> 20:bigint) -> 18:bigint, DoubleColAddDoubleColumn(col 17:double, col 21:double)(children: DoubleColUnaryMinus(col 0:double) -> 17:double, CastLongToDouble(col 4:int) -> 21:double) -> 22:double, LongColModuloLongColumn(col 20:bigint, col 1:bigint)(children: LongColUnaryMinus(col 1:bigint) -> 20:bigint) -> 23:bigint, LongScalarModuloLongColumn(val -3728, col 20:bigint)(children: LongColAddLongColumn(col 2:bigint, col 24:bigint)(children: col 2:tinyint, LongScalarMultiplyLongColumn(val 762, col 20:bigint)(children: LongColUnaryMinus(col 1:bigint) -> 20:bigint) -> 24:bigint) -> 20:bigint) -> 24:bigint
                   Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -850,12 +841,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2139070 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterTimestampColLessEqualTimestampColumn(col 9, col 8) -> boolean, FilterDoubleColNotEqualDoubleColumn(col 12, col 5)(children: CastLongToDouble(col 3) -> 12:double) -> boolean, FilterStringScalarLessEqualStringGroupColumn(val ss, col 6) -> boolean) -> boolean, FilterExprAndExpr(children: FilterLongColLessLongColumn(col 1, col 0)(children: col 0) -> boolean, FilterDoubleColGreaterEqualDoubleScalar(col 12, val 0.0)(children: CastTimestampToDouble(col 8) -> 12:double) -> boolean) -> boolean, FilterDoubleColEqualDoubleScalar(col 4, val 17.0) -> boolean) -> boolean
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterTimestampColLessEqualTimestampColumn(col 9:timestamp, col 8:timestamp), FilterDoubleColNotEqualDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 13:double), FilterStringScalarLessEqualStringGroupColumn(val ss, col 6:string)), FilterExprAndExpr(children: FilterLongColLessLongColumn(col 1:smallint, col 0:smallint)(children: col 0:tinyint), FilterDoubleColGreaterEqualDoubleScalar(col 13:double, val 0.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double)), FilterDoubleColEqualDoubleScalar(col 4:float, val 17.0))
                     predicate: (((csmallint < UDFToShort(ctinyint)) and (UDFToDouble(ctimestamp1) >= 0.0)) or ((ctimestamp2 <= ctimestamp1) and (UDFToDouble(cbigint) <> cdouble) and ('ss' <= cstring1)) or (cfloat = 17)) (type: boolean)
                     Statistics: Num rows: 2824 Data size: 491654 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -864,18 +854,17 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 2, 3, 4]
+                          projectedOutputColumnNums: [0, 2, 3, 4]
                       Statistics: Num rows: 2824 Data size: 491654 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: avg(ctinyint), max(cbigint), stddev_samp(cint), var_pop(cint), var_pop(cbigint), max(cfloat)
                         Group By Vectorization:
-                            aggregators: VectorUDAFAvgLong(col 0) -> struct<count:bigint,sum:double,input:bigint>, VectorUDAFMaxLong(col 3) -> bigint, VectorUDAFStdSampLong(col 2) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFVarPopLong(col 2) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFVarPopLong(col 3) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFMaxDouble(col 4) -> float
+                            aggregators: VectorUDAFAvgLong(col 0:tinyint) -> struct<count:bigint,sum:double,input:tinyint>, VectorUDAFMaxLong(col 3:bigint) -> bigint, VectorUDAFVarLong(col 2:int) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_samp, VectorUDAFVarLong(col 2:int) -> struct<count:bigint,sum:double,variance:double> aggregation: var_pop, VectorUDAFVarLong(col 3:bigint) -> struct<count:bigint,sum:double,variance:double> aggregation: var_pop, VectorUDAFMaxDouble(col 4:float) -> float
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            vectorOutput: true
                             native: false
                             vectorProcessingMode: HASH
-                            projectedOutputColumns: [0, 1, 2, 3, 4, 5]
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                         Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: COMPLETE
@@ -892,7 +881,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -902,7 +892,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -910,13 +899,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: avg(VALUE._col0), max(VALUE._col1), stddev_samp(VALUE._col2), var_pop(VALUE._col3), var_pop(VALUE._col4), max(VALUE._col5)
                 Group By Vectorization:
-                    aggregators: VectorUDAFAvgFinal(col 0) -> double, VectorUDAFMaxLong(col 1) -> bigint, VectorUDAFStdSampFinal(col 2) -> double, VectorUDAFVarPopFinal(col 3) -> double, VectorUDAFVarPopFinal(col 4) -> double, VectorUDAFMaxDouble(col 5) -> float
+                    aggregators: VectorUDAFAvgFinal(col 0:struct<count:bigint,sum:double,input:tinyint>) -> double, VectorUDAFMaxLong(col 1:bigint) -> bigint, VectorUDAFVarFinal(col 2:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_samp, VectorUDAFVarFinal(col 3:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_pop, VectorUDAFVarFinal(col 4:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_pop, VectorUDAFMaxDouble(col 5:float) -> float
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                 Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
@@ -926,8 +914,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumns: [0, 6, 8, 1, 7, 10, 2, 9, 3, 4, 12, 14, 5, 11]
-                      selectExpressions: DoubleColAddDoubleScalar(col 0, val 6981.0) -> 6:double, DoubleColAddDoubleColumn(col 7, col 0)(children: DoubleColAddDoubleScalar(col 0, val 6981.0) -> 7:double) -> 8:double, DoubleColDivideDoubleColumn(col 9, col 0)(children: DoubleColAddDoubleColumn(col 7, col 0)(children: DoubleColAddDoubleScalar(col 0, val 6981.0) -> 7:double) -> 9:double) -> 7:double, DoubleColUnaryMinus(col 9)(children: DoubleColAddDoubleScalar(col 0, val 6981.0) -> 9:double) -> 10:double, DoubleColModuloDoubleColumn(col 0, col 11)(children: DoubleColUnaryMinus(col 9)(children: DoubleColAddDoubleScalar(col 0, val 6981.0) -> 9:double) -> 11:double) -> 9:double, LongColUnaryMinus(col 1) -> 12:long, DoubleColDivideDoubleColumn(col 11, col 2)(children: CastLongToDouble(col 13)(children: LongColUnaryMinus(col 1) -> 13:long) -> 11:double) -> 14:double, DoubleColMultiplyDoubleScalar(col 4, val -26.28) -> 11:double
+                      projectedOutputColumnNums: [0, 6, 8, 1, 7, 10, 2, 9, 3, 4, 12, 14, 5, 11]
+                      selectExpressions: DoubleColAddDoubleScalar(col 0:double, val 6981.0) -> 6:double, DoubleColAddDoubleColumn(col 7:double, col 0:double)(children: DoubleColAddDoubleScalar(col 0:double, val 6981.0) -> 7:double) -> 8:double, DoubleColDivideDoubleColumn(col 9:double, col 0:double)(children: DoubleColAddDoubleColumn(col 7:double, col 0:double)(children: DoubleColAddDoubleScalar(col 0:double, val 6981.0) -> 7:double) -> 9:double) -> 7:double, DoubleColUnaryMinus(col 9:double)(children: DoubleColAddDoubleScalar(col 0:double, val 6981.0) -> 9:double) -> 10:double, DoubleColModuloDoubleColumn(col 0:double, col 11:double)(children: DoubleColUnaryMinus(col 9:double)(children: DoubleColAddDoubleScalar(col 0:double, val 6981.0) -> 9:double) -> 11:double) -> 9:double, LongColUnaryMinus(col 1:bigint) -> 12:bigint, DoubleColDivideDoubleColumn(col 11:double, col 2:double)(children: CastLongToDouble(col 13:bigint)(children: LongColUnaryMinus(col 1:bigint) -> 13:bigint) -> 11:double) -> 14:double, DoubleColMultiplyDoubleScalar(col 4:double, val -26.28) -> 11:double
                   Statistics: Num rows: 1 Data size: 108 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -1093,12 +1081,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 3056470 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterStringColRegExpStringScalar(col 6, pattern a.*) -> boolean, FilterStringColLikeStringScalar(col 7, pattern %ss%) -> boolean) -> boolean, FilterExprAndExpr(children: FilterLongScalarNotEqualLongColumn(val 1, col 11) -> boolean, FilterDecimalColLessDecimalScalar(col 12, val 79.553)(children: CastLongToDecimal(col 1) -> 12:decimal(8,3)) -> boolean, FilterLongScalarNotEqualLongColumn(val -257, col 0)(children: col 0) -> boolean) -> boolean, FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 5, col 13)(children: CastLongToDouble(col 0) -> 13:double) -> boolean, FilterDoubleColGreaterEqualDoubleColumn(col 4, col 13)(children: CastLongToFloatViaLongToDouble(col 2) -> 13:double) -> boolean) -> boolean, FilterExprAndExpr(children: FilterLongColLessLongColumn(col 2, col 3)(children: col 2) -> boolean, FilterLongColGreaterLongColumn(col 0, col 3)(children: col 0) -> boolean) -> boolean) -> boolean
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterStringColRegExpStringScalar(col 6:string, pattern a.*), FilterStringColLikeStringScalar(col 7:string, pattern %ss%)), FilterExprAndExpr(children: FilterLongScalarNotEqualLongColumn(val 1, col 11:boolean), FilterDecimalColLessDecimalScalar(col 13:decimal(8,3), val 79.553)(children: CastLongToDecimal(col 1:smallint) -> 13:decimal(8,3)), FilterLongScalarNotEqualLongColumn(val -257, col 0:int)(children: col 0:tinyint)), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 5:double, col 14:double)(children: CastLongToDouble(col 0:tinyint) -> 14:double), FilterDoubleColGreaterEqualDoubleColumn(col 4:float, col 14:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 14:float)), FilterExprAndExpr(children: FilterLongColLessLongColumn(col 2:bigint, col 3:bigint)(children: col 2:int), FilterLongColGreaterLongColumn(col 0:bigint, col 3:bigint)(children: col 0:tinyint)))
                     predicate: (((1 <> cboolean2) and (CAST( csmallint AS decimal(8,3)) < 79.553) and (-257 <> UDFToInteger(ctinyint))) or ((UDFToLong(cint) < cbigint) and (UDFToLong(ctinyint) > cbigint)) or ((cdouble > UDFToDouble(ctinyint)) and (cfloat >= UDFToFloat(cint))) or (cstring1 regexp 'a.*' and (cstring2 like '%ss%'))) (type: boolean)
                     Statistics: Num rows: 9898 Data size: 2462086 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1107,8 +1094,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [2, 5, 9, 6, 11, 0, 4, 8, 1, 3, 14, 15, 17, 18, 20, 22, 24, 26, 13, 23, 28, 19, 30]
-                          selectExpressions: LongScalarMultiplyLongColumn(val -3728, col 3) -> 14:long, LongColUnaryMinus(col 2) -> 15:long, DecimalScalarSubtractDecimalColumn(val -863.257, col 16)(children: CastLongToDecimal(col 2) -> 16:decimal(10,0)) -> 17:decimal(14,3), LongColUnaryMinus(col 1) -> 18:long, LongColSubtractLongColumn(col 1, col 19)(children: LongColUnaryMinus(col 1) -> 19:long) -> 20:long, LongColAddLongColumn(col 21, col 19)(children: LongColSubtractLongColumn(col 1, col 19)(children: LongColUnaryMinus(col 1) -> 19:long) -> 21:long, LongColUnaryMinus(col 1) -> 19:long) -> 22:long, DoubleColDivideDoubleColumn(col 13, col 23)(children: CastLongToDouble(col 2) -> 13:double, CastLongToDouble(col 2) -> 23:double) -> 24:double, DecimalColSubtractDecimalScalar(col 25, val -26.28)(children: DecimalScalarSubtractDecimalColumn(val -863.257, col 16)(children: CastLongToDecimal(col 2) -> 16:decimal(10,0)) -> 25:decimal(14,3)) -> 26:decimal(15,3), DoubleColUnaryMinus(col 4) -> 13:double, DoubleColMultiplyDoubleScalar(col 5, val -89010.0) -> 23:double, DoubleColDivideDoubleScalar(col 27, val 988888.0)(children: CastLongToDouble(col 0) -> 27:double) -> 28:double, LongColUnaryMinus(col 0) -> 19:long, DecimalScalarDivideDecimalColumn(val 79.553, col 29)(children: CastLongToDecimal(col 0) -> 29:decimal(3,0)) -> 30:decimal(9,7)
+                          projectedOutputColumnNums: [2, 5, 9, 6, 11, 0, 4, 8, 1, 3, 15, 16, 18, 19, 21, 23, 25, 27, 14, 24, 29, 20, 31]
+                          selectExpressions: LongScalarMultiplyLongColumn(val -3728, col 3:bigint) -> 15:bigint, LongColUnaryMinus(col 2:int) -> 16:int, DecimalScalarSubtractDecimalColumn(val -863.257, col 17:decimal(10,0))(children: CastLongToDecimal(col 2:int) -> 17:decimal(10,0)) -> 18:decimal(14,3), LongColUnaryMinus(col 1:smallint) -> 19:smallint, LongColSubtractLongColumn(col 1:smallint, col 20:smallint)(children: LongColUnaryMinus(col 1:smallint) -> 20:smallint) -> 21:smallint, LongColAddLongColumn(col 22:smallint, col 20:smallint)(children: LongColSubtractLongColumn(col 1:smallint, col 20:smallint)(children: LongColUnaryMinus(col 1:smallint) -> 20:smallint) -> 22:smallint, LongColUnaryMinus(col 1:smallint) -> 20:smallint) -> 23:smallint, DoubleColDivideDoubleColumn(col 14:double, col 24:double)(children: CastLongToDouble(col 2:int) -> 14:double, CastLongToDouble(col 2:int) -> 24:double) -> 25:double, DecimalColSubtractDecimalScalar(col 26:decimal(14,3), val -26.28)(children: DecimalScalarSubtractDecimalColumn(val -863.257, col 17:decimal(10,0))(children: CastLongToDecimal(col 2:int) -> 17:decimal(10,0)) -> 26:decimal(14,3)) -> 27:decimal(15,3), DoubleColUnaryMinus(col 4:float) -> 14:float, DoubleColMultiplyDoubleScalar(col 5:double, val -89010.0) -> 24:double, DoubleColDivideDoubleScalar(col 28:double, val 988888.0)(children: CastLongToDouble(col 0:tinyint) -> 28:double) -> 29:double, LongColUnaryMinus(col 0:tinyint) -> 20:tinyint, DecimalScalarDivideDecimalColumn(val 79.553, col 30:decimal(3,0))(children: CastLongToDecimal(col 0:tinyint) -> 30:decimal(3,0)) -> 31:decimal(9,7)
                       Statistics: Num rows: 9898 Data size: 5632662 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: double), _col2 (type: timestamp), _col3 (type: string), _col4 (type: boolean), _col5 (type: tinyint), _col6 (type: float), _col7 (type: timestamp), _col8 (type: smallint), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: int), _col12 (type: decimal(14,3)), _col13 (type: smallint), _col14 (type: smallint), _col15 (type: smallint), _col16 (type: double), _col17 (type: decimal(15,3)), _col18 (type: float), _col19 (type: double), _col20 (type: double), _col21 (type: tinyint), _col22 (type: decimal(9,7))
@@ -1124,7 +1111,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1134,7 +1122,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1145,7 +1132,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
                 Statistics: Num rows: 9898 Data size: 5632662 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 50
@@ -1391,12 +1378,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2601650 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongScalarGreaterLongColumn(val 197, col 0)(children: col 0) -> boolean, FilterLongColEqualLongColumn(col 2, col 3)(children: col 2) -> boolean) -> boolean, FilterLongColEqualLongScalar(col 3, val 359) -> boolean, FilterLongColLessLongScalar(col 10, val 0) -> boolean, FilterExprAndExpr(children: FilterStringColLikeStringScalar(col 6, pattern %ss) -> boolean, FilterDoubleColLessEqualDoubleColumn(col 4, col 12)(children: CastLongToFloatViaLongToDouble(col 0) -> 12:double) -> boolean) -> boolean) -> boolean
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongScalarGreaterLongColumn(val 197, col 0:int)(children: col 0:tinyint), FilterLongColEqualLongColumn(col 2:bigint, col 3:bigint)(children: col 2:int)), FilterLongColEqualLongScalar(col 3:bigint, val 359), FilterLongColLessLongScalar(col 10:boolean, val 0), FilterExprAndExpr(children: FilterStringColLikeStringScalar(col 6:string, pattern %ss), FilterDoubleColLessEqualDoubleColumn(col 4:float, col 13:float)(children: CastLongToFloatViaLongToDouble(col 0:tinyint) -> 13:float)))
                     predicate: (((197 > UDFToInteger(ctinyint)) and (UDFToLong(cint) = cbigint)) or ((cstring1 like '%ss') and (cfloat <= UDFToFloat(ctinyint))) or (cbigint = 359) or (cboolean1 < 0)) (type: boolean)
                     Statistics: Num rows: 8194 Data size: 1734900 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1405,8 +1391,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [2, 3, 6, 10, 4, 5, 9, 1, 7, 11, 14, 16, 12, 13, 17, 19, 18, 21, 20, 22, 23, 26, 27, 24, 28]
-                          selectExpressions: DoubleColDivideDoubleColumn(col 12, col 13)(children: CastLongToDouble(col 2) -> 12:double, CastLongToDouble(col 3) -> 13:double) -> 14:double, DecimalColModuloDecimalScalar(col 15, val 79.553)(children: CastLongToDecimal(col 3) -> 15:decimal(19,0)) -> 16:decimal(5,3), DoubleColUnaryMinus(col 17)(children: DoubleColDivideDoubleColumn(col 12, col 13)(children: CastLongToDouble(col 2) -> 12:double, CastLongToDouble(col 3) -> 13:double) -> 17:double) -> 12:double, DoubleScalarModuloDoubleColumn(val 10.175000190734863, col 4) -> 13:double, DoubleColUnaryMinus(col 4) -> 17:double, DoubleColSubtractDoubleColumn(col 4, col 18)(children: DoubleColUnaryMinus(col 4) -> 18:double) -> 19:double, DoubleColModuloDoubleScalar(col 20, val -6432.0)(children: DoubleColSubtractDoubleColumn(col 4, col 18)(children: DoubleColUnaryMinus(col 4) -> 18:double) -> 20:double) -> 18:double, DoubleColMultiplyDoubleColumn(col 5, col 20)(children: CastLongToDouble(col 1) -> 20:double) -> 21:double, DoubleColUnaryMinus(col 5) -> 20:double, LongColUnaryMinus(col 3) -> 22:long, DoubleColSubtractDoubleColumn(col 4, col 25)(children: col 4, DoubleColDivideDoubleColumn(col 23, col 24)(children: CastLongToDouble(col 2) -> 23:double, CastLongToDouble(col 3) -> 24:double) -> 25:double) -> 23:double, LongColUnaryMinus(col 1) -> 26:long, LongScalarModuloLongColumn(val 3569, col 3) -> 27:long, DoubleScalarSubtractDoubleColumn(val 359.0, col 5) -> 24:double, LongColUnaryMinus(col 1) -> 28:long
+                          projectedOutputColumnNums: [2, 3, 6, 10, 4, 5, 9, 1, 7, 11, 15, 17, 13, 14, 18, 20, 19, 22, 21, 23, 24, 27, 28, 25, 29]
+                          selectExpressions: DoubleColDivideDoubleColumn(col 13:double, col 14:double)(children: CastLongToDouble(col 2:int) -> 13:double, CastLongToDouble(col 3:bigint) -> 14:double) -> 15:double, DecimalColModuloDecimalScalar(col 16:decimal(19,0), val 79.553)(children: CastLongToDecimal(col 3:bigint) -> 16:decimal(19,0)) -> 17:decimal(5,3), DoubleColUnaryMinus(col 18:double)(children: DoubleColDivideDoubleColumn(col 13:double, col 14:double)(children: CastLongToDouble(col 2:int) -> 13:double, CastLongToDouble(col 3:bigint) -> 14:double) -> 18:double) -> 13:double, DoubleScalarModuloDoubleColumn(val 10.175000190734863, col 4:float) -> 14:float, DoubleColUnaryMinus(col 4:float) -> 18:float, DoubleColSubtractDoubleColumn(col 4:float, col 19:float)(children: DoubleColUnaryMinus(col 4:float) -> 19:float) -> 20:float, DoubleColModuloDoubleScalar(col 21:float, val -6432.0)(children: DoubleColSubtractDoubleColumn(col 4:float, col 19:float)(children: DoubleColUnaryMinus(col 4:float) -> 19:float) -> 21:float) -> 19:float, DoubleColMultiplyDoubleColumn(col 5:double, col 21:double)(children: CastLongToDouble(col 1:smallint) -> 21:double) -> 22:double, DoubleColUnaryMinus(col 5:double) -> 21:double, LongColUnaryMinus(col 3:bigint) -> 23:bigint, DoubleColSubtractDoubleColumn(col 4:double, col 26:double)(children: col 4:float, DoubleColDivideDoubleColumn(col 24:double, col 25:double)(children: CastLongToDouble(col 2:int) -> 24:double, CastLongToDouble(col 3:bigint) -> 25:double) -> 26:double) -> 24:double, LongColUnaryMinus(col 1:smallint) -> 27:smallint, LongScalarModuloLongColumn(val 3569, col 3:bigint) -> 28:bigint, DoubleScalarSubtractDoubleColumn(val 359.0, col 5:double) -> 25:double, LongColUnaryMinus(col 1:smallint) -> 29:smallint
                       Statistics: Num rows: 8194 Data size: 3349228 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: boolean), _col4 (type: float), _col5 (type: double), _col6 (type: timestamp), _col7 (type: smallint), _col8 (type: string), _col9 (type: boolean), _col10 (type: double), _col11 (type: decimal(5,3)), _col12 (type: double), _col13 (type: float), _col14 (type: float), _col15 (type: float), _col16 (type: float), _col17 (type: double), _col18 (type: double), _col19 (type: bigint), _col20 (type: double), _col21 (type: smallint), _col22 (type: bigint), _col23 (type: double), _col24 (type: smallint)
@@ -1422,7 +1408,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1432,7 +1419,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1443,7 +1429,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 21]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 21]
                 Statistics: Num rows: 8194 Data size: 3349228 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 25
@@ -1638,12 +1624,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2601650 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDecimalColGreaterDecimalScalar(col 12, val -26.28)(children: CastLongToDecimal(col 1) -> 12:decimal(7,2)) -> boolean, FilterStringColLikeStringScalar(col 7, pattern ss) -> boolean) -> boolean, FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleColumn(col 5, col 13)(children: CastLongToDouble(col 3) -> 13:double) -> boolean, FilterStringGroupColGreaterEqualStringScalar(col 6, val ss) -> boolean, FilterDoubleColNotEqualDoubleColumn(col 13, col 5)(children: CastLongToDouble(col 2) -> 13:double) -> boolean) -> boolean, FilterLongColEqualLongScalar(col 0, val -89010)(children: col 0) -> boolean, FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleColumn(col 13, col 4)(children: CastLongToFloatViaLongToDouble(col 3) -> 13:double) -> boolean, FilterDecimalScalarLessEqualDecimalColumn(val -26.28, col 12)(children: CastLongToDecimal(col 1) -> 12:decimal(7,2)) -> boolean) -> boolean) -> boolean
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDecimalColGreaterDecimalScalar(col 13:decimal(7,2), val -26.28)(children: CastLongToDecimal(col 1:smallint) -> 13:decimal(7,2)), FilterStringColLikeStringScalar(col 7:string, pattern ss)), FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleColumn(col 5:double, col 14:double)(children: CastLongToDouble(col 3:bigint) -> 14:double), FilterStringGroupColGreaterEqualStringScalar(col 6:string, val ss), FilterDoubleColNotEqualDoubleColumn(col 14:double, col 5:double)(children: CastLongToDouble(col 2:int) -> 14:double)), FilterLongColEqualLongScalar(col 0:int, val -89010)(children: col 0:tinyint), FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleColumn(col 14:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 3:bigint) -> 14:float), FilterDecimalScalarLessEqualDecimalColumn(val -26.28, col 13:decimal(7,2))(children: CastLongToDecimal(col 1:smallint) -> 13:decimal(7,2))))
                     predicate: (((CAST( csmallint AS decimal(7,2)) > -26.28) and (cstring2 like 'ss')) or ((UDFToFloat(cbigint) <= cfloat) and (-26.28 <= CAST( csmallint AS decimal(7,2)))) or ((cdouble <= UDFToDouble(cbigint)) and (cstring1 >= 'ss') and (UDFToDouble(cint) <> cdouble)) or (UDFToInteger(ctinyint) = -89010)) (type: boolean)
                     Statistics: Num rows: 10922 Data size: 2312410 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1652,8 +1637,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [2, 6, 11, 9, 5, 4, 3, 1, 10, 14, 15, 16, 13, 18, 19, 20, 22, 25, 27, 24, 17, 28]
-                          selectExpressions: LongColAddLongColumn(col 2, col 1)(children: col 1) -> 14:long, LongColSubtractLongColumn(col 3, col 0)(children: col 0) -> 15:long, LongColUnaryMinus(col 3) -> 16:long, DoubleColUnaryMinus(col 4) -> 13:double, LongColAddLongColumn(col 17, col 3)(children: LongColSubtractLongColumn(col 3, col 0)(children: col 0) -> 17:long) -> 18:long, DoubleColDivideDoubleColumn(col 5, col 5) -> 19:double, DoubleColUnaryMinus(col 5) -> 20:double, LongColMultiplyLongColumn(col 17, col 21)(children: col 17, LongColUnaryMinus(col 3) -> 21:long) -> 22:long, DoubleColAddDoubleColumn(col 23, col 24)(children: DoubleColUnaryMinus(col 5) -> 23:double, CastLongToDouble(col 3) -> 24:double) -> 25:double, DecimalScalarDivideDecimalColumn(val -1.389, col 26)(children: CastLongToDecimal(col 0) -> 26:decimal(3,0)) -> 27:decimal(8,7), DoubleColModuloDoubleColumn(col 23, col 5)(children: CastLongToDouble(col 3) -> 23:double) -> 24:double, LongColUnaryMinus(col 1) -> 17:long, LongColAddLongColumn(col 1, col 21)(children: col 1, LongColAddLongColumn(col 2, col 1)(children: col 1) -> 21:long) -> 28:long
+                          projectedOutputColumnNums: [2, 6, 11, 9, 5, 4, 3, 1, 10, 15, 16, 17, 14, 19, 20, 21, 23, 26, 28, 25, 18, 29]
+                          selectExpressions: LongColAddLongColumn(col 2:int, col 1:int)(children: col 1:smallint) -> 15:int, LongColSubtractLongColumn(col 3:bigint, col 0:bigint)(children: col 0:tinyint) -> 16:bigint, LongColUnaryMinus(col 3:bigint) -> 17:bigint, DoubleColUnaryMinus(col 4:float) -> 14:float, LongColAddLongColumn(col 18:bigint, col 3:bigint)(children: LongColSubtractLongColumn(col 3:bigint, col 0:bigint)(children: col 0:tinyint) -> 18:bigint) -> 19:bigint, DoubleColDivideDoubleColumn(col 5:double, col 5:double) -> 20:double, DoubleColUnaryMinus(col 5:double) -> 21:double, LongColMultiplyLongColumn(col 18:bigint, col 22:bigint)(children: col 18:int, LongColUnaryMinus(col 3:bigint) -> 22:bigint) -> 23:bigint, DoubleColAddDoubleColumn(col 24:double, col 25:double)(children: DoubleColUnaryMinus(col 5:double) -> 24:double, CastLongToDouble(col 3:bigint) -> 25:double) -> 26:double, DecimalScalarDivideDecimalColumn(val -1.389, col 27:decimal(3,0))(children: CastLongToDecimal(col 0:tinyint) -> 27:decimal(3,0)) -> 28:decimal(8,7), DoubleColModuloDoubleColumn(col 24:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 24:double) -> 25:double, LongColUnaryMinus(col 1:smallint) -> 18:smallint, LongColAddLongColumn(col 1:int, col 22:int)(children: col 1:smallint, LongColAddLongColumn(col 2:int, col 1:int)(children: col 1:smallint) -> 22:int) -> 29:int
                       Statistics: Num rows: 10922 Data size: 3594034 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col8 (type: boolean), _col1 (type: string), _col3 (type: timestamp), _col5 (type: float), _col6 (type: bigint), _col1 (type: string), _col4 (type: double), _col0 (type: int), _col7 (type: smallint), _col4 (type: double), _col9 (type: int), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: float), _col13 (type: bigint), _col14 (type: double), _col15 (type: double), _col16 (type: bigint), _col17 (type: double), _col18 (type: decimal(8,7)), _col19 (type: double), _col20 (type: smallint), _col21 (type: int)
@@ -1670,7 +1655,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1680,7 +1666,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1691,7 +1676,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [7, 1, 23, 2, 6, 3, 4, 8, 0, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+                    projectedOutputColumnNums: [7, 1, 23, 2, 6, 3, 4, 8, 0, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
                 Statistics: Num rows: 10922 Data size: 3594034 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 75
@@ -1943,12 +1928,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2528254 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDecimalScalarGreaterEqualDecimalColumn(val -1.389, col 12)(children: CastLongToDecimal(col 2) -> 12:decimal(13,3)) -> boolean, FilterLongColLessLongColumn(col 1, col 0)(children: col 0) -> boolean, FilterLongScalarGreaterLongColumn(val -6432, col 1)(children: col 1) -> boolean) -> boolean, FilterExprAndExpr(children: FilterDoubleColGreaterEqualDoubleColumn(col 5, col 4)(children: col 4) -> boolean, FilterStringGroupColLessEqualStringScalar(col 7, val a) -> boolean) -> boolean, FilterExprAndExpr(children: FilterStringColLikeStringScalar(col 6, pattern ss%) -> boolean, FilterDecimalScalarGreaterDecimalColumn(val 10.175, col 13)(children: CastLongToDecimal(col 3) -> 13:decimal(22,3)) -> boolean) -> boolean) -> boolean
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDecimalScalarGreaterEqualDecimalColumn(val -1.389, col 13:decimal(13,3))(children: CastLongToDecimal(col 2:int) -> 13:decimal(13,3)), FilterLongColLessLongColumn(col 1:smallint, col 0:smallint)(children: col 0:tinyint), FilterLongScalarGreaterLongColumn(val -6432, col 1:int)(children: col 1:smallint)), FilterExprAndExpr(children: FilterDoubleColGreaterEqualDoubleColumn(col 5:double, col 4:double)(children: col 4:float), FilterStringGroupColLessEqualStringScalar(col 7:string, val a)), FilterExprAndExpr(children: FilterStringColLikeStringScalar(col 6:string, pattern ss%), FilterDecimalScalarGreaterDecimalColumn(val 10.175, col 14:decimal(22,3))(children: CastLongToDecimal(col 3:bigint) -> 14:decimal(22,3))))
                     predicate: (((-1.389 >= CAST( cint AS decimal(13,3))) and (csmallint < UDFToShort(ctinyint)) and (-6432 > UDFToInteger(csmallint))) or ((cdouble >= UDFToDouble(cfloat)) and (cstring2 <= 'a')) or ((cstring1 like 'ss%') and (10.175 > CAST( cbigint AS decimal(22,3))))) (type: boolean)
                     Statistics: Num rows: 3868 Data size: 795962 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1957,8 +1941,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [8, 7, 5, 4, 3, 1, 15, 16, 14, 17, 18, 20, 19, 21, 22, 24]
-                          selectExpressions: DoubleColDivideDoubleScalar(col 14, val 3569.0)(children: CastLongToDouble(col 3) -> 14:double) -> 15:double, LongScalarSubtractLongColumn(val -257, col 1)(children: col 1) -> 16:long, DoubleScalarMultiplyDoubleColumn(val -6432.0, col 4) -> 14:double, DoubleColUnaryMinus(col 5) -> 17:double, DoubleColMultiplyDoubleScalar(col 5, val 10.175) -> 18:double, DoubleColDivideDoubleColumn(col 19, col 4)(children: col 19, col 4) -> 20:double, DoubleColUnaryMinus(col 4) -> 19:double, LongColModuloLongColumn(col 2, col 1)(children: col 1) -> 21:long, DoubleColUnaryMinus(col 5) -> 22:double, DoubleColMultiplyDoubleColumn(col 5, col 23)(children: DoubleColUnaryMinus(col 5) -> 23:double) -> 24:double
+                          projectedOutputColumnNums: [8, 7, 5, 4, 3, 1, 16, 17, 15, 18, 19, 21, 20, 22, 23, 25]
+                          selectExpressions: DoubleColDivideDoubleScalar(col 15:double, val 3569.0)(children: CastLongToDouble(col 3:bigint) -> 15:double) -> 16:double, LongScalarSubtractLongColumn(val -257, col 1:int)(children: col 1:smallint) -> 17:int, DoubleScalarMultiplyDoubleColumn(val -6432.0, col 4:float) -> 15:float, DoubleColUnaryMinus(col 5:double) -> 18:double, DoubleColMultiplyDoubleScalar(col 5:double, val 10.175) -> 19:double, DoubleColDivideDoubleColumn(col 20:double, col 4:double)(children: col 20:float, col 4:float) -> 21:double, DoubleColUnaryMinus(col 4:float) -> 20:float, LongColModuloLongColumn(col 2:int, col 1:int)(children: col 1:smallint) -> 22:int, DoubleColUnaryMinus(col 5:double) -> 23:double, DoubleColMultiplyDoubleColumn(col 5:double, col 24:double)(children: DoubleColUnaryMinus(col 5:double) -> 24:double) -> 25:double
                       Statistics: Num rows: 3868 Data size: 748844 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col5 (type: smallint), _col1 (type: string), _col2 (type: double), _col3 (type: float), _col4 (type: bigint), _col6 (type: double), _col7 (type: int), _col8 (type: float), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: float), _col13 (type: int), _col14 (type: double), _col15 (type: double)
@@ -1975,7 +1959,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1985,7 +1970,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1996,7 +1980,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [15, 1, 2, 3, 4, 0, 5, 6, 7, 8, 9, 10, 11, 12, 8, 14]
+                    projectedOutputColumnNums: [15, 1, 2, 3, 4, 0, 5, 6, 7, 8, 9, 10, 11, 12, 8, 14]
                 Statistics: Num rows: 3868 Data size: 748844 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 45
@@ -2190,12 +2174,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 256884 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColGreaterEqualLongScalar(col 1, val -257)(children: col 1) -> boolean, FilterExprOrExpr(children: FilterLongScalarEqualLongColumn(val -6432, col 1)(children: col 1) -> boolean, FilterExprAndExpr(children: FilterDoubleColGreaterEqualDoubleColumn(col 12, col 5)(children: CastLongToDouble(col 2) -> 12:double) -> boolean, FilterLongColLessEqualLongColumn(col 0, col 2)(children: col 0) -> boolean) -> boolean) -> boolean) -> boolean
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColGreaterEqualLongScalar(col 1:int, val -257)(children: col 1:smallint), FilterExprOrExpr(children: FilterLongScalarEqualLongColumn(val -6432, col 1:int)(children: col 1:smallint), FilterExprAndExpr(children: FilterDoubleColGreaterEqualDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 2:int) -> 13:double), FilterLongColLessEqualLongColumn(col 0:int, col 2:int)(children: col 0:tinyint))))
                     predicate: (((-6432 = UDFToInteger(csmallint)) or ((UDFToDouble(cint) >= cdouble) and (UDFToInteger(ctinyint) <= cint))) and (UDFToInteger(csmallint) >= -257)) (type: boolean)
                     Statistics: Num rows: 2503 Data size: 52344 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2204,19 +2187,18 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 1, 3]
+                          projectedOutputColumnNums: [0, 1, 3]
                       Statistics: Num rows: 2503 Data size: 52344 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: stddev_samp(csmallint), sum(cbigint), var_pop(ctinyint), count()
                         Group By Vectorization:
-                            aggregators: VectorUDAFStdSampLong(col 1) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFSumLong(col 3) -> bigint, VectorUDAFVarPopLong(col 0) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFCountStar(*) -> bigint
+                            aggregators: VectorUDAFVarLong(col 1:smallint) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_samp, VectorUDAFSumLong(col 3:bigint) -> bigint, VectorUDAFVarLong(col 0:tinyint) -> struct<count:bigint,sum:double,variance:double> aggregation: var_pop, VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            vectorOutput: true
-                            keyExpressions: col 1
+                            keyExpressions: col 1:smallint
                             native: false
                             vectorProcessingMode: HASH
-                            projectedOutputColumns: [0, 1, 2, 3]
+                            projectedOutputColumnNums: [0, 1, 2, 3]
                         keys: csmallint (type: smallint)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4
@@ -2236,7 +2218,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -2246,7 +2229,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -2254,14 +2236,13 @@ STAGE PLANS:
               Group By Operator
                 aggregations: stddev_samp(VALUE._col0), sum(VALUE._col1), var_pop(VALUE._col2), count(VALUE._col3)
                 Group By Vectorization:
-                    aggregators: VectorUDAFStdSampFinal(col 1) -> double, VectorUDAFSumLong(col 2) -> bigint, VectorUDAFVarPopFinal(col 3) -> double, VectorUDAFCountMerge(col 4) -> bigint
+                    aggregators: VectorUDAFVarFinal(col 1:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_samp, VectorUDAFSumLong(col 2:bigint) -> bigint, VectorUDAFVarFinal(col 3:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_pop, VectorUDAFCountMerge(col 4:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
-                    keyExpressions: col 0
+                    keyExpressions: col 0:smallint
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumns: [0, 1, 2, 3]
+                    projectedOutputColumnNums: [0, 1, 2, 3]
                 keys: KEY._col0 (type: smallint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
@@ -2272,8 +2253,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumns: [0, 5, 1, 7, 2, 11, 12, 3, 8, 4, 13]
-                      selectExpressions: LongColModuloLongScalar(col 0, val -75)(children: col 0) -> 5:long, DecimalScalarDivideDecimalColumn(val -1.389, col 6)(children: CastLongToDecimal(col 0) -> 6:decimal(5,0)) -> 7:decimal(10,9), DoubleColDivideDoubleColumn(col 9, col 10)(children: CastLongToDouble(col 8)(children: LongColModuloLongScalar(col 0, val -75)(children: col 0) -> 8:long) -> 9:double, CastLongToDouble(col 2) -> 10:double) -> 11:double, LongColUnaryMinus(col 8)(children: LongColModuloLongScalar(col 0, val -75)(children: col 0) -> 8:long) -> 12:long, LongColUnaryMinus(col 13)(children: LongColUnaryMinus(col 8)(children: LongColModuloLongScalar(col 0, val -75)(children: col 0) -> 8:long) -> 13:long) -> 8:long, LongColSubtractLongScalar(col 4, val -89010) -> 13:long
+                      projectedOutputColumnNums: [0, 5, 1, 7, 2, 11, 12, 3, 8, 4, 13]
+                      selectExpressions: LongColModuloLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 5:int, DecimalScalarDivideDecimalColumn(val -1.389, col 6:decimal(5,0))(children: CastLongToDecimal(col 0:smallint) -> 6:decimal(5,0)) -> 7:decimal(10,9), DoubleColDivideDoubleColumn(col 9:double, col 10:double)(children: CastLongToDouble(col 8:int)(children: LongColModuloLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 8:int) -> 9:double, CastLongToDouble(col 2:bigint) -> 10:double) -> 11:double, LongColUnaryMinus(col 8:int)(children: LongColModuloLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 8:int) -> 12:int, LongColUnaryMinus(col 13:int)(children: LongColUnaryMinus(col 8:int)(children: LongColModuloLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 8:int) -> 13:int) -> 8:int, LongColSubtractLongScalar(col 4:bigint, val -89010) -> 13:bigint
                   Statistics: Num rows: 1141 Data size: 199664 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: smallint), _col1 (type: int), _col2 (type: double), _col3 (type: decimal(10,9)), _col4 (type: bigint), _col5 (type: double), _col6 (type: int), _col7 (type: double), _col8 (type: int), _col9 (type: bigint), _col10 (type: bigint)
@@ -2289,7 +2270,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -2300,7 +2280,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                 Statistics: Num rows: 1141 Data size: 199664 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
@@ -2369,26 +2349,26 @@ LIMIT 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--100	-25	0.0	0.013890000	NULL	NULL	25	0.0	-25	1	89011
--113	-38	0.0	0.012292035	NULL	NULL	38	0.0	-38	1	89011
--118	-43	0.0	0.011771186	NULL	NULL	43	0.0	-43	1	89011
--165	-15	0.0	0.008418182	NULL	NULL	15	0.0	-15	1	89011
--168	-18	0.0	0.008267857	NULL	NULL	18	0.0	-18	1	89011
--171	-21	0.0	0.008122807	NULL	NULL	21	0.0	-21	1	89011
--180	-30	0.0	0.007716667	NULL	NULL	30	0.0	-30	1	89011
--203	-53	0.0	0.006842365	NULL	NULL	53	0.0	-53	1	89011
--217	-67	0.0	0.006400922	NULL	NULL	67	0.0	-67	1	89011
--220	-70	0.0	0.006313636	NULL	NULL	70	0.0	-70	1	89011
+-100	-25	NULL	0.013890000	NULL	NULL	25	0.0	-25	1	89011
+-113	-38	NULL	0.012292035	NULL	NULL	38	0.0	-38	1	89011
+-118	-43	NULL	0.011771186	NULL	NULL	43	0.0	-43	1	89011
+-165	-15	NULL	0.008418182	NULL	NULL	15	0.0	-15	1	89011
+-168	-18	NULL	0.008267857	NULL	NULL	18	0.0	-18	1	89011
+-171	-21	NULL	0.008122807	NULL	NULL	21	0.0	-21	1	89011
+-180	-30	NULL	0.007716667	NULL	NULL	30	0.0	-30	1	89011
+-203	-53	NULL	0.006842365	NULL	NULL	53	0.0	-53	1	89011
+-217	-67	NULL	0.006400922	NULL	NULL	67	0.0	-67	1	89011
+-220	-70	NULL	0.006313636	NULL	NULL	70	0.0	-70	1	89011
 -257	-32	0.0	0.005404669	NULL	NULL	32	0.0	-32	2	89012
--29	-29	0.0	0.047896552	NULL	NULL	29	0.0	-29	1	89011
--42	-42	0.0	0.033071429	NULL	NULL	42	0.0	-42	1	89011
--49	-49	0.0	0.028346939	NULL	NULL	49	0.0	-49	1	89011
--62	-62	0.0	0.022403226	NULL	NULL	62	0.0	-62	1	89011
+-29	-29	NULL	0.047896552	NULL	NULL	29	0.0	-29	1	89011
+-42	-42	NULL	0.033071429	NULL	NULL	42	0.0	-42	1	89011
+-49	-49	NULL	0.028346939	NULL	NULL	49	0.0	-49	1	89011
+-62	-62	NULL	0.022403226	NULL	NULL	62	0.0	-62	1	89011
 -75	0	0.0	0.018520000	NULL	NULL	0	107.55555555555556	0	3	89013
--77	-2	0.0	0.018038961	NULL	NULL	2	0.0	-2	1	89011
--84	-9	0.0	0.016535714	NULL	NULL	9	0.0	-9	1	89011
--89	-14	0.0	0.015606742	NULL	NULL	14	0.0	-14	1	89011
--95	-20	0.0	0.014621053	NULL	NULL	20	0.0	-20	1	89011
+-77	-2	NULL	0.018038961	NULL	NULL	2	0.0	-2	1	89011
+-84	-9	NULL	0.016535714	NULL	NULL	9	0.0	-9	1	89011
+-89	-14	NULL	0.015606742	NULL	NULL	14	0.0	-14	1	89011
+-95	-20	NULL	0.014621053	NULL	NULL	20	0.0	-20	1	89011
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT   cdouble,
@@ -2470,12 +2450,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 293580 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 5, val 2563.58) -> boolean, FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongColGreaterEqualLongColumn(col 3, col 2)(children: col 2) -> boolean, FilterLongColLessLongColumn(col 1, col 2)(children: col 1) -> boolean, FilterDoubleColLessDoubleScalar(col 4, val -5638.14990234375) -> boolean) -> boolean, FilterDecimalScalarEqualDecimalColumn(val 2563.58, col 12)(children: CastLongToDecimal(col 0) -> 12:decimal(6,2)) -> boolean, FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleColumn(col 5, col 13)(children: CastLongToDouble(col 3) -> 13:double) -> boolean, FilterDecimalScalarGreaterDecimalColumn(val -5638.15, col 14)(children: CastLongToDecimal(col 3) -> 14:decimal(21,2)) -> boolean) -> boolean) -> boolean) -> boolean
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 5:double, val 2563.58), FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongColGreaterEqualLongColumn(col 3:bigint, col 2:bigint)(children: col 2:int), FilterLongColLessLongColumn(col 1:int, col 2:int)(children: col 1:smallint), FilterDoubleColLessDoubleScalar(col 4:float, val -5638.14990234375)), FilterDecimalScalarEqualDecimalColumn(val 2563.58, col 13:decimal(6,2))(children: CastLongToDecimal(col 0:tinyint) -> 13:decimal(6,2)), FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleColumn(col 5:double, col 14:double)(children: CastLongToDouble(col 3:bigint) -> 14:double), FilterDecimalScalarGreaterDecimalColumn(val -5638.15, col 15:decimal(21,2))(children: CastLongToDecimal(col 3:bigint) -> 15:decimal(21,2)))))
                     predicate: ((((cbigint >= UDFToLong(cint)) and (UDFToInteger(csmallint) < cint) and (cfloat < -5638.15)) or (2563.58 = CAST( ctinyint AS decimal(6,2))) or ((cdouble <= UDFToDouble(cbigint)) and (-5638.15 > CAST( cbigint AS decimal(21,2))))) and (cdouble > 2563.58)) (type: boolean)
                     Statistics: Num rows: 2503 Data size: 59820 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2484,19 +2463,18 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [4, 5]
+                          projectedOutputColumnNums: [4, 5]
                       Statistics: Num rows: 2503 Data size: 59820 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: var_samp(cdouble), count(cfloat), sum(cfloat), var_pop(cdouble), stddev_pop(cdouble), sum(cdouble)
                         Group By Vectorization:
-                            aggregators: VectorUDAFVarSampDouble(col 5) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFCount(col 4) -> bigint, VectorUDAFSumDouble(col 4) -> double, VectorUDAFVarPopDouble(col 5) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFStdPopDouble(col 5) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFSumDouble(col 5) -> double
+                            aggregators: VectorUDAFVarDouble(col 5:double) -> struct<count:bigint,sum:double,variance:double> aggregation: var_samp, VectorUDAFCount(col 4:float) -> bigint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFVarDouble(col 5:double) -> struct<count:bigint,sum:double,variance:double> aggregation: var_pop, VectorUDAFVarDouble(col 5:double) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop, VectorUDAFSumDouble(col 5:double) -> double
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            vectorOutput: true
-                            keyExpressions: col 5
+                            keyExpressions: col 5:double
                             native: false
                             vectorProcessingMode: HASH
-                            projectedOutputColumns: [0, 1, 2, 3, 4, 5]
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
                         keys: cdouble (type: double)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -2516,7 +2494,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -2526,7 +2505,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -2534,14 +2512,13 @@ STAGE PLANS:
               Group By Operator
                 aggregations: var_samp(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), var_pop(VALUE._col3), stddev_pop(VALUE._col4), sum(VALUE._col5)
                 Group By Vectorization:
-                    aggregators: VectorUDAFVarSampFinal(col 1) -> double, VectorUDAFCountMerge(col 2) -> bigint, VectorUDAFSumDouble(col 3) -> double, VectorUDAFVarPopFinal(col 4) -> double, VectorUDAFStdPopFinal(col 5) -> double, VectorUDAFSumDouble(col 6) -> double
+                    aggregators: VectorUDAFVarFinal(col 1:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_samp, VectorUDAFCountMerge(col 2:bigint) -> bigint, VectorUDAFSumDouble(col 3:double) -> double, VectorUDAFVarFinal(col 4:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_pop, VectorUDAFVarFinal(col 5:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_pop, VectorUDAFSumDouble(col 6:double) -> double
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
-                    keyExpressions: col 0
+                    keyExpressions: col 0:double
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
                 keys: KEY._col0 (type: double)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -2552,8 +2529,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumns: [0, 1, 7, 8, 2, 10, 11, 3, 4, 12, 5, 9, 13, 6, 15]
-                      selectExpressions: DoubleScalarMultiplyDoubleColumn(val 2563.58, col 1) -> 7:double, DoubleColUnaryMinus(col 1) -> 8:double, DoubleColAddDoubleScalar(col 9, val -5638.15)(children: DoubleScalarMultiplyDoubleColumn(val 2563.58, col 1) -> 9:double) -> 10:double, DoubleColMultiplyDoubleColumn(col 9, col 12)(children: DoubleColUnaryMinus(col 1) -> 9:double, DoubleColAddDoubleScalar(col 11, val -5638.15)(children: DoubleScalarMultiplyDoubleColumn(val 2563.58, col 1) -> 11:double) -> 12:double) -> 11:double, DoubleColSubtractDoubleColumn(col 0, col 9)(children: DoubleColUnaryMinus(col 1) -> 9:double) -> 12:double, DoubleColAddDoubleColumn(col 0, col 1) -> 9:double, DoubleColMultiplyDoubleScalar(col 0, val 762.0) -> 13:double, DoubleScalarModuloDoubleColumn(val -863.257, col 14)(children: DoubleColMultiplyDoubleScalar(col 0, val 762.0) -> 14:double) -> 15:double
+                      projectedOutputColumnNums: [0, 1, 7, 8, 2, 10, 11, 3, 4, 12, 5, 9, 13, 6, 15]
+                      selectExpressions: DoubleScalarMultiplyDoubleColumn(val 2563.58, col 1:double) -> 7:double, DoubleColUnaryMinus(col 1:double) -> 8:double, DoubleColAddDoubleScalar(col 9:double, val -5638.15)(children: DoubleScalarMultiplyDoubleColumn(val 2563.58, col 1:double) -> 9:double) -> 10:double, DoubleColMultiplyDoubleColumn(col 9:double, col 12:double)(children: DoubleColUnaryMinus(col 1:double) -> 9:double, DoubleColAddDoubleScalar(col 11:double, val -5638.15)(children: DoubleScalarMultiplyDoubleColumn(val 2563.58, col 1:double) -> 11:double) -> 12:double) -> 11:double, DoubleColSubtractDoubleColumn(col 0:double, col 9:double)(children: DoubleColUnaryMinus(col 1:double) -> 9:double) -> 12:double, DoubleColAddDoubleColumn(col 0:double, col 1:double) -> 9:double, DoubleColMultiplyDoubleScalar(col 0:double, val 762.0) -> 13:double, DoubleScalarModuloDoubleColumn(val -863.257, col 14:double)(children: DoubleColMultiplyDoubleScalar(col 0:double, val 762.0) -> 14:double) -> 15:double
                   Statistics: Num rows: 1136 Data size: 143112 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: double)
@@ -2569,7 +2546,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -2580,7 +2556,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 13]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 13]
                 Statistics: Num rows: 1136 Data size: 143112 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
@@ -2794,12 +2770,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 3019778 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColNotEqualDoubleScalar(col 12, val 0.0)(children: CastTimestampToDouble(col 8) -> 12:double) -> boolean, FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongScalarNotEqualLongColumn(val -257, col 0)(children: col 0) -> boolean, SelectColumnIsNotNull(col 11) -> boolean, FilterStringColRegExpStringScalar(col 6, pattern .*ss) -> boolean, FilterDoubleScalarLessDoubleColumn(val -3.0, col 12)(children: CastTimestampToDouble(col 8) -> 12:double) -> boolean) -> boolean, FilterDoubleColEqualDoubleScalar(col 12, val -5.0)(children: CastTimestampToDouble(col 9) -> 12:double) -> boolean, FilterExprAndExpr(children: FilterDoubleColLessDoubleScalar(col 12, val 0.0)(children: CastTimestampToDouble(col 8) -> 12:double) -> boolean, FilterStringColLikeStringScalar(col 7, pattern %b%) -> boolean) -> boolean, FilterDoubleColEqualDoubleColumn(col 5, col 12)(children: CastLongToDouble(col 2) -> 12:double) -> boolean, FilterExprAndExpr(children: SelectColumnIsNull(col 10) -> boolean, FilterDoubleColLessDoubleColumn(col 4, col 12)(children: CastLongToFloatViaLongToDouble(col 2) -> 12:double) -> boolean) -> boolean) -> boolean) -> boolean
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColNotEqualDoubleScalar(col 13:double, val 0.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongScalarNotEqualLongColumn(val -257, col 0:int)(children: col 0:tinyint), SelectColumnIsNotNull(col 11:boolean), FilterStringColRegExpStringScalar(col 6:string, pattern .*ss), FilterDoubleScalarLessDoubleColumn(val -3.0, col 13:double)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double)), FilterDoubleColEqualDoubleScalar(col 13:double, val -5.0)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterExprAndExpr(children: FilterDoubleColLessDoubleScalar(col 13:double, val 0.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterStringColLikeStringScalar(col 7:string, pattern %b%)), FilterDoubleColEqualDoubleColumn(col 5:double, col 13:double)(children: CastLongToDouble(col 2:int) -> 13:double), FilterExprAndExpr(children: SelectColumnIsNull(col 10:boolean), FilterDoubleColLessDoubleColumn(col 4:float, col 13:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 13:float))))
                     predicate: ((((-257 <> UDFToInteger(ctinyint)) and cboolean2 is not null and cstring1 regexp '.*ss' and (-3.0 < UDFToDouble(ctimestamp1))) or (UDFToDouble(ctimestamp2) = -5.0) or ((UDFToDouble(ctimestamp1) < 0.0) and (cstring2 like '%b%')) or (cdouble = UDFToDouble(cint)) or (cboolean1 is null and (cfloat < UDFToFloat(cint)))) and (UDFToDouble(ctimestamp1) <> 0.0)) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 3019778 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2808,19 +2783,18 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 1, 2, 4, 5, 6, 8]
+                          projectedOutputColumnNums: [0, 1, 2, 4, 5, 6, 8]
                       Statistics: Num rows: 12288 Data size: 3019778 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: stddev_pop(cint), avg(csmallint), count(), min(ctinyint), var_samp(csmallint), var_pop(cfloat), avg(cint), var_samp(cfloat), avg(cfloat), min(cdouble), var_pop(csmallint), stddev_pop(ctinyint), sum(cint)
                         Group By Vectorization:
-                            aggregators: VectorUDAFStdPopLong(col 2) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFAvgLong(col 1) -> struct<count:bigint,sum:double,input:bigint>, VectorUDAFCountStar(*) -> bigint, VectorUDAFMinLong(col 0) -> tinyint, VectorUDAFVarSampLong(col 1) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFVarPopDouble(col 4) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFAvgLong(col 2) -> struct<count:bigint,sum:double,input:bigint>, VectorUDAFVarSampDouble(col 4) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFAvgDouble(col 4) -> struct<count:bigint,sum:double,input:double>, VectorUDAFMinDouble(col 5) -> double, VectorUDAFVarPopLong(col 1) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFStdPopLong(col 0) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFSumLong(col 2) -> bigint
+                            aggregators: VectorUDAFVarLong(col 2:int) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop, VectorUDAFAvgLong(col 1:smallint) -> struct<count:bigint,sum:double,input:smallint>, VectorUDAFCountStar(*) -> bigint, VectorUDAFMinLong(col 0:tinyint) -> tinyint, VectorUDAFVarLong(col 1:smallint) -> struct<count:bigint,sum:double,variance:double> aggregation: var_samp, VectorUDAFVarDouble(col 4:float) -> struct<count:bigint,sum:double,variance:double> aggregation: var_pop, VectorUDAFAvgLong(col 2:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFVarDouble(col 4:float) -> struct<count:bigint,sum:double,variance:double> aggregation: var_samp, VectorUDAFAvgDouble(col 4:float) -> struct<count:bigint,sum:double,input:float>, VectorUDAFMinDouble(col 5:double) -> double, VectorUDAFVarLong(col 1:smallint) -> struct<count:bigint,sum:double,variance:double> aggregation: var_pop, VectorUDAFVarLong(col 0:tinyint) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop, VectorUDAFSumLong(col 2:int) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            vectorOutput: true
-                            keyExpressions: col 8, col 6
+                            keyExpressions: col 8:timestamp, col 6:string
                             native: false
                             vectorProcessingMode: HASH
-                            projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                         keys: ctimestamp1 (type: timestamp), cstring1 (type: string)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
@@ -2840,7 +2814,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -2850,7 +2825,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -2858,14 +2832,13 @@ STAGE PLANS:
               Group By Operator
                 aggregations: stddev_pop(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), min(VALUE._col3), var_samp(VALUE._col4), var_pop(VALUE._col5), avg(VALUE._col6), var_samp(VALUE._col7), avg(VALUE._col8), min(VALUE._col9), var_pop(VALUE._col10), stddev_pop(VALUE._col11), sum(VALUE._col12)
                 Group By Vectorization:
-                    aggregators: VectorUDAFStdPopFinal(col 2) -> double, VectorUDAFAvgFinal(col 3) -> double, VectorUDAFCountMerge(col 4) -> bigint, VectorUDAFMinLong(col 5) -> tinyint, VectorUDAFVarSampFinal(col 6) -> double, VectorUDAFVarPopFinal(col 7) -> double, VectorUDAFAvgFinal(col 8) -> double, VectorUDAFVarSampFinal(col 9) -> double, VectorUDAFAvgFinal(col 10) -> double, VectorUDAFMinDouble(col 11) -> double, VectorUDAFVarPopFinal(col 12) -> double, VectorUDAFStdPopFinal(col 13) -> double, VectorUDAFSumLong(col 14) -> bigint
+                    aggregators: VectorUDAFVarFinal(col 2:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_pop, VectorUDAFAvgFinal(col 3:struct<count:bigint,sum:double,input:smallint>) -> double, VectorUDAFCountMerge(col 4:bigint) -> bigint, VectorUDAFMinLong(col 5:tinyint) -> tinyint, VectorUDAFVarFinal(col 6:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_samp, VectorUDAFVarFinal(col 7:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_pop, VectorUDAFAvgFinal(col 8:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFVarFinal(col 9:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_samp, VectorUDAFAvgFinal(col 10:struct<count:bigint,sum:double,input:float>) -> double, VectorUDAFMinDouble(col 11:double) -> double, VectorUDAFVarFinal(col 12:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_pop, VectorUDAFVarFinal(col 13:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_pop, VectorUDAFSumLong(col 14:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
-                    keyExpressions: col 0, col 1
+                    keyExpressions: col 0:timestamp, col 1:string
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                 keys: KEY._col0 (type: timestamp), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
@@ -2876,8 +2849,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 15, 16, 3, 17, 18, 4, 19, 22, 5, 21, 23, 6, 20, 26, 27, 7, 25, 8, 9, 29, 28, 10, 30, 32, 24, 11, 12, 31, 34, 37, 13, 14, 38, 40, 4, 39]
-                      selectExpressions: DoubleColMultiplyDoubleScalar(col 2, val 10.175) -> 15:double, DoubleColUnaryMinus(col 2) -> 16:double, DoubleColUnaryMinus(col 2) -> 17:double, DoubleScalarSubtractDoubleColumn(val -26.28, col 2) -> 18:double, LongColUnaryMinus(col 4) -> 19:long, DoubleColMultiplyDoubleColumn(col 20, col 21)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2) -> 20:double, DoubleColUnaryMinus(col 2) -> 21:double) -> 22:double, DoubleColMultiplyDoubleColumn(col 23, col 20)(children: DoubleColMultiplyDoubleColumn(col 20, col 21)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2) -> 20:double, DoubleColUnaryMinus(col 2) -> 21:double) -> 23:double, CastLongToDouble(col 24)(children: LongColUnaryMinus(col 4) -> 24:long) -> 20:double) -> 21:double, DoubleColUnaryMinus(col 20)(children: DoubleColMultiplyDoubleScalar(col 2, val 10.175) -> 20:double) -> 23:double, DoubleColAddDoubleColumn(col 6, col 25)(children: DoubleColMultiplyDoubleColumn(col 26, col 20)(children: DoubleColMultiplyDoubleColumn(col 20, col 25)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2) -> 20:double, DoubleColUnaryMinus(col 2) -> 25:double) -> 26:double, CastLongToDouble(col 24)(children: LongColUnaryMinus(col 4) -> 24:long) -> 20:double) -> 25:double) -> 20:double, DoubleColUnaryMinus(col 25)(children: DoubleColUnaryMinus(col 2) -> 25:double) -> 26:double, DoubleColDivideDoubleColumn(col 25, col 2)(children: CastLongToDouble(col 24)(children: LongColUnaryMinus(col 4) -> 24:long) -> 25:double) -> 27:double, DoubleScalarDivideDoubleColumn(val 10.175, col 3) -> 25:double, DoubleColSubtractDoubleColumn(col 28, col 30)(children: DoubleColAddDoubleColumn(col 6, col 29)(children: DoubleColMultiplyDoubleColumn(col 30, col 28)(children: DoubleColMultiplyDoubleColumn(col 28, col 29)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2) -> 28:double, DoubleColUnaryMinus(col 2) -> 29:double) -> 30:double, CastLongToDouble(col 24)(children: LongColUnaryMinus(col 4) -> 24:long) -> 28:double) -> 29:double) -> 28:double, DoubleColMultiplyDoubleColumn(col 31, col 29)(children: DoubleColMultiplyDoubleColumn(col 29, col 30)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2) -> 29:double, DoubleColUnaryMinus(col 2) -> 30:double) -> 31:double, CastLongToDouble(col 24)(children: LongColUnaryMinus(col 4) -> 24:long) -> 29:double) -> 30:double) -> 29:double, DoubleColUnaryMinus(col 30)(children: DoubleColUnaryMinus(col 28)(children: DoubleColMultiplyDoubleScalar(col 2, val 10.175) -> 28:double) -> 30:double) -> 28:double, DoubleColMultiplyDoubleScalar(col 31, val 10.175)(children: DoubleColSubtractDoubleColumn(col 30, col 32)(children: DoubleColAddDoubleColumn(col 6, col 31)(children: DoubleColMultiplyDoubleColumn(col 32, col 30)(children: DoubleColMultiplyDoubleColumn(col 30, col 31)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2) -> 30:double, DoubleColUnaryMinus(col 2) -> 31:double) -> 32:double, CastLongToDouble(col 24)(children: LongColUnaryMinus(col 4) -> 24:long) -> 30:double) -> 31:double) -> 30:double, DoubleColMultiplyDoubleColumn(col 33, col 31)(children: DoubleColMultiplyDoubleColumn(col 31, col 32)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2) -> 31:double, DoubleColUnaryMinus(col 2) -> 32:double) -> 33:double, CastLongToDouble(col 24)(children: LongColUnaryMinus(col 4) -> 24:long) -> 31:double) -> 32:double) -> 31:double) -> 30:double, DoubleScalarModuloDoubleColumn(val 10.175, col 31)(children: DoubleScalarDivideDoubleColumn(val 10.175, col 3) -> 31:double) -> 32:double, LongColUnaryMinus(col 5) -> 24:long, DoubleColUnaryMinus(col 34)(children: DoubleColMultiplyDoubleColumn(col 31, col 33)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2) -> 31:double, DoubleColUnaryMinus(col 2) -> 33:double) -> 34:double) -> 31:double, DoubleColModuloDoubleColumn(col 33, col 10)(children: DoubleColUnaryMinus(col 2) -> 33:double) -> 34:double, DecimalScalarDivideDecimalColumn(val -26.28, col 36)(children: CastLongToDecimal(col 35)(children: LongColUnaryMinus(col 5) -> 35:long) -> 36:decimal(3,0)) -> 37:decimal(8,6), DoubleColDivideDoubleColumn(col 33, col 7)(children: DoubleColAddDoubleColumn(col 6, col 38)(children: DoubleColMultiplyDoubleColumn(col 39, col 33)(children: DoubleColMultiplyDoubleColumn(col 33, col 38)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2) -> 33:double, DoubleColUnaryMinus(col 2) -> 38:double) -> 39:double, CastLongToDouble(col 35)(children: LongColUnaryMinus(col 4) -> 35:long) -> 33:double) -> 38:double) -> 33:double) -> 38:double, LongColUnaryMinus(col 35)(children: LongColUnaryMinus(col 4) -> 35:long) -> 40:long, DoubleColModuloDoubleScalar(col 33, val -26.28)(children: DoubleColAddDoubleColumn(col 6, col 39)(children: DoubleColMultiplyDoubleColumn(col 41, col 33)(children: DoubleColMultiplyDoubleColumn(col 33, col 39)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2) -> 33:double, DoubleColUnaryMinus(col 2) -> 39:double) -> 41:double, CastLongToDouble(col 35)(children: LongColUnaryMinus(col 4) -> 35:long) -> 33:double) -> 39:double) -> 33:double) -> 39:double
+                      projectedOutputColumnNums: [0, 1, 2, 15, 16, 3, 17, 18, 4, 19, 22, 5, 21, 23, 6, 20, 26, 27, 7, 25, 8, 9, 29, 28, 10, 30, 32, 24, 11, 12, 31, 34, 37, 13, 14, 38, 40, 4, 39]
+                      selectExpressions: DoubleColMultiplyDoubleScalar(col 2:double, val 10.175) -> 15:double, DoubleColUnaryMinus(col 2:double) -> 16:double, DoubleColUnaryMinus(col 2:double) -> 17:double, DoubleScalarSubtractDoubleColumn(val -26.28, col 2:double) -> 18:double, LongColUnaryMinus(col 4:bigint) -> 19:bigint, DoubleColMultiplyDoubleColumn(col 20:double, col 21:double)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2:double) -> 20:double, DoubleColUnaryMinus(col 2:double) -> 21:double) -> 22:double, DoubleColMultiplyDoubleColumn(col 23:double, col 20:double)(children: DoubleColMultiplyDoubleColumn(col 20:double, col 21:double)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2:double) -> 20:double, DoubleColUnaryMinus(col 2:double) -> 21:double) -> 23:double, CastLongToDouble(col 24:bigint)(children: LongColUnaryMinus(col 4:bigint) -> 24:bigint) -> 20:double) -> 21:double, DoubleColUnaryMinus(col 20:double)(children: DoubleColMultiplyDoubleScalar(col 2:double, val 10.175) -> 20:double) -> 23:double, DoubleColAddDoubleColumn(col 6:double, col 25:double)(children: DoubleColMultiplyDoubleColumn(col 26:double, col 20:double)(children: DoubleColMultiplyDoubleColumn(col 20:double, col 25:double)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2:double) -> 20:double, DoubleColUnaryMinus(col 2:double) -> 25:double) -> 26:double, CastLongToDouble(col 24:bigint)(children: LongColUnaryMinus(col 4:bigint) -> 24:bigint) -> 20:double) -> 25:double) -> 20:double, DoubleColUnaryMinus(col 25:double)(children: DoubleColUnaryMinus(col 2:double) -> 25:double) -> 26:double, DoubleColDivideDoubleColumn(col 25:double, col 2:double)(children: CastLongToDouble(col 24:bigint)(children: LongColUnaryMinus(col 4:bigint) -> 24:bigint) -> 25:double) -> 27:double, DoubleScalarDivideDoubleColumn(val 10.175, col 3:double) -> 25:double, DoubleColSubtractDoubleColumn(col 28:double, col 30:double)(children: DoubleColAddDoubleColumn(col 6:double, col 29:double)(children: DoubleColMultiplyDoubleColumn(col 30:double, col 28:double)(children: DoubleColMultiplyDoubleColumn(col 28:double, col 29:double)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2:double) -> 28:double, DoubleColUnaryMinus(col 2:double) -> 29:double) -> 30:double, CastLongToDouble(col 24:bigint)(children: LongColUnaryMinus(col 4:bigint) -> 24:bigint) -> 28:double) -> 29:double) -> 28:double, DoubleColMultiplyDoubleColumn(col 31:double, col 29:double)(children: DoubleColMultiplyDoubleColumn(col 29:double, col 30:double)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2:double) -> 29:double, DoubleColUnaryMinus(col 2:double) -> 30:double) -> 31:double, CastLongToDouble(col 24:bigint)(children: LongColUnaryMinus(col 4:bigint) -> 24:bigint) -> 29:double) -> 30:double) -> 29:double, DoubleColUnaryMinus(col 30:double)(children: DoubleColUnaryMinus(col 28:double)(children: DoubleColMultiplyDoubleScalar(col 2:double, val 10.175) -> 28:double) -> 30:double) -> 28:double, DoubleColMultiplyDoubleScalar(col 31:double, val 10.175)(children: DoubleColSubtractDoubleColumn(col 30:double, col 32:double)(children: DoubleColAddDoubleColumn(col 6:double, col 31:double)(children: DoubleColMultiplyDoubleColumn(col 32:double, col 30:double)(children: DoubleColMultiplyDoubleColumn(col 30:double, col 31:double)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2:double) -> 30:double, DoubleColUnaryMinus(col 2:double) -> 31:double) -> 32:double, CastLongToDouble(col 24:bigint)(children: LongColUnaryMinus(col 4:bigint) -> 24:bigint) -> 30:double) -> 31:double) -> 30:double, DoubleColMultiplyDoubleColumn(col 33:double, col 31:double)(children: DoubleColMultiplyDoubleColumn(col 31:double, col 32:double)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2:double) -> 31:double, DoubleColUnaryMinus(col 2:double) -> 32:double) -> 33:double, CastLongToDouble(col 24:bigint)(children: LongColUnaryMinus(col 4:bigint) -> 24:bigint) -> 31:double) -> 32:double) -> 31:double) -> 30:double, DoubleScalarModuloDoubleColumn(val 10.175, col 31:double)(children: DoubleScalarDivideDoubleColumn(val 10.175, col 3:double) -> 31:double) -> 32:double, LongColUnaryMinus(col 5:tinyint) -> 24:tinyint, DoubleColUnaryMinus(col 34:double)(children: DoubleColMultiplyDoubleColumn(col 31:double, col 33:double)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2:double) -> 31:double, DoubleColUnaryMinus(col 2:double) -> 33:double) -> 34:double) -> 31:double, DoubleColModuloDoubleColumn(col 33:double, col 10:double)(children: DoubleColUnaryMinus(col 2:double) -> 33:double) -> 34:double, DecimalScalarDivideDecimalColumn(val -26.28, col 36:decimal(3,0))(children: CastLongToDecimal(col 35:tinyint)(children: LongColUnaryMinus(col 5:tinyint) -> 35:tinyint) -> 36:decimal(3,0)) -> 37:decimal(8,6), DoubleColDivideDoubleColumn(col 33:double, col 7:double)(children: DoubleColAddDoubleColumn(col 6:double, col 38:double)(children: DoubleColMultiplyDoubleColumn(col 39:double, col 33:double)(children: DoubleColMultiplyDoubleColumn(col 33:double, col 38:double)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2:double) -> 33:double, DoubleColUnaryMinus(col 2:double) -> 38:double) -> 39:double, CastLongToDouble(col 35:bigint)(children: LongColUnaryMinus(col 4:bigint) -> 35:bigint) -> 33:double) -> 38:double) -> 33:double) -> 38:double, LongColUnaryMinus(col 35:bigint)(children: LongColUnaryMinus(col 4:bigint) -> 35:bigint) -> 40:bigint, DoubleColModuloDoubleScalar(col 33:double, val -26.28)(children: DoubleColAddDoubleColumn(col 6:double, col 39:double)(children: DoubleColMultiplyDoubleColumn(col 41:double, col 33:double)(children: DoubleColMultiplyDoubleColumn(col 33:double, col 39:double)(children: DoubleScalarSubtractDoubleColumn(val -26.28, col 2:double) -> 33:double, DoubleColUnaryMinus(col 2:double) -> 39:double) -> 41:double, CastLongToDouble(col 35:bigint)(children: LongColUnaryMinus(col 4:bigint) -> 35:bigint) -> 33:double) -> 39:double) -> 33:double) -> 39:double
                   Statistics: Num rows: 3072 Data size: 1542740 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: timestamp), _col1 (type: string), _col2 (type: double), _col3 (type: double), _col4 (type: double), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: bigint), _col9 (type: bigint), _col10 (type: double), _col11 (type: tinyint), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: double), _col16 (type: double), _col17 (type: double), _col18 (type: double), _col19 (type: double), _col20 (type: double), _col21 (type: double), _col22 (type: double), _col23 (type: double), _col24 (type: double), _col25 (type: double), _col26 (type: double), _col27 (type: tinyint), _col28 (type: double), _col29 (type: double), _col30 (type: double), _col31 (type: double), _col32 (type: decimal(8,6)), _col33 (type: double), _col34 (type: bigint), _col35 (type: double), _col36 (type: bigint), _col37 (type: bigint), _col38 (type: double)
@@ -2893,7 +2866,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -2904,7 +2876,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 8, 38]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 8, 38]
                 Statistics: Num rows: 3072 Data size: 1542740 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 50
@@ -3043,56 +3015,56 @@ LIMIT 50
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-1969-12-31 15:59:43.773	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-24	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	-24.0	NULL	0.0	24	-200.0	0.0	NULL	NULL	-1.095000	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:43.783	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-11	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	-11.0	NULL	0.0	11	-200.0	0.0	NULL	NULL	-2.389091	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:43.874	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	-8	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	-8.0	NULL	0.001413979988882123	8	-7196.0	0.0	NULL	NULL	-3.285000	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:43.904	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	7	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	7.0	NULL	0.0	-7	-200.0	0.0	NULL	NULL	3.754286	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:43.919	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-21	NULL	NULL	0.0	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	0.0	NULL	NULL	-21.0	NULL	6.522017819364598E-4	21	15601.0	0.0	NULL	NULL	-1.251429	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:43.995	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	31	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	31.0	NULL	0.001413979988882123	-31	-7196.0	0.0	NULL	NULL	0.847742	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.07	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-9	NULL	NULL	0.0	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	0.0	NULL	NULL	-9.0	NULL	6.522017819364598E-4	9	15601.0	0.0	NULL	NULL	-2.920000	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.081	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	61	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	61.0	NULL	0.001413979988882123	-61	-7196.0	0.0	NULL	NULL	0.430820	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.179	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	34	NULL	NULL	0.0	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	0.0	NULL	NULL	34.0	NULL	6.522017819364598E-4	-34	15601.0	0.0	NULL	NULL	0.772941	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.286	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	16	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	16.0	NULL	0.001413979988882123	-16	-7196.0	0.0	NULL	NULL	1.642500	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.291	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-32	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	-32.0	NULL	0.0	32	-200.0	0.0	NULL	NULL	-0.821250	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.394	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	31	NULL	NULL	0.0	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	0.0	NULL	NULL	31.0	NULL	6.522017819364598E-4	-31	15601.0	0.0	NULL	NULL	0.847742	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.448	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	22	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	22.0	NULL	0.0	-22	-200.0	0.0	NULL	NULL	1.194545	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.455	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	-25	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	-25.0	NULL	0.001413979988882123	25	-7196.0	0.0	NULL	NULL	-1.051200	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.477	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-42	NULL	NULL	0.0	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	0.0	NULL	NULL	-42.0	NULL	6.522017819364598E-4	42	15601.0	0.0	NULL	NULL	-0.625714	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.549	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	59	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	59.0	NULL	0.0	-59	-200.0	0.0	NULL	NULL	0.445424	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.55	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	24	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	24.0	NULL	0.0	-24	-200.0	0.0	NULL	NULL	1.095000	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.559	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-34	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	-34.0	NULL	0.0	34	-200.0	0.0	NULL	NULL	-0.772941	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.568	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	22	NULL	NULL	0.0	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	0.0	NULL	NULL	22.0	NULL	6.522017819364598E-4	-22	15601.0	0.0	NULL	NULL	1.194545	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.571	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-42	NULL	NULL	0.0	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	0.0	NULL	NULL	-42.0	NULL	6.522017819364598E-4	42	15601.0	0.0	NULL	NULL	-0.625714	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.646	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	54	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	54.0	NULL	0.001413979988882123	-54	-7196.0	0.0	NULL	NULL	0.486667	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.708	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-22	NULL	NULL	0.0	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	0.0	NULL	NULL	-22.0	NULL	6.522017819364598E-4	22	15601.0	0.0	NULL	NULL	-1.194545	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.782	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	7	NULL	NULL	0.0	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	0.0	NULL	NULL	7.0	NULL	6.522017819364598E-4	-7	15601.0	0.0	NULL	NULL	3.754286	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:44.904	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	0	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	0.0	NULL	0.0	0	-200.0	0.0	NULL	NULL	NULL	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.137	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-32	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	-32.0	NULL	0.0	32	-200.0	0.0	NULL	NULL	-0.821250	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.153	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	42	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	42.0	NULL	0.0	-42	-200.0	0.0	NULL	NULL	0.625714	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.169	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-60	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	-60.0	NULL	0.0	60	-200.0	0.0	NULL	NULL	-0.438000	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.198	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	47	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	47.0	NULL	0.0	-47	-200.0	0.0	NULL	NULL	0.559149	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.314	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	56	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	56.0	NULL	0.0	-56	-200.0	0.0	NULL	NULL	0.469286	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.322	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-15	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	-15.0	NULL	0.0	15	-200.0	0.0	NULL	NULL	-1.752000	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.39	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-16	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	-16.0	NULL	0.0	16	-200.0	0.0	NULL	NULL	-1.642500	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.427	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-7	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	-7.0	NULL	0.0	7	-200.0	0.0	NULL	NULL	-3.754286	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.572	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	32	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	32.0	NULL	0.001413979988882123	-32	-7196.0	0.0	NULL	NULL	0.821250	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.644	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-52	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	-52.0	NULL	0.0	52	-200.0	0.0	NULL	NULL	-0.505385	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.764	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	54	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	54.0	NULL	0.001413979988882123	-54	-7196.0	0.0	NULL	NULL	0.486667	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.816	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	7	NULL	NULL	0.0	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	0.0	NULL	NULL	7.0	NULL	6.522017819364598E-4	-7	15601.0	0.0	NULL	NULL	3.754286	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.932	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	-51	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	-51.0	NULL	0.001413979988882123	51	-7196.0	0.0	NULL	NULL	-0.515294	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.947	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	-59	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	-59.0	NULL	0.001413979988882123	59	-7196.0	0.0	NULL	NULL	-0.445424	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:45.978	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	-52	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	-52.0	NULL	0.001413979988882123	52	-7196.0	0.0	NULL	NULL	-0.505385	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:46.015	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	25	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	25.0	NULL	0.001413979988882123	-25	-7196.0	0.0	NULL	NULL	1.051200	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:46.022	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	19	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	19.0	NULL	0.0	-19	-200.0	0.0	NULL	NULL	1.383158	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:46.114	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-3	NULL	NULL	0.0	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	0.0	NULL	NULL	-3.0	NULL	6.522017819364598E-4	3	15601.0	0.0	NULL	NULL	-8.760000	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:46.38	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	28	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	28.0	NULL	0.0	-28	-200.0	0.0	NULL	NULL	0.938571	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:46.387	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	3	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	3.0	NULL	0.001413979988882123	-3	-7196.0	0.0	NULL	NULL	8.760000	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:46.52	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	8	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	8.0	NULL	0.0	-8	-200.0	0.0	NULL	NULL	3.285000	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:46.762	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	12	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	12.0	NULL	0.0	-12	-200.0	0.0	NULL	NULL	2.190000	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:46.775	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	4	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	4.0	NULL	0.001413979988882123	-4	-7196.0	0.0	NULL	NULL	6.570000	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:46.82	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-46	NULL	NULL	0.0	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	0.0	NULL	NULL	-46.0	NULL	6.522017819364598E-4	46	15601.0	0.0	NULL	NULL	-0.571304	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:46.847	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	-26	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	-26.0	NULL	0.001413979988882123	26	-7196.0	0.0	NULL	NULL	-1.010769	0.0	NULL	NULL	1	1	NULL
-1969-12-31 15:59:46.915	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-25	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	-25.0	NULL	0.0	25	-200.0	0.0	NULL	NULL	-1.051200	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:43.773	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-24	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	-24.0	NULL	0.0	24	-200.0	0.0	NULL	NULL	-1.095000	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:43.783	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-11	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	-11.0	NULL	0.0	11	-200.0	0.0	NULL	NULL	-2.389091	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:43.874	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	-8	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	-8.0	NULL	0.001413979988882123	8	-7196.0	0.0	NULL	NULL	-3.285000	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:43.904	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	7	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	7.0	NULL	0.0	-7	-200.0	0.0	NULL	NULL	3.754286	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:43.919	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-21	NULL	NULL	NULL	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	NULL	NULL	NULL	-21.0	NULL	6.522017819364598E-4	21	15601.0	0.0	NULL	NULL	-1.251429	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:43.995	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	31	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	31.0	NULL	0.001413979988882123	-31	-7196.0	0.0	NULL	NULL	0.847742	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.07	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-9	NULL	NULL	NULL	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	NULL	NULL	NULL	-9.0	NULL	6.522017819364598E-4	9	15601.0	0.0	NULL	NULL	-2.920000	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.081	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	61	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	61.0	NULL	0.001413979988882123	-61	-7196.0	0.0	NULL	NULL	0.430820	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.179	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	34	NULL	NULL	NULL	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	NULL	NULL	NULL	34.0	NULL	6.522017819364598E-4	-34	15601.0	0.0	NULL	NULL	0.772941	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.286	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	16	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	16.0	NULL	0.001413979988882123	-16	-7196.0	0.0	NULL	NULL	1.642500	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.291	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-32	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	-32.0	NULL	0.0	32	-200.0	0.0	NULL	NULL	-0.821250	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.394	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	31	NULL	NULL	NULL	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	NULL	NULL	NULL	31.0	NULL	6.522017819364598E-4	-31	15601.0	0.0	NULL	NULL	0.847742	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.448	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	22	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	22.0	NULL	0.0	-22	-200.0	0.0	NULL	NULL	1.194545	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.455	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	-25	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	-25.0	NULL	0.001413979988882123	25	-7196.0	0.0	NULL	NULL	-1.051200	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.477	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-42	NULL	NULL	NULL	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	NULL	NULL	NULL	-42.0	NULL	6.522017819364598E-4	42	15601.0	0.0	NULL	NULL	-0.625714	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.549	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	59	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	59.0	NULL	0.0	-59	-200.0	0.0	NULL	NULL	0.445424	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.55	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	24	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	24.0	NULL	0.0	-24	-200.0	0.0	NULL	NULL	1.095000	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.559	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-34	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	-34.0	NULL	0.0	34	-200.0	0.0	NULL	NULL	-0.772941	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.568	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	22	NULL	NULL	NULL	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	NULL	NULL	NULL	22.0	NULL	6.522017819364598E-4	-22	15601.0	0.0	NULL	NULL	1.194545	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.571	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-42	NULL	NULL	NULL	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	NULL	NULL	NULL	-42.0	NULL	6.522017819364598E-4	42	15601.0	0.0	NULL	NULL	-0.625714	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.646	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	54	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	54.0	NULL	0.001413979988882123	-54	-7196.0	0.0	NULL	NULL	0.486667	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.708	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-22	NULL	NULL	NULL	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	NULL	NULL	NULL	-22.0	NULL	6.522017819364598E-4	22	15601.0	0.0	NULL	NULL	-1.194545	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.782	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	7	NULL	NULL	NULL	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	NULL	NULL	NULL	7.0	NULL	6.522017819364598E-4	-7	15601.0	0.0	NULL	NULL	3.754286	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:44.904	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	0.0	NULL	0.0	0	-200.0	0.0	NULL	NULL	NULL	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.137	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-32	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	-32.0	NULL	0.0	32	-200.0	0.0	NULL	NULL	-0.821250	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.153	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	42	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	42.0	NULL	0.0	-42	-200.0	0.0	NULL	NULL	0.625714	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.169	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-60	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	-60.0	NULL	0.0	60	-200.0	0.0	NULL	NULL	-0.438000	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.198	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	47	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	47.0	NULL	0.0	-47	-200.0	0.0	NULL	NULL	0.559149	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.314	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	56	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	56.0	NULL	0.0	-56	-200.0	0.0	NULL	NULL	0.469286	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.322	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-15	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	-15.0	NULL	0.0	15	-200.0	0.0	NULL	NULL	-1.752000	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.39	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-16	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	-16.0	NULL	0.0	16	-200.0	0.0	NULL	NULL	-1.642500	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.427	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-7	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	-7.0	NULL	0.0	7	-200.0	0.0	NULL	NULL	-3.754286	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.572	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	32	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	32.0	NULL	0.001413979988882123	-32	-7196.0	0.0	NULL	NULL	0.821250	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.644	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-52	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	-52.0	NULL	0.0	52	-200.0	0.0	NULL	NULL	-0.505385	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.764	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	54	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	54.0	NULL	0.001413979988882123	-54	-7196.0	0.0	NULL	NULL	0.486667	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.816	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	7	NULL	NULL	NULL	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	NULL	NULL	NULL	7.0	NULL	6.522017819364598E-4	-7	15601.0	0.0	NULL	NULL	3.754286	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.932	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	-51	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	-51.0	NULL	0.001413979988882123	51	-7196.0	0.0	NULL	NULL	-0.515294	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.947	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	-59	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	-59.0	NULL	0.001413979988882123	59	-7196.0	0.0	NULL	NULL	-0.445424	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:45.978	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	-52	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	-52.0	NULL	0.001413979988882123	52	-7196.0	0.0	NULL	NULL	-0.505385	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:46.015	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	25	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	25.0	NULL	0.001413979988882123	-25	-7196.0	0.0	NULL	NULL	1.051200	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:46.022	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	19	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	19.0	NULL	0.0	-19	-200.0	0.0	NULL	NULL	1.383158	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:46.114	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-3	NULL	NULL	NULL	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	NULL	NULL	NULL	-3.0	NULL	6.522017819364598E-4	3	15601.0	0.0	NULL	NULL	-8.760000	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:46.38	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	28	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	28.0	NULL	0.0	-28	-200.0	0.0	NULL	NULL	0.938571	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:46.387	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	3	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	3.0	NULL	0.001413979988882123	-3	-7196.0	0.0	NULL	NULL	8.760000	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:46.52	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	8	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	8.0	NULL	0.0	-8	-200.0	0.0	NULL	NULL	3.285000	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:46.762	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	12	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	12.0	NULL	0.0	-12	-200.0	0.0	NULL	NULL	2.190000	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:46.775	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	4	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	4.0	NULL	0.001413979988882123	-4	-7196.0	0.0	NULL	NULL	6.570000	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:46.82	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-46	NULL	NULL	NULL	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	NULL	NULL	NULL	-46.0	NULL	6.522017819364598E-4	46	15601.0	0.0	NULL	NULL	-0.571304	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:46.847	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	-26	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	NULL	NULL	NULL	-26.0	NULL	0.001413979988882123	26	-7196.0	0.0	NULL	NULL	-1.010769	0.0	NULL	NULL	1	1	NULL
+1969-12-31 15:59:46.915	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-25	NULL	NULL	NULL	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	NULL	NULL	NULL	-25.0	NULL	0.0	25	-200.0	0.0	NULL	NULL	-1.051200	0.0	NULL	NULL	1	1	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT   cboolean1,
          MAX(cfloat),
@@ -3199,12 +3171,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2601650 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessDoubleColumn(col 5, col 12)(children: CastLongToDouble(col 1) -> 12:double) -> boolean, FilterLongColEqualLongColumn(col 11, col 10) -> boolean, FilterDecimalColLessEqualDecimalScalar(col 13, val -863.257)(children: CastLongToDecimal(col 3) -> 13:decimal(22,3)) -> boolean) -> boolean, FilterExprAndExpr(children: FilterLongColGreaterEqualLongScalar(col 2, val -257) -> boolean, SelectColumnIsNotNull(col 6) -> boolean, FilterLongColGreaterEqualLongScalar(col 10, val 1) -> boolean) -> boolean, FilterStringColRegExpStringScalar(col 7, pattern b) -> boolean, FilterExprAndExpr(children: FilterLongColGreaterEqualLongColumn(col 1, col 0)(children: col 0) -> boolean, SelectColumnIsNull(col 9) -> boolean) -> boolean) -> boolean, SelectColumnIsNotNull(col 10) -> boolean) -> boolean
+                        predicateExpression: FilterExprAndExpr(children: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessDoubleColumn(col 5:double, col 13:double)(children: CastLongToDouble(col 1:smallint) -> 13:double), FilterLongColEqualLongColumn(col 11:boolean, col 10:boolean), FilterDecimalColLessEqualDecimalScalar(col 14:decimal(22,3), val -863.257)(children: CastLongToDecimal(col 3:bigint) -> 14:decimal(22,3))), FilterExprAndExpr(children: FilterLongColGreaterEqualLongScalar(col 2:int, val -257), SelectColumnIsNotNull(col 6:string), FilterLongColGreaterEqualLongScalar(col 10:boolean, val 1)), FilterStringColRegExpStringScalar(col 7:string, pattern b), FilterExprAndExpr(children: FilterLongColGreaterEqualLongColumn(col 1:smallint, col 0:smallint)(children: col 0:tinyint), SelectColumnIsNull(col 9:timestamp))), SelectColumnIsNotNull(col 10:boolean))
                     predicate: ((((cdouble < UDFToDouble(csmallint)) and (cboolean2 = cboolean1) and (CAST( cbigint AS decimal(22,3)) <= -863.257)) or ((cint >= -257) and cstring1 is not null and (cboolean1 >= 1)) or cstring2 regexp 'b' or ((csmallint >= UDFToShort(ctinyint)) and ctimestamp2 is null)) and cboolean1 is not null) (type: boolean)
                     Statistics: Num rows: 7153 Data size: 1514550 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -3213,19 +3184,18 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [0, 1, 2, 3, 4, 5, 10]
+                          projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 10]
                       Statistics: Num rows: 7153 Data size: 1514550 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: max(cfloat), sum(cbigint), var_samp(cint), avg(cdouble), min(cbigint), var_pop(cbigint), sum(cint), stddev_samp(ctinyint), stddev_pop(csmallint), avg(cint)
                         Group By Vectorization:
-                            aggregators: VectorUDAFMaxDouble(col 4) -> float, VectorUDAFSumLong(col 3) -> bigint, VectorUDAFVarSampLong(col 2) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFAvgDouble(col 5) -> struct<count:bigint,sum:double,input:double>, VectorUDAFMinLong(col 3) -> bigint, VectorUDAFVarPopLong(col 3) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFSumLong(col 2) -> bigint, VectorUDAFStdSampLong(col 0) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFStdPopLong(col 1) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFAvgLong(col 2) -> struct<count:bigint,sum:double,input:bigint>
+                            aggregators: VectorUDAFMaxDouble(col 4:float) -> float, VectorUDAFSumLong(col 3:bigint) -> bigint, VectorUDAFVarLong(col 2:int) -> struct<count:bigint,sum:double,variance:double> aggregation: var_samp, VectorUDAFAvgDouble(col 5:double) -> struct<count:bigint,sum:double,input:double>, VectorUDAFMinLong(col 3:bigint) -> bigint, VectorUDAFVarLong(col 3:bigint) -> struct<count:bigint,sum:double,variance:double> aggregation: var_pop, VectorUDAFSumLong(col 2:int) -> bigint, VectorUDAFVarLong(col 0:tinyint) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_samp, VectorUDAFVarLong(col 1:smallint) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop, VectorUDAFAvgLong(col 2:int) -> struct<count:bigint,sum:double,input:int>
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            vectorOutput: true
-                            keyExpressions: col 10
+                            keyExpressions: col 10:boolean
                             native: false
                             vectorProcessingMode: HASH
-                            projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
                         keys: cboolean1 (type: boolean)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
@@ -3245,7 +3215,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -3255,7 +3226,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -3263,14 +3233,13 @@ STAGE PLANS:
               Group By Operator
                 aggregations: max(VALUE._col0), sum(VALUE._col1), var_samp(VALUE._col2), avg(VALUE._col3), min(VALUE._col4), var_pop(VALUE._col5), sum(VALUE._col6), stddev_samp(VALUE._col7), stddev_pop(VALUE._col8), avg(VALUE._col9)
                 Group By Vectorization:
-                    aggregators: VectorUDAFMaxDouble(col 1) -> float, VectorUDAFSumLong(col 2) -> bigint, VectorUDAFVarSampFinal(col 3) -> double, VectorUDAFAvgFinal(col 4) -> double, VectorUDAFMinLong(col 5) -> bigint, VectorUDAFVarPopFinal(col 6) -> double, VectorUDAFSumLong(col 7) -> bigint, VectorUDAFStdSampFinal(col 8) -> double, VectorUDAFStdPopFinal(col 9) -> double, VectorUDAFAvgFinal(col 10) -> double
+                    aggregators: VectorUDAFMaxDouble(col 1:float) -> float, VectorUDAFSumLong(col 2:bigint) -> bigint, VectorUDAFVarFinal(col 3:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_samp, VectorUDAFAvgFinal(col 4:struct<count:bigint,sum:double,input:double>) -> double, VectorUDAFMinLong(col 5:bigint) -> bigint, VectorUDAFVarFinal(col 6:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_pop, VectorUDAFSumLong(col 7:bigint) -> bigint, VectorUDAFVarFinal(col 8:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_samp, VectorUDAFVarFinal(col 9:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_pop, VectorUDAFAvgFinal(col 10:struct<count:bigint,sum:double,input:int>) -> double
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
-                    keyExpressions: col 0
+                    keyExpressions: col 0:boolean
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
@@ -3281,8 +3250,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumns: [0, 1, 11, 12, 2, 14, 3, 15, 17, 4, 19, 5, 6, 16, 20, 22, 7, 8, 23, 26, 9, 28, 10, 21, 30]
-                      selectExpressions: DoubleColUnaryMinus(col 1) -> 11:double, DoubleScalarDivideDoubleColumn(val -26.28, col 1)(children: col 1) -> 12:double, DecimalColSubtractDecimalScalar(col 13, val 10.175)(children: CastLongToDecimal(col 2) -> 13:decimal(19,0)) -> 14:decimal(23,3), DoubleColModuloDoubleColumn(col 3, col 1)(children: col 1) -> 15:double, DoubleScalarAddDoubleColumn(val 10.175000190734863, col 16)(children: DoubleColUnaryMinus(col 1) -> 16:double) -> 17:double, DoubleColAddDoubleColumn(col 16, col 3)(children: CastDecimalToDouble(col 18)(children: DecimalColSubtractDecimalScalar(col 13, val 10.175)(children: CastLongToDecimal(col 2) -> 13:decimal(19,0)) -> 18:decimal(23,3)) -> 16:double) -> 19:double, DoubleColUnaryMinus(col 20)(children: DoubleScalarAddDoubleColumn(val 10.175000190734863, col 16)(children: DoubleColUnaryMinus(col 1) -> 16:double) -> 20:double) -> 16:double, DoubleScalarDivideDoubleColumn(val 79.553, col 6) -> 20:double, DoubleColModuloDoubleColumn(col 3, col 21)(children: DoubleScalarDivideDoubleColumn(val 79.553, col 6) -> 21:double) -> 22:double, DecimalScalarMultiplyDecimalColumn(val -1.389, col 13)(children: CastLongToDecimal(col 5) -> 13:decimal(19,0)) -> 23:decimal(24,3), DecimalColSubtractDecimalColumn(col 13, col 25)(children: CastLongToDecimal(col 7) -> 13:decimal(19,0), DecimalScalarMultiplyDecimalColumn(val -1.389, col 24)(children: CastLongToDecimal(col 5) -> 24:decimal(19,0)) -> 25:decimal(24,3)) -> 26:decimal(25,3), FuncNegateDecimalToDecimal(col 27)(children: DecimalColSubtractDecimalColumn(col 13, col 25)(children: CastLongToDecimal(col 7) -> 13:decimal(19,0), DecimalScalarMultiplyDecimalColumn(val -1.389, col 24)(children: CastLongToDecimal(col 5) -> 24:decimal(19,0)) -> 25:decimal(24,3)) -> 27:decimal(25,3)) -> 28:decimal(25,3), DoubleColUnaryMinus(col 10) -> 21:double, DoubleColMultiplyDoubleColumn(col 10, col 29)(children: CastLongToDouble(col 7) -> 29:double) -> 30:double
+                      projectedOutputColumnNums: [0, 1, 11, 12, 2, 14, 3, 15, 17, 4, 19, 5, 6, 16, 20, 22, 7, 8, 23, 26, 9, 28, 10, 21, 30]
+                      selectExpressions: DoubleColUnaryMinus(col 1:float) -> 11:float, DoubleScalarDivideDoubleColumn(val -26.28, col 1:double)(children: col 1:float) -> 12:double, DecimalColSubtractDecimalScalar(col 13:decimal(19,0), val 10.175)(children: CastLongToDecimal(col 2:bigint) -> 13:decimal(19,0)) -> 14:decimal(23,3), DoubleColModuloDoubleColumn(col 3:double, col 1:double)(children: col 1:float) -> 15:double, DoubleScalarAddDoubleColumn(val 10.175000190734863, col 16:float)(children: DoubleColUnaryMinus(col 1:float) -> 16:float) -> 17:float, DoubleColAddDoubleColumn(col 16:double, col 3:double)(children: CastDecimalToDouble(col 18:decimal(23,3))(children: DecimalColSubtractDecimalScalar(col 13:decimal(19,0), val 10.175)(children: CastLongToDecimal(col 2:bigint) -> 13:decimal(19,0)) -> 18:decimal(23,3)) -> 16:double) -> 19:double, DoubleColUnaryMinus(col 20:float)(children: DoubleScalarAddDoubleColumn(val 10.175000190734863, col 16:float)(children: DoubleColUnaryMinus(col 1:float) -> 16:float) -> 20:float) -> 16:float, DoubleScalarDivideDoubleColumn(val 79.553, col 6:double) -> 20:double, DoubleColModuloDoubleColumn(col 3:double, col 21:double)(children: DoubleScalarDivideDoubleColumn(val 79.553, col 6:double) -> 21:double) -> 22:double, DecimalScalarMultiplyDecimalColumn(val -1.389, col 13:decimal(19,0))(children: CastLongToDecimal(col 5:bigint) -> 13:decimal(19,0)) -> 23:decimal(24,3), DecimalColSubtractDecimalColumn(col 13:decimal(19,0), col 25:decimal(24,3))(children: CastLongToDecimal(col 7:bigint) -> 13:decimal(19,0), DecimalScalarMultiplyDecimalColumn(val -1.389, col 24:decimal(19,0))(children: CastLongToDecimal(col 5:bigint) -> 24:decimal(19,0)) -> 25:decimal(24,3)) -> 26:decimal(25,3), FuncNegateDecimalToDecimal(col 27:decimal(25,3))(children: DecimalColSubtractDecimalColumn(col 13:decimal(19,0), col 25:decimal(24,3))(children: CastLongToDecimal(col 7:bigint) -> 13:decimal(19,0), DecimalScalarMultiplyDecimalColumn(val -1.389, col 24:decimal(19,0))(children: CastLongToDecimal(col 5:bigint) -> 24:decimal(19,0)) -> 25:decimal(24,3)) -> 27:decimal(25,3)) -> 28:decimal(25,3), DoubleColUnaryMinus(col 10:double) -> 21:double, DoubleColMultiplyDoubleColumn(col 10:double, col 29:double)(children: CastLongToDouble(col 7:bigint) -> 29:double) -> 30:double
                   Statistics: Num rows: 3 Data size: 1800 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: boolean)
@@ -3298,7 +3267,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -3309,7 +3277,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 13, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 13, 16, 17, 18, 19, 20, 21, 22, 23, 24]
                 Statistics: Num rows: 3 Data size: 1800 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
@@ -3451,12 +3419,11 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0]
                   Select Operator
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: []
+                        projectedOutputColumnNums: []
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
@@ -3464,10 +3431,9 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3484,7 +3450,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -3494,7 +3461,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -3502,13 +3468,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3567,25 +3532,23 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0]
                   Select Operator
                     expressions: i (type: int)
                     outputColumnNames: i
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0]
+                        projectedOutputColumnNums: [0]
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(i)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(col 0) -> bigint
+                          aggregators: VectorUDAFCount(col 0:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -3602,7 +3565,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -3612,7 +3576,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -3620,13 +3583,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -3759,12 +3721,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Select Operator
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: []
+                        projectedOutputColumnNums: []
                     Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
@@ -3772,10 +3733,9 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3792,7 +3752,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -3802,7 +3763,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -3810,13 +3770,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3875,25 +3834,23 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 46700 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: ctinyint
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0]
+                        projectedOutputColumnNums: [0]
                     Statistics: Num rows: 12288 Data size: 46700 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(ctinyint)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(col 0) -> bigint
+                          aggregators: VectorUDAFCount(col 0:tinyint) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -3910,7 +3867,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -3920,7 +3878,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -3928,13 +3885,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -3993,25 +3949,23 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 46700 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Select Operator
                     expressions: cint (type: int)
                     outputColumnNames: cint
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [2]
+                        projectedOutputColumnNums: [2]
                     Statistics: Num rows: 12288 Data size: 46700 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cint)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(col 2) -> bigint
+                          aggregators: VectorUDAFCount(col 2:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -4028,7 +3982,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -4038,7 +3993,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -4046,13 +4000,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -4111,25 +4064,23 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 46700 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Select Operator
                     expressions: cfloat (type: float)
                     outputColumnNames: cfloat
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [4]
+                        projectedOutputColumnNums: [4]
                     Statistics: Num rows: 12288 Data size: 46700 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cfloat)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(col 4) -> bigint
+                          aggregators: VectorUDAFCount(col 4:float) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -4146,7 +4097,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -4156,7 +4108,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -4164,13 +4115,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -4229,25 +4179,23 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 2148200 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Select Operator
                     expressions: cstring1 (type: string)
                     outputColumnNames: cstring1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [6]
+                        projectedOutputColumnNums: [6]
                     Statistics: Num rows: 12288 Data size: 2148200 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cstring1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(col 6) -> bigint
+                          aggregators: VectorUDAFCount(col 6:string) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
@@ -4264,7 +4212,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -4274,7 +4223,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -4282,13 +4230,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
@@ -4347,25 +4294,23 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 46700 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Select Operator
                     expressions: cboolean1 (type: boolean)
                     outputColumnNames: cboolean1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [10]
+                        projectedOutputColumnNums: [10]
                     Statistics: Num rows: 12288 Data size: 46700 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cboolean1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(col 10) -> bigint
+                          aggregators: VectorUDAFCount(col 10:boolean) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: [0]
+                          projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -4382,7 +4327,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -4392,7 +4338,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -4400,13 +4345,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE

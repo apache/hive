@@ -28,8 +28,8 @@ public final class VectorUDFDayOfMonthTimestamp extends VectorUDFTimestampFieldT
 
   private static final long serialVersionUID = 1L;
 
-  public VectorUDFDayOfMonthTimestamp(int colNum, int outputColumn) {
-    super(Calendar.DAY_OF_MONTH, colNum, outputColumn);
+  public VectorUDFDayOfMonthTimestamp(int colNum, int outputColumnNum) {
+    super(Calendar.DAY_OF_MONTH, colNum, outputColumnNum);
   }
 
   public VectorUDFDayOfMonthTimestamp() {

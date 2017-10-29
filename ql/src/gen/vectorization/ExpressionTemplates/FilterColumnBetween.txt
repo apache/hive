@@ -33,19 +33,25 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  
-  // The comparison is of the form "column BETWEEN leftValue AND rightValue"
+  private final int colNum;
+
+  // The comparison is of the form "column BETWEEN leftValue AND rightValue".
+  // NOTE: These can be set later by FilterColumnBetweenDynamicValue.txt so they are not final.
   private <OperandType> leftValue;
   private <OperandType> rightValue;
 
-  public <ClassName>(int colNum, <OperandType> leftValue, <OperandType> rightValue) { 
+  public <ClassName>(int colNum, <OperandType> leftValue, <OperandType> rightValue) {
+    super();
     this.colNum = colNum;
     this.leftValue = leftValue;
     this.rightValue = rightValue;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   @Override
@@ -140,24 +146,6 @@ public class <ClassName> extends VectorExpression {
     }
   }
 
-  @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-  
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
   public <OperandType> getLeftValue() {
     return leftValue;
   }
@@ -165,7 +153,7 @@ public class <ClassName> extends VectorExpression {
   public void setLeftValue(<OperandType> value) {
     this.leftValue = value;
   }
-  
+
   public <OperandType> getRightValue() {
     return rightValue;
   }
@@ -176,7 +164,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", left " + leftValue + ", right " + rightValue;
+    return getColumnParamString(0, colNum) + ", left " + leftValue + ", right " + rightValue;
   }
 
   @Override

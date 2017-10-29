@@ -24,22 +24,26 @@ import java.io.IOException;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression.AggregationBuffer;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCount.Aggregation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.common.util.BloomKFilter;
 
@@ -50,7 +54,6 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
   private long expectedEntries = -1;
   private ValueProcessor valueProcessor;
   transient private int bitSetSize;
-  transient private BytesWritable bw;
   transient private ByteArrayOutputStream byteStream;
 
   /**
@@ -76,42 +79,50 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
     }
   }
 
-  public VectorUDAFBloomFilter(VectorExpression inputExpression,
-      GenericUDAFEvaluator.Mode mode) {
-    super(inputExpression, mode);
+  // This constructor is used to momentarily create the object so match can be called.
+  public VectorUDAFBloomFilter() {
+    super();
+  }
+
+  public VectorUDAFBloomFilter(VectorAggregationDesc vecAggrDesc) {
+    super(vecAggrDesc);
+    init();
   }
 
   private void init() {
+
+    GenericUDAFBloomFilterEvaluator udafBloomFilter =
+        (GenericUDAFBloomFilterEvaluator) vecAggrDesc.getEvaluator();
+    expectedEntries = udafBloomFilter.getExpectedEntries();
+
     bitSetSize = -1;
-    bw = new BytesWritable();
     byteStream = new ByteArrayOutputStream();
 
     // Instantiate the ValueProcessor based on the input type
-    VectorExpressionDescriptor.ArgumentType inputType =
-        VectorExpressionDescriptor.ArgumentType.fromHiveTypeName(inputExpression.getOutputType());
-    switch (inputType) {
-    case INT_FAMILY:
-    case DATE:
+    ColumnVector.Type colVectorType;
+    try {
+    colVectorType = inputExpression.getOutputColumnVectorType();
+    } catch (HiveException e) {
+      throw new RuntimeException(e);
+    }
+    switch (colVectorType) {
+    case LONG:
       valueProcessor = new ValueProcessorLong();
       break;
-    case FLOAT_FAMILY:
+    case DOUBLE:
       valueProcessor = new ValueProcessorDouble();
       break;
     case DECIMAL:
       valueProcessor = new ValueProcessorDecimal();
       break;
-    case STRING:
-    case CHAR:
-    case VARCHAR:
-    case STRING_FAMILY:
-    case BINARY:
+    case BYTES:
       valueProcessor = new ValueProcessorBytes();
       break;
     case TIMESTAMP:
       valueProcessor = new ValueProcessorTimestamp();
       break;
     default:
-      throw new IllegalStateException("Unsupported type " + inputType);
+      throw new IllegalStateException("Unsupported column vector type " + colVectorType);
     }
   }
 
@@ -129,7 +140,7 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
 
     inputExpression.evaluate(batch);
 
-    ColumnVector inputColumn =  batch.cols[this.inputExpression.getOutputColumn()];
+    ColumnVector inputColumn =  batch.cols[this.inputExpression.getOutputColumnNum()];
 
     int batchSize = batch.size;
 
@@ -220,7 +231,7 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
 
     inputExpression.evaluate(batch);
 
-    ColumnVector inputColumn = batch.cols[this.inputExpression.getOutputColumn()];
+    ColumnVector inputColumn = batch.cols[this.inputExpression.getOutputColumnNum()];
 
     if (inputColumn.noNulls) {
       if (inputColumn.isRepeating) {
@@ -352,27 +363,6 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
   }
 
   @Override
-  public Object evaluateOutput(AggregationBuffer agg) throws HiveException {
-    try {
-      Aggregation bfAgg = (Aggregation) agg;
-      byteStream.reset();
-      BloomKFilter.serialize(byteStream, bfAgg.bf);
-      byte[] bytes = byteStream.toByteArray();
-      bw.set(bytes, 0, bytes.length);
-      return bw;
-    } catch (IOException err) {
-      throw new HiveException("Error encountered while serializing bloomfilter", err);
-    } finally {
-      IOUtils.closeStream(byteStream);
-    }
-  }
-
-  @Override
-  public ObjectInspector getOutputObjectInspector() {
-    return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
-  }
-
-  @Override
   public long getAggregationBufferFixedSize() {
     if (bitSetSize < 0) {
       // Not pretty, but we need a way to get the size
@@ -391,15 +381,6 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
     return JavaDataModel.alignUp(
         model.object() + bloomFilterSize + model.primitive1() + model.primitive1(),
         model.memoryAlign());
-  }
-
-  @Override
-  public void init(AggregationDesc desc) throws HiveException {
-    init();
-
-    GenericUDAFBloomFilterEvaluator udafBloomFilter =
-        (GenericUDAFBloomFilterEvaluator) desc.getGenericUDAFEvaluator();
-    expectedEntries = udafBloomFilter.getExpectedEntries();
   }
 
   public long getExpectedEntries() {
@@ -459,6 +440,43 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
     protected void processValue(Aggregation myagg, ColumnVector columnVector, int i) {
       TimestampColumnVector inputColumn = (TimestampColumnVector) columnVector;
       myagg.bf.addLong(inputColumn.time[i]);
+    }
+  }
+
+  @Override
+  public boolean matches(String name, ColumnVector.Type inputColVectorType,
+      ColumnVector.Type outputColVectorType, Mode mode) {
+
+    /*
+     * Bloom filter *any* input and output is BYTES.
+     *
+     * Just modes (PARTIAL1, COMPLETE).
+     */
+    return
+        name.equals("bloom_filter") &&
+        outputColVectorType == ColumnVector.Type.BYTES &&
+        (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE);
+  }
+
+  @Override
+  public void assignRowColumn(VectorizedRowBatch batch, int batchIndex, int columnNum,
+      AggregationBuffer agg) throws HiveException {
+
+    BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[columnNum];
+    Aggregation myagg = (Aggregation) agg;
+    outputColVector.isNull[batchIndex] = false;
+
+    try {
+      Aggregation bfAgg = (Aggregation) agg;
+      byteStream.reset();
+      BloomKFilter.serialize(byteStream, bfAgg.bf);
+      byte[] bytes = byteStream.toByteArray();
+
+      outputColVector.setVal(batchIndex, bytes);
+    } catch (IOException err) {
+      throw new HiveException("Error encountered while serializing bloomfilter", err);
+    } finally {
+      IOUtils.closeStream(byteStream);
     }
   }
 }

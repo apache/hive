@@ -70,20 +70,22 @@ public class AppMasterEventDesc extends AbstractOperatorDesc {
     private final AppMasterEventDesc appMasterEventDesc;
     private final VectorAppMasterEventDesc vectorAppMasterEventDesc;
 
-    public AppMasterEventOperatorExplainVectorization(AppMasterEventDesc appMasterEventDesc, VectorDesc vectorDesc) {
+    public AppMasterEventOperatorExplainVectorization(AppMasterEventDesc appMasterEventDesc,
+        VectorAppMasterEventDesc vectorAppMasterEventDesc) {
       // Native vectorization supported.
-      super(vectorDesc, true);
+      super(vectorAppMasterEventDesc, true);
       this.appMasterEventDesc = appMasterEventDesc;
-      vectorAppMasterEventDesc = (VectorAppMasterEventDesc) vectorDesc;
+      this.vectorAppMasterEventDesc = vectorAppMasterEventDesc;
     }
   }
 
   @Explain(vectorization = Vectorization.OPERATOR, displayName = "App Master Event Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public AppMasterEventOperatorExplainVectorization getAppMasterEventVectorization() {
-    if (vectorDesc == null) {
+    VectorAppMasterEventDesc vectorAppMasterEventDesc = (VectorAppMasterEventDesc) getVectorDesc();
+    if (vectorAppMasterEventDesc == null) {
       return null;
     }
-    return new AppMasterEventOperatorExplainVectorization(this, vectorDesc);
+    return new AppMasterEventOperatorExplainVectorization(this, vectorAppMasterEventDesc);
   }
 
   @Override

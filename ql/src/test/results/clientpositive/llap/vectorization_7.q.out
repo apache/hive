@@ -75,12 +75,12 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 3019778 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0, val 0) -> boolean, FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleScalar(col 12, val 0.0)(children: CastTimestampToDouble(col 8) -> 12:double) -> boolean, FilterLongColEqualLongColumn(col 0, col 2)(children: col 0) -> boolean, FilterStringColLikeStringScalar(col 7, pattern ss) -> boolean) -> boolean, FilterExprOrExpr(children: FilterDoubleScalarLessDoubleColumn(val 988888.0, col 5) -> boolean, FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 12, val -15.0)(children: CastTimestampToDouble(col 9) -> 12:double) -> boolean, FilterDoubleScalarGreaterEqualDoubleColumn(val 3569.0, col 5) -> boolean) -> boolean) -> boolean) -> boolean
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0:tinyint, val 0), FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleScalar(col 13:double, val 0.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterLongColEqualLongColumn(col 0:int, col 2:int)(children: col 0:tinyint), FilterStringColLikeStringScalar(col 7:string, pattern ss)), FilterExprOrExpr(children: FilterDoubleScalarLessDoubleColumn(val 988888.0, col 5:double), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 13:double, val -15.0)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDoubleScalarGreaterEqualDoubleColumn(val 3569.0, col 5:double))))
                     predicate: (((988888.0 < cdouble) or ((UDFToDouble(ctimestamp2) > -15.0) and (3569.0 >= cdouble))) and ((UDFToDouble(ctimestamp1) <= 0.0) or (UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss')) and (ctinyint <> 0)) (type: boolean)
                     Statistics: Num rows: 5461 Data size: 1342196 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -89,18 +89,18 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [10, 3, 1, 0, 8, 6, 13, 14, 15, 16, 18, 19, 17, 20, 22]
-                          selectExpressions: LongColAddLongColumn(col 3, col 3) -> 13:long, LongColModuloLongScalar(col 1, val -257)(children: col 1) -> 14:long, LongColUnaryMinus(col 1) -> 15:long, LongColUnaryMinus(col 0) -> 16:long, LongColAddLongScalar(col 17, val 17)(children: col 17) -> 18:long, LongColMultiplyLongColumn(col 3, col 17)(children: col 17) -> 19:long, LongColModuloLongColumn(col 2, col 1)(children: col 1) -> 17:long, LongColUnaryMinus(col 0) -> 20:long, LongColModuloLongColumn(col 21, col 0)(children: LongColUnaryMinus(col 0) -> 21:long) -> 22:long
+                          projectedOutputColumnNums: [10, 3, 1, 0, 8, 6, 14, 15, 16, 17, 19, 20, 18, 21, 23]
+                          selectExpressions: LongColAddLongColumn(col 3:bigint, col 3:bigint) -> 14:bigint, LongColModuloLongScalar(col 1:int, val -257)(children: col 1:smallint) -> 15:int, LongColUnaryMinus(col 1:smallint) -> 16:smallint, LongColUnaryMinus(col 0:tinyint) -> 17:tinyint, LongColAddLongScalar(col 18:int, val 17)(children: col 18:tinyint) -> 19:int, LongColMultiplyLongColumn(col 3:bigint, col 18:bigint)(children: col 18:smallint) -> 20:bigint, LongColModuloLongColumn(col 2:int, col 1:int)(children: col 1:smallint) -> 18:int, LongColUnaryMinus(col 0:tinyint) -> 21:tinyint, LongColModuloLongColumn(col 22:tinyint, col 0:tinyint)(children: LongColUnaryMinus(col 0:tinyint) -> 22:tinyint) -> 23:tinyint
                       Statistics: Num rows: 5461 Data size: 923616 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean), _col1 (type: bigint), _col2 (type: smallint), _col3 (type: tinyint), _col4 (type: timestamp), _col5 (type: string), _col6 (type: bigint), _col7 (type: int), _col8 (type: smallint), _col9 (type: tinyint), _col10 (type: int), _col11 (type: bigint), _col12 (type: int), _col13 (type: tinyint), _col14 (type: tinyint)
                         sort order: +++++++++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
-                            keyColumns: [10, 3, 1, 0, 8, 6, 13, 14, 15, 16, 18, 19, 17, 20, 22]
+                            keyColumnNums: [10, 3, 1, 0, 8, 6, 14, 15, 16, 17, 19, 20, 18, 21, 23]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: []
+                            valueColumnNums: []
                         Statistics: Num rows: 5461 Data size: 923616 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
@@ -108,7 +108,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -118,7 +119,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2, 3, 5, 6, 7, 8, 9, 10]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: double, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint
+                    scratchColumnTypeNames: [double, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -126,7 +127,6 @@ STAGE PLANS:
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
                 reduceColumnNullOrder: aaaaaaaaaaaaaaa
                 reduceColumnSortOrder: +++++++++++++++
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -134,6 +134,7 @@ STAGE PLANS:
                     dataColumnCount: 15
                     dataColumns: KEY.reducesinkkey0:boolean, KEY.reducesinkkey1:bigint, KEY.reducesinkkey2:smallint, KEY.reducesinkkey3:tinyint, KEY.reducesinkkey4:timestamp, KEY.reducesinkkey5:string, KEY.reducesinkkey6:bigint, KEY.reducesinkkey7:int, KEY.reducesinkkey8:smallint, KEY.reducesinkkey9:tinyint, KEY.reducesinkkey10:int, KEY.reducesinkkey11:bigint, KEY.reducesinkkey12:int, KEY.reducesinkkey13:tinyint, KEY.reducesinkkey14:tinyint
                     partitionColumnCount: 0
+                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: boolean), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: smallint), KEY.reducesinkkey3 (type: tinyint), KEY.reducesinkkey4 (type: timestamp), KEY.reducesinkkey5 (type: string), KEY.reducesinkkey6 (type: bigint), KEY.reducesinkkey7 (type: int), KEY.reducesinkkey8 (type: smallint), KEY.reducesinkkey9 (type: tinyint), KEY.reducesinkkey10 (type: int), KEY.reducesinkkey11 (type: bigint), KEY.reducesinkkey12 (type: int), KEY.reducesinkkey9 (type: tinyint), KEY.reducesinkkey14 (type: tinyint)
@@ -141,7 +142,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 9, 14]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 9, 14]
                 Statistics: Num rows: 5461 Data size: 923616 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 25
@@ -324,12 +325,11 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 3019778 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0, val 0) -> boolean, FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleScalar(col 12, val 0.0)(children: CastTimestampToDouble(col 8) -> 12:double) -> boolean, FilterLongColEqualLongColumn(col 0, col 2)(children: col 0) -> boolean, FilterStringColLikeStringScalar(col 7, pattern ss) -> boolean) -> boolean, FilterExprOrExpr(children: FilterDoubleScalarLessDoubleColumn(val 988888.0, col 5) -> boolean, FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 12, val 7.6850000000000005)(children: CastTimestampToDouble(col 9) -> 12:double) -> boolean, FilterDoubleScalarGreaterEqualDoubleColumn(val 3569.0, col 5) -> boolean) -> boolean) -> boolean) -> boolean
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0:tinyint, val 0), FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleScalar(col 13:double, val 0.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterLongColEqualLongColumn(col 0:int, col 2:int)(children: col 0:tinyint), FilterStringColLikeStringScalar(col 7:string, pattern ss)), FilterExprOrExpr(children: FilterDoubleScalarLessDoubleColumn(val 988888.0, col 5:double), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 13:double, val 7.6850000000000005)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDoubleScalarGreaterEqualDoubleColumn(val 3569.0, col 5:double))))
                     predicate: (((988888.0 < cdouble) or ((UDFToDouble(ctimestamp2) > 7.6850000000000005) and (3569.0 >= cdouble))) and ((UDFToDouble(ctimestamp1) <= 0.0) or (UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss')) and (ctinyint <> 0)) (type: boolean)
                     Statistics: Num rows: 5461 Data size: 1342196 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -338,8 +338,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [10, 3, 1, 0, 8, 6, 13, 14, 15, 16, 18, 19, 17, 20, 22]
-                          selectExpressions: LongColAddLongColumn(col 3, col 3) -> 13:long, LongColModuloLongScalar(col 1, val -257)(children: col 1) -> 14:long, LongColUnaryMinus(col 1) -> 15:long, LongColUnaryMinus(col 0) -> 16:long, LongColAddLongScalar(col 17, val 17)(children: col 17) -> 18:long, LongColMultiplyLongColumn(col 3, col 17)(children: col 17) -> 19:long, LongColModuloLongColumn(col 2, col 1)(children: col 1) -> 17:long, LongColUnaryMinus(col 0) -> 20:long, LongColModuloLongColumn(col 21, col 0)(children: LongColUnaryMinus(col 0) -> 21:long) -> 22:long
+                          projectedOutputColumnNums: [10, 3, 1, 0, 8, 6, 14, 15, 16, 17, 19, 20, 18, 21, 23]
+                          selectExpressions: LongColAddLongColumn(col 3:bigint, col 3:bigint) -> 14:bigint, LongColModuloLongScalar(col 1:int, val -257)(children: col 1:smallint) -> 15:int, LongColUnaryMinus(col 1:smallint) -> 16:smallint, LongColUnaryMinus(col 0:tinyint) -> 17:tinyint, LongColAddLongScalar(col 18:int, val 17)(children: col 18:tinyint) -> 19:int, LongColMultiplyLongColumn(col 3:bigint, col 18:bigint)(children: col 18:smallint) -> 20:bigint, LongColModuloLongColumn(col 2:int, col 1:int)(children: col 1:smallint) -> 18:int, LongColUnaryMinus(col 0:tinyint) -> 21:tinyint, LongColModuloLongColumn(col 22:tinyint, col 0:tinyint)(children: LongColUnaryMinus(col 0:tinyint) -> 22:tinyint) -> 23:tinyint
                       Statistics: Num rows: 5461 Data size: 923616 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean), _col1 (type: bigint), _col2 (type: smallint), _col3 (type: tinyint), _col4 (type: timestamp), _col5 (type: string), _col6 (type: bigint), _col7 (type: int), _col8 (type: smallint), _col9 (type: tinyint), _col10 (type: int), _col11 (type: bigint), _col12 (type: int), _col13 (type: tinyint), _col14 (type: tinyint)
@@ -355,7 +355,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -365,7 +366,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -376,7 +376,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 9, 14]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 9, 14]
                 Statistics: Num rows: 5461 Data size: 923616 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 25

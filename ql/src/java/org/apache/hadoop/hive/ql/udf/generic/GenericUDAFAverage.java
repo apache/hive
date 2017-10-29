@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
@@ -117,6 +119,11 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     return eval;
   }
 
+  @VectorizedUDAFs({
+    VectorUDAFAvgLong.class, VectorUDAFAvgLongComplete.class,
+    VectorUDAFAvgDouble.class, VectorUDAFAvgDoubleComplete.class,
+    VectorUDAFAvgTimestamp.class, VectorUDAFAvgTimestampComplete.class,
+    VectorUDAFAvgPartial2.class, VectorUDAFAvgFinal.class})
   public static class GenericUDAFAverageEvaluatorDouble extends AbstractGenericUDAFAverageEvaluator<Double> {
 
     @Override
@@ -237,6 +244,10 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     }
   }
 
+  @VectorizedUDAFs({
+    VectorUDAFAvgDecimal.class, VectorUDAFAvgDecimalComplete.class,
+    VectorUDAFAvgDecimal64ToDecimal.class, VectorUDAFAvgDecimal64ToDecimalComplete.class,
+    VectorUDAFAvgDecimalPartial2.class, VectorUDAFAvgDecimalFinal.class})
   public static class GenericUDAFAverageEvaluatorDecimal extends AbstractGenericUDAFAverageEvaluator<HiveDecimal> {
 
     @Override

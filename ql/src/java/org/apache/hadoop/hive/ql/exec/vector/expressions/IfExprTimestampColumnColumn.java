@@ -28,8 +28,8 @@ public class IfExprTimestampColumnColumn extends IfExprTimestampColumnColumnBase
 
   private static final long serialVersionUID = 1L;
 
-  public IfExprTimestampColumnColumn(int arg1Column, int arg2Column, int arg3Column, int outputColumn) {
-    super(arg1Column, arg2Column, arg3Column, outputColumn);
+  public IfExprTimestampColumnColumn(int arg1Column, int arg2Column, int arg3Column, int outputColumnNum) {
+    super(arg1Column, arg2Column, arg3Column, outputColumnNum);
   }
 
   public IfExprTimestampColumnColumn() {

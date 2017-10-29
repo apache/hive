@@ -27,15 +27,19 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 public class SelectColumnIsFalse extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  private int colNum1;
+
+  private final int colNum1;
 
   public SelectColumnIsFalse(int colNum1) {
-    this();
+    super();
     this.colNum1 = colNum1;
   }
 
   public SelectColumnIsFalse() {
     super();
+
+    // Dummy final assignments.
+    colNum1 = -1;
   }
 
   @Override
@@ -120,26 +124,8 @@ public class SelectColumnIsFalse extends VectorExpression {
     }
   }
 
-  @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  public int getColNum1() {
-    return colNum1;
-  }
-
-  public void setColNum1(int colNum1) {
-    this.colNum1 = colNum1;
-  }
-
   public String vectorExpressionParameters() {
-    return "col " + colNum1;
+    return getColumnParamString(0, colNum1);
   }
 
   @Override

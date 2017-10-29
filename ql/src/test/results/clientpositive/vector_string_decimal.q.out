@@ -61,12 +61,11 @@ STAGE PLANS:
             Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterDoubleColumnInList(col 1, values [1.0E8, 2.0E8])(children: CastDecimalToDouble(col 0) -> 1:double) -> boolean
+                  predicateExpression: FilterDoubleColumnInList(col 2:double, values [1.0E8, 2.0E8])(children: CastDecimalToDouble(col 0:decimal(18,0)) -> 2:double)
               predicate: (UDFToDouble(id)) IN (1.0E8, 2.0E8) (type: boolean)
               Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -75,7 +74,7 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -91,7 +90,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false

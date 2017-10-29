@@ -37,19 +37,25 @@ public abstract class IfExprTimestampColumnScalarBase extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int arg1Column, arg2Column;
-  private Timestamp arg3Scalar;
-  private int outputColumn;
+  private final int arg1Column;
+  private final int arg2Column;
+  private final Timestamp arg3Scalar;
 
   public IfExprTimestampColumnScalarBase(int arg1Column, int arg2Column, Timestamp arg3Scalar,
-      int outputColumn) {
+      int outputColumnNum) {
+    super(outputColumnNum);
     this.arg1Column = arg1Column;
     this.arg2Column = arg2Column;
     this.arg3Scalar = arg3Scalar;
-    this.outputColumn = outputColumn;
   }
 
   public IfExprTimestampColumnScalarBase() {
+    super();
+
+    // Dummy final assignments.
+    arg1Column = -1;
+    arg2Column = -1;
+    arg3Scalar = null;
   }
 
   @Override
@@ -61,7 +67,7 @@ public abstract class IfExprTimestampColumnScalarBase extends VectorExpression {
 
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
     TimestampColumnVector arg2ColVector = (TimestampColumnVector) batch.cols[arg2Column];
-    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumn];
+    TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = arg2ColVector.noNulls; // nulls can only come from arg2
@@ -122,18 +128,8 @@ public abstract class IfExprTimestampColumnScalarBase extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "timestamp";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", col "+ arg2Column + ", val "+ arg3Scalar;
+    return getColumnParamString(0, arg1Column) + ", " + getColumnParamString(1, arg2Column) +
+        ", val "+ arg3Scalar;
   }
-
 }

@@ -28,17 +28,20 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * operate directly on the input and set the output.
  */
 public abstract class FuncDecimalToTimestamp extends VectorExpression {
-  private static final long serialVersionUID = 1L;
-  int inputColumn;
-  int outputColumn;
 
-  public FuncDecimalToTimestamp(int inputColumn, int outputColumn) {
+  private static final long serialVersionUID = 1L;
+  private final int inputColumn;
+
+  public FuncDecimalToTimestamp(int inputColumn, int outputColumnNum) {
+    super(outputColumnNum);
     this.inputColumn = inputColumn;
-    this.outputColumn = outputColumn;
   }
 
   public FuncDecimalToTimestamp() {
     super();
+
+    // Dummy final assignments.
+    inputColumn = -1;
   }
 
   abstract protected void func(TimestampColumnVector outV, DecimalColumnVector inV, int i);
@@ -53,7 +56,7 @@ public abstract class FuncDecimalToTimestamp extends VectorExpression {
     DecimalColumnVector inV = (DecimalColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
-    TimestampColumnVector outV = (TimestampColumnVector) batch.cols[outputColumn];
+    TimestampColumnVector outV = (TimestampColumnVector) batch.cols[outputColumnNum];
 
     if (n == 0) {
 
@@ -110,20 +113,9 @@ public abstract class FuncDecimalToTimestamp extends VectorExpression {
     }
   }
 
-
-  @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "timestamp";
-  }
-
   @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumn;
+    return getColumnParamString(0, inputColumn);
   }
 
   @Override

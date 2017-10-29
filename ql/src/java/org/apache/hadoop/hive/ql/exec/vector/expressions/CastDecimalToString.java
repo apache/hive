@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
@@ -30,16 +31,24 @@ public class CastDecimalToString extends DecimalToStringUnaryUDF {
 
   private static final long serialVersionUID = 1L;
 
+  // Transient members initialized by transientInit method.
+
   // We use a scratch buffer with the HiveDecimalWritable toBytes method so
   // we don't incur poor performance creating a String result.
-  private byte[] scratchBuffer;
+  private transient byte[] scratchBuffer;
 
   public CastDecimalToString() {
     super();
   }
 
-  public CastDecimalToString(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public CastDecimalToString(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
+  }
+
+  @Override
+  public void transientInit() throws HiveException {
+    super.transientInit();
+
     scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
   }
 

@@ -35,19 +35,21 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private HiveDecimal value;
-  private int outputColumn;
+  private final int colNum;
+  private final HiveDecimal value;
 
-  public <ClassName>(int colNum, HiveDecimal value, int outputColumn) {
+  public <ClassName>(int colNum, HiveDecimal value, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
     this.value = value;
-    this.outputColumn = outputColumn;
-    this.outputType = "decimal";
   }
 
   public <ClassName>() {
-    this.outputType = "decimal";
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    value = null;
   }
 
   @Override
@@ -58,7 +60,7 @@ public class <ClassName> extends VectorExpression {
     }
 
     DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[colNum];
-    DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumn];
+    DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -127,13 +129,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", val " + value.toString();
+    return getColumnParamString(0, colNum) + ", val " + value.toString();
   }
 
   @Override

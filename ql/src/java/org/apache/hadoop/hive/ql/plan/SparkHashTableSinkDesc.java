@@ -52,20 +52,22 @@ public class SparkHashTableSinkDesc extends HashTableSinkDesc {
     private final HashTableSinkDesc filterDesc;
     private final VectorSparkHashTableSinkDesc vectorHashTableSinkDesc;
 
-    public SparkHashTableSinkOperatorExplainVectorization(HashTableSinkDesc filterDesc, VectorDesc vectorDesc) {
+    public SparkHashTableSinkOperatorExplainVectorization(HashTableSinkDesc filterDesc,
+        VectorSparkHashTableSinkDesc vectorSparkHashTableSinkDesc) {
       // Native vectorization supported.
-      super(vectorDesc, true);
+      super(vectorSparkHashTableSinkDesc, true);
       this.filterDesc = filterDesc;
-      vectorHashTableSinkDesc = (VectorSparkHashTableSinkDesc) vectorDesc;
+      this.vectorHashTableSinkDesc = vectorSparkHashTableSinkDesc;
     }
   }
 
   @Explain(vectorization = Vectorization.OPERATOR, displayName = "Spark Hash Table Sink Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
   public SparkHashTableSinkOperatorExplainVectorization getHashTableSinkVectorization() {
-    if (vectorDesc == null) {
+    VectorSparkHashTableSinkDesc vectorHashTableSinkDesc = (VectorSparkHashTableSinkDesc) getVectorDesc();
+    if (vectorHashTableSinkDesc == null) {
       return null;
     }
-    return new SparkHashTableSinkOperatorExplainVectorization(this, vectorDesc);
+    return new SparkHashTableSinkOperatorExplainVectorization(this, vectorHashTableSinkDesc);
   }
 
 }

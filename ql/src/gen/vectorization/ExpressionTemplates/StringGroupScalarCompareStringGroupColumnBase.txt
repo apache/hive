@@ -35,9 +35,22 @@ public abstract class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  protected int colNum;
-  protected byte[] value;
-  protected int outputColumn;
+  protected final int colNum;
+  protected final byte[] value;
+
+  public <ClassName>(int colNum, byte[] value, int outputColumnNum) {
+    super(outputColumnNum);
+    this.colNum = colNum;
+    this.value = value;
+  }
+
+  public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
+    value = null;
+  }
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
@@ -45,7 +58,7 @@ public abstract class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     boolean[] outNull = outputColVector.isNull;
@@ -128,37 +141,7 @@ public abstract class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-  
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public byte[] getValue() {
-    return value;
-  }
-
-  public void setValue(byte[] value) {
-    this.value = value;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "val " + displayUtf8Bytes(value) + ", col " + + colNum;
+    return "val " + displayUtf8Bytes(value) + ", " + getColumnParamString(1, colNum);
   }
 }

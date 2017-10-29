@@ -1255,24 +1255,22 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 3511604 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33]
                   Select Operator
                     expressions: ws_order_number (type: int)
                     outputColumnNames: ws_order_number
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [16]
+                        projectedOutputColumnNums: [16]
                     Statistics: Num rows: 2000 Data size: 3511604 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          vectorOutput: true
-                          keyExpressions: col 16
+                          keyExpressions: col 16:int
                           native: false
                           vectorProcessingMode: HASH
-                          projectedOutputColumns: []
+                          projectedOutputColumnNums: []
                       keys: ws_order_number (type: int)
                       mode: hash
                       outputColumnNames: _col0
@@ -1291,7 +1289,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1301,7 +1300,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1310,11 +1308,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
-                    keyExpressions: col 0
+                    keyExpressions: col 0:int
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumns: []
+                    projectedOutputColumnNums: []
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -1322,13 +1319,12 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count(_col0)
                   Group By Vectorization:
-                      aggregators: VectorUDAFCount(col 0) -> bigint
+                      aggregators: VectorUDAFCount(col 0:int) -> bigint
                       className: VectorGroupByOperator
                       groupByMode: HASH
-                      vectorOutput: true
                       native: false
                       vectorProcessingMode: HASH
-                      projectedOutputColumns: [0]
+                      projectedOutputColumnNums: [0]
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -1345,7 +1341,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1353,13 +1348,12 @@ STAGE PLANS:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
-                    vectorOutput: true
                     native: false
                     vectorProcessingMode: GLOBAL
-                    projectedOutputColumns: [0]
+                    projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE

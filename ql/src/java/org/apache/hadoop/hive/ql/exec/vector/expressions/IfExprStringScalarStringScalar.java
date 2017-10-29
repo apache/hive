@@ -36,20 +36,25 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int arg1Column;
-  private byte[] arg2Scalar;
-  private byte[] arg3Scalar;
-  private int outputColumn;
+  private final int arg1Column;
+  private final byte[] arg2Scalar;
+  private final byte[] arg3Scalar;
 
   public IfExprStringScalarStringScalar(
-      int arg1Column, byte[] arg2Scalar, byte[] arg3Scalar, int outputColumn) {
+      int arg1Column, byte[] arg2Scalar, byte[] arg3Scalar, int outputColumnNum) {
+    super(outputColumnNum);
     this.arg1Column = arg1Column;
     this.arg2Scalar = arg2Scalar;
     this.arg3Scalar = arg3Scalar;
-    this.outputColumn = outputColumn;
   }
 
   public IfExprStringScalarStringScalar() {
+    super();
+
+    // Dummy final assignments.
+    arg1Column = -1;
+    arg2Scalar = null;
+    arg3Scalar = null;
   }
 
   @Override
@@ -60,7 +65,7 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
     }
 
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
-    BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumn];
+    BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     outputColVector.noNulls = true; // output must be a scalar and neither one is null
     outputColVector.isRepeating = false; // may override later
@@ -125,18 +130,8 @@ public class IfExprStringScalarStringScalar extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "String";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", val "+ displayUtf8Bytes(arg2Scalar) + ", val "+ displayUtf8Bytes(arg3Scalar);
+    return getColumnParamString(0, arg1Column) + ", val "+ displayUtf8Bytes(arg2Scalar) + ", val "+ displayUtf8Bytes(arg3Scalar);
   }
 
   @Override

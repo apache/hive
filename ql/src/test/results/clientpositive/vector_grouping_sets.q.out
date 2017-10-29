@@ -150,24 +150,22 @@ STAGE PLANS:
             Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
             Select Operator
               expressions: s_store_id (type: string)
               outputColumnNames: s_store_id
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [1]
+                  projectedOutputColumnNums: [1]
               Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
                     groupByMode: HASH
-                    vectorOutput: true
-                    keyExpressions: col 1, ConstantVectorExpression(val 0) -> 29:long
+                    keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 30:int
                     native: false
                     vectorProcessingMode: HASH
-                    projectedOutputColumns: []
+                    projectedOutputColumnNums: []
                 keys: s_store_id (type: string), 0 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -186,7 +184,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -197,12 +196,6 @@ STAGE PLANS:
           enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
-          Group By Vectorization:
-              groupByMode: MERGEPARTIAL
-              vectorOutput: false
-              native: false
-              vectorProcessingMode: NONE
-              projectedOutputColumns: null
           keys: KEY._col0 (type: string), KEY._col1 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
@@ -268,24 +261,22 @@ STAGE PLANS:
             Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
             Select Operator
               expressions: s_store_id (type: string)
               outputColumnNames: _col0
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumns: [1]
+                  projectedOutputColumnNums: [1]
               Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
                     groupByMode: HASH
-                    vectorOutput: true
-                    keyExpressions: col 1, ConstantVectorExpression(val 0) -> 29:long
+                    keyExpressions: col 1:string, ConstantVectorExpression(val 0) -> 30:int
                     native: false
                     vectorProcessingMode: HASH
-                    projectedOutputColumns: []
+                    projectedOutputColumnNums: []
                 keys: _col0 (type: string), 0 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -304,7 +295,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          groupByVectorOutput: true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -315,12 +307,6 @@ STAGE PLANS:
           enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
-          Group By Vectorization:
-              groupByMode: MERGEPARTIAL
-              vectorOutput: false
-              native: false
-              vectorProcessingMode: NONE
-              projectedOutputColumns: null
           keys: KEY._col0 (type: string), KEY._col1 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1

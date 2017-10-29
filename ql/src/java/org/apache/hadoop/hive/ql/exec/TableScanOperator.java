@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -55,8 +57,10 @@ import org.apache.hadoop.mapred.JobConf;
  * read as part of map-reduce framework
  **/
 public class TableScanOperator extends Operator<TableScanDesc> implements
-    Serializable {
+    Serializable, VectorizationContextRegion {
   private static final long serialVersionUID = 1L;
+
+  private VectorizationContext taskVectorizationContext;
 
   protected transient JobConf jc;
   private transient boolean inputFileChanged = false;
@@ -401,6 +405,15 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   public void setInsideView(boolean insiderView) {
     this.insideView = insiderView;
+  }
+
+  public void setTaskVectorizationContext(VectorizationContext taskVectorizationContext) {
+    this.taskVectorizationContext = taskVectorizationContext;
+  }
+
+  @Override
+  public VectorizationContext getOutputVectorizationContext() {
+    return taskVectorizationContext;
   }
 
 }

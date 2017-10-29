@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized.VectorMapJoinOpti
 import org.apache.hadoop.hive.ql.exec.vector.rowbytescontainer.VectorRowBytesContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.WriteBuffers.ByteSegmentRef;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinaryDeserializeRead;
@@ -104,9 +105,9 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
     super(ctx);
   }
 
-  public VectorMapJoinGenerateResultOperator(CompilationOpContext ctx,
-      VectorizationContext vContext, OperatorDesc conf) throws HiveException {
-    super(ctx, vContext, conf);
+  public VectorMapJoinGenerateResultOperator(CompilationOpContext ctx, OperatorDesc conf,
+      VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
+    super(ctx, conf, vContext, vectorDesc);
   }
 
   @Override

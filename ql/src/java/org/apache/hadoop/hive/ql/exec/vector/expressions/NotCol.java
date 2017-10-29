@@ -26,17 +26,19 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 public class NotCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  private int colNum;
-  private int outputColumn;
 
-  public NotCol(int colNum, int outputColumn) {
-    this();
+  private final int colNum;
+
+  public NotCol(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
 
   public NotCol() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   @Override
@@ -50,7 +52,7 @@ public class NotCol extends VectorExpression {
     int[] sel = batch.selected;
     int n = batch.size;
     long[] vector = inputColVector.vector;
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
     long[] outputVector = outV.vector;
 
     if (n <= 0) {
@@ -100,30 +102,8 @@ public class NotCol extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 
   @Override

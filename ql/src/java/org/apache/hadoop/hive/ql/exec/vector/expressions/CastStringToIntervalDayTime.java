@@ -34,16 +34,18 @@ import org.apache.hive.common.util.DateUtils;
 public class CastStringToIntervalDayTime extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int inputColumn;
-  private int outputColumn;
+  private final int inputColumn;
 
   public CastStringToIntervalDayTime() {
+    super();
 
+    // Dummy final assignments.
+    inputColumn = -1;
   }
 
-  public CastStringToIntervalDayTime(int inputColumn, int outputColumn) {
+  public CastStringToIntervalDayTime(int inputColumn, int outputColumnNum) {
+    super(outputColumnNum);
     this.inputColumn = inputColumn;
-    this.outputColumn = outputColumn;
   }
 
   @Override
@@ -56,7 +58,7 @@ public class CastStringToIntervalDayTime extends VectorExpression {
     BytesColumnVector inV = (BytesColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
-    IntervalDayTimeColumnVector outV = (IntervalDayTimeColumnVector) batch.cols[outputColumn];
+    IntervalDayTimeColumnVector outV = (IntervalDayTimeColumnVector) batch.cols[outputColumnNum];
 
     if (n == 0) {
 
@@ -126,30 +128,8 @@ public class CastStringToIntervalDayTime extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  public int getInputColumn() {
-    return inputColumn;
-  }
-
-  public void setInputColumn(int inputColumn) {
-    this.inputColumn = inputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + inputColumn;
+    return getColumnParamString(0, inputColumn);
   }
 
   @Override

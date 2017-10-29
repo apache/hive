@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 
@@ -60,17 +61,14 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
 
   private ProcessingMode processingMode;
 
-  private boolean isVectorOutput;
-
   private VectorExpression[] keyExpressions;
-  private VectorAggregateExpression[] aggregators;
+  private VectorAggregationDesc[] vecAggrDescs;
   private int[] projectedOutputColumns;
   private boolean isVectorizationComplexTypesEnabled;
   private boolean isVectorizationGroupByComplexTypesEnabled;
 
   public VectorGroupByDesc() {
     this.processingMode = ProcessingMode.NONE;
-    this.isVectorOutput = false;
   }
 
   public void setProcessingMode(ProcessingMode processingMode) {
@@ -78,14 +76,6 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
   }
   public ProcessingMode getProcessingMode() {
     return processingMode;
-  }
-
-  public boolean isVectorOutput() {
-    return isVectorOutput;
-  }
-
-  public void setVectorOutput(boolean isVectorOutput) {
-    this.isVectorOutput = isVectorOutput;
   }
 
   public void setKeyExpressions(VectorExpression[] keyExpressions) {
@@ -96,12 +86,12 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
     return keyExpressions;
   }
 
-  public void setAggregators(VectorAggregateExpression[] aggregators) {
-    this.aggregators = aggregators;
+  public void setVecAggrDescs(VectorAggregationDesc[] vecAggrDescs) {
+    this.vecAggrDescs = vecAggrDescs;
   }
 
-  public VectorAggregateExpression[] getAggregators() {
-    return aggregators;
+  public VectorAggregationDesc[] getVecAggrDescs() {
+    return vecAggrDescs;
   }
 
   public void setProjectedOutputColumns(int[] projectedOutputColumns) {

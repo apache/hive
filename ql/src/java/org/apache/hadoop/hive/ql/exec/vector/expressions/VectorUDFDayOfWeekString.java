@@ -37,8 +37,8 @@ public final class VectorUDFDayOfWeekString extends VectorUDFTimestampFieldStrin
   private transient final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
   private transient final Calendar calendar = Calendar.getInstance();
 
-  public VectorUDFDayOfWeekString(int colNum, int outputColumn) {
-    super(colNum, outputColumn, -1, -1);
+  public VectorUDFDayOfWeekString(int colNum, int outputColumnNum) {
+    super(colNum, outputColumnNum, -1, -1);
   }
 
   public VectorUDFDayOfWeekString() {

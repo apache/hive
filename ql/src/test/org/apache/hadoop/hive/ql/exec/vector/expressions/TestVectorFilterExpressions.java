@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -53,6 +54,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterTimestampColu
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterTimestampColumnNotBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -423,19 +426,6 @@ public class TestVectorFilterExpressions {
 
     expr1.evaluate(vrb3);
     assertEquals(0, vrb3.size);
-
-    // Test getters/setters
-    FilterLongColumnBetween betweenExpr = (FilterLongColumnBetween) expr1;
-    assertEquals(15, betweenExpr.getLeftValue());
-    assertEquals(17, betweenExpr.getRightValue());
-    assertEquals(0, betweenExpr.getColNum());
-
-    betweenExpr.setColNum(1);
-    assertEquals(1, betweenExpr.getColNum());
-    betweenExpr.setLeftValue(2);
-    assertEquals(2, betweenExpr.getLeftValue());
-    betweenExpr.setRightValue(3);
-    assertEquals(3, betweenExpr.getRightValue());
   }
 
   @Test
@@ -654,7 +644,7 @@ public class TestVectorFilterExpressions {
    */
 
   @Test
-  public void testFilterLongIn() {
+  public void testFilterLongIn() throws HiveException {
     int seed = 17;
     VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
         5, 2, seed);
@@ -662,6 +652,8 @@ public class TestVectorFilterExpressions {
     long[] inList = {5, 20};
     FilterLongColumnInList f = new FilterLongColumnInList(0);
     f.setInListValues(inList);
+    f.setInputTypeInfos(new TypeInfo[] {TypeInfoFactory.longTypeInfo});
+    f.transientInit();
     VectorExpression expr1 = f;
 
     // Basic case
@@ -754,7 +746,7 @@ public class TestVectorFilterExpressions {
   }
 
   @Test
-  public void testFilterDoubleIn() {
+  public void testFilterDoubleIn() throws HiveException {
     int seed = 17;
     VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
         5, 2, seed);
@@ -763,6 +755,8 @@ public class TestVectorFilterExpressions {
     double[] inList = {5.0, 20.2};
     FilterDoubleColumnInList f = new FilterDoubleColumnInList(0);
     f.setInListValues(inList);
+    f.setInputTypeInfos(new TypeInfo[] {TypeInfoFactory.doubleTypeInfo});
+    f.transientInit();
     VectorExpression expr1 = f;
 
     // Basic sanity check. Other cases are not skipped because it is similar to the case for Long.

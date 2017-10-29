@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColLessLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColLessLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarLessLongColumn;
@@ -58,6 +59,9 @@ import org.apache.hadoop.io.Text;
     FilterDecimalColLessDecimalColumn.class, FilterDecimalColLessDecimalScalar.class,
     FilterDecimalScalarLessDecimalColumn.class,
 
+    FilterDecimal64ColLessDecimal64Column.class, FilterDecimal64ColLessDecimal64Scalar.class,
+    FilterDecimal64ScalarLessDecimal64Column.class,
+
     TimestampColLessTimestampColumn.class,
     TimestampColLessTimestampScalar.class, TimestampScalarLessTimestampColumn.class,
     TimestampColLessLongColumn.class,
@@ -90,6 +94,7 @@ import org.apache.hadoop.io.Text;
     DateColLessDateScalar.class,FilterDateColLessDateScalar.class,
     DateScalarLessDateColumn.class,FilterDateScalarLessDateColumn.class,
     })
+@VectorizedExpressionsSupportDecimal64()
 @NDV(maxNdv = 2)
 public class GenericUDFOPLessThan extends GenericUDFBaseCompare {
   public GenericUDFOPLessThan(){

@@ -25,17 +25,18 @@ import org.apache.hadoop.hive.ql.exec.vector.*;
 public class CastTimestampToBoolean extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private int outputColumn;
+  private final int colNum;
 
-  public CastTimestampToBoolean(int colNum, int outputColumn) {
-    this();
+  public CastTimestampToBoolean(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.colNum = colNum;
-    this.outputColumn = outputColumn;
   }
 
   public CastTimestampToBoolean() {
     super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   private int toBool(TimestampColumnVector timestampColVector, int index) {
@@ -51,7 +52,7 @@ public class CastTimestampToBoolean extends VectorExpression {
     }
 
     TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[colNum];
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -101,30 +102,8 @@ public class CastTimestampToBoolean extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  public int getColNum() {
-    return colNum;
-  }
-
-  public void setColNum(int colNum) {
-    this.colNum = colNum;
-  }
-
-  public void setOutputColumn(int outputColumn) {
-    this.outputColumn = outputColumn;
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum;
+    return getColumnParamString(0, colNum);
   }
 
   @Override

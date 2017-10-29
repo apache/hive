@@ -68,6 +68,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   private HiveIntervalYearMonthWritable hiveIntervalYearMonthWritable;
   private HiveIntervalDayTimeWritable hiveIntervalDayTimeWritable;
   private HiveIntervalDayTime hiveIntervalDayTime;
+  private HiveDecimalWritable hiveDecimalWritable;
   private byte[] vLongBytes;
   private long[] scratchLongs;
   private byte[] scratchBuffer;
@@ -378,6 +379,15 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
    * NOTE: The scale parameter is for text serialization (e.g. HiveDecimal.toFormatString) that
    * creates trailing zeroes output decimals.
    */
+  @Override
+  public void writeDecimal64(long decimal64Long, int scale) throws IOException {
+    if (hiveDecimalWritable == null) {
+      hiveDecimalWritable = new HiveDecimalWritable();
+    }
+    hiveDecimalWritable.deserialize64(decimal64Long, scale);
+    writeHiveDecimal(hiveDecimalWritable, scale);
+  }
+
   @Override
   public void writeHiveDecimal(HiveDecimal dec, int scale) throws IOException {
     beginElement();

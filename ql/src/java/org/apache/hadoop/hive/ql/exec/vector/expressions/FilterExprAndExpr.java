@@ -43,16 +43,6 @@ public class FilterExprAndExpr extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return -1;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "boolean";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
     // The children are input.
     return null;

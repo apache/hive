@@ -46,22 +46,25 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private Date value;
-  private int outputColumn;
-  private HiveIntervalYearMonth scratchIntervalYearMonth2;
-  private Date outputDate;
-  private DateTimeMath dtm = new DateTimeMath();
+  private final int colNum;
+  private final Date value;
 
-  public <ClassName>(long value, int colNum, int outputColumn) {
-    this.colNum = colNum;
+  private transient final HiveIntervalYearMonth scratchIntervalYearMonth2 = new HiveIntervalYearMonth();
+  private transient final Date outputDate = new Date(0);
+  private transient final DateTimeMath dtm = new DateTimeMath();
+
+  public <ClassName>(long value, int colNum, int outputColumnNum) {
+    super(outputColumnNum);
     this.value = new Date(DateWritable.daysToMillis((int) value));
-    this.outputColumn = outputColumn;
-    scratchIntervalYearMonth2 = new HiveIntervalYearMonth();
-    outputDate = new Date(0);
+    this.colNum = colNum;
   }
 
   public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    value = null;
+    colNum = -1;
   }
 
   @Override
@@ -80,7 +83,7 @@ public class <ClassName> extends VectorExpression {
     LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[colNum];
 
     // Output is type Date.
-    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
 
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector2.isNull;
@@ -145,18 +148,8 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public int getOutputColumn() {
-    return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "long";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "val " + value + ", col " + + colNum;
+    return "val " + value + ", " + getColumnParamString(1, colNum);
   }
 
   @Override

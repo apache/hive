@@ -33,8 +33,8 @@ public class CastTimestampToDecimal extends FuncTimestampToDecimal {
     super();
   }
 
-  public CastTimestampToDecimal(int inputColumn, int outputColumn) {
-    super(inputColumn, outputColumn);
+  public CastTimestampToDecimal(int inputColumn, int outputColumnNum) {
+    super(inputColumn, outputColumnNum);
   }
 
   @Override

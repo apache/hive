@@ -39,13 +39,12 @@ public class <ClassName> extends <BaseClassName> {
 
   private static final long serialVersionUID = 1L;
 
-  public <ClassName>(<TruncStringHiveType> value, int colNum, int outputColumn) {
-    this.colNum = colNum;
-    this.value = value.<TruncStringHiveGetBytes>;
-    this.outputColumn = outputColumn;
+  public <ClassName>(<TruncStringHiveType> value, int colNum, int outputColumnNum) {
+    super(colNum, value.<TruncStringHiveGetBytes>, outputColumnNum);
   }
 
   public <ClassName>() {
+    super();
   }
 
   @Override

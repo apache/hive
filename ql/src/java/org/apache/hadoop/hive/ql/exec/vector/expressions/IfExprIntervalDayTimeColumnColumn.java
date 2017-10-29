@@ -38,6 +38,7 @@ public class IfExprIntervalDayTimeColumnColumn extends IfExprConditionalFilter {
   public IfExprIntervalDayTimeColumnColumn() {
     super();
   }
+
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
@@ -48,7 +49,7 @@ public class IfExprIntervalDayTimeColumnColumn extends IfExprConditionalFilter {
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
     IntervalDayTimeColumnVector arg2ColVector = (IntervalDayTimeColumnVector) batch.cols[arg2Column];
     IntervalDayTimeColumnVector arg3ColVector = (IntervalDayTimeColumnVector) batch.cols[arg3Column];
-    IntervalDayTimeColumnVector outputColVector = (IntervalDayTimeColumnVector) batch.cols[outputColumn];
+    IntervalDayTimeColumnVector outputColVector = (IntervalDayTimeColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = arg2ColVector.noNulls && arg3ColVector.noNulls;
@@ -120,13 +121,9 @@ public class IfExprIntervalDayTimeColumnColumn extends IfExprConditionalFilter {
   }
 
   @Override
-  public String getOutputType() {
-    return "interval_day_time";
-  }
-
-  @Override
   public String vectorExpressionParameters() {
-    return "col " + arg1Column + ", col "+ arg2Column + ", col "+ arg3Column;
+    return getColumnParamString(0, arg1Column) + ", " + getColumnParamString(1, arg2Column) +
+        getColumnParamString(2, arg3Column);
   }
 
   @Override

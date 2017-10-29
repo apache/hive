@@ -34,11 +34,11 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 public class <ClassName> extends <BaseClassName> {
 
   public <ClassName>(int colNum, <TruncStringHiveType> value) {
-    this.colNum = colNum;
-    this.value = value.<TruncStringHiveGetBytes>;
+    super(colNum, value.<TruncStringHiveGetBytes>);
   }
 
   public <ClassName>() {
+    super();
   }
 
   @Override

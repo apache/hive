@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSignLongToDoubl
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSinDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSqrtDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncTanDoubleToDouble;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.junit.Test;
 
@@ -106,7 +107,6 @@ public class TestVectorMathFunctions {
   public void testRoundToDecimalPlaces() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
     VectorExpression expr = new RoundWithNumDigitsDoubleToDouble(0, 4, 1);
-    ((ISetLongArg) expr).setArg(4);  // set number of digits
     expr.evaluate(b);
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
 
@@ -547,7 +547,6 @@ public class TestVectorMathFunctions {
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
     b.cols[0].noNulls = true;
     VectorExpression expr = new FuncLogWithBaseDoubleToDouble(10.0, 0, 1);
-    ((ISetDoubleArg) expr).setArg(10.0d);  // set base
     expr.evaluate(b);
     Assert.assertTrue(equalsWithinTolerance(Math.log(0.5d) / Math.log(10), resultV.vector[4]));
   }
@@ -562,7 +561,6 @@ public class TestVectorMathFunctions {
     b.cols[0].noNulls = true;
     inV.vector[4] = -4.0;
     VectorExpression expr = new PosModDoubleToDouble(0, 0.3d, 1);
-    //((ISetDoubleArg) expr).setArg(0.3d);  // set base
     expr.evaluate(b);
     Assert.assertTrue(equalsWithinTolerance(((-4.0d % 0.3d) + 0.3d) % 0.3d, resultV.vector[4]));
 
@@ -582,7 +580,6 @@ public class TestVectorMathFunctions {
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
     b.cols[0].noNulls = true;
     VectorExpression expr = new FuncPowerDoubleToDouble(0, 2.0, 1);
-    ((ISetDoubleArg) expr).setArg(2.0d);  // set power
     expr.evaluate(b);
     Assert.assertTrue(equalsWithinTolerance(0.5d * 0.5d, resultV.vector[4]));
   }
@@ -642,26 +639,28 @@ public class TestVectorMathFunctions {
   }
 
   @Test
-  public void testVectorBin() {
+  public void testVectorBin() throws HiveException {
 
     // test conversion of long->string
     VectorizedRowBatch b = getBatchForStringMath();
     BytesColumnVector resultV = (BytesColumnVector) b.cols[2];
     b.cols[0].noNulls = true;
     VectorExpression expr = new FuncBin(1, 2);
+    expr.transientInit();
     expr.evaluate(b);
     String s = new String(resultV.vector[1], resultV.start[1], resultV.length[1]);
     Assert.assertEquals("11111111", s);
   }
 
   @Test
-  public void testVectorHex() {
+  public void testVectorHex() throws HiveException {
 
     // test long->string version
     VectorizedRowBatch b = getBatchForStringMath();
     BytesColumnVector resultV = (BytesColumnVector) b.cols[2];
     b.cols[1].noNulls = true;
     VectorExpression expr = new FuncHex(1, 2);
+    expr.transientInit();
     expr.evaluate(b);
     String s = new String(resultV.vector[1], resultV.start[1], resultV.length[1]);
     Assert.assertEquals("FF", s);
