@@ -37,6 +37,7 @@ import org.apache.hive.service.rpc.thrift.TGetOperationStatusReq;
 import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
 import org.apache.hive.service.rpc.thrift.TGetQueryIdReq;
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
+import org.apache.hive.service.rpc.thrift.TOperationState;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -386,7 +387,12 @@ public class HiveStatement implements java.sql.Statement {
             break;
           case CANCELED_STATE:
             // 01000 -> warning
-            throw new SQLException("Query was cancelled", "01000");
+            String errMsg = statusResp.getErrorMessage();
+            if (errMsg != null && !errMsg.isEmpty()) {
+              throw new SQLException("Query was cancelled. " + errMsg, "01000");
+            } else {
+              throw new SQLException("Query was cancelled", "01000");
+            }
           case TIMEDOUT_STATE:
             throw new SQLTimeoutException("Query timed out after " + queryTimeout + " seconds");
           case ERROR_STATE:

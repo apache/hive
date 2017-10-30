@@ -120,7 +120,7 @@ public class TestTriggersTezSessionPoolManager {
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 500), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, "Query was cancelled");
+    runQueryWithTrigger(query, null, trigger + " violated");
   }
 
   @Test(timeout = 60000)
@@ -130,7 +130,7 @@ public class TestTriggersTezSessionPoolManager {
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, "Query was cancelled");
+    runQueryWithTrigger(query, null, trigger + " violated");
   }
 
   @Test(timeout = 60000)
@@ -148,7 +148,7 @@ public class TestTriggersTezSessionPoolManager {
     setCmds.add("set tez.grouping.max-size=400");
     String query = "select t1.under_col, t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col order by t1.under_col";
-    runQueryWithTrigger(query, setCmds, "Query was cancelled");
+    runQueryWithTrigger(query, setCmds, trigger + " violated");
   }
 
   @Test(timeout = 60000)
@@ -158,7 +158,7 @@ public class TestTriggersTezSessionPoolManager {
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, "Query was cancelled");
+    runQueryWithTrigger(query, null, trigger + " violated");
   }
 
   @Test(timeout = 60000)
@@ -168,7 +168,7 @@ public class TestTriggersTezSessionPoolManager {
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, "Query was cancelled");
+    runQueryWithTrigger(query, null, trigger + " violated");
   }
 
   @Test(timeout = 60000)
@@ -178,7 +178,7 @@ public class TestTriggersTezSessionPoolManager {
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, getConfigs(), "Query was cancelled");
+    runQueryWithTrigger(query, getConfigs(), trigger + " violated");
   }
 
   @Test(timeout = 60000)
@@ -309,7 +309,7 @@ public class TestTriggersTezSessionPoolManager {
     setupTriggers(Lists.newArrayList(shuffleTrigger, execTimeTrigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, "Query was cancelled");
+    runQueryWithTrigger(query, null, execTimeTrigger + " violated");
   }
 
   @Test(timeout = 60000)
@@ -321,7 +321,7 @@ public class TestTriggersTezSessionPoolManager {
     setupTriggers(Lists.newArrayList(shuffleTrigger, execTimeTrigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, "Query was cancelled");
+    runQueryWithTrigger(query, null, shuffleTrigger + " violated");
   }
 
   private void createSleepUDF() throws SQLException {

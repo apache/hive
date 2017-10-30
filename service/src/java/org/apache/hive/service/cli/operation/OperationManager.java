@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.log.LogDivertAppender;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.hive.ql.session.OperationLog;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -50,12 +49,6 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
-import org.apache.hive.service.server.KillQueryImpl;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -259,10 +252,11 @@ public class OperationManager extends AbstractService {
 
   /**
    * Cancel the running operation unless it is already in a terminal state
-   * @param opHandle
+   * @param opHandle operation handle
+   * @param errMsg error message
    * @throws HiveSQLException
    */
-  public void cancelOperation(OperationHandle opHandle) throws HiveSQLException {
+  public void cancelOperation(OperationHandle opHandle, String errMsg) throws HiveSQLException {
     Operation operation = getOperation(opHandle);
     OperationState opState = operation.getStatus().getState();
     if (opState.isTerminal()) {
@@ -270,11 +264,22 @@ public class OperationManager extends AbstractService {
       LOG.debug(opHandle + ": Operation is already aborted in state - " + opState);
     } else {
       LOG.debug(opHandle + ": Attempting to cancel from state - " + opState);
-      operation.cancel(OperationState.CANCELED);
+      OperationState operationState = OperationState.CANCELED;
+      operationState.setErrorMessage(errMsg);
+      operation.cancel(operationState);
       if (operation instanceof SQLOperation) {
         removeSafeQueryInfo(opHandle);
       }
     }
+  }
+
+  /**
+   * Cancel the running operation unless it is already in a terminal state
+   * @param opHandle
+   * @throws HiveSQLException
+   */
+  public void cancelOperation(OperationHandle opHandle) throws HiveSQLException {
+    cancelOperation(opHandle, "");
   }
 
   public void closeOperation(OperationHandle opHandle) throws HiveSQLException {

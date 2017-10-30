@@ -3136,7 +3136,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int killQuery(Hive db, KillQueryDesc desc) throws HiveException {
     SessionState sessionState = SessionState.get();
     for (String queryId : desc.getQueryIds()) {
-      sessionState.getKillQuery().killQuery(queryId);
+      sessionState.getKillQuery().killQuery(queryId, "User invoked KILL QUERY");
     }
     LOG.info("kill query called ({})", desc.getQueryIds());
     return 0;

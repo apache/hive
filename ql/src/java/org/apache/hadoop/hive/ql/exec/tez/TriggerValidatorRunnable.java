@@ -57,7 +57,10 @@ public class TriggerValidatorRunnable implements Runnable {
                 String queryId = s.getTriggerContext().getQueryId();
                 LOG.info("Query {} violated trigger {}. Current counter value: {}. Going to apply action {}", queryId,
                   t, currentCounterValue, t.getAction());
-                violatedSessions.put(s, t.getAction());
+                Trigger.Action action = t.getAction();
+                String msg = "Trigger " + t + " violated. Current value: " + currentCounterValue;
+                action.setMsg(msg);
+                violatedSessions.put(s, action);
               }
             }
           }

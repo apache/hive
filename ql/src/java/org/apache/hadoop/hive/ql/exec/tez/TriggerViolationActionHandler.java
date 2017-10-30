@@ -35,7 +35,7 @@ public class TriggerViolationActionHandler implements TriggerActionHandler {
           TezSessionState sessionState = entry.getKey();
           String queryId = sessionState.getTriggerContext().getQueryId();
           try {
-            sessionState.getKillQuery().killQuery(queryId);
+            sessionState.getKillQuery().killQuery(queryId, entry.getValue().getMsg());
           } catch (HiveException e) {
             LOG.warn("Unable to kill query {} for trigger violation");
           }

@@ -661,6 +661,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       OperationStatus operationStatus =
           cliService.getOperationStatus(operationHandle, req.isGetProgressUpdate());
       resp.setOperationState(operationStatus.getState().toTOperationState());
+      resp.setErrorMessage(operationStatus.getState().getErrorMessage());
       HiveSQLException opException = operationStatus.getOperationException();
       resp.setTaskStatus(operationStatus.getTaskStatus());
       resp.setOperationStarted(operationStatus.getOperationStarted());

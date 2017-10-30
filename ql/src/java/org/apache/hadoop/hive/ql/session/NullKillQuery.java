@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public class NullKillQuery implements KillQuery {
   @Override
-  public void killQuery(String queryId) throws HiveException {
+  public void killQuery(String queryId, String errMsg) throws HiveException {
     // Do nothing
   }
 }

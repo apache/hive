@@ -27,6 +27,7 @@ public interface Trigger {
     MOVE_TO_POOL("");
 
     String poolName;
+    String msg;
 
     Action(final String poolName) {
       this.poolName = poolName;
@@ -39,6 +40,14 @@ public interface Trigger {
 
     public String getPoolName() {
       return poolName;
+    }
+
+    public String getMsg() {
+      return msg;
+    }
+
+    public void setMsg(final String msg) {
+      this.msg = msg;
     }
   }
 

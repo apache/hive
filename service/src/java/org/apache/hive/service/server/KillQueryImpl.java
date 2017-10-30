@@ -37,14 +37,14 @@ public class KillQueryImpl implements KillQuery {
   }
 
   @Override
-  public void killQuery(String queryId) throws HiveException {
+  public void killQuery(String queryId, String errMsg) throws HiveException {
     try {
       Operation operation = operationManager.getOperationByQueryId(queryId);
       if (operation == null) {
         LOG.info("Query not found: " + queryId);
       } else {
         OperationHandle handle = operation.getHandle();
-        operationManager.cancelOperation(handle);
+        operationManager.cancelOperation(handle, errMsg);
       }
     } catch (HiveSQLException e) {
       throw new HiveException(e);

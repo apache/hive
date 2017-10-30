@@ -21,5 +21,5 @@ package org.apache.hadoop.hive.ql.session;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public interface KillQuery {
-  void killQuery(String queryId) throws HiveException;
+  void killQuery(String queryId, String errMsg) throws HiveException;
 }
