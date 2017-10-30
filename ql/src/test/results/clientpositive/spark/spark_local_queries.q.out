@@ -69,63 +69,63 @@ POSTHOOK: Input: default@src
 103	val_103
 104	val_104
 104	val_104
-PREHOOK: query: select * from src join src1 on src.key = src1.key limit 10
+PREHOOK: query: select * from src join src1 on src.key = src1.key order by src.key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src join src1 on src.key = src1.key limit 10
+POSTHOOK: query: select * from src join src1 on src.key = src1.key order by src.key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-213	val_213	213	val_213
-213	val_213	213	val_213
+128	val_128	128	
+128	val_128	128	
+128	val_128	128	
+146	val_146	146	val_146
+146	val_146	146	val_146
 150	val_150	150	val_150
-238	val_238	238	val_238
-238	val_238	238	val_238
-146	val_146	146	val_146
-146	val_146	146	val_146
-255	val_255	255	val_255
-255	val_255	255	val_255
-401	val_401	401	val_401
-PREHOOK: query: select * from srcpart where ds = "2008-04-08" limit 10
+213	val_213	213	val_213
+213	val_213	213	val_213
+224	val_224	224	
+224	val_224	224	
+PREHOOK: query: select * from srcpart where ds = "2008-04-08" order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from srcpart where ds = "2008-04-08" limit 10
+POSTHOOK: query: select * from srcpart where ds = "2008-04-08" order by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-238	val_238	2008-04-08	11
-86	val_86	2008-04-08	11
-311	val_311	2008-04-08	11
-27	val_27	2008-04-08	11
-165	val_165	2008-04-08	11
-409	val_409	2008-04-08	11
-255	val_255	2008-04-08	11
-278	val_278	2008-04-08	11
-98	val_98	2008-04-08	11
-484	val_484	2008-04-08	11
-PREHOOK: query: select key, count(*) from src group by key limit 10
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	12
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	12
+0	val_0	2008-04-08	12
+10	val_10	2008-04-08	12
+10	val_10	2008-04-08	11
+100	val_100	2008-04-08	12
+100	val_100	2008-04-08	11
+PREHOOK: query: select key, count(*) from src group by key order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select key, count(*) from src group by key limit 10
+POSTHOOK: query: select key, count(*) from src group by key order by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-114	1
-111	1
-113	2
-103	2
+0	3
 10	1
 100	2
+103	2
 104	2
-11	1
 105	1
-0	3
+11	1
+111	1
+113	2
+114	1
