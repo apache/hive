@@ -61,6 +61,12 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     FileSystem dstFs = null;
     Path toPath = null;
     try {
+      // Note: CopyWork supports copying multiple files, but ReplCopyWork doesn't.
+      //       Not clear of ReplCopyWork should inherit from CopyWork.
+      if (work.getFromPaths().length > 1 || work.getToPaths().length > 1) {
+        throw new RuntimeException("Invalid ReplCopyWork: "
+            + work.getFromPaths() + ", " + work.getToPaths());
+      }
       Path fromPath = work.getFromPaths()[0];
       toPath = work.getToPaths()[0];
 
