@@ -138,9 +138,17 @@ public class TestTriggersTezSessionPoolManager {
     Expression expression = ExpressionFactory.fromString("SHUFFLE_BYTES > 100");
     Trigger trigger = new ExecutionTrigger("big_shuffle", expression, Trigger.Action.KILL_QUERY);
     setupTriggers(Lists.newArrayList(trigger));
-    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
-      " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, "Query was cancelled");
+    List<String> setCmds = new ArrayList<>();
+    // reducer phase starts only after 75% of mappers
+    // this will start 15 tasks, shuffle starts after 11 tasks
+    setCmds.add("set hive.exec.dynamic.partition.mode=nonstrict");
+    setCmds.add("set mapred.min.split.size=400");
+    setCmds.add("set mapred.max.split.size=400");
+    setCmds.add("set tez.grouping.min-size=400");
+    setCmds.add("set tez.grouping.max-size=400");
+    String query = "select t1.under_col, t1.value from " + tableName + " t1 join " + tableName +
+      " t2 on t1.under_col>=t2.under_col order by t1.under_col";
+    runQueryWithTrigger(query, setCmds, "Query was cancelled");
   }
 
   @Test(timeout = 60000)
