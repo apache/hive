@@ -3755,9 +3755,14 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("execute removeUnusedColumnDescriptor");
-      List<MStorageDescriptor> referencedSDs = listStorageDescriptorsWithCD(oldCD, 1, queryWrapper);
+
+      Query query = pm.newQuery("select count(1) from " +
+        "org.apache.hadoop.hive.metastore.model.MStorageDescriptor where (this.cd == inCD)");
+      query.declareParameters("MColumnDescriptor inCD");
+      long count = ((Long)query.execute(oldCD)).longValue();
+
       //if no other SD references this CD, we can throw it out.
-      if (referencedSDs != null && referencedSDs.isEmpty()) {
+      if (count == 0) {
         pm.retrieve(oldCD);
         pm.deletePersistent(oldCD);
       }
@@ -3785,40 +3790,6 @@ public class ObjectStore implements RawStore, Configurable {
     // to satisfy foreign key constraints.
     msd.setCD(null);
     removeUnusedColumnDescriptor(mcd);
-  }
-
-  /**
-   * Get a list of storage descriptors that reference a particular Column Descriptor
-   * @param oldCD the column descriptor to get storage descriptors for
-   * @param maxSDs the maximum number of SDs to return
-   * @return a list of storage descriptors
-   */
-  private List<MStorageDescriptor> listStorageDescriptorsWithCD(
-      MColumnDescriptor oldCD,
-      long maxSDs,
-      QueryWrapper queryWrapper) {
-    boolean success = false;
-    List<MStorageDescriptor> sds = null;
-    try {
-      openTransaction();
-      LOG.debug("Executing listStorageDescriptorsWithCD");
-      Query query = queryWrapper.query = pm.newQuery(MStorageDescriptor.class, "this.cd == inCD");
-      query.declareParameters("MColumnDescriptor inCD");
-      if (maxSDs >= 0) {
-        // User specified a row limit, set it on the Query
-        query.setRange(0, maxSDs);
-      }
-      sds = (List<MStorageDescriptor>)query.execute(oldCD);
-      LOG.debug("Done executing query for listStorageDescriptorsWithCD");
-      pm.retrieveAll(sds);
-      success = commitTransaction();
-      LOG.debug("Done retrieving all objects for listStorageDescriptorsWithCD");
-    } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
-    }
-    return sds;
   }
 
   private static MFieldSchema getColumnFromTableColumns(List<MFieldSchema> cols, String col) {
