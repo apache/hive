@@ -55,39 +55,37 @@ POSTHOOK: query: explain insert into table part_mm partition(key_mm=455) select 
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
-  Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
-  Stage-2 depends on stages: Stage-0
-  Stage-3
-  Stage-5
-  Stage-6 depends on stages: Stage-5
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: intermediate
-            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int)
-              outputColumnNames: _col0
-              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part_mm
-                Write Type: INSERT
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: intermediate
+                  Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.part_mm
+                      Write Type: INSERT
+            Execution mode: llap
+            LLAP IO: all inputs
 
-  Stage: Stage-7
-    Conditional Operator
-
-  Stage: Stage-4
+  Stage: Stage-2
     Dependency Collection
 
   Stage: Stage-0
@@ -104,25 +102,8 @@ STAGE PLANS:
           Write Type: INSERT
           micromanaged table: true
 
-  Stage: Stage-2
-    Stats-Aggr Operator
-
   Stage: Stage-3
-    Merge File Operator
-      Map Operator Tree:
-          ORC File Merge Operator
-      merge level: stripe
-      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-
-  Stage: Stage-5
-    Merge File Operator
-      Map Operator Tree:
-          ORC File Merge Operator
-      merge level: stripe
-      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-
-  Stage: Stage-6
-    Dependency Collection
+    Stats-Aggr Operator
 
 PREHOOK: query: insert into table part_mm partition(key_mm=455) select key from intermediate
 PREHOOK: type: QUERY
@@ -966,10 +947,10 @@ POSTHOOK: Input: default@merge0_mm
 #### A masked pattern was here ####
 98
 97
-0
-10
 100
 103
+0
+10
 PREHOOK: query: insert into table merge0_mm select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -995,16 +976,16 @@ POSTHOOK: Input: default@merge0_mm
 #### A masked pattern was here ####
 98
 97
-0
-10
 100
 103
+0
+10
 98
 97
-0
-10
 100
 103
+0
+10
 PREHOOK: query: drop table merge0_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@merge0_mm
@@ -1046,10 +1027,10 @@ POSTHOOK: Input: default@merge2_mm
 #### A masked pattern was here ####
 98
 97
-0
-10
 100
 103
+0
+10
 PREHOOK: query: insert into table merge2_mm select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -1075,16 +1056,16 @@ POSTHOOK: Input: default@merge2_mm
 #### A masked pattern was here ####
 98
 97
-0
-10
 100
 103
+0
+10
 98
 97
-0
-10
 100
 103
+0
+10
 PREHOOK: query: drop table merge2_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@merge2_mm
@@ -1249,10 +1230,10 @@ POSTHOOK: Input: default@ctas0_mm
 #### A masked pattern was here ####
 98	455
 97	455
-0	456
-10	456
 100	457
 103	457
+0	456
+10	456
 PREHOOK: query: drop table ctas0_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ctas0_mm
@@ -1294,17 +1275,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ctas1_mm
 #### A masked pattern was here ####
 98	455
+97	455
+100	457
+103	457
+0	456
+10	456
 98	455
 97	455
-97	455
-0	456
-0	456
-10	456
-10	456
-100	457
 100	457
 103	457
-103	457
+0	456
+10	456
 PREHOOK: query: drop table ctas1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ctas1_mm
@@ -1798,7 +1779,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	1                   
+	numFiles            	3                   
 	numRows             	6                   
 	rawDataSize         	13                  
 	totalSize           	19                  
@@ -1848,7 +1829,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	2                   
+	numFiles            	6                   
 	numRows             	12                  
 	rawDataSize         	26                  
 	totalSize           	38                  
@@ -1906,7 +1887,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	1                   
+	numFiles            	55                  
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -2085,10 +2066,10 @@ POSTHOOK: Input: default@temp1
 #### A masked pattern was here ####
 98
 97
-0
-10
 100
 103
+0
+10
 PREHOOK: query: drop table intermediate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate

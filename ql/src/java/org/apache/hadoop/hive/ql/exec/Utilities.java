@@ -1594,7 +1594,7 @@ public final class Utilities {
     int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
         numBuckets = (conf != null && conf.getTable() != null) ? conf.getTable().getNumBuckets() : 0;
     return removeTempOrDuplicateFiles(
-        fs, fileStats, dpLevels, numBuckets, hconf, null, 0, false, filesKept);
+        fs, fileStats, null, dpLevels, numBuckets, hconf, null, 0, false, filesKept);
   }
   
   private static boolean removeEmptyDpDirectory(FileSystem fs, Path path) throws IOException {
@@ -1610,15 +1610,15 @@ public final class Utilities {
   }
 
   public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
-      int dpLevels, int numBuckets, Configuration hconf, Long txnId, int stmtId, boolean isMmTable,
-      Set<Path> filesKept) throws IOException {
+      String unionSuffix, int dpLevels, int numBuckets, Configuration hconf, Long txnId,
+      int stmtId, boolean isMmTable, Set<Path> filesKept) throws IOException {
     if (fileStats == null) {
       return null;
     }
     List<Path> result = new ArrayList<Path>();
     HashMap<String, FileStatus> taskIDToFile = null;
     if (dpLevels > 0) {
-      FileStatus parts[] = fileStats;
+      FileStatus[] parts = fileStats;
       for (int i = 0; i < parts.length; ++i) {
         assert parts[i].isDirectory() : "dynamic partition " + parts[i].getPath()
             + " is not a directory";
@@ -1627,7 +1627,6 @@ public final class Utilities {
           parts[i] = null;
           continue;
         }
-        FileStatus[] items = fs.listStatus(path);
 
         if (isMmTable) {
           Path mmDir = parts[i].getPath();
@@ -1638,7 +1637,12 @@ public final class Utilities {
             Utilities.FILE_OP_LOGGER.trace(
                 "removeTempOrDuplicateFiles processing files in MM directory " + mmDir);
           }
+          if (!StringUtils.isEmpty(unionSuffix)) {
+            path = new Path(path, unionSuffix);
+          }
         }
+
+        FileStatus[] items = fs.listStatus(path);
         taskIDToFile = removeTempOrDuplicateFilesNonMm(items, fs);
         if (filesKept != null && taskIDToFile != null) {
           addFilesToPathSet(taskIDToFile.values(), filesKept);
@@ -1646,6 +1650,18 @@ public final class Utilities {
 
         addBucketFileToResults(taskIDToFile, numBuckets, hconf, result);
       }
+    } else if (isMmTable && !StringUtils.isEmpty(unionSuffix)) {
+      FileStatus[] items = fileStats;
+      if (fileStats.length == 0) {
+        return result;
+      }
+      Path mmDir = extractNonDpMmDir(txnId, stmtId, items);
+      taskIDToFile = removeTempOrDuplicateFilesNonMm(
+          fs.listStatus(new Path(mmDir, unionSuffix)), fs);
+      if (filesKept != null && taskIDToFile != null) {
+        addFilesToPathSet(taskIDToFile.values(), filesKept);
+      }
+      addBucketFileToResults2(taskIDToFile, numBuckets, hconf, result);
     } else {
       FileStatus[] items = fileStats;
       if (items.length == 0) {
@@ -1657,17 +1673,7 @@ public final class Utilities {
           addFilesToPathSet(taskIDToFile.values(), filesKept);
         }
       } else {
-        if (items.length > 1) {
-          throw new IOException("Unexpected directories for non-DP MM: " + Arrays.toString(items));
-        }
-        Path mmDir = items[0].getPath();
-        if (!mmDir.getName().equals(AcidUtils.deltaSubdir(txnId, txnId, stmtId))) {
-          throw new IOException("Unexpected non-MM directory " + mmDir);
-        }
-        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-          Utilities.FILE_OP_LOGGER.trace(
-            "removeTempOrDuplicateFiles processing files in MM directory "  + mmDir);
-        }
+        Path mmDir = extractNonDpMmDir(txnId, stmtId, items);
         taskIDToFile = removeTempOrDuplicateFilesNonMm(fs.listStatus(mmDir), fs);
         if (filesKept != null && taskIDToFile != null) {
           addFilesToPathSet(taskIDToFile.values(), filesKept);
@@ -1678,6 +1684,22 @@ public final class Utilities {
 
     return result;
   }
+
+  private static Path extractNonDpMmDir(Long txnId, int stmtId, FileStatus[] items) throws IOException {
+    if (items.length > 1) {
+      throw new IOException("Unexpected directories for non-DP MM: " + Arrays.toString(items));
+    }
+    Path mmDir = items[0].getPath();
+    if (!mmDir.getName().equals(AcidUtils.deltaSubdir(txnId, txnId, stmtId))) {
+      throw new IOException("Unexpected non-MM directory " + mmDir);
+    }
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace(
+        "removeTempOrDuplicateFiles processing files in MM directory "  + mmDir);
+    }
+    return mmDir;
+  }
+
 
   // TODO: not clear why two if conditions are different. Preserve the existing logic for now.
   private static void addBucketFileToResults2(HashMap<String, FileStatus> taskIDToFile,
@@ -4039,7 +4061,8 @@ public final class Utilities {
   }
 
   public static Path[] getMmDirectoryCandidates(FileSystem fs, Path path, int dpLevels,
-      int lbLevels, PathFilter filter, long txnId, int stmtId, Configuration conf) throws IOException {
+      int lbLevels, PathFilter filter, long txnId, int stmtId, Configuration conf)
+          throws IOException {
     int skipLevels = dpLevels + lbLevels;
     if (filter == null) {
       filter = new JavaUtils.IdPathFilter(txnId, stmtId, true);
@@ -4047,7 +4070,10 @@ public final class Utilities {
     if (skipLevels == 0) {
       return statusToPath(fs.listStatus(path, filter));
     }
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_AVOID_GLOBSTATUS_ON_S3) && isS3(fs)) {
+    // TODO: for some reason, globStatus doesn't work for masks like "...blah/*/delta_0000007_0000007*"
+    //       the last star throws it off. So, for now, if stmtId is missing use recursion.
+    if (stmtId < 0
+        || (HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_AVOID_GLOBSTATUS_ON_S3) && isS3(fs))) {
       return getMmDirectoryCandidatesRecursive(fs, path, skipLevels, filter);
     }
     return getMmDirectoryCandidatesGlobStatus(fs, path, skipLevels, filter, txnId, stmtId);
@@ -4124,7 +4150,13 @@ public final class Utilities {
     for (int i = 0; i < skipLevels; i++) {
       sb.append(Path.SEPARATOR).append("*");
     }
-    sb.append(Path.SEPARATOR).append(AcidUtils.deltaSubdir(txnId, txnId, stmtId));
+    if (stmtId < 0) {
+      // Note: this does not work.
+      // sb.append(Path.SEPARATOR).append(AcidUtils.deltaSubdir(txnId, txnId)).append("_*");
+      throw new AssertionError("GlobStatus should not be called without a statement ID");
+    } else {
+      sb.append(Path.SEPARATOR).append(AcidUtils.deltaSubdir(txnId, txnId, stmtId));
+    }
     Path pathPattern = new Path(path, sb.toString());
     return statusToPath(fs.globStatus(pathPattern, filter));
   }
@@ -4278,8 +4310,9 @@ public final class Utilities {
     for (int i = 0; i < mmDirectories.size(); ++i) {
       finalResults[i] = new PathOnlyFileStatus(mmDirectories.get(i));
     }
-    List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(fs, finalResults, dpLevels,
-        mbc == null ? 0 : mbc.numBuckets, hconf, txnId, stmtId, isMmTable, null);
+    List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(fs, finalResults,
+        unionSuffix, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, txnId, stmtId,
+            isMmTable, null);
     // create empty buckets if necessary
     if (emptyBuckets.size() > 0) {
       assert mbc != null;
