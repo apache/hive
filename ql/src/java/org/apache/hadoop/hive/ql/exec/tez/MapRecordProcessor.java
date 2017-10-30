@@ -100,7 +100,7 @@ public class MapRecordProcessor extends RecordProcessor {
       setLlapOfFragmentId(context);
     }
     cache = ObjectCacheFactory.getCache(jconf, queryId, true);
-    dynamicValueCache = ObjectCacheFactory.getCache(jconf, queryId, false);
+    dynamicValueCache = ObjectCacheFactory.getCache(jconf, queryId, false, true);
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
     cacheKeys = new ArrayList<String>();

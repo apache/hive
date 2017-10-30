@@ -113,7 +113,7 @@ public class DynamicValue implements LiteralDelegate, Serializable {
     try {
       // Get object cache
       String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
-      ObjectCache cache = ObjectCacheFactory.getCache(conf, queryId, false);
+      ObjectCache cache = ObjectCacheFactory.getCache(conf, queryId, false, true);
 
       if (cache == null) {
         return null;

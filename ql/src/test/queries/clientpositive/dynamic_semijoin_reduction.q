@@ -121,6 +121,7 @@ set hive.tez.dynamic.semijoin.reduction=false;
 EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds;
 select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds;
 set hive.tez.dynamic.semijoin.reduction=true;
+set hive.llap.object.cache.enabled=false;
 EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds;
 select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds;
 
