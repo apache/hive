@@ -2948,6 +2948,9 @@ public class HiveConf extends Configuration {
         + "When it is set to false, only [a-zA-Z_0-9]+ are supported.\n"
         + "The only supported special character right now is '/'. This flag applies only to quoted table names.\n"
         + "The default value is true."),
+    HIVE_CREATE_TABLES_AS_INSERT_ONLY("hive.create.as.insert.only", false,
+        "Whether the eligible tables should be created as ACID insert-only by default. Does \n" +
+        "not apply to external tables, the ones using storage handlers, etc."),
     // role names are case-insensitive
     USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +

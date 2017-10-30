@@ -42,7 +42,6 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
@@ -68,6 +67,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -12157,7 +12158,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *          property map
    * @return Modified table property map
    */
-  private Map<String, String> addDefaultProperties(Map<String, String> tblProp) {
+  private Map<String, String> addDefaultProperties(
+      Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat) {
     Map<String, String> retValue;
     if (tblProp == null) {
       retValue = new HashMap<String, String>();
@@ -12175,6 +12177,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           retValue.put(keyValue[0], keyValue[1]);
         }
       }
+    }
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY)
+        && !isExt && StringUtils.isBlank(storageFormat.getStorageHandler())
+        && !retValue.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)) {
+      retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+      String oldProps = retValue.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+      if (oldProps != null) {
+        LOG.warn("Non-transactional table has transactional properties; overwriting " + oldProps);
+      }
+      retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+          TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
     }
     return retValue;
   }
@@ -12398,7 +12411,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (command_type) {
 
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
-      tblProps = addDefaultProperties(tblProps);
+      tblProps = addDefaultProperties(tblProps, isExt, storageFormat);
 
       CreateTableDesc crtTblDesc = new CreateTableDesc(dbDotTab, isExt, isTemporary, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
@@ -12419,7 +12432,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
 
     case CTLT: // create table like <tbl_name>
-      tblProps = addDefaultProperties(tblProps);
+      tblProps = addDefaultProperties(tblProps, isExt, storageFormat);
 
       if (isTemporary) {
         Table likeTable = getTable(likeTableName, false);
@@ -12496,7 +12509,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      tblProps = addDefaultProperties(tblProps);
+      tblProps = addDefaultProperties(tblProps, isExt, storageFormat);
       tableDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
           partCols, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape, rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim,
