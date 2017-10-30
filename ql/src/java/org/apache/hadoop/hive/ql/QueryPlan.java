@@ -108,7 +108,7 @@ public class QueryPlan implements Serializable {
   private transient Long queryStartTime;
   private final HiveOperation operation;
   private final boolean acidResourcesInQuery;
-  private final Set<FileSinkDesc> acidSinks;
+  private final Set<FileSinkDesc> acidSinks; // Note: both full-ACID and insert-only sinks.
   private Boolean autoCommitValue;
 
   public QueryPlan() {
