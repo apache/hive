@@ -304,6 +304,24 @@ STAGE PLANS:
 
   Stage: Stage-3
 
+PREHOOK: query: update orc_llap set cbigint = 2 where cint = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@orc_llap@csmallint=1
+PREHOOK: Input: default@orc_llap@csmallint=2
+PREHOOK: Input: default@orc_llap@csmallint=3
+PREHOOK: Output: default@orc_llap@csmallint=1
+PREHOOK: Output: default@orc_llap@csmallint=2
+PREHOOK: Output: default@orc_llap@csmallint=3
+POSTHOOK: query: update orc_llap set cbigint = 2 where cint = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@orc_llap@csmallint=1
+POSTHOOK: Input: default@orc_llap@csmallint=2
+POSTHOOK: Input: default@orc_llap@csmallint=3
+POSTHOOK: Output: default@orc_llap@csmallint=1
+POSTHOOK: Output: default@orc_llap@csmallint=2
+POSTHOOK: Output: default@orc_llap@csmallint=3
 PREHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap where cint is not null order
 by csmallint, cint
@@ -408,7 +426,7 @@ POSTHOOK: Input: default@orc_llap@csmallint=3
 #### A masked pattern was here ####
 -285355633	1	-1241163445
 -109813638	1	-58941842
-1	1	1
+1	1	2
 164554497	1	1161977292
 199879534	1	123351087
 246423894	1	-1645852809

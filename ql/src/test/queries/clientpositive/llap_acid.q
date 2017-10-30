@@ -44,7 +44,7 @@ insert into table orc_llap partition (csmallint = 1) values (1, 1, 1, 1);
 
 explain vectorization only detail
 update orc_llap set cbigint = 2 where cint = 1;
--- update orc_llap set cbigint = 2 where cint = 1;
+update orc_llap set cbigint = 2 where cint = 1;
 
 explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap where cint is not null order
