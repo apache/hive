@@ -119,6 +119,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -4717,7 +4718,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public List<WMResourcePlan> geAllResourcePlans() throws HiveException {
+  public List<WMResourcePlan> getAllResourcePlans() throws HiveException {
     try {
       return getMSC().getAllResourcePlans();
     } catch (Exception e) {
@@ -4744,6 +4745,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public boolean validateResourcePlan(String rpName) throws HiveException {
     try {
       return getMSC().validateResourcePlan(rpName);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void createWMTrigger(WMTrigger trigger) throws HiveException {
+    try {
+      getMSC().createWMTrigger(trigger);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void alterWMTrigger(WMTrigger trigger) throws HiveException {
+    try {
+      getMSC().alterWMTrigger(trigger);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void dropWMTrigger(String rpName, String triggerName) throws HiveException {
+    try {
+      getMSC().dropWMTrigger(rpName, triggerName);
     } catch (Exception e) {
       throw new HiveException(e);
     }

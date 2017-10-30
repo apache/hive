@@ -413,6 +413,10 @@ TOK_VALIDATE;
 TOK_ACTIVATE;
 TOK_QUERY_PARALLELISM;
 TOK_RENAME;
+TOK_CREATE_TRIGGER;
+TOK_ALTER_TRIGGER;
+TOK_DROP_TRIGGER;
+TOK_TRIGGER_EXPRESSION;
 }
 
 
@@ -590,6 +594,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_QUERY_PARALLELISM", "QUERY_PARALLELISM");
     xlateMap.put("KW_PLANS", "PLANS");
     xlateMap.put("KW_ACTIVATE", "ACTIVATE");
+    xlateMap.put("KW_MOVE", "MOVE");
+    xlateMap.put("KW_DO", "DO");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -931,6 +937,9 @@ ddlStatement
     | createResourcePlanStatement
     | alterResourcePlanStatement
     | dropResourcePlanStatement
+    | createTriggerStatement
+    | alterTriggerStatement
+    | dropTriggerStatement
     ;
 
 ifExists
@@ -1013,6 +1022,81 @@ dropResourcePlanStatement
 @after { popMsg(state); }
     : KW_DROP KW_RESOURCE KW_PLAN name=identifier
     -> ^(TOK_DROP_RP $name)
+    ;
+
+poolPath
+@init { pushMsg("poolPath", state); }
+@after { popMsg(state); }
+    : identifier^ (DOT identifier)*
+    ;
+
+triggerExpression
+@init { pushMsg("triggerExpression", state); }
+@after { popMsg(state); }
+    : triggerOrExpression -> ^(TOK_TRIGGER_EXPRESSION triggerOrExpression)
+    ;
+
+triggerOrExpression
+@init { pushMsg("triggerOrExpression", state); }
+@after { popMsg(state); }
+    : triggerAndExpression (KW_OR triggerAndExpression)*
+    ;
+
+triggerAndExpression
+@init { pushMsg("triggerAndExpression", state); }
+@after { popMsg(state); }
+    : triggerAtomExpression (KW_AND triggerAtomExpression)*
+    ;
+
+triggerAtomExpression
+@init { pushMsg("triggerAtomExpression", state); }
+@after { popMsg(state); }
+    : (identifier comparisionOperator triggerLiteral)
+    | (LPAREN triggerOrExpression RPAREN)
+    ;
+
+triggerLiteral
+@init { pushMsg("triggerLiteral", state); }
+@after { popMsg(state); }
+    : (Number (KW_HOUR|KW_MINUTE|KW_SECOND)?)
+    | ByteLengthLiteral
+    | StringLiteral
+    ;
+
+comparisionOperator
+@init { pushMsg("comparisionOperator", state); }
+@after { popMsg(state); }
+    : EQUAL | LESSTHAN | LESSTHANOREQUALTO | GREATERTHAN | GREATERTHANOREQUALTO
+    ;
+
+triggerActionExpression
+@init { pushMsg("triggerActionExpression", state); }
+@after { popMsg(state); }
+    : KW_KILL
+    | (KW_MOVE^ KW_TO! poolPath)
+    ;
+
+createTriggerStatement
+@init { pushMsg("create trigger statement", state); }
+@after { popMsg(state); }
+    : KW_CREATE KW_TRIGGER rpName=identifier DOT triggerName=identifier
+      KW_WHEN triggerExpression KW_DO triggerActionExpression
+    -> ^(TOK_CREATE_TRIGGER $rpName $triggerName triggerExpression triggerActionExpression)
+    ;
+
+alterTriggerStatement
+@init { pushMsg("alter trigger statement", state); }
+@after { popMsg(state); }
+    : KW_ALTER KW_TRIGGER rpName=identifier DOT triggerName=identifier
+      KW_WHEN triggerExpression KW_DO triggerActionExpression
+    -> ^(TOK_ALTER_TRIGGER $rpName $triggerName triggerExpression triggerActionExpression)
+    ;
+
+dropTriggerStatement
+@init { pushMsg("drop trigger statement", state); }
+@after { popMsg(state); }
+    : KW_DROP KW_TRIGGER rpName=identifier DOT triggerName=identifier
+    -> ^(TOK_DROP_TRIGGER $rpName $triggerName)
     ;
 
 createDatabaseStatement

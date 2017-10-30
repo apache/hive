@@ -314,6 +314,9 @@ public class Operation2Privilege {
     adminPrivOps.add(HiveOperationType.ALTER_RESOURCEPLAN);
     adminPrivOps.add(HiveOperationType.DROP_RESOURCEPLAN);
     adminPrivOps.add(HiveOperationType.SHOW_RESOURCEPLAN);
+    adminPrivOps.add(HiveOperationType.CREATE_TRIGGER);
+    adminPrivOps.add(HiveOperationType.ALTER_TRIGGER);
+    adminPrivOps.add(HiveOperationType.DROP_TRIGGER);
 
     // operations require select priv
     op2Priv.put(HiveOperationType.SHOWCOLUMNS, PrivRequirement.newIOPrivRequirement
@@ -476,6 +479,9 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.ALTER_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.DROP_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.SHOW_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.CREATE_TRIGGER, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.ALTER_TRIGGER, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.DROP_TRIGGER, PrivRequirement.newIOPrivRequirement(null, null));
   }
 
   /**

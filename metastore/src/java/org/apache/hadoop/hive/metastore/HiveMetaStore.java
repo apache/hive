@@ -7454,7 +7454,58 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         getMS().dropResourcePlan(request.getResourcePlanName());
         return new WMDropResourcePlanResponse();
       } catch (MetaException e) {
+        LOG.error("Exception while trying to drop resource plan", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMCreateTriggerResponse create_wm_trigger(WMCreateTriggerRequest request)
+        throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+      try {
+        getMS().createWMTrigger(request.getTrigger());
+        return new WMCreateTriggerResponse();
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to create trigger", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMAlterTriggerResponse alter_wm_trigger(WMAlterTriggerRequest request)
+        throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
+      try {
+        getMS().alterWMTrigger(request.getTrigger());
+        return new WMAlterTriggerResponse();
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to alter trigger", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMDropTriggerResponse drop_wm_trigger(WMDropTriggerRequest request)
+        throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+      try {
+        getMS().dropWMTrigger(request.getResourcePlanName(), request.getTriggerName());
+        return new WMDropTriggerResponse();
+      } catch (MetaException e) {
         LOG.error("Exception while trying to retrieve resource plans", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMGetTriggersForResourePlanResponse get_triggers_for_resourceplan(
+        WMGetTriggersForResourePlanRequest request)
+        throws NoSuchObjectException, MetaException, TException {
+      try {
+        List<WMTrigger> triggers = getMS().getTriggersForResourcePlan(request.getResourcePlanName());
+        WMGetTriggersForResourePlanResponse response = new WMGetTriggersForResourePlanResponse();
+        response.setTriggers(triggers);
+        return response;
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to retrieve triggers plans", e);
         throw e;
       }
     }

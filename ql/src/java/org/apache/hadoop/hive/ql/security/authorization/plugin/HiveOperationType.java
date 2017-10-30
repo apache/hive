@@ -136,6 +136,9 @@ public enum HiveOperationType {
   SHOW_RESOURCEPLAN,
   ALTER_RESOURCEPLAN,
   DROP_RESOURCEPLAN,
+  CREATE_TRIGGER,
+  ALTER_TRIGGER,
+  DROP_TRIGGER,
 
   // ==== Hive command operation types starts here ==== //
   SET,

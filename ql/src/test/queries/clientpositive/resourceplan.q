@@ -104,3 +104,45 @@ DROP RESOURCE PLAN plan_2;
 -- Success.
 DROP RESOURCE PLAN plan_3;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
+
+
+--
+-- Create trigger commands.
+--
+
+CREATE RESOURCE PLAN plan_1;
+
+CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > 10k AND BYTES_READ <= 1M OR ELAPSED_TIME > 30 SECOND AND ELAPSED_TIME < 1 MINUTE DO KILL;
+SELECT * FROM SYS.WM_TRIGGERS;
+
+-- Duplicate should fail.
+CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ = 10G DO KILL;
+
+CREATE TRIGGER plan_1.trigger_2 WHEN BYTES_READ > 100 DO MOVE TO slow_pool;
+SELECT * FROM SYS.WM_TRIGGERS;
+
+ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ = 1000 DO KILL;
+SELECT * FROM SYS.WM_TRIGGERS;
+
+DROP TRIGGER plan_1.trigger_1;
+SELECT * FROM SYS.WM_TRIGGERS;
+
+-- No edit on active resource plan.
+CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ = 0m DO MOVE TO null_pool;
+
+-- Cannot drop/change trigger from enabled plan.
+ALTER RESOURCE PLAN plan_1 ENABLE;
+SELECT * FROM SYS.WM_RESOURCEPLANS;
+DROP TRIGGER plan_1.trigger_2;
+ALTER TRIGGER plan_1.trigger_2 WHEN BYTES_READ = 1000g DO KILL;
+
+-- Cannot drop/change trigger from active plan.
+ALTER RESOURCE PLAN plan_1 ACTIVATE;
+SELECT * FROM SYS.WM_RESOURCEPLANS;
+DROP TRIGGER plan_1.trigger_2;
+ALTER TRIGGER plan_1.trigger_2 WHEN BYTES_READ = 1000K DO KILL;
+
+-- Once disabled we should be able to change it.
+ALTER RESOURCE PLAN plan_2 DISABLE;
+CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ = 0 DO MOVE TO null_pool;
+SELECT * FROM SYS.WM_TRIGGERS;

@@ -92,11 +92,13 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
+import org.apache.hadoop.hive.ql.plan.AlterWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateResourcePlanDesc;
+import org.apache.hadoop.hive.ql.plan.CreateWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
@@ -105,6 +107,7 @@ import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
+import org.apache.hadoop.hive.ql.plan.DropWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -165,7 +168,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -559,6 +561,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    case HiveParser.TOK_DROP_RP:
      analyzeDropResourcePlan(ast);
      break;
+   case HiveParser.TOK_CREATE_TRIGGER:
+     analyzeCreateTrigger(ast);
+     break;
+   case HiveParser.TOK_ALTER_TRIGGER:
+     analyzeAlterTrigger(ast);
+     break;
+   case HiveParser.TOK_DROP_TRIGGER:
+     analyzeDropTrigger(ast);
+     break;
    default:
       throw new SemanticException("Unsupported command: " + ast);
     }
@@ -920,6 +931,85 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     String rpName = unescapeIdentifier(ast.getChild(0).getText());
     DropResourcePlanDesc desc = new DropResourcePlanDesc(rpName);
+    rootTasks.add(TaskFactory.get(
+        new DDLWork(getInputs(), getOutputs(), desc), conf));
+  }
+
+  private void analyzeCreateTrigger(ASTNode ast) throws SemanticException {
+    if (ast.getChildCount() != 4) {
+      throw new SemanticException("Invalid syntax for create trigger statement");
+    }
+    String rpName = unescapeIdentifier(ast.getChild(0).getText());
+    String triggerName = unescapeIdentifier(ast.getChild(1).getText());
+    String triggerExpression = buildTriggerExpression((ASTNode)ast.getChild(2));
+    String actionExpression = buildTriggerActionExpression((ASTNode)ast.getChild(3));
+
+    CreateWMTriggerDesc desc =
+        new CreateWMTriggerDesc(rpName, triggerName, triggerExpression, actionExpression);
+    rootTasks.add(TaskFactory.get(
+        new DDLWork(getInputs(), getOutputs(), desc), conf));
+  }
+
+  private String buildTriggerExpression(ASTNode ast) throws SemanticException {
+    if (ast.getType() != HiveParser.TOK_TRIGGER_EXPRESSION || ast.getChildCount() == 0) {
+      throw new SemanticException("Invalid trigger expression.");
+    }
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < ast.getChildCount(); ++i) {
+      builder.append(ast.getChild(i).getText());
+      builder.append(' ');
+    }
+    builder.deleteCharAt(builder.length() - 1);
+    return builder.toString();
+  }
+
+  private String poolPath(ASTNode ast) {
+    StringBuilder builder = new StringBuilder();
+    builder.append(ast.getText());
+    for (int i = 0; i < ast.getChildCount(); ++i) {
+      builder.append(ast.getChild(i).getText());
+    }
+    return builder.toString();
+  }
+
+  private String buildTriggerActionExpression(ASTNode ast) throws SemanticException {
+    switch (ast.getType()) {
+    case HiveParser.KW_KILL:
+      return "KILL";
+    case HiveParser.KW_MOVE:
+      if (ast.getChildCount() != 1) {
+        throw new SemanticException("Invalid move to clause in trigger action.");
+      }
+      String poolPath = poolPath((ASTNode)ast.getChild(0));
+      return "MOVE TO " + poolPath;
+    default:
+      throw new SemanticException("Unknown token in action clause: " + ast.getType());
+    }
+  }
+
+  private void analyzeAlterTrigger(ASTNode ast) throws SemanticException {
+    if (ast.getChildCount() != 4) {
+      throw new SemanticException("Invalid syntax for alter trigger statement");
+    }
+    String rpName = unescapeIdentifier(ast.getChild(0).getText());
+    String triggerName = unescapeIdentifier(ast.getChild(1).getText());
+    String triggerExpression = buildTriggerExpression((ASTNode)ast.getChild(2));
+    String actionExpression = buildTriggerActionExpression((ASTNode)ast.getChild(3));
+
+    AlterWMTriggerDesc desc =
+        new AlterWMTriggerDesc(rpName, triggerName, triggerExpression, actionExpression);
+    rootTasks.add(TaskFactory.get(
+        new DDLWork(getInputs(), getOutputs(), desc), conf));
+  }
+
+  private void analyzeDropTrigger(ASTNode ast) throws SemanticException {
+    if (ast.getChildCount() != 2) {
+      throw new SemanticException("Invalid syntax for drop trigger.");
+    }
+    String rpName = ast.getChild(0).getText();
+    String triggerName = ast.getChild(1).getText();
+
+    DropWMTriggerDesc desc = new DropWMTriggerDesc(rpName, triggerName);
     rootTasks.add(TaskFactory.get(
         new DDLWork(getInputs(), getOutputs(), desc), conf));
   }

@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
@@ -56,6 +57,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -747,17 +749,32 @@ public interface RawStore extends Configurable {
    */
   String getMetastoreDbUuid() throws MetaException;
 
-  void createResourcePlan(WMResourcePlan resourcePlan) throws MetaException;
+  void createResourcePlan(WMResourcePlan resourcePlan)
+      throws AlreadyExistsException, MetaException;
 
   WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException, MetaException;
 
   List<WMResourcePlan> getAllResourcePlans() throws MetaException;
 
   void alterResourcePlan(String name, WMResourcePlan resourcePlan)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
+          MetaException;
 
   boolean validateResourcePlan(String name)
       throws NoSuchObjectException, InvalidObjectException, MetaException;
 
   void dropResourcePlan(String name) throws NoSuchObjectException, MetaException;
+
+  void createWMTrigger(WMTrigger trigger)
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
+          MetaException;
+
+  void alterWMTrigger(WMTrigger trigger)
+      throws NoSuchObjectException, InvalidOperationException, MetaException;
+
+  void dropWMTrigger(String resourcePlanName, String triggerName)
+      throws NoSuchObjectException, InvalidOperationException, MetaException;
+
+  List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName)
+      throws NoSuchObjectException, MetaException;
 }

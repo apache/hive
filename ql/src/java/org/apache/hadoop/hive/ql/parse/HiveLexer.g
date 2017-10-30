@@ -358,6 +358,8 @@ KW_PLAN: 'PLAN';
 KW_QUERY_PARALLELISM: 'QUERY_PARALLELISM';
 KW_PLANS: 'PLANS';
 KW_ACTIVATE: 'ACTIVATE';
+KW_MOVE: 'MOVE';
+KW_DO: 'DO';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

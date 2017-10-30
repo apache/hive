@@ -39,7 +39,7 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("WMTrigger");
 
   private static final org.apache.thrift.protocol.TField RESOURCE_PLAN_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("resourcePlanName", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField POOL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("poolName", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField TRIGGER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("triggerName", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField TRIGGER_EXPRESSION_FIELD_DESC = new org.apache.thrift.protocol.TField("triggerExpression", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField ACTION_EXPRESSION_FIELD_DESC = new org.apache.thrift.protocol.TField("actionExpression", org.apache.thrift.protocol.TType.STRING, (short)4);
 
@@ -50,14 +50,14 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
   }
 
   private String resourcePlanName; // required
-  private String poolName; // required
+  private String triggerName; // required
   private String triggerExpression; // optional
   private String actionExpression; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     RESOURCE_PLAN_NAME((short)1, "resourcePlanName"),
-    POOL_NAME((short)2, "poolName"),
+    TRIGGER_NAME((short)2, "triggerName"),
     TRIGGER_EXPRESSION((short)3, "triggerExpression"),
     ACTION_EXPRESSION((short)4, "actionExpression");
 
@@ -76,8 +76,8 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
       switch(fieldId) {
         case 1: // RESOURCE_PLAN_NAME
           return RESOURCE_PLAN_NAME;
-        case 2: // POOL_NAME
-          return POOL_NAME;
+        case 2: // TRIGGER_NAME
+          return TRIGGER_NAME;
         case 3: // TRIGGER_EXPRESSION
           return TRIGGER_EXPRESSION;
         case 4: // ACTION_EXPRESSION
@@ -128,7 +128,7 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.RESOURCE_PLAN_NAME, new org.apache.thrift.meta_data.FieldMetaData("resourcePlanName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.POOL_NAME, new org.apache.thrift.meta_data.FieldMetaData("poolName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.TRIGGER_NAME, new org.apache.thrift.meta_data.FieldMetaData("triggerName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TRIGGER_EXPRESSION, new org.apache.thrift.meta_data.FieldMetaData("triggerExpression", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
@@ -143,11 +143,11 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
 
   public WMTrigger(
     String resourcePlanName,
-    String poolName)
+    String triggerName)
   {
     this();
     this.resourcePlanName = resourcePlanName;
-    this.poolName = poolName;
+    this.triggerName = triggerName;
   }
 
   /**
@@ -157,8 +157,8 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
     if (other.isSetResourcePlanName()) {
       this.resourcePlanName = other.resourcePlanName;
     }
-    if (other.isSetPoolName()) {
-      this.poolName = other.poolName;
+    if (other.isSetTriggerName()) {
+      this.triggerName = other.triggerName;
     }
     if (other.isSetTriggerExpression()) {
       this.triggerExpression = other.triggerExpression;
@@ -175,7 +175,7 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
   @Override
   public void clear() {
     this.resourcePlanName = null;
-    this.poolName = null;
+    this.triggerName = null;
     this.triggerExpression = null;
     this.actionExpression = null;
   }
@@ -203,26 +203,26 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
     }
   }
 
-  public String getPoolName() {
-    return this.poolName;
+  public String getTriggerName() {
+    return this.triggerName;
   }
 
-  public void setPoolName(String poolName) {
-    this.poolName = poolName;
+  public void setTriggerName(String triggerName) {
+    this.triggerName = triggerName;
   }
 
-  public void unsetPoolName() {
-    this.poolName = null;
+  public void unsetTriggerName() {
+    this.triggerName = null;
   }
 
-  /** Returns true if field poolName is set (has been assigned a value) and false otherwise */
-  public boolean isSetPoolName() {
-    return this.poolName != null;
+  /** Returns true if field triggerName is set (has been assigned a value) and false otherwise */
+  public boolean isSetTriggerName() {
+    return this.triggerName != null;
   }
 
-  public void setPoolNameIsSet(boolean value) {
+  public void setTriggerNameIsSet(boolean value) {
     if (!value) {
-      this.poolName = null;
+      this.triggerName = null;
     }
   }
 
@@ -282,11 +282,11 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
       }
       break;
 
-    case POOL_NAME:
+    case TRIGGER_NAME:
       if (value == null) {
-        unsetPoolName();
+        unsetTriggerName();
       } else {
-        setPoolName((String)value);
+        setTriggerName((String)value);
       }
       break;
 
@@ -314,8 +314,8 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
     case RESOURCE_PLAN_NAME:
       return getResourcePlanName();
 
-    case POOL_NAME:
-      return getPoolName();
+    case TRIGGER_NAME:
+      return getTriggerName();
 
     case TRIGGER_EXPRESSION:
       return getTriggerExpression();
@@ -336,8 +336,8 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
     switch (field) {
     case RESOURCE_PLAN_NAME:
       return isSetResourcePlanName();
-    case POOL_NAME:
-      return isSetPoolName();
+    case TRIGGER_NAME:
+      return isSetTriggerName();
     case TRIGGER_EXPRESSION:
       return isSetTriggerExpression();
     case ACTION_EXPRESSION:
@@ -368,12 +368,12 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
         return false;
     }
 
-    boolean this_present_poolName = true && this.isSetPoolName();
-    boolean that_present_poolName = true && that.isSetPoolName();
-    if (this_present_poolName || that_present_poolName) {
-      if (!(this_present_poolName && that_present_poolName))
+    boolean this_present_triggerName = true && this.isSetTriggerName();
+    boolean that_present_triggerName = true && that.isSetTriggerName();
+    if (this_present_triggerName || that_present_triggerName) {
+      if (!(this_present_triggerName && that_present_triggerName))
         return false;
-      if (!this.poolName.equals(that.poolName))
+      if (!this.triggerName.equals(that.triggerName))
         return false;
     }
 
@@ -407,10 +407,10 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
     if (present_resourcePlanName)
       list.add(resourcePlanName);
 
-    boolean present_poolName = true && (isSetPoolName());
-    list.add(present_poolName);
-    if (present_poolName)
-      list.add(poolName);
+    boolean present_triggerName = true && (isSetTriggerName());
+    list.add(present_triggerName);
+    if (present_triggerName)
+      list.add(triggerName);
 
     boolean present_triggerExpression = true && (isSetTriggerExpression());
     list.add(present_triggerExpression);
@@ -443,12 +443,12 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetPoolName()).compareTo(other.isSetPoolName());
+    lastComparison = Boolean.valueOf(isSetTriggerName()).compareTo(other.isSetTriggerName());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetPoolName()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.poolName, other.poolName);
+    if (isSetTriggerName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.triggerName, other.triggerName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -501,11 +501,11 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("poolName:");
-    if (this.poolName == null) {
+    sb.append("triggerName:");
+    if (this.triggerName == null) {
       sb.append("null");
     } else {
-      sb.append(this.poolName);
+      sb.append(this.triggerName);
     }
     first = false;
     if (isSetTriggerExpression()) {
@@ -538,8 +538,8 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'resourcePlanName' is unset! Struct:" + toString());
     }
 
-    if (!isSetPoolName()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'poolName' is unset! Struct:" + toString());
+    if (!isSetTriggerName()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'triggerName' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -587,10 +587,10 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // POOL_NAME
+          case 2: // TRIGGER_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.poolName = iprot.readString();
-              struct.setPoolNameIsSet(true);
+              struct.triggerName = iprot.readString();
+              struct.setTriggerNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -629,9 +629,9 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
         oprot.writeString(struct.resourcePlanName);
         oprot.writeFieldEnd();
       }
-      if (struct.poolName != null) {
-        oprot.writeFieldBegin(POOL_NAME_FIELD_DESC);
-        oprot.writeString(struct.poolName);
+      if (struct.triggerName != null) {
+        oprot.writeFieldBegin(TRIGGER_NAME_FIELD_DESC);
+        oprot.writeString(struct.triggerName);
         oprot.writeFieldEnd();
       }
       if (struct.triggerExpression != null) {
@@ -666,7 +666,7 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
     public void write(org.apache.thrift.protocol.TProtocol prot, WMTrigger struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeString(struct.resourcePlanName);
-      oprot.writeString(struct.poolName);
+      oprot.writeString(struct.triggerName);
       BitSet optionals = new BitSet();
       if (struct.isSetTriggerExpression()) {
         optionals.set(0);
@@ -688,8 +688,8 @@ public class WMTrigger implements org.apache.thrift.TBase<WMTrigger, WMTrigger._
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.resourcePlanName = iprot.readString();
       struct.setResourcePlanNameIsSet(true);
-      struct.poolName = iprot.readString();
-      struct.setPoolNameIsSet(true);
+      struct.triggerName = iprot.readString();
+      struct.setTriggerNameIsSet(true);
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.triggerExpression = iprot.readString();

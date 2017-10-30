@@ -192,6 +192,10 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  WMAlterResourcePlanResponse alter_resource_plan(WMAlterResourcePlanRequest request)')
   print('  WMValidateResourcePlanResponse validate_resource_plan(WMValidateResourcePlanRequest request)')
   print('  WMDropResourcePlanResponse drop_resource_plan(WMDropResourcePlanRequest request)')
+  print('  WMCreateTriggerResponse create_wm_trigger(WMCreateTriggerRequest request)')
+  print('  WMAlterTriggerResponse alter_wm_trigger(WMAlterTriggerRequest request)')
+  print('  WMDropTriggerResponse drop_wm_trigger(WMDropTriggerRequest request)')
+  print('  WMGetTriggersForResourePlanResponse get_triggers_for_resourceplan(WMGetTriggersForResourePlanRequest request)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -1268,6 +1272,30 @@ elif cmd == 'drop_resource_plan':
     print('drop_resource_plan requires 1 args')
     sys.exit(1)
   pp.pprint(client.drop_resource_plan(eval(args[0]),))
+
+elif cmd == 'create_wm_trigger':
+  if len(args) != 1:
+    print('create_wm_trigger requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.create_wm_trigger(eval(args[0]),))
+
+elif cmd == 'alter_wm_trigger':
+  if len(args) != 1:
+    print('alter_wm_trigger requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.alter_wm_trigger(eval(args[0]),))
+
+elif cmd == 'drop_wm_trigger':
+  if len(args) != 1:
+    print('drop_wm_trigger requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.drop_wm_trigger(eval(args[0]),))
+
+elif cmd == 'get_triggers_for_resourceplan':
+  if len(args) != 1:
+    print('get_triggers_for_resourceplan requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_triggers_for_resourceplan(eval(args[0]),))
 
 elif cmd == 'getName':
   if len(args) != 0:

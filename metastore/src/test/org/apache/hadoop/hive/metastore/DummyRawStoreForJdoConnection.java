@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -976,5 +977,25 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public void dropResourcePlan(String name) throws NoSuchObjectException, MetaException {
+  }
+
+  @Override
+  public void createWMTrigger(WMTrigger trigger) throws MetaException {
+  }
+
+  @Override
+  public void alterWMTrigger(WMTrigger trigger)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+  }
+
+  @Override
+  public void dropWMTrigger(String resourcePlanName, String triggerName)
+      throws NoSuchObjectException, MetaException {
+  }
+
+  @Override
+  public List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName)
+      throws NoSuchObjectException, MetaException {
+    return null;
   }
 }

@@ -78,6 +78,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -113,6 +114,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
@@ -155,6 +157,7 @@ import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MPartitionEvent;
 import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
+import org.apache.hadoop.hive.metastore.model.MWMTrigger;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
 import org.apache.hadoop.hive.metastore.model.MResourceUri;
 import org.apache.hadoop.hive.metastore.model.MRole;
@@ -192,14 +195,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.SortedSetMultimap;
-import com.google.common.collect.TreeMultimap;
 
 
 /**
@@ -9438,17 +9435,33 @@ public class ObjectStore implements RawStore, Configurable {
     return prop;
   }
 
+  private void checkForConstraintException(Exception e, String msg) throws AlreadyExistsException {
+    Throwable ex = e;
+    while (ex != null) {
+      if (ex instanceof SQLIntegrityConstraintViolationException) {
+        LOG.error(msg, e);
+        throw new AlreadyExistsException(msg);
+      }
+      ex = ex.getCause();
+    }
+  }
+
   @Override
-  public void createResourcePlan(WMResourcePlan resourcePlan) throws MetaException {
+  public void createResourcePlan(WMResourcePlan resourcePlan)
+      throws AlreadyExistsException, MetaException {
     boolean commited = false;
     String rpName = normalizeIdentifier(resourcePlan.getName());
     Integer queryParallelism = resourcePlan.isSetQueryParallelism() ?
         resourcePlan.getQueryParallelism() : null;
-    MWMResourcePlan rp = new MWMResourcePlan(rpName, queryParallelism, MWMResourcePlan.Status.DISABLED);
+    MWMResourcePlan rp = new MWMResourcePlan(rpName, queryParallelism,
+        MWMResourcePlan.Status.DISABLED);
     try {
       openTransaction();
       pm.makePersistent(rp);
       commited = commitTransaction();
+    } catch (Exception e) {
+      checkForConstraintException(e, "Resource plan already exists: ");
+      throw e;
     } finally {
       if (!commited) {
         rollbackTransaction();
@@ -9471,24 +9484,28 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
-    WMResourcePlan resourcePlan = null;
+    return fromMResourcePlan(getMWMResourcePlan(name));
+  }
+
+  public MWMResourcePlan getMWMResourcePlan(String name) throws NoSuchObjectException {
+    MWMResourcePlan resourcePlan;
     boolean commited = false;
     Query query = null;
+
+    name = normalizeIdentifier(name);
     try {
       openTransaction();
-      name = normalizeIdentifier(name);
       query = pm.newQuery(MWMResourcePlan.class, "name == rpname");
       query.declareParameters("java.lang.String rpname");
       query.setUnique(true);
-      MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute(name);
-      pm.retrieve(mResourcePlan);
-      resourcePlan = fromMResourcePlan(mResourcePlan);
+      resourcePlan = (MWMResourcePlan) query.execute(name);
+      pm.retrieve(resourcePlan);
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, query);
     }
     if (resourcePlan == null) {
-      throw new NoSuchObjectException("There is no resource plan named " + name);
+      throw new NoSuchObjectException("There is no resource plan named: " + name);
     }
     return resourcePlan;
   }
@@ -9517,7 +9534,8 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void alterResourcePlan(String name, WMResourcePlan resourcePlan)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
+          MetaException {
     name = normalizeIdentifier(name);
     boolean commited = false;
     Query query = null;
@@ -9539,18 +9557,10 @@ public class ObjectStore implements RawStore, Configurable {
       if (resourcePlan.isSetStatus()) {
         switchStatus(name, mResourcePlan, resourcePlan.getStatus().name());
       }
-      try {
-        commited = commitTransaction();
-      } catch (Exception e) {
-        Throwable ex = e;
-        while (ex != null) {
-          if (ex instanceof SQLIntegrityConstraintViolationException) {
-            throw new InvalidOperationException("Resource plan should be unique");
-          }
-          ex = ex.getCause();
-        }
-        throw e;
-      }
+      commited = commitTransaction();
+    } catch (Exception e) {
+      checkForConstraintException(e, "Resource plan name should be unique: ");
+      throw e;
     } finally {
       rollbackAndCleanup(commited, query);
     }
@@ -9656,5 +9666,118 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       rollbackAndCleanup(commited, query);
     }
+  }
+
+  @Override
+  public void createWMTrigger(WMTrigger trigger)
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
+          MetaException {
+    boolean commited = false;
+    try {
+      openTransaction();
+      MWMResourcePlan resourcePlan = getMWMResourcePlan(
+          normalizeIdentifier(trigger.getResourcePlanName()));
+      if (resourcePlan.getStatus() != MWMResourcePlan.Status.DISABLED) {
+        throw new InvalidOperationException("Resource plan must be disabled to edit it.");
+      }
+      MWMTrigger mTrigger = new MWMTrigger(resourcePlan,
+          normalizeIdentifier(trigger.getTriggerName()), trigger.getTriggerExpression(),
+          trigger.getActionExpression(), null);
+      pm.makePersistent(mTrigger);
+      commited = commitTransaction();
+    } catch (Exception e) {
+      checkForConstraintException(e, "Trigger already exists, use alter: ");
+      throw e;
+    } finally {
+      rollbackAndCleanup(commited, (Query)null);
+    }
+  }
+
+  @Override
+  public void alterWMTrigger(WMTrigger trigger)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      MWMResourcePlan resourcePlan = getMWMResourcePlan(
+          normalizeIdentifier(trigger.getResourcePlanName()));
+      if (resourcePlan.getStatus() != MWMResourcePlan.Status.DISABLED) {
+        throw new InvalidOperationException("Resource plan must be disabled to edit it.");
+      }
+
+      // Get the MWMTrigger object from DN
+      query = pm.newQuery(MWMTrigger.class, "resourcePlan == rp && name == triggerName");
+      query.declareParameters("MWMResourcePlan rp, java.lang.String triggerName");
+      query.setUnique(true);
+      MWMTrigger mTrigger = (MWMTrigger) query.execute(resourcePlan, trigger.getTriggerName());
+      pm.retrieve(mTrigger);
+
+      // Update the object.
+      mTrigger.setTriggerExpression(trigger.getTriggerExpression());
+      mTrigger.setActionExpression(mTrigger.getActionExpression());
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+  }
+
+  @Override
+  public void dropWMTrigger(String resourcePlanName, String triggerName)
+      throws NoSuchObjectException, InvalidOperationException, MetaException  {
+    resourcePlanName = normalizeIdentifier(resourcePlanName);
+    triggerName = normalizeIdentifier(triggerName);
+
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      MWMResourcePlan resourcePlan = getMWMResourcePlan(resourcePlanName);
+      if (resourcePlan.getStatus() != MWMResourcePlan.Status.DISABLED) {
+        throw new InvalidOperationException("Resource plan must be disabled to edit it.");
+      }
+      query = pm.newQuery(MWMTrigger.class, "resourcePlan == rp && name == triggerName");
+      query.declareParameters("MWMResourcePlan rp, java.lang.String triggerName");
+      if (query.deletePersistentAll(resourcePlan, triggerName) == 0) {
+        throw new NoSuchObjectException("Cannot delete trigger: " + triggerName);
+      }
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+  }
+
+  @Override
+  public List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName)
+      throws NoSuchObjectException, MetaException {
+    List<WMTrigger> triggers = new ArrayList();
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      MWMResourcePlan resourcePlan = getMWMResourcePlan(resourcePlanName);
+      query = pm.newQuery(MWMTrigger.class, "resourcePlan == rp");
+      query.declareParameters("MWMResourcePlan rp");
+      List<MWMTrigger> mTriggers = (List<MWMTrigger>) query.execute(resourcePlan);
+      pm.retrieveAll(mTriggers);
+      commited = commitTransaction();
+      if (mTriggers != null) {
+        for (MWMTrigger trigger : mTriggers) {
+          triggers.add(fromMWMTrigger(trigger, resourcePlanName));
+        }
+      }
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return triggers;
+  }
+
+  private WMTrigger fromMWMTrigger(MWMTrigger mTrigger, String resourcePlanName) {
+    WMTrigger trigger = new WMTrigger();
+    trigger.setResourcePlanName(resourcePlanName);
+    trigger.setTriggerName(mTrigger.getName());
+    trigger.setTriggerExpression(mTrigger.getTriggerExpression());
+    trigger.setActionExpression(mTrigger.getActionExpression());
+    return trigger;
   }
 }

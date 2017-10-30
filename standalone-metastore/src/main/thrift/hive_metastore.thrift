@@ -1056,7 +1056,7 @@ struct WMPool {
 
 struct WMTrigger {
   1: required string resourcePlanName;
-  2: required string poolName;
+  2: required string triggerName;
   3: optional string triggerExpression;
   4: optional string actionExpression;
 }
@@ -1115,6 +1115,37 @@ struct WMDropResourcePlanRequest {
 
 struct WMDropResourcePlanResponse {
 }
+
+struct WMCreateTriggerRequest {
+  1: optional WMTrigger trigger;
+}
+
+struct WMCreateTriggerResponse {
+}
+
+struct WMAlterTriggerRequest {
+  1: optional WMTrigger trigger;
+}
+
+struct WMAlterTriggerResponse {
+}
+
+struct WMDropTriggerRequest {
+  1: optional string resourcePlanName;
+  2: optional string triggerName;
+}
+
+struct WMDropTriggerResponse {
+}
+
+struct WMGetTriggersForResourePlanRequest {
+  1: optional string resourcePlanName;
+}
+
+struct WMGetTriggersForResourePlanResponse {
+  1: optional list<WMTrigger> triggers;
+}
+
 
 // Exceptions.
 
@@ -1699,6 +1730,18 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   WMDropResourcePlanResponse drop_resource_plan(1:WMDropResourcePlanRequest request)
       throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+
+  WMCreateTriggerResponse create_wm_trigger(1:WMCreateTriggerRequest request)
+      throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3, 4:MetaException o4)
+
+  WMAlterTriggerResponse alter_wm_trigger(1:WMAlterTriggerRequest request)
+      throws(1:NoSuchObjectException o1, 2:InvalidObjectException o2, 3:MetaException o3)
+
+  WMDropTriggerResponse drop_wm_trigger(1:WMDropTriggerRequest request)
+      throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+
+  WMGetTriggersForResourePlanResponse get_triggers_for_resourceplan(1:WMGetTriggersForResourePlanRequest request)
+      throws(1:NoSuchObjectException o1, 2:MetaException o2)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

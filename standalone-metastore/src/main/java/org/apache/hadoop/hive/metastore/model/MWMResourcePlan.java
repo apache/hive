@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.model;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * Storage class for ResourcePlan.
@@ -27,9 +27,9 @@ public class MWMResourcePlan {
   private String name;
   private Integer queryParallelism;
   private Status status;
-  private List<MWMPool> pools;
-  private List<MWMTrigger> triggers;
-  private List<MWMMapping> mappings;
+  private Set<MWMPool> pools;
+  private Set<MWMTrigger> triggers;
+  private Set<MWMMapping> mappings;
 
   public enum Status {
     ACTIVE,
@@ -69,27 +69,27 @@ public class MWMResourcePlan {
     this.status = status;
   }
 
-  public List<MWMPool> getPools() {
+  public Set<MWMPool> getPools() {
     return pools;
   }
 
-  public void setPools(List<MWMPool> pools) {
+  public void setPools(Set<MWMPool> pools) {
     this.pools = pools;
   }
 
-  public List<MWMTrigger> getTriggers() {
+  public Set<MWMTrigger> getTriggers() {
     return triggers;
   }
 
-  public void setTriggers(List<MWMTrigger> triggers) {
+  public void setTriggers(Set<MWMTrigger> triggers) {
     this.triggers = triggers;
   }
 
-  public List<MWMMapping> getMappings() {
+  public Set<MWMMapping> getMappings() {
     return mappings;
   }
 
-  public void setMappings(List<MWMMapping> mappings) {
+  public void setMappings(Set<MWMMapping> mappings) {
     this.mappings = mappings;
   }
 }

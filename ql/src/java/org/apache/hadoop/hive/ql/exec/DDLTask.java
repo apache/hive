@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
-import static org.apache.hadoop.util.StringUtils.stringifyException;
 
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
@@ -88,6 +87,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -167,6 +167,7 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
+import org.apache.hadoop.hive.ql.plan.AlterWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
@@ -175,6 +176,7 @@ import org.apache.hadoop.hive.ql.plan.CreateResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
+import org.apache.hadoop.hive.ql.plan.CreateWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
@@ -183,6 +185,7 @@ import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
+import org.apache.hadoop.hive.ql.plan.DropWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.GrantDesc;
 import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
@@ -627,6 +630,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (work.getDropResourcePlanDesc() != null) {
         return dropResourcePlan(db, work.getDropResourcePlanDesc());
       }
+
+      if (work.getCreateWMTriggerDesc() != null) {
+        return createWMTrigger(db, work.getCreateWMTriggerDesc());
+      }
+
+      if (work.getAlterWMTriggerDesc() != null) {
+        return alterWMTrigger(db, work.getAlterWMTriggerDesc());
+      }
+
+      if (work.getDropWMTriggerDesc() != null) {
+        return dropWMTrigger(db, work.getDropWMTriggerDesc());
+      }
     } catch (Throwable e) {
       failed(e);
       return 1;
@@ -656,7 +671,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (rpName != null) {
         resourcePlans = Collections.singletonList(db.getResourcePlan(rpName));
       } else {
-        resourcePlans = db.geAllResourcePlans();
+        resourcePlans = db.getAllResourcePlans();
       }
       formatter.showResourcePlans(out, resourcePlans);
     } catch (Exception e) {
@@ -694,6 +709,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int dropResourcePlan(Hive db, DropResourcePlanDesc desc) throws HiveException {
     db.dropResourcePlan(desc.getRpName());
+    return 0;
+  }
+
+  private int createWMTrigger(Hive db, CreateWMTriggerDesc desc) throws HiveException {
+    WMTrigger trigger = new WMTrigger(desc.getRpName(), desc.getTriggerName());
+    trigger.setTriggerExpression(desc.getTriggerExpression());
+    trigger.setActionExpression(desc.getActionExpression());
+    db.createWMTrigger(trigger);
+    return 0;
+  }
+
+  private int alterWMTrigger(Hive db, AlterWMTriggerDesc desc) throws HiveException {
+    WMTrigger trigger = new WMTrigger(desc.getRpName(), desc.getTriggerName());
+    trigger.setTriggerExpression(desc.getTriggerExpression());
+    trigger.setActionExpression(desc.getActionExpression());
+    db.alterWMTrigger(trigger);
+    return 0;
+  }
+
+  private int dropWMTrigger(Hive db, DropWMTriggerDesc desc) throws HiveException {
+    db.dropWMTrigger(desc.getRpName(), desc.getTriggerName());
     return 0;
   }
 

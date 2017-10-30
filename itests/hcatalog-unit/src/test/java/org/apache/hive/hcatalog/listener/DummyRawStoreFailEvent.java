@@ -20,7 +20,6 @@ package org.apache.hive.hcatalog.listener;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +31,7 @@ import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -978,7 +979,8 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public void createResourcePlan(WMResourcePlan resourcePlan) throws MetaException {
+  public void createResourcePlan(WMResourcePlan resourcePlan)
+      throws AlreadyExistsException, MetaException {
     objectStore.createResourcePlan(resourcePlan);
   }
 
@@ -994,7 +996,8 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public void alterResourcePlan(String name, WMResourcePlan resourcePlan)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
+          MetaException {
     objectStore.alterResourcePlan(name, resourcePlan);
   }
 
@@ -1007,5 +1010,30 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public void dropResourcePlan(String name) throws NoSuchObjectException, MetaException {
     objectStore.dropResourcePlan(name);
+  }
+
+  @Override
+  public void createWMTrigger(WMTrigger trigger)
+      throws AlreadyExistsException, MetaException, NoSuchObjectException,
+          InvalidOperationException {
+    objectStore.createWMTrigger(trigger);
+  }
+
+  @Override
+  public void alterWMTrigger(WMTrigger trigger)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    objectStore.alterWMTrigger(trigger);
+  }
+
+  @Override
+  public void dropWMTrigger(String resourcePlanName, String triggerName)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    objectStore.dropWMTrigger(resourcePlanName, triggerName);
+  }
+
+  @Override
+  public List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName)
+      throws NoSuchObjectException, MetaException {
+    return objectStore.getTriggersForResourcePlan(resourcePlanName);
   }
 }

@@ -2683,4 +2683,37 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     request.setResourcePlanName(resourcePlanName);
     return client.validate_resource_plan(request).isIsValid();
   }
+
+  @Override
+  public void createWMTrigger(WMTrigger trigger)
+      throws InvalidObjectException, MetaException, TException {
+    WMCreateTriggerRequest request = new WMCreateTriggerRequest();
+    request.setTrigger(trigger);
+    client.create_wm_trigger(request);
+  }
+
+  @Override
+  public void alterWMTrigger(WMTrigger trigger)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
+    WMAlterTriggerRequest request = new WMAlterTriggerRequest();
+    request.setTrigger(trigger);
+    client.alter_wm_trigger(request);
+  }
+
+  @Override
+  public void dropWMTrigger(String resourcePlanName, String triggerName)
+      throws NoSuchObjectException, MetaException, TException {
+    WMDropTriggerRequest request = new WMDropTriggerRequest();
+    request.setResourcePlanName(resourcePlanName);
+    request.setTriggerName(triggerName);
+    client.drop_wm_trigger(request);
+  }
+
+  @Override
+  public List<WMTrigger> getTriggersForResourcePlan(String resourcePlan)
+      throws NoSuchObjectException, MetaException, TException {
+    WMGetTriggersForResourePlanRequest request = new WMGetTriggersForResourePlanRequest();
+    request.setResourcePlanName(resourcePlan);
+    return client.get_triggers_for_resourceplan(request).getTriggers();
+  }
 }

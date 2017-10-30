@@ -862,6 +862,26 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_resource_plan\n");
   }
 
+  void create_wm_trigger(WMCreateTriggerResponse& _return, const WMCreateTriggerRequest& request) {
+    // Your implementation goes here
+    printf("create_wm_trigger\n");
+  }
+
+  void alter_wm_trigger(WMAlterTriggerResponse& _return, const WMAlterTriggerRequest& request) {
+    // Your implementation goes here
+    printf("alter_wm_trigger\n");
+  }
+
+  void drop_wm_trigger(WMDropTriggerResponse& _return, const WMDropTriggerRequest& request) {
+    // Your implementation goes here
+    printf("drop_wm_trigger\n");
+  }
+
+  void get_triggers_for_resourceplan(WMGetTriggersForResourePlanResponse& _return, const WMGetTriggersForResourePlanRequest& request) {
+    // Your implementation goes here
+    printf("get_triggers_for_resourceplan\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

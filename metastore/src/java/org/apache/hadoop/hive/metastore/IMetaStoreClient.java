@@ -87,6 +87,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -1784,4 +1785,16 @@ public interface IMetaStoreClient {
 
   boolean validateResourcePlan(String resourcePlanName)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+
+  void createWMTrigger(WMTrigger trigger)
+      throws InvalidObjectException, MetaException, TException;
+
+  void alterWMTrigger(WMTrigger trigger)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+
+  void dropWMTrigger(String resourcePlanName, String triggerName)
+      throws NoSuchObjectException, MetaException, TException;
+
+  List<WMTrigger> getTriggersForResourcePlan(String resourcePlan)
+      throws NoSuchObjectException, MetaException, TException;
 }
