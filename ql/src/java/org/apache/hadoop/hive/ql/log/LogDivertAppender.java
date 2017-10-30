@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,9 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.log;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.common.LogUtils;
@@ -28,14 +25,11 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.RandomAccessFileAppender;
 import org.apache.logging.log4j.core.appender.routing.Route;
 import org.apache.logging.log4j.core.appender.routing.Routes;
 import org.apache.logging.log4j.core.appender.routing.RoutingAppender;
-import org.apache.logging.log4j.core.config.AppenderControl;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.config.Node;
@@ -208,11 +202,11 @@ public class LogDivertAppender {
     Node node = new Node(null, "Route", type);
 
     PluginEntry childEntry = new PluginEntry();
-    childEntry.setClassName(RandomAccessFileAppender.class.getName());
-    childEntry.setKey("randomaccessfile");
+    childEntry.setClassName(HushableRandomAccessFileAppender.class.getName());
+    childEntry.setKey("HushableMutableRandomAccess");
     childEntry.setName("appender");
-    PluginType<RandomAccessFileAppender> childType = new PluginType<RandomAccessFileAppender>(childEntry, RandomAccessFileAppender.class, "appender");
-    Node childNode = new Node(node, "RandomAccessFile", childType);
+    PluginType<HushableRandomAccessFileAppender> childType = new PluginType<>(childEntry, HushableRandomAccessFileAppender.class, "appender");
+    Node childNode = new Node(node, "HushableMutableRandomAccess", childType);
     childNode.getAttributes().put("name", "query-file-appender");
     childNode.getAttributes().put("fileName", logLocation + "/${ctx:sessionId}/${ctx:queryId}");
     node.getChildren().add(childNode);
@@ -221,7 +215,7 @@ public class LogDivertAppender {
     filterEntry.setClassName(NameFilter.class.getName());
     filterEntry.setKey("namefilter");
     filterEntry.setName("namefilter");
-    PluginType<NameFilter> filterType = new PluginType<NameFilter>(filterEntry, NameFilter.class, "filter");
+    PluginType<NameFilter> filterType = new PluginType<>(filterEntry, NameFilter.class, "filter");
     Node filterNode = new Node(childNode, "NameFilter", filterType);
     filterNode.getAttributes().put("loggingLevel", loggingMode.name());
     childNode.getChildren().add(filterNode);
@@ -230,7 +224,7 @@ public class LogDivertAppender {
     layoutEntry.setClassName(PatternLayout.class.getName());
     layoutEntry.setKey("patternlayout");
     layoutEntry.setName("layout");
-    PluginType<PatternLayout> layoutType = new PluginType<PatternLayout>(layoutEntry, PatternLayout.class, "layout");
+    PluginType<PatternLayout> layoutType = new PluginType<>(layoutEntry, PatternLayout.class, "layout");
     Node layoutNode = new Node(childNode, "PatternLayout", layoutType);
     layoutNode.getAttributes().put("pattern", layout);
     childNode.getChildren().add(layoutNode);

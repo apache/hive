@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.log.HushableRandomAccessFileAppender;
 import org.apache.hadoop.hive.ql.log.LogDivertAppender;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
@@ -34,7 +35,9 @@ import org.apache.hive.service.cli.FetchType;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.AbstractLogEvent;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.routing.RoutingAppender;
@@ -152,6 +155,16 @@ public class TestOperationLoggingLayout {
     Appender appender = appenderControl.getAppender();
     Assert.assertNotNull(msg + "could not find Appender for query id " + queryId + " from AppenderControl " + appenderControl, appender);
     Assert.assertEquals(msg + "Appender for query is in unexpected state", expectedStopped, appender.isStopped());
+    Assert.assertTrue("Appender should be a HushableMutableRandomAccessAppender", appender instanceof HushableRandomAccessFileAppender);
+    HushableRandomAccessFileAppender ra = (HushableRandomAccessFileAppender) appender;
+    // Even if the appender is stopped it should not throw an exception when we log
+    try {
+      ra.append(new LocalLogEvent());
+    } catch (Exception e) {
+      e.printStackTrace();
+      Assert.fail("Caught exception while logging to an appender of class " + ra.getClass()
+          + " with stopped=" + ra.isStopped());
+    }
   }
 
   private SessionHandle setupSession() throws Exception {
@@ -183,5 +196,18 @@ public class TestOperationLoggingLayout {
     Assert.assertEquals("val_238", rowSetResult.iterator().next()[1]);
 
     return sessionHandle;
+  }
+
+  /**
+   * A minimal LogEvent implementation for testing
+   */
+  private static class LocalLogEvent extends AbstractLogEvent {
+
+    LocalLogEvent() {
+    }
+
+    @Override public Level getLevel() {
+      return Level.DEBUG;
+    }
   }
 }
