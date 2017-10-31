@@ -204,31 +204,31 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: key1 is not null (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: key1
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: key1 (type: string)
                         sort order: +
                         Map-reduce partition columns: key1 (type: string)
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Select Operator
                         expressions: key1 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=309)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                          Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                            Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                             value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
             Execution mode: llap
             LLAP IO: all inputs
@@ -241,17 +241,17 @@ STAGE PLANS:
                 keys:
                   0 str (type: string)
                   1 key1 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 6472 Data size: 25888 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                       value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -260,10 +260,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: $f0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -275,10 +275,10 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=309)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
 
   Stage: Stage-0
@@ -329,19 +329,19 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: key1 is not null (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: key1
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: key1 (type: string)
                         sort order: +
                         Map-reduce partition columns: key1 (type: string)
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -353,17 +353,17 @@ STAGE PLANS:
                 keys:
                   0 str (type: string)
                   1 key1 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 6472 Data size: 25888 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                       value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -372,10 +372,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: $f0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -453,19 +453,19 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_9_srcpart_date_str_min) AND DynamicValue(RS_9_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_9_srcpart_date_str_bloom_filter)))) (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: ((key1 BETWEEN DynamicValue(RS_9_srcpart_date_str_min) AND DynamicValue(RS_9_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_9_srcpart_date_str_bloom_filter))) and key1 is not null) (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: key1
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: key1 (type: string)
                         sort order: +
                         Map-reduce partition columns: key1 (type: string)
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -506,17 +506,17 @@ STAGE PLANS:
                 keys:
                   0 str (type: string)
                   1 key1 (type: string)
-                Statistics: Num rows: 13126 Data size: 105008 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 4461 Data size: 388159 Basic stats: PARTIAL Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 13126 Data size: 52504 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 4461 Data size: 388159 Basic stats: PARTIAL Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                       value expressions: _col0 (type: bigint)
         Reducer 4 
             Execution mode: llap
@@ -525,10 +525,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: $f0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -609,19 +609,19 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_3_i_cstring_min) AND DynamicValue(RS_3_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_3_i_cstring_bloom_filter)))) (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: ((key1 BETWEEN DynamicValue(RS_3_i_cstring_min) AND DynamicValue(RS_3_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_3_i_cstring_bloom_filter))) and key1 is not null) (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: key1
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: key1 (type: string)
                         sort order: +
                         Map-reduce partition columns: key1 (type: string)
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Map 6 
@@ -655,17 +655,17 @@ STAGE PLANS:
                   0 cstring (type: string)
                   1 key1 (type: string)
                   2 str (type: string)
-                Statistics: Num rows: 13128 Data size: 105024 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 20182 Data size: 1416580 Basic stats: PARTIAL Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 13128 Data size: 52512 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 20182 Data size: 1416580 Basic stats: PARTIAL Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                       value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -674,10 +674,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: $f0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -758,19 +758,19 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter)))) (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: ((key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter))) and key1 is not null) (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: key1
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: key1 (type: string)
                         sort order: +
                         Map-reduce partition columns: key1 (type: string)
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -782,17 +782,17 @@ STAGE PLANS:
                 keys:
                   0 str (type: string)
                   1 key1 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 6472 Data size: 25888 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                       value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -801,10 +801,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: $f0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -870,19 +870,19 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: key1 is not null (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: key1
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: key1 (type: string)
                         sort order: +
                         Map-reduce partition columns: key1 (type: string)
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -894,17 +894,17 @@ STAGE PLANS:
                 keys:
                   0 value (type: string)
                   1 key1 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 200200 Basic stats: PARTIAL Column stats: NONE
                 Select Operator
-                  Statistics: Num rows: 6472 Data size: 25888 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 2200 Data size: 200200 Basic stats: PARTIAL Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                       value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -913,10 +913,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: $f0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -993,31 +993,31 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: key1 is not null (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                          Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                            Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                             value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
             Execution mode: llap
             LLAP IO: all inputs
@@ -1026,19 +1026,19 @@ STAGE PLANS:
                 TableScan
                   alias: s
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_6_k_str_min) AND DynamicValue(RS_6_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_6_k_str_bloom_filter)))) (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: ((key1 BETWEEN DynamicValue(RS_6_k_str_min) AND DynamicValue(RS_6_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_6_k_str_bloom_filter))) and key1 is not null) (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Map 7 
@@ -1068,10 +1068,10 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=5000)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
         Reducer 2 
             Execution mode: llap
@@ -1082,15 +1082,15 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -1099,10 +1099,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1128,15 +1128,15 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 9 
             Execution mode: llap
@@ -1145,10 +1145,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1206,31 +1206,31 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: key1 is not null (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Select Operator
                         expressions: _col0 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=309)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1000)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                          Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                            Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                             value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
             Execution mode: llap
             LLAP IO: all inputs
@@ -1243,15 +1243,15 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -1260,10 +1260,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1272,13 +1272,13 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=309)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=1000)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
 
   Stage: Stage-0
@@ -1329,19 +1329,19 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: key1 is not null (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1353,15 +1353,15 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -1370,10 +1370,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1451,19 +1451,19 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_12_srcpart_date_str_min) AND DynamicValue(RS_12_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_12_srcpart_date_str_bloom_filter)))) (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: ((key1 BETWEEN DynamicValue(RS_12_srcpart_date_str_min) AND DynamicValue(RS_12_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_12_srcpart_date_str_bloom_filter))) and key1 is not null) (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1504,15 +1504,15 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 13126 Data size: 105008 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 4461 Data size: 388159 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 4 
             Execution mode: llap
@@ -1521,10 +1521,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1605,19 +1605,19 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_9_i_cstring_min) AND DynamicValue(RS_9_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_9_i_cstring_bloom_filter)))) (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: ((key1 BETWEEN DynamicValue(RS_9_i_cstring_min) AND DynamicValue(RS_9_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_9_i_cstring_bloom_filter))) and key1 is not null) (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Map 6 
@@ -1651,15 +1651,15 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                   2 _col0 (type: string)
-                Statistics: Num rows: 13128 Data size: 105024 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 20182 Data size: 1416580 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -1668,10 +1668,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1752,19 +1752,19 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_6_k_str_min) AND DynamicValue(RS_6_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_6_k_str_bloom_filter)))) (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: ((key1 BETWEEN DynamicValue(RS_6_k_str_min) AND DynamicValue(RS_6_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_6_k_str_bloom_filter))) and key1 is not null) (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1776,15 +1776,15 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -1793,10 +1793,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1862,19 +1862,19 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: key1 is not null (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1886,15 +1886,15 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 200200 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -1903,10 +1903,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1979,27 +1979,27 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: key1 is not null (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: key1 (type: string)
                       sort order: +
                       Map-reduce partition columns: key1 (type: string)
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Group By Operator
                         aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                          Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                           value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
             Execution mode: llap
             LLAP IO: all inputs
@@ -2008,15 +2008,15 @@ STAGE PLANS:
                 TableScan
                   alias: s
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter)))) (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: ((key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter))) and key1 is not null) (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: key1 (type: string)
                       sort order: +
                       Map-reduce partition columns: key1 (type: string)
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Map 7 
@@ -2042,10 +2042,10 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=5000)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
         Reducer 2 
             Execution mode: llap
@@ -2056,15 +2056,15 @@ STAGE PLANS:
                 keys:
                   0 str (type: string)
                   1 key1 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -2073,10 +2073,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2102,15 +2102,15 @@ STAGE PLANS:
                 keys:
                   0 str (type: string)
                   1 key1 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 9 
             Execution mode: llap
@@ -2119,10 +2119,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2176,27 +2176,27 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: key1 is not null (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: key1 (type: string)
                       sort order: +
                       Map-reduce partition columns: key1 (type: string)
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Select Operator
                       expressions: key1 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                       Group By Operator
                         aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=309)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                          Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                           value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
             Execution mode: llap
             LLAP IO: all inputs
@@ -2209,15 +2209,15 @@ STAGE PLANS:
                 keys:
                   0 str (type: string)
                   1 key1 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -2226,10 +2226,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2241,10 +2241,10 @@ STAGE PLANS:
                 aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=309)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 639 Basic stats: PARTIAL Column stats: PARTIAL
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
 
   Stage: Stage-0
@@ -2291,15 +2291,15 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: key1 is not null (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: key1 (type: string)
                       sort order: +
                       Map-reduce partition columns: key1 (type: string)
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -2311,15 +2311,15 @@ STAGE PLANS:
                 keys:
                   0 str (type: string)
                   1 key1 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -2328,10 +2328,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2398,15 +2398,15 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_4_srcpart_date_str_min) AND DynamicValue(RS_4_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_4_srcpart_date_str_bloom_filter)))) (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: ((key1 BETWEEN DynamicValue(RS_4_srcpart_date_str_min) AND DynamicValue(RS_4_srcpart_date_str_max) and in_bloom_filter(key1, DynamicValue(RS_4_srcpart_date_str_bloom_filter))) and key1 is not null) (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: key1 (type: string)
                       sort order: +
                       Map-reduce partition columns: key1 (type: string)
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Map 7 
@@ -2435,12 +2435,12 @@ STAGE PLANS:
                   0 str (type: string)
                   1 key1 (type: string)
                 outputColumnNames: _col1
-                Statistics: Num rows: 6472 Data size: 588952 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 391600 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 6472 Data size: 588952 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 2200 Data size: 391600 Basic stats: PARTIAL Column stats: NONE
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2450,15 +2450,15 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: string)
                   1 cstring (type: string)
-                Statistics: Num rows: 13127 Data size: 105016 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 10091 Data size: 708290 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 4 
             Execution mode: llap
@@ -2467,10 +2467,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2534,15 +2534,15 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_8_i_cstring_min) AND DynamicValue(RS_8_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_8_i_cstring_bloom_filter)))) (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: ((key1 BETWEEN DynamicValue(RS_8_i_cstring_min) AND DynamicValue(RS_8_i_cstring_max) and in_bloom_filter(key1, DynamicValue(RS_8_i_cstring_bloom_filter))) and key1 is not null) (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: key1 (type: string)
                       sort order: +
                       Map-reduce partition columns: key1 (type: string)
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Map 5 
@@ -2585,15 +2585,15 @@ STAGE PLANS:
                   0 str (type: string)
                   1 key1 (type: string)
                   2 cstring (type: string)
-                Statistics: Num rows: 13128 Data size: 105024 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 20182 Data size: 1416580 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -2602,10 +2602,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2682,15 +2682,15 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter)))) (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: ((key1 BETWEEN DynamicValue(RS_3_k_str_min) AND DynamicValue(RS_3_k_str_max) and in_bloom_filter(key1, DynamicValue(RS_3_k_str_bloom_filter))) and key1 is not null) (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: key1 (type: string)
                       sort order: +
                       Map-reduce partition columns: key1 (type: string)
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -2702,15 +2702,15 @@ STAGE PLANS:
                 keys:
                   0 str (type: string)
                   1 key1 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 191400 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -2719,10 +2719,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2784,15 +2784,15 @@ STAGE PLANS:
                 TableScan
                   alias: v
                   filterExpr: key1 is not null (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
-                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: key1 (type: string)
                       sort order: +
                       Map-reduce partition columns: key1 (type: string)
-                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 1000 Data size: 87000 Basic stats: PARTIAL Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -2804,15 +2804,15 @@ STAGE PLANS:
                 keys:
                   0 value (type: string)
                   1 key1 (type: string)
-                Statistics: Num rows: 6472 Data size: 51776 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 2200 Data size: 200200 Basic stats: PARTIAL Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Reduce Output Operator
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
             Execution mode: llap
@@ -2821,10 +2821,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
