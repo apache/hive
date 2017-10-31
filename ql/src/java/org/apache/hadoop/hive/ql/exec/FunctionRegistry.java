@@ -811,8 +811,9 @@ public final class FunctionRegistry {
     if (pgA == pgB) {
       // grouping is same, but category is not.
       if (pgA == PrimitiveGrouping.DATE_GROUP) {
-        // we got timestamp & date and timestamp has higher precedence than date
-        return TypeInfoFactory.timestampTypeInfo;
+        Integer ai = TypeInfoUtils.dateTypes.get(pcA);
+        Integer bi = TypeInfoUtils.dateTypes.get(pcB);
+        return (ai > bi) ? a : b;
       }
     }
     // handle string types properly
@@ -854,27 +855,48 @@ public final class FunctionRegistry {
     PrimitiveCategory pcA = ((PrimitiveTypeInfo)a).getPrimitiveCategory();
     PrimitiveCategory pcB = ((PrimitiveTypeInfo)b).getPrimitiveCategory();
 
+    if (pcA == pcB) {
+      // Same primitive category
+      return pcA;
+    }
+
     PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
     PrimitiveGrouping pgB = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcB);
-    // handle string types properly
-    if (pgA == PrimitiveGrouping.STRING_GROUP && pgB == PrimitiveGrouping.STRING_GROUP) {
-      return PrimitiveCategory.STRING;
+
+    if (pgA == pgB) {
+      // Equal groups, return what we can handle
+      switch (pgA) {
+        case NUMERIC_GROUP: {
+          Integer ai = TypeInfoUtils.numericTypes.get(pcA);
+          Integer bi = TypeInfoUtils.numericTypes.get(pcB);
+          return (ai > bi) ? pcA : pcB;
+        }
+        case DATE_GROUP: {
+          Integer ai = TypeInfoUtils.dateTypes.get(pcA);
+          Integer bi = TypeInfoUtils.dateTypes.get(pcB);
+          return (ai > bi) ? pcA : pcB;
+        }
+        case STRING_GROUP: {
+          // handle string types properly
+          return PrimitiveCategory.STRING;
+        }
+        default:
+          break;
+      }
     }
 
-    if (pgA == PrimitiveGrouping.DATE_GROUP && pgB == PrimitiveGrouping.STRING_GROUP) {
-      return PrimitiveCategory.STRING;
+    // Handle date-string common category and numeric-string common category
+    if (pgA == PrimitiveGrouping.STRING_GROUP
+        && (pgB == PrimitiveGrouping.DATE_GROUP || pgB == PrimitiveGrouping.NUMERIC_GROUP)) {
+      return pcA;
     }
-    if (pgB == PrimitiveGrouping.DATE_GROUP && pgA == PrimitiveGrouping.STRING_GROUP) {
-      return PrimitiveCategory.STRING;
-    }
-    Integer ai = TypeInfoUtils.numericTypes.get(pcA);
-    Integer bi = TypeInfoUtils.numericTypes.get(pcB);
-    if (ai == null || bi == null) {
-      // If either is not a numeric type, return null.
-      return null;
+    if (pgB == PrimitiveGrouping.STRING_GROUP
+        && (pgA == PrimitiveGrouping.DATE_GROUP || pgA == PrimitiveGrouping.NUMERIC_GROUP)) {
+      return pcB;
     }
 
-    return (ai > bi) ? pcA : pcB;
+    // We could not find a common category, return null
+    return null;
   }
 
   /**

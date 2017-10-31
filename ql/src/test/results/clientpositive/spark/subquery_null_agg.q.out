@@ -137,7 +137,7 @@ STAGE PLANS:
                   predicate: ((_col1 = 0) or _col2 is null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: null (type: double)
+                    expressions: null (type: void)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator

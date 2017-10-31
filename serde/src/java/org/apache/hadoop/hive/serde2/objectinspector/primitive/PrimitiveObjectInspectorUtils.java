@@ -1356,8 +1356,8 @@ public final class PrimitiveObjectInspectorUtils {
         return PrimitiveGrouping.STRING_GROUP;
       case BOOLEAN:
         return PrimitiveGrouping.BOOLEAN_GROUP;
-      case TIMESTAMP:
       case DATE:
+      case TIMESTAMP:
       case TIMESTAMPLOCALTZ:
         return PrimitiveGrouping.DATE_GROUP;
       case INTERVAL_YEAR_MONTH:

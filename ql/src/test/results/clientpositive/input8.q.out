@@ -108,7 +108,7 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.c1 EXPRESSION []
 POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c3 SIMPLE []
+POSTHOOK: Lineage: dest1.c3 EXPRESSION []
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1

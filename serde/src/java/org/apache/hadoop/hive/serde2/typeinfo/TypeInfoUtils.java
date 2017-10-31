@@ -66,7 +66,6 @@ public final class TypeInfoUtils {
   // that were arbitrarily assigned in PrimitiveCategory work for our purposes.
   public static EnumMap<PrimitiveCategory, Integer> numericTypes =
       new EnumMap<PrimitiveCategory, Integer>(PrimitiveCategory.class);
-
   static {
     registerNumericType(PrimitiveCategory.BYTE, 1);
     registerNumericType(PrimitiveCategory.SHORT, 2);
@@ -76,6 +75,15 @@ public final class TypeInfoUtils {
     registerNumericType(PrimitiveCategory.FLOAT, 6);
     registerNumericType(PrimitiveCategory.DOUBLE, 7);
     registerNumericType(PrimitiveCategory.STRING, 8);
+  }
+
+  public static List<PrimitiveCategory> dateTypeList = new ArrayList<PrimitiveCategory>();
+  public static EnumMap<PrimitiveCategory, Integer> dateTypes =
+      new EnumMap<PrimitiveCategory, Integer>(PrimitiveCategory.class);
+  static {
+    registerDateType(PrimitiveCategory.DATE, 1);
+    registerDateType(PrimitiveCategory.TIMESTAMP, 2);
+    registerDateType(PrimitiveCategory.TIMESTAMPLOCALTZ, 3);
   }
 
   private TypeInfoUtils() {
@@ -898,6 +906,11 @@ public final class TypeInfoUtils {
   public static synchronized void registerNumericType(PrimitiveCategory primitiveCategory, int level) {
     numericTypeList.add(primitiveCategory);
     numericTypes.put(primitiveCategory, level);
+  }
+
+  public static synchronized void registerDateType(PrimitiveCategory primitiveCategory, int level) {
+    dateTypeList.add(primitiveCategory);
+    dateTypes.put(primitiveCategory, level);
   }
 
   /**
