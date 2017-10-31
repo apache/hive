@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -214,8 +215,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
             LOG.debug("Found a big table branch with parent operator {} and position {}", parentOp, pos);
             bigTablePosition = pos;
             bigTableFound = true;
-            bigInputStat = new Statistics();
-            bigInputStat.setDataSize(Long.MAX_VALUE);
+            bigInputStat = new Statistics(0, Long.MAX_VALUE);
           } else {
             // Either we've found multiple big table branches, or the current branch cannot
             // be a big table branch. Disable mapjoin for these cases.
@@ -236,13 +236,20 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
         continue;
       }
 
-      Statistics currInputStat;
+      Statistics currInputStat = null;
       if (useTsStats) {
-        currInputStat = new Statistics();
         // Find all root TSs and add up all data sizes
         // Not adding other stats (e.g., # of rows, col stats) since only data size is used here
         for (TableScanOperator root : OperatorUtils.findOperatorsUpstream(parentOp, TableScanOperator.class)) {
-          currInputStat.addToDataSize(root.getStatistics().getDataSize());
+          if (currInputStat == null) {
+            try {
+              currInputStat = root.getStatistics().clone();
+            } catch (CloneNotSupportedException e) {
+              throw new RuntimeException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
+            }
+          } else {
+            currInputStat.addBasicStats(root.getStatistics());
+          }
         }
       } else {
          currInputStat = parentOp.getStatistics();

@@ -160,10 +160,10 @@ STAGE PLANS:
                       Select Operator
                         expressions: 86 (type: int), _col0 (type: string), '1' (type: string)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -184,10 +184,10 @@ STAGE PLANS:
                       Select Operator
                         expressions: 86 (type: int), _col0 (type: string), '1' (type: string)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -208,10 +208,10 @@ STAGE PLANS:
                       Select Operator
                         expressions: 86 (type: int), _col0 (type: string), '1' (type: string)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -248,10 +248,10 @@ STAGE PLANS:
                       Select Operator
                         expressions: 86 (type: int), _col0 (type: string), '2' (type: string)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -272,10 +272,10 @@ STAGE PLANS:
                       Select Operator
                         expressions: 86 (type: int), _col0 (type: string), '2' (type: string)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -296,10 +296,10 @@ STAGE PLANS:
                       Select Operator
                         expressions: 86 (type: int), _col0 (type: string), '2' (type: string)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -336,10 +336,10 @@ STAGE PLANS:
                       Select Operator
                         expressions: 86 (type: int), _col0 (type: string), '3' (type: string)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -360,10 +360,10 @@ STAGE PLANS:
                       Select Operator
                         expressions: 86 (type: int), _col0 (type: string), '3' (type: string)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -384,10 +384,10 @@ STAGE PLANS:
                       Select Operator
                         expressions: 86 (type: int), _col0 (type: string), '3' (type: string)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -492,11 +492,11 @@ STAGE PLANS:
 86	val_86	2
 86	val_86	3
 86	val_86	3
-86	val_86	3
-86	val_86	3
 86	val_86	1
 86	val_86	2
 86	val_86	2
+86	val_86	3
+86	val_86	3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -517,15 +517,15 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           value expressions: _col0 (type: bigint)
         Map 3 
             Map Operator Tree:
@@ -539,15 +539,15 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                             value expressions: _col0 (type: bigint)
         Map 4 
             Map Operator Tree:
@@ -561,15 +561,15 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                             value expressions: _col0 (type: bigint)
         Reducer 2 
             Reduce Operator Tree:
@@ -577,10 +577,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -615,15 +615,15 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                             value expressions: _col0 (type: bigint)
         Map 3 
             Map Operator Tree:
@@ -634,15 +634,15 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           value expressions: _col0 (type: bigint)
         Map 4 
             Map Operator Tree:
@@ -656,15 +656,15 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                             value expressions: _col0 (type: bigint)
         Reducer 2 
             Reduce Operator Tree:
@@ -672,10 +672,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -710,15 +710,15 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                             value expressions: _col0 (type: bigint)
         Map 3 
             Map Operator Tree:
@@ -732,15 +732,15 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                             value expressions: _col0 (type: bigint)
         Map 4 
             Map Operator Tree:
@@ -751,15 +751,15 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           value expressions: _col0 (type: bigint)
         Reducer 2 
             Reduce Operator Tree:
@@ -767,10 +767,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -810,10 +810,10 @@ STAGE PLANS:
                       Select Operator
                         expressions: 86 (type: int), _col0 (type: string), '4' (type: string)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -834,10 +834,10 @@ STAGE PLANS:
                       Select Operator
                         expressions: 86 (type: int), _col0 (type: string), '4' (type: string)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -858,10 +858,10 @@ STAGE PLANS:
                       Select Operator
                         expressions: 86 (type: int), _col0 (type: string), '4' (type: string)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 252 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 252 Data size: 2656 Basic stats: PARTIAL Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -897,15 +897,15 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                             value expressions: _col0 (type: bigint)
         Map 3 
             Map Operator Tree:
@@ -919,15 +919,15 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           Reduce Output Operator
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                             value expressions: _col0 (type: bigint)
         Map 4 
             Map Operator Tree:
@@ -938,15 +938,15 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                         Reduce Output Operator
                           sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                           value expressions: _col0 (type: bigint)
         Reducer 2 
             Reduce Operator Tree:
@@ -954,10 +954,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

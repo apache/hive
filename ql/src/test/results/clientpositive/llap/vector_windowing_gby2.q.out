@@ -712,7 +712,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [2, 3, 1, 4, 5]
-                Statistics: Num rows: 10 Data size: 1090 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 10 Data size: 1005 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -746,7 +746,7 @@ STAGE PLANS:
                       outputTypes: [int, int, string, double, int, double]
                       partitionExpressions: [StringLower(col 3:string) -> 7:string]
                       streamingColumns: [6]
-                  Statistics: Num rows: 10 Data size: 1090 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 10 Data size: 1005 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: dense_rank_window_1 (type: int), _col0 (type: int), _col5 (type: int), _col6 (type: double)
                     outputColumnNames: dense_rank_window_1, _col0, _col5, _col6
@@ -754,7 +754,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [6, 2, 4, 5]
-                    Statistics: Num rows: 10 Data size: 1090 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 10 Data size: 1005 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col5 (type: int), _col6 (type: double)
                       sort order: ++
@@ -766,7 +766,7 @@ STAGE PLANS:
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           partitionColumnNums: [4]
                           valueColumnNums: [6, 2]
-                      Statistics: Num rows: 10 Data size: 1090 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 10 Data size: 1005 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: dense_rank_window_1 (type: int), _col0 (type: int)
         Reducer 5 
             Execution mode: llap
