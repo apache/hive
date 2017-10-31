@@ -291,6 +291,9 @@ public class MetaStoreUtils {
   // check if stats need to be (re)calculated
   public static boolean requireCalStats(Configuration hiveConf, Partition oldPart,
     Partition newPart, Table tbl, EnvironmentContext environmentContext) {
+    if (!HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      return false;
+    }
 
     if (environmentContext != null
         && environmentContext.isSetProperties()
