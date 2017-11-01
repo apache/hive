@@ -1,0 +1,134 @@
+PREHOOK: query: DROP DATABASE IF EXISTS db1
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS db1
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: DROP DATABASE IF EXISTS db2
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS db2
+POSTHOOK: type: DROPDATABASE
+#### A masked pattern was here ####
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
+PREHOOK: Output: ### test.blobstore.path ###/multiple_db/db1
+#### A masked pattern was here ####
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: ### test.blobstore.path ###/multiple_db/db1
+#### A masked pattern was here ####
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db2
+PREHOOK: Output: ### test.blobstore.path ###/multiple_db/db2
+#### A masked pattern was here ####
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db2
+POSTHOOK: Output: ### test.blobstore.path ###/multiple_db/db2
+PREHOOK: query: USE db1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
+POSTHOOK: query: USE db1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
+PREHOOK: query: DROP TABLE test_db1_tbl
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE test_db1_tbl
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE test_db1_tbl (
+    a INT,
+    b STRING,
+    value DOUBLE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ' '
+LINES TERMINATED BY '\n'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@test_db1_tbl
+POSTHOOK: query: CREATE TABLE test_db1_tbl (
+    a INT,
+    b STRING,
+    value DOUBLE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ' '
+LINES TERMINATED BY '\n'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@test_db1_tbl
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/3col_data.txt' INTO TABLE test_db1_tbl
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: db1@test_db1_tbl
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/3col_data.txt' INTO TABLE test_db1_tbl
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: db1@test_db1_tbl
+PREHOOK: query: USE db2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db2
+POSTHOOK: query: USE db2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db2
+PREHOOK: query: DROP TABLE test_db2_tbl
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE test_db2_tbl
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE test_db2_tbl (a INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db2
+PREHOOK: Output: db2@test_db2_tbl
+POSTHOOK: query: CREATE TABLE test_db2_tbl (a INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db2
+POSTHOOK: Output: db2@test_db2_tbl
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/single_int.txt' INTO TABLE test_db2_tbl
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: db2@test_db2_tbl
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/single_int.txt' INTO TABLE test_db2_tbl
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: db2@test_db2_tbl
+PREHOOK: query: SELECT * FROM test_db2_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: db2@test_db2_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_db2_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db2@test_db2_tbl
+#### A masked pattern was here ####
+1234
+PREHOOK: query: SELECT * FROM db1.test_db1_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@test_db1_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM db1.test_db1_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@test_db1_tbl
+#### A masked pattern was here ####
+1	abc	10.5
+2	def	11.5
+3	ajss	90.23232
+4	djns	89.02002
+5	random	2.99
+6	data	3.002
+7	ne	71.9084
+PREHOOK: query: DROP TABLE test_db2_tbl
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: db2@test_db2_tbl
+PREHOOK: Output: db2@test_db2_tbl
+POSTHOOK: query: DROP TABLE test_db2_tbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: db2@test_db2_tbl
+POSTHOOK: Output: db2@test_db2_tbl
+PREHOOK: query: USE db1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
+POSTHOOK: query: USE db1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
+PREHOOK: query: DROP TABLE test_db1_tbl
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: db1@test_db1_tbl
+PREHOOK: Output: db1@test_db1_tbl
+POSTHOOK: query: DROP TABLE test_db1_tbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: db1@test_db1_tbl
+POSTHOOK: Output: db1@test_db1_tbl
