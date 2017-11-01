@@ -40,9 +40,29 @@ POSTHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE accumulo_table_1 SELECT
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
+<<<<<<< HEAD
 
 STAGE PLANS:
   Stage: Stage-0
+=======
+  Stage-1
+  Stage-2 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Alter Table Operator:
+        Alter Table
+          type: drop props
+          old name: default.accumulo_table_1
+          properties:
+            COLUMN_STATS_ACCURATE 
+
+  Stage: Stage-1
+      Insert operator:
+        Insert
+
+  Stage: Stage-2
+>>>>>>> 38c3f1a... HIVE-15439 : Support INSERT OVERWRITE for internal druid datasources. (Slim Bouguerra via Jesus Camacho Rodriguez)
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -485,11 +505,33 @@ JOIN
 ON (x.key = Y.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
+<<<<<<< HEAD
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
+=======
+  Stage-0 is a root stage
+  Stage-1
+  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-0
+      Alter Table Operator:
+        Alter Table
+          type: drop props
+          old name: default.accumulo_table_3
+          properties:
+            COLUMN_STATS_ACCURATE 
+
+  Stage: Stage-1
+      Insert operator:
+        Insert
+
+  Stage: Stage-3
+>>>>>>> 38c3f1a... HIVE-15439 : Support INSERT OVERWRITE for internal druid datasources. (Slim Bouguerra via Jesus Camacho Rodriguez)
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -524,7 +566,11 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
+<<<<<<< HEAD
   Stage: Stage-0
+=======
+  Stage: Stage-2
+>>>>>>> 38c3f1a... HIVE-15439 : Support INSERT OVERWRITE for internal druid datasources. (Slim Bouguerra via Jesus Camacho Rodriguez)
     Map Reduce
       Map Operator Tree:
           TableScan

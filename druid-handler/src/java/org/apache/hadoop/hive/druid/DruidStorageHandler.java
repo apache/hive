@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.io.DruidOutputFormat;
 import org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat;
 import org.apache.hadoop.hive.druid.serde.DruidSerDe;
+import org.apache.hadoop.hive.metastore.HiveMetaHookV2;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -78,7 +79,7 @@ import java.util.concurrent.Callable;
  * DruidStorageHandler provides a HiveStorageHandler implementation for Druid.
  */
 @SuppressWarnings({ "deprecation", "rawtypes" })
-public class DruidStorageHandler extends DefaultStorageHandler implements HiveMetaHook {
+public class DruidStorageHandler extends DefaultStorageHandler implements HiveMetaHookV2 {
 
   protected static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandler.class);
 
@@ -461,6 +462,26 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
             .disableDataSource(connector, druidMetadataStorageTablesConfig, dataSourceName)) {
       LOG.info(String.format("Successfully dropped druid data source [%s]", dataSourceName));
     }
+  }
+
+  @Override
+  public void commitInsertTable(Table table, boolean overwrite) throws MetaException {
+    if (overwrite) {
+      LOG.debug(String.format("commit insert overwrite into table [%s]", table.getTableName()));
+      this.commitCreateTable(table);
+    } else {
+      throw new MetaException("Insert into is not supported yet");
+    }
+  }
+
+  @Override
+  public void preInsertTable(Table table, boolean overwrite) throws MetaException {
+    //do nothing
+  }
+
+  @Override
+  public void rollbackInsertTable(Table table, boolean overwrite) throws MetaException {
+    // do nothing
   }
 
   @Override

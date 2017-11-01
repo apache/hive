@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -128,8 +129,16 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
         // Bail out, nothing to do
         return null;
       }
-      String segmentGranularity = parseCtx.getCreateTable().getTblProps()
-              .get(Constants.DRUID_SEGMENT_GRANULARITY);
+      String segmentGranularity = null;
+      final Table table = fsOp.getConf().getTable();
+      if (table != null) {
+        // case the statement is an INSERT
+        segmentGranularity = table.getParameters().get(Constants.DRUID_SEGMENT_GRANULARITY);
+      } else {
+        // case the statement is a CREATE TABLE AS
+       segmentGranularity = parseCtx.getCreateTable().getTblProps()
+                .get(Constants.DRUID_SEGMENT_GRANULARITY);
+      }
       segmentGranularity = !Strings.isNullOrEmpty(segmentGranularity)
               ? segmentGranularity
               : HiveConf.getVar(parseCtx.getConf(),

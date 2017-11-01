@@ -35,6 +35,7 @@ insert overwrite table src_x2
 select value,"" where a.key > 50 AND a.key < 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
+<<<<<<< HEAD
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
@@ -46,6 +47,33 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
+=======
+  Stage-0 is a root stage
+  Stage-1
+  Stage-3 is a root stage
+  Stage-9 depends on stages: Stage-3 , consists of Stage-6, Stage-5, Stage-7
+  Stage-6
+  Stage-2 depends on stages: Stage-6, Stage-5, Stage-8
+  Stage-4 depends on stages: Stage-2
+  Stage-5
+  Stage-7
+  Stage-8 depends on stages: Stage-7
+
+STAGE PLANS:
+  Stage: Stage-0
+      Alter Table Operator:
+        Alter Table
+          type: drop props
+          old name: default.src_x2
+          properties:
+            COLUMN_STATS_ACCURATE 
+
+  Stage: Stage-1
+      Insert operator:
+        Insert
+
+  Stage: Stage-3
+>>>>>>> 38c3f1a... HIVE-15439 : Support INSERT OVERWRITE for internal druid datasources. (Slim Bouguerra via Jesus Camacho Rodriguez)
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -82,16 +110,27 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.accumulo.serde.AccumuloSerDe
                       name: default.src_x2
 
+<<<<<<< HEAD
   Stage: Stage-7
     Conditional Operator
 
   Stage: Stage-4
+=======
+  Stage: Stage-9
+    Conditional Operator
+
+  Stage: Stage-6
+>>>>>>> 38c3f1a... HIVE-15439 : Support INSERT OVERWRITE for internal druid datasources. (Slim Bouguerra via Jesus Camacho Rodriguez)
     Move Operator
       files:
           hdfs directory: true
 #### A masked pattern was here ####
 
+<<<<<<< HEAD
   Stage: Stage-0
+=======
+  Stage: Stage-2
+>>>>>>> 38c3f1a... HIVE-15439 : Support INSERT OVERWRITE for internal druid datasources. (Slim Bouguerra via Jesus Camacho Rodriguez)
     Move Operator
       tables:
           replace: true
@@ -101,22 +140,17 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src_x1
 
+<<<<<<< HEAD
   Stage: Stage-2
     Stats-Aggr Operator
 
   Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.src_x1
+=======
+  Stage: Stage-4
+    Stats-Aggr Operator
 
   Stage: Stage-5
+>>>>>>> 38c3f1a... HIVE-15439 : Support INSERT OVERWRITE for internal druid datasources. (Slim Bouguerra via Jesus Camacho Rodriguez)
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -128,7 +162,27 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.src_x1
 
+<<<<<<< HEAD
+  Stage: Stage-5
+=======
+  Stage: Stage-7
+>>>>>>> 38c3f1a... HIVE-15439 : Support INSERT OVERWRITE for internal druid datasources. (Slim Bouguerra via Jesus Camacho Rodriguez)
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.src_x1
+
+<<<<<<< HEAD
   Stage: Stage-6
+=======
+  Stage: Stage-8
+>>>>>>> 38c3f1a... HIVE-15439 : Support INSERT OVERWRITE for internal druid datasources. (Slim Bouguerra via Jesus Camacho Rodriguez)
     Move Operator
       files:
           hdfs directory: true
