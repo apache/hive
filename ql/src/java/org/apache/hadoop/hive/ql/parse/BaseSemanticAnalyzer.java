@@ -1570,7 +1570,7 @@ public abstract class BaseSemanticAnalyzer {
       TypeInfo expectedType =
           TypeInfoUtils.getTypeInfoFromTypeString(colType);
       ObjectInspector outputOI =
-          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(expectedType);
+          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(expectedType);
       //  Since partVal is a constant, it is safe to cast ExprNodeDesc to ExprNodeConstantDesc.
       //  Its value should be in normalized format (e.g. no leading zero in integer, date is in
       //  format of YYYY-MM-DD etc)

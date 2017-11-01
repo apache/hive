@@ -1,0 +1,176 @@
+PREHOOK: query: DROP TABLE blobstore_partitioned_source_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE blobstore_partitioned_source_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE blobstore_partitioned_target_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE blobstore_partitioned_target_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE EXTERNAL TABLE blobstore_partitioned_source_table (
+  tsbucket TIMESTAMP,geo_country STRING,aid BIGINT)
+STORED AS ORC
+#### A masked pattern was here ####
+TBLPROPERTIES("orc.compress"="ZLIB")
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/source_table/data
+PREHOOK: Output: database:default
+PREHOOK: Output: default@blobstore_partitioned_source_table
+POSTHOOK: query: CREATE EXTERNAL TABLE blobstore_partitioned_source_table (
+  tsbucket TIMESTAMP,geo_country STRING,aid BIGINT)
+STORED AS ORC
+#### A masked pattern was here ####
+TBLPROPERTIES("orc.compress"="ZLIB")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/source_table/data
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@blobstore_partitioned_source_table
+PREHOOK: query: INSERT INTO TABLE blobstore_partitioned_source_table VALUES
+  ('2016-11-02 17:00:00','France',74530),
+  ('2016-11-02 18:00:00','Canada',57008),
+  ('2016-11-02 17:00:00','Morocco',58097)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@blobstore_partitioned_source_table
+POSTHOOK: query: INSERT INTO TABLE blobstore_partitioned_source_table VALUES
+  ('2016-11-02 17:00:00','France',74530),
+  ('2016-11-02 18:00:00','Canada',57008),
+  ('2016-11-02 17:00:00','Morocco',58097)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@blobstore_partitioned_source_table
+POSTHOOK: Lineage: blobstore_partitioned_source_table.aid SCRIPT []
+POSTHOOK: Lineage: blobstore_partitioned_source_table.geo_country SCRIPT []
+POSTHOOK: Lineage: blobstore_partitioned_source_table.tsbucket SCRIPT []
+PREHOOK: query: CREATE EXTERNAL TABLE blobstore_partitioned_target_table (
+  geo_country STRING,aid BIGINT)
+PARTITIONED BY (tsbucket TIMESTAMP)
+STORED AS ORC
+#### A masked pattern was here ####
+TBLPROPERTIES("orc.compress"="ZLIB")
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/target_table/data
+PREHOOK: Output: database:default
+PREHOOK: Output: default@blobstore_partitioned_target_table
+POSTHOOK: query: CREATE EXTERNAL TABLE blobstore_partitioned_target_table (
+  geo_country STRING,aid BIGINT)
+PARTITIONED BY (tsbucket TIMESTAMP)
+STORED AS ORC
+#### A masked pattern was here ####
+TBLPROPERTIES("orc.compress"="ZLIB")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/target_table/data
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@blobstore_partitioned_target_table
+PREHOOK: query: INSERT INTO TABLE blobstore_partitioned_target_table PARTITION (tsbucket)
+SELECT geo_country,aid,tsbucket FROM blobstore_partitioned_source_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_partitioned_source_table
+PREHOOK: Output: default@blobstore_partitioned_target_table
+POSTHOOK: query: INSERT INTO TABLE blobstore_partitioned_target_table PARTITION (tsbucket)
+SELECT geo_country,aid,tsbucket FROM blobstore_partitioned_source_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_partitioned_source_table
+POSTHOOK: Output: default@blobstore_partitioned_target_table@tsbucket=2016-11-02 17%3A00%3A00
+POSTHOOK: Output: default@blobstore_partitioned_target_table@tsbucket=2016-11-02 18%3A00%3A00
+POSTHOOK: Lineage: blobstore_partitioned_target_table PARTITION(tsbucket=2016-11-02 17:00:00).aid SIMPLE [(blobstore_partitioned_source_table)blobstore_partitioned_source_table.FieldSchema(name:aid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: blobstore_partitioned_target_table PARTITION(tsbucket=2016-11-02 17:00:00).geo_country SIMPLE [(blobstore_partitioned_source_table)blobstore_partitioned_source_table.FieldSchema(name:geo_country, type:string, comment:null), ]
+POSTHOOK: Lineage: blobstore_partitioned_target_table PARTITION(tsbucket=2016-11-02 18:00:00).aid SIMPLE [(blobstore_partitioned_source_table)blobstore_partitioned_source_table.FieldSchema(name:aid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: blobstore_partitioned_target_table PARTITION(tsbucket=2016-11-02 18:00:00).geo_country SIMPLE [(blobstore_partitioned_source_table)blobstore_partitioned_source_table.FieldSchema(name:geo_country, type:string, comment:null), ]
+PREHOOK: query: SHOW PARTITIONS blobstore_partitioned_target_table
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@blobstore_partitioned_target_table
+POSTHOOK: query: SHOW PARTITIONS blobstore_partitioned_target_table
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@blobstore_partitioned_target_table
+tsbucket=2016-11-02 17%3A00%3A00
+tsbucket=2016-11-02 18%3A00%3A00
+PREHOOK: query: DESCRIBE formatted blobstore_partitioned_target_table PARTITION (tsbucket='2016-11-02 17:00:00')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@blobstore_partitioned_target_table
+POSTHOOK: query: DESCRIBE formatted blobstore_partitioned_target_table PARTITION (tsbucket='2016-11-02 17:00:00')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@blobstore_partitioned_target_table
+# col_name            	data_type           	comment             
+geo_country         	string              	                    
+aid                 	bigint              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+tsbucket            	timestamp           	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2016-11-02 17:00:00]	 
+Database:           	default             	 
+Table:              	blobstore_partitioned_target_table	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"aid\":\"true\",\"geo_country\":\"true\"}}
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	196                 
+	totalSize           	365                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE formatted blobstore_partitioned_target_table PARTITION (tsbucket='2016-11-02 17:00:00.0')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@blobstore_partitioned_target_table
+POSTHOOK: query: DESCRIBE formatted blobstore_partitioned_target_table PARTITION (tsbucket='2016-11-02 17:00:00.0')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@blobstore_partitioned_target_table
+# col_name            	data_type           	comment             
+geo_country         	string              	                    
+aid                 	bigint              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+tsbucket            	timestamp           	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2016-11-02 17:00:00]	 
+Database:           	default             	 
+Table:              	blobstore_partitioned_target_table	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"aid\":\"true\",\"geo_country\":\"true\"}}
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	196                 
+	totalSize           	365                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DROP TABLE blobstore_partitioned_source_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@blobstore_partitioned_source_table
+PREHOOK: Output: default@blobstore_partitioned_source_table
+POSTHOOK: query: DROP TABLE blobstore_partitioned_source_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@blobstore_partitioned_source_table
+POSTHOOK: Output: default@blobstore_partitioned_source_table
+PREHOOK: query: DROP TABLE blobstore_partitioned_target_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@blobstore_partitioned_target_table
+PREHOOK: Output: default@blobstore_partitioned_target_table
+POSTHOOK: query: DROP TABLE blobstore_partitioned_target_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@blobstore_partitioned_target_table
+POSTHOOK: Output: default@blobstore_partitioned_target_table
