@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.druid;
 
 import com.google.common.collect.ImmutableMap;
@@ -43,14 +61,14 @@ public class DruidStorageHandlerTest {
 
   private String segmentsTable;
 
-  private String tablePath;
+  private String tableWorkingPath;
 
   private DataSegment dataSegment = DataSegment.builder().dataSource(DATA_SOURCE_NAME).version("v1")
           .interval(new Interval(100, 170)).shardSpec(NoneShardSpec.instance()).build();
 
   @Before
   public void before() throws Throwable {
-    tablePath = temporaryFolder.newFolder().getAbsolutePath();
+    tableWorkingPath = temporaryFolder.newFolder().getAbsolutePath();
     segmentsTable = derbyConnectorRule.metadataTablesConfigSupplier().get().getSegmentsTable();
     Map<String, String> mockMap = ImmutableMap.of(Constants.DRUID_DATA_SOURCE, DATA_SOURCE_NAME);
     Mockito.when(tableMock.getParameters()).thenReturn(mockMap);
@@ -115,14 +133,10 @@ public class DruidStorageHandlerTest {
     druidStorageHandler.preCreateTable(tableMock);
     Configuration config = new Configuration();
     config.set(String.valueOf(HiveConf.ConfVars.HIVEQUERYID), UUID.randomUUID().toString());
-    config.set(String.valueOf(HiveConf.ConfVars.DRUID_WORKING_DIR), tablePath);
+    config.set(String.valueOf(HiveConf.ConfVars.DRUID_WORKING_DIR), tableWorkingPath);
     druidStorageHandler.setConf(config);
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
-    /*
-    final descriptor path is in the form tablePath/taskId_Attempt_ID/segmentDescriptorDir/segmentIdentifier.json
-    UUID.randomUUID() will fake the taskId_attemptID
-    */
-    Path taskDirPath = new Path(tablePath, druidStorageHandler.makeStagingName());
+    Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
     Path descriptorPath = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment,
             new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
     );
@@ -138,6 +152,32 @@ public class DruidStorageHandlerTest {
                     derbyConnectorRule.metadataTablesConfigSupplier().get()
             )).toArray());
 
+  }
+
+  @Test
+  public void testCommitInsertTable() throws MetaException, IOException {
+    DruidStorageHandler druidStorageHandler = new DruidStorageHandler(
+            derbyConnectorRule.getConnector(),
+            new SQLMetadataStorageUpdaterJobHandler(derbyConnectorRule.getConnector()),
+            derbyConnectorRule.metadataTablesConfigSupplier().get(),
+            null
+    );
+    druidStorageHandler.preCreateTable(tableMock);
+    Configuration config = new Configuration();
+    config.set(String.valueOf(HiveConf.ConfVars.HIVEQUERYID), UUID.randomUUID().toString());
+    config.set(String.valueOf(HiveConf.ConfVars.DRUID_WORKING_DIR), tableWorkingPath);
+    druidStorageHandler.setConf(config);
+    LocalFileSystem localFileSystem = FileSystem.getLocal(config);
+    Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
+    Path descriptorPath = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment,
+            new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
+    );
+    DruidStorageHandlerUtils.writeSegmentDescriptor(localFileSystem, dataSegment, descriptorPath);
+    druidStorageHandler.commitCreateTable(tableMock);
+    Assert.assertArrayEquals(Lists.newArrayList(DATA_SOURCE_NAME).toArray(), Lists.newArrayList(
+            DruidStorageHandlerUtils.getAllDataSourceNames(derbyConnectorRule.getConnector(),
+                    derbyConnectorRule.metadataTablesConfigSupplier().get()
+            )).toArray());
   }
 
   @Test

@@ -2178,6 +2178,24 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     client.add_dynamic_partitions(adp);
   }
 
+  @Override
+  public void insertTable(Table table, boolean overwrite) throws MetaException {
+    boolean failed = true;
+    HiveMetaHook hook = getHook(table);
+    if (hook == null || !(hook instanceof HiveMetaHookV2)) {
+      return;
+    }
+    HiveMetaHookV2 hiveMetaHook = (HiveMetaHookV2) hook;
+    try {
+      hiveMetaHook.preInsertTable(table, overwrite);
+      hiveMetaHook.commitInsertTable(table, overwrite);
+    } finally {
+      if (failed) {
+        hiveMetaHook.rollbackInsertTable(table, overwrite);
+      }
+    }
+  }
+
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
   @Override
   public NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,
