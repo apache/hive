@@ -49,6 +49,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
@@ -64,6 +65,10 @@ public class TestCompactionTxnHandler {
 
   public TestCompactionTxnHandler() throws Exception {
     TxnDbUtil.setConfValues(conf);
+    // Set config so that TxnUtils.buildQueryWithINClauseStrings() will
+    // produce multiple queries
+    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 1);
+    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 10);
     tearDown();
   }
 
@@ -221,6 +226,64 @@ public class TestCompactionTxnHandler {
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(1, rsp.getCompactsSize());
     assertTrue(TxnHandler.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
+  }
+
+  @Test
+  public void testMarkFailed() throws Exception {
+    CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
+    rqst.setPartitionname("ds=today");
+    txnHandler.compact(rqst);
+    assertEquals(0, txnHandler.findReadyToClean().size());
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    assertNotNull(ci);
+
+    assertEquals(0, txnHandler.findReadyToClean().size());
+    txnHandler.markFailed(ci);
+    assertNull(txnHandler.findNextToCompact("fred"));
+    boolean failedCheck = txnHandler.checkFailedCompactions(ci);
+    assertFalse(failedCheck);
+    try {
+      // The first call to markFailed() should have removed the record from
+      // COMPACTION_QUEUE, so a repeated call should fail
+      txnHandler.markFailed(ci);
+      fail("The first call to markFailed() must have failed as this call did "
+          + "not throw the expected exception");
+    } catch (IllegalStateException e) {
+      // This is expected
+      assertTrue(e.getMessage().contains("No record with CQ_ID="));
+    }
+
+    // There are not enough failed compactions yet so checkFailedCompactions() should return false.
+    // But note that any sql error will also result in a return of false.
+    assertFalse(txnHandler.checkFailedCompactions(ci));
+
+    // Add more failed compactions so that the total is exactly COMPACTOR_INITIATOR_FAILED_THRESHOLD
+    for (int i = 1 ; i <  conf.getIntVar(HiveConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD); i++) {
+      addFailedCompaction("foo", "bar", CompactionType.MINOR, "ds=today");
+    }
+    // Now checkFailedCompactions() will return true
+    assertTrue(txnHandler.checkFailedCompactions(ci));
+
+    // Now add enough failed compactions to ensure purgeCompactionHistory() will attempt delete;
+    // HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED is enough for this.
+    // But we also want enough to tickle the code in TxnUtils.buildQueryWithINClauseStrings()
+    // so that it produces multiple queries. For that we need at least 290.
+    for (int i = 0 ; i < 300; i++) {
+      addFailedCompaction("foo", "bar", CompactionType.MINOR, "ds=today");
+    }
+    txnHandler.purgeCompactionHistory();
+  }
+
+  private void addFailedCompaction(String dbName, String tableName, CompactionType type,
+      String partitionName) throws MetaException {
+    CompactionRequest rqst;
+    CompactionInfo ci;
+    rqst = new CompactionRequest(dbName, tableName, type);
+    rqst.setPartitionname(partitionName);
+    txnHandler.compact(rqst);
+    ci = txnHandler.findNextToCompact("fred");
+    assertNotNull(ci);
+    txnHandler.markFailed(ci);
   }
 
   @Test

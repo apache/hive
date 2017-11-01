@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
@@ -172,8 +173,9 @@ public class TxnUtils {
    * @param addParens IN:  add a pair of parenthesis outside the IN lists
    *                       e.g. "(id in (1,2,3) OR id in (4,5,6))"
    * @param notIn     IN:  is this for building a 'NOT IN' composite clause?
+   * @return          OUT: a list of the count of IN list values that are in each of the corresponding queries
    */
-  public static void buildQueryWithINClause(Configuration conf,
+  public static List<Integer> buildQueryWithINClause(Configuration conf,
                                             List<String> queries,
                                             StringBuilder prefix,
                                             StringBuilder suffix,
@@ -181,6 +183,47 @@ public class TxnUtils {
                                             String inColumn,
                                             boolean addParens,
                                             boolean notIn) {
+    List<String> inListStrings = new ArrayList<>(inList.size());
+    for (Long aLong : inList) {
+      inListStrings.add(aLong.toString());
+    }
+    return buildQueryWithINClauseStrings(conf, queries, prefix, suffix,
+        inListStrings, inColumn, addParens, notIn);
+
+  }
+  /**
+   * Build a query (or queries if one query is too big but only for the case of 'IN'
+   * composite clause. For the case of 'NOT IN' clauses, multiple queries change
+   * the semantics of the intended query.
+   * E.g., Let's assume that input "inList" parameter has [5, 6] and that
+   * _DIRECT_SQL_MAX_QUERY_LENGTH_ configuration parameter only allows one value in a 'NOT IN' clause,
+   * Then having two delete statements changes the semantics of the inteneded SQL statement.
+   * I.e. 'delete from T where a not in (5)' and 'delete from T where a not in (6)' sequence
+   * is not equal to 'delete from T where a not in (5, 6)'.)
+   * with one or multiple 'IN' or 'NOT IN' clauses with the given input parameters.
+   *
+   * Note that this method currently support only single column for
+   * IN/NOT IN clauses and that only covers OR-based composite 'IN' clause and
+   * AND-based composite 'NOT IN' clause.
+   * For example, for 'IN' clause case, the method will build a query with OR.
+   * E.g., "id in (1,2,3) OR id in (4,5,6)".
+   * For 'NOT IN' case, NOT IN list is broken into multiple 'NOT IN" clauses connected by AND.
+   *
+   * Note that, in this method, "a composite 'IN' clause" is defined as "a list of multiple 'IN'
+   * clauses in a query".
+   *
+   * @param queries   OUT: Array of query strings
+   * @param prefix    IN:  Part of the query that comes before IN list
+   * @param suffix    IN:  Part of the query that comes after IN list
+   * @param inList    IN:  the list with IN list values
+   * @param inColumn  IN:  single column name of IN list operator
+   * @param addParens IN:  add a pair of parenthesis outside the IN lists
+   *                       e.g. "(id in (1,2,3) OR id in (4,5,6))"
+   * @param notIn     IN:  is this for building a 'NOT IN' composite clause?
+   * @return          OUT: a list of the count of IN list values that are in each of the corresponding queries
+   */
+  public static List<Integer> buildQueryWithINClauseStrings(Configuration conf, List<String> queries, StringBuilder prefix,
+      StringBuilder suffix, List<String> inList, String inColumn, boolean addParens, boolean notIn) {
     // Get configuration parameters
     int maxQueryLength = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH);
     int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
@@ -203,6 +246,8 @@ public class TxnUtils {
     StringBuilder newInclausePrefix =
       new StringBuilder(notIn ? " and " + inColumn + " not in (":
 	                        " or " + inColumn + " in (");
+    List<Integer> ret = new ArrayList<>();
+    int currentCount = 0;
 
     // Loop over the given inList elements.
     while( cursor4InListArray < inListSize || !nextItemNeeded) {
@@ -257,9 +302,11 @@ public class TxnUtils {
 
         buf.append(suffix);
         queries.add(buf.toString());
+        ret.add(currentCount);
 
         // Prepare a new query string.
         buf.setLength(0);
+        currentCount = 0;
         cursor4queryOfInClauses = cursor4InClauseElements = 0;
         querySize = 0;
         newInclausePrefixJustAppended = false;
@@ -276,6 +323,7 @@ public class TxnUtils {
         cursor4InClauseElements = 0;
       } else {
         buf.append(nextValue.toString()).append(",");
+        currentCount++;
         nextItemNeeded = true;
         newInclausePrefixJustAppended = false;
         // increment cursor for elements per 'IN'/'NOT IN' clause.
@@ -293,6 +341,8 @@ public class TxnUtils {
     }
     buf.append(suffix);
     queries.add(buf.toString());
+    ret.add(currentCount);
+    return ret;
   }
 
   /*

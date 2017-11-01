@@ -45,6 +45,7 @@ public class TestTxnUtils {
   @Test
   public void testBuildQueryWithINClause() throws Exception {
     List<String> queries = new ArrayList<>();
+    List<Integer> ret;
 
     StringBuilder prefix = new StringBuilder();
     StringBuilder suffix = new StringBuilder();
@@ -61,16 +62,21 @@ public class TestTxnUtils {
     for (long i = 1; i <= 189; i++) {
       inList.add(i);
     }
-    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
+    ret = TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
     Assert.assertEquals(1, queries.size());
+    Assert.assertEquals(queries.size(), ret.size());
+    Assert.assertEquals(189L, ret.get(0).longValue());
     runAgainstDerby(queries);
 
     // Case 2 - Max in list members: 10; Max query string length: 1KB
     //          The first query has 2 full batches, and the second query only has 1 batch which only contains 1 member
     queries.clear();
     inList.add((long)190);
-    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
+    ret = TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
     Assert.assertEquals(2, queries.size());
+    Assert.assertEquals(queries.size(), ret.size());
+    Assert.assertEquals(189L, ret.get(0).longValue());
+    Assert.assertEquals(1L, ret.get(1).longValue());
     runAgainstDerby(queries);
 
     // Case 3.1 - Max in list members: 1000, Max query string length: 1KB, and exact 1000 members in a single IN clause
@@ -80,16 +86,19 @@ public class TestTxnUtils {
     for (long i = 191; i <= 1000; i++) {
       inList.add(i);
     }
-    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
+    ret = TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
     Assert.assertEquals(5, queries.size());
+    Assert.assertEquals(queries.size(), ret.size());
+    Assert.assertEquals(267L, ret.get(0).longValue());
     runAgainstDerby(queries);
 
     // Case 3.2 - Max in list members: 1000, Max query string length: 10KB, and exact 1000 members in a single IN clause
     MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 10);
     MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 1000);
     queries.clear();
-    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
+    ret = TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
     Assert.assertEquals(1, queries.size());
+    Assert.assertEquals(queries.size(), ret.size());
     runAgainstDerby(queries);
 
     // Case 3.3 - Now with 2000 entries, try the above settings
@@ -98,19 +107,25 @@ public class TestTxnUtils {
     }
     MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 1);
     queries.clear();
-    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
+    ret = TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
     Assert.assertEquals(10, queries.size());
+    Assert.assertEquals(queries.size(), ret.size());
+    Assert.assertEquals(267L, ret.get(0).longValue());
+    Assert.assertEquals(240L, ret.get(1).longValue());
     runAgainstDerby(queries);
     MetastoreConf.setLongVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 10);
     queries.clear();
-    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
+    ret = TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
     Assert.assertEquals(1, queries.size());
+    Assert.assertEquals(queries.size(), ret.size());
+    Assert.assertEquals(2000L, ret.get(0).longValue());
     runAgainstDerby(queries);
 
     // Case 4 - NOT IN list
     queries.clear();
-    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, true);
+    ret = TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, true);
     Assert.assertEquals(1, queries.size());
+    Assert.assertEquals(queries.size(), ret.size());
     runAgainstDerby(queries);
 
     // Case 5 - Max in list members: 1000; Max query string length: 10KB
@@ -118,16 +133,21 @@ public class TestTxnUtils {
     for (long i = 2001; i <= 4321; i++) {
       inList.add(i);
     }
-    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
+    ret = TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", true, false);
     Assert.assertEquals(3, queries.size());
+    Assert.assertEquals(queries.size(), ret.size());
     runAgainstDerby(queries);
 
     // Case 6 - No parenthesis
     queries.clear();
     suffix.setLength(0);
     suffix.append("");
-    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", false, false);
+    ret = TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, inList, "TXN_ID", false, false);
     Assert.assertEquals(3, queries.size());
+    Assert.assertEquals(queries.size(), ret.size());
+    Assert.assertEquals(2255L, ret.get(0).longValue());
+    Assert.assertEquals(2033L, ret.get(1).longValue());
+    Assert.assertEquals(33L, ret.get(2).longValue());
     runAgainstDerby(queries);
   }
 

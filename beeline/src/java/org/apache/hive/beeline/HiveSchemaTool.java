@@ -667,27 +667,31 @@ public class HiveSchemaTool {
       for (String seqName : seqNameToTable.keySet()) {
         String tableName = seqNameToTable.get(seqName).getLeft();
         String tableKey = seqNameToTable.get(seqName).getRight();
+        String fullSequenceName = "org.apache.hadoop.hive.metastore.model." + seqName;
         String seqQuery = needsQuotedIdentifier ?
-            ("select t.\"NEXT_VAL\" from \"SEQUENCE_TABLE\" t WHERE t.\"SEQUENCE_NAME\"='org.apache.hadoop.hive.metastore.model." + seqName + "' order by t.\"SEQUENCE_NAME\" ")
-            : ("select t.NEXT_VAL from SEQUENCE_TABLE t WHERE t.SEQUENCE_NAME='org.apache.hadoop.hive.metastore.model." + seqName + "' order by t.SEQUENCE_NAME ");
+            ("select t.\"NEXT_VAL\" from \"SEQUENCE_TABLE\" t WHERE t.\"SEQUENCE_NAME\"=? order by t.\"SEQUENCE_NAME\" ")
+            : ("select t.NEXT_VAL from SEQUENCE_TABLE t WHERE t.SEQUENCE_NAME=? order by t.SEQUENCE_NAME ");
         String maxIdQuery = needsQuotedIdentifier ?
             ("select max(\"" + tableKey + "\") from \"" + tableName + "\"")
             : ("select max(" + tableKey + ") from " + tableName);
 
-          ResultSet res = stmt.executeQuery(maxIdQuery);
-          if (res.next()) {
-             long maxId = res.getLong(1);
-             if (maxId > 0) {
-               ResultSet resSeq = stmt.executeQuery(seqQuery);
-               if (!resSeq.next()) {
-                 isValid = false;
-                 System.err.println("Missing SEQUENCE_NAME " + seqName + " from SEQUENCE_TABLE");
-               } else if (resSeq.getLong(1) < maxId) {
-                 isValid = false;
-                 System.err.println("NEXT_VAL for " + seqName + " in SEQUENCE_TABLE < max("+ tableKey + ") in " + tableName);
-               }
-             }
+        ResultSet res = stmt.executeQuery(maxIdQuery);
+        if (res.next()) {
+          long maxId = res.getLong(1);
+          if (maxId > 0) {
+            PreparedStatement pStmt = conn.prepareStatement(seqQuery);
+            pStmt.setString(1, fullSequenceName);
+            ResultSet resSeq = pStmt.executeQuery();
+            if (!resSeq.next()) {
+              isValid = false;
+              System.err.println("Missing SEQUENCE_NAME " + seqName + " from SEQUENCE_TABLE");
+            } else if (resSeq.getLong(1) < maxId) {
+              isValid = false;
+              System.err.println("NEXT_VAL for " + seqName + " in SEQUENCE_TABLE < max(" +
+                  tableKey + ") in " + tableName);
+            }
           }
+        }
       }
 
       System.out.println((isValid ? "Succeeded" :"Failed") + " in sequence number validation for SEQUENCE_TABLE.");
