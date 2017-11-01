@@ -154,18 +154,22 @@ abstract class Rows implements Iterator {
       } catch (Throwable t) {
       }
 
-      for (int i = 0; i < size; i++) {
+       for (int i = 0; i < size; i++) {
         Object o = rs.getObject(i + 1);
-        if(rs.wasNull()) {
-          values[i] = nullStr;
+        String value = null;
+
+        if (o == null) {
+          value = nullStr;
         } else if (o instanceof Number) {
-          values[i] = numberFormat != null ? numberFormat.format(o) : o.toString() ;
+          value = numberFormat != null ? numberFormat.format(o) : o.toString();
         } else if (o instanceof byte[]) {
-          values[i] = convertBinaryArray ? new String((byte[])o) : Arrays.toString((byte[])o);
+          value = convertBinaryArray ? new String((byte[])o) : Arrays.toString((byte[])o);
         } else {
-          values[i] = o.toString();
+          value = o.toString();
         }
-        sizes[i] = values[i].length();
+
+        values[i] = value.intern();
+        sizes[i] = value.length();
       }
     }
   }
