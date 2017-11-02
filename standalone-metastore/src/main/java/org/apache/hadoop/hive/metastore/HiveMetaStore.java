@@ -4486,26 +4486,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                   tbl.getSd().getSerdeInfo().getSerializationLib())) {
           ret = tbl.getSd().getCols();
         } else {
-              /* TODO - sort out what changed here
-          try {
-            if (envContext != null) {
-              String addedJars = envContext.getProperties().get("hive.added.jars.path");
-              if (org.apache.commons.lang.StringUtils.isNotBlank(addedJars)) {
-                //for thread safe
-                curConf = getConf();
-                orgHiveLoader = curConf.getClassLoader();
-                ClassLoader loader = MetaStoreUtils.addToClassPath(orgHiveLoader, org.apache.commons.lang.StringUtils.split(addedJars, ","));
-                curConf.setClassLoader(loader);
-              }
-            }
-
-            Deserializer s = MetaStoreUtils.getDeserializer(curConf, tbl, false);
-            ret = MetaStoreUtils.getFieldsFromDeserializer(tableName, s);
-          } catch (SerDeException e) {
-            StringUtils.stringifyException(e);
-            throw new MetaException(e.getMessage());
-          }
-          */
           StorageSchemaReader schemaReader = getStorageSchemaReader();
           ret = schemaReader.readSchema(tbl, envContext, getConf());
         }
