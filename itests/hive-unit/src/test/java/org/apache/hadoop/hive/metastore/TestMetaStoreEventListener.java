@@ -509,13 +509,13 @@ public class TestMetaStoreEventListener extends TestCase {
     closingClient.setMetaConf(metaConfKey, "[test pattern modified]");
     ConfigChangeEvent event = (ConfigChangeEvent) DummyListener.getLastEvent();
     int beforeCloseNotificationEventCounts = DummyListener.notifyList.size();
-    HiveMetaStore.HMSHandler beforeHandler = event.getHandler();
+    IHMSHandler beforeHandler = event.getIHMSHandler();
     closingClient.close();
 
     Thread.sleep(5 * 1000);
     event = (ConfigChangeEvent) DummyListener.getLastEvent();
     int afterCloseNotificationEventCounts = DummyListener.notifyList.size();
-    HiveMetaStore.HMSHandler afterHandler = event.getHandler();
+    IHMSHandler afterHandler = event.getIHMSHandler();
     // Meta-conf cleanup should trigger an event to listener
     assertNotSame(beforeCloseNotificationEventCounts, afterCloseNotificationEventCounts);
     // Both the handlers should be same

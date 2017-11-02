@@ -27,6 +27,7 @@ import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -36,7 +37,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -271,7 +271,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
   }
 
   @Override
-  public void setMetaStoreHandler(HMSHandler handler) {
+  public void setMetaStoreHandler(IHMSHandler handler) {
     hive_db.setHandler(handler);
     this.wh = handler.getWh();
     this.isRunFromMetaStore = true;

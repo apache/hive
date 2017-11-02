@@ -130,7 +130,10 @@ import org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
 import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
+import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
+import org.apache.hadoop.hive.metastore.txn.AcidCompactionHistoryService;
+import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -215,17 +218,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
-  /**
-   * An ugly interface because everything about this file is ugly. RawStore is threadlocal so this
-   * thread-local disease propagates everywhere, and FileMetadataManager cannot just get a RawStore
-   * or handlers to use; it will need to have this method to make thread-local handlers and a
-   * thread-local RawStore.
-   */
-  public interface ThreadLocalRawStore {
-    RawStore getMS() throws MetaException;
-  }
-
-  public static class HMSHandler extends FacebookBase implements IHMSHandler, ThreadLocalRawStore {
+  public static class HMSHandler extends FacebookBase implements IHMSHandler {
     public static final Logger LOG = HiveMetaStore.LOG;
     private final HiveConf hiveConf; // stores datastore (jpox) properties,
                                      // right now they come from jpox.properties
@@ -406,7 +399,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return threadLocalIpAddress.get();
     }
 
+    /**
+     * Use {@link #getThreadId()} instead.
+     * @return thread id
+     */
+    @Deprecated
     public static Integer get() {
+      return threadLocalId.get();
+    }
+
+    @Override
+    public int getThreadId() {
       return threadLocalId.get();
     }
 
@@ -457,7 +460,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    List<TransactionalMetaStoreEventListener> getTransactionalListeners() {
+    @Override
+    public List<TransactionalMetaStoreEventListener> getTransactionalListeners() {
       return transactionalListeners;
     }
 
@@ -537,7 +541,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         cleaner.schedule(new DumpDirCleanerTask(hiveConf), cleanFreq, cleanFreq);
       }
       expressionProxy = PartFilterExprUtil.createExpressionProxy(hiveConf);
-      fileMetadataManager = new FileMetadataManager((ThreadLocalRawStore)this, hiveConf);
+      fileMetadataManager = new FileMetadataManager(this.getMS(), hiveConf);
     }
 
     private static String addPrefix(String s) {
@@ -580,6 +584,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return modifiedConf;
     }
 
+    @Override
     public Warehouse getWh() {
       return wh;
     }
@@ -1027,14 +1032,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return db;
     }
 
-    /**
-     * Equivalent to get_database, but does not write to audit logs, or fire pre-event listners.
-     * Meant to be used for internal hive classes that don't use the thrift interface.
-     * @param name
-     * @return
-     * @throws NoSuchObjectException
-     * @throws MetaException
-     */
+    @Override
     public Database get_database_core(final String name) throws NoSuchObjectException,
         MetaException {
       Database db = null;
@@ -2400,16 +2398,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return t;
     }
 
-    /**
-     * Equivalent of get_table, but does not log audits and fire pre-event listener.
-     * Meant to be used for calls made by other hive classes, that are not using the
-     * thrift interface.
-     * @param dbname
-     * @param name
-     * @return Table object
-     * @throws MetaException
-     * @throws NoSuchObjectException
-     */
+    @Override
     public Table get_table_core(final String dbname, final String name) throws MetaException,
         NoSuchObjectException {
       Table t = null;
@@ -8059,33 +8048,29 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     if(!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_INITIATOR_ON)) {
       return;
     }
-    startHouseKeeperService(conf, Class.forName("org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService"));
-    startHouseKeeperService(conf, Class.forName("org.apache.hadoop.hive.ql.txn.AcidCompactionHistoryService"));
-    startHouseKeeperService(conf, Class.forName("org.apache.hadoop.hive.ql.txn.AcidWriteSetService"));
 
     ThreadPool.initialize(conf);
-    RunnableConfigurable rc = new AcidOpenTxnsCounterService();
+    startOneHouseKeeperService(new AcidHouseKeeperService(), conf,
+        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TIMEDOUT_TXN_REAPER_INTERVAL,
+            TimeUnit.MILLISECONDS));
+    startOneHouseKeeperService(new AcidOpenTxnsCounterService(), conf,
+        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COUNT_OPEN_TXNS_INTERVAL,
+            TimeUnit.MILLISECONDS));
+    startOneHouseKeeperService(new AcidCompactionHistoryService(), conf,
+        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_REAPER_INTERVAL,
+            TimeUnit.MILLISECONDS));
+    startOneHouseKeeperService(new AcidWriteSetService(), conf,
+        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.WRITE_SET_REAPER_INTERVAL,
+            TimeUnit.MILLISECONDS));
+  }
+
+  private static void startOneHouseKeeperService(RunnableConfigurable rc, Configuration conf,
+                                                 long interval) {
     rc.setConf(conf);
-    ThreadPool.getPool().scheduleAtFixedRate(rc, 100, MetastoreConf.getTimeVar(conf,
-        MetastoreConf.ConfVars.COUNT_OPEN_TXNS_INTERVAL, TimeUnit.MILLISECONDS),
-        TimeUnit.MILLISECONDS);
-
-  }
-  private static void startHouseKeeperService(HiveConf conf, Class<?> c) throws Exception {
-    //todo: when metastore adds orderly-shutdown logic, houseKeeper.stop()
-    //should be called form it
-    HouseKeeperService houseKeeper = (HouseKeeperService)c.newInstance();
-    try {
-      houseKeeper.start(conf);
-    }
-    catch (Exception ex) {
-      LOG.error("Failed to start {}" , houseKeeper.getClass() +
-        ".  The system will not handle {} " , houseKeeper.getServiceDescription(),
-        ".  Root Cause: ", ex);
-    }
+    ThreadPool.getPool().scheduleAtFixedRate(rc, 0, interval, TimeUnit.MILLISECONDS);
   }
 
-  public static Map<FileMetadataExprType, FileMetadataHandler> createHandlerMap() {
+  static Map<FileMetadataExprType, FileMetadataHandler> createHandlerMap() {
     Map<FileMetadataExprType, FileMetadataHandler> fmHandlers = new HashMap<>();
     for (FileMetadataExprType v : FileMetadataExprType.values()) {
       switch (v) {

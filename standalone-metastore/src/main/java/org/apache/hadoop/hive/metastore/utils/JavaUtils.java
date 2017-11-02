@@ -88,6 +88,20 @@ public class JavaUtils {
   }
 
   /**
+   * Create an object of the given class using a no-args constructor
+   * @param theClass class to return new object of
+   * @param <T> the type of the class to be returned
+   * @return an object of the requested type
+   */
+  public static <T> T newInstance(Class<T> theClass) {
+    try {
+      return theClass.newInstance();
+    } catch (InstantiationException|IllegalAccessException e) {
+      throw new RuntimeException("Unable to instantiate " + theClass.getName(), e);
+    }
+  }
+
+  /**
    * @return name of current host
    */
   public static String hostname() {

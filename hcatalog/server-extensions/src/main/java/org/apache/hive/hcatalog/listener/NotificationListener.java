@@ -34,12 +34,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
+import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
@@ -54,6 +51,7 @@ import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.HCatEventMessage;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -182,7 +180,7 @@ public class NotificationListener extends MetaStoreEventListener {
     // by listening on a topic named "HCAT" and message selector string
     // as "HCAT_EVENT = HCAT_ADD_DATABASE"
     if (dbEvent.getStatus()) {
-      String topicName = getTopicPrefix(dbEvent.getHandler().getHiveConf());
+      String topicName = getTopicPrefix(dbEvent.getIHMSHandler().getConf());
       send(messageFactory.buildCreateDatabaseMessage(dbEvent.getDatabase()), topicName);
     }
   }
@@ -193,7 +191,7 @@ public class NotificationListener extends MetaStoreEventListener {
     // by listening on a topic named "HCAT" and message selector string
     // as "HCAT_EVENT = HCAT_DROP_DATABASE"
     if (dbEvent.getStatus()) {
-      String topicName = getTopicPrefix(dbEvent.getHandler().getHiveConf());
+      String topicName = getTopicPrefix(dbEvent.getIHMSHandler().getConf());
       send(messageFactory.buildDropDatabaseMessage(dbEvent.getDatabase()), topicName);
     }
   }
@@ -205,8 +203,8 @@ public class NotificationListener extends MetaStoreEventListener {
     // as "HCAT_EVENT = HCAT_ADD_TABLE"
     if (tableEvent.getStatus()) {
       Table tbl = tableEvent.getTable();
-      HMSHandler handler = tableEvent.getHandler();
-      HiveConf conf = handler.getHiveConf();
+      IHMSHandler handler = tableEvent.getIHMSHandler();
+      Configuration conf = handler.getConf();
       Table newTbl;
       try {
         newTbl = handler.get_table_core(tbl.getDbName(), tbl.getTableName())
@@ -216,11 +214,7 @@ public class NotificationListener extends MetaStoreEventListener {
           getTopicPrefix(conf) + "." + newTbl.getDbName().toLowerCase() + "."
             + newTbl.getTableName().toLowerCase());
         handler.alter_table(newTbl.getDbName(), newTbl.getTableName(), newTbl);
-      } catch (InvalidOperationException e) {
-        MetaException me = new MetaException(e.toString());
-        me.initCause(e);
-        throw me;
-      } catch (NoSuchObjectException e) {
+      } catch (TException e) {
         MetaException me = new MetaException(e.toString());
         me.initCause(e);
         throw me;
@@ -258,7 +252,7 @@ public class NotificationListener extends MetaStoreEventListener {
       }
       // I think this is wrong, the alter table statement should come on the table topic not the
       // DB topic - Alan.
-      String topicName = getTopicPrefix(tableEvent.getHandler().getHiveConf()) + "." +
+      String topicName = getTopicPrefix(tableEvent.getIHMSHandler().getConf()) + "." +
           after.getDbName().toLowerCase();
       send(messageFactory.buildAlterTableMessage(before, after), topicName);
     }
@@ -288,7 +282,7 @@ public class NotificationListener extends MetaStoreEventListener {
       Table table = tableEvent.getTable();
       // I think this is wrong, the drop table statement should come on the table topic not the
       // DB topic - Alan.
-      String topicName = getTopicPrefix(tableEvent.getHandler().getHiveConf()) + "." + table.getDbName().toLowerCase();
+      String topicName = getTopicPrefix(tableEvent.getIHMSHandler().getConf()) + "." + table.getDbName().toLowerCase();
       send(messageFactory.buildDropTableMessage(table), topicName);
     }
   }

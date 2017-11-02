@@ -172,6 +172,12 @@ public final class TxnDbUtil {
         LOG.error("Error rolling back: " + re.getMessage());
       }
 
+      // Another thread might have already created these tables.
+      if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+        LOG.info("Txn tables already exist, returning");
+        return;
+      }
+
       // This might be a deadlock, if so, let's retry
       if (e instanceof SQLTransactionRollbackException && deadlockCnt++ < 5) {
         LOG.warn("Caught deadlock, retrying db creation");
