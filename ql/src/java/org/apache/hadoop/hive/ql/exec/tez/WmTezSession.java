@@ -18,18 +18,30 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.util.concurrent.TimeoutException;
+import com.google.common.util.concurrent.ListenableFuture;
 
+import org.apache.hadoop.hive.ql.exec.Utilities;
+
+import com.google.common.annotations.VisibleForTesting;
+
+import com.google.common.util.concurrent.SettableFuture;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.registry.impl.TezAmInstance;
 
 public class WmTezSession extends TezSessionPoolSession implements AmPluginNode {
   private String poolName;
   private double clusterFraction;
+  private String killReason = null;
 
   private final Object amPluginInfoLock = new Object();
   private AmPluginInfo amPluginInfo = null;
+  private SettableFuture<WmTezSession> amRegistryFuture = null;
+  private ScheduledFuture<?> timeoutTimer = null;
 
+  private final WorkloadManager wmParent;
 
   /** The actual state of the guaranteed task, and the update state, for the session. */
   // Note: hypothetically, a generic WM-aware-session should not know about guaranteed tasks.
@@ -41,34 +53,60 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
   }
   private final ActualWmState actualState = new ActualWmState();
 
-  public WmTezSession(String sessionId, Manager parent,
+  public WmTezSession(String sessionId, WorkloadManager parent,
       SessionExpirationTracker expiration, HiveConf conf) {
     super(sessionId, parent, expiration, conf);
+    wmParent = parent;
   }
 
-  @Override
-  public AmPluginInfo waitForAmPluginInfo(int timeoutMs)
-      throws InterruptedException, TimeoutException {
-    synchronized (amPluginInfoLock) {
-      if (amPluginInfo == null) {
-        amPluginInfoLock.wait(timeoutMs);
-        if (amPluginInfo == null) {
-          throw new TimeoutException("No plugin information for " + getSessionId());
-        }
-      }
-      return amPluginInfo;
-    }
+  @VisibleForTesting
+  WmTezSession(String sessionId, Manager testParent,
+      SessionExpirationTracker expiration, HiveConf conf) {
+    super(sessionId, testParent, expiration, conf);
+    wmParent = null;
   }
+
+  public ListenableFuture<WmTezSession> waitForAmRegistryAsync(
+      int timeoutMs, ScheduledExecutorService timeoutPool) {
+    SettableFuture<WmTezSession> future = SettableFuture.create();
+    synchronized (amPluginInfoLock) {
+      if (amPluginInfo != null) {
+        future.set(this);
+        return future;
+      }
+      if (amRegistryFuture != null) {
+        // We don't need this for now, so do not support it.
+        future.setException(new RuntimeException("Multiple waits are not suported"));
+        return future;
+      }
+      amRegistryFuture = future;
+      if (timeoutMs <= 0) return future;
+      // TODO: replace with withTimeout after we get the relevant guava upgrade.
+      this.timeoutTimer = timeoutPool.schedule(
+          new TimeoutRunnable(), timeoutMs, TimeUnit.MILLISECONDS);
+    }
+    return future;
+  }
+
 
   @Override
   void updateFromRegistry(TezAmInstance si) {
+    AmPluginInfo info = new AmPluginInfo(si.getHost(), si.getPluginPort(),
+        si.getPluginToken(), si.getPluginTokenJobId());
     synchronized (amPluginInfoLock) {
-      this.amPluginInfo = new AmPluginInfo(si.getHost(), si.getPluginPort(),
-          si.getPluginToken(), si.getPluginTokenJobId());
-      amPluginInfoLock.notifyAll();
+      this.amPluginInfo = info;
+      if (amRegistryFuture != null) {
+        amRegistryFuture.set(this);
+        amRegistryFuture = null;
+      }
+      if (timeoutTimer != null) {
+        timeoutTimer.cancel(true);
+        timeoutTimer = null;
+      }
     }
   }
 
+  @Override
   public AmPluginInfo getAmPluginInfo() {
     return amPluginInfo; // Only has final fields, no artifacts from the absence of sync.
   }
@@ -83,6 +121,11 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
 
   void setClusterFraction(double fraction) {
     this.clusterFraction = fraction;
+  }
+
+  void clearWm() {
+    this.poolName = null;
+    this.clusterFraction = 0f;
   }
 
   double getClusterFraction() {
@@ -116,6 +159,44 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
       actualState.sending = -1;
       // It's ok to skip a failed message if the target has changed back to the old value.
       return (actualState.sent == actualState.target);
+    }
+  }
+
+  public void handleUpdateError() {
+    wmParent.addUpdateError(this);
+  }
+
+  @Override
+  public int hashCode() {
+    return System.identityHashCode(this);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj == this;
+  }
+
+  boolean isIrrelevantForWm() {
+    return killReason != null;
+  }
+
+  String getReasonForKill() {
+    return killReason;
+  }
+
+  void setIsIrrelevantForWm(String killReason) {
+    this.killReason = killReason;
+  }
+
+  private final class TimeoutRunnable implements Runnable {
+    @Override
+    public void run() {
+      synchronized (amPluginInfoLock) {
+        timeoutTimer = null;
+        if (amRegistryFuture == null || amRegistryFuture.isDone()) return;
+        amRegistryFuture.cancel(true);
+        amRegistryFuture = null;
+      }
     }
   }
 }

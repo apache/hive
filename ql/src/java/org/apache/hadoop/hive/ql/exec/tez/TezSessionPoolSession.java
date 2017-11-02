@@ -18,6 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import com.google.common.util.concurrent.SettableFuture;
+
+import org.apache.hadoop.hive.registry.impl.TezAmInstance;
+
+import org.apache.hadoop.conf.Configuration;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -139,28 +145,28 @@ class TezSessionPoolSession extends TezSessionState {
    * Tries to use this session. When the session is in use, it will not expire.
    * @return true if the session can be used; false if it has already expired.
    */
-  public boolean tryUse() throws Exception {
+  public boolean tryUse(boolean ignoreExpiration) {
     while (true) {
       int oldValue = sessionState.get();
       if (oldValue == STATE_IN_USE) throw new AssertionError(this + " is already in use");
       if (oldValue == STATE_EXPIRED) return false;
-      int finalState = shouldExpire() ? STATE_EXPIRED : STATE_IN_USE;
+      int finalState = (!ignoreExpiration && shouldExpire()) ? STATE_EXPIRED : STATE_IN_USE;
       if (sessionState.compareAndSet(STATE_NONE, finalState)) {
         if (finalState == STATE_IN_USE) return true;
         // Restart asynchronously, don't block the caller.
-        expirationTracker.closeAndRestartExpiredSession(this, true);
+        expirationTracker.closeAndRestartExpiredSessionAsync(this);
         return false;
       }
     }
   }
 
-  boolean stopUsing() throws Exception {
+  boolean stopUsing() {
     int finalState = shouldExpire() ? STATE_EXPIRED : STATE_NONE;
     if (!sessionState.compareAndSet(STATE_IN_USE, finalState)) {
       throw new AssertionError("Unexpected state change; currently " + sessionState.get());
     }
     if (finalState == STATE_NONE) return true;
-    expirationTracker.closeAndRestartExpiredSession(this, true);
+    expirationTracker.closeAndRestartExpiredSessionAsync(this);
     return false;
   }
 
@@ -176,13 +182,17 @@ class TezSessionPoolSession extends TezSessionState {
     while (true) {
       if (sessionState.get() != STATE_NONE) return true; // returnAfterUse will take care of this
       if (sessionState.compareAndSet(STATE_NONE, STATE_EXPIRED)) {
-        expirationTracker.closeAndRestartExpiredSession(this, isAsync);
+        if (isAsync) {
+          expirationTracker.closeAndRestartExpiredSessionAsync(this);
+        } else {
+          expirationTracker.closeAndRestartExpiredSession(this);
+        }
         return true;
       }
     }
   }
 
-  private boolean shouldExpire() {
+  private final boolean shouldExpire() {
     return expirationNs != null && (System.nanoTime() - expirationNs) >= 0;
   }
 

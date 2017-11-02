@@ -114,7 +114,7 @@ public class LlapPluginEndpointClientImpl extends
 
     private void ensureInfo() throws InterruptedException, TimeoutException {
       if (info != null) return;
-      info = node.waitForAmPluginInfo(0); // Don't wait - should already be initialized.
+      info = node.getAmPluginInfo(); // Don't wait - should already be initialized.
       if (info == null) {
         throw new AssertionError("A request was created without AM plugin info for " + node);
       }

@@ -48,7 +48,7 @@ class SessionExpirationTracker {
   private volatile SessionState initSessionState;
 
   interface RestartImpl {
-    void closeAndReopenPoolSession(TezSessionPoolSession session) throws Exception;
+    void closeAndReopenExpiredSession(TezSessionPoolSession session) throws Exception;
   }
 
   public static SessionExpirationTracker create(HiveConf conf, RestartImpl restartImpl) {
@@ -114,7 +114,7 @@ class SessionExpirationTracker {
         TezSessionPoolSession next = restartQueue.take();
         LOG.info("Restarting the expired session [" + next + "]");
         try {
-          sessionRestartImpl.closeAndReopenPoolSession(next);
+          sessionRestartImpl.closeAndReopenExpiredSession(next);
         } catch (InterruptedException ie) {
           throw ie;
         } catch (Exception e) {
@@ -225,12 +225,12 @@ class SessionExpirationTracker {
     expirationQueue.remove(session);
   }
 
+  public void closeAndRestartExpiredSessionAsync(TezSessionPoolSession session) {
+    restartQueue.add(session);
+  }
+
   public void closeAndRestartExpiredSession(
-      TezSessionPoolSession session, boolean isAsync) throws Exception {
-    if (isAsync) {
-      restartQueue.add(session);
-    } else {
-      sessionRestartImpl.closeAndReopenPoolSession(session);
-    }
+      TezSessionPoolSession session) throws Exception {
+    sessionRestartImpl.closeAndReopenExpiredSession(session);
   }
 }

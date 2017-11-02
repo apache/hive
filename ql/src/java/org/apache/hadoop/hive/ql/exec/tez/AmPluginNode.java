@@ -39,5 +39,5 @@ public interface AmPluginNode {
     }
   }
 
-  AmPluginInfo waitForAmPluginInfo(int timeoutMs) throws InterruptedException, TimeoutException;
+  AmPluginInfo getAmPluginInfo() throws InterruptedException, TimeoutException;
 }

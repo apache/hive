@@ -16,17 +16,21 @@
 
 package org.apache.hive.jdbc;
 
+import com.google.common.collect.Lists;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
+import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpHivePool;
+import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpResourcePlan;
+import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpUserMapping;
+import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpUserMappingType;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
@@ -70,6 +74,10 @@ public class TestTriggersWorkloadManager extends TestTriggersTezSessionPoolManag
   @Override
   protected void setupTriggers(final List<Trigger> triggers) throws Exception {
     WorkloadManager wm = WorkloadManager.getInstance();
-    wm.getPools().get("llap").setTriggers(triggers);
+    TmpResourcePlan rp = new TmpResourcePlan(Lists.newArrayList(new TmpHivePool(
+        "llap", null, 1, 1.0f, triggers)), Lists.newArrayList(
+            new TmpUserMapping(TmpUserMappingType.DEFAULT, "", "llap", 1)));
+    wm.updateResourcePlanAsync(rp).get(10, TimeUnit.SECONDS);
   }
+  
 }

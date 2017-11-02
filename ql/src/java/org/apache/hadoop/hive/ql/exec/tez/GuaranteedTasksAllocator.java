@@ -64,6 +64,8 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
 
   @Override
   public void start() {
+    // Try to get cluster information once, to avoid immediate cluster-update event in WM.
+    clusterState.initClusterInfo();
     clusterStateUpdateThread.start();
   }
 
@@ -72,9 +74,13 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
     clusterStateUpdateThread.interrupt(); // Don't wait for the thread.
   }
 
+  public void initClusterInfo() {
+    clusterState.initClusterInfo();
+  }
+
   @VisibleForTesting
   protected int getExecutorCount(boolean allowUpdate) {
-    if (!clusterState.initClusterInfo(allowUpdate)) {
+    if (allowUpdate && !clusterState.initClusterInfo()) {
       LOG.warn("Failed to get LLAP cluster information for "
           + HiveConf.getTrimmedVar(this.conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS)
           + "; we may rely on outdated cluster status");
@@ -92,15 +98,18 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
   }
 
   @Override
-  public void updateSessionsAsync(double totalMaxAlloc, List<WmTezSession> sessionsToUpdate) {
-    // Do not make a remote call unless we have no information at all.
+  public void updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessionsToUpdate) {
+    // Do not make a remote call under any circumstances - this is supposed to be async.
     int totalCount = getExecutorCount(false);
-    int totalToDistribute = (int)Math.round(totalCount * totalMaxAlloc);
+    int totalToDistribute = -1;
+    if (totalMaxAlloc != null) {
+      totalToDistribute = (int)Math.round(totalCount * totalMaxAlloc);
+    }
     double lastDelta = 0;
     for (int i = 0; i < sessionsToUpdate.size(); ++i) {
       WmTezSession session = sessionsToUpdate.get(i);
       int intAlloc = -1;
-      if (i + 1 == sessionsToUpdate.size()) {
+      if (i + 1 == sessionsToUpdate.size() && totalToDistribute >= 0) {
         intAlloc = totalToDistribute;
         // We rely on the caller to supply a reasonable total; we could log a warning
         // if this doesn't match the allocation of the last session beyond some threshold.
@@ -119,10 +128,12 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
         intAlloc = (int)roundedAlloc;
       }
       // Make sure we don't give out more than allowed due to double/rounding artifacts.
-      if (intAlloc > totalToDistribute) {
-        intAlloc = totalToDistribute;
+      if (totalToDistribute >= 0) {
+        if (intAlloc > totalToDistribute) {
+          intAlloc = totalToDistribute;
+        }
+        totalToDistribute -= intAlloc;
       }
-      totalToDistribute -= intAlloc;
       // This will only send update if it's necessary.
       updateSessionAsync(session, intAlloc);
     }
@@ -162,7 +173,7 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
       // RPC already handles retries, so we will just try to kill the session here.
       // This will cause the current query to fail. We could instead keep retrying.
       try {
-        session.destroy();
+        session.handleUpdateError();
       } catch (Exception e) {
         LOG.error("Failed to kill the session " + session);
       }

@@ -19,14 +19,17 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 
-import java.util.Collection;
-import org.apache.hadoop.fs.Path;
+import com.google.common.util.concurrent.Futures;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.SettableFuture;
 import java.io.IOException;
-import java.net.URISyntaxException;
-
+import java.util.Collection;
+import java.util.concurrent.ScheduledExecutorService;
 import javax.security.auth.login.LoginException;
-
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -45,6 +48,7 @@ public class SampleTezSessionState extends WmTezSession {
   private final HiveConf hiveConf;
   private String user;
   private boolean doAsEnabled;
+  private ListenableFuture<Boolean> waitForAmRegFuture;
 
   public SampleTezSessionState(
       String sessionId, TezSessionPoolSession.Manager parent, HiveConf conf) {
@@ -52,6 +56,13 @@ public class SampleTezSessionState extends WmTezSession {
         ? ((TezSessionPoolManager)parent).getExpirationTracker() : null, conf);
     this.sessionId = sessionId;
     this.hiveConf = conf;
+    waitForAmRegFuture = createDefaultWaitForAmRegistryFuture();
+  }
+
+  private SettableFuture<Boolean> createDefaultWaitForAmRegistryFuture() {
+    SettableFuture<Boolean> noWait = SettableFuture.create();
+    noWait.set(true); // By default, do not wait.
+    return noWait;
   }
 
   @Override
@@ -105,5 +116,28 @@ public class SampleTezSessionState extends WmTezSession {
   @Override
   public boolean getDoAsEnabled() {
     return this.doAsEnabled;
+  }
+
+  @Override
+  public SettableFuture<WmTezSession> waitForAmRegistryAsync(
+      int timeoutMs, ScheduledExecutorService timeoutPool) {
+    final SampleTezSessionState session = this;
+    final SettableFuture<WmTezSession> future = SettableFuture.create();
+    Futures.addCallback(waitForAmRegFuture, new FutureCallback<Boolean>() {
+      @Override
+      public void onSuccess(Boolean result) {
+        future.set(session);
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        future.setException(t);
+      }
+    });
+    return future;
+  }
+
+  public void setWaitForAmRegistryFuture(ListenableFuture<Boolean> future) {
+    waitForAmRegFuture = future != null ? future : createDefaultWaitForAmRegistryFuture();
   }
 }

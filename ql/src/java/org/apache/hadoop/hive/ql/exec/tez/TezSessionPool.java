@@ -17,17 +17,25 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListenableFutureTask;
+import com.google.common.util.concurrent.SettableFuture;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Queue;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -45,35 +53,48 @@ import org.slf4j.LoggerFactory;
 class TezSessionPool<SessionType extends TezSessionPoolSession> {
   private static final Logger LOG = LoggerFactory.getLogger(TezSessionPool.class);
 
-  /** A queue for initial sessions that have not been started yet. */
-  private final Queue<SessionType> initialSessions =
-      new ConcurrentLinkedQueue<SessionType>();
+  public interface SessionObjectFactory<SessionType> {
+    SessionType create(SessionType oldSession);
+  }
 
   private final HiveConf initConf;
-  private int initialSize;
+  private int initialSize = 0; // For testing only.
+  private final SessionObjectFactory<SessionType> sessionObjFactory;
 
-  // TODO: eventually, this will need to support resize. That would probably require replacement
-  //       with a RW lock, a semaphore and linked list.
-  private BlockingDeque<SessionType> defaultQueuePool;
+  private final ReentrantLock poolLock = new ReentrantLock(true);
+  private final Condition notEmpty = poolLock.newCondition();
+  private final LinkedList<SessionType> pool = new LinkedList<>();
+  private final LinkedList<SettableFuture<SessionType>> asyncRequests = new LinkedList<>();
+  /**
+   * The number of sessions that needs to be started or killed because of the resize calls on
+   * the pool. When increasing the size, we set this to a positive number and start new sessions
+   * on background threads, gradually bringing it back to 0.
+   * When decreasing the size, we try to kill as many existing sessions as we can; if that is
+   * not enough because the sessions are in use or being restarted, we kill them as they are
+   * re-added to the pool.
+   * Repeated calls to resize adjust the delta to ensure correctness between different resizes.
+   */
+  private final AtomicInteger deltaRemaining = new AtomicInteger();
 
   private final String amRegistryName;
   private final TezAmRegistryImpl amRegistry;
 
   private final ConcurrentHashMap<String, SessionType> bySessionId =
       new ConcurrentHashMap<>();
+  // Preserved at initialization time to have a session to use during resize.
+  // TODO: rather, Tez sessions should not depend on SessionState.
+  private SessionState parentSessionState;
 
-
-  TezSessionPool(HiveConf initConf, int numSessionsTotal, boolean useAmRegistryIfPresent) {
+  TezSessionPool(HiveConf initConf, int numSessionsTotal, boolean useAmRegistryIfPresent,
+      SessionObjectFactory<SessionType> sessionFactory) {
     this.initConf = initConf;
-    assert numSessionsTotal > 0;
-    defaultQueuePool = new LinkedBlockingDeque<>(numSessionsTotal);
+    this.initialSize = numSessionsTotal;
     this.amRegistry = useAmRegistryIfPresent ? TezAmRegistryImpl.create(initConf, true) : null;
     this.amRegistryName = amRegistry == null ? null : amRegistry.getRegistryName();
+    this.sessionObjFactory = sessionFactory;
   }
 
-  void startInitialSessions() throws Exception {
-    initialSize = initialSessions.size();
-    if (initialSessions.isEmpty()) return;
+  void start() throws Exception {
     if (amRegistry != null) {
       amRegistry.start();
       amRegistry.initializeWithoutRegistering();
@@ -82,82 +103,145 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       amRegistry.populateCache(true);
     }
 
-    int threadCount = Math.min(initialSessions.size(),
+    int threadCount = Math.min(initialSize,
         HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
     Preconditions.checkArgument(threadCount > 0);
     if (threadCount == 1) {
-      while (true) {
-        SessionType session = initialSessions.poll();
+      for (int i = 0; i < initialSize; ++i) {
+        SessionType session = sessionObjFactory.create(null);
         if (session == null) break;
         startInitialSession(session);
       }
     } else {
-      final SessionState parentSessionState = SessionState.get();
-      // The runnable has no mutable state, so each thread can run the same thing.
-      final AtomicReference<Exception> firstError = new AtomicReference<>(null);
-      Runnable runnable = new Runnable() {
-        public void run() {
-          if (parentSessionState != null) {
-            SessionState.setCurrentSessionState(parentSessionState);
-          }
-          while (true) {
-            SessionType session = initialSessions.poll();
-            if (session == null) break;
-            if (firstError.get() != null) break; // Best-effort.
-            try {
-              startInitialSession(session);
-            } catch (Exception e) {
-              if (!firstError.compareAndSet(null, e)) {
-                LOG.error("Failed to start session; ignoring due to previous error", e);
-              }
-              break;
-            }
-          }
+      final AtomicInteger remaining = new AtomicInteger(initialSize);
+      this.parentSessionState = SessionState.get();
+      @SuppressWarnings("unchecked")
+      FutureTask<Boolean>[] threadTasks = new FutureTask[threadCount];
+      for (int i = threadTasks.length - 1; i >= 0; --i) {
+        threadTasks[i] = new FutureTask<Boolean>(new CreateSessionsRunnable(remaining));
+        if (i == 0) {
+          // Start is blocking, so run one of the tasks on the main thread.
+          threadTasks[i].run();
+        } else {
+          new Thread(threadTasks[i], "Tez session init " + i).start();
         }
-      };
-      Thread[] threads = new Thread[threadCount - 1];
-      for (int i = 0; i < threads.length; ++i) {
-        threads[i] = new Thread(runnable, "Tez session init " + i);
-        threads[i].start();
       }
-      runnable.run();
-      for (int i = 0; i < threads.length; ++i) {
-        threads[i].join();
-      }
-      Exception ex = firstError.get();
-      if (ex != null) {
-        throw ex;
+      for (int i = 0; i < threadTasks.length; ++i) {
+        threadTasks[i].get();
       }
     }
-  }
-
-  void addInitialSession(SessionType session) {
-    initialSessions.add(session);
   }
 
   SessionType getSession() throws Exception {
     while (true) {
-      SessionType result = defaultQueuePool.take();
-      if (result.tryUse()) return result;
+      SessionType result = null;
+      poolLock.lock();
+      try {
+        while ((result = pool.poll()) == null) {
+          notEmpty.await(100, TimeUnit.MILLISECONDS);
+        }
+      } finally {
+        poolLock.unlock();
+      }
+      if (result.tryUse(false)) return result;
       LOG.info("Couldn't use a session [" + result + "]; attempting another one");
     }
   }
 
-  void returnSession(SessionType session) throws Exception {
+  ListenableFuture<SessionType> getSessionAsync() throws Exception {
+    SettableFuture<SessionType> future = SettableFuture.create();
+    poolLock.lock();
+    try {
+      // Try to get the session quickly.
+      while (true) {
+        SessionType result = pool.poll();
+        if (result == null) break;
+        if (!result.tryUse(false)) continue;
+        future.set(result);
+        return future;
+      }
+      // The pool is empty; queue the request.
+      asyncRequests.add(future);
+      return future;
+    } finally {
+      poolLock.unlock();
+    }
+  }
+
+  void returnSession(SessionType session) {
+    returnSessionInternal(session, false);
+  }
+
+  boolean returnSessionAsync(SessionType session) {
+    return returnSessionInternal(session, true);
+  }
+
+  private boolean returnSessionInternal(SessionType session, boolean isAsync) {
     // Make sure that if the session is returned to the pool, it doesn't live in the global.
     SessionState sessionState = SessionState.get();
     if (sessionState != null) {
       sessionState.setTezSession(null);
     }
-    if (session.stopUsing()) {
-      defaultQueuePool.putFirst(session);
+    if (!session.stopUsing()) return true; // The session will be restarted and return to us.
+    boolean canPutBack = putSessionBack(session, true);
+    if (canPutBack) return true;
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Closing an unneeded returned session " + session);
     }
+
+    if (isAsync) return false; // The caller is responsible for destroying the session.
+    try {
+      session.close(false);
+    } catch (Exception ex) {
+      LOG.error("Failed to close " + session, ex);
+    }
+    return true;
   }
 
-  void replaceSession(SessionType oldSession, SessionType newSession,
-      boolean keepTmpDir, String[] additionalFilesArray, HiveConf conf) throws Exception {
+  /**
+   * Puts session back into the pool.
+   * @return true if the session has been put back; false if it's not needed and should be killed.
+   */
+  private boolean putSessionBack(SessionType session, boolean isFirst) {
+    SettableFuture<SessionType> future = null;
+    poolLock.lock();
+    try {
+      // See if we need to kill some sessions because the pool was resized down while
+      // a bunch of sessions were outstanding. See also deltaRemaining javadoc.
+      while (true) {
+        int remainingToKill = -deltaRemaining.get();
+        if (remainingToKill <= 0) break; // No need to kill anything.
+        if (deltaRemaining.compareAndSet(-remainingToKill, -remainingToKill + 1)) {
+          return false;
+        }
+      }
+      // If there are async requests, satisfy them first.
+      if (!asyncRequests.isEmpty() && session.tryUse(false)) {
+        future = asyncRequests.poll();
+      }
+      if (future == null) {
+        // Put session into the pool.
+        if (isFirst) {
+          pool.addFirst(session);
+        } else {
+          pool.addLast(session);
+        }
+        notEmpty.signalAll();
+      }
+    } finally {
+      poolLock.unlock();
+    }
+    if (future != null) {
+      future.set(session);
+    }
+    return true;
+  }
+
+  void replaceSession(SessionType oldSession, boolean keepTmpDir,
+      String[] additionalFilesArray) throws Exception {
     // Retain the stuff from the old session.
     // Re-setting the queue config is an old hack that we may remove in future.
+    SessionType newSession = sessionObjFactory.create(oldSession);
     Path scratchDir = oldSession.getTezScratchDir();
     String queueName = oldSession.getQueueName();
     Set<String> additionalFiles = null;
@@ -171,12 +255,16 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     }
     try {
       oldSession.close(keepTmpDir);
-      boolean wasRemoved = defaultQueuePool.remove(oldSession);
-      if (!wasRemoved) {
-        LOG.error("Old session was closed but it was not in the pool", oldSession);
-      }
-      bySessionId.remove(oldSession.getSessionId());
     } finally {
+      poolLock.lock();
+      try {
+        // The expiring session may or may not be in the pool.
+        pool.remove(oldSession);
+      } finally {
+        poolLock.unlock();
+      }
+
+      bySessionId.remove(oldSession.getSessionId());
       // There's some bogus code that can modify the queue name. Force-set it for pool sessions.
       // TODO: this might only be applicable to TezSessionPoolManager; try moving it there?
       newSession.getConf().set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
@@ -184,18 +272,36 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       // registry again just in case. TODO: maybe we should enforce that.
       configureAmRegistry(newSession);
       newSession.open(additionalFiles, scratchDir);
-      defaultQueuePool.put(newSession);
+      if (!putSessionBack(newSession, false)) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Closing an unneeded session " + newSession
+              + "; trying to replace " + oldSession);
+        }
+        try {
+          newSession.close(false);
+        } catch (Exception ex) {
+          LOG.error("Failed to close an unneeded session", ex);
+        }
+      }
     }
   }
 
+
   private void startInitialSession(SessionType session) throws Exception {
-    boolean isUsable = session.tryUse();
+    boolean isUsable = session.tryUse(true);
     if (!isUsable) throw new IOException(session + " is not usable at pool startup");
     session.getConf().set(TezConfiguration.TEZ_QUEUE_NAME, session.getQueueName());
     configureAmRegistry(session);
     session.open();
     if (session.stopUsing()) {
-      defaultQueuePool.put(session);
+      if (!putSessionBack(session, false)) {
+        LOG.warn("Couldn't add a session during initialization");
+        try {
+          session.close(false);
+        } catch (Exception ex) {
+          LOG.error("Failed to close an unneeded session", ex);
+        }
+      }
     }
   }
 
@@ -230,7 +336,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     @Override
     public void onUpdate(TezAmInstance serviceInstance) {
       // Presumably we'd get those later if AM updates its stuff.
-      LOG.warn("Received an unexpected update for instance={}. Ignoring", serviceInstance);
+      LOG.info("Received an unexpected update for instance={}. Ignoring", serviceInstance);
     }
 
     @Override
@@ -239,11 +345,126 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       // For now, we don't take any action. In future, we might restore the session based
       // on this and get rid of the logic outside of the pool that replaces/reopens/etc.
       LOG.warn("AM for " + sessionId + " has disappeared from the registry");
+      // TODO: this might race if AM for the same session is restarted internally by Tez.
+      //        It is possible to receive the create before remove and remove the wrong one.
+      //        We need some identity in the value to make sure that doesn't happen.
       bySessionId.remove(sessionId);
     }
   }
 
+  @VisibleForTesting
   int getInitialSize() {
     return initialSize;
+  }
+
+  /**
+   * Resizes the pool asynchronously.
+   * @param delta A number of threads to add or remove.
+   * @param toClose An output list to which newly-unneeded sessions, to be closed by the caller.
+   */
+  public ListenableFuture<?> resizeAsync(int delta, List<SessionType> toClose) {
+    if (delta == 0) return createDummyFuture();
+    poolLock.lock();
+    try {
+      if (delta < 0) {
+        return resizeDownInternal(-delta, toClose);
+      } else {
+        return resizeUpInternal(delta);
+      }
+    } finally {
+      poolLock.unlock();
+    }
+  }
+
+  private ListenableFuture<?> resizeUpInternal(int delta) {
+    // 1) Cancel the kills if any, to avoid killing the returned sessions.
+    //    Also sets the count for the async initialization.
+    int oldVal;
+    do {
+      oldVal = deltaRemaining.get();
+    } while (!deltaRemaining.compareAndSet(oldVal, oldVal + delta));
+    int toStart = oldVal + delta;
+    if (toStart <= 0) return createDummyFuture();
+    LOG.info("Resizing the pool; adding " + toStart + " sessions");
+
+    // 2) If we need to create some extra sessions, we'd do it just like startup does.
+    int threadCount = Math.max(1, Math.min(toStart,
+        HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS)));
+    List<ListenableFutureTask<Boolean>> threadTasks = new ArrayList<>(threadCount);
+    // This is an async method, so always launch threads, even for a single task.
+    for (int i = 0; i < threadCount; ++i) {
+      ListenableFutureTask<Boolean> task = ListenableFutureTask.create(
+          new CreateSessionsRunnable(deltaRemaining));
+      new Thread(task, "Tez pool resize " + i).start();
+      threadTasks.add(task);
+    }
+    return Futures.allAsList(threadTasks);
+  }
+
+  private ListenableFuture<Boolean> resizeDownInternal(int delta, List<SessionType> toClose) {
+    // 1) Cancel the previous expansion, if any.
+    while (true) {
+      int expansionCount = deltaRemaining.get();
+      if (expansionCount <= 0) break;
+      int expansionCancelled = Math.min(expansionCount, delta);
+      if (deltaRemaining.compareAndSet(expansionCount, expansionCount - expansionCancelled)) {
+        delta -= expansionCancelled;
+        break;
+      }
+    }
+    // 2) Drain unused sessions; the close() is sync so delegate to the caller.
+    while (delta > 0) {
+      SessionType session = pool.poll();
+      if (session == null) break;
+      if (!session.tryUse(true)) continue;
+      toClose.add(session);
+      --delta;
+    }
+    // 3) If too many sessions are outstanding (e.g. due to expiration restarts - should
+    //    not happen with in-use sessions because WM already kills the extras), we will kill
+    //    them as they come back from restarts.
+    if (delta > 0) {
+      int oldVal;
+      do {
+        oldVal = deltaRemaining.get();
+      } while (!deltaRemaining.compareAndSet(oldVal, oldVal - delta));
+    }
+    return createDummyFuture();
+  }
+
+  private ListenableFuture<Boolean> createDummyFuture() {
+    SettableFuture<Boolean> f = SettableFuture.create();
+    f.set(true);
+    return f;
+  }
+
+  private final class CreateSessionsRunnable implements Callable<Boolean> {
+    private final AtomicInteger remaining;
+
+    private CreateSessionsRunnable(AtomicInteger remaining) {
+      this.remaining = remaining;
+    }
+
+    public Boolean call() throws Exception {
+      if (parentSessionState != null) {
+        SessionState.setCurrentSessionState(parentSessionState);
+      }
+      while (true) {
+        int oldVal = remaining.get();
+        if (oldVal <= 0) return true;
+        if (!remaining.compareAndSet(oldVal, oldVal - 1)) continue;
+        startInitialSession(sessionObjFactory.create(null));
+      }
+    }
+  }
+
+  @VisibleForTesting
+  int getCurrentSize() {
+    poolLock.tryLock();
+    try {
+      return pool.size();
+    } finally {
+      poolLock.unlock();
+    }
   }
 }

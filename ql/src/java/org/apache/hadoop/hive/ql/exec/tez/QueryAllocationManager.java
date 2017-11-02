@@ -26,7 +26,8 @@ interface QueryAllocationManager {
    * Updates the session allocations asynchoronously.
    * @param totalMaxAlloc The total maximum fraction of the cluster to allocate. Used to
    *                      avoid various artifacts, esp. with small numbers and double weirdness.
+   *                      Null means the total is unknown.
    * @param sessions Sessions to update based on their allocation fraction.
    */
-  void updateSessionsAsync(double totalMaxAlloc, List<WmTezSession> sessions);
+  void updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessions);
 }

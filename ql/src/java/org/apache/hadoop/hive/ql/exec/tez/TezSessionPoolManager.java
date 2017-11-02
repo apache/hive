@@ -18,6 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import javax.security.auth.login.LoginException;
+import org.apache.tez.dag.api.TezException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -102,7 +107,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
 
   public void startPool() throws Exception {
     if (defaultSessionPool != null) {
-      defaultSessionPool.startInitialSessions();
+      defaultSessionPool.start();
     }
     if (expirationTracker != null) {
       expirationTracker.start();
@@ -110,7 +115,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   }
 
   public void setupPool(HiveConf conf) throws Exception {
-    String[] defaultQueueList = HiveConf.getTrimmedStringsVar(
+    final String[] defaultQueueList = HiveConf.getTrimmedStringsVar(
         conf, HiveConf.ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES);
     this.initConf = conf;
     int emptyNames = 0; // We don't create sessions for empty entries.
@@ -123,7 +128,37 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     int numSessionsTotal = numSessions * (defaultQueueList.length - emptyNames);
     if (numSessionsTotal > 0) {
       boolean enableAmRegistry = false;
-      defaultSessionPool = new TezSessionPool<>(initConf, numSessionsTotal, enableAmRegistry);
+      defaultSessionPool = new TezSessionPool<>(initConf, numSessionsTotal, enableAmRegistry,
+          new TezSessionPool.SessionObjectFactory<TezSessionPoolSession>() {
+            int queueIx = 0;
+
+            @Override
+            public TezSessionPoolSession create(TezSessionPoolSession oldSession) {
+              if (oldSession != null) {
+                return createAndInitSession(
+                    oldSession.getQueueName(), oldSession.isDefault(), oldSession.getConf());
+              }
+              // We never resize the pool, so assume this is initialization.
+              // If that changes, we might have to make the factory interface more complicated.
+              /*
+               * In a single-threaded init case, with this the ordering of sessions in the queue will be
+               * (with 2 sessions 3 queues) s1q1, s1q2, s1q3, s2q1, s2q2, s2q3 there by ensuring uniform
+               * distribution of the sessions across queues at least to begin with. Then as sessions get
+               * freed up, the list may change this ordering.
+               * In a multi threaded init case it's a free for all.
+               */
+              int localQueueIx;
+              synchronized (defaultQueueList) {
+                localQueueIx = queueIx;
+                ++queueIx;
+                if (queueIx == defaultQueueList.length) {
+                  queueIx = 0;
+                }
+              }
+              HiveConf sessionConf = new HiveConf(initConf);
+              return createAndInitSession(defaultQueueList[localQueueIx], true, sessionConf);
+          }
+      });
     }
 
     numConcurrentLlapQueries = conf.getIntVar(ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES);
@@ -154,24 +189,6 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     this.hasInitialSessions = numSessionsTotal > 0;
     if (!hasInitialSessions) {
       return;
-    }
-
-
-    /*
-     * In a single-threaded init case, with this the ordering of sessions in the queue will be
-     * (with 2 sessions 3 queues) s1q1, s1q2, s1q3, s2q1, s2q2, s2q3 there by ensuring uniform
-     * distribution of the sessions across queues at least to begin with. Then as sessions get
-     * freed up, the list may change this ordering.
-     * In a multi threaded init case it's a free for all.
-     */
-    for (int i = 0; i < numSessions; i++) {
-      for (String queueName : defaultQueueList) {
-        if (queueName.isEmpty()) {
-          continue;
-        }
-        HiveConf sessionConf = new HiveConf(initConf);
-        defaultSessionPool.addInitialSession(createAndInitSession(queueName, true, sessionConf));
-      }
     }
   }
 
@@ -438,7 +455,14 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
         && sessionConf.get(TezConfiguration.TEZ_QUEUE_NAME) == null) {
       sessionConf.set(TezConfiguration.TEZ_QUEUE_NAME, sessionState.getQueueName());
     }
+    reopenInternal(sessionState, additionalFiles);
+    return sessionState;
+  }
+
+  static void reopenInternal(
+      TezSessionState sessionState, String[] additionalFiles) throws Exception {
     Set<String> oldAdditionalFiles = sessionState.getAdditionalFilesNotFromConf();
+    // TODO: implies the session files and the array are the same if not null; why? very brittle
     if ((oldAdditionalFiles == null || oldAdditionalFiles.isEmpty())
         && (additionalFiles != null)) {
       oldAdditionalFiles = new HashSet<>();
@@ -449,10 +473,10 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     // TODO: close basically resets the object to a bunch of nulls.
     //       We should ideally not reuse the object because it's pointless and error-prone.
     sessionState.close(true);
-    // TODO: should we reuse scratchDir too?
+    // Note: scratchdir is reused implicitly because the sessionId is the same.
     sessionState.open(oldAdditionalFiles, null);
-    return sessionState;
   }
+
 
   public void closeNonDefaultSessions(boolean keepTmpDir) throws Exception {
     List<TezSessionPoolSession> sessionsToClose = null;
@@ -467,14 +491,14 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
 
   /** Closes a running (expired) pool session and reopens it. */
   @Override
-  public void closeAndReopenPoolSession(TezSessionPoolSession oldSession) throws Exception {
+  public void closeAndReopenExpiredSession(TezSessionPoolSession oldSession) throws Exception {
     String queueName = oldSession.getQueueName();
     if (queueName == null) {
       LOG.warn("Pool session has a null queue: " + oldSession);
     }
     TezSessionPoolSession newSession = createAndInitSession(
       queueName, oldSession.isDefault(), oldSession.getConf());
-    defaultSessionPool.replaceSession(oldSession, newSession, false, null, null);
+    defaultSessionPool.replaceSession(oldSession, false, null);
   }
 
   /** Called by TezSessionPoolSession when opened. */

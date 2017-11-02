@@ -23,27 +23,28 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.*;
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.common.util.concurrent.SettableFuture;
 
 import com.google.common.collect.Lists;
-import java.io.IOException;
 import java.lang.Thread.State;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpHivePool;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpResourcePlan;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpUserMapping;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpUserMappingType;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestWorkloadManager {
+  @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TestWorkloadManager.class);
 
   private final class GetSessionRunnable implements Runnable {
@@ -91,7 +92,7 @@ public class TestWorkloadManager {
     }
 
     @Override
-    public void updateSessionsAsync(double totalMaxAlloc, List<WmTezSession> sessions) {
+    public void updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessions) {
       isCalled = true;
     }
 
@@ -105,12 +106,12 @@ public class TestWorkloadManager {
 
     public WorkloadManagerForTest(String yarnQueue, HiveConf conf, int numSessions,
         QueryAllocationManager qam) {
-      super(yarnQueue, conf, qam, null, createDummyPlan(numSessions));
+      super(yarnQueue, conf, qam, createDummyPlan(numSessions));
     }
 
     public WorkloadManagerForTest(String yarnQueue, HiveConf conf,
         QueryAllocationManager qam, TmpResourcePlan plan) {
-      super(yarnQueue, conf, qam, null, plan);
+      super(yarnQueue, conf, qam, plan);
     }
 
     private static TmpResourcePlan createDummyPlan(int numSessions) {
@@ -120,13 +121,42 @@ public class TestWorkloadManager {
     }
 
     @Override
-    protected WmTezSession createSessionObject(String sessionId) {
-      return new SampleTezSessionState(sessionId, this, new HiveConf(getConf()));
+    protected WmTezSession createSessionObject(String sessionId, HiveConf conf) {
+      conf = conf == null ? new HiveConf(getConf()) : conf;
+      return new SampleTezSessionState(sessionId, this, conf);
     }
 
     @Override
-    protected boolean ensureAmIsRegistered(WmTezSession session) throws Exception {
-      return true;
+    public TezSessionState getSession(
+        TezSessionState session, String userName, HiveConf conf) throws Exception {
+      // We want to wait for the iteration to finish and set the cluster fraction.
+      TezSessionState state = super.getSession(session, userName, conf);
+      ensureWm();
+      return state;
+    }
+
+    @Override
+    public void destroy(TezSessionState session) throws Exception {
+      super.destroy(session);
+      ensureWm();
+    }
+
+    private void ensureWm() throws InterruptedException, ExecutionException {
+      addTestEvent().get(); // Wait for the events to be processed.
+    }
+
+    @Override
+    public void returnAfterUse(TezSessionPoolSession session) throws Exception {
+      super.returnAfterUse(session);
+      ensureWm();
+    }
+
+    @Override
+    public TezSessionState reopen(
+        TezSessionState session, Configuration conf, String[] additionalFiles) throws Exception {
+      session = super.reopen(session, conf, additionalFiles);
+      ensureWm();
+      return session;
     }
   }
 
@@ -185,7 +215,8 @@ public class TestWorkloadManager {
     qam.assertWasCalled();
     WmTezSession session2 = (WmTezSession) session.reopen(conf, null);
     assertNotSame(session, session2);
-    assertEquals(1.0, session2.getClusterFraction(), EPSILON);
+    wm.addTestEvent().get();
+    assertEquals(session2.toString(), 1.0, session2.getClusterFraction(), EPSILON);
     assertEquals(0.0, session.getClusterFraction(), EPSILON);
     qam.assertWasCalled();
   }
@@ -273,7 +304,7 @@ public class TestWorkloadManager {
 
     Thread t1 = new Thread(new GetSessionRunnable(sessionA3, wm, error, conf, cdl, "A")),
         t2 = new Thread(new GetSessionRunnable(sessionA4, wm, error, conf, null, "A"));
-    waitForThreadToBlockOnQueue(cdl, t1);
+    waitForThreadToBlock(cdl, t1);
     t2.start();
     assertNull(sessionA3.get());
     assertNull(sessionA4.get());
@@ -327,7 +358,7 @@ public class TestWorkloadManager {
     CountDownLatch cdl = new CountDownLatch(1), cdl2 = new CountDownLatch(1);
     Thread t1 = new Thread(new GetSessionRunnable(session3, wm, error, conf, cdl, null), "t1"),
         t2 = new Thread(new GetSessionRunnable(session4, wm, error, conf, cdl2, null), "t2");
-    waitForThreadToBlockOnQueue(cdl, t1);
+    waitForThreadToBlock(cdl, t1);
     assertNull(session3.get());
     checkError(error);
     t2.start();
@@ -351,7 +382,7 @@ public class TestWorkloadManager {
     session4.get().returnToSessionManager();
   }
 
-  private void waitForThreadToBlockOnQueue(CountDownLatch cdl, Thread t1) throws InterruptedException {
+  private void waitForThreadToBlock(CountDownLatch cdl, Thread t1) throws InterruptedException {
     t1.start();
     cdl.await();
     // Wait for t1 to block, just be sure. Not ideal...
@@ -390,6 +421,308 @@ public class TestWorkloadManager {
     sessionA3.returnToSessionManager();
     sessionB1.returnToSessionManager();
     sessionA2.returnToSessionManager();
+  }
+
+  @Test(timeout=10000)
+  public void testApplyPlanUserMapping() throws Exception {
+    final HiveConf conf = createConf();
+    MockQam qam = new MockQam();
+    TmpResourcePlan plan = new TmpResourcePlan(Lists.newArrayList(
+        new TmpHivePool("A", null, 1, 0.5f), new TmpHivePool("B", null, 1, 0.5f)),
+        Lists.newArrayList(create("U", "A")));
+    final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
+    wm.start();
+ 
+    // One session will be running, the other will be queued in "A"
+    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, "U", conf);
+    assertEquals("A", sessionA1.getPoolName());
+    assertEquals(0.5f, sessionA1.getClusterFraction(), EPSILON);
+    final AtomicReference<WmTezSession> sessionA2 = new AtomicReference<>();
+    final AtomicReference<Throwable> error = new AtomicReference<>();
+    final CountDownLatch cdl = new CountDownLatch(1);
+    Thread t1 = new Thread(new GetSessionRunnable(sessionA2, wm, error, conf, cdl, "U"));
+    waitForThreadToBlock(cdl, t1);
+    assertNull(sessionA2.get());
+    checkError(error);
+
+    // Now change the resource plan - change the mapping for the user.
+    plan = new TmpResourcePlan(Lists.newArrayList(
+        new TmpHivePool("A", null, 1, 0.6f), new TmpHivePool("B", null, 1, 0.4f)),
+        Lists.newArrayList(create("U", "B")));
+    wm.updateResourcePlanAsync(plan);
+
+    // The session will go to B with the new mapping; check it.
+    t1.join();
+    checkError(error);
+    assertNotNull(sessionA2.get());
+    assertEquals("B", sessionA2.get().getPoolName());
+    assertEquals(0.4f, sessionA2.get().getClusterFraction(), EPSILON);
+    // The new session will also go to B now.
+    sessionA2.get().returnToSessionManager();
+    WmTezSession sessionB1 = (WmTezSession) wm.getSession(null, "U", conf);
+    assertEquals("B", sessionB1.getPoolName());
+    assertEquals(0.4f, sessionB1.getClusterFraction(), EPSILON);
+    sessionA1.returnToSessionManager();
+    sessionB1.returnToSessionManager();
+  }
+
+
+  @Test(timeout=10000)
+  public void testApplyPlanQpChanges() throws Exception {
+    final HiveConf conf = createConf();
+    MockQam qam = new MockQam();
+    TmpResourcePlan plan = new TmpResourcePlan(Lists.newArrayList(
+        new TmpHivePool("A", null, 1, 0.35f), new TmpHivePool("B", null, 2, 0.15f),
+        new TmpHivePool("C", null, 2, 0.3f), new TmpHivePool("D", null, 1, 0.3f)),
+        Lists.newArrayList(create("A", "A"), create("B", "B"),
+            create("C", "C"), create("D", "D")));
+    final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
+    wm.start();
+ 
+    // A: 1/1 running, 1 queued; B: 2/2 running, C: 1/2 running, D: 1/1 running, 1 queued.
+    // Total: 5/6 running.
+    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, "A", conf),
+        sessionB1 = (WmTezSession) wm.getSession(null, "B", conf),
+        sessionB2 = (WmTezSession) wm.getSession(null, "B", conf),
+        sessionC1 = (WmTezSession) wm.getSession(null, "C", conf),
+        sessionD1 = (WmTezSession) wm.getSession(null, "D", conf);
+    final AtomicReference<WmTezSession> sessionA2 = new AtomicReference<>(),
+        sessionD2 = new AtomicReference<>();
+    final AtomicReference<Throwable> error = new AtomicReference<>();
+    final CountDownLatch cdl1 = new CountDownLatch(1), cdl2 = new CountDownLatch(1);
+    Thread t1 = new Thread(new GetSessionRunnable(sessionA2, wm, error, conf, cdl1, "A")),
+        t2 = new Thread(new GetSessionRunnable(sessionD2, wm, error, conf, cdl2, "D"));
+    waitForThreadToBlock(cdl1, t1);
+    waitForThreadToBlock(cdl2, t2);
+    checkError(error);
+    assertEquals(0.3f, sessionC1.getClusterFraction(), EPSILON);
+    assertEquals(0.3f, sessionD1.getClusterFraction(), EPSILON);
+
+    // Change the resource plan - resize B and C down, D up, and remove A remapping users to B.
+    // Everything will be killed in A and B, C won't change, D will start one more query from
+    // the queue, and the query queued in A will be re-queued in B and started.
+    // The fractions will also all change.
+    // Total: 4/4 running.
+    plan = new TmpResourcePlan(Lists.newArrayList(new TmpHivePool("B", null, 1, 0.3f),
+        new TmpHivePool("C", null, 1, 0.2f), new TmpHivePool("D", null, 2, 0.5f)),
+        Lists.newArrayList(create("A", "B"), create("B", "B"),
+            create("C", "C"), create("D", "D")));
+    wm.updateResourcePlanAsync(plan);
+    wm.addTestEvent().get();
+
+    t1.join();
+    t2.join();
+    checkError(error);
+    assertNotNull(sessionA2.get());
+    assertNotNull(sessionD2.get());
+    assertEquals("D", sessionD2.get().getPoolName());
+    assertEquals("B", sessionA2.get().getPoolName());
+    assertEquals("C", sessionC1.getPoolName());
+    assertEquals(0.3f, sessionA2.get().getClusterFraction(), EPSILON);
+    assertEquals(0.2f, sessionC1.getClusterFraction(), EPSILON);
+    assertEquals(0.25f, sessionD1.getClusterFraction(), EPSILON);
+
+    assertKilledByWm(sessionA1);
+    assertKilledByWm(sessionB1);
+    assertKilledByWm(sessionB2);
+
+    // Wait for another iteration to make sure event gets processed for D2 to receive allocation.
+    sessionA2.get().returnToSessionManager();
+    assertEquals(0.25f, sessionD2.get().getClusterFraction(), EPSILON);
+    sessionD2.get().returnToSessionManager();
+    sessionC1.returnToSessionManager();
+    sessionD1.returnToSessionManager();
+
+    // Try to "return" stuff that was killed from "under" us. Should be a no-op.
+    sessionA1.returnToSessionManager();
+    sessionB1.returnToSessionManager();
+    sessionB2.returnToSessionManager(); 
+    assertEquals(4, wm.getTezAmPool().getCurrentSize());
+  }
+
+  @Test(timeout=10000)
+  public void testAmPoolInteractions() throws Exception {
+    final HiveConf conf = createConf();
+    MockQam qam = new MockQam();
+    TmpResourcePlan plan = new TmpResourcePlan(Lists.newArrayList(
+        new TmpHivePool("A", null, 1, 1.0f)), Lists.newArrayList(create("A", "A")));
+    final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
+    wm.start();
+    // Take away the only session, as if it was expiring.
+    TezSessionPool<WmTezSession> pool = wm.getTezAmPool();
+    WmTezSession oob = pool.getSession();
+ 
+    final AtomicReference<WmTezSession> sessionA1 = new AtomicReference<>();
+    final AtomicReference<Throwable> error = new AtomicReference<>();
+    final CountDownLatch cdl1 = new CountDownLatch(1);
+    Thread t1 = new Thread(new GetSessionRunnable(sessionA1, wm, error, conf, cdl1, "A"));
+    waitForThreadToBlock(cdl1, t1);
+    checkError(error);
+    // Replacing it directly in the pool should unblock get.
+    pool.replaceSession(oob, false, null);
+    t1.join();
+    assertNotNull(sessionA1.get());
+    assertEquals("A", sessionA1.get().getPoolName());
+
+    // Increase qp, check that the pool grows.
+    plan = new TmpResourcePlan(Lists.newArrayList(
+        new TmpHivePool("A", null, 4, 1.0f)), Lists.newArrayList(create("A", "A")));
+    wm.updateResourcePlanAsync(plan);
+    WmTezSession oob2 = pool.getSession(),
+        oob3 = pool.getSession(),
+        oob4 = pool.getSession();
+    pool.returnSession(oob2);
+    assertEquals(1, pool.getCurrentSize());
+
+    // Decrease qp, check that the pool shrinks incl. killing the unused and returned sessions.
+    plan = new TmpResourcePlan(Lists.newArrayList(
+        new TmpHivePool("A", null, 1, 1.0f)), Lists.newArrayList(create("A", "A")));
+    wm.updateResourcePlanAsync(plan);
+    wm.addTestEvent().get();
+    assertEquals(0, pool.getCurrentSize());
+     sessionA1.get().returnToSessionManager();
+    pool.returnSession(oob3);
+    assertEquals(0, pool.getCurrentSize());
+    pool.returnSession(oob4);
+    assertEquals(1, pool.getCurrentSize());
+
+    // Decrease, then increase qp - sessions should not be killed on return.
+    plan = new TmpResourcePlan(Lists.newArrayList(
+        new TmpHivePool("A", null, 2, 1.0f)), Lists.newArrayList(create("A", "A")));
+    wm.updateResourcePlanAsync(plan);
+    oob2 = pool.getSession();
+    oob3 = pool.getSession();
+    assertEquals(0, pool.getCurrentSize());
+    plan = new TmpResourcePlan(Lists.newArrayList(
+        new TmpHivePool("A", null, 1, 1.0f)), Lists.newArrayList(create("A", "A")));
+    wm.updateResourcePlanAsync(plan);
+    plan = new TmpResourcePlan(Lists.newArrayList(
+        new TmpHivePool("A", null, 2, 1.0f)), Lists.newArrayList(create("A", "A")));
+    wm.updateResourcePlanAsync(plan);
+    wm.addTestEvent().get();
+    assertEquals(0, pool.getCurrentSize());
+    pool.returnSession(oob3);
+    pool.returnSession(oob4);
+    assertEquals(2, pool.getCurrentSize());
+  }
+
+  @Test(timeout=10000)
+  public void testAsyncSessionInitFailures() throws Exception {
+    final HiveConf conf = createConf();
+    MockQam qam = new MockQam();
+    TmpResourcePlan plan = new TmpResourcePlan(Lists.newArrayList(
+        new TmpHivePool("A", null, 1, 1.0f)), Lists.newArrayList(create("A", "A")));
+    final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
+    wm.start();
+
+    // Make sure session init gets stuck in init.
+    TezSessionPool<WmTezSession> pool = wm.getTezAmPool();
+    SampleTezSessionState theOnlySession = (SampleTezSessionState) pool.getSession();
+    SettableFuture<Boolean> blockedWait = SettableFuture.create();
+    theOnlySession.setWaitForAmRegistryFuture(blockedWait);
+    pool.returnSession(theOnlySession);
+    assertEquals(1, pool.getCurrentSize());
+
+    final AtomicReference<WmTezSession> sessionA = new AtomicReference<>();
+    final AtomicReference<Throwable> error = new AtomicReference<>();
+    CountDownLatch cdl = new CountDownLatch(1);
+    Thread t1 = new Thread(new GetSessionRunnable(sessionA, wm, error, conf, cdl, "A"));
+    waitForThreadToBlock(cdl, t1);
+    checkError(error);
+    wm.addTestEvent().get();
+    // The session is taken out of the pool, but is waiting for registration.
+    assertEquals(0, pool.getCurrentSize());
+
+    // Change the resource plan, so that the session gets killed.
+    plan = new TmpResourcePlan(Lists.newArrayList(
+        new TmpHivePool("B", null, 1, 1.0f)), Lists.newArrayList(create("A", "B")));
+    wm.updateResourcePlanAsync(plan);
+    wm.addTestEvent().get();
+    blockedWait.set(true); // Meanwhile, the init succeeds!
+    t1.join();
+    try {
+      sessionA.get();
+      fail("Expected an error but got " + sessionA.get());
+    } catch (Throwable t) {
+      // Expected.
+    }
+    try {
+      // The get-session call should also fail.
+      checkError(error);
+      fail("Expected an error");
+    } catch (Exception ex) {
+      // Expected.
+    }
+    error.set(null);
+    theOnlySession = validatePoolAfterCleanup(theOnlySession, conf, wm, pool, "B");
+
+    // Initialization fails, no resource plan change.
+    SettableFuture<Boolean> failedWait = SettableFuture.create();
+    failedWait.setException(new Exception("foo"));
+    theOnlySession.setWaitForAmRegistryFuture(failedWait);
+    try {
+      TezSessionState r = wm.getSession(null, "A", conf);
+      fail("Expected an error but got " + r);
+    } catch (Exception ex) {
+      // Expected.
+    }
+    theOnlySession = validatePoolAfterCleanup(theOnlySession, conf, wm, pool, "B");
+
+    // Init fails, but the session is also killed by WM before that.
+    failedWait = SettableFuture.create();
+    theOnlySession.setWaitForAmRegistryFuture(failedWait);
+    sessionA.set(null);
+    cdl = new CountDownLatch(1);
+    t1 = new Thread(new GetSessionRunnable(sessionA, wm, error, conf, cdl, "A"));
+    waitForThreadToBlock(cdl, t1);
+    wm.addTestEvent().get();
+    // The session is taken out of the pool, but is waiting for registration.
+    assertEquals(0, pool.getCurrentSize());
+
+    plan = new TmpResourcePlan(Lists.newArrayList(
+        new TmpHivePool("A", null, 1, 1.0f)), Lists.newArrayList(create("A", "A")));
+    wm.updateResourcePlanAsync(plan);
+    wm.addTestEvent().get();
+    failedWait.setException(new Exception("moo")); // Meanwhile, the init fails.
+    t1.join();
+    try {
+      sessionA.get();
+      fail("Expected an error but got " + sessionA.get());
+    } catch (Throwable t) {
+      // Expected.
+    }
+    try {
+      // The get-session call should also fail.
+      checkError(error);
+      fail("Expected an error");
+    } catch (Exception ex) {
+      // Expected.
+    }
+    validatePoolAfterCleanup(theOnlySession, conf, wm, pool, "A");
+  }
+
+  private SampleTezSessionState validatePoolAfterCleanup(
+      SampleTezSessionState oldSession, HiveConf conf, WorkloadManager wm,
+      TezSessionPool<WmTezSession> pool, String sessionPoolName) throws Exception {
+    // Make sure the cleanup doesn't leave the pool without a session.
+    SampleTezSessionState theOnlySession = (SampleTezSessionState) pool.getSession();
+    assertNotNull(theOnlySession);
+    theOnlySession.setWaitForAmRegistryFuture(null);
+    assertNull(oldSession.getPoolName());
+    assertEquals(0f, oldSession.getClusterFraction(), EPSILON);
+    pool.returnSession(theOnlySession);
+    // Make sure we can actually get a session still - parallelism/etc. should not be affected.
+    WmTezSession result = (WmTezSession) wm.getSession(null, "A", conf);
+    assertEquals(sessionPoolName, result.getPoolName());
+    assertEquals(1f, result.getClusterFraction(), EPSILON);
+    result.returnToSessionManager();
+    return theOnlySession;
+  }
+
+  private void assertKilledByWm(WmTezSession session) {
+    assertNull(session.getPoolName());
+    assertEquals(0f, session.getClusterFraction(), EPSILON);
+    assertTrue(session.isIrrelevantForWm());
   }
 
   private void checkError(final AtomicReference<Throwable> error) throws Exception {

@@ -92,23 +92,18 @@ public class LlapClusterStateForCompile {
     return numExecutorsPerNode;
   }
 
-  public boolean initClusterInfo() {
-    return initClusterInfo(true);
-  }
-
-  private boolean isUpdateNeeded(boolean allowUpdate) {
+  private boolean isUpdateNeeded() {
     Long lastUpdateLocal = lastClusterUpdateNs;
     if (lastUpdateLocal == null) return true;
-    if (!allowUpdate) return false;
     long elapsed = System.nanoTime() - lastUpdateLocal;
     return (elapsed >= updateIntervalNs);
   }
 
-  public boolean initClusterInfo(boolean allowUpdate) {
-    if (!isUpdateNeeded(allowUpdate)) return true;
+  public boolean initClusterInfo() {
+    if (!isUpdateNeeded()) return true;
     synchronized (updateInfoLock) {
       // At this point, no one will take the write lock and update, so we can do the last check.
-      if (!isUpdateNeeded(allowUpdate)) return true;
+      if (!isUpdateNeeded()) return true;
       if (svc == null) {
         try {
           svc = LlapRegistryService.getClient(conf);

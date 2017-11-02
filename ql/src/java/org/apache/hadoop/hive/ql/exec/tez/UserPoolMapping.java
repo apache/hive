@@ -41,13 +41,12 @@ class UserPoolMapping {
   private final String defaultPoolName;
   // TODO: add other types as needed
 
-  public UserPoolMapping(List<TmpUserMapping> mappings, Set<String> poolNames) {
+  public UserPoolMapping(List<TmpUserMapping> mappings) {
     String defaultPoolName = null;
     for (TmpUserMapping mapping : mappings) {
       switch (mapping.getType()) {
       case USER: {
-          String poolName = getValidPoolName(poolNames, mapping);
-          Mapping val = new Mapping(poolName, mapping.getPriority());
+          Mapping val = new Mapping(mapping.getPoolName(), mapping.getPriority());
           Mapping oldValue = userMappings.put(mapping.getName(), val);
           if (oldValue != null) {
             throw new AssertionError("Duplicate mapping for user " + mapping.getName() + "; "
@@ -56,7 +55,7 @@ class UserPoolMapping {
         break;
       }
       case DEFAULT: {
-        String poolName = getValidPoolName(poolNames, mapping);
+        String poolName = mapping.getPoolName();
         if (defaultPoolName != null) {
           throw new AssertionError("Duplicate default mapping; "
               + defaultPoolName + " and " + poolName);
@@ -79,14 +78,5 @@ class UserPoolMapping {
     Mapping userMapping = userMappings.get(userName);
     if (userMapping != null) return userMapping.fullPoolName;
     return defaultPoolName;
-  }
-
-  private static String getValidPoolName(Set<String> poolNames, TmpUserMapping mapping) {
-    String poolName = mapping.getPoolName();
-    // Should we really be validating here? The plan should be validated before applying.
-    if (!poolNames.contains(mapping.getPoolName())) {
-      throw new AssertionError("Invalid pool in the mapping " + poolName);
-    }
-    return poolName;
   }
 }
