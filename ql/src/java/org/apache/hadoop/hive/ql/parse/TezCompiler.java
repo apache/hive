@@ -1414,7 +1414,13 @@ public class TezCompiler extends TaskCompiler {
               ExprNodeColumnDesc tsColExpr = ExprNodeDescUtils.getColumnExpr(tsExpr);
               long nDVsOfTS = filStats.getColumnStatisticsFromColName(
                       tsColExpr.getColumn()).getCountDistint();
-              if (nDVsOfTS >= nDVs) {
+              double nDVsOfTSFactored = nDVsOfTS * procCtx.conf.getFloatVar(
+                      ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_FOR_DPP_FACTOR);
+              if ((long)nDVsOfTSFactored > nDVs) {
+                if (LOG.isDebugEnabled()) {
+                  LOG.debug("nDVs = " + nDVs + ", nDVsOfTS = " + nDVsOfTS + " and nDVsOfTSFactored = " + nDVsOfTSFactored
+                  + "Adding semijoin branch from ReduceSink " + rs + " to TS " + sjInfo.getTsOp());
+                }
                 sjInfo.setShouldRemove(false);
               }
             }

@@ -125,6 +125,13 @@ set hive.llap.object.cache.enabled=false;
 EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds;
 select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds;
 
+-- HIVE-17936
+set hive.tez.dynamic.semijoin.reduction.for.dpp.factor = 0.75;
+EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds;
+-- semijoin branch should be removed.
+set hive.tez.dynamic.semijoin.reduction.for.dpp.factor = 0.4;
+EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds;
+
 -- With unions
 explain select * from alltypesorc_int join
                                       (select srcpart_date.key as key from srcpart_date
