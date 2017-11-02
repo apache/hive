@@ -18,14 +18,15 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,16 +56,12 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMerger;
@@ -74,7 +71,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -82,15 +78,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
 import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.util.MachineList;
-import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
-
-import javax.annotation.Nullable;
 
 public class MetaStoreUtils {
 
@@ -103,69 +95,6 @@ public class MetaStoreUtils {
   // configuration parameter documentation
   // HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES in HiveConf as well.
   public static final char[] specialCharactersInTableNames = new char[] { '/' };
-
-  public static Table createColumnsetSchema(String name, List<String> columns,
-      List<String> partCols, Configuration conf) throws MetaException {
-
-    if (columns == null) {
-      throw new MetaException("columns not specified for table " + name);
-    }
-
-    Table tTable = new Table();
-    tTable.setTableName(name);
-    tTable.setSd(new StorageDescriptor());
-    StorageDescriptor sd = tTable.getSd();
-    sd.setSerdeInfo(new SerDeInfo());
-    SerDeInfo serdeInfo = sd.getSerdeInfo();
-    serdeInfo.setSerializationLib(LazySimpleSerDe.class.getName());
-    serdeInfo.setParameters(new HashMap<String, String>());
-    serdeInfo.getParameters().put(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT,
-        Warehouse.DEFAULT_SERIALIZATION_FORMAT);
-
-    List<FieldSchema> fields = new ArrayList<FieldSchema>(columns.size());
-    sd.setCols(fields);
-    for (String col : columns) {
-      FieldSchema field = new FieldSchema(col,
-          org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME, "'default'");
-      fields.add(field);
-    }
-
-    tTable.setPartitionKeys(new ArrayList<FieldSchema>());
-    for (String partCol : partCols) {
-      FieldSchema part = new FieldSchema();
-      part.setName(partCol);
-      part.setType(org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME); // default
-                                                                             // partition
-                                                                             // key
-      tTable.getPartitionKeys().add(part);
-    }
-    sd.setNumBuckets(-1);
-    return tTable;
-  }
-
-  /**
-   * recursiveDelete
-   *
-   * just recursively deletes a dir - you'd think Java would have something to
-   * do this??
-   *
-   * @param f
-   *          - the file/dir to delete
-   * @exception IOException
-   *              propogate f.delete() exceptions
-   *
-   */
-  static public void recursiveDelete(File f) throws IOException {
-    if (f.isDirectory()) {
-      File fs[] = f.listFiles();
-      for (File subf : fs) {
-        recursiveDelete(subf);
-      }
-    }
-    if (!f.delete()) {
-      throw new IOException("could not delete: " + f.getPath());
-    }
-  }
 
   /**
    * @param partParams
@@ -435,53 +364,6 @@ public class MetaStoreUtils {
     }
   }
 
-  static public void deleteWHDirectory(Path path, Configuration conf,
-      boolean use_trash) throws MetaException {
-
-    try {
-      if (!path.getFileSystem(conf).exists(path)) {
-        LOG.warn("drop data called on table/partition with no directory: "
-            + path);
-        return;
-      }
-
-      if (use_trash) {
-
-        int count = 0;
-        Path newPath = new Path("/Trash/Current"
-            + path.getParent().toUri().getPath());
-
-        if (path.getFileSystem(conf).exists(newPath) == false) {
-          path.getFileSystem(conf).mkdirs(newPath);
-        }
-
-        do {
-          newPath = new Path("/Trash/Current" + path.toUri().getPath() + "."
-              + count);
-          if (path.getFileSystem(conf).exists(newPath)) {
-            count++;
-            continue;
-          }
-          if (path.getFileSystem(conf).rename(path, newPath)) {
-            break;
-          }
-        } while (++count < 50);
-        if (count >= 50) {
-          throw new MetaException("Rename failed due to maxing out retries");
-        }
-      } else {
-        // directly delete it
-        path.getFileSystem(conf).delete(path, true);
-      }
-    } catch (IOException e) {
-      LOG.error("Got exception trying to delete data dir: " + e);
-      throw new MetaException(e.getMessage());
-    } catch (MetaException e) {
-      LOG.error("Got exception trying to delete data dir: " + e);
-      throw e;
-    }
-  }
-
   /**
    * Given a list of partition columns and a partial mapping from
    * some partition columns to values the function returns the values
@@ -570,82 +452,9 @@ public class MetaStoreUtils {
   }
 
   public static final String TYPE_FROM_DESERIALIZER = "<derived from deserializer>";
-  /**
-   * validate column type
-   *
-   * if it is predefined, yes. otherwise no
-   * @param type
-   * @return
-   */
-  static public String validateColumnType(String type) {
-    if (type.equals(TYPE_FROM_DESERIALIZER)) {
-      return null;
-    }
-    int last = 0;
-    boolean lastAlphaDigit = isValidTypeChar(type.charAt(last));
-    for (int i = 1; i <= type.length(); i++) {
-      if (i == type.length()
-          || isValidTypeChar(type.charAt(i)) != lastAlphaDigit) {
-        String token = type.substring(last, i);
-        last = i;
-        if (!hiveThriftTypeMap.contains(token)) {
-          return "type: " + type;
-        }
-        break;
-      }
-    }
-    return null;
-  }
-
-  private static boolean isValidTypeChar(char c) {
-    return Character.isLetterOrDigit(c) || c == '_';
-  }
-
-  public static String validateSkewedColNames(List<String> cols) {
-    if (CollectionUtils.isEmpty(cols)) {
-      return null;
-    }
-    for (String col : cols) {
-      if (!validateColumnName(col)) {
-        return col;
-      }
-    }
-    return null;
-  }
-
-  public static String validateSkewedColNamesSubsetCol(List<String> skewedColNames,
-      List<FieldSchema> cols) {
-    if (CollectionUtils.isEmpty(skewedColNames)) {
-      return null;
-    }
-    List<String> colNames = new ArrayList<String>(cols.size());
-    for (FieldSchema fieldSchema : cols) {
-      colNames.add(fieldSchema.getName());
-    }
-    // make a copy
-    List<String> copySkewedColNames = new ArrayList<String>(skewedColNames);
-    // remove valid columns
-    copySkewedColNames.removeAll(colNames);
-    if (copySkewedColNames.isEmpty()) {
-      return null;
-    }
-    return copySkewedColNames.toString();
-  }
 
   public static String getListType(String t) {
     return "array<" + t + ">";
-  }
-
-  public static String getMapType(String k, String v) {
-    return "map<" + k + "," + v + ">";
-  }
-
-  public static void setSerdeParam(SerDeInfo sdi, Properties schema,
-      String param) {
-    String val = schema.getProperty(param);
-    if (org.apache.commons.lang.StringUtils.isNotBlank(val)) {
-      sdi.getParameters().put(param, val);
-    }
   }
 
   static HashMap<String, String> typeToThriftTypeMap;
@@ -722,42 +531,6 @@ public class MetaStoreUtils {
       }
     }
     return thriftType.toString();
-  }
-
-  /**
-   * Convert FieldSchemas to Thrift DDL + column names and column types
-   *
-   * @param structName
-   *          The name of the table
-   * @param fieldSchemas
-   *          List of fields along with their schemas
-   * @return String containing "Thrift
-   *         DDL#comma-separated-column-names#colon-separated-columntypes
-   *         Example:
-   *         "struct result { a string, map&lt;int,string&gt; b}#a,b#string:map&lt;int,string&gt;"
-   */
-  public static String getFullDDLFromFieldSchema(String structName,
-      List<FieldSchema> fieldSchemas) {
-    StringBuilder ddl = new StringBuilder();
-    ddl.append(getDDLFromFieldSchema(structName, fieldSchemas));
-    ddl.append('#');
-    StringBuilder colnames = new StringBuilder();
-    StringBuilder coltypes = new StringBuilder();
-    boolean first = true;
-    for (FieldSchema col : fieldSchemas) {
-      if (first) {
-        first = false;
-      } else {
-        colnames.append(',');
-        coltypes.append(':');
-      }
-      colnames.append(col.getName());
-      coltypes.append(col.getType());
-    }
-    ddl.append(colnames);
-    ddl.append('#');
-    ddl.append(coltypes);
-    return ddl.toString();
   }
 
   /**
@@ -1106,15 +879,131 @@ public class MetaStoreUtils {
     return sb.toString();
   }
 
-  public static void makeDir(Path path, HiveConf hiveConf) throws MetaException {
-    FileSystem fs;
-    try {
-      fs = path.getFileSystem(hiveConf);
-      if (!fs.exists(path)) {
-        fs.mkdirs(path);
+  public static int startMetaStore() throws Exception {
+    return startMetaStore(HadoopThriftAuthBridge.getBridge(), null);
+  }
+
+  public static int startMetaStore(final HadoopThriftAuthBridge bridge, HiveConf conf) throws Exception {
+    int port = findFreePort();
+    startMetaStore(port, bridge, conf);
+    return port;
+  }
+
+  public static int startMetaStore(HiveConf conf) throws Exception {
+    return startMetaStore(HadoopThriftAuthBridge.getBridge(), conf);
+  }
+
+  public static void startMetaStore(final int port, final HadoopThriftAuthBridge bridge) throws Exception {
+    startMetaStore(port, bridge, null);
+  }
+
+  public static void startMetaStore(final int port,
+      final HadoopThriftAuthBridge bridge, HiveConf hiveConf)
+      throws Exception{
+    if (hiveConf == null) {
+      hiveConf = new HiveConf(HMSHandler.class);
+    }
+    final HiveConf finalHiveConf = hiveConf;
+    Thread thread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          HiveMetaStore.startMetaStore(port, bridge, finalHiveConf);
+        } catch (Throwable e) {
+          LOG.error("Metastore Thrift Server threw an exception...",e);
+        }
       }
-    } catch (IOException e) {
-      throw new MetaException("Unable to : " + path);
+    });
+    thread.setDaemon(true);
+    thread.start();
+    loopUntilHMSReady(port);
+  }
+
+  /**
+   * A simple connect test to make sure that the metastore is up
+   * @throws Exception
+   */
+  private static void loopUntilHMSReady(int port) throws Exception {
+    int retries = 0;
+    Exception exc = null;
+    while (true) {
+      try {
+        Socket socket = new Socket();
+        socket.connect(new InetSocketAddress(port), 5000);
+        socket.close();
+        return;
+      } catch (Exception e) {
+        if (retries++ > 60) { //give up
+          exc = e;
+          break;
+        }
+        Thread.sleep(1000);
+      }
+    }
+    // something is preventing metastore from starting
+    // print the stack from all threads for debugging purposes
+    LOG.error("Unable to connect to metastore server: " + exc.getMessage());
+    LOG.info("Printing all thread stack traces for debugging before throwing exception.");
+    LOG.info(getAllThreadStacksAsString());
+    throw exc;
+  }
+
+  private static String getAllThreadStacksAsString() {
+    Map<Thread, StackTraceElement[]> threadStacks = Thread.getAllStackTraces();
+    StringBuilder sb = new StringBuilder();
+    for (Map.Entry<Thread, StackTraceElement[]> entry : threadStacks.entrySet()) {
+      Thread t = entry.getKey();
+      sb.append(System.lineSeparator());
+      sb.append("Name: ").append(t.getName()).append(" State: ").append(t.getState());
+      addStackString(entry.getValue(), sb);
+    }
+    return sb.toString();
+  }
+
+  private static void addStackString(StackTraceElement[] stackElems, StringBuilder sb) {
+    sb.append(System.lineSeparator());
+    for (StackTraceElement stackElem : stackElems) {
+      sb.append(stackElem).append(System.lineSeparator());
+    }
+  }
+
+  /**
+   * Finds a free port on the machine.
+   *
+   * @return
+   * @throws IOException
+   */
+  public static int findFreePort() throws IOException {
+    ServerSocket socket= new ServerSocket(0);
+    int port = socket.getLocalPort();
+    socket.close();
+    return port;
+  }
+
+  /**
+   * Finds a free port on the machine, but allow the
+   * ability to specify a port number to not use, no matter what.
+   */
+  public static int findFreePortExcepting(int portToExclude) throws IOException {
+    ServerSocket socket1 = null;
+    ServerSocket socket2 = null;
+    try {
+      socket1 = new ServerSocket(0);
+      socket2 = new ServerSocket(0);
+      if (socket1.getLocalPort() != portToExclude) {
+        return socket1.getLocalPort();
+      }
+      // If we're here, then socket1.getLocalPort was the port to exclude
+      // Since both sockets were open together at a point in time, we're
+      // guaranteed that socket2.getLocalPort() is not the same.
+      return socket2.getLocalPort();
+    } finally {
+      if (socket1 != null){
+        socket1.close();
+      }
+      if (socket2 != null){
+        socket2.close();
+      }
     }
   }
 
@@ -1224,50 +1113,10 @@ public class MetaStoreUtils {
     return "TRUE".equalsIgnoreCase(params.get("EXTERNAL"));
   }
 
-  /**
-   * Determines whether a table is an immutable table.
-   * Immutable tables are write-once/replace, and do not support append. Partitioned
-   * immutable tables do support additions by way of creation of new partitions, but
-   * do not allow the partitions themselves to be appended to. "INSERT INTO" will not
-   * work for Immutable tables.
-   *
-   * @param table table of interest
-   *
-   * @return true if immutable
-   */
-  public static boolean isImmutableTable(Table table) {
-    if (table == null){
-      return false;
-    }
-    Map<String, String> params = table.getParameters();
-    if (params == null) {
-      return false;
-    }
-
-    return "TRUE".equalsIgnoreCase(params.get(hive_metastoreConstants.IS_IMMUTABLE));
-  }
-
   public static boolean isArchived(
       org.apache.hadoop.hive.metastore.api.Partition part) {
     Map<String, String> params = part.getParameters();
     return "TRUE".equalsIgnoreCase(params.get(hive_metastoreConstants.IS_ARCHIVED));
-  }
-
-  public static Path getOriginalLocation(
-      org.apache.hadoop.hive.metastore.api.Partition part) {
-    Map<String, String> params = part.getParameters();
-    assert(isArchived(part));
-    String originalLocation = params.get(hive_metastoreConstants.ORIGINAL_LOCATION);
-    assert( originalLocation != null);
-
-    return new Path(originalLocation);
-  }
-
-  public static boolean isNonNativeTable(Table table) {
-    if (table == null || table.getParameters() == null) {
-      return false;
-    }
-    return (table.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE) != null);
   }
 
   /**
@@ -1300,29 +1149,6 @@ public class MetaStoreUtils {
     return true;
   }
 
-  /**
-   * Returns true if partial has the same values as full for all values that
-   * aren't empty in partial.
-   */
-
-  public static boolean pvalMatches(List<String> partial, List<String> full) {
-    if(partial.size() > full.size()) {
-      return false;
-    }
-    Iterator<String> p = partial.iterator();
-    Iterator<String> f = full.iterator();
-
-    while(p.hasNext()) {
-      String pval = p.next();
-      String fval = f.next();
-
-      if (pval.length() != 0 && !pval.equals(fval)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   public static String getIndexTableName(String dbName, String baseTblName, String indexName) {
     return dbName + "__" + baseTblName + "_" + indexName + "__";
   }
@@ -1341,67 +1167,11 @@ public class MetaStoreUtils {
     return TableType.MATERIALIZED_VIEW.toString().equals(table.getTableType());
   }
 
-  /**
-   * Given a map of partition column names to values, this creates a filter
-   * string that can be used to call the *byFilter methods
-   * @param m
-   * @return the filter string
-   */
-  public static String makeFilterStringFromMap(Map<String, String> m) {
-    StringBuilder filter = new StringBuilder();
-    for (Entry<String, String> e : m.entrySet()) {
-      String col = e.getKey();
-      String val = e.getValue();
-      if (filter.length() == 0) {
-        filter.append(col + "=\"" + val + "\"");
-      } else {
-        filter.append(" and " + col + "=\"" + val + "\"");
-      }
-    }
-    return filter.toString();
-  }
-
   public static boolean isView(Table table) {
     if (table == null) {
       return false;
     }
     return TableType.VIRTUAL_VIEW.toString().equals(table.getTableType());
-  }
-
-  /**
-   * create listener instances as per the configuration.
-   *
-   * @param clazz
-   * @param conf
-   * @param listenerImplList
-   * @return
-   * @throws MetaException
-   */
-  static <T> List<T> getMetaStoreListeners(Class<T> clazz,
-      HiveConf conf, String listenerImplList) throws MetaException {
-    List<T> listeners = new ArrayList<T>();
-
-    if (StringUtils.isBlank(listenerImplList)) {
-      return listeners;
-    }
-
-    String[] listenerImpls = listenerImplList.split(",");
-    for (String listenerImpl : listenerImpls) {
-      try {
-        T listener = (T) Class.forName(
-            listenerImpl.trim(), true, JavaUtils.getClassLoader()).getConstructor(
-                Configuration.class).newInstance(conf);
-        listeners.add(listener);
-      } catch (InvocationTargetException ie) {
-        throw new MetaException("Failed to instantiate listener named: "+
-            listenerImpl + ", reason: " + ie.getCause());
-      } catch (Exception e) {
-        throw new MetaException("Failed to instantiate listener named: "+
-            listenerImpl + ", reason: " + e);
-      }
-    }
-
-    return listeners;
   }
 
   @SuppressWarnings("unchecked")
@@ -1445,24 +1215,6 @@ public class MetaStoreUtils {
     } catch (Exception e) {
       throw new RuntimeException("Unable to instantiate " + theClass.getName(), e);
     }
-  }
-
-  public static void validatePartitionNameCharacters(List<String> partVals,
-      Pattern partitionValidationPattern) throws MetaException {
-
-    String invalidPartitionVal =
-        HiveStringUtils.getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern);
-    if (invalidPartitionVal != null) {
-      throw new MetaException("Partition value '" + invalidPartitionVal +
-          "' contains a character " + "not matched by whitelist pattern '" +
-          partitionValidationPattern.toString() + "'.  " + "(configure with " +
-          HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname + ")");
-      }
-  }
-
-  public static boolean partitionNameHasValidCharacters(List<String> partVals,
-      Pattern partitionValidationPattern) {
-    return HiveStringUtils.getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern) == null;
   }
 
   /**

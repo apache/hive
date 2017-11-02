@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.metastore.conf;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader;
+import org.apache.hadoop.hive.metastore.HiveAlterHandler;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
@@ -239,7 +241,7 @@ public class MetastoreConf {
         "hive.metastore.aggregate.stats.cache.ttl", 600, TimeUnit.SECONDS,
         "Number of seconds for a cached node to be active in the cache before they become stale."),
     ALTER_HANDLER("metastore.alter.handler", "hive.metastore.alter.impl",
-        "org.apache.hadoop.hive.metastore.HiveAlterHandler",
+        HiveAlterHandler.class.getName(),
         "Alter handler.  For now defaults to the Hive one.  Really need a better default option"),
     ASYNC_LOG_ENABLED("metastore.async.log.enabled", "hive.async.log.enabled", true,
         "Whether to enable Log4j2's asynchronous logging. Asynchronous logging can give\n" +
@@ -646,6 +648,10 @@ public class MetastoreConf {
         "The Java class (implementing the StatsAggregator interface) that is used by default if hive.stats.dbclass is custom type."),
     STATS_DEFAULT_PUBLISHER("metastore.stats.default.publisher", "hive.stats.default.publisher", "",
         "The Java class (implementing the StatsPublisher interface) that is used by default if hive.stats.dbclass is custom type."),
+    STORAGE_SCHEMA_READER_IMPL("metastore.storage.schema.reader.impl", NO_SUCH_KEY,
+        DefaultStorageSchemaReader.class.getName(),
+        "The class to use to read schemas from storage.  It must implement " +
+        "org.apache.hadoop.hive.metastore.StorageSchemaReader"),
     STORE_MANAGER_TYPE("datanucleus.storeManagerType", "datanucleus.storeManagerType", "rdbms", "metadata store type"),
     SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES("metastore.support.special.characters.tablename",
         "hive.support.special.characters.tablename", true,

@@ -34,14 +34,28 @@ import org.apache.hadoop.security.token.TokenSelector;
 import org.apache.zookeeper.client.ZooKeeperSaslClient;
 
 import javax.security.auth.login.AppConfigurationEntry;
+import org.apache.thrift.transport.TSSLTransportFactory;
+import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLServerSocket;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class SecurityUtils {
+  private static final Logger LOG = LoggerFactory.getLogger(SecurityUtils.class);
+
   public static UserGroupInformation getUGI() throws LoginException, IOException {
     String doAs = System.getenv("HADOOP_USER_NAME");
     if (doAs != null && doAs.length() > 0) {
@@ -208,5 +222,66 @@ public class SecurityUtils {
     default:
       return tokenStoreClass;
     }
+  }
+
+
+  /**
+   * @return the user name set in hadoop.job.ugi param or the current user from System
+   * @throws IOException if underlying Hadoop call throws LoginException
+   */
+  public static String getUser() throws IOException {
+    try {
+      UserGroupInformation ugi = getUGI();
+      return ugi.getUserName();
+    } catch (LoginException le) {
+      throw new IOException(le);
+    }
+  }
+
+  public static TServerSocket getServerSocket(String hiveHost, int portNum) throws TTransportException {
+    InetSocketAddress serverAddress;
+    if (hiveHost == null || hiveHost.isEmpty()) {
+      // Wildcard bind
+      serverAddress = new InetSocketAddress(portNum);
+    } else {
+      serverAddress = new InetSocketAddress(hiveHost, portNum);
+    }
+    return new TServerSocket(serverAddress);
+  }
+
+  public static TServerSocket getServerSSLSocket(String hiveHost, int portNum, String keyStorePath,
+                                                 String keyStorePassWord, List<String> sslVersionBlacklist) throws TTransportException,
+      UnknownHostException {
+    TSSLTransportFactory.TSSLTransportParameters params =
+        new TSSLTransportFactory.TSSLTransportParameters();
+    params.setKeyStore(keyStorePath, keyStorePassWord);
+    InetSocketAddress serverAddress;
+    if (hiveHost == null || hiveHost.isEmpty()) {
+      // Wildcard bind
+      serverAddress = new InetSocketAddress(portNum);
+    } else {
+      serverAddress = new InetSocketAddress(hiveHost, portNum);
+    }
+    TServerSocket thriftServerSocket =
+        TSSLTransportFactory.getServerSocket(portNum, 0, serverAddress.getAddress(), params);
+    if (thriftServerSocket.getServerSocket() instanceof SSLServerSocket) {
+      List<String> sslVersionBlacklistLocal = new ArrayList<>();
+      for (String sslVersion : sslVersionBlacklist) {
+        sslVersionBlacklistLocal.add(sslVersion.trim().toLowerCase());
+      }
+      SSLServerSocket sslServerSocket = (SSLServerSocket) thriftServerSocket.getServerSocket();
+      List<String> enabledProtocols = new ArrayList<>();
+      for (String protocol : sslServerSocket.getEnabledProtocols()) {
+        if (sslVersionBlacklistLocal.contains(protocol.toLowerCase())) {
+          LOG.debug("Disabling SSL Protocol: " + protocol);
+        } else {
+          enabledProtocols.add(protocol);
+        }
+      }
+      sslServerSocket.setEnabledProtocols(enabledProtocols.toArray(new String[0]));
+      LOG.info("SSL Server Socket Enabled Protocols: "
+          + Arrays.toString(sslServerSocket.getEnabledProtocols()));
+    }
+    return thriftServerSocket;
   }
 }
