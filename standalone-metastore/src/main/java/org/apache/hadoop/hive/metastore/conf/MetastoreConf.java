@@ -945,6 +945,10 @@ public class MetastoreConf {
       return hiveName;
     }
 
+    public Object getDefaultVal() {
+      return defaultVal;
+    }
+
     @Override
     public String toString() {
       return varname;

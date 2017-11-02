@@ -22,15 +22,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang.*;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.ColumnType;
@@ -81,11 +77,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -925,6 +919,19 @@ public class MetaStoreUtils {
   public static boolean partitionNameHasValidCharacters(List<String> partVals,
       Pattern partitionValidationPattern) {
     return getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern) == null;
+  }
+
+  protected static void getMergableCols(ColumnStatistics csNew, Map<String, String> parameters) {
+    List<ColumnStatisticsObj> list = new ArrayList<>();
+    for (int index = 0; index < csNew.getStatsObj().size(); index++) {
+      ColumnStatisticsObj statsObjNew = csNew.getStatsObj().get(index);
+      // canColumnStatsMerge guarantees that it is accurate before we do merge
+      if (StatsSetupConst.canColumnStatsMerge(parameters, statsObjNew.getColName())) {
+        list.add(statsObjNew);
+      }
+      // in all the other cases, we can not merge
+    }
+    csNew.setStatsObj(list);
   }
 
   // this function will merge csOld into csNew.

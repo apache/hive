@@ -616,7 +616,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             " by " + e.getMessage());
       }
       Configuration configuration = getConf();
-      String oldValue = configuration.get(key);
+      String oldValue = MetastoreConf.get(configuration, key);
       // Save prev val of the key on threadLocal
       Map<String, String> modifiedConf = getModifiedConf();
       if (!modifiedConf.containsKey(key)) {
@@ -635,7 +635,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (confVar == null) {
         throw new MetaException("Invalid configuration key " + key);
       }
-      return getConf().get(key, confVar.defaultVal.toString());
+      return getConf().get(key, confVar.getDefaultVal().toString());
     }
 
     /**
@@ -2500,7 +2500,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ClientCapability value, String what, String call) throws MetaException {
       if (!doesClientHaveCapability(client, value)) {
         throw new MetaException("Your client does not appear to support " + what + ". To skip"
-            + " capability checks, please set " + ConfVars.CAPABILITY_CHECK.varname
+            + " capability checks, please set " + ConfVars.CAPABILITY_CHECK.toString()
             + " to false. This setting can be set globally, or on the client for the current"
             + " metastore session. Note that this may lead to incorrect results, data loss,"
             + " undefined behavior, etc. if your client is actually incompatible. You can also"
@@ -3874,7 +3874,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         int partitionLimit = MetastoreConf.getIntVar(conf, ConfVars.LIMIT_PARTITION_REQUEST);
         int partitionRequest = (maxToFetch < 0) ? numPartitions : maxToFetch;
         if (partitionRequest > partitionLimit) {
-          String configName = ConfVars.LIMIT_PARTITION_REQUEST.varname;
+          String configName = ConfVars.LIMIT_PARTITION_REQUEST.toString();
           throw new MetaException(String.format(PARTITION_NUMBER_EXCEED_LIMIT_MSG, partitionRequest,
               tblName, partitionLimit, configName));
         }
@@ -6904,7 +6904,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         authorizeProxyPrivilege();
       } catch (Exception ex) {
         LOG.error("Not authorized to make the get_next_notification call. You can try to disable " +
-            ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.varname, ex);
+            ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.toString(), ex);
         throw new TException(ex);
       }
 
@@ -6918,7 +6918,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         authorizeProxyPrivilege();
       } catch (Exception ex) {
         LOG.error("Not authorized to make the get_current_notificationEventId call. You can try to disable " +
-            ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.varname, ex);
+            ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.toString(), ex);
         throw new TException(ex);
       }
 
@@ -6933,7 +6933,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         authorizeProxyPrivilege();
       } catch (Exception ex) {
         LOG.error("Not authorized to make the get_notification_events_count call. You can try to disable " +
-            ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.varname, ex);
+            ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.toString(), ex);
         throw new TException(ex);
       }
 
@@ -7766,7 +7766,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } else {
         String keyStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_PATH).trim();
         if (keyStorePath.isEmpty()) {
-          throw new IllegalArgumentException(ConfVars.SSL_KEYSTORE_PATH.varname
+          throw new IllegalArgumentException(ConfVars.SSL_KEYSTORE_PATH.toString()
               + " Not configured for SSL connection");
         }
         String keyStorePassword =

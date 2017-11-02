@@ -20,9 +20,6 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -43,7 +40,6 @@ import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -53,19 +49,14 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMerger;
-import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMergerFactory;
-import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -92,178 +83,20 @@ public class MetaStoreUtils {
   // HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES in HiveConf as well.
   public static final char[] specialCharactersInTableNames = new char[] { '/' };
 
-  /**
-   * @param partParams
-   * @return True if the passed Parameters Map contains values for all "Fast Stats".
-   */
-  private static boolean containsAllFastStats(Map<String, String> partParams) {
-    for (String stat : StatsSetupConst.fastStats) {
-      if (!partParams.containsKey(stat)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
-      boolean madeDir, EnvironmentContext environmentContext) throws MetaException {
-    return updateTableStatsFast(db, tbl, wh, madeDir, false, environmentContext);
-  }
-
-  private static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
-      boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
-    if (tbl.getPartitionKeysSize() == 0) {
-      // Update stats only when unpartitioned
-      FileStatus[] fileStatuses = wh.getFileStatusesForUnpartitionedTable(db, tbl);
-      return updateTableStatsFast(tbl, fileStatuses, madeDir, forceRecompute, environmentContext);
-    } else {
-      return false;
-    }
-  }
-
-  /**
-   * Updates the numFiles and totalSize parameters for the passed Table by querying
-   * the warehouse if the passed Table does not already have values for these parameters.
-   * @param tbl
-   * @param fileStatus
-   * @param newDir if true, the directory was just created and can be assumed to be empty
-   * @param forceRecompute Recompute stats even if the passed Table already has
-   * these parameters set
-   * @return true if the stats were updated, false otherwise
-   */
-  public static boolean updateTableStatsFast(Table tbl, FileStatus[] fileStatus, boolean newDir,
-      boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
-
-    Map<String,String> params = tbl.getParameters();
-
-    if ((params!=null) && params.containsKey(StatsSetupConst.DO_NOT_UPDATE_STATS)){
-      boolean doNotUpdateStats = Boolean.valueOf(params.get(StatsSetupConst.DO_NOT_UPDATE_STATS));
-      params.remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
-      tbl.setParameters(params); // to make sure we remove this marker property
-      if (doNotUpdateStats){
-        return false;
-      }
-    }
-
-    boolean updated = false;
-    if (forceRecompute ||
-        params == null ||
-        !containsAllFastStats(params)) {
-      if (params == null) {
-        params = new HashMap<String,String>();
-      }
-      if (!newDir) {
-        // The table location already exists and may contain data.
-        // Let's try to populate those stats that don't require full scan.
-        LOG.info("Updating table stats fast for " + tbl.getTableName());
-        populateQuickStats(fileStatus, params);
-        LOG.info("Updated size of table " + tbl.getTableName() +" to "+ params.get(StatsSetupConst.TOTAL_SIZE));
-        if (environmentContext != null
-            && environmentContext.isSetProperties()
-            && StatsSetupConst.TASK.equals(environmentContext.getProperties().get(
-                StatsSetupConst.STATS_GENERATED))) {
-          StatsSetupConst.setBasicStatsState(params, StatsSetupConst.TRUE);
-        } else {
-          StatsSetupConst.setBasicStatsState(params, StatsSetupConst.FALSE);
-        }
-      }
-      tbl.setParameters(params);
-      updated = true;
-    }
-    return updated;
-  }
-
   public static void populateQuickStats(FileStatus[] fileStatus, Map<String, String> params) {
-    int numFiles = 0;
-    long tableSize = 0L;
-    String s = "LOG14535 Populating quick stats for: ";
-    for (FileStatus status : fileStatus) {
-      s += status.getPath() + ", ";
-      // don't take directories into account for quick stats
-      if (!status.isDir()) {
-        tableSize += status.getLen();
-        numFiles += 1;
-      }
-    }
-    LOG.info(s/*, new Exception()*/);
-    params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
-    params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
+    org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.populateQuickStats(fileStatus, params);
   }
 
-  static boolean updatePartitionStatsFast(Partition part, Warehouse wh, EnvironmentContext environmentContext)
+  public static boolean updateTableStatsFast(Table tbl, FileStatus[] fileStatus, boolean newDir,
+                                             boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
+    return org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.updateTableStatsFast(
+        tbl, fileStatus, newDir, forceRecompute, environmentContext);
+  }
+
+  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh, EnvironmentContext environmentContext)
       throws MetaException {
-    return updatePartitionStatsFast(part, wh, false, false, environmentContext);
-  }
-
-  static boolean updatePartitionStatsFast(Partition part, Warehouse wh, boolean madeDir, EnvironmentContext environmentContext)
-      throws MetaException {
-    return updatePartitionStatsFast(part, wh, madeDir, false, environmentContext);
-  }
-
-  /**
-   * Updates the numFiles and totalSize parameters for the passed Partition by querying
-   *  the warehouse if the passed Partition does not already have values for these parameters.
-   * @param part
-   * @param wh
-   * @param madeDir if true, the directory was just created and can be assumed to be empty
-   * @param forceRecompute Recompute stats even if the passed Partition already has
-   * these parameters set
-   * @return true if the stats were updated, false otherwise
-   */
-  private static boolean updatePartitionStatsFast(Partition part, Warehouse wh,
-      boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
-    return updatePartitionStatsFast(new PartitionSpecProxy.SimplePartitionWrapperIterator(part),
-                                    wh, madeDir, forceRecompute, environmentContext);
-  }
-
-  /**
-   * Updates the numFiles and totalSize parameters for the passed Partition by querying
-   *  the warehouse if the passed Partition does not already have values for these parameters.
-   * @param part
-   * @param wh
-   * @param madeDir if true, the directory was just created and can be assumed to be empty
-   * @param forceRecompute Recompute stats even if the passed Partition already has
-   * these parameters set
-   * @return true if the stats were updated, false otherwise
-   */
-  static boolean updatePartitionStatsFast(PartitionSpecProxy.PartitionIterator part, Warehouse wh,
-      boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
-    Map<String,String> params = part.getParameters();
-    boolean updated = false;
-    if (forceRecompute ||
-        params == null ||
-        !containsAllFastStats(params)) {
-      if (params == null) {
-        params = new HashMap<String,String>();
-      }
-      if (!madeDir) {
-        // The partition location already existed and may contain data. Lets try to
-        // populate those statistics that don't require a full scan of the data.
-        LOG.warn("Updating partition stats fast for: " + part.getTableName());
-        FileStatus[] fileStatus = wh.getFileStatusesForLocation(part.getLocation());
-        populateQuickStats(fileStatus, params);
-        LOG.warn("Updated size to " + params.get(StatsSetupConst.TOTAL_SIZE));
-        updateBasicState(environmentContext, params);
-      }
-      part.setParameters(params);
-      updated = true;
-    }
-    return updated;
-  }
-
-  private static void updateBasicState(EnvironmentContext environmentContext, Map<String,String>
-      params) {
-    if (params == null) {
-      return;
-    }
-    if (environmentContext != null
-        && environmentContext.isSetProperties()
-        && StatsSetupConst.TASK.equals(environmentContext.getProperties().get(
-        StatsSetupConst.STATS_GENERATED))) {
-      StatsSetupConst.setBasicStatsState(params, StatsSetupConst.TRUE);
-    } else {
-      StatsSetupConst.setBasicStatsState(params, StatsSetupConst.FALSE);
-    }
+    return org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.updatePartitionStatsFast(
+        part, wh, environmentContext);
   }
 
   /**
@@ -412,39 +245,6 @@ public class MetaStoreUtils {
    */
   public static boolean validateColumnName(String name) {
     return true;
-  }
-
-  static public String validateTblColumns(List<FieldSchema> cols) {
-    for (FieldSchema fieldSchema : cols) {
-      if (!validateColumnName(fieldSchema.getName())) {
-        return "name: " + fieldSchema.getName();
-      }
-      String typeError = validateColumnType(fieldSchema.getType());
-      if (typeError != null) {
-        return typeError;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * @return true if oldType and newType are compatible.
-   * Two types are compatible if we have internal functions to cast one to another.
-   */
-  static private boolean areColTypesCompatible(String oldType, String newType) {
-
-    /*
-     * RCFile default serde (ColumnarSerde) serializes the values in such a way that the
-     * datatypes can be converted from string to any type. The map is also serialized as
-     * a string, which can be read as a string as well. However, with any binary
-     * serialization, this is not true.
-     *
-     * Primitive types like INT, STRING, BIGINT, etc are compatible with each other and are
-     * not blocked.
-     */
-
-    return TypeInfoUtils.implicitConvertible(TypeInfoUtils.getTypeInfoFromTypeString(oldType),
-      TypeInfoUtils.getTypeInfoFromTypeString(newType));
   }
 
   public static final String TYPE_FROM_DESERIALIZER = "<derived from deserializer>";
@@ -1285,129 +1085,11 @@ public class MetaStoreUtils {
     return names;
   }
 
-  /**
-   * Helper function to transform Nulls to empty strings.
-   */
-  private static final com.google.common.base.Function<String,String> transFormNullsToEmptyString
-      = new com.google.common.base.Function<String, String>() {
-    @Override
-    public java.lang.String apply(@Nullable java.lang.String string) {
-      return StringUtils.defaultString(string);
-    }
-  };
-
-  /**
-   * Create a URL from a string representing a path to a local file.
-   * The path string can be just a path, or can start with file:/, file:///
-   * @param onestr  path string
-   * @return
-   */
-  private static URL urlFromPathString(String onestr) {
-    URL oneurl = null;
-    try {
-      if (onestr.startsWith("file:/")) {
-        oneurl = new URL(onestr);
-      } else {
-        oneurl = new File(onestr).toURL();
-      }
-    } catch (Exception err) {
-      LOG.error("Bad URL " + onestr + ", ignoring path");
-    }
-    return oneurl;
-  }
-
-  /**
-   * Add new elements to the classpath.
-   *
-   * @param newPaths
-   *          Array of classpath elements
-   */
-  public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
-    URLClassLoader loader = (URLClassLoader) cloader;
-    List<URL> curPath = Arrays.asList(loader.getURLs());
-    ArrayList<URL> newPath = new ArrayList<URL>(curPath.size());
-
-    // get a list with the current classpath components
-    for (URL onePath : curPath) {
-      newPath.add(onePath);
-    }
-    curPath = newPath;
-
-    for (String onestr : newPaths) {
-      URL oneurl = urlFromPathString(onestr);
-      if (oneurl != null && !curPath.contains(oneurl)) {
-        curPath.add(oneurl);
-      }
-    }
-
-    return new URLClassLoader(curPath.toArray(new URL[0]), loader);
-  }
-
-  protected static void getMergableCols(ColumnStatistics csNew, Map<String, String> parameters) {
-    List<ColumnStatisticsObj> list = new ArrayList<>();
-    for (int index = 0; index < csNew.getStatsObj().size(); index++) {
-      ColumnStatisticsObj statsObjNew = csNew.getStatsObj().get(index);
-      // canColumnStatsMerge guarantees that it is accurate before we do merge
-      if (StatsSetupConst.canColumnStatsMerge(parameters, statsObjNew.getColName())) {
-        list.add(statsObjNew);
-      }
-      // in all the other cases, we can not merge
-    }
-    csNew.setStatsObj(list);
-  }
-
-  // this function will merge csOld into csNew.
-  public static void mergeColStats(ColumnStatistics csNew, ColumnStatistics csOld)
-      throws InvalidObjectException {
-    List<ColumnStatisticsObj> list = new ArrayList<>();
-    if (csNew.getStatsObj().size() != csOld.getStatsObjSize()) {
-      // Some of the columns' stats are missing
-      // This implies partition schema has changed. We will merge columns
-      // present in both, overwrite stats for columns absent in metastore and
-      // leave alone columns stats missing from stats task. This last case may
-      // leave stats in stale state. This will be addressed later.
-      LOG.debug("New ColumnStats size is {}, but old ColumnStats size is {}",
-          csNew.getStatsObj().size(), csOld.getStatsObjSize());
-    }
-    // In this case, we have to find out which columns can be merged.
-    Map<String, ColumnStatisticsObj> map = new HashMap<>();
-    // We build a hash map from colName to object for old ColumnStats.
-    for (ColumnStatisticsObj obj : csOld.getStatsObj()) {
-      map.put(obj.getColName(), obj);
-    }
-    for (int index = 0; index < csNew.getStatsObj().size(); index++) {
-      ColumnStatisticsObj statsObjNew = csNew.getStatsObj().get(index);
-      ColumnStatisticsObj statsObjOld = map.get(statsObjNew.getColName());
-      if (statsObjOld != null) {
-        // because we already confirm that the stats is accurate
-        // it is impossible that the column types have been changed while the
-        // column stats is still accurate.
-        assert (statsObjNew.getStatsData().getSetField() == statsObjOld.getStatsData()
-            .getSetField());
-        // If statsObjOld is found, we can merge.
-        ColumnStatsMerger merger = ColumnStatsMergerFactory.getColumnStatsMerger(statsObjNew,
-            statsObjOld);
-        merger.merge(statsObjNew, statsObjOld);
-      }
-      // If statsObjOld is not found, we just use statsObjNew as it is accurate.
-      list.add(statsObjNew);
-    }
-    // in all the other cases, we can not merge
-    csNew.setStatsObj(list);
-  }
-
   public static List<String> getColumnNames(List<FieldSchema> schema) {
     List<String> cols = new ArrayList<>(schema.size());
     for (FieldSchema fs : schema) {
       cols.add(fs.getName());
     }
     return cols;
-  }
-
-
-  /** Duplicates AcidUtils; used in a couple places in metastore. */
-  public static boolean isInsertOnlyTableParam(Map<String, String> params) {
-    String transactionalProp = params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
   }
 }
