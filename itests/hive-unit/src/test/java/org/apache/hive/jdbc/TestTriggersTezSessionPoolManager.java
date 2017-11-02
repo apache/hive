@@ -138,9 +138,14 @@ public class TestTriggersTezSessionPoolManager {
     Expression expression = ExpressionFactory.fromString("SHUFFLE_BYTES > 100");
     Trigger trigger = new ExecutionTrigger("big_shuffle", expression, Trigger.Action.KILL_QUERY);
     setupTriggers(Lists.newArrayList(trigger));
-    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
-      " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, "Query was cancelled");
+    List<String> cmds = new ArrayList<>();
+    cmds.add("set hive.auto.convert.join=false");
+    // to slow down the reducer so that SHUFFLE_BYTES publishing and validation can happen, adding sleep between
+    // multiple reduce stages
+    String query = "select count(distinct t.under_col), sleep(t.under_col, 10) from (select t1.under_col from " +
+      tableName + " t1 " + "join " + tableName + " t2 on t1.under_col=t2.under_col order by sleep(t1.under_col, 0))" +
+      " t group by t.under_col";
+    runQueryWithTrigger(query, null, trigger + " violated");
   }
 
   @Test(timeout = 60000)
