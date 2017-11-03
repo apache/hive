@@ -38,17 +38,13 @@ public class DBTokenStore implements DelegationTokenStore {
 
   @Override
   public int addMasterKey(String s) throws TokenStoreException {
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("addMasterKey: s = " + s);
-    }
+    LOG.trace("addMasterKey: s = {}", s);
     return (Integer)invokeOnTokenStore("addMasterKey", new Object[]{s},String.class);
   }
 
   @Override
   public void updateMasterKey(int keySeq, String s) throws TokenStoreException {
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("updateMasterKey: s = " + s + ", keySeq = " + keySeq);
-    }
+    LOG.trace("updateMasterKey: s = {}, keySeq = {}", s, keySeq);
     invokeOnTokenStore("updateMasterKey", new Object[] {Integer.valueOf(keySeq), s},
         Integer.class, String.class);
   }
@@ -74,9 +70,7 @@ public class DBTokenStore implements DelegationTokenStore {
         MetastoreDelegationTokenSupport.encodeDelegationTokenInformation(token));
       boolean result = (Boolean)invokeOnTokenStore("addToken", new Object[] {identifier, tokenStr},
         String.class, String.class);
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("addToken: tokenIdentifier = " + tokenIdentifier + ", added = " + result);
-      }
+      LOG.trace("addToken: tokenIdentifier = {}, added = {}", tokenIdentifier, result);
       return result;
     } catch (IOException e) {
       throw new TokenStoreException(e);
@@ -93,9 +87,7 @@ public class DBTokenStore implements DelegationTokenStore {
       if (StringUtils.isNotEmpty(tokenStr)) {
         result = MetastoreDelegationTokenSupport.decodeDelegationTokenInformation(Base64.decodeBase64(tokenStr));
       }
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("getToken: tokenIdentifier = " + tokenIdentifier + ", result = " + result);
-      }
+      LOG.trace("getToken: tokenIdentifier = {}, result = {}", tokenIdentifier, result);
       return result;
     } catch (IOException e) {
       throw new TokenStoreException(e);
@@ -107,9 +99,7 @@ public class DBTokenStore implements DelegationTokenStore {
     try {
       boolean result = (Boolean)invokeOnTokenStore("removeToken", new Object[] {
         TokenStoreDelegationTokenSecretManager.encodeWritable(tokenIdentifier)}, String.class);
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("removeToken: tokenIdentifier = " + tokenIdentifier + ", removed = " + result);
-      }
+      LOG.trace("removeToken: tokenIdentifier = {}, removed = {}", tokenIdentifier, result);
       return result;
     } catch (IOException e) {
       throw new TokenStoreException(e);
