@@ -107,3 +107,14 @@ explain
 select count(*)
 from
 (select distinct key,value from tab_part) a join tab b on a.key = b.key and a.value = b.value;
+
+
+--HIVE-17939
+create table small (i int) stored as ORC;
+create table big (i int) partitioned by (k int) clustered by (i) into 10 buckets stored as ORC;
+
+insert into small values (1),(2),(3),(4),(5),(6);
+insert into big partition(k=1) values(1),(3),(5),(7),(9);
+insert into big partition(k=2) values(0),(2),(4),(6),(8);
+explain select small.i, big.i from small,big where small.i=big.i;
+select small.i, big.i from small,big where small.i=big.i order by small.i, big.i;
