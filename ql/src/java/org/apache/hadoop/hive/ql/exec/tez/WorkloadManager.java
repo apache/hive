@@ -1443,7 +1443,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
     public TmpHivePool(String name,
         List<TmpHivePool> children, int queryParallelism, double resourceFraction) {
-      this(name, children, queryParallelism, resourceFraction, null);
+      this(name, children, queryParallelism, resourceFraction, new ArrayList<Trigger>());
     }
 
     public TmpHivePool(String name,
