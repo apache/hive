@@ -259,7 +259,12 @@ public final class Utilities {
    * VALUE: record value
    */
   public static enum ReduceField {
-    KEY, VALUE
+    KEY(0), VALUE(1);
+
+    int position;
+    ReduceField(int position) {
+      this.position = position;
+    };
   };
 
   public static List<String> reduceFieldNameList;

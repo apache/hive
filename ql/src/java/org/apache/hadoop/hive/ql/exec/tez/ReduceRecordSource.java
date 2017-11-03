@@ -349,7 +349,7 @@ public class ReduceRecordSource implements RecordSource {
       } else {
         row.add(passDownKey.get(0));
       }
-      if ((passDownKey == null) && (reducer instanceof CommonMergeJoinOperator)) {
+      if ((passDownKey == null) && (reducer instanceof CommonMergeJoinOperator) && hasNext()) {
         passDownKey =
             (List<Object>) ObjectInspectorUtils.copyToStandardObject(row,
                 reducer.getInputObjInspectors()[tag], ObjectInspectorCopyOption.WRITABLE);
