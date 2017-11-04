@@ -1780,15 +1780,6 @@ public class HiveConf extends Configuration {
         "Average row size is computed from average column size of all columns in the row. In the absence\n" +
         "of column statistics and for variable length complex columns like map, the average number of\n" +
         "entries/values can be specified using this config."),
-    // statistics annotation fetches stats for each partition, which can be expensive. turning
-    // this off will result in basic sizes being fetched from namenode instead
-    HIVE_STATS_FETCH_PARTITION_STATS("hive.stats.fetch.partition.stats", true,
-        "Annotation of operator tree with statistics information requires partition level basic\n" +
-        "statistics like number of rows, data size and file size. Partition statistics are fetched from\n" +
-        "metastore. Fetching partition statistics for each needed partition can be expensive when the\n" +
-        "number of partitions is high. This flag can be used to disable fetching of partition statistics\n" +
-        "from metastore. When this flag is disabled, Hive will make calls to filesystem to get file sizes\n" +
-        "and will estimate the number of rows from row schema."),
     // statistics annotation fetches column statistics for all required columns which can
     // be very expensive sometimes
     HIVE_STATS_FETCH_COLUMN_STATS("hive.stats.fetch.column.stats", false,

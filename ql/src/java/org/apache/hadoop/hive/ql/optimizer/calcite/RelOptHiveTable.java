@@ -451,7 +451,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
         try {
           Statistics stats = StatsUtils.collectStatistics(hiveConf, null,
               hiveTblMetadata, hiveNonPartitionCols, nonPartColNamesThatRqrStats,
-              colStatsCached, nonPartColNamesThatRqrStats, true, true);
+              colStatsCached, nonPartColNamesThatRqrStats, true);
           rowCount = stats.getNumRows();
           for (String c : nonPartColNamesThatRqrStats) {
             ColStatistics cs = stats.getColumnStatisticsFromColName(c);
@@ -517,7 +517,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
           } else {
             Statistics stats = StatsUtils.collectStatistics(hiveConf, partitionList,
                 hiveTblMetadata, hiveNonPartitionCols, nonPartColNamesThatRqrStats, colStatsCached,
-                nonPartColNamesThatRqrStats, true, true);
+                nonPartColNamesThatRqrStats, true);
             rowCount = stats.getNumRows();
             hiveColStats = new ArrayList<ColStatistics>();
             for (String c : nonPartColNamesThatRqrStats) {
