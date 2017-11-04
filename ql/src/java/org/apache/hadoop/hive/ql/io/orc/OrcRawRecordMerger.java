@@ -433,7 +433,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           AcidOutputFormat.Options bucketOptions =
             AcidUtils.parseBaseOrDeltaBucketFilename(f.getFileStatus().getPath(), conf);
           if (bucketOptions.getBucketId() != bucketId) {
-            continue;
+            continue;//todo: HIVE-16952
           }
           if (haveSeenCurrentFile) {
             //if here we already saw current file and now found another file for the same bucket

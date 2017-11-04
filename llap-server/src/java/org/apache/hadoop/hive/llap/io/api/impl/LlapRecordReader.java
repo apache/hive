@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcAcidRowBatchReader;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
@@ -277,7 +278,7 @@ class LlapRecordReader
         acidVrb.cols = cvb.cols;
         acidVrb.size = cvb.size;
         final VectorizedOrcAcidRowBatchReader acidReader =
-            new VectorizedOrcAcidRowBatchReader(split, jobConf, Reporter.NULL,
+            new VectorizedOrcAcidRowBatchReader((OrcSplit)split, jobConf, Reporter.NULL,
                 new RecordReader<NullWritable, VectorizedRowBatch>() {
                   @Override
                   public boolean next(NullWritable key, VectorizedRowBatch value) throws IOException {

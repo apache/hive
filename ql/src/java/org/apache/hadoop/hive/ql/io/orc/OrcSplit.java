@@ -29,7 +29,6 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.ColumnarSplit;
@@ -238,6 +237,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     final AcidUtils.AcidOperationalProperties acidOperationalProperties
         = AcidUtils.getAcidOperationalProperties(conf);
     final boolean isSplitUpdate = acidOperationalProperties.isSplitUpdate();
+    assert isSplitUpdate : "should be true in Hive 3.0";
 
     if (isOriginal) {
       if (!isAcidRead && !hasDelta) {

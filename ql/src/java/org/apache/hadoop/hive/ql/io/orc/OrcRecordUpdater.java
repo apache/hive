@@ -62,21 +62,24 @@ public class OrcRecordUpdater implements RecordUpdater {
 
   private static final Logger LOG = LoggerFactory.getLogger(OrcRecordUpdater.class);
 
-  public static final String ACID_KEY_INDEX_NAME = "hive.acid.key.index";
-  public static final String ACID_FORMAT = "_orc_acid_version";
-  public static final int ORC_ACID_VERSION = 0;
+  static final String ACID_KEY_INDEX_NAME = "hive.acid.key.index";
+  private static final String ACID_FORMAT = "_orc_acid_version";
+  private static final int ORC_ACID_VERSION = 0;
 
 
   final static int INSERT_OPERATION = 0;
   final static int UPDATE_OPERATION = 1;
   final static int DELETE_OPERATION = 2;
-
+  //column indexes of corresponding data in storage layer
   final static int OPERATION = 0;
   final static int ORIGINAL_TRANSACTION = 1;
   final static int BUCKET = 2;
   final static int ROW_ID = 3;
   final static int CURRENT_TRANSACTION = 4;
   final static int ROW = 5;
+  /**
+   * total number of fields (above)
+   */
   final static int FIELDS = 6;
 
   final static int DELTA_BUFFER_SIZE = 16 * 1024;

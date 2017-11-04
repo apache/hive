@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
@@ -100,10 +101,11 @@ public class TestVectorizedOrcAcidRowBatchReader {
     conf.setBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname, true);
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "BI");
 
-    fs = FileSystem.getLocal(conf);
     Path workDir = new Path(System.getProperty("test.tmp.dir",
         "target" + File.separator + "test" + File.separator + "tmp"));
     root = new Path(workDir, "TestVectorizedOrcAcidRowBatch.testDump");
+    fs = root.getFileSystem(conf);
+    root = fs.makeQualified(root);
     fs.delete(root, true);
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
@@ -189,7 +191,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     assertEquals(1, splitStrategies.size());
     List<OrcSplit> splits = ((OrcInputFormat.ACIDSplitStrategy)splitStrategies.get(0)).getSplits();
     assertEquals(1, splits.size());
-    assertEquals("file://" + root.toUri().toString() + File.separator + "delta_0000001_0000010_0000/bucket_00000",
+    assertEquals(root.toUri().toString() + File.separator + "delta_0000001_0000010_0000/bucket_00000",
         splits.get(0).getPath().toUri().toString());
     assertFalse(splits.get(0).isOriginal());
     return splits;
@@ -216,7 +218,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     // are being handled properly.
     conf.set(ValidTxnList.VALID_TXNS_KEY, "14:1:1:5"); // Exclude transaction 5
 
-    VectorizedOrcAcidRowBatchReader vectorizedReader = new VectorizedOrcAcidRowBatchReader(splits.get(0), conf, Reporter.NULL);
+    VectorizedOrcAcidRowBatchReader vectorizedReader = new VectorizedOrcAcidRowBatchReader(splits.get(0), conf, Reporter.NULL, new VectorizedRowBatchCtx());
     if (deleteEventRegistry.equals(ColumnizedDeleteEventRegistry.class.getName())) {
       assertTrue(vectorizedReader.getDeleteEventRegistry() instanceof ColumnizedDeleteEventRegistry);
     }
@@ -242,20 +244,4 @@ public class TestVectorizedOrcAcidRowBatchReader {
       }
     }
   }
-
-  @Test
-  public void testCanCreateVectorizedAcidRowBatchReaderOnSplit() throws Exception {
-    OrcSplit mockSplit = Mockito.mock(OrcSplit.class);
-
-    conf.setInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname,
-        AcidUtils.AcidOperationalProperties.getDefault().toInt());
-    Mockito.when(mockSplit.isOriginal()).thenReturn(true);
-    // Test false when trying to create a vectorized ACID row batch reader when reading originals.
-    assertFalse(VectorizedOrcAcidRowBatchReader.canCreateVectorizedAcidRowBatchReaderOnSplit(conf, mockSplit));
-
-    // A positive test case.
-    Mockito.when(mockSplit.isOriginal()).thenReturn(false);
-    assertTrue(VectorizedOrcAcidRowBatchReader.canCreateVectorizedAcidRowBatchReaderOnSplit(conf, mockSplit));
-  }
-
 }

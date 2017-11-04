@@ -18,6 +18,10 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -521,6 +525,120 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     int j = ErrorMsg.CTAS_PARCOL_COEXISTENCE.getErrorCode();//this code doesn't propagate
 //    Assert.assertEquals("Wrong msg", ErrorMsg.CTAS_PARCOL_COEXISTENCE.getErrorCode(), cpr.getErrorCode());
     Assert.assertTrue(cpr.getErrorMessage().contains("CREATE-TABLE-AS-SELECT does not support"));
+  }
+  /**
+   * Tests to check that we are able to use vectorized acid reader,
+   * VectorizedOrcAcidRowBatchReader, when reading "original" files,
+   * i.e. those that were written before the table was converted to acid.
+   * See also acid_vectorization_original*.q
+   */
+  @Test
+  public void testNonAcidToAcidVectorzied() throws Exception {
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
+    hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    //this enables vectorization of ROW__ID
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ROW_IDENTIFIER_ENABLED, true);//HIVE-12631
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("create table T(a int, b int) stored as orc");
+    int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};
+    runStatementOnDriver("insert into T(a, b) " + makeValuesClause(values));
+    //, 'transactional_properties'='default'
+    runStatementOnDriver("alter table T SET TBLPROPERTIES ('transactional'='true')");
+    //Execution mode: vectorized
+      //this uses VectorizedOrcAcidRowBatchReader
+    String query = "select a from T where b > 6 order by a";
+    List<String> rs = runStatementOnDriver(query);
+    String[][] expected = {
+      {"6", ""},
+      {"9", ""},
+    };
+    checkExpected(rs, expected, "After conversion");
+    Assert.assertEquals(Integer.toString(6), rs.get(0));
+    Assert.assertEquals(Integer.toString(9), rs.get(1));
+    assertVectorized(true, query);
+
+    //why isn't PPD working.... - it is working but storage layer doesn't do row level filtering; only row group level
+    //this uses VectorizedOrcAcidRowBatchReader
+    query = "select ROW__ID, a from T where b > 6 order by a";
+    rs = runStatementOnDriver(query);
+    String[][] expected1 = {
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}", "6"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}", "9"}
+    };
+    checkExpected(rs, expected1, "After conversion with VC1");
+    assertVectorized(true, query);
+
+    //this uses VectorizedOrcAcidRowBatchReader
+    query = "select ROW__ID, a from T where b > 0 order by a";
+    rs = runStatementOnDriver(query);
+    String[][] expected2 = {
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}", "1"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}", "2"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}", "5"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}", "6"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}", "9"}
+    };
+    checkExpected(rs, expected2, "After conversion with VC2");
+    assertVectorized(true, query);
+
+    //doesn't vectorize (uses neither of the Vectorzied Acid readers)
+    query = "select ROW__ID, a, INPUT__FILE__NAME from T where b > 6 order by a";
+    rs = runStatementOnDriver(query);
+    Assert.assertEquals("", 2, rs.size());
+    String[][] expected3 = {
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t6", "warehouse/t/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}\t9", "warehouse/t/000000_0"}
+    };
+    checkExpected(rs, expected3, "After non-vectorized read");
+    Assert.assertEquals(0, BucketCodec.determineVersion(536870912).decodeWriterId(536870912));
+    //vectorized because there is INPUT__FILE__NAME
+    assertVectorized(false, query);
+
+    runStatementOnDriver("update T set b = 17 where a = 1");
+    //this should use VectorizedOrcAcidRowReader
+    query = "select ROW__ID, b from T where b > 0 order by a";
+    rs = runStatementOnDriver(query);
+    String[][] expected4 = {
+      {"{\"transactionid\":25,\"bucketid\":536870912,\"rowid\":0}","17"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}","4"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}","6"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}","8"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}","10"}
+    };
+    checkExpected(rs, expected4, "After conversion with VC4");
+    assertVectorized(true, query);
+
+    runStatementOnDriver("alter table T compact 'major'");
+    TestTxnCommands2.runWorker(hiveConf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
+    Assert.assertTrue(resp.getCompacts().get(0).getHadoopJobId().startsWith("job_local"));
+
+    //this should not vectorize at all
+    query = "select ROW__ID, a, b, INPUT__FILE__NAME from T where b > 0 order by a, b";
+    rs = runStatementOnDriver(query);
+    String[][] expected5 = {//the row__ids are the same after compaction
+      {"{\"transactionid\":25,\"bucketid\":536870912,\"rowid\":0}\t1\t17", "warehouse/t/base_0000025/bucket_00000"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}\t2\t4",   "warehouse/t/base_0000025/bucket_00000"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}\t5\t6",   "warehouse/t/base_0000025/bucket_00000"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t6\t8",   "warehouse/t/base_0000025/bucket_00000"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}\t9\t10",  "warehouse/t/base_0000025/bucket_00000"}
+    };
+    checkExpected(rs, expected5, "After major compaction");
+    //vectorized because there is INPUT__FILE__NAME
+    assertVectorized(false, query);
+  }
+  private void assertVectorized(boolean vectorized, String query) throws Exception {
+    List<String> rs = runStatementOnDriver("EXPLAIN VECTORIZATION DETAIL " + query);
+    for(String line : rs) {
+      if(line != null && line.contains("Execution mode: vectorized")) {
+        Assert.assertTrue("Was vectorized when it wasn't expected", vectorized);
+        return;
+      }
+    }
+    Assert.assertTrue("Din't find expected 'vectorized' in plan", !vectorized);
   }
 }
 

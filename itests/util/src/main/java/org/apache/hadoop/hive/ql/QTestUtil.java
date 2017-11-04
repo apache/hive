@@ -85,9 +85,7 @@ import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -1561,6 +1559,16 @@ public class QTestUtil {
           }
         }
       }
+      else {
+        for (PatternReplacementPair prp : partialPlanMask) {
+          matcher = prp.pattern.matcher(line);
+          if (matcher.find()) {
+            line = line.replaceAll(prp.pattern.pattern(), prp.replacement);
+            partialMaskWasMatched = true;
+            break;
+          }
+        }
+      }
 
       if (!partialMaskWasMatched) {
         for (Pair<Pattern, String> pair : patternsWithMaskComments) {
@@ -1650,7 +1658,26 @@ public class QTestUtil {
       "data/warehouse/(.*?/)+\\.hive-staging"  // the directory might be db/table/partition
       //TODO: add more expected test result here
   });
-
+  /**
+   * Pattern to match and (partial) replacement text.
+   * For example, {"transaction":76,"bucketid":8249877}.  We just want to mask 76 but a regex that
+   * matches just 76 will match a lot of other things.
+   */
+  private final static class PatternReplacementPair {
+    private final Pattern pattern;
+    private final String replacement;
+    PatternReplacementPair(Pattern p, String r) {
+      pattern = p;
+      replacement = r;
+    }
+  }
+  private final PatternReplacementPair[] partialPlanMask;
+  {
+    ArrayList<PatternReplacementPair> ppm = new ArrayList<>();
+    ppm.add(new PatternReplacementPair(Pattern.compile("\\{\"transactionid\":[1-9][0-9]*,\"bucketid\":"),
+      "{\"transactionid\":### Masked txnid ###,\"bucketid\":"));
+    partialPlanMask = ppm.toArray(new PatternReplacementPair[ppm.size()]);
+  }
   /* This list may be modified by specific cli drivers to mask strings that change on every test */
   private final List<Pair<Pattern, String>> patternsWithMaskComments = new ArrayList<Pair<Pattern, String>>() {{
     add(toPatternPair("(pblob|s3.?|swift|wasb.?).*hive-staging.*","### BLOBSTORE_STAGING_PATH ###"));

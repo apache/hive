@@ -1849,6 +1849,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   public org.apache.hadoop.mapred.RecordReader<NullWritable, OrcStruct>
   getRecordReader(InputSplit inputSplit, JobConf conf,
                   Reporter reporter) throws IOException {
+    //CombineHiveInputFormat may produce FileSplit that is not OrcSplit
     boolean vectorMode = Utilities.getUseVectorizedInputFileFormat(conf);
     boolean isAcidRead = isAcidRead(conf, inputSplit);
     if (!isAcidRead) {
@@ -1868,27 +1869,19 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     reporter.setStatus(inputSplit.toString());
+    //if here we are now doing an Acid read so must have OrcSplit.  CombineHiveInputFormat is
+    // disabled for acid path
+    OrcSplit split = (OrcSplit) inputSplit;
 
-    boolean isFastVectorizedReaderAvailable =
-        VectorizedOrcAcidRowBatchReader.canCreateVectorizedAcidRowBatchReaderOnSplit(conf, inputSplit);
-
-    if (vectorMode && isFastVectorizedReaderAvailable) {
-      // Faster vectorized ACID row batch reader is available that avoids row-by-row stitching.
+    if (vectorMode) {
       return (org.apache.hadoop.mapred.RecordReader)
-          new VectorizedOrcAcidRowBatchReader(inputSplit, conf, reporter);
+          new VectorizedOrcAcidRowBatchReader(split, conf, reporter);
     }
 
     Options options = new Options(conf).reporter(reporter);
     final RowReader<OrcStruct> inner = getReader(inputSplit, options);
-    if (vectorMode && !isFastVectorizedReaderAvailable) {
-      // Vectorized regular ACID reader that does row-by-row stitching.
-      return (org.apache.hadoop.mapred.RecordReader)
-          new VectorizedOrcAcidRowReader(inner, conf,
-              Utilities.getMapWork(conf).getVectorizedRowBatchCtx(), (FileSplit) inputSplit);
-    } else {
-      // Non-vectorized regular ACID reader.
-      return new NullKeyRecordReader(inner, conf);
-    }
+    // Non-vectorized regular ACID reader.
+    return new NullKeyRecordReader(inner, conf);
   }
 
   /**
@@ -1945,38 +1938,20 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                                             throws IOException {
 
     final OrcSplit split = (OrcSplit) inputSplit;
-    final Path path = split.getPath();
-    Path root;
-    if (split.hasBase()) {
-      if (split.isOriginal()) {
-        root = split.getRootDir();
-      } else {
-        root = path.getParent().getParent();
-        assert root.equals(split.getRootDir()) : "root mismatch: baseDir=" + split.getRootDir() +
-          " path.p.p=" + root;
-      }
-    } else {
-      throw new IllegalStateException("Split w/o base: " + path);
-    }
 
     // Retrieve the acidOperationalProperties for the table, initialized in HiveInputFormat.
     AcidUtils.AcidOperationalProperties acidOperationalProperties
             = AcidUtils.getAcidOperationalProperties(options.getConfiguration());
+    if(!acidOperationalProperties.isSplitUpdate()) {
+      throw new IllegalStateException("Expected SpliUpdate table: " + split.getPath());
+    }
 
-    // The deltas are decided based on whether split-update has been turned on for the table or not.
-    // When split-update is turned off, everything in the delta_x_y/ directory should be treated
-    // as delta. However if split-update is turned on, only the files in delete_delta_x_y/ directory
-    // need to be considered as delta, because files in delta_x_y/ will be processed as base files
-    // since they only have insert events in them.
-    final Path[] deltas =
-        acidOperationalProperties.isSplitUpdate() ?
-            AcidUtils.deserializeDeleteDeltas(root, split.getDeltas())
-            : AcidUtils.deserializeDeltas(root, split.getDeltas());
+    final Path[] deltas = VectorizedOrcAcidRowBatchReader.getDeleteDeltaDirsFromSplit(split);
     final Configuration conf = options.getConfiguration();
 
     final Reader reader = OrcInputFormat.createOrcReaderForSplit(conf, split);
     OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options().isCompacting(false);
-    mergerOptions.rootPath(root);
+    mergerOptions.rootPath(split.getRootDir());
     final int bucket;
     if (split.hasBase()) {
       AcidOutputFormat.Options acidIOOptions =

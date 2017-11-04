@@ -24,6 +24,7 @@ import java.util.BitSet;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
@@ -37,9 +38,12 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -51,10 +55,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 /**
- * A fast vectorized batch reader class for ACID when split-update behavior is enabled.
- * When split-update is turned on, row-by-row stitching could be avoided to create the final
- * version of a row. Essentially, there are only insert and delete events. Insert events can be
- * directly read from the base files/insert_only deltas in vectorized row batches. The deleted
+ * A fast vectorized batch reader class for ACID. Insert events are read directly
+ * from the base files/insert_only deltas in vectorized row batches. The deleted
  * rows can then be easily indicated via the 'selected' field of the vectorized row batch.
  * Refer HIVE-14233 for more details.
  */
@@ -63,26 +65,51 @@ public class VectorizedOrcAcidRowBatchReader
 
   private static final Logger LOG = LoggerFactory.getLogger(VectorizedOrcAcidRowBatchReader.class);
 
-  public org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch> baseReader;
-  protected VectorizedRowBatchCtx rbCtx;
-  protected VectorizedRowBatch vectorizedRowBatchBase;
+  private org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch> baseReader;
+  private final VectorizedRowBatchCtx rbCtx;
+  private VectorizedRowBatch vectorizedRowBatchBase;
   private long offset;
   private long length;
   protected float progress = 0.0f;
   protected Object[] partitionValues;
-  protected boolean addPartitionCols = true;
-  private ValidTxnList validTxnList;
-  protected DeleteEventRegistry deleteEventRegistry;
-  protected StructColumnVector recordIdColumnVector;
-  private org.apache.orc.Reader.Options readerOptions;
+  private boolean addPartitionCols = true;
+  private final ValidTxnList validTxnList;
+  private final DeleteEventRegistry deleteEventRegistry;
+  /**
+   * {@link RecordIdentifier}/{@link VirtualColumn#ROWID} information
+   */
+  private final StructColumnVector recordIdColumnVector;
+  private final Reader.Options readerOptions;
+  private final boolean isOriginal;
+  /**
+   * something further in the data pipeline wants {@link VirtualColumn#ROWID}
+   */
+  private final boolean rowIdProjected;
+  /**
+   * partition/table root
+   */
+  private final Path rootPath;
+  /**
+   * for reading "original" files
+   */
+  private final OffsetAndBucketProperty syntheticProps;
+  /**
+   * To have access to {@link RecordReader#getRowNumber()} in the underlying file
+   */
+  private RecordReader innerReader;
 
-  public VectorizedOrcAcidRowBatchReader(InputSplit inputSplit, JobConf conf,
-        Reporter reporter) throws IOException {
-    this.init(inputSplit, conf, reporter, Utilities.getVectorizedRowBatchCtx(conf));
+  VectorizedOrcAcidRowBatchReader(OrcSplit inputSplit, JobConf conf,
+                                  Reporter reporter) throws IOException {
+    this(inputSplit, conf,reporter, null);
+  }
+  @VisibleForTesting
+  VectorizedOrcAcidRowBatchReader(OrcSplit inputSplit, JobConf conf,
+        Reporter reporter, VectorizedRowBatchCtx rbCtx) throws IOException {
+    this(conf, inputSplit, reporter, rbCtx == null ? Utilities.getVectorizedRowBatchCtx(conf) : rbCtx);
 
     final Reader reader = OrcInputFormat.createOrcReaderForSplit(conf, (OrcSplit) inputSplit);
     // Careful with the range here now, we do not want to read the whole base file like deltas.
-    final RecordReader innerReader = reader.rowsOptions(readerOptions.range(offset, length));
+    innerReader = reader.rowsOptions(readerOptions.range(offset, length));
     baseReader = new org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch>() {
 
       @Override
@@ -117,16 +144,19 @@ public class VectorizedOrcAcidRowBatchReader
     };
     this.vectorizedRowBatchBase = ((RecordReaderImpl) innerReader).createRowBatch();
   }
-
-  public VectorizedOrcAcidRowBatchReader(InputSplit inputSplit, JobConf conf, Reporter reporter,
+  /**
+   * LLAP IO c'tor
+   */
+  public VectorizedOrcAcidRowBatchReader(OrcSplit inputSplit, JobConf conf, Reporter reporter,
       org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch> baseReader,
       VectorizedRowBatchCtx rbCtx) throws IOException {
-    this.init(inputSplit, conf, reporter, rbCtx);
+    this(conf, inputSplit, reporter, rbCtx);
     this.baseReader = baseReader;
+    this.innerReader = null;
     this.vectorizedRowBatchBase = baseReader.createValue();
   }
 
-  private void init(InputSplit inputSplit, JobConf conf, Reporter reporter,
+  private VectorizedOrcAcidRowBatchReader(JobConf conf, OrcSplit inputSplit, Reporter reporter,
       VectorizedRowBatchCtx rowBatchCtx) throws IOException {
     this.rbCtx = rowBatchCtx;
     final boolean isAcidRead = HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
@@ -143,8 +173,7 @@ public class VectorizedOrcAcidRowBatchReader
     final OrcSplit orcSplit = (OrcSplit) inputSplit;
 
     reporter.setStatus(orcSplit.toString());
-    readerOptions = OrcInputFormat.createOptionsForReader(conf);
-    readerOptions = OrcRawRecordMerger.createEventOptions(readerOptions);
+    readerOptions = OrcRawRecordMerger.createEventOptions(OrcInputFormat.createOptionsForReader(conf));
 
     this.offset = orcSplit.getStart();
     this.length = orcSplit.getLength();
@@ -167,55 +196,161 @@ public class VectorizedOrcAcidRowBatchReader
     deleteEventReaderOptions.range(0, Long.MAX_VALUE);
     //  Disable SARGs for deleteEventReaders, as SARGs have no meaning.
     deleteEventReaderOptions.searchArgument(null, null);
+    DeleteEventRegistry der;
     try {
       // See if we can load all the delete events from all the delete deltas in memory...
-      this.deleteEventRegistry = new ColumnizedDeleteEventRegistry(conf, orcSplit, deleteEventReaderOptions);
+      der = new ColumnizedDeleteEventRegistry(conf, orcSplit, deleteEventReaderOptions);
     } catch (DeleteEventsOverflowMemoryException e) {
       // If not, then create a set of hanging readers that do sort-merge to find the next smallest
       // delete event on-demand. Caps the memory consumption to (some_const * no. of readers).
-      this.deleteEventRegistry = new SortMergedDeleteEventRegistry(conf, orcSplit, deleteEventReaderOptions);
+      der = new SortMergedDeleteEventRegistry(conf, orcSplit, deleteEventReaderOptions);
     }
-
-    recordIdColumnVector = new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE, null, null, null);
+    this.deleteEventRegistry = der;
+    isOriginal = orcSplit.isOriginal();
+    if(isOriginal) {
+      recordIdColumnVector = new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+        new LongColumnVector(), new LongColumnVector(), new LongColumnVector());
+    }
+    else {
+      //will swap in the Vectors from underlying row batch
+      recordIdColumnVector = new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE, null, null, null);
+    }
+    rowIdProjected = areRowIdsProjected(rbCtx);
+    rootPath = orcSplit.getRootDir();
+    syntheticProps = computeOffsetAndBucket(orcSplit, conf, validTxnList);
   }
 
   /**
-   * Returns whether it is possible to create a valid instance of this class for a given split.
-   * @param conf is the job configuration
-   * @param inputSplit
-   * @return true if it is possible, else false.
+   * Used for generating synthetic ROW__IDs for reading "original" files
    */
-  public static boolean canCreateVectorizedAcidRowBatchReaderOnSplit(JobConf conf, InputSplit inputSplit) {
-    if (!(inputSplit instanceof OrcSplit)) {
-      return false; // must be an instance of OrcSplit.
+  private static final class OffsetAndBucketProperty {
+    private final long rowIdOffset;
+    private final int bucketProperty;
+    private OffsetAndBucketProperty(long rowIdOffset, int bucketProperty) {
+      this.rowIdOffset = rowIdOffset;
+      this.bucketProperty = bucketProperty;
     }
-    // First check if we are reading any original files in the split.
-    // To simplify the vectorization logic, the vectorized acid row batch reader does not handle
-    // original files for now as they have a different schema than a regular ACID file.
-    final OrcSplit split = (OrcSplit) inputSplit;
-    if (AcidUtils.getAcidOperationalProperties(conf).isSplitUpdate() && !split.isOriginal()) {
-      // When split-update is turned on for ACID, a more optimized vectorized batch reader
-      // can be created. But still only possible when we are *NOT* reading any originals.
+  }
+  /**
+   * See {@link #next(NullWritable, VectorizedRowBatch)} fist and
+   * {@link OrcRawRecordMerger.OriginalReaderPair}.
+   * When reading a split of an "original" file and we need to decorate data with ROW__ID.
+   * This requires treating multiple files that are part of the same bucket (tranche for unbucketed
+   * tables) as a single logical file to number rowids consistently.
+   *
+   * todo: This logic is executed per split of every "original" file.  The computed result is the
+   * same for every split form the same file so this could be optimized by moving it to
+   * before/during splt computation and passing the info in the split.  (HIVE-17917)
+   */
+  private OffsetAndBucketProperty computeOffsetAndBucket(
+    OrcSplit split, JobConf conf,ValidTxnList validTxnList) throws IOException {
+    if(!needSyntheticRowIds(split, !deleteEventRegistry.isEmpty(), rowIdProjected)) {
+      return new OffsetAndBucketProperty(0,0);
+    }
+    long rowIdOffset = 0;
+    int bucketId = AcidUtils.parseBaseOrDeltaBucketFilename(split.getPath(), conf).getBucketId();
+    int bucketProperty = BucketCodec.V1.encode(new AcidOutputFormat.Options(conf).statementId(0).bucket(bucketId));
+    AcidUtils.Directory directoryState = AcidUtils.getAcidState(split.getRootDir(), conf,
+      validTxnList, false, true);
+    for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
+      AcidOutputFormat.Options bucketOptions =
+        AcidUtils.parseBaseOrDeltaBucketFilename(f.getFileStatus().getPath(), conf);
+      if (bucketOptions.getBucketId() != bucketId) {
+        continue;//HIVE-16952
+      }
+      if (f.getFileStatus().getPath().equals(split.getPath())) {
+        //'f' is the file whence this split is
+        break;
+      }
+      Reader reader = OrcFile.createReader(f.getFileStatus().getPath(),
+        OrcFile.readerOptions(conf));
+      rowIdOffset += reader.getNumberOfRows();
+    }
+    return new OffsetAndBucketProperty(rowIdOffset, bucketProperty);
+  }
+  /**
+   * {@link VectorizedOrcAcidRowBatchReader} is always used for vectorized reads of acid tables.
+   * In some cases this cannot be used from LLAP IO elevator because
+   * {@link RecordReader#getRowNumber()} is not (currently) available there but is required to
+   * generate ROW__IDs for "original" files
+   * @param hasDeletes - if there are any deletes that apply to this split
+   * todo: HIVE-17944
+   */
+  static boolean canUseLlapForAcid(OrcSplit split, boolean hasDeletes, Configuration conf) {
+    if(!split.isOriginal()) {
       return true;
     }
-    return false; // no split-update or possibly reading originals!
+    VectorizedRowBatchCtx rbCtx = Utilities.getVectorizedRowBatchCtx(conf);
+    if(rbCtx == null) {
+      throw new IllegalStateException("Could not create VectorizedRowBatchCtx for " + split.getPath());
+    }
+    return !needSyntheticRowIds(split, hasDeletes, areRowIdsProjected(rbCtx));
   }
 
-  private static Path[] getDeleteDeltaDirsFromSplit(OrcSplit orcSplit) throws IOException {
+  /**
+   * Does this reader need to decorate rows with ROW__IDs (for "original" reads).
+   * Even if ROW__ID is not projected you still need to decorate the rows with them to see if
+   * any of the delete events apply.
+   */
+  private static boolean needSyntheticRowIds(OrcSplit split, boolean hasDeletes, boolean rowIdProjected) {
+    return split.isOriginal() && (hasDeletes || rowIdProjected);
+  }
+  private static boolean areRowIdsProjected(VectorizedRowBatchCtx rbCtx) {
+    if(rbCtx.getVirtualColumnCount() == 0) {
+      return false;
+    }
+    for(VirtualColumn vc : rbCtx.getNeededVirtualColumns()) {
+      if(vc == VirtualColumn.ROWID) {
+        //The query needs ROW__ID: maybe explicitly asked, maybe it's part of
+        // Update/Delete statement.
+        //Either way, we need to decorate "original" rows with row__id
+        return true;
+      }
+    }
+    return false;
+  }
+  static Path[] getDeleteDeltaDirsFromSplit(OrcSplit orcSplit) throws IOException {
     Path path = orcSplit.getPath();
     Path root;
     if (orcSplit.hasBase()) {
       if (orcSplit.isOriginal()) {
-        root = path.getParent();
+        root = orcSplit.getRootDir();
       } else {
         root = path.getParent().getParent();
+        assert root.equals(orcSplit.getRootDir()) : "root mismatch: baseDir=" + orcSplit.getRootDir() +
+          " path.p.p=" + root;
       }
     } else {
-      root = path;
+      throw new IllegalStateException("Split w/o base w/Acid 2.0??: " + path);
     }
     return AcidUtils.deserializeDeleteDeltas(root, orcSplit.getDeltas());
   }
 
+  /**
+   * There are 2 types of schema from the {@link #baseReader} that this handles.  In the case
+   * the data was written to a transactional table from the start, every row is decorated with
+   * transaction related info and looks like <op, otid, writerId, rowid, ctid, <f1, ... fn>>.
+   *
+   * The other case is when data was written to non-transactional table and thus only has the user
+   * data: <f1, ... fn>.  Then this table was then converted to a transactional table but the data
+   * files are not changed until major compaction.  These are the "original" files.
+   *
+   * In this case we may need to decorate the outgoing data with transactional column values at
+   * read time.  (It's done somewhat out of band via VectorizedRowBatchCtx - ask Teddy Choi).
+   * The "otid, writerId, rowid" columns represent {@link RecordIdentifier}.  They are assigned
+   * each time the table is read in a way that needs to project {@link VirtualColumn#ROWID}.
+   * Major compaction will attach these values to each row permanently.
+   * It's critical that these generated column values are assigned exactly the same way by each
+   * read of the same row and by the Compactor.
+   * See {@link org.apache.hadoop.hive.ql.txn.compactor.CompactorMR} and
+   * {@link OrcRawRecordMerger.OriginalReaderPairToCompact} for the Compactor read path.
+   * (Longer term should make compactor use this class)
+   *
+   * This only decorates original rows with metadata if something above is requesting these values
+   * or if there are Delete events to apply.
+   *
+   * @return false where there is no more data, i.e. {@code value} is empty
+   */
   @Override
   public boolean next(NullWritable key, VectorizedRowBatch value) throws IOException {
     try {
@@ -257,12 +392,60 @@ public class VectorizedOrcAcidRowBatchReader
       // When selectedInUse is set to false, everything in the batch is selected.
       selectedBitSet.set(0, vectorizedRowBatchBase.size, true);
     }
-
-    // Case 1- find rows which belong to transactions that are not valid.
-    findRecordsWithInvalidTransactionIds(vectorizedRowBatchBase, selectedBitSet);
+    ColumnVector[] innerRecordIdColumnVector = vectorizedRowBatchBase.cols;
+    if(isOriginal) {
+      /*
+       * If there are deletes and reading original file, we must produce synthetic ROW_IDs in order
+       * to see if any deletes apply
+       */
+      if(rowIdProjected || !deleteEventRegistry.isEmpty()) {
+        if(innerReader == null) {
+          throw new IllegalStateException(getClass().getName() + " requires " +
+            org.apache.orc.RecordReader.class +
+            " to handle original files that require ROW__IDs: " + rootPath);
+        }
+        /**
+         * {@link RecordIdentifier#getTransactionId()}
+         */
+        recordIdColumnVector.fields[0].noNulls = true;
+        recordIdColumnVector.fields[0].isRepeating = true;
+        //all "original" is considered written by txnid:0 which committed
+        ((LongColumnVector)recordIdColumnVector.fields[0]).vector[0] = 0;
+        /**
+         * This is {@link RecordIdentifier#getBucketProperty()}
+         * Also see {@link BucketCodec}
+         */
+        recordIdColumnVector.fields[1].noNulls = true;
+        recordIdColumnVector.fields[1].isRepeating = true;
+        ((LongColumnVector)recordIdColumnVector.fields[1]).vector[0] = syntheticProps.bucketProperty;
+        /**
+         * {@link RecordIdentifier#getRowId()}
+         */
+        recordIdColumnVector.fields[2].noNulls = true;
+        recordIdColumnVector.fields[2].isRepeating = false;
+        long[] rowIdVector = ((LongColumnVector)recordIdColumnVector.fields[2]).vector;
+        for(int i = 0; i < vectorizedRowBatchBase.size; i++) {
+          //baseReader.getRowNumber() seems to point at the start of the batch todo: validate
+          rowIdVector[i] = syntheticProps.rowIdOffset + innerReader.getRowNumber() + i;
+        }
+        //Now populate a structure to use to apply delete events
+        innerRecordIdColumnVector = new ColumnVector[OrcRecordUpdater.FIELDS];
+        innerRecordIdColumnVector[OrcRecordUpdater.ORIGINAL_TRANSACTION] = recordIdColumnVector.fields[0];
+        innerRecordIdColumnVector[OrcRecordUpdater.BUCKET] = recordIdColumnVector.fields[1];
+        innerRecordIdColumnVector[OrcRecordUpdater.ROW_ID] = recordIdColumnVector.fields[2];
+      }
+    }
+    else {
+      // Case 1- find rows which belong to transactions that are not valid.
+      findRecordsWithInvalidTransactionIds(vectorizedRowBatchBase, selectedBitSet);
+      /**
+       * All "original" data belongs to txnid:0 and is always valid/committed for every reader
+       * So only do findRecordsWithInvalidTransactionIds() wrt {@link validTxnList} for !isOriginal
+       */
+    }
 
     // Case 2- find rows which have been deleted.
-    this.deleteEventRegistry.findDeletedRecords(vectorizedRowBatchBase.cols,
+    this.deleteEventRegistry.findDeletedRecords(innerRecordIdColumnVector,
         vectorizedRowBatchBase.size, selectedBitSet);
 
     if (selectedBitSet.cardinality() == vectorizedRowBatchBase.size) {
@@ -283,30 +466,39 @@ public class VectorizedOrcAcidRowBatchReader
       }
     }
 
-    // Finally, link up the columnVector from the base VectorizedRowBatch to outgoing batch.
-    // NOTE: We only link up the user columns and not the ACID metadata columns because this
-    // vectorized code path is not being used in cases of update/delete, when the metadata columns
-    // would be expected to be passed up the operator pipeline. This is because
-    // currently the update/delete specifically disable vectorized code paths.
-    // This happens at ql/exec/Utilities.java::3293 when it checks for mapWork.getVectorMode()
-    StructColumnVector payloadStruct = (StructColumnVector) vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW];
-    // Transfer columnVector objects from base batch to outgoing batch.
-    System.arraycopy(payloadStruct.fields, 0, value.cols, 0, value.getDataColumnCount());
-    if (rbCtx != null) {
-      recordIdColumnVector.fields[0] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ORIGINAL_TRANSACTION];
-      recordIdColumnVector.fields[1] = vectorizedRowBatchBase.cols[OrcRecordUpdater.BUCKET];
-      recordIdColumnVector.fields[2] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW_ID];
+    if(isOriginal) {
+     /*Just copy the payload.  {@link recordIdColumnVector} has already been populated*/
+      System.arraycopy(vectorizedRowBatchBase.cols, 0, value.cols, 0,
+        value.getDataColumnCount());
+    }
+    else {
+      // Finally, link up the columnVector from the base VectorizedRowBatch to outgoing batch.
+      // NOTE: We only link up the user columns and not the ACID metadata columns because this
+      // vectorized code path is not being used in cases of update/delete, when the metadata columns
+      // would be expected to be passed up the operator pipeline. This is because
+      // currently the update/delete specifically disable vectorized code paths.
+      // This happens at ql/exec/Utilities.java::3293 when it checks for mapWork.getVectorMode()
+      StructColumnVector payloadStruct = (StructColumnVector) vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW];
+      // Transfer columnVector objects from base batch to outgoing batch.
+      System.arraycopy(payloadStruct.fields, 0, value.cols, 0, value.getDataColumnCount());
+      if(rowIdProjected) {
+        recordIdColumnVector.fields[0] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ORIGINAL_TRANSACTION];
+        recordIdColumnVector.fields[1] = vectorizedRowBatchBase.cols[OrcRecordUpdater.BUCKET];
+        recordIdColumnVector.fields[2] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW_ID];
+      }
+    }
+    if(rowIdProjected) {
       rbCtx.setRecordIdColumnVector(recordIdColumnVector);
     }
     progress = baseReader.getProgress();
     return true;
   }
 
-  protected void findRecordsWithInvalidTransactionIds(VectorizedRowBatch batch, BitSet selectedBitSet) {
+  private void findRecordsWithInvalidTransactionIds(VectorizedRowBatch batch, BitSet selectedBitSet) {
     findRecordsWithInvalidTransactionIds(batch.cols, batch.size, selectedBitSet);
   }
 
-  protected void findRecordsWithInvalidTransactionIds(ColumnVector[] cols, int size, BitSet selectedBitSet) {
+  private void findRecordsWithInvalidTransactionIds(ColumnVector[] cols, int size, BitSet selectedBitSet) {
     if (cols[OrcRecordUpdater.CURRENT_TRANSACTION].isRepeating) {
       // When we have repeating values, we can unset the whole bitset at once
       // if the repeating value is not a valid transaction.
@@ -387,6 +579,11 @@ public class VectorizedOrcAcidRowBatchReader
      * @throws IOException
      */
     public void close() throws IOException;
+
+    /**
+     * @return {@code true} if no delete events were found
+     */
+    boolean isEmpty();
   }
 
   /**
@@ -400,10 +597,10 @@ public class VectorizedOrcAcidRowBatchReader
     private OrcRawRecordMerger deleteRecords;
     private OrcRawRecordMerger.ReaderKey deleteRecordKey;
     private OrcStruct deleteRecordValue;
-    private boolean isDeleteRecordAvailable = true;
+    private Boolean isDeleteRecordAvailable = null;
     private ValidTxnList validTxnList;
 
-    public SortMergedDeleteEventRegistry(JobConf conf, OrcSplit orcSplit, Reader.Options readerOptions)
+    SortMergedDeleteEventRegistry(JobConf conf, OrcSplit orcSplit, Reader.Options readerOptions)
       throws IOException {
         final Path[] deleteDeltas = getDeleteDeltaDirsFromSplit(orcSplit);
         if (deleteDeltas.length > 0) {
@@ -427,6 +624,13 @@ public class VectorizedOrcAcidRowBatchReader
         }
     }
 
+    @Override
+    public boolean isEmpty() {
+      if(isDeleteRecordAvailable == null) {
+        throw new IllegalStateException("Not yet initialized");
+      }
+      return !isDeleteRecordAvailable;
+    }
     @Override
     public void findDeletedRecords(ColumnVector[] cols, int size, BitSet selectedBitSet)
         throws IOException {
@@ -546,7 +750,7 @@ public class VectorizedOrcAcidRowBatchReader
        */
       private int bucketProperty; 
       private long rowId;
-      public DeleteRecordKey() {
+      DeleteRecordKey() {
         this.originalTransactionId = -1;
         this.rowId = -1;
       }
@@ -596,7 +800,7 @@ public class VectorizedOrcAcidRowBatchReader
       private boolean isBucketPropertyRepeating;
       private final boolean isBucketedTable;
 
-      public DeleteReaderValue(Reader deleteDeltaReader, Reader.Options readerOptions, int bucket,
+      DeleteReaderValue(Reader deleteDeltaReader, Reader.Options readerOptions, int bucket,
           ValidTxnList validTxnList, boolean isBucketedTable) throws IOException {
         this.recordReader  = deleteDeltaReader.rowsOptions(readerOptions);
         this.bucketForSplit = bucket;
@@ -741,8 +945,9 @@ public class VectorizedOrcAcidRowBatchReader
     private long rowIds[];
     private CompressedOtid compressedOtids[];
     private ValidTxnList validTxnList;
+    private Boolean isEmpty = null;
 
-    public ColumnizedDeleteEventRegistry(JobConf conf, OrcSplit orcSplit,
+    ColumnizedDeleteEventRegistry(JobConf conf, OrcSplit orcSplit,
         Reader.Options readerOptions) throws IOException, DeleteEventsOverflowMemoryException {
       int bucket = AcidUtils.parseBaseOrDeltaBucketFilename(orcSplit.getPath(), conf).getBucketId();
       String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
@@ -804,6 +1009,7 @@ public class VectorizedOrcAcidRowBatchReader
             readAllDeleteEventsFromDeleteDeltas();
           }
         }
+        isEmpty = compressedOtids == null || rowIds == null;
       } catch(IOException|DeleteEventsOverflowMemoryException e) {
         close(); // close any open readers, if there was some exception during initialization.
         throw e; // rethrow the exception so that the caller can handle.
@@ -910,7 +1116,13 @@ public class VectorizedOrcAcidRowBatchReader
       }
       return false;
     }
-
+    @Override
+    public boolean isEmpty() {
+      if(isEmpty == null) {
+        throw new IllegalStateException("Not yet initialized");
+      }
+      return isEmpty;
+    }
     @Override
     public void findDeletedRecords(ColumnVector[] cols, int size, BitSet selectedBitSet)
         throws IOException {
