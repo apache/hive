@@ -494,7 +494,7 @@
               <sources>
                 <source>src/gen/thrift/gen-javabean</source>
                 <source>${project.build.directory}/generated-sources</source>
-                <source>src/gen/org</source>
+                <source>src/gen/version</source>
               </sources>
             </configuration>
           </execution>
@@ -530,6 +530,7 @@
           </execution>
         </executions>
         <configuration>
+          <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
           <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
         </configuration>
       </plugin>
