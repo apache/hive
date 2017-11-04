@@ -32,10 +32,6 @@ public class ReloadProcessor implements CommandProcessor{
   private static final Logger LOG = LoggerFactory.getLogger(ReloadProcessor.class);
 
   @Override
-  public void init() {
-  }
-
-  @Override
   public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
     SessionState ss = SessionState.get();
     try {

@@ -41,10 +41,6 @@ public class AddResourceProcessor implements CommandProcessor {
   public static final LogHelper console = new LogHelper(LOG);
 
   @Override
-  public void init() {
-  }
-
-  @Override
   public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
     command = new VariableSubstitution(new HiveVariableSource() {

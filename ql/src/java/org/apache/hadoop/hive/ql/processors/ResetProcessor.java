@@ -40,10 +40,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class ResetProcessor implements CommandProcessor {
 
-  @Override
-  public void init() {
-  }
-
   private final static String DEFAULT_ARG = "-d";
 
   @Override
@@ -68,7 +64,9 @@ public class ResetProcessor implements CommandProcessor {
     boolean isDefault = false;
     List<String> varnames = new ArrayList<>(parts.length);
     for (String part : parts) {
-      if (part.isEmpty()) continue;
+      if (part.isEmpty()) {
+        continue;
+      }
       if (DEFAULT_ARG.equals(part)) {
         isDefault = true;
       } else {
@@ -95,7 +93,9 @@ public class ResetProcessor implements CommandProcessor {
   }
 
   private static void resetOverridesOnly(SessionState ss) {
-    if (ss.getOverriddenConfigurations().isEmpty()) return;
+    if (ss.getOverriddenConfigurations().isEmpty()) {
+      return;
+    }
     HiveConf conf = new HiveConf();
     for (String key : ss.getOverriddenConfigurations().keySet()) {
       setSessionVariableFromConf(ss, key, conf);
@@ -104,7 +104,9 @@ public class ResetProcessor implements CommandProcessor {
   }
 
   private static void resetOverrideOnly(SessionState ss, String varname) {
-    if (!ss.getOverriddenConfigurations().containsKey(varname)) return;
+    if (!ss.getOverriddenConfigurations().containsKey(varname)) {
+      return;
+    }
     setSessionVariableFromConf(ss, varname, new HiveConf());
     ss.getOverriddenConfigurations().remove(varname);
   }
@@ -150,7 +152,9 @@ public class ResetProcessor implements CommandProcessor {
 
   private static HiveConf.ConfVars getConfVar(String propName) {
     HiveConf.ConfVars confVars = HiveConf.getConfVars(propName);
-    if (confVars == null) throw new IllegalArgumentException(propName + " not found");
+    if (confVars == null) {
+      throw new IllegalArgumentException(propName + " not found");
+    }
     return confVars;
   }
 }

@@ -83,6 +83,7 @@ public class TestHooks {
   }
 
   public static class SimpleQueryRedactor extends Redactor {
+    @Override
     public String redactQuery(String query) {
       return query.replaceAll("XXX", "AAA");
     }
@@ -92,7 +93,6 @@ public class TestHooks {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     SessionState.start(conf);
     Driver driver = new Driver(conf);
-    driver.init();
     return driver;
   }
 

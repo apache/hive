@@ -21,8 +21,5 @@ package org.apache.hadoop.hive.ql.processors;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 
 public interface CommandProcessor {
-
-  void init();
-
   CommandProcessorResponse run(String command) throws CommandNeedRetryException;
 }

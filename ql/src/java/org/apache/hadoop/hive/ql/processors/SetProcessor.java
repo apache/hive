@@ -151,10 +151,6 @@ public class SetProcessor implements CommandProcessor {
     }
   }
 
-  @Override
-  public void init() {
-  }
-
   public CommandProcessorResponse executeSetVariable(String varname, String varvalue) {
     try {
       return setVariable(varname, varvalue);

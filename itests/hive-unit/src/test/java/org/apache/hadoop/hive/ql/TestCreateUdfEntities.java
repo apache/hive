@@ -37,7 +37,6 @@ public class TestCreateUdfEntities {
     HiveConf conf = new HiveConf(Driver.class);
     SessionState.start(conf);
     driver = new Driver(conf);
-    driver.init();
   }
 
   @After

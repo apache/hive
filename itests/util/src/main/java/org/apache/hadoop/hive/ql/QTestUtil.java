@@ -706,7 +706,9 @@ public class QTestUtil {
   public void addFile(File qf, boolean partial) throws IOException  {
     String query = readEntireFileIntoString(qf);
     qMap.put(qf.getName(), query);
-    if (partial) return;
+    if (partial) {
+      return;
+    }
 
     if(checkHadoopVersionExclude(qf.getName(), query)) {
       qSkipSet.add(qf.getName());
@@ -1090,7 +1092,6 @@ public class QTestUtil {
     conf.set("hive.execution.engine", execEngine);
     db = Hive.get(conf);
     drv = new Driver(conf);
-    drv.init();
     pd = new ParseDriver();
     sem = new SemanticAnalyzer(queryState);
   }
@@ -1738,9 +1739,10 @@ public class QTestUtil {
         getQuotedString(inFileName),
         getQuotedString(outFileName)
     }).getReturnCode();
-    if (result != 0)
+    if (result != 0) {
       throw new IllegalStateException("Unexpected error while overwriting " +
           inFileName + " with " + outFileName);
+    }
   }
 
   private static QTestProcessExecResult executeDiffCommand(String inFileName,
@@ -1799,8 +1801,9 @@ public class QTestUtil {
         "sort",
         getQuotedString(in),
     }, out, null).getReturnCode();
-    if (result != 0)
+    if (result != 0) {
       throw new IllegalStateException("Unexpected error while sorting " + in);
+    }
   }
 
   private static QTestProcessExecResult executeCmd(Collection<String> args) throws Exception {
@@ -1865,7 +1868,6 @@ public class QTestUtil {
   }
 
   public void resetParser() throws SemanticException {
-    drv.init();
     pd = new ParseDriver();
     queryState = new QueryState.Builder().withHiveConf(conf).build();
     sem = new SemanticAnalyzer(queryState);
@@ -2137,7 +2139,9 @@ public class QTestUtil {
   }
 
   private static void ensureQvFileList(String queryDir) {
-    if (cachedQvFileList != null) return;
+    if (cachedQvFileList != null) {
+      return;
+    }
     // Not thread-safe.
     System.out.println("Getting versions from " + queryDir);
     cachedQvFileList = (new File(queryDir)).list(new FilenameFilter() {
@@ -2146,7 +2150,9 @@ public class QTestUtil {
         return name.toLowerCase().endsWith(".qv");
       }
     });
-    if (cachedQvFileList == null) return; // no files at all
+    if (cachedQvFileList == null) {
+      return; // no files at all
+    }
     Arrays.sort(cachedQvFileList, String.CASE_INSENSITIVE_ORDER);
     List<String> defaults = getVersionFilesInternal("default");
     cachedDefaultQvFileList = (defaults != null)

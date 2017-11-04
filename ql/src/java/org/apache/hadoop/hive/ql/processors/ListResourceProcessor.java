@@ -44,10 +44,6 @@ public class ListResourceProcessor implements CommandProcessor {
   }
 
   @Override
-  public void init() {
-  }
-
-  @Override
   public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
     SessionState ss = SessionState.get();
     String[] tokens = command.split("\\s+");

@@ -186,7 +186,6 @@ public class TestReadEntityDirect {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     SessionState.start(conf);
     Driver driver = new Driver(conf);
-    driver.init();
     return driver;
   }
 

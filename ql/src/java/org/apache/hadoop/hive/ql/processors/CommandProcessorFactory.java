@@ -128,7 +128,6 @@ public final class CommandProcessorFactory {
       } else {
         drv.resetQueryState();
       }
-      drv.init();
       return drv;
     }
   }

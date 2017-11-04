@@ -60,10 +60,6 @@ public class DfsProcessor implements CommandProcessor {
   }
 
   @Override
-  public void init() {
-  }
-
-  @Override
   public CommandProcessorResponse run(String command) {
 
 

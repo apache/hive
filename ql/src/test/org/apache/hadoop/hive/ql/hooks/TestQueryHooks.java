@@ -137,7 +137,6 @@ public class TestQueryHooks {
 
     SessionState.start(conf);
     Driver driver = new Driver(conf, mockLoader);
-    driver.init();
     return driver;
   }
 

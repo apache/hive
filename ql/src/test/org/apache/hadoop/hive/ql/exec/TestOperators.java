@@ -413,25 +413,21 @@ public class TestOperators extends TestCase {
         "outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat' " +
         "tblproperties ('myprop1'='val1', 'myprop2' = 'val2')";
     Driver driver = new Driver();
-    driver.init();
     CommandProcessorResponse response = driver.run(cmd);
     assertEquals(0, response.getResponseCode());
     List<Object> result = new ArrayList<Object>();
 
     cmd = "load data local inpath '../data/files/employee.dat' " +
         "overwrite into table fetchOp partition (state='CA')";
-    driver.init();
     response = driver.run(cmd);
     assertEquals(0, response.getResponseCode());
 
     cmd = "load data local inpath '../data/files/employee2.dat' " +
         "overwrite into table fetchOp partition (state='OR')";
-    driver.init();
     response = driver.run(cmd);
     assertEquals(0, response.getResponseCode());
 
     cmd = "select * from fetchOp";
-    driver.init();
     driver.setMaxRows(500);
     response = driver.run(cmd);
     assertEquals(0, response.getResponseCode());

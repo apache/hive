@@ -3198,7 +3198,6 @@ public class TestReplicationScenarios {
     String replDumpLocn = getResult(0,0,driver);
     // Reset the driver
     driverMirror.close();
-    driverMirror.init();
     run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
     // Calling close() explicitly to clean up the staging dirs
     driverMirror.close();

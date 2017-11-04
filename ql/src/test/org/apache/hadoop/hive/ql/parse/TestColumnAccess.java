@@ -191,7 +191,6 @@ public class TestColumnAccess {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS, true);
     SessionState.start(conf);
     Driver driver = new Driver(conf);
-    driver.init();
     return driver;
   }
 

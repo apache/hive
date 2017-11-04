@@ -94,11 +94,6 @@ public class CompileProcessor implements CommandProcessor {
     runCount = new AtomicInteger(0);
   }
 
-  @Override
-  public void init() {
-    //no init needed
-  }
-
   /**
    * User supplies dynamic code in this format:
    * COMPILE ` some code here ` AS groovy NAMED something.groovy;

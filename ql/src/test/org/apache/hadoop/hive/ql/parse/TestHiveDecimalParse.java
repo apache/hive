@@ -137,7 +137,6 @@ public class TestHiveDecimalParse {
 
     SessionState.start(conf);
     Driver driver = new Driver(conf);
-    driver.init();
     return driver;
   }
 
