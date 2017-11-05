@@ -57,26 +57,20 @@ public class MemoryTokenStore implements DelegationTokenStore {
   @Override
   public int addMasterKey(String s) {
     int keySeq = masterKeySeq.getAndIncrement();
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("addMasterKey: s = " + s + ", keySeq = " + keySeq);
-    }
+    LOG.trace("addMasterKey: s = {}, keySeq = {}", s, keySeq);
     masterKeys.put(keySeq, s);
     return keySeq;
   }
 
   @Override
   public void updateMasterKey(int keySeq, String s) {
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("updateMasterKey: s = " + s + ", keySeq = " + keySeq);
-    }
+    LOG.trace("updateMasterKey: s = {}, keySeq = {}", s, keySeq);
     masterKeys.put(keySeq, s);
   }
 
   @Override
   public boolean removeMasterKey(int keySeq) {
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("removeMasterKey: keySeq = " + keySeq);
-    }
+    LOG.trace("removeMasterKey: keySeq = {}", keySeq);
     return masterKeys.remove(keySeq) != null;
   }
 
@@ -89,38 +83,27 @@ public class MemoryTokenStore implements DelegationTokenStore {
   public boolean addToken(DelegationTokenIdentifier tokenIdentifier,
     DelegationTokenInformation token) {
     DelegationTokenInformation tokenInfo = tokens.putIfAbsent(tokenIdentifier, token);
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("addToken: tokenIdentifier = " + tokenIdentifier + ", added = " + (tokenInfo == null));
-    }
+    LOG.trace("addToken: tokenIdentifier = {}, added = {}", tokenIdentifier, (tokenInfo == null));
     return (tokenInfo == null);
   }
 
   @Override
   public boolean removeToken(DelegationTokenIdentifier tokenIdentifier) {
     DelegationTokenInformation tokenInfo = tokens.remove(tokenIdentifier);
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("removeToken: tokenIdentifier = " + tokenIdentifier + ", removed = " + (tokenInfo != null));
-    }
+    LOG.trace("removeToken: tokenIdentifier = {}, removed = ", tokenIdentifier, (tokenInfo != null));
     return tokenInfo != null;
   }
 
   @Override
   public DelegationTokenInformation getToken(DelegationTokenIdentifier tokenIdentifier) {
     DelegationTokenInformation result = tokens.get(tokenIdentifier);
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("getToken: tokenIdentifier = " + tokenIdentifier + ", result = " + result);
-    }
+    LOG.trace("getToken: tokenIdentifier = {}, result = {}", tokenIdentifier, result);
     return result;
   }
 
   @Override
   public List<DelegationTokenIdentifier> getAllDelegationTokenIdentifiers() {
-    List<DelegationTokenIdentifier> result = new ArrayList<>(
-        tokens.size());
-    for (DelegationTokenIdentifier id : tokens.keySet()) {
-        result.add(id);
-    }
-    return result;
+    return new ArrayList<>(tokens.keySet());
   }
 
   @Override
