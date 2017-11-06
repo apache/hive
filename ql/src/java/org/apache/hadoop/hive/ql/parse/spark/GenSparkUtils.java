@@ -505,7 +505,7 @@ public class GenSparkUtils {
       targetWork.getEventSourcePartKeyExprMap().put(sourceId, new LinkedList<ExprNodeDesc>());
     }
     List<ExprNodeDesc> keys = targetWork.getEventSourcePartKeyExprMap().get(sourceId);
-    keys.add(desc.getPartKey());
+    keys.add(desc.getTargetPartKey());
   }
 
   public static SparkEdgeProperty getEdgeProperty(HiveConf conf, ReduceSinkOperator reduceSink,

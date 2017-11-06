@@ -166,7 +166,10 @@ public class SparkPartitionPruningSinkOperator extends Operator<SparkPartitionPr
     try {
       fsout = fs.create(path, numOfRepl);
       out = new ObjectOutputStream(new BufferedOutputStream(fsout));
-      out.writeUTF(conf.getTargetColumnName());
+      out.writeInt(conf.getTargetInfos().size());
+      for (SparkPartitionPruningSinkDesc.DPPTargetInfo info : conf.getTargetInfos()) {
+        out.writeUTF(info.columnName);
+      }
       buffer.writeTo(out);
     } catch (Exception e) {
       try {

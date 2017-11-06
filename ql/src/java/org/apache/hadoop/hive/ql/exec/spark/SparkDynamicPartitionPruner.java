@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -124,18 +125,23 @@ public class SparkDynamicPartitionPruner {
         for (FileStatus fstatus : fs.listStatus(sourceDir)) {
           LOG.info("Start processing pruning file: " + fstatus.getPath());
           in = new ObjectInputStream(fs.open(fstatus.getPath()));
-          String columnName = in.readUTF();
+          final int numName = in.readInt();
           SourceInfo info = null;
 
+          Set<String> columnNames = new HashSet<>();
+          for (int i = 0; i < numName; i++) {
+            columnNames.add(in.readUTF());
+          }
           for (SourceInfo si : sourceInfoMap.get(name)) {
-            if (columnName.equals(si.columnName)) {
+            if (columnNames.contains(si.columnName)) {
               info = si;
               break;
             }
           }
 
           Preconditions.checkArgument(info != null,
-              "AssertionError: no source info for the column: " + columnName);
+              "AssertionError: no source info for the column: " +
+                  Arrays.toString(columnNames.toArray()));
 
           // Read fields
           while (in.available() > 0) {
@@ -172,7 +178,8 @@ public class SparkDynamicPartitionPruner {
   private void prunePartitionSingleSource(SourceInfo info, MapWork work)
       throws HiveException {
     Set<Object> values = info.values;
-    String columnName = info.columnName;
+    // strip the column name of the targetId
+    String columnName = info.columnName.substring(info.columnName.indexOf(':') + 1);
 
     ObjectInspector oi =
         PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(TypeInfoFactory

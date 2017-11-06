@@ -213,10 +213,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: hr (string)
-                            partition key expr: hr
+                            Target column: [1:hr (string)]
+                            partition key expr: [hr]
                             Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
 
   Stage: Stage-3
     Spark
@@ -249,10 +249,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Local Work:
               Map Reduce Local Work
 
@@ -387,10 +387,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: ds (string)
-                            partition key expr: ds
+                            Target column: [1:ds (string)]
+                            partition key expr: [ds]
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            target work: Map 1
+                            target works: [Map 1]
             Local Work:
               Map Reduce Local Work
 
