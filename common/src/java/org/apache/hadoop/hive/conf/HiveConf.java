@@ -1457,11 +1457,6 @@ public class HiveConf extends Configuration {
     HIVELIMITPUSHDOWNMEMORYUSAGE("hive.limit.pushdown.memory.usage", 0.1f, new RatioValidator(),
         "The fraction of available memory to be used for buffering rows in Reducesink operator for limit pushdown optimization."),
 
-    @Deprecated
-    HIVELIMITTABLESCANPARTITION("hive.limit.query.max.table.partition", -1,
-        "This controls how many partitions can be scanned for each partitioned table.\n" +
-        "The default value \"-1\" means no limit. (DEPRECATED: Please use " + ConfVars.METASTORE_LIMIT_PARTITION_REQUEST + " in the metastore instead.)"),
-
     HIVECONVERTJOINMAXENTRIESHASHTABLE("hive.auto.convert.join.hashtable.max.entries", 21000000L,
         "If hive.auto.convert.join.noconditionaltask is off, this parameter does not take affect. \n" +
         "However, if it is on, and the predicted number of entries in hashtable for a given join \n" +

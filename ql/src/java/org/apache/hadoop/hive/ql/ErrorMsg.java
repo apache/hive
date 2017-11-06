@@ -476,8 +476,6 @@ public enum ErrorMsg {
   DYNAMIC_PARTITIONS_TOO_MANY_PER_NODE_ERROR(20004, "Fatal error occurred when node " +
       "tried to create too many dynamic partitions. The maximum number of dynamic partitions " +
       "is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. "),
-  PARTITION_SCAN_LIMIT_EXCEEDED(20005, "Number of partitions scanned (={0}) on table {1} exceeds limit" +
-      " (={2}). This is controlled by hive.limit.query.max.table.partition.", true),
   /**
    * {1} is the transaction id;
    * use {@link org.apache.hadoop.hive.common.JavaUtils#txnIdToString(long)} to format

@@ -87,7 +87,6 @@ import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
-import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
@@ -7003,7 +7002,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             Utilities.FILE_OP_LOGGER.trace("Setting query directory " + queryTmpdir
                   + " from " + dest_path + " (" + isMmTable + ")");
           }
-        } catch (Exception e) { 
+        } catch (Exception e) {
           throw new SemanticException("Error creating temporary folder on: "
               + dest_path, e);
         }
@@ -7412,7 +7411,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private DynamicPartitionCtx checkDynPart(QB qb, QBMetaData qbm, Table dest_tab,
       Map<String, String> partSpec, String dest) throws SemanticException {
     List<FieldSchema> parts = dest_tab.getPartitionKeys();
-    if (parts == null || parts.isEmpty()) return null; // table is not partitioned
+    if (parts == null || parts.isEmpty()) {
+      return null; // table is not partitioned
+    }
     if (partSpec == null || partSpec.size() == 0) { // user did NOT specify partition
       throw new SemanticException(generateErrorMessage(qb.getParseInfo().getDestForClause(dest),
           ErrorMsg.NEED_PARTITION_ERROR.getMsg()));
@@ -11685,7 +11686,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // set ColumnAccessInfo for view column authorization
       setColumnAccessInfo(pCtx.getColumnAccessInfo());
     }
-    FetchTask origFetchTask = pCtx.getFetchTask();
     if (LOG.isDebugEnabled()) {
       LOG.debug("After logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
     }
@@ -11718,12 +11718,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       putAccessedColumnsToReadEntity(inputs, columnAccessInfo);
     }
 
-    // 11. if desired check we're not going over partition scan limits
-    if (!ctx.isExplainSkipExecution()) {
-      enforceScanLimits(pCtx, origFetchTask);
-    }
-
-    return;
   }
 
   private void putAccessedColumnsToReadEntity(HashSet<ReadEntity> inputs, ColumnAccessInfo columnAccessInfo) {
@@ -11746,45 +11740,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             break;
           default:
             // no-op
-        }
-      }
-    }
-  }
-
-  private void enforceScanLimits(ParseContext pCtx, FetchTask fTask)
-      throws SemanticException {
-    int scanLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVELIMITTABLESCANPARTITION);
-
-    if (scanLimit > -1) {
-      // a scan limit on the number of partitions has been set by the user
-      if (fTask != null) {
-        // having a fetch task at this point means that we're not going to
-        // launch a job on the cluster
-        if (!fTask.getWork().isNotPartitioned() && fTask.getWork().getLimit() == -1
-            && scanLimit < fTask.getWork().getPartDir().size()) {
-          throw new SemanticException(ErrorMsg.PARTITION_SCAN_LIMIT_EXCEEDED, ""
-              + fTask.getWork().getPartDir().size(), ""
-              + fTask.getWork().getTblDesc().getTableName(), "" + scanLimit);
-        }
-      } else {
-        // At this point we've run the partition pruner for all top ops. Let's
-        // check whether any of them break the limit
-        for (Operator<?> topOp : topOps.values()) {
-          if (topOp instanceof TableScanOperator) {
-            TableScanOperator tsOp = (TableScanOperator) topOp;
-            if (tsOp.getConf().getIsMetadataOnly()) {
-              continue;
-            }
-            PrunedPartitionList parts = pCtx.getPrunedPartitions(tsOp);
-            if (!parts.getSourceTable().isPartitioned()) {
-              continue;
-            }
-            if (parts.getPartitions().size() > scanLimit) {
-              throw new SemanticException(ErrorMsg.PARTITION_SCAN_LIMIT_EXCEEDED, ""
-                  + parts.getPartitions().size(), "" + parts.getSourceTable().getTableName(), ""
-                  + scanLimit);
-            }
-          }
         }
       }
     }
@@ -13744,9 +13699,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Don't know the characteristics of non-native tables,
     // and don't have a rational way to guess, so assume the most
     // conservative case.
-    if (isNonNativeTable) return WriteEntity.WriteType.INSERT_OVERWRITE;
-    else return ((ltd.getLoadFileType() == LoadFileType.REPLACE_ALL)
-                         ? WriteEntity.WriteType.INSERT_OVERWRITE : getWriteType(dest));
+    if (isNonNativeTable) {
+      return WriteEntity.WriteType.INSERT_OVERWRITE;
+    } else {
+      return ((ltd.getLoadFileType() == LoadFileType.REPLACE_ALL)
+                           ? WriteEntity.WriteType.INSERT_OVERWRITE : getWriteType(dest));
+    }
   }
 
   private WriteEntity.WriteType getWriteType(String dest) {
