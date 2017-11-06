@@ -393,7 +393,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       return DataWritableReadSupport
         .getSchemaByIndex(tableSchema, columnNamesList, indexColumnsWanted);
     } else {
-      return fileSchema;
+      return tableSchema;
     }
   }
 
