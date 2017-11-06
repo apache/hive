@@ -135,8 +135,10 @@ public class HiveServer2 extends CompositeService {
         MetricsFactory.init(hiveConf);
       }
 
+      // will be invoked anyway in TezTask. Doing it early to initialize triggers for non-pool tez session.
+      tezSessionPoolManager = TezSessionPoolManager.getInstance();
+      tezSessionPoolManager.initTriggers(hiveConf);
       if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
-        tezSessionPoolManager = TezSessionPoolManager.getInstance();
         tezSessionPoolManager.setupPool(hiveConf);
       }
     } catch (Throwable t) {

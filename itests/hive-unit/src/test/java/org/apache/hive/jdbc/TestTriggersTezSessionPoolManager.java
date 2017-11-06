@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,102 +16,23 @@
 
 package org.apache.hive.jdbc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 import org.apache.hadoop.hive.ql.wm.Expression;
 import org.apache.hadoop.hive.ql.wm.ExpressionFactory;
 import org.apache.hadoop.hive.ql.wm.MetastoreGlobalTriggersFetcher;
 import org.apache.hadoop.hive.ql.wm.Trigger;
-import org.apache.hive.jdbc.miniHS2.MiniHS2;
-import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-public class TestTriggersTezSessionPoolManager {
-  protected static MiniHS2 miniHS2 = null;
-  protected static String dataFileDir;
-  static Path kvDataFilePath;
-  private static String tableName = "testtab1";
-
-  protected static HiveConf conf = null;
-  protected Connection hs2Conn = null;
-
-  @BeforeClass
-  public static void beforeTest() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
-
-    String confDir = "../../data/conf/llap/";
-    HiveConf.setHiveSiteLocation(new URL("file://" + new File(confDir).toURI().getPath() + "/hive-site.xml"));
-    System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
-
-    conf = new HiveConf();
-    conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
-    conf.setVar(ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES, "default");
-    conf.setTimeVar(ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL_MS, 100, TimeUnit.MILLISECONDS);
-    conf.setBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS, true);
-    conf.setBoolVar(ConfVars.TEZ_EXEC_SUMMARY, true);
-    conf.setBoolVar(ConfVars.HIVE_STRICT_CHECKS_CARTESIAN, false);
-    // don't want cache hits from llap io for testing filesystem bytes read counters
-    conf.setVar(ConfVars.LLAP_IO_MEMORY_MODE, "none");
-
-    conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
-      + "/tez-site.xml"));
-
-    miniHS2 = new MiniHS2(conf, MiniClusterType.LLAP);
-    dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
-    kvDataFilePath = new Path(dataFileDir, "kv1.txt");
-
-    Map<String, String> confOverlay = new HashMap<>();
-    miniHS2.start(confOverlay);
-    miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    hs2Conn = TestJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    LlapBaseInputFormat.closeAll();
-    hs2Conn.close();
-  }
-
-  @AfterClass
-  public static void afterTest() throws Exception {
-    if (miniHS2.isStarted()) {
-      miniHS2.stop();
-    }
-  }
+public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest {
 
   @Test(timeout = 60000)
   public void testTriggerSlowQueryElapsedTime() throws Exception {
@@ -145,7 +66,7 @@ public class TestTriggersTezSessionPoolManager {
     String query = "select count(distinct t.under_col), sleep(t.under_col, 10) from (select t1.under_col from " +
       tableName + " t1 " + "join " + tableName + " t2 on t1.under_col=t2.under_col order by sleep(t1.under_col, 0))" +
       " t group by t.under_col";
-    runQueryWithTrigger(query, null, trigger + " violated");
+    runQueryWithTrigger(query, cmds, trigger + " violated");
   }
 
   @Test(timeout = 60000)
@@ -321,67 +242,10 @@ public class TestTriggersTezSessionPoolManager {
     runQueryWithTrigger(query, null, shuffleTrigger + " violated");
   }
 
-  private void createSleepUDF() throws SQLException {
-    String udfName = TestJdbcWithMiniHS2.SleepMsUDF.class.getName();
-    Connection con = hs2Conn;
-    Statement stmt = con.createStatement();
-    stmt.execute("create temporary function sleep as '" + udfName + "'");
-    stmt.close();
-  }
-
-  private void runQueryWithTrigger(final String query, final List<String> setCmds,
-    final String expect)
-    throws Exception {
-
-    Connection con = hs2Conn;
-    TestJdbcWithMiniLlap.createTestTable(con, null, tableName, kvDataFilePath.toString());
-    createSleepUDF();
-
-    final Statement selStmt = con.createStatement();
-    final Throwable[] throwable = new Throwable[1];
-    Thread queryThread = new Thread(() -> {
-      try {
-        if (setCmds != null) {
-          for (String setCmd : setCmds) {
-            selStmt.execute(setCmd);
-          }
-        }
-        selStmt.execute(query);
-      } catch (SQLException e) {
-        throwable[0] = e;
-      }
-    });
-    queryThread.start();
-
-    queryThread.join();
-    selStmt.close();
-
-    if (expect == null) {
-      assertNull("Expected query to succeed", throwable[0]);
-    } else {
-      assertNotNull("Expected non-null throwable", throwable[0]);
-      assertEquals(SQLException.class, throwable[0].getClass());
-      assertTrue(expect + " is not contained in " + throwable[0].getMessage(),
-        throwable[0].getMessage().contains(expect));
-    }
-  }
-
+  @Override
   protected void setupTriggers(final List<Trigger> triggers) throws Exception {
     MetastoreGlobalTriggersFetcher triggersFetcher = mock(MetastoreGlobalTriggersFetcher.class);
     when(triggersFetcher.fetch()).thenReturn(triggers);
     TezSessionPoolManager.getInstance().setGlobalTriggersFetcher(triggersFetcher);
-  }
-
-  private List<String> getConfigs(String... more) {
-    List<String> setCmds = new ArrayList<>();
-    setCmds.add("set hive.exec.dynamic.partition.mode=nonstrict");
-    setCmds.add("set mapred.min.split.size=100");
-    setCmds.add("set mapred.max.split.size=100");
-    setCmds.add("set tez.grouping.min-size=100");
-    setCmds.add("set tez.grouping.max-size=100");
-    if (more != null) {
-      setCmds.addAll(Arrays.asList(more));
-    }
-    return setCmds;
   }
 }

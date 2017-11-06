@@ -86,7 +86,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   private static TezSessionPoolManager instance = null;
 
   /** This is used to close non-default sessions, and also all sessions when stopping. */
-  private final List<TezSessionPoolSession> openSessions = new LinkedList<>();
+  private final List<TezSessionState> openSessions = new LinkedList<>();
   private MetastoreGlobalTriggersFetcher globalTriggersFetcher;
   private SessionTriggerProvider sessionTriggerProvider;
   private TriggerActionHandler triggerActionHandler;
@@ -164,13 +164,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     numConcurrentLlapQueries = conf.getIntVar(ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES);
     llapQueue = new Semaphore(numConcurrentLlapQueries, true);
 
-    sessionTriggerProvider = new SessionTriggerProvider();
-    triggerActionHandler = new KillTriggerActionHandler();
-    // TODO: update runnable to handle per pool validation
-    triggerValidatorRunnable = new TriggerValidatorRunnable(getSessionTriggerProvider(), getTriggerActionHandler());
-    Hive db = Hive.get(conf);
-    globalTriggersFetcher = new MetastoreGlobalTriggersFetcher(db);
-    startTriggerValidator(conf);
+    initTriggers(conf);
 
     String queueAllowedStr = HiveConf.getVar(initConf,
         ConfVars.HIVE_SERVER2_TEZ_SESSION_CUSTOM_QUEUE_ALLOWED);
@@ -189,6 +183,20 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     this.hasInitialSessions = numSessionsTotal > 0;
     if (!hasInitialSessions) {
       return;
+    }
+  }
+
+  public void initTriggers(final HiveConf conf) throws HiveException {
+    if (globalTriggersFetcher == null) {
+      Hive db = Hive.get(conf);
+      globalTriggersFetcher = new MetastoreGlobalTriggersFetcher(db);
+    }
+
+    if (triggerValidatorRunnable == null) {
+      sessionTriggerProvider = new SessionTriggerProvider(openSessions, globalTriggersFetcher.fetch());
+      triggerActionHandler = new KillTriggerActionHandler();
+      triggerValidatorRunnable = new TriggerValidatorRunnable(getSessionTriggerProvider(), getTriggerActionHandler());
+      startTriggerValidator(conf);
     }
   }
 
@@ -327,9 +335,9 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     if ((instance == null) || !this.hasInitialSessions) {
       return;
     }
-    List<TezSessionPoolSession> sessionsToClose = null;
+    List<TezSessionState> sessionsToClose = null;
     synchronized (openSessions) {
-      sessionsToClose = new ArrayList<TezSessionPoolSession>(openSessions);
+      sessionsToClose = new ArrayList<TezSessionState>(openSessions);
     }
 
     // we can just stop all the sessions
@@ -479,11 +487,11 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
 
 
   public void closeNonDefaultSessions(boolean keepTmpDir) throws Exception {
-    List<TezSessionPoolSession> sessionsToClose = null;
+    List<TezSessionState> sessionsToClose = null;
     synchronized (openSessions) {
-      sessionsToClose = new ArrayList<TezSessionPoolSession>(openSessions);
+      sessionsToClose = new ArrayList<TezSessionState>(openSessions);
     }
-    for (TezSessionPoolSession sessionState : sessionsToClose) {
+    for (TezSessionState sessionState : sessionsToClose) {
       System.err.println("Shutting down tez session.");
       closeIfNotDefault(sessionState, keepTmpDir);
     }
