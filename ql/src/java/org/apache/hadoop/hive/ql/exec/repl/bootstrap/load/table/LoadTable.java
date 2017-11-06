@@ -28,11 +28,12 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
-import org.apache.hadoop.hive.ql.exec.repl.bootstrap.ReplLoadTask;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.AddDependencyToLeaves;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.PathUtils;
+import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
@@ -78,12 +79,12 @@ public class LoadTable {
   private void createTableReplLogTask(String tableName, TableType tableType) throws SemanticException {
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger,tableName, tableType);
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
-    ReplLoadTask.dependency(tracker.tasks(), replLogTask);
+    DAGTraversal.traverse(tracker.tasks(), new AddDependencyToLeaves(replLogTask));
 
     if (tracker.tasks().isEmpty()) {
       tracker.addTask(replLogTask);
     } else {
-      ReplLoadTask.dependency(tracker.tasks(), replLogTask);
+      DAGTraversal.traverse(tracker.tasks(), new AddDependencyToLeaves(replLogTask));
 
       List<Task<? extends Serializable>> visited = new ArrayList<>();
       tracker.updateTaskCount(replLogTask, visited);

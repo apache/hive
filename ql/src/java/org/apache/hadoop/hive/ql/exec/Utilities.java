@@ -121,6 +121,7 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -2569,41 +2570,49 @@ public final class Utilities {
   }
 
   public static List<TezTask> getTezTasks(List<Task<? extends Serializable>> tasks) {
-    return getTasks(tasks, TezTask.class);
+    return getTasks(tasks, new TaskFilterFunction<>(TezTask.class));
   }
 
   public static List<SparkTask> getSparkTasks(List<Task<? extends Serializable>> tasks) {
-    return getTasks(tasks, SparkTask.class);
+    return getTasks(tasks, new TaskFilterFunction<>(SparkTask.class));
   }
 
   public static List<ExecDriver> getMRTasks(List<Task<? extends Serializable>> tasks) {
-    return getTasks(tasks, ExecDriver.class);
+    return getTasks(tasks, new TaskFilterFunction<>(ExecDriver.class));
+  }
+
+  static class TaskFilterFunction<T> implements DAGTraversal.Function {
+    private Set<Task<? extends Serializable>> visited = new HashSet<>();
+    private Class<T> requiredType;
+    private List<T> typeSpecificTasks = new ArrayList<>();
+
+    TaskFilterFunction(Class<T> requiredType) {
+      this.requiredType = requiredType;
+    }
+
+    @Override
+    public void process(Task<? extends Serializable> task) {
+      if (requiredType.isInstance(task) && !typeSpecificTasks.contains(task)) {
+        typeSpecificTasks.add((T) task);
+      }
+      visited.add(task);
+    }
+
+    List<T> getTasks() {
+      return typeSpecificTasks;
+    }
+
+    @Override
+    public boolean skipProcessing(Task<? extends Serializable> task) {
+      return visited.contains(task);
+    }
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> List<T> getTasks(List<Task<? extends Serializable>> tasks, Class<T> requiredType) {
-    List<T> typeSpecificTasks = new ArrayList<>();
-    if (tasks != null) {
-      Set<Task<? extends Serializable>> visited = new HashSet<>();
-      while (!tasks.isEmpty()) {
-        List<Task<? extends Serializable>> childTasks = new ArrayList<>();
-        for (Task<? extends Serializable> task : tasks) {
-          if (visited.contains(task)) {
-            continue;
-          }
-          if (requiredType.isInstance(task) && !typeSpecificTasks.contains(task)) {
-            typeSpecificTasks.add((T) task);
-          }
-          if (task.getDependentTasks() != null) {
-            childTasks.addAll(task.getDependentTasks());
-          }
-          visited.add(task);
-        }
-        // start recursion
-        tasks = childTasks;
-      }
-    }
-    return typeSpecificTasks;
+  private static <T> List<T> getTasks(List<Task<? extends Serializable>> tasks,
+      TaskFilterFunction<T> function) {
+    DAGTraversal.traverse(tasks, function);
+    return function.getTasks();
   }
 
   /**
