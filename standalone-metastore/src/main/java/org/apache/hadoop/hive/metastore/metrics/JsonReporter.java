@@ -163,9 +163,10 @@ public class JsonReporter extends ScheduledReporter {
         return;
       }
 
+      // Atomically move temp file to the destination file
       try {
-        Files.move(tmpFile, path, StandardCopyOption.REPLACE_EXISTING);
-      } catch (IOException e) {
+        Files.move(tmpFile, path, StandardCopyOption.ATOMIC_MOVE);
+      } catch (Exception e) {
         LOG.error("Unable to rename temp file {} to {}", tmpFile, path);
         LOG.error("Exception during rename", e);
       }

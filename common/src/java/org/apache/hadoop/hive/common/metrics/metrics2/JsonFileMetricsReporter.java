@@ -170,9 +170,9 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
         return;
       }
 
-      // Move temp file to the destination file
+      // Atomically move temp file to the destination file
       try {
-        Files.move(tmpFile, path, StandardCopyOption.REPLACE_EXISTING);
+        Files.move(tmpFile, path, StandardCopyOption.ATOMIC_MOVE);
       } catch (Exception e) {
         LOGGER.error("Unable to rename temp file {} to {}", tmpFile, path);
         LOGGER.error("Exception during rename", e);
