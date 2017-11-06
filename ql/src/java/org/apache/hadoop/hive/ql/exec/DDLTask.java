@@ -21,6 +21,15 @@ package org.apache.hadoop.hive.ql.exec;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
+import java.util.concurrent.ExecutionException;
+
+import com.google.common.util.concurrent.FutureCallback;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
@@ -48,7 +57,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -86,8 +94,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -102,6 +108,10 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
@@ -112,6 +122,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -270,10 +281,6 @@ import org.apache.hive.common.util.RetryUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.ST;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 /**
  * DDLTask implementation.
@@ -688,7 +695,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     WMResourcePlan resourcePlan = new WMResourcePlan();
-
     if (desc.getNewName() != null) {
       resourcePlan.setName(desc.getNewName());
     } else {
@@ -699,12 +705,48 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       resourcePlan.setQueryParallelism(desc.getQueryParallelism());
     }
 
+    boolean isActivate = false, isInTest = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
+    WorkloadManager wm = null;
     if (desc.getStatus() != null) {
       resourcePlan.setStatus(desc.getStatus());
+      isActivate = desc.getStatus() == WMResourcePlanStatus.ACTIVE;
+      if (isActivate) {
+        wm = WorkloadManager.getInstance();
+        if (wm == null && !isInTest) {
+          throw new HiveException("Resource plan can only be activated when WM is enabled");
+        }
+      }
     }
 
-    db.alterResourcePlan(desc.getRpName(), resourcePlan);
-    return 0;
+    WMFullResourcePlan appliedRp = db.alterResourcePlan(
+        desc.getRpName(), resourcePlan, desc.isEnableActivate());
+    if (!isActivate || (wm == null && isInTest)) return 0;
+    assert wm != null;
+    if (appliedRp == null) {
+      throw new HiveException("Cannot get a resource plan to apply");
+      // TODO: shut down HS2?
+    }
+    final String name = (desc.getNewName() != null) ? desc.getNewName() : desc.getRpName();
+    LOG.info("Activating a new resource plan " + name + ": " + appliedRp);
+    // Note: as per our current constraints, the behavior of two parallel activates is
+    //       undefined; although only one will succeed and the other will receive exception.
+    //       We need proper (semi-)transactional modifications to support this without hacks.
+    ListenableFuture<Boolean> future = wm.updateResourcePlanAsync(appliedRp);
+    boolean isOk = false;
+    try {
+      // Note: we may add an async option in future. For now, let the task fail for the user.
+      future.get();
+      isOk = true;
+      LOG.info("Successfully activated resource plan " + name);
+      return 0;
+    } catch (InterruptedException | ExecutionException e) {
+      throw new HiveException(e);
+    } finally {
+      if (!isOk) {
+        LOG.error("Failed to activate resource plan " + name);
+        // TODO: shut down HS2?
+      }
+    }
   }
 
   private int dropResourcePlan(Hive db, DropResourcePlanDesc desc) throws HiveException {

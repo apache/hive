@@ -1002,18 +1002,20 @@ createResourcePlanStatement
     -> ^(TOK_CREATERESOURCEPLAN $name $parallelism?)
     ;
 
+activate : KW_ACTIVATE -> ^(TOK_ACTIVATE);
+enable : KW_ENABLE -> ^(TOK_ENABLE);
+
 alterResourcePlanStatement
 @init { pushMsg("alter resource plan statement", state); }
 @after { popMsg(state); }
     : KW_ALTER KW_RESOURCE KW_PLAN name=identifier (
           (KW_VALIDATE -> ^(TOK_ALTER_RP $name TOK_VALIDATE))
-        | (KW_ACTIVATE -> ^(TOK_ALTER_RP $name TOK_ACTIVATE))
-        | (KW_ENABLE -> ^(TOK_ALTER_RP $name TOK_ENABLE))
         | (KW_DISABLE -> ^(TOK_ALTER_RP $name TOK_DISABLE))
         | (KW_SET KW_QUERY_PARALLELISM EQUAL parallelism=Number
            -> ^(TOK_ALTER_RP $name TOK_QUERY_PARALLELISM $parallelism))
         | (KW_RENAME KW_TO newName=identifier
            -> ^(TOK_ALTER_RP $name TOK_RENAME $newName))
+        | ((activate+ enable? | enable+ activate?) -> ^(TOK_ALTER_RP $name activate? enable?))
       )
     ;
 

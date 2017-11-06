@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.metastore;
 
 
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -1780,8 +1782,11 @@ public interface IMetaStoreClient {
   void dropResourcePlan(String resourcePlanName)
       throws NoSuchObjectException, MetaException, TException;
 
-  void alterResourcePlan(String resourcePlanName, WMResourcePlan resourcePlan)
+  WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMResourcePlan resourcePlan,
+      boolean canActivateDisabled)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+
+  WMFullResourcePlan getActiveResourcePlan() throws MetaException, TException;
 
   boolean validateResourcePlan(String resourcePlanName)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;

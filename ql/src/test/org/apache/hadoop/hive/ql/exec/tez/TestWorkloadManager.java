@@ -23,6 +23,14 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.*;
 
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+
+import org.apache.hadoop.hive.metastore.api.WMPool;
+
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+
 import com.google.common.util.concurrent.SettableFuture;
 
 import com.google.common.collect.Lists;
@@ -34,10 +42,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpHivePool;
-import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpResourcePlan;
-import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpUserMapping;
-import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager.TmpUserMappingType;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -102,6 +106,23 @@ public class TestWorkloadManager {
     }
   }
 
+  public static WMResourcePlan plan() {
+    return new WMResourcePlan("rp");
+  }
+
+  public static WMPool pool(String path, int qp, double alloc) {
+    WMPool pool = new WMPool("rp", path);
+    pool.setAllocFraction(alloc);
+    pool.setQueryParallelism(qp);
+    return pool;
+  }
+
+  public static WMMapping mapping(String user, String pool) {
+    WMMapping mapping = new WMMapping("rp", "USER", user);
+    mapping.setPoolName(pool);
+    return mapping;
+  }
+
   public static class WorkloadManagerForTest extends WorkloadManager {
 
     public WorkloadManagerForTest(String yarnQueue, HiveConf conf, int numSessions,
@@ -110,14 +131,17 @@ public class TestWorkloadManager {
     }
 
     public WorkloadManagerForTest(String yarnQueue, HiveConf conf,
-        QueryAllocationManager qam, TmpResourcePlan plan) {
+        QueryAllocationManager qam, WMFullResourcePlan plan) {
       super(yarnQueue, conf, qam, plan);
     }
 
-    private static TmpResourcePlan createDummyPlan(int numSessions) {
-      return new TmpResourcePlan(
-          Lists.newArrayList(new TmpHivePool("llap", null, numSessions, 1.0f)),
-          Lists.newArrayList(new TmpUserMapping(TmpUserMappingType.DEFAULT, "", "llap", 0)));
+    private static WMFullResourcePlan createDummyPlan(int numSessions) {
+      WMMapping mapping = new WMMapping("rp", "DEFAULT", "");
+      mapping.setPoolName("llap");
+      WMFullResourcePlan plan = new WMFullResourcePlan();
+      plan.addToPools(pool("llap", numSessions, 1.0f));
+      plan.addToMappings(mapping);
+      return plan;
     }
 
     @Override
@@ -249,20 +273,15 @@ public class TestWorkloadManager {
     qam.assertWasCalled();
   }
 
-  private static TmpUserMapping create(String user, String pool) {
-    return new TmpUserMapping(TmpUserMappingType.USER, user, pool, 0);
-  }
-
   @Test(timeout = 10000)
   public void testClusterFractions() throws Exception {
     HiveConf conf = createConf();
     MockQam qam = new MockQam();
-    List<TmpHivePool> l2 = Lists.newArrayList(
-        new TmpHivePool("p1", null, 1, 0.5f), new TmpHivePool("p2", null, 2, 0.3f));
-    TmpResourcePlan plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("r1", l2, 1, 0.6f), new TmpHivePool("r2", null, 1, 0.4f)),
-        Lists.newArrayList(create("p1", "r1/p1"), create("p2", "r1/p2"), create("r1", "r1"),
-            create("r2", "r2")));
+    WMFullResourcePlan plan = new WMFullResourcePlan(plan(),
+        Lists.newArrayList(pool("r1", 1, 0.6f), pool("r2", 1, 0.4f),
+            pool("r1.p1", 1, 0.5f), pool("r1.p2", 2, 0.3f)));
+    plan.setMappings(Lists.newArrayList(mapping("p1", "r1.p1"),
+        mapping("p2", "r1.p2"), mapping("r1", "r1"), mapping("r2", "r2")));
     WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
     assertEquals(5, wm.getNumSessions());
@@ -289,9 +308,9 @@ public class TestWorkloadManager {
   public void testQueueing() throws Exception {
     final HiveConf conf = createConf();
     MockQam qam = new MockQam();
-    TmpResourcePlan plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("A", null, 2, 0.5f), new TmpHivePool("B", null, 2, 0.5f)),
-        Lists.newArrayList(create("A", "A"), create("B", "B")));
+    WMFullResourcePlan plan = new WMFullResourcePlan(plan(), Lists.newArrayList(
+        pool("A", 2, 0.5f), pool("B", 2, 0.5f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "A"), mapping("B", "B")));
     final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
     WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, "A", conf),
@@ -397,9 +416,9 @@ public class TestWorkloadManager {
   public void testReuseWithDifferentPool() throws Exception {
     final HiveConf conf = createConf();
     MockQam qam = new MockQam();
-    TmpResourcePlan plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("A", null, 2, 0.6f), new TmpHivePool("B", null, 1, 0.4f)),
-        Lists.newArrayList(create("A", "A"), create("B", "B")));
+    WMFullResourcePlan plan = new WMFullResourcePlan(plan(), Lists.newArrayList(
+        pool("A", 2, 0.6f), pool("B", 1, 0.4f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "A"), mapping("B", "B")));
     final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
     WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, "A", conf),
@@ -427,9 +446,9 @@ public class TestWorkloadManager {
   public void testApplyPlanUserMapping() throws Exception {
     final HiveConf conf = createConf();
     MockQam qam = new MockQam();
-    TmpResourcePlan plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("A", null, 1, 0.5f), new TmpHivePool("B", null, 1, 0.5f)),
-        Lists.newArrayList(create("U", "A")));
+    WMFullResourcePlan plan = new WMFullResourcePlan(plan(), Lists.newArrayList(
+        pool("A", 1, 0.5f), pool("B", 1, 0.5f)));
+    plan.setMappings(Lists.newArrayList(mapping("U", "A")));
     final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
  
@@ -446,9 +465,9 @@ public class TestWorkloadManager {
     checkError(error);
 
     // Now change the resource plan - change the mapping for the user.
-    plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("A", null, 1, 0.6f), new TmpHivePool("B", null, 1, 0.4f)),
-        Lists.newArrayList(create("U", "B")));
+    plan = new WMFullResourcePlan(plan(), Lists.newArrayList(
+        pool("A", 1, 0.6f), pool("B", 1, 0.4f)));
+    plan.setMappings(Lists.newArrayList(mapping("U", "B")));
     wm.updateResourcePlanAsync(plan);
 
     // The session will go to B with the new mapping; check it.
@@ -471,11 +490,11 @@ public class TestWorkloadManager {
   public void testApplyPlanQpChanges() throws Exception {
     final HiveConf conf = createConf();
     MockQam qam = new MockQam();
-    TmpResourcePlan plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("A", null, 1, 0.35f), new TmpHivePool("B", null, 2, 0.15f),
-        new TmpHivePool("C", null, 2, 0.3f), new TmpHivePool("D", null, 1, 0.3f)),
-        Lists.newArrayList(create("A", "A"), create("B", "B"),
-            create("C", "C"), create("D", "D")));
+    WMFullResourcePlan plan = new WMFullResourcePlan(plan(), Lists.newArrayList(
+        pool("A", 1, 0.35f), pool("B", 2, 0.15f),
+        pool("C", 2, 0.3f), pool("D", 1, 0.3f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "A"), mapping("B", "B"),
+            mapping("C", "C"), mapping("D", "D")));
     final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
  
@@ -503,10 +522,10 @@ public class TestWorkloadManager {
     // the queue, and the query queued in A will be re-queued in B and started.
     // The fractions will also all change.
     // Total: 4/4 running.
-    plan = new TmpResourcePlan(Lists.newArrayList(new TmpHivePool("B", null, 1, 0.3f),
-        new TmpHivePool("C", null, 1, 0.2f), new TmpHivePool("D", null, 2, 0.5f)),
-        Lists.newArrayList(create("A", "B"), create("B", "B"),
-            create("C", "C"), create("D", "D")));
+    plan = new WMFullResourcePlan(plan(), Lists.newArrayList(pool("B", 1, 0.3f),
+        pool("C", 1, 0.2f), pool("D", 2, 0.5f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "B"), mapping("B", "B"),
+            mapping("C", "C"), mapping("D", "D")));
     wm.updateResourcePlanAsync(plan);
     wm.addTestEvent().get();
 
@@ -544,8 +563,9 @@ public class TestWorkloadManager {
   public void testAmPoolInteractions() throws Exception {
     final HiveConf conf = createConf();
     MockQam qam = new MockQam();
-    TmpResourcePlan plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("A", null, 1, 1.0f)), Lists.newArrayList(create("A", "A")));
+    WMFullResourcePlan plan = new WMFullResourcePlan(plan(), Lists.newArrayList(
+        pool("A", 1, 1.0f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "A")));
     final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
     // Take away the only session, as if it was expiring.
@@ -565,8 +585,9 @@ public class TestWorkloadManager {
     assertEquals("A", sessionA1.get().getPoolName());
 
     // Increase qp, check that the pool grows.
-    plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("A", null, 4, 1.0f)), Lists.newArrayList(create("A", "A")));
+    plan = new WMFullResourcePlan(plan(), Lists.newArrayList(
+        pool("A", 4, 1.0f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "A")));
     wm.updateResourcePlanAsync(plan);
     WmTezSession oob2 = pool.getSession(),
         oob3 = pool.getSession(),
@@ -575,8 +596,8 @@ public class TestWorkloadManager {
     assertEquals(1, pool.getCurrentSize());
 
     // Decrease qp, check that the pool shrinks incl. killing the unused and returned sessions.
-    plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("A", null, 1, 1.0f)), Lists.newArrayList(create("A", "A")));
+    plan = new WMFullResourcePlan(plan(), Lists.newArrayList(pool("A", 1, 1.0f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "A")));
     wm.updateResourcePlanAsync(plan);
     wm.addTestEvent().get();
     assertEquals(0, pool.getCurrentSize());
@@ -587,17 +608,17 @@ public class TestWorkloadManager {
     assertEquals(1, pool.getCurrentSize());
 
     // Decrease, then increase qp - sessions should not be killed on return.
-    plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("A", null, 2, 1.0f)), Lists.newArrayList(create("A", "A")));
+    plan = new WMFullResourcePlan(plan(), Lists.newArrayList(pool("A", 2, 1.0f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "A")));
     wm.updateResourcePlanAsync(plan);
     oob2 = pool.getSession();
     oob3 = pool.getSession();
     assertEquals(0, pool.getCurrentSize());
-    plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("A", null, 1, 1.0f)), Lists.newArrayList(create("A", "A")));
+    plan = new WMFullResourcePlan(plan(), Lists.newArrayList(pool("A", 1, 1.0f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "A")));
     wm.updateResourcePlanAsync(plan);
-    plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("A", null, 2, 1.0f)), Lists.newArrayList(create("A", "A")));
+    plan = new WMFullResourcePlan(plan(), Lists.newArrayList(pool("A", 2, 1.0f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "A")));
     wm.updateResourcePlanAsync(plan);
     wm.addTestEvent().get();
     assertEquals(0, pool.getCurrentSize());
@@ -610,8 +631,9 @@ public class TestWorkloadManager {
   public void testAsyncSessionInitFailures() throws Exception {
     final HiveConf conf = createConf();
     MockQam qam = new MockQam();
-    TmpResourcePlan plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("A", null, 1, 1.0f)), Lists.newArrayList(create("A", "A")));
+    WMFullResourcePlan plan = new WMFullResourcePlan(plan(),
+        Lists.newArrayList(pool("A", 1, 1.0f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "A")));
     final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
 
@@ -634,8 +656,8 @@ public class TestWorkloadManager {
     assertEquals(0, pool.getCurrentSize());
 
     // Change the resource plan, so that the session gets killed.
-    plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("B", null, 1, 1.0f)), Lists.newArrayList(create("A", "B")));
+    plan = new WMFullResourcePlan(plan(), Lists.newArrayList(pool("B", 1, 1.0f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "B")));
     wm.updateResourcePlanAsync(plan);
     wm.addTestEvent().get();
     blockedWait.set(true); // Meanwhile, the init succeeds!
@@ -679,8 +701,8 @@ public class TestWorkloadManager {
     // The session is taken out of the pool, but is waiting for registration.
     assertEquals(0, pool.getCurrentSize());
 
-    plan = new TmpResourcePlan(Lists.newArrayList(
-        new TmpHivePool("A", null, 1, 1.0f)), Lists.newArrayList(create("A", "A")));
+    plan = new WMFullResourcePlan(plan(), Lists.newArrayList(pool("A", 1, 1.0f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "A")));
     wm.updateResourcePlanAsync(plan);
     wm.addTestEvent().get();
     failedWait.setException(new Exception("moo")); // Meanwhile, the init fails.

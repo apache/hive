@@ -880,49 +880,64 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeAlterResourcePlan(ASTNode ast) throws SemanticException {
-    if (ast.getChildCount() == 0) {
-      throw new SemanticException("Expected name in ALTER RESOURCE PLAN statement");
-    }
-    String rpName = unescapeIdentifier(ast.getChild(0).getText());
     if (ast.getChildCount() < 2) {
       throw new SemanticException("Invalid syntax for ALTER RESOURCE PLAN statement");
     }
-    AlterResourcePlanDesc desc;
-    switch (ast.getChild(1).getType()) {
-    case HiveParser.TOK_VALIDATE:
-      desc = AlterResourcePlanDesc.createValidatePlan(rpName);
-      break;
-    case HiveParser.TOK_ACTIVATE:
-      desc = AlterResourcePlanDesc.createChangeStatus(rpName, WMResourcePlanStatus.ACTIVE);
-      break;
-    case HiveParser.TOK_ENABLE:
-      desc = AlterResourcePlanDesc.createChangeStatus(rpName, WMResourcePlanStatus.ENABLED);
-      break;
-    case HiveParser.TOK_DISABLE:
-      desc = AlterResourcePlanDesc.createChangeStatus(rpName, WMResourcePlanStatus.DISABLED);
-      break;
-    case HiveParser.TOK_QUERY_PARALLELISM:
-      if (ast.getChildCount() != 3) {
-        throw new SemanticException(
-            "Expected number for query parallelism in alter resource plan statment");
+    String rpName = unescapeIdentifier(ast.getChild(0).getText());
+    AlterResourcePlanDesc desc = null;
+    for (int i = 1; i < ast.getChildCount(); ++i) {
+      Tree child = ast.getChild(i);
+      switch (child.getType()) {
+      case HiveParser.TOK_VALIDATE:
+        desc = AlterResourcePlanDesc.createValidatePlan(rpName);
+        break;
+      case HiveParser.TOK_ACTIVATE:
+        if (desc == null) {
+          desc = AlterResourcePlanDesc.createChangeStatus(rpName, WMResourcePlanStatus.ACTIVE);
+        } else if (desc.getStatus() == WMResourcePlanStatus.ENABLED) {
+          desc.setIsEnableActivate(true);
+          desc.setStatus(WMResourcePlanStatus.ACTIVE);
+        } else {
+          throw new SemanticException("Invalid ALTER ACTIVATE command");
+        }
+        break;
+      case HiveParser.TOK_ENABLE:
+        if (desc == null) {
+          desc = AlterResourcePlanDesc.createChangeStatus(rpName, WMResourcePlanStatus.ENABLED);
+        } else if (desc.getStatus() == WMResourcePlanStatus.ACTIVE) {
+          desc.setIsEnableActivate(true);
+        } else {
+          throw new SemanticException("Invalid ALTER ENABLE command");
+        }
+        break;
+      case HiveParser.TOK_DISABLE:
+        if (desc != null) {
+          throw new SemanticException("Invalid ALTER DISABLE command");
+        }
+        desc = AlterResourcePlanDesc.createChangeStatus(rpName, WMResourcePlanStatus.DISABLED);
+        break;
+      case HiveParser.TOK_QUERY_PARALLELISM:
+        if (ast.getChildCount() <= (i + 1)) {
+          throw new SemanticException(
+              "Expected number for query parallelism in alter resource plan statment");
+        }
+        int queryParallelism = Integer.parseInt(ast.getChild(++i).getText());
+        desc = AlterResourcePlanDesc.createChangeParallelism(rpName, queryParallelism);
+        break;
+      case HiveParser.TOK_RENAME:
+        if (ast.getChildCount() <= (i + 1)) {
+          throw new SemanticException(
+              "Expected new name for rename in alter resource plan statment");
+        }
+        String name = ast.getChild(++i).getText();
+        desc = AlterResourcePlanDesc.createRenamePlan(rpName, name);
+        break;
+      default:
+        throw new SemanticException("Unexpected token in alter resource plan statement: "
+            + ast.getChild(1).getType());
       }
-      int queryParallelism = Integer.parseInt(ast.getChild(2).getText());
-      desc = AlterResourcePlanDesc.createChangeParallelism(rpName, queryParallelism);
-      break;
-    case HiveParser.TOK_RENAME:
-      if (ast.getChildCount() != 3) {
-        throw new SemanticException(
-            "Expected new name for rename in alter resource plan statment");
-      }
-      String name = ast.getChild(2).getText();
-      desc = AlterResourcePlanDesc.createRenamePlan(rpName, name);
-      break;
-    default:
-      throw new SemanticException("Unexpected token in alter resource plan statement: "
-          + ast.getChild(1).getType());
     }
-    rootTasks.add(TaskFactory.get(
-        new DDLWork(getInputs(), getOutputs(), desc), conf));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
 
   private void analyzeDropResourcePlan(ASTNode ast) throws SemanticException {

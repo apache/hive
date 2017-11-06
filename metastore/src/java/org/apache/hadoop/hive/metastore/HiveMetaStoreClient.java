@@ -2668,12 +2668,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void alterResourcePlan(String resourcePlanName, WMResourcePlan resourcePlan)
+  public WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMResourcePlan resourcePlan,
+      boolean canActivateDisabled)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMAlterResourcePlanRequest request = new WMAlterResourcePlanRequest();
     request.setResourcePlanName(resourcePlanName);
     request.setResourcePlan(resourcePlan);
-    client.alter_resource_plan(request);
+    request.setIsEnableAndActivate(canActivateDisabled);
+    WMAlterResourcePlanResponse resp = client.alter_resource_plan(request);
+    return resp.isSetFullResourcePlan() ? resp.getFullResourcePlan() : null;
+  }
+
+  @Override
+  public WMFullResourcePlan getActiveResourcePlan() throws MetaException, TException {
+    return client.get_active_resource_plan(new WMGetActiveResourcePlanRequest()).getResourcePlan();
   }
 
   @Override

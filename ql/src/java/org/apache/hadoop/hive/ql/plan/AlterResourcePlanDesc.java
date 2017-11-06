@@ -14,6 +14,7 @@ public class AlterResourcePlanDesc extends DDLDesc implements Serializable {
   private Integer queryParallelism;
   private WMResourcePlanStatus status;
   private boolean validate;
+  private boolean isEnableActivate;
 
   public AlterResourcePlanDesc() {}
 
@@ -87,5 +88,13 @@ public class AlterResourcePlanDesc extends DDLDesc implements Serializable {
 
   public void setValidate(boolean validate) {
     this.validate = validate;
+  }
+
+  public void setIsEnableActivate(boolean b) {
+    this.isEnableActivate = b;
+  }
+
+  public boolean isEnableActivate() {
+    return isEnableActivate;
   }
 }

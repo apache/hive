@@ -1047,11 +1047,10 @@ struct WMResourcePlan {
 
 struct WMPool {
   1: required string resourcePlanName;
-  2: required string poolName;
-  3: optional string parentPoolName;
-  4: optional double allocFraction;
-  5: optional i32 queryParallelism;
-  6: optional string schedulingPolicy;
+  2: required string poolPath;
+  3: optional double allocFraction;
+  4: optional i32 queryParallelism;
+  5: optional string schedulingPolicy;
 }
 
 struct WMTrigger {
@@ -1069,6 +1068,19 @@ struct WMMapping {
   5: optional i32 ordering;
 }
 
+struct WMPoolTrigger {
+  1: required string pool;
+  2: required string trigger;
+}
+
+struct WMFullResourcePlan {
+  1: required WMResourcePlan plan;
+  2: required list<WMPool> pools;
+  3: optional list<WMMapping> mappings;
+  4: optional list<WMTrigger> triggers;
+  5: optional list<WMPoolTrigger> poolTriggers;
+}
+
 // Request response for workload management API's.
 
 struct WMCreateResourcePlanRequest {
@@ -1076,6 +1088,13 @@ struct WMCreateResourcePlanRequest {
 }
 
 struct WMCreateResourcePlanResponse {
+}
+
+struct WMGetActiveResourcePlanRequest {
+}
+
+struct WMGetActiveResourcePlanResponse {
+  1: optional WMFullResourcePlan resourcePlan;
 }
 
 struct WMGetResourcePlanRequest {
@@ -1096,9 +1115,11 @@ struct WMGetAllResourcePlanResponse {
 struct WMAlterResourcePlanRequest {
   1: optional string resourcePlanName;
   2: optional WMResourcePlan resourcePlan;
+  3: optional bool isEnableAndActivate;
 }
 
 struct WMAlterResourcePlanResponse {
+  1: optional WMFullResourcePlan fullResourcePlan;
 }
 
 struct WMValidateResourcePlanRequest {
@@ -1718,6 +1739,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   WMGetResourcePlanResponse get_resource_plan(1:WMGetResourcePlanRequest request)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
+
+  WMGetActiveResourcePlanResponse get_active_resource_plan(1:WMGetActiveResourcePlanRequest request)
+      throws(1:MetaException o2)
 
   WMGetAllResourcePlanResponse get_all_resource_plans(1:WMGetAllResourcePlanRequest request)
       throws(1:MetaException o1)

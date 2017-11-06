@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -756,9 +758,12 @@ public interface RawStore extends Configurable {
 
   List<WMResourcePlan> getAllResourcePlans() throws MetaException;
 
-  void alterResourcePlan(String name, WMResourcePlan resourcePlan)
+  WMFullResourcePlan alterResourcePlan(
+      String name, WMResourcePlan resourcePlan, boolean canActivateDisabled)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException;
+
+  WMFullResourcePlan getActiveResourcePlan() throws MetaException;
 
   boolean validateResourcePlan(String name)
       throws NoSuchObjectException, InvalidObjectException, MetaException;

@@ -186,6 +186,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_metastore_db_uuid(std::string& _return) = 0;
   virtual void create_resource_plan(WMCreateResourcePlanResponse& _return, const WMCreateResourcePlanRequest& request) = 0;
   virtual void get_resource_plan(WMGetResourcePlanResponse& _return, const WMGetResourcePlanRequest& request) = 0;
+  virtual void get_active_resource_plan(WMGetActiveResourcePlanResponse& _return, const WMGetActiveResourcePlanRequest& request) = 0;
   virtual void get_all_resource_plans(WMGetAllResourcePlanResponse& _return, const WMGetAllResourcePlanRequest& request) = 0;
   virtual void alter_resource_plan(WMAlterResourcePlanResponse& _return, const WMAlterResourcePlanRequest& request) = 0;
   virtual void validate_resource_plan(WMValidateResourcePlanResponse& _return, const WMValidateResourcePlanRequest& request) = 0;
@@ -741,6 +742,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_resource_plan(WMGetResourcePlanResponse& /* _return */, const WMGetResourcePlanRequest& /* request */) {
+    return;
+  }
+  void get_active_resource_plan(WMGetActiveResourcePlanResponse& /* _return */, const WMGetActiveResourcePlanRequest& /* request */) {
     return;
   }
   void get_all_resource_plans(WMGetAllResourcePlanResponse& /* _return */, const WMGetAllResourcePlanRequest& /* request */) {
@@ -20965,6 +20969,118 @@ class ThriftHiveMetastore_get_resource_plan_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_get_active_resource_plan_args__isset {
+  _ThriftHiveMetastore_get_active_resource_plan_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_get_active_resource_plan_args__isset;
+
+class ThriftHiveMetastore_get_active_resource_plan_args {
+ public:
+
+  ThriftHiveMetastore_get_active_resource_plan_args(const ThriftHiveMetastore_get_active_resource_plan_args&);
+  ThriftHiveMetastore_get_active_resource_plan_args& operator=(const ThriftHiveMetastore_get_active_resource_plan_args&);
+  ThriftHiveMetastore_get_active_resource_plan_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_active_resource_plan_args() throw();
+  WMGetActiveResourcePlanRequest request;
+
+  _ThriftHiveMetastore_get_active_resource_plan_args__isset __isset;
+
+  void __set_request(const WMGetActiveResourcePlanRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_active_resource_plan_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_active_resource_plan_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_active_resource_plan_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_active_resource_plan_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_active_resource_plan_pargs() throw();
+  const WMGetActiveResourcePlanRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_active_resource_plan_result__isset {
+  _ThriftHiveMetastore_get_active_resource_plan_result__isset() : success(false), o2(false) {}
+  bool success :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_active_resource_plan_result__isset;
+
+class ThriftHiveMetastore_get_active_resource_plan_result {
+ public:
+
+  ThriftHiveMetastore_get_active_resource_plan_result(const ThriftHiveMetastore_get_active_resource_plan_result&);
+  ThriftHiveMetastore_get_active_resource_plan_result& operator=(const ThriftHiveMetastore_get_active_resource_plan_result&);
+  ThriftHiveMetastore_get_active_resource_plan_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_active_resource_plan_result() throw();
+  WMGetActiveResourcePlanResponse success;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_active_resource_plan_result__isset __isset;
+
+  void __set_success(const WMGetActiveResourcePlanResponse& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_active_resource_plan_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_active_resource_plan_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_active_resource_plan_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_active_resource_plan_presult__isset {
+  _ThriftHiveMetastore_get_active_resource_plan_presult__isset() : success(false), o2(false) {}
+  bool success :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_active_resource_plan_presult__isset;
+
+class ThriftHiveMetastore_get_active_resource_plan_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_active_resource_plan_presult() throw();
+  WMGetActiveResourcePlanResponse* success;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_active_resource_plan_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_get_all_resource_plans_args__isset {
   _ThriftHiveMetastore_get_all_resource_plans_args__isset() : request(false) {}
   bool request :1;
@@ -22468,6 +22584,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_resource_plan(WMGetResourcePlanResponse& _return, const WMGetResourcePlanRequest& request);
   void send_get_resource_plan(const WMGetResourcePlanRequest& request);
   void recv_get_resource_plan(WMGetResourcePlanResponse& _return);
+  void get_active_resource_plan(WMGetActiveResourcePlanResponse& _return, const WMGetActiveResourcePlanRequest& request);
+  void send_get_active_resource_plan(const WMGetActiveResourcePlanRequest& request);
+  void recv_get_active_resource_plan(WMGetActiveResourcePlanResponse& _return);
   void get_all_resource_plans(WMGetAllResourcePlanResponse& _return, const WMGetAllResourcePlanRequest& request);
   void send_get_all_resource_plans(const WMGetAllResourcePlanRequest& request);
   void recv_get_all_resource_plans(WMGetAllResourcePlanResponse& _return);
@@ -22666,6 +22785,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_metastore_db_uuid(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_create_resource_plan(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_resource_plan(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_active_resource_plan(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_all_resource_plans(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_resource_plan(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_validate_resource_plan(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -22842,6 +22962,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_metastore_db_uuid"] = &ThriftHiveMetastoreProcessor::process_get_metastore_db_uuid;
     processMap_["create_resource_plan"] = &ThriftHiveMetastoreProcessor::process_create_resource_plan;
     processMap_["get_resource_plan"] = &ThriftHiveMetastoreProcessor::process_get_resource_plan;
+    processMap_["get_active_resource_plan"] = &ThriftHiveMetastoreProcessor::process_get_active_resource_plan;
     processMap_["get_all_resource_plans"] = &ThriftHiveMetastoreProcessor::process_get_all_resource_plans;
     processMap_["alter_resource_plan"] = &ThriftHiveMetastoreProcessor::process_alter_resource_plan;
     processMap_["validate_resource_plan"] = &ThriftHiveMetastoreProcessor::process_validate_resource_plan;
@@ -24457,6 +24578,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void get_active_resource_plan(WMGetActiveResourcePlanResponse& _return, const WMGetActiveResourcePlanRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_active_resource_plan(_return, request);
+    }
+    ifaces_[i]->get_active_resource_plan(_return, request);
+    return;
+  }
+
   void get_all_resource_plans(WMGetAllResourcePlanResponse& _return, const WMGetAllResourcePlanRequest& request) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -25045,6 +25176,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_resource_plan(WMGetResourcePlanResponse& _return, const WMGetResourcePlanRequest& request);
   int32_t send_get_resource_plan(const WMGetResourcePlanRequest& request);
   void recv_get_resource_plan(WMGetResourcePlanResponse& _return, const int32_t seqid);
+  void get_active_resource_plan(WMGetActiveResourcePlanResponse& _return, const WMGetActiveResourcePlanRequest& request);
+  int32_t send_get_active_resource_plan(const WMGetActiveResourcePlanRequest& request);
+  void recv_get_active_resource_plan(WMGetActiveResourcePlanResponse& _return, const int32_t seqid);
   void get_all_resource_plans(WMGetAllResourcePlanResponse& _return, const WMGetAllResourcePlanRequest& request);
   int32_t send_get_all_resource_plans(const WMGetAllResourcePlanRequest& request);
   void recv_get_all_resource_plans(WMGetAllResourcePlanResponse& _return, const int32_t seqid);

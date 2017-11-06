@@ -1126,6 +1126,9 @@
       <field name="allocFraction">
         <column name="ALLOC_FRACTION" jdbc-type="double" allows-null="true"/>
       </field>
+      <field name="schedulingPolicy">
+        <column name="SCHEDULING_POLICY" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
       <field name="queryParallelism">
         <column name="QUERY_PARALLELISM" jdbc-type="integer" allows-null="true"/>
       </field>

@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class DDLWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
+  // TODO: this can probably be replaced with much less code via dynamic dispatch and/or templates.
   private PreInsertTableDesc preInsertTableDesc;
   private InsertTableDesc insertTableDesc;
   private CreateIndexDesc createIndexDesc;

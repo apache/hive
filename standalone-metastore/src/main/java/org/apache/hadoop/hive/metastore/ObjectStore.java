@@ -21,6 +21,18 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
+import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
+
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+
+import org.apache.hadoop.hive.metastore.model.MWMMapping;
+
+import org.apache.hadoop.hive.metastore.api.WMPool;
+
+import org.apache.hadoop.hive.metastore.model.MWMPool;
+
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
@@ -9482,6 +9494,50 @@ public class ObjectStore implements RawStore, Configurable {
     return rp;
   }
 
+  private WMFullResourcePlan fullFromMResourcePlan(MWMResourcePlan mplan) {
+    if (mplan == null) {
+      return null;
+    }
+    WMFullResourcePlan rp = new WMFullResourcePlan();
+    rp.setPlan(fromMResourcePlan(mplan));
+    for (MWMPool mPool : mplan.getPools()) {
+      rp.addToPools(fromMPool(mPool, mplan.getName()));
+      for (MWMTrigger mTrigger : mPool.getTriggers()) {
+        rp.addToPoolTriggers(new WMPoolTrigger(mPool.getPath(), mTrigger.getName()));
+      }
+    }
+    // TODO: add global triggers to pTPT map depending on how they are stored, with a special key?
+    for (MWMTrigger mTrigger : mplan.getTriggers()) {
+      rp.addToTriggers(fromMWMTrigger(mTrigger, mplan.getName()));
+    }
+    for (MWMMapping mMapping : mplan.getMappings()) {
+      rp.addToMappings(fromMMapping(mMapping, mplan.getName()));
+    }
+    return rp;
+  }
+
+  private WMPool fromMPool(MWMPool mPool, String rpName) {
+    WMPool result = new WMPool(rpName, mPool.getPath());
+    assert mPool.getAllocFraction() != null;
+    result.setAllocFraction(mPool.getAllocFraction());
+    assert mPool.getQueryParallelism() != null;
+    result.setQueryParallelism(mPool.getQueryParallelism());
+    result.setSchedulingPolicy(mPool.getSchedulingPolicy());
+    return result;
+  }
+
+  private WMMapping fromMMapping(MWMMapping mMapping, String rpName) {
+    WMMapping result = new WMMapping(rpName,
+        mMapping.getEntityType().toString(), mMapping.getEntityName());
+    if (mMapping.getPool() != null) {
+      result.setPoolName(mMapping.getPool().getPath());
+    }
+    if (mMapping.getOrdering() != null) {
+      result.setOrdering(mMapping.getOrdering());
+    }
+    return result;
+  }
+
   @Override
   public WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
     return fromMResourcePlan(getMWMResourcePlan(name));
@@ -9533,12 +9589,17 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void alterResourcePlan(String name, WMResourcePlan resourcePlan)
+  public WMFullResourcePlan alterResourcePlan(
+      String name, WMResourcePlan resourcePlan, boolean canActivateDisabled)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException {
     name = normalizeIdentifier(name);
     boolean commited = false;
     Query query = null;
+    // This method only returns the result when activating a resource plan.
+    // We could also add a boolean flag to be specified by the caller to see
+    // when the result might be needed.
+    WMFullResourcePlan result = null;
     try {
       openTransaction();
       query = pm.newQuery(MWMResourcePlan.class, "name == rpName");
@@ -9555,9 +9616,11 @@ public class ObjectStore implements RawStore, Configurable {
         mResourcePlan.setQueryParallelism(resourcePlan.getQueryParallelism());
       }
       if (resourcePlan.isSetStatus()) {
-        switchStatus(name, mResourcePlan, resourcePlan.getStatus().name());
+        result = switchStatus(
+            name, mResourcePlan, resourcePlan.getStatus().name(), canActivateDisabled);
       }
       commited = commitTransaction();
+      return result;
     } catch (Exception e) {
       checkForConstraintException(e, "Resource plan name should be unique: ");
       throw e;
@@ -9566,8 +9629,29 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private void switchStatus(String name, MWMResourcePlan mResourcePlan, String status)
-      throws InvalidOperationException {
+  @Override
+  public WMFullResourcePlan getActiveResourcePlan() throws MetaException {
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MWMResourcePlan.class, "status == activeStatus");
+      query.declareParameters("java.lang.String activeStatus");
+      query.setUnique(true);
+      MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute(Status.ACTIVE.toString());
+      if (mResourcePlan == null) {
+        return null; // No active plan.
+      }
+      commited = commitTransaction();
+      return fullFromMResourcePlan(mResourcePlan);
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+  }
+
+
+  private WMFullResourcePlan switchStatus(String name, MWMResourcePlan mResourcePlan,
+      String status, boolean canActivateDisabled) throws InvalidOperationException {
     Status currentStatus = mResourcePlan.getStatus();
     Status newStatus = null;
     try {
@@ -9577,35 +9661,51 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     if (newStatus == currentStatus) {
-      return;
+      return null;
     }
 
-    // No status change for active resource plan, first activate another plan.
-    if (currentStatus == Status.ACTIVE) {
-      throw new InvalidOperationException(
+    boolean doActivate = false, doValidate = false;
+    switch (currentStatus) {
+      case ACTIVE: // No status change for active resource plan, first activate another plan.
+        throw new InvalidOperationException(
           "Resource plan " + name + " is active, activate another plan first.");
+      case DISABLED:
+        assert newStatus == Status.ACTIVE || newStatus == Status.ENABLED;
+        doValidate = true;
+        doActivate = (newStatus == Status.ACTIVE);
+        if (doActivate && !canActivateDisabled) {
+          throw new InvalidOperationException("Resource plan " + name
+              + " is disabled and should be enabled before activation (or in the same command)");
+        }
+        break;
+      case ENABLED:
+        if (newStatus == Status.DISABLED) {
+          mResourcePlan.setStatus(newStatus);
+          return null; // A simple case.
+        }
+        assert newStatus == Status.ACTIVE;
+        doActivate = true;
+        break;
+      default: throw new AssertionError("Unexpected status " + currentStatus);
     }
-
-    if ((currentStatus == Status.ENABLED && newStatus == Status.DISABLED) ||
-        (currentStatus == Status.DISABLED && newStatus == Status.ENABLED)) {
-      // enabled plan can be disabled and disabled plan enabled.
-      mResourcePlan.setStatus(newStatus);
-    } else if (currentStatus == Status.ENABLED && newStatus == Status.ACTIVE) {
-      // We can activate an enabled resource plan.
-      if (!isResourcePlanValid(mResourcePlan)) {
-        throw new InvalidOperationException("ResourcePlan: " + name + " is invalid.");
+    if (doValidate) {
+      // Note: this may use additional inputs from the caller, e.g. maximum query
+      // parallelism in the cluster based on physical constraints.
+      String planErrors = getResourcePlanErrors(mResourcePlan);
+      if (planErrors != null) {
+        throw new InvalidOperationException(
+            "ResourcePlan: " + name + " is invalid: " + planErrors);
       }
+    }
+    if (doActivate) {
       // Deactivate currently active resource plan.
       deactivateActiveResourcePlan();
       mResourcePlan.setStatus(newStatus);
-    } else if (currentStatus == Status.DISABLED && newStatus == Status.ACTIVE) {
-      throw new InvalidOperationException(
-          "Cannot activate resource plan: " + name + " first enable it");
+      return fullFromMResourcePlan(mResourcePlan);
     } else {
-      // This should not happen just there in case we add more status.
-      throw new InvalidOperationException("Cannot move resource plan: " + name +
-          " from " + currentStatus + " to " + newStatus);
+      mResourcePlan.setStatus(newStatus);
     }
+    return null;
   }
 
   private void deactivateActiveResourcePlan() {
@@ -9626,8 +9726,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private boolean isResourcePlanValid(MWMResourcePlan mResourcePlan) {
-    return true;
+  private String getResourcePlanErrors(MWMResourcePlan mResourcePlan) {
+    return null;
   }
 
   @Override
@@ -9644,7 +9744,7 @@ public class ObjectStore implements RawStore, Configurable {
         throw new NoSuchObjectException("Cannot find resourcePlan: " + name);
       }
       // Validate resource plan.
-      return isResourcePlanValid(mResourcePlan);
+      return getResourcePlanErrors(mResourcePlan) == null; // TODO: propagate errors?
     } finally {
       rollbackAndCleanup(true, query);
     }

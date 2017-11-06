@@ -7414,10 +7414,31 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public WMAlterResourcePlanResponse alter_resource_plan(WMAlterResourcePlanRequest request)
         throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
       try {
-        getMS().alterResourcePlan(request.getResourcePlanName(), request.getResourcePlan());
-        return new WMAlterResourcePlanResponse();
+        WMAlterResourcePlanResponse response = new WMAlterResourcePlanResponse();
+        // This method will only return full resource plan when activating one,
+        // to give the caller the result atomically with the activation.
+        WMFullResourcePlan fullPlanAfterAlter = getMS().alterResourcePlan(
+            request.getResourcePlanName(), request.getResourcePlan(),
+            request.isIsEnableAndActivate());
+        if (fullPlanAfterAlter != null) {
+          response.setFullResourcePlan(fullPlanAfterAlter);
+        }
+        return response;
       } catch (MetaException e) {
         LOG.error("Exception while trying to alter resource plan", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMGetActiveResourcePlanResponse get_active_resource_plan(
+        WMGetActiveResourcePlanRequest request) throws MetaException, TException {
+      try {
+        WMGetActiveResourcePlanResponse response = new WMGetActiveResourcePlanResponse();
+        response.setResourcePlan(getMS().getActiveResourcePlan());
+        return response;
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to get active resource plan", e);
         throw e;
       }
     }

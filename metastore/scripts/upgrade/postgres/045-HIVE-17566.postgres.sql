@@ -18,7 +18,8 @@ CREATE TABLE "WM_POOL" (
     "PATH" character varying(1024) NOT NULL,
     "PARENT_POOL_ID" bigint,
     "ALLOC_FRACTION" DOUBLE,
-    "QUERY_PARALLELISM" integer
+    "QUERY_PARALLELISM" integer,
+    "SCHEDULING_POLICY" character varying(1024)
 );
 
 ALTER TABLE ONLY "WM_POOL"

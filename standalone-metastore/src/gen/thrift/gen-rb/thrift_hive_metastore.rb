@@ -2728,6 +2728,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_resource_plan failed: unknown result')
     end
 
+    def get_active_resource_plan(request)
+      send_get_active_resource_plan(request)
+      return recv_get_active_resource_plan()
+    end
+
+    def send_get_active_resource_plan(request)
+      send_message('get_active_resource_plan', Get_active_resource_plan_args, :request => request)
+    end
+
+    def recv_get_active_resource_plan()
+      result = receive_message(Get_active_resource_plan_result)
+      return result.success unless result.success.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_active_resource_plan failed: unknown result')
+    end
+
     def get_all_resource_plans(request)
       send_get_all_resource_plans(request)
       return recv_get_all_resource_plans()
@@ -4886,6 +4902,17 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_resource_plan', seqid)
+    end
+
+    def process_get_active_resource_plan(seqid, iprot, oprot)
+      args = read_args(iprot, Get_active_resource_plan_args)
+      result = Get_active_resource_plan_result.new()
+      begin
+        result.success = @handler.get_active_resource_plan(args.request)
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_active_resource_plan', seqid)
     end
 
     def process_get_all_resource_plans(seqid, iprot, oprot)
@@ -11120,6 +11147,40 @@ module ThriftHiveMetastore
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::WMGetResourcePlanResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_active_resource_plan_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::WMGetActiveResourcePlanRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_active_resource_plan_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O2 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::WMGetActiveResourcePlanResponse},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
 

@@ -842,6 +842,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_resource_plan\n");
   }
 
+  void get_active_resource_plan(WMGetActiveResourcePlanResponse& _return, const WMGetActiveResourcePlanRequest& request) {
+    // Your implementation goes here
+    printf("get_active_resource_plan\n");
+  }
+
   void get_all_resource_plans(WMGetAllResourcePlanResponse& _return, const WMGetAllResourcePlanRequest& request) {
     // Your implementation goes here
     printf("get_all_resource_plans\n");

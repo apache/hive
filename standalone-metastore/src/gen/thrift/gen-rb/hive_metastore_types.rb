@@ -3280,16 +3280,14 @@ end
 class WMPool
   include ::Thrift::Struct, ::Thrift::Struct_Union
   RESOURCEPLANNAME = 1
-  POOLNAME = 2
-  PARENTPOOLNAME = 3
-  ALLOCFRACTION = 4
-  QUERYPARALLELISM = 5
-  SCHEDULINGPOLICY = 6
+  POOLPATH = 2
+  ALLOCFRACTION = 3
+  QUERYPARALLELISM = 4
+  SCHEDULINGPOLICY = 5
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName'},
-    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName'},
-    PARENTPOOLNAME => {:type => ::Thrift::Types::STRING, :name => 'parentPoolName', :optional => true},
+    POOLPATH => {:type => ::Thrift::Types::STRING, :name => 'poolPath'},
     ALLOCFRACTION => {:type => ::Thrift::Types::DOUBLE, :name => 'allocFraction', :optional => true},
     QUERYPARALLELISM => {:type => ::Thrift::Types::I32, :name => 'queryParallelism', :optional => true},
     SCHEDULINGPOLICY => {:type => ::Thrift::Types::STRING, :name => 'schedulingPolicy', :optional => true}
@@ -3299,7 +3297,7 @@ class WMPool
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field resourcePlanName is unset!') unless @resourcePlanName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field poolName is unset!') unless @poolName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field poolPath is unset!') unless @poolPath
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -3356,6 +3354,52 @@ class WMMapping
   ::Thrift::Struct.generate_accessors self
 end
 
+class WMPoolTrigger
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  POOL = 1
+  TRIGGER = 2
+
+  FIELDS = {
+    POOL => {:type => ::Thrift::Types::STRING, :name => 'pool'},
+    TRIGGER => {:type => ::Thrift::Types::STRING, :name => 'trigger'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field pool is unset!') unless @pool
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field trigger is unset!') unless @trigger
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMFullResourcePlan
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PLAN = 1
+  POOLS = 2
+  MAPPINGS = 3
+  TRIGGERS = 4
+  POOLTRIGGERS = 5
+
+  FIELDS = {
+    PLAN => {:type => ::Thrift::Types::STRUCT, :name => 'plan', :class => ::WMResourcePlan},
+    POOLS => {:type => ::Thrift::Types::LIST, :name => 'pools', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WMPool}},
+    MAPPINGS => {:type => ::Thrift::Types::LIST, :name => 'mappings', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WMMapping}, :optional => true},
+    TRIGGERS => {:type => ::Thrift::Types::LIST, :name => 'triggers', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WMTrigger}, :optional => true},
+    POOLTRIGGERS => {:type => ::Thrift::Types::LIST, :name => 'poolTriggers', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WMPoolTrigger}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field plan is unset!') unless @plan
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field pools is unset!') unless @pools
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class WMCreateResourcePlanRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   RESOURCEPLAN = 1
@@ -3377,6 +3421,37 @@ class WMCreateResourcePlanResponse
 
   FIELDS = {
 
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMGetActiveResourcePlanRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMGetActiveResourcePlanResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RESOURCEPLAN = 1
+
+  FIELDS = {
+    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMFullResourcePlan, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3454,10 +3529,12 @@ class WMAlterResourcePlanRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   RESOURCEPLANNAME = 1
   RESOURCEPLAN = 2
+  ISENABLEANDACTIVATE = 3
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
-    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true}
+    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true},
+    ISENABLEANDACTIVATE => {:type => ::Thrift::Types::BOOL, :name => 'isEnableAndActivate', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3470,9 +3547,10 @@ end
 
 class WMAlterResourcePlanResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
+  FULLRESOURCEPLAN = 1
 
   FIELDS = {
-
+    FULLRESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'fullResourcePlan', :class => ::WMFullResourcePlan, :optional => true}
   }
 
   def struct_fields; FIELDS; end

@@ -188,6 +188,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  string get_metastore_db_uuid()')
   print('  WMCreateResourcePlanResponse create_resource_plan(WMCreateResourcePlanRequest request)')
   print('  WMGetResourcePlanResponse get_resource_plan(WMGetResourcePlanRequest request)')
+  print('  WMGetActiveResourcePlanResponse get_active_resource_plan(WMGetActiveResourcePlanRequest request)')
   print('  WMGetAllResourcePlanResponse get_all_resource_plans(WMGetAllResourcePlanRequest request)')
   print('  WMAlterResourcePlanResponse alter_resource_plan(WMAlterResourcePlanRequest request)')
   print('  WMValidateResourcePlanResponse validate_resource_plan(WMValidateResourcePlanRequest request)')
@@ -1248,6 +1249,12 @@ elif cmd == 'get_resource_plan':
     print('get_resource_plan requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_resource_plan(eval(args[0]),))
+
+elif cmd == 'get_active_resource_plan':
+  if len(args) != 1:
+    print('get_active_resource_plan requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_active_resource_plan(eval(args[0]),))
 
 elif cmd == 'get_all_resource_plans':
   if len(args) != 1:

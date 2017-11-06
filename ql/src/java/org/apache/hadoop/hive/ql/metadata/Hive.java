@@ -27,6 +27,8 @@ import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -4734,9 +4736,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public void alterResourcePlan(String rpName, WMResourcePlan resourcePlan) throws HiveException {
+  public WMFullResourcePlan alterResourcePlan(String rpName, WMResourcePlan resourcePlan,
+      boolean canActivateDisabled) throws HiveException {
     try {
-      getMSC().alterResourcePlan(rpName, resourcePlan);
+      return getMSC().alterResourcePlan(rpName, resourcePlan, canActivateDisabled);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public WMFullResourcePlan getActiveResourcePlan() throws HiveException {
+    try {
+      return getMSC().getActiveResourcePlan();
     } catch (Exception e) {
       throw new HiveException(e);
     }
