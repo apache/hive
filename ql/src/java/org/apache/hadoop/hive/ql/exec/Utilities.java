@@ -93,6 +93,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
@@ -1451,11 +1452,43 @@ public final class Utilities {
       boolean success, Logger log, DynamicPartitionCtx dpCtx, FileSinkDesc conf,
       Reporter reporter) throws IOException,
       HiveException {
-    
+
+    //
+    // Runaway task attempts (which are unable to be killed by MR/YARN) can cause HIVE-17113,
+    // where they can write duplicate output files to tmpPath after de-duplicating the files,
+    // but before tmpPath is moved to specPath.
+    // Fixing this issue will be done differently for blobstore (e.g. S3)
+    // vs non-blobstore (local filesystem, HDFS) filesystems due to differences in
+    // implementation - a directory move in a blobstore effectively results in file-by-file
+    // moves for every file in a directory, while in HDFS/localFS a directory move is just a
+    // single filesystem operation.
+    // - For non-blobstore FS, do the following:
+    //   1) Rename tmpPath to a new directory name to prevent additional files
+    //      from being added by runaway processes.
+    //   2) Remove duplicates from the temp directory
+    //   3) Rename/move the temp directory to specPath
+    //
+    // - For blobstore FS, do the following:
+    //   1) Remove duplicates from tmpPath
+    //   2) Use moveSpecifiedFiles() to perform a file-by-file move of the de-duped files
+    //      to specPath. On blobstore FS, assuming n files in the directory, this results
+    //      in n file moves, compared to 2*n file moves with the previous solution
+    //      (each directory move would result in a file-by-file move of the files in the directory)
+    //
     FileSystem fs = specPath.getFileSystem(hconf);
+    boolean isBlobStorage = BlobStorageUtils.isBlobStorageFileSystem(hconf, fs);
     Path tmpPath = Utilities.toTempPath(specPath);
     Path taskTmpPath = Utilities.toTaskTempPath(specPath);
     if (success) {
+      if (!isBlobStorage && fs.exists(tmpPath)) {
+        //   1) Rename tmpPath to a new directory name to prevent additional files
+        //      from being added by runaway processes.
+        Path tmpPathOriginal = tmpPath;
+        tmpPath = new Path(tmpPath.getParent(), tmpPath.getName() + ".moved");
+        Utilities.rename(fs, tmpPathOriginal, tmpPath);
+      }
+
+      // Remove duplicates from tmpPath
       FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(
           tmpPath, ((dpCtx == null) ? 1 : dpCtx.getNumDPCols()), fs);
       if(statuses != null && statuses.length > 0) {
@@ -1474,15 +1507,18 @@ public final class Utilities {
           filesKept.addAll(emptyBuckets);
           perfLogger.PerfLogEnd("FileSinkOperator", "CreateEmptyBuckets");
         }
+
         // move to the file destination
         Utilities.FILE_OP_LOGGER.trace("Moving tmp dir: {} to: {}", tmpPath, specPath);
 
         perfLogger.PerfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
-        if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_EXEC_MOVE_FILES_FROM_SOURCE_DIR)) {
+        if (isBlobStorage) {
           // HIVE-17113 - avoid copying files that may have been written to the temp dir by runaway tasks,
           // by moving just the files we've tracked from removeTempOrDuplicateFiles().
           Utilities.moveSpecifiedFiles(fs, tmpPath, specPath, filesKept);
         } else {
+          // For non-blobstore case, can just move the directory - the initial directory rename
+          // at the start of this method should prevent files written by runaway tasks.
           Utilities.renameOrMoveFiles(fs, tmpPath, specPath);
         }
         perfLogger.PerfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
