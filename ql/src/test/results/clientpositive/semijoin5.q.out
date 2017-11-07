@@ -48,11 +48,10 @@ WHERE (t2.smallint_col_19) IN (SELECT
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-7
+  Stage-2 depends on stages: Stage-1, Stage-6
   Stage-3 depends on stages: Stage-2
   Stage-4 depends on stages: Stage-3
   Stage-6 is a root stage
-  Stage-7 depends on stages: Stage-6
   Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
@@ -63,7 +62,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (bigint_col_7 is not null and decimal2016_col_26 is not null and tinyint_col_3 is not null) (type: boolean)
+              predicate: (bigint_col_7 is not null and decimal2016_col_26 is not null and timestamp_col_9 is not null and tinyint_col_3 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: tinyint_col_3 (type: tinyint), bigint_col_7 (type: bigint), timestamp_col_9 (type: timestamp), double_col_16 (type: double), decimal2016_col_26 (type: decimal(20,16)), smallint_col_50 (type: smallint)
@@ -79,7 +78,7 @@ STAGE PLANS:
             alias: t2
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (decimal2709_col_9 is not null and tinyint_col_15 is not null and tinyint_col_20 is not null) (type: boolean)
+              predicate: (decimal2709_col_9 is not null and smallint_col_19 is not null and tinyint_col_15 is not null and tinyint_col_20 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: decimal2709_col_9 (type: decimal(27,9)), int_col_10 (type: int), tinyint_col_15 (type: tinyint), smallint_col_19 (type: smallint), tinyint_col_20 (type: tinyint)
@@ -119,17 +118,17 @@ STAGE PLANS:
               value expressions: _col3 (type: double), _col5 (type: smallint), _col7 (type: int)
           TableScan
             Reduce Output Operator
-              key expressions: _col1 (type: timestamp), -92 (type: int)
+              key expressions: _col0 (type: timestamp), _col1 (type: int)
               sort order: ++
-              Map-reduce partition columns: _col1 (type: timestamp), -92 (type: int)
+              Map-reduce partition columns: _col0 (type: timestamp), _col1 (type: int)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Inner Join 0 to 1
+               Left Semi Join 0 to 1
           keys:
             0 _col2 (type: timestamp), UDFToInteger(_col9) (type: int)
-            1 _col1 (type: timestamp), -92 (type: int)
+            1 _col0 (type: timestamp), _col1 (type: int)
           outputColumnNames: _col3, _col5, _col7
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           File Output Operator
@@ -276,43 +275,21 @@ STAGE PLANS:
             1 _col0 (type: decimal(26,12))
           outputColumnNames: _col2
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          Group By Operator
-            keys: _col2 (type: timestamp)
-            mode: hash
-            outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-7
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: timestamp)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: timestamp)
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-      Reduce Operator Tree:
-        Group By Operator
-          keys: KEY._col0 (type: timestamp)
-          mode: mergepartial
-          outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: _col0 (type: timestamp)
-            outputColumnNames: _col1
+            expressions: _col2 (type: timestamp), -92 (type: int)
+            outputColumnNames: _col0, _col1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            Group By Operator
+              keys: _col0 (type: timestamp), _col1 (type: int)
+              mode: hash
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Fetch Operator

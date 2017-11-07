@@ -27,9 +27,8 @@ STAGE PLANS:
           TableScan
             alias: masking_test_subq
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int)
-              outputColumnNames: key
+            Filter Operator
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: int)
@@ -60,16 +59,19 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: _col0
+            Filter Operator
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: UDFToDouble(_col0) (type: double)
-                sort order: +
-                Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string)
+                Reduce Output Operator
+                  key expressions: UDFToDouble(_col0) (type: double)
+                  sort order: +
+                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double)
@@ -104,16 +106,19 @@ STAGE PLANS:
           TableScan
             alias: masking_test_subq
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int), value (type: string)
-              outputColumnNames: _col0, _col1
+            Filter Operator
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: UDFToDouble(_col0) (type: double), _col0 (type: int)
-                sort order: ++
-                Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col0 (type: int)
+              Select Operator
+                expressions: key (type: int), value (type: string)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: string)
+                Reduce Output Operator
+                  key expressions: UDFToDouble(_col0) (type: double), _col0 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: UDFToDouble(_col0) (type: double), _col0 (type: int)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: string)
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double), _col1 (type: int)
@@ -670,26 +675,25 @@ STAGE PLANS:
           TableScan
             alias: masking_test_subq
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int)
-              outputColumnNames: key
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key > 0) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: int)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -703,22 +707,25 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: _col0
+            Filter Operator
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: UDFToDouble(_col0) (type: double)
-                sort order: +
-                Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string)
+                Reduce Output Operator
+                  key expressions: UDFToDouble(_col0) (type: double)
+                  sort order: +
+                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double)
               sort order: +
               Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: int)
       Reduce Operator Tree:
         Join Operator
@@ -1313,26 +1320,25 @@ STAGE PLANS:
           TableScan
             alias: masking_test_subq
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int)
-              outputColumnNames: key
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key > 0) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: int)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -1346,22 +1352,25 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: _col0
+            Filter Operator
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: UDFToDouble(_col0) (type: double)
-                sort order: +
-                Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string)
+                Reduce Output Operator
+                  key expressions: UDFToDouble(_col0) (type: double)
+                  sort order: +
+                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double)
               sort order: +
               Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: int)
       Reduce Operator Tree:
         Join Operator
@@ -1955,26 +1964,25 @@ STAGE PLANS:
           TableScan
             alias: masking_test_subq
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int)
-              outputColumnNames: key
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key > 0) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: int)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -1988,22 +1996,25 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: _col0
+            Filter Operator
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: UDFToDouble(_col0) (type: double)
-                sort order: +
-                Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string)
+                Reduce Output Operator
+                  key expressions: UDFToDouble(_col0) (type: double)
+                  sort order: +
+                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double)
               sort order: +
               Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: int)
       Reduce Operator Tree:
         Join Operator
@@ -2603,9 +2614,8 @@ STAGE PLANS:
           TableScan
             alias: masking_test_subq
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int)
-              outputColumnNames: key
+            Filter Operator
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: int)
@@ -2636,16 +2646,19 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: _col0
+            Filter Operator
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: UDFToDouble(_col0) (type: double)
-                sort order: +
-                Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string)
+                Reduce Output Operator
+                  key expressions: UDFToDouble(_col0) (type: double)
+                  sort order: +
+                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double)
@@ -6913,26 +6926,25 @@ STAGE PLANS:
           TableScan
             alias: masking_test_subq
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int)
-              outputColumnNames: key
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key > 0) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: int)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -6946,22 +6958,25 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: _col0
+            Filter Operator
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: UDFToDouble(_col0) (type: double)
-                sort order: +
-                Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string)
+                Reduce Output Operator
+                  key expressions: UDFToDouble(_col0) (type: double)
+                  sort order: +
+                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double)
               sort order: +
               Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: int)
       Reduce Operator Tree:
         Join Operator
@@ -7556,26 +7571,25 @@ STAGE PLANS:
           TableScan
             alias: masking_test_subq
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: int)
-              outputColumnNames: key
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (key > 0) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: key (type: int)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             table:
@@ -7589,22 +7603,25 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: key (type: string)
-              outputColumnNames: _col0
+            Filter Operator
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: UDFToDouble(_col0) (type: double)
-                sort order: +
-                Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string)
+                Reduce Output Operator
+                  key expressions: UDFToDouble(_col0) (type: double)
+                  sort order: +
+                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double)
               sort order: +
               Map-reduce partition columns: UDFToDouble(_col0) (type: double)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: int)
       Reduce Operator Tree:
         Join Operator
