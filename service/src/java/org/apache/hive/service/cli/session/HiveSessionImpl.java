@@ -102,6 +102,7 @@ public class HiveSessionImpl implements HiveSession {
   //       2) Some parts of session state, like mrStats and vars, need proper synchronization.
   private SessionState sessionState;
   private String ipAddress;
+  private List<String> forwardedAddresses;
 
   private static final String FETCH_WORK_SERDE_CLASS =
       "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe";
@@ -122,13 +123,15 @@ public class HiveSessionImpl implements HiveSession {
 
 
   public HiveSessionImpl(SessionHandle sessionHandle, TProtocolVersion protocol,
-      String username, String password, HiveConf serverConf, String ipAddress) {
+    String username, String password, HiveConf serverConf, String ipAddress,
+    final List<String> forwardedAddresses) {
     this.username = username;
     this.password = password;
     creationTime = System.currentTimeMillis();
     this.sessionHandle = sessionHandle != null ? sessionHandle : new SessionHandle(protocol);
     this.sessionConf = new HiveConf(serverConf);
     this.ipAddress = ipAddress;
+    this.forwardedAddresses = forwardedAddresses;
     this.operationLock = serverConf.getBoolVar(
         ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION) ? null : new Semaphore(1);
     try {
@@ -924,6 +927,16 @@ public class HiveSessionImpl implements HiveSession {
   @Override
   public void setIpAddress(String ipAddress) {
     this.ipAddress = ipAddress;
+  }
+
+  @Override
+  public List<String> getForwardedAddresses() {
+    return forwardedAddresses;
+  }
+
+  @Override
+  public void setForwardedAddresses(final List<String> forwardedAddresses) {
+    this.forwardedAddresses = forwardedAddresses;
   }
 
   @Override

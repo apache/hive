@@ -2455,6 +2455,17 @@ public class HiveConf extends Configuration {
         "  PERFORMANCE: Execution + Performance logs \n" +
         "  VERBOSE: All logs" ),
 
+    // HS2 connections guard rails
+    HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER("hive.server2.limit.connections.per.user", 0,
+      "Maximum hive server2 connections per user. Any user exceeding this limit will not be allowed to connect. " +
+        "Default=0 does not enforce limits."),
+    HIVE_SERVER2_LIMIT_CONNECTIONS_PER_IPADDRESS("hive.server2.limit.connections.per.ipaddress", 0,
+      "Maximum hive server2 connections per ipaddress. Any ipaddress exceeding this limit will not be allowed " +
+        "to connect. Default=0 does not enforce limits."),
+    HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER_IPADDRESS("hive.server2.limit.connections.per.user.ipaddress", 0,
+      "Maximum hive server2 connections per user:ipaddress combination. Any user-ipaddress exceeding this limit will " +
+        "not be allowed to connect. Default=0 does not enforce limits."),
+
     // Enable metric collection for HiveServer2
     HIVE_SERVER2_METRICS_ENABLED("hive.server2.metrics.enabled", false, "Enable metrics on the HiveServer2."),
 

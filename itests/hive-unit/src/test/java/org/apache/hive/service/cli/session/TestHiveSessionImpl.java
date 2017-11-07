@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -50,7 +50,7 @@ public class TestHiveSessionImpl {
     HiveConf serverhiveConf = new HiveConf();
     String ipAddress = null;
     HiveSessionImpl session = new HiveSessionImpl(null, protocol, username, password,
-      serverhiveConf, ipAddress) {
+      serverhiveConf, ipAddress, null) {
       @Override
       protected synchronized void acquire(boolean userAccess, boolean isOperation) {
       }
