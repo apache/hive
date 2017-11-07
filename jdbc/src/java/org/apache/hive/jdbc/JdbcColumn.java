@@ -161,6 +161,8 @@ public class JdbcColumn {
       return Type.ARRAY_TYPE;
     } else if ("struct".equalsIgnoreCase(type)) {
       return Type.STRUCT_TYPE;
+    } else if ("uniontype".equalsIgnoreCase(type)) {
+      return Type.UNION_TYPE;
     } else if ("void".equalsIgnoreCase(type) || "null".equalsIgnoreCase(type)) {
       return Type.NULL_TYPE;
     }
