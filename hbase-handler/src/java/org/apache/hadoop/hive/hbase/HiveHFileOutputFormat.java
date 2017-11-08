@@ -35,7 +35,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.CellComparator;
+import org.apache.hadoop.hbase.CellComparatorImpl;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.KeyValueUtil;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
@@ -228,7 +228,7 @@ public class HiveHFileOutputFormat extends
         ImmutableBytesWritable row = new ImmutableBytesWritable(put.getPut().getRow());
         SortedMap<byte[], List<Cell>> cells = put.getPut().getFamilyCellMap();
         for (Map.Entry<byte[], List<Cell>> entry : cells.entrySet()) {
-          Collections.sort(entry.getValue(), new CellComparator());
+          Collections.sort(entry.getValue(), new CellComparatorImpl());
           for (Cell c : entry.getValue()) {
             try {
               fileWriter.write(row, KeyValueUtil.copyToNewKeyValue(c));
