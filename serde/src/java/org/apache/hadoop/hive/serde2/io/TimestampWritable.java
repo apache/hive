@@ -21,8 +21,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -66,13 +65,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
 
   public static final int BINARY_SORTABLE_LENGTH = 11;
 
-  private static final ThreadLocal<DateFormat> threadLocalDateFormat =
-      new ThreadLocal<DateFormat>() {
-        @Override
-        protected DateFormat initialValue() {
-          return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        }
-      };
+  public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
   private Timestamp timestamp = new Timestamp(0);
 
@@ -389,17 +382,11 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
       populateTimestamp();
     }
 
-    String timestampString = timestamp.toString();
-    if (timestampString.length() > 19) {
-      if (timestampString.length() == 21) {
-        if (timestampString.substring(19).compareTo(".0") == 0) {
-          return threadLocalDateFormat.get().format(timestamp);
-        }
-      }
-      return threadLocalDateFormat.get().format(timestamp) + timestampString.substring(19);
+    if (timestamp.getNanos() > 0) {
+      return timestamp.toString();
     }
 
-    return threadLocalDateFormat.get().format(timestamp);
+    return timestamp.toLocalDateTime().format(DATE_TIME_FORMAT);
   }
 
   @Override
