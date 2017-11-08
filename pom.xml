@@ -31,6 +31,7 @@
   </prerequisites>
 
   <modules>
+    <module>storage-api</module>
     <module>accumulo-handler</module>
     <module>vector-code-gen</module>
     <module>beeline</module>
@@ -57,7 +58,6 @@
     <module>shims</module>
     <module>spark-client</module>
     <module>kryo-registrator</module>
-    <module>storage-api</module>
     <module>testutils</module>
     <module>packaging</module>
     <module>standalone-metastore</module>

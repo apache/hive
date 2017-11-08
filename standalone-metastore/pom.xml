@@ -538,6 +538,7 @@
       <plugin>
         <groupId>org.antlr</groupId>
         <artifactId>antlr3-maven-plugin</artifactId>
+        <version>${antlr.version}</version>
         <executions>
           <execution>
             <goals>
