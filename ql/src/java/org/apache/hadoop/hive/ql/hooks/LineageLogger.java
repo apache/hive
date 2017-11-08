@@ -175,7 +175,7 @@ public class LineageLogger implements ExecuteWithHookContext {
 
         List<Edge> edges = getEdges(plan, index);
         Set<Vertex> vertices = getVertices(edges);
-        writeEdges(writer, edges);
+        writeEdges(writer, edges, hookContext.getConf());
         writeVertices(writer, vertices);
         writer.endObject();
         writer.close();
@@ -415,7 +415,8 @@ public class LineageLogger implements ExecuteWithHookContext {
   /**
    * Write out an JSON array of edges.
    */
-  private void writeEdges(JsonWriter writer, List<Edge> edges) throws IOException {
+  private void writeEdges(JsonWriter writer, List<Edge> edges, HiveConf conf)
+      throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
     writer.name("edges");
     writer.beginArray();
     for (Edge edge: edges) {
@@ -433,7 +434,7 @@ public class LineageLogger implements ExecuteWithHookContext {
       }
       writer.endArray();
       if (edge.expr != null) {
-        writer.name("expression").value(edge.expr);
+        writer.name("expression").value(HookUtils.redactLogString(conf, edge.expr));
       }
       writer.name("edgeType").value(edge.type.name());
       writer.endObject();
