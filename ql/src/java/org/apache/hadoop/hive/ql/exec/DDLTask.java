@@ -705,6 +705,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       resourcePlan.setQueryParallelism(desc.getQueryParallelism());
     }
 
+    if (desc.getDefaultPoolPath() != null) {
+      resourcePlan.setDefaultPoolPath(desc.getDefaultPoolPath());
+    }
+
     boolean isActivate = false, isInTest = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
     WorkloadManager wm = null;
     if (desc.getStatus() != null) {

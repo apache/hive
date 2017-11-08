@@ -23,11 +23,11 @@ import java.util.Set;
 public class MWMPool {
   private MWMResourcePlan resourcePlan;
   private String path;
-  private MWMPool parentPool;
   private Double allocFraction;
   private Integer queryParallelism;
   private Set<MWMTrigger> triggers;
   private String schedulingPolicy;
+  private MWMPool parentPool;
 
   public MWMPool() {}
 
@@ -35,7 +35,6 @@ public class MWMPool {
       Double allocFraction, Integer queryParallelism, String schedulingPolicy) {
     this.resourcePlan = resourcePlan;
     this.path = path;
-    this.parentPool = parentPool;
     this.allocFraction = allocFraction;
     this.queryParallelism = queryParallelism;
     this.schedulingPolicy = schedulingPolicy;
@@ -55,14 +54,6 @@ public class MWMPool {
 
   public void setPath(String path) {
     this.path = path;
-  }
-
-  public MWMPool getParentPool() {
-    return parentPool;
-  }
-
-  public void setParentPool(MWMPool parentPool) {
-    this.parentPool = parentPool;
   }
 
   public Double getAllocFraction() {
@@ -95,5 +86,13 @@ public class MWMPool {
 
   public void setSchedulingPolicy(String schedulingPolicy) {
     this.schedulingPolicy = schedulingPolicy;
+  }
+
+  public MWMPool getParentPool() {
+    return parentPool;
+  }
+
+  public void setParentPool(MWMPool parentPool) {
+    this.parentPool = parentPool;
   }
 }

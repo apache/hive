@@ -22,6 +22,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMEN
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
 
+import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.metastore.model.MWMPool;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
@@ -7419,8 +7422,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public WMCreateResourcePlanResponse create_resource_plan(WMCreateResourcePlanRequest request)
         throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+      int defaultPoolSize = MetastoreConf.getIntVar(
+          hiveConf, MetastoreConf.ConfVars.WM_DEFAULT_POOL_SIZE);
+
       try {
-        getMS().createResourcePlan(request.getResourcePlan());
+        getMS().createResourcePlan(request.getResourcePlan(), defaultPoolSize);
         return new WMCreateResourcePlanResponse();
       } catch (MetaException e) {
         LOG.error("Exception while trying to persist resource plan", e);

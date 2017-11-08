@@ -2242,9 +2242,9 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createResourcePlan(WMResourcePlan resourcePlan)
+  public void createResourcePlan(WMResourcePlan resourcePlan, int defaultPoolSize)
       throws AlreadyExistsException, MetaException {
-    rawStore.createResourcePlan(resourcePlan);
+    rawStore.createResourcePlan(resourcePlan, defaultPoolSize);
   }
 
   @Override

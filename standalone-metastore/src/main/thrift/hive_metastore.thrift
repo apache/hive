@@ -1043,6 +1043,7 @@ struct WMResourcePlan {
   1: required string name;
   2: optional WMResourcePlanStatus status;
   3: optional i32 queryParallelism;
+  4: optional string defaultPoolPath;
 }
 
 struct WMPool {

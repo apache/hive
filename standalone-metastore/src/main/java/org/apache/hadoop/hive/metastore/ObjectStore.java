@@ -21,16 +21,12 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
+import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
-
 import org.apache.hadoop.hive.metastore.api.WMMapping;
-
 import org.apache.hadoop.hive.metastore.model.MWMMapping;
-
 import org.apache.hadoop.hive.metastore.api.WMPool;
-
 import org.apache.hadoop.hive.metastore.model.MWMPool;
-
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 
 import java.io.IOException;
@@ -9503,17 +9499,25 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createResourcePlan(WMResourcePlan resourcePlan)
+  public void createResourcePlan(WMResourcePlan resourcePlan, int defaultPoolSize)
       throws AlreadyExistsException, MetaException {
     boolean commited = false;
     String rpName = normalizeIdentifier(resourcePlan.getName());
     Integer queryParallelism = resourcePlan.isSetQueryParallelism() ?
         resourcePlan.getQueryParallelism() : null;
-    MWMResourcePlan rp = new MWMResourcePlan(rpName, queryParallelism,
-        MWMResourcePlan.Status.DISABLED);
+    MWMResourcePlan rp = new MWMResourcePlan(
+        rpName, queryParallelism, MWMResourcePlan.Status.DISABLED);
     try {
       openTransaction();
       pm.makePersistent(rp);
+      // TODO: ideally, this should be moved outside to HiveMetaStore to be shared between
+      //       all the RawStore-s. Right now there's no method to create a pool.
+      if (defaultPoolSize > 0) {
+        MWMPool defaultPool = new MWMPool(rp, "default", null, 1.0, defaultPoolSize, null);
+        pm.makePersistent(defaultPool);
+        rp.setPools(Sets.newHashSet(defaultPool));
+        rp.setDefaultPool(defaultPool);
+      }
       commited = commitTransaction();
     } catch (Exception e) {
       checkForConstraintException(e, "Resource plan already exists: ");
@@ -9534,6 +9538,9 @@ public class ObjectStore implements RawStore, Configurable {
     rp.setStatus(WMResourcePlanStatus.valueOf(mplan.getStatus().name()));
     if (mplan.getQueryParallelism() != null) {
       rp.setQueryParallelism(mplan.getQueryParallelism());
+    }
+    if (mplan.getDefaultPool() != null) {
+      rp.setDefaultPoolPath(mplan.getDefaultPool().getPath());
     }
     return rp;
   }
@@ -9663,11 +9670,38 @@ public class ObjectStore implements RawStore, Configurable {
         result = switchStatus(
             name, mResourcePlan, resourcePlan.getStatus().name(), canActivateDisabled);
       }
+      if (resourcePlan.isSetDefaultPoolPath()) {
+        MWMPool pool = getPoolByPath(resourcePlan, resourcePlan.getDefaultPoolPath());
+        if (pool == null) {
+          throw new NoSuchObjectException(
+              "Cannot find pool: " + resourcePlan.getDefaultPoolPath());
+        }
+        mResourcePlan.setDefaultPool(pool);
+      }
       commited = commitTransaction();
       return result;
     } catch (Exception e) {
       checkForConstraintException(e, "Resource plan name should be unique: ");
       throw e;
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+  }
+
+
+  private MWMPool getPoolByPath(WMResourcePlan parent, String path) {
+    // Note: this doesn't do recursion because we will do that on create/alter.
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MWMPool.class, "path == pname and resourcePlan == rp");
+      query.declareParameters("java.lang.String pname, MWMResourcePlan rp");
+      query.setUnique(true);
+      MWMPool pool = (MWMPool) query.execute(path, parent);
+      pm.retrieve(pool);
+      commited = commitTransaction();
+      return pool;
     } finally {
       rollbackAndCleanup(commited, query);
     }
@@ -9683,16 +9717,15 @@ public class ObjectStore implements RawStore, Configurable {
       query.declareParameters("java.lang.String activeStatus");
       query.setUnique(true);
       MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute(Status.ACTIVE.toString());
+      commited = commitTransaction();
       if (mResourcePlan == null) {
         return null; // No active plan.
       }
-      commited = commitTransaction();
       return fullFromMResourcePlan(mResourcePlan);
     } finally {
       rollbackAndCleanup(commited, query);
     }
   }
-
 
   private WMFullResourcePlan switchStatus(String name, MWMResourcePlan mResourcePlan,
       String status, boolean canActivateDisabled) throws InvalidOperationException {
@@ -9801,11 +9834,23 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      query = pm.newQuery(MWMResourcePlan.class, "name == resourcePlanName && status != \"ACTIVE\"");
-      query.declareParameters("java.lang.String resourcePlanName");
-      if (query.deletePersistentAll(name) == 0) {
-        throw new NoSuchObjectException("Cannot find resourcePlan: " + name + " or its active");
+      query = pm.newQuery(MWMResourcePlan.class, "name == rpname");
+      query.declareParameters("java.lang.String rpname");
+      query.setUnique(true);
+      MWMResourcePlan resourcePlan = (MWMResourcePlan) query.execute(name);
+      pm.retrieve(resourcePlan);
+      if (resourcePlan == null) {
+        throw new NoSuchObjectException("There is no resource plan named: " + name);
       }
+      if (resourcePlan.getStatus() == Status.ACTIVE) {
+        throw new MetaException("Cannot drop an active resource plan");
+      }
+      // First, drop all the dependencies.
+      resourcePlan.setDefaultPool(null);
+      pm.deletePersistentAll(resourcePlan.getTriggers());
+      pm.deletePersistentAll(resourcePlan.getMappings());
+      pm.deletePersistentAll(resourcePlan.getPools());
+      pm.deletePersistent(resourcePlan);
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, query);

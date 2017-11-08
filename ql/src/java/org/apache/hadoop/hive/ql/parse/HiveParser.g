@@ -413,6 +413,7 @@ TOK_VALIDATE;
 TOK_ACTIVATE;
 TOK_QUERY_PARALLELISM;
 TOK_RENAME;
+TOK_DEFAULT_POOL;
 TOK_CREATE_TRIGGER;
 TOK_ALTER_TRIGGER;
 TOK_DROP_TRIGGER;
@@ -594,6 +595,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_QUERY_PARALLELISM", "QUERY_PARALLELISM");
     xlateMap.put("KW_PLANS", "PLANS");
     xlateMap.put("KW_ACTIVATE", "ACTIVATE");
+    xlateMap.put("KW_DEFAULT", "DEFAULT");
+    xlateMap.put("KW_POOL", "POOL");
     xlateMap.put("KW_MOVE", "MOVE");
     xlateMap.put("KW_DO", "DO");
 
@@ -1002,6 +1005,22 @@ createResourcePlanStatement
     -> ^(TOK_CREATERESOURCEPLAN $name $parallelism?)
     ;
 
+alterRpSet
+@init { pushMsg("alterRpSet", state); }
+@after { popMsg(state); }
+  : (
+     (KW_QUERY_PARALLELISM EQUAL parallelism=Number -> ^(TOK_QUERY_PARALLELISM $parallelism))
+   | (KW_DEFAULT KW_POOL EQUAL poolName=StringLiteral -> ^(TOK_DEFAULT_POOL $poolName))
+    )
+  ;
+
+alterRpSetList
+@init { pushMsg("alterRpSetList", state); }
+@after { popMsg(state); }
+  :
+  alterRpSet (COMMA alterRpSet)* -> alterRpSet+
+  ;
+
 activate : KW_ACTIVATE -> ^(TOK_ACTIVATE);
 enable : KW_ENABLE -> ^(TOK_ENABLE);
 
@@ -1011,8 +1030,7 @@ alterResourcePlanStatement
     : KW_ALTER KW_RESOURCE KW_PLAN name=identifier (
           (KW_VALIDATE -> ^(TOK_ALTER_RP $name TOK_VALIDATE))
         | (KW_DISABLE -> ^(TOK_ALTER_RP $name TOK_DISABLE))
-        | (KW_SET KW_QUERY_PARALLELISM EQUAL parallelism=Number
-           -> ^(TOK_ALTER_RP $name TOK_QUERY_PARALLELISM $parallelism))
+        | (KW_SET setList=alterRpSetList -> ^(TOK_ALTER_RP $name $setList))
         | (KW_RENAME KW_TO newName=identifier
            -> ^(TOK_ALTER_RP $name TOK_RENAME $newName))
         | ((activate+ enable? | enable+ activate?) -> ^(TOK_ALTER_RP $name activate? enable?))

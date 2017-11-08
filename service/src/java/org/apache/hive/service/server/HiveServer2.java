@@ -302,9 +302,7 @@ public class HiveServer2 extends CompositeService {
     pool.setQueryParallelism(1);
     resourcePlan = new WMFullResourcePlan(
         new WMResourcePlan("testDefault"), Lists.newArrayList(pool));
-    WMMapping mapping = new WMMapping("testDefault", "DEFAULT", "");
-    mapping.setPoolName("llap");
-    resourcePlan.addToMappings(mapping);
+    resourcePlan.getPlan().setDefaultPoolPath("testDefault");
     return resourcePlan;
   }
 

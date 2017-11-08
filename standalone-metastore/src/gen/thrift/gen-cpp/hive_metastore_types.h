@@ -8509,9 +8509,10 @@ inline std::ostream& operator<<(std::ostream& out, const TableMeta& obj)
 }
 
 typedef struct _WMResourcePlan__isset {
-  _WMResourcePlan__isset() : status(false), queryParallelism(false) {}
+  _WMResourcePlan__isset() : status(false), queryParallelism(false), defaultPoolPath(false) {}
   bool status :1;
   bool queryParallelism :1;
+  bool defaultPoolPath :1;
 } _WMResourcePlan__isset;
 
 class WMResourcePlan {
@@ -8519,13 +8520,14 @@ class WMResourcePlan {
 
   WMResourcePlan(const WMResourcePlan&);
   WMResourcePlan& operator=(const WMResourcePlan&);
-  WMResourcePlan() : name(), status((WMResourcePlanStatus::type)0), queryParallelism(0) {
+  WMResourcePlan() : name(), status((WMResourcePlanStatus::type)0), queryParallelism(0), defaultPoolPath() {
   }
 
   virtual ~WMResourcePlan() throw();
   std::string name;
   WMResourcePlanStatus::type status;
   int32_t queryParallelism;
+  std::string defaultPoolPath;
 
   _WMResourcePlan__isset __isset;
 
@@ -8534,6 +8536,8 @@ class WMResourcePlan {
   void __set_status(const WMResourcePlanStatus::type val);
 
   void __set_queryParallelism(const int32_t val);
+
+  void __set_defaultPoolPath(const std::string& val);
 
   bool operator == (const WMResourcePlan & rhs) const
   {
@@ -8546,6 +8550,10 @@ class WMResourcePlan {
     if (__isset.queryParallelism != rhs.__isset.queryParallelism)
       return false;
     else if (__isset.queryParallelism && !(queryParallelism == rhs.queryParallelism))
+      return false;
+    if (__isset.defaultPoolPath != rhs.__isset.defaultPoolPath)
+      return false;
+    else if (__isset.defaultPoolPath && !(defaultPoolPath == rhs.defaultPoolPath))
       return false;
     return true;
   }

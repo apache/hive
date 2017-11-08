@@ -20458,6 +20458,10 @@ class WMResourcePlan {
    * @var int
    */
   public $queryParallelism = null;
+  /**
+   * @var string
+   */
+  public $defaultPoolPath = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -20474,6 +20478,10 @@ class WMResourcePlan {
           'var' => 'queryParallelism',
           'type' => TType::I32,
           ),
+        4 => array(
+          'var' => 'defaultPoolPath',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -20485,6 +20493,9 @@ class WMResourcePlan {
       }
       if (isset($vals['queryParallelism'])) {
         $this->queryParallelism = $vals['queryParallelism'];
+      }
+      if (isset($vals['defaultPoolPath'])) {
+        $this->defaultPoolPath = $vals['defaultPoolPath'];
       }
     }
   }
@@ -20529,6 +20540,13 @@ class WMResourcePlan {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->defaultPoolPath);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -20555,6 +20573,11 @@ class WMResourcePlan {
     if ($this->queryParallelism !== null) {
       $xfer += $output->writeFieldBegin('queryParallelism', TType::I32, 3);
       $xfer += $output->writeI32($this->queryParallelism);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->defaultPoolPath !== null) {
+      $xfer += $output->writeFieldBegin('defaultPoolPath', TType::STRING, 4);
+      $xfer += $output->writeString($this->defaultPoolPath);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

@@ -1095,6 +1095,9 @@
       <field name="status">
         <column name="STATUS" jdbc-type="string" allows-null="false"/>
       </field>
+      <field name="defaultPool">
+        <column name="DEFAULT_POOL_ID" jdbc-type="integer" allows-null="true"/>
+      </field>
       <index name="UniqueResourcePlan" unique="true">
         <column name="NAME"/>
       </index>

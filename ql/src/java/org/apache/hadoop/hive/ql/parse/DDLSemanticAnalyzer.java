@@ -890,6 +890,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       Tree child = ast.getChild(i);
       switch (child.getType()) {
       case HiveParser.TOK_VALIDATE:
+        if (desc != null) throw new SemanticException("Invalid ALTER VALIDATE command");
         desc = AlterResourcePlanDesc.createValidatePlan(rpName);
         break;
       case HiveParser.TOK_ACTIVATE:
@@ -912,30 +913,40 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         break;
       case HiveParser.TOK_DISABLE:
-        if (desc != null) {
-          throw new SemanticException("Invalid ALTER DISABLE command");
-        }
+        if (desc != null) throw new SemanticException("Invalid ALTER DISABLE command");
         desc = AlterResourcePlanDesc.createChangeStatus(rpName, WMResourcePlanStatus.DISABLED);
         break;
       case HiveParser.TOK_QUERY_PARALLELISM:
-        if (ast.getChildCount() <= (i + 1)) {
-          throw new SemanticException(
-              "Expected number for query parallelism in alter resource plan statment");
+        if (child.getChildCount() != 1) {
+          throw new SemanticException("Expected one argument");
         }
-        int queryParallelism = Integer.parseInt(ast.getChild(++i).getText());
-        desc = AlterResourcePlanDesc.createChangeParallelism(rpName, queryParallelism);
+        if (desc == null) {
+          desc = AlterResourcePlanDesc.createSet(rpName);
+        }
+        desc.setQueryParallelism(Integer.parseInt(child.getChild(0).getText()));
+        break;
+      case HiveParser.TOK_DEFAULT_POOL:
+        if (child.getChildCount() != 1) {
+          throw new SemanticException("Expected one argument");
+        }
+        if (desc == null) {
+          desc = AlterResourcePlanDesc.createSet(rpName);
+        }
+        desc.setDefaultPoolPath(child.getChild(0).getText());
         break;
       case HiveParser.TOK_RENAME:
-        if (ast.getChildCount() <= (i + 1)) {
-          throw new SemanticException(
-              "Expected new name for rename in alter resource plan statment");
+        if (desc != null) throw new SemanticException("Invalid ALTER RENAME command");
+        if (ast.getChildCount() == (i + 1)) {
+          throw new SemanticException("Expected an argument");
         }
-        String name = ast.getChild(++i).getText();
-        desc = AlterResourcePlanDesc.createRenamePlan(rpName, name);
+        if (desc == null) {
+          desc = AlterResourcePlanDesc.createSet(rpName);
+        }
+        desc.setNewName(ast.getChild(++i).getText());
         break;
       default:
-        throw new SemanticException("Unexpected token in alter resource plan statement: "
-            + ast.getChild(1).getType());
+        throw new SemanticException(
+          "Unexpected token in alter resource plan statement: " + child.getType());
       }
     }
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));

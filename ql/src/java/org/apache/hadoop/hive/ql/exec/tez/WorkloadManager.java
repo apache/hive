@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import org.apache.hadoop.hive.ql.wm.ExpressionFactory;
 
 import org.apache.hadoop.hive.ql.wm.Trigger.Action;
@@ -434,7 +435,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     //    want query level fairness, and don't want the get in queue to hold up a session.
     GetRequest req;
     while ((req = e.getRequests.pollFirst()) != null) {
-      LOG.debug("Processing a new get request from " + req.userName);
+      LOG.debug("Processing a new get request from " + req.mappingInput);
       queueGetRequestOnMasterThread(req, poolsToRedistribute, syncWork);
     }
     e.toReuse.clear();
@@ -591,7 +592,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // FIXME: Add Triggers from metastore to poolstate
     // Note: we assume here that plan has been validated beforehand, so we don't verify
     //       that fractions or query parallelism add up, etc.
-    this.userPoolMapping = new UserPoolMapping(e.resourcePlanToApply.getMappings());
+    this.userPoolMapping = new UserPoolMapping(e.resourcePlanToApply.getMappings(),
+        e.resourcePlanToApply.getPlan().getDefaultPoolPath());
     HashMap<String, PoolState> oldPools = pools;
     pools = new HashMap<>();
 
@@ -681,10 +683,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
   private void queueGetRequestOnMasterThread(
       GetRequest req, HashSet<String> poolsToRedistribute, WmThreadSyncWork syncWork) {
-    String poolName = userPoolMapping.mapSessionToPoolName(req.userName);
+    String poolName = userPoolMapping.mapSessionToPoolName(req.mappingInput);
     if (poolName == null) {
-      req.future.setException(new HiveException(
-          "Cannot find any pool mapping for user " + req.userName));
+      req.future.setException(new NoPoolMappingException(
+          "Cannot find any pool mapping for " + req.mappingInput));
       returnSessionOnFailedReuse(req, syncWork, poolsToRedistribute);
       return;
     }
@@ -856,13 +858,14 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       }
     };
     private final long order;
-    private final String userName;
+    private final MappingInput mappingInput;
     private final SettableFuture<WmTezSession> future;
     private WmTezSession sessionToReuse;
 
-    private GetRequest(String userName, SettableFuture<WmTezSession> future,
+    private GetRequest(MappingInput mappingInput, SettableFuture<WmTezSession> future,
         WmTezSession sessionToReuse, long order) {
-      this.userName = userName;
+      assert mappingInput != null;
+      this.mappingInput = mappingInput;
       this.future = future;
       this.sessionToReuse = sessionToReuse;
       this.order = order;
@@ -870,18 +873,18 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
     @Override
     public String toString() {
-      return "[#" + order + ", " + userName + ", reuse " + sessionToReuse + "]";
+      return "[#" + order + ", " + mappingInput + ", reuse " + sessionToReuse + "]";
     }
   }
 
   public TezSessionState getSession(
-      TezSessionState session, String userName, HiveConf conf) throws Exception {
+      TezSessionState session, MappingInput input, HiveConf conf) throws Exception {
     // Note: not actually used for pool sessions; verify some things like doAs are not set.
     validateConfig(conf);
     SettableFuture<WmTezSession> future = SettableFuture.create();
     WmTezSession wmSession = checkSessionForReuse(session);
     GetRequest req = new GetRequest(
-        userName, future, wmSession, getRequestVersion.incrementAndGet());
+        input, future, wmSession, getRequestVersion.incrementAndGet());
     currentLock.lock();
     try {
       current.getRequests.add(req);
@@ -1434,8 +1437,21 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     }
   }
 
+  boolean isManaged(MappingInput input) {
+    // This is always replaced atomically, so we don't care about concurrency here.
+    return userPoolMapping.mapSessionToPoolName(input) != null;
+  }
+
   @VisibleForTesting
   TezSessionPool<WmTezSession> getTezAmPool() {
     return tezAmPool;
+  }
+
+  public final static class NoPoolMappingException extends Exception {
+    public NoPoolMappingException(String message) {
+      super(message);
+    }
+
+    private static final long serialVersionUID = 346375346724L;
   }
 }

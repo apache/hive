@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -157,17 +159,8 @@ public class TezTask extends Task<TezWork> {
         LOG.warn("The session: " + session + " has not been opened");
       }
       Set<String> desiredCounters = new HashSet<>();
-      if (WorkloadManager.isInUse(ss.getConf())) {
-        WorkloadManager wm = WorkloadManager.getInstance();
-        // TODO: in future, we may also pass getUserIpAddress.
-        // Note: for now this will just block to wait for a session based on parallelism.
-        session = wm.getSession(session, ss.getUserName(), conf);
-        desiredCounters.addAll(wm.getTriggerCounterNames());
-      } else {
-        TezSessionPoolManager pm = TezSessionPoolManager.getInstance();
-        session = pm.getSession(session, conf, false, getWork().getLlapMode());
-        desiredCounters.addAll(pm.getTriggerCounterNames());
-      }
+      session = WorkloadManagerFederation.getSession(session, conf,
+          new MappingInput(ss.getUserName()), getWork().getLlapMode(), desiredCounters);
 
       TriggerContext triggerContext = ctx.getTriggerContext();
       triggerContext.setDesiredCounters(desiredCounters);

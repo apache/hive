@@ -432,6 +432,9 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
         if (plan.isSetQueryParallelism()) {
           generator.writeNumberField("queryParallelism", plan.getQueryParallelism());
         }
+        if (plan.isSetDefaultPoolPath()) {
+          generator.writeStringField("defaultPoolPath", plan.getDefaultPoolPath());
+        }
         generator.writeEndObject();
       }
       generator.writeEndArray();

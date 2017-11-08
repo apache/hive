@@ -20792,6 +20792,11 @@ void WMResourcePlan::__set_queryParallelism(const int32_t val) {
 __isset.queryParallelism = true;
 }
 
+void WMResourcePlan::__set_defaultPoolPath(const std::string& val) {
+  this->defaultPoolPath = val;
+__isset.defaultPoolPath = true;
+}
+
 uint32_t WMResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -20840,6 +20845,14 @@ uint32_t WMResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->defaultPoolPath);
+          this->__isset.defaultPoolPath = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -20873,6 +20886,11 @@ uint32_t WMResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot) con
     xfer += oprot->writeI32(this->queryParallelism);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.defaultPoolPath) {
+    xfer += oprot->writeFieldBegin("defaultPoolPath", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->defaultPoolPath);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -20883,6 +20901,7 @@ void swap(WMResourcePlan &a, WMResourcePlan &b) {
   swap(a.name, b.name);
   swap(a.status, b.status);
   swap(a.queryParallelism, b.queryParallelism);
+  swap(a.defaultPoolPath, b.defaultPoolPath);
   swap(a.__isset, b.__isset);
 }
 
@@ -20890,12 +20909,14 @@ WMResourcePlan::WMResourcePlan(const WMResourcePlan& other864) {
   name = other864.name;
   status = other864.status;
   queryParallelism = other864.queryParallelism;
+  defaultPoolPath = other864.defaultPoolPath;
   __isset = other864.__isset;
 }
 WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other865) {
   name = other865.name;
   status = other865.status;
   queryParallelism = other865.queryParallelism;
+  defaultPoolPath = other865.defaultPoolPath;
   __isset = other865.__isset;
   return *this;
 }
@@ -20905,6 +20926,7 @@ void WMResourcePlan::printTo(std::ostream& out) const {
   out << "name=" << to_string(name);
   out << ", " << "status="; (__isset.status ? (out << to_string(status)) : (out << "<null>"));
   out << ", " << "queryParallelism="; (__isset.queryParallelism ? (out << to_string(queryParallelism)) : (out << "<null>"));
+  out << ", " << "defaultPoolPath="; (__isset.defaultPoolPath ? (out << to_string(defaultPoolPath)) : (out << "<null>"));
   out << ")";
 }
 

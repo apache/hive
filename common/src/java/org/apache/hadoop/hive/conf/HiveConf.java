@@ -288,7 +288,8 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_FULL,
       HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_CLEAN_UNTIL,
       HiveConf.ConfVars.METASTORE_FASTPATH,
-      HiveConf.ConfVars.METASTORE_HBASE_FILE_METADATA_THREADS
+      HiveConf.ConfVars.METASTORE_HBASE_FILE_METADATA_THREADS,
+      HiveConf.ConfVars.METASTORE_WM_DEFAULT_POOL_SIZE
       };
 
   /**
@@ -669,7 +670,12 @@ public class HiveConf extends Configuration {
     METASTORE_TCP_KEEP_ALIVE("hive.metastore.server.tcp.keepalive", true,
         "Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections."),
 
-    METASTORE_INT_ORIGINAL("hive.metastore.archive.intermediate.original",
+    METASTORE_WM_DEFAULT_POOL_SIZE("hive.metastore.wm.default.pool.size", 4,
+        "The size of a default pool to create when creating an empty resource plan;\n" +
+        "If not positive, no default pool will be created."),
+
+
+   METASTORE_INT_ORIGINAL("hive.metastore.archive.intermediate.original",
         "_INTERMEDIATE_ORIGINAL",
         "Intermediate dir suffixes used for archiving. Not important what they\n" +
         "are, as long as collisions are avoided"),

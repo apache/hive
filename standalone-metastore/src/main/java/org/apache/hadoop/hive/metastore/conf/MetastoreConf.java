@@ -740,6 +740,10 @@ public class MetastoreConf {
     WRITE_SET_REAPER_INTERVAL("metastore.writeset.reaper.interval",
         "hive.writeset.reaper.interval", 60, TimeUnit.SECONDS,
         "Frequency of WriteSet reaper runs"),
+    WM_DEFAULT_POOL_SIZE("metastore.wm.default.pool.size",
+        "hive.metastore.wm.default.pool.size", 4,
+        "The size of a default pool to create when creating an empty resource plan;\n" +
+        "If not positive, no default pool will be created."),
 
     // Hive values we have copied and use as is
     // These two are used to indicate that we are running tests

@@ -557,6 +557,12 @@ class TextMetaDataFormatter implements MetaDataFormatter {
         }
         out.write(separator);
         out.write(plan.getStatus().name().getBytes("UTF-8"));
+        out.write(separator);
+        if (plan.isSetDefaultPoolPath()) {
+          out.write(plan.getDefaultPoolPath().getBytes("UTF-8"));
+        } else {
+          out.writeBytes("null");
+        }
         out.write(terminator);
       }
     } catch (IOException e) {

@@ -34,53 +34,63 @@ class UserPoolMapping {
       this.priority = priority;
     }
     int priority;
+    /** The destination pool; null means unmanaged. */
     String fullPoolName;
     @Override
     public String toString() {
-      return "[" + fullPoolName + ", priority=" + priority + "]";
+      return "[" + (fullPoolName == null ? "unmanaged" : fullPoolName)
+          + ", priority=" + priority + "]";
     }
   }
 
-  private final Map<String, Mapping> userMappings = new HashMap<>();
-  private final String defaultPoolName;
+  /** Contains all the information necessary to map a query to a pool. */
+  public static final class MappingInput {
+    public final String userName;
+    // TODO: we may add app name, group name, etc. later
 
-  public UserPoolMapping(List<WMMapping> mappings) {
-    String defaultPoolName = null;
-    for (WMMapping mapping : mappings) {
-      MappingType type = MappingType.valueOf(mapping.getEntityType().toUpperCase());
-      switch (type) {
-      case USER: {
+    public MappingInput(String userName) {
+      this.userName = userName;
+    }
+
+    @Override
+    public String toString() {
+      return userName;
+    }
+  }
+
+
+  private final Map<String, Mapping> userMappings = new HashMap<>();
+  private final String defaultPoolPath;
+
+  public UserPoolMapping(List<WMMapping> mappings, String defaultPoolPath) {
+    if (mappings != null) {
+      for (WMMapping mapping : mappings) {
+        MappingType type = MappingType.valueOf(mapping.getEntityType().toUpperCase());
+        switch (type) {
+        case USER: {
           Mapping val = new Mapping(mapping.getPoolName(), mapping.getOrdering());
           Mapping oldValue = userMappings.put(mapping.getEntityName(), val);
           if (oldValue != null) {
             throw new AssertionError("Duplicate mapping for user " + mapping.getEntityName()
                 + "; " + oldValue + " and " + val);
           }
-        break;
-      }
-      case DEFAULT: {
-        String poolName = mapping.getPoolName();
-        if (defaultPoolName != null) {
-          throw new AssertionError("Duplicate default mapping; "
-              + defaultPoolName + " and " + poolName);
+          break;
         }
-        defaultPoolName = poolName;
-        break;
-      }
-      default: throw new AssertionError("Unknown type " + mapping.getEntityType());
+        default: throw new AssertionError("Unknown type " + type);
+        }
       }
     }
-    this.defaultPoolName = defaultPoolName;
+    this.defaultPoolPath = defaultPoolPath;
   }
 
-  public String mapSessionToPoolName(String userName) {
+  public String mapSessionToPoolName(MappingInput input) {
     // For now, we only have user rules, so this is very simple.
     // In future we'd also look up groups (each groups the user is in initially; we may do it
     // the opposite way if the user is a member of many groups but there are not many rules),
     // whatever user supplies in connection string to HS2, etc.
     // If multiple rules match, we'd need to get the highest priority one.
-    Mapping userMapping = userMappings.get(userName);
+    Mapping userMapping = userMappings.get(input.userName);
     if (userMapping != null) return userMapping.fullPoolName;
-    return defaultPoolName;
+    return defaultPoolPath;
   }
 }

@@ -941,9 +941,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void createResourcePlan(WMResourcePlan resourcePlan)
+  public void createResourcePlan(WMResourcePlan resourcePlan, int defaultPoolSize)
       throws AlreadyExistsException, MetaException {
-    objectStore.createResourcePlan(resourcePlan);
+    objectStore.createResourcePlan(resourcePlan, defaultPoolSize);
   }
 
   @Override

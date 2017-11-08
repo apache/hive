@@ -3258,11 +3258,13 @@ class WMResourcePlan
   NAME = 1
   STATUS = 2
   QUERYPARALLELISM = 3
+  DEFAULTPOOLPATH = 4
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :optional => true, :enum_class => ::WMResourcePlanStatus},
-    QUERYPARALLELISM => {:type => ::Thrift::Types::I32, :name => 'queryParallelism', :optional => true}
+    QUERYPARALLELISM => {:type => ::Thrift::Types::I32, :name => 'queryParallelism', :optional => true},
+    DEFAULTPOOLPATH => {:type => ::Thrift::Types::STRING, :name => 'defaultPoolPath', :optional => true}
   }
 
   def struct_fields; FIELDS; end

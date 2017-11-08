@@ -84,11 +84,9 @@ public class TestTriggersWorkloadManager extends TestTriggersTezSessionPoolManag
     WMPool pool = new WMPool("rp", "llap");
     pool.setAllocFraction(1.0f);
     pool.setQueryParallelism(1);
-    WMMapping mapping = new WMMapping("rp", "DEFAULT", "");
-    mapping.setPoolName("llap");
     WMFullResourcePlan rp = new WMFullResourcePlan(
         new WMResourcePlan("rp"), Lists.newArrayList(pool));
-    rp.addToMappings(mapping);
+    rp.getPlan().setDefaultPoolPath("llap");
     for (Trigger trigger : triggers) {
       rp.addToTriggers(wmTriggerFromTrigger(trigger));
       rp.addToPoolTriggers(new WMPoolTrigger("llap", trigger.getName()));

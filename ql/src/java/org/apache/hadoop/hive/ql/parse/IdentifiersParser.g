@@ -829,6 +829,8 @@ nonReserved
     | KW_WAIT
     | KW_ZONE
     | KW_TIMESTAMPTZ
+    | KW_DEFAULT
+    | KW_POOL
 
 ;
 
