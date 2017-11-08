@@ -468,7 +468,6 @@
       <!-- TODO MS-SPLIT assembly plugin -->
       <!-- TODO MS-SPLIT findbugs plugin -->
       <!-- TODO MS-SPLIT javadoc plugin -->
-      <!-- TODO MS-SPLIT rat plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -493,6 +492,28 @@
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
           </additionalClasspathElements>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>0.10</version>
+        <configuration>
+          <excludes>
+            <exclude>**/README.md</exclude>
+            <exclude>**/*.iml</exclude>
+            <exclude>**/*.txt</exclude>
+            <exclude>**/*.log</exclude>
+            <exclude>**/*.arcconfig</exclude>
+            <exclude>**/package-info.java</exclude>
+            <exclude>**/*.properties</exclude>
+            <exclude>**/*.q</exclude>
+            <exclude>**/*.q.out</exclude>
+            <exclude>**/*.xml</exclude>
+            <exclude>**/gen/**</exclude>
+            <exclude>**/patchprocess/**</exclude>
+            <exclude>**/metastore_db/**</exclude>
+          </excludes>
         </configuration>
       </plugin>
       <plugin>
