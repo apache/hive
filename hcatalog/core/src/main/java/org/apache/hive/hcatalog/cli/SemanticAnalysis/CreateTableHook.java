@@ -106,7 +106,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
 
       case HiveParser.TOK_TABLEPARTCOLS:
         List<FieldSchema> partCols = BaseSemanticAnalyzer
-          .getColumns((ASTNode) child.getChild(0), false);
+          .getColumns(child, false);
         for (FieldSchema fs : partCols) {
           if (!fs.getType().equalsIgnoreCase("string")) {
             throw new SemanticException(

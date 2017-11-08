@@ -134,7 +134,7 @@ class MetaStoreDirectSql {
   @TableName
   private String DBS, TBLS, PARTITIONS, DATABASE_PARAMS, PARTITION_PARAMS, SORT_COLS, SD_PARAMS,
       SDS, SERDES, SKEWED_STRING_LIST_VALUES, SKEWED_VALUES, BUCKETING_COLS, SKEWED_COL_NAMES,
-      SKEWED_COL_VALUE_LOC_MAP, COLUMNS_V2, SERDE_PARAMS, PART_COL_STATS, KEY_CONSTRAINTS,
+      SKEWED_COL_VALUE_LOC_MAP, COLUMNS_V2, PARTITION_KEYS, SERDE_PARAMS, PART_COL_STATS, KEY_CONSTRAINTS,
       TAB_COL_STATS, PARTITION_KEY_VALS;
 
   public MetaStoreDirectSql(PersistenceManager pm, Configuration conf, String schema) {
@@ -2006,26 +2006,32 @@ class MetaStoreDirectSql {
   public List<SQLForeignKey> getForeignKeys(String parent_db_name, String parent_tbl_name, String foreign_db_name, String foreign_tbl_name) throws MetaException {
     List<SQLForeignKey> ret = new ArrayList<SQLForeignKey>();
     String queryText =
-      "SELECT  \"D2\".\"NAME\", \"T2\".\"TBL_NAME\", \"C2\".\"COLUMN_NAME\","
-      + "" + DBS + ".\"NAME\", " + TBLS + ".\"TBL_NAME\", " + COLUMNS_V2 + ".\"COLUMN_NAME\", "
+      "SELECT  \"D2\".\"NAME\", \"T2\".\"TBL_NAME\", "
+      + "CASE WHEN \"C2\".\"COLUMN_NAME\" IS NOT NULL THEN \"C2\".\"COLUMN_NAME\" "
+      + "ELSE \"P2\".\"PKEY_NAME\" END, "
+      + "" + DBS + ".\"NAME\", " + TBLS + ".\"TBL_NAME\", "
+      + "CASE WHEN " + COLUMNS_V2 + ".\"COLUMN_NAME\" IS NOT NULL THEN " + COLUMNS_V2 + ".\"COLUMN_NAME\" "
+      + "ELSE " + PARTITION_KEYS + ".\"PKEY_NAME\" END, "
       + "" + KEY_CONSTRAINTS + ".\"POSITION\", " + KEY_CONSTRAINTS + ".\"UPDATE_RULE\", " + KEY_CONSTRAINTS + ".\"DELETE_RULE\", "
       + "" + KEY_CONSTRAINTS + ".\"CONSTRAINT_NAME\" , \"KEY_CONSTRAINTS2\".\"CONSTRAINT_NAME\", " + KEY_CONSTRAINTS + ".\"ENABLE_VALIDATE_RELY\" "
       + " from " + TBLS + " "
-      + " INNER join " + KEY_CONSTRAINTS + " ON " + TBLS + ".\"TBL_ID\" = " + KEY_CONSTRAINTS + ".\"CHILD_TBL_ID\" "
-      + " INNER join " + KEY_CONSTRAINTS + " \"KEY_CONSTRAINTS2\" ON \"KEY_CONSTRAINTS2\".\"PARENT_TBL_ID\"  = " + KEY_CONSTRAINTS + ".\"PARENT_TBL_ID\" "
+      + " INNER JOIN " + KEY_CONSTRAINTS + " ON " + TBLS + ".\"TBL_ID\" = " + KEY_CONSTRAINTS + ".\"CHILD_TBL_ID\" "
+      + " INNER JOIN " + KEY_CONSTRAINTS + " \"KEY_CONSTRAINTS2\" ON \"KEY_CONSTRAINTS2\".\"PARENT_TBL_ID\"  = " + KEY_CONSTRAINTS + ".\"PARENT_TBL_ID\" "
       + " AND \"KEY_CONSTRAINTS2\".\"PARENT_CD_ID\"  = " + KEY_CONSTRAINTS + ".\"PARENT_CD_ID\" AND "
       + " \"KEY_CONSTRAINTS2\".\"PARENT_INTEGER_IDX\"  = " + KEY_CONSTRAINTS + ".\"PARENT_INTEGER_IDX\" "
-      + " INNER join " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
-      + " INNER join " + TBLS + " \"T2\" ON  " + KEY_CONSTRAINTS + ".\"PARENT_TBL_ID\" = \"T2\".\"TBL_ID\" "
-      + " INNER join " + DBS + " \"D2\" ON \"T2\".\"DB_ID\" = \"D2\".\"DB_ID\" "
-      + " INNER JOIN " + COLUMNS_V2 + "  ON " + COLUMNS_V2 + ".\"CD_ID\" = " + KEY_CONSTRAINTS + ".\"CHILD_CD_ID\" AND "
+      + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
+      + " INNER JOIN " + TBLS + " \"T2\" ON  " + KEY_CONSTRAINTS + ".\"PARENT_TBL_ID\" = \"T2\".\"TBL_ID\" "
+      + " INNER JOIN " + DBS + " \"D2\" ON \"T2\".\"DB_ID\" = \"D2\".\"DB_ID\" "
+      + " LEFT OUTER JOIN " + COLUMNS_V2 + "  ON " + COLUMNS_V2 + ".\"CD_ID\" = " + KEY_CONSTRAINTS + ".\"CHILD_CD_ID\" AND "
       + " " + COLUMNS_V2 + ".\"INTEGER_IDX\" = " + KEY_CONSTRAINTS + ".\"CHILD_INTEGER_IDX\" "
-      + " INNER JOIN " + COLUMNS_V2 + " \"C2\" ON \"C2\".\"CD_ID\" = " + KEY_CONSTRAINTS + ".\"PARENT_CD_ID\" AND "
+      + " LEFT OUTER JOIN " + PARTITION_KEYS + " ON " + TBLS + ".\"TBL_ID\" = " + PARTITION_KEYS + ".\"TBL_ID\" AND "
+      + " " + PARTITION_KEYS + ".\"INTEGER_IDX\" = " + KEY_CONSTRAINTS + ".\"CHILD_INTEGER_IDX\" "
+      + " LEFT OUTER JOIN " + COLUMNS_V2 + " \"C2\" ON \"C2\".\"CD_ID\" = " + KEY_CONSTRAINTS + ".\"PARENT_CD_ID\" AND "
       + " \"C2\".\"INTEGER_IDX\" = " + KEY_CONSTRAINTS + ".\"PARENT_INTEGER_IDX\" "
-      + " WHERE " + KEY_CONSTRAINTS + ".\"CONSTRAINT_TYPE\" = "
-      + MConstraint.FOREIGN_KEY_CONSTRAINT
-      + " AND \"KEY_CONSTRAINTS2\".\"CONSTRAINT_TYPE\" = "
-      + MConstraint.PRIMARY_KEY_CONSTRAINT + " AND"
+      + " LEFT OUTER JOIN " + PARTITION_KEYS + " \"P2\" ON \"P2\".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\" AND "
+      + " \"P2\".\"INTEGER_IDX\" = " + KEY_CONSTRAINTS + ".\"PARENT_INTEGER_IDX\" "
+      + " WHERE " + KEY_CONSTRAINTS + ".\"CONSTRAINT_TYPE\" = " + MConstraint.FOREIGN_KEY_CONSTRAINT
+      + " AND \"KEY_CONSTRAINTS2\".\"CONSTRAINT_TYPE\" = " + MConstraint.PRIMARY_KEY_CONSTRAINT + " AND"
       + (foreign_db_name == null ? "" : " " + DBS + ".\"NAME\" = ? AND")
       + (foreign_tbl_name == null ? "" : " " + TBLS + ".\"TBL_NAME\" = ? AND")
       + (parent_tbl_name == null ? "" : " \"T2\".\"TBL_NAME\" = ? AND")
@@ -2084,14 +2090,17 @@ class MetaStoreDirectSql {
   public List<SQLPrimaryKey> getPrimaryKeys(String db_name, String tbl_name) throws MetaException {
     List<SQLPrimaryKey> ret = new ArrayList<SQLPrimaryKey>();
     String queryText =
-      "SELECT " + DBS + ".\"NAME\", " + TBLS + ".\"TBL_NAME\", " + COLUMNS_V2 + ".\"COLUMN_NAME\","
-      + "" + KEY_CONSTRAINTS + ".\"POSITION\", "
+      "SELECT " + DBS + ".\"NAME\", " + TBLS + ".\"TBL_NAME\", "
+      + "CASE WHEN " + COLUMNS_V2 + ".\"COLUMN_NAME\" IS NOT NULL THEN " + COLUMNS_V2 + ".\"COLUMN_NAME\" "
+      + "ELSE " + PARTITION_KEYS + ".\"PKEY_NAME\" END, " + KEY_CONSTRAINTS + ".\"POSITION\", "
       + "" + KEY_CONSTRAINTS + ".\"CONSTRAINT_NAME\", " + KEY_CONSTRAINTS + ".\"ENABLE_VALIDATE_RELY\" "
       + " from " + TBLS + " "
-      + " INNER  join " + KEY_CONSTRAINTS + " ON " + TBLS + ".\"TBL_ID\" = " + KEY_CONSTRAINTS + ".\"PARENT_TBL_ID\" "
-      + " INNER join " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
-      + " INNER JOIN " + COLUMNS_V2 + " ON " + COLUMNS_V2 + ".\"CD_ID\" = " + KEY_CONSTRAINTS + ".\"PARENT_CD_ID\" AND "
+      + " INNER JOIN " + KEY_CONSTRAINTS + " ON " + TBLS + ".\"TBL_ID\" = " + KEY_CONSTRAINTS + ".\"PARENT_TBL_ID\" "
+      + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
+      + " LEFT OUTER JOIN " + COLUMNS_V2 + " ON " + COLUMNS_V2 + ".\"CD_ID\" = " + KEY_CONSTRAINTS + ".\"PARENT_CD_ID\" AND "
       + " " + COLUMNS_V2 + ".\"INTEGER_IDX\" = " + KEY_CONSTRAINTS + ".\"PARENT_INTEGER_IDX\" "
+      + " LEFT OUTER JOIN " + PARTITION_KEYS + " ON " + TBLS + ".\"TBL_ID\" = " + PARTITION_KEYS + ".\"TBL_ID\" AND "
+      + " " + PARTITION_KEYS + ".\"INTEGER_IDX\" = " + KEY_CONSTRAINTS + ".\"PARENT_INTEGER_IDX\" "
       + " WHERE " + KEY_CONSTRAINTS + ".\"CONSTRAINT_TYPE\" = "+ MConstraint.PRIMARY_KEY_CONSTRAINT + " AND"
       + (db_name == null ? "" : " " + DBS + ".\"NAME\" = ? AND")
       + (tbl_name == null ? "" : " " + TBLS + ".\"TBL_NAME\" = ? ") ;
@@ -2136,14 +2145,17 @@ class MetaStoreDirectSql {
           throws MetaException {
     List<SQLUniqueConstraint> ret = new ArrayList<SQLUniqueConstraint>();
     String queryText =
-      "SELECT " + DBS + ".\"NAME\", " + TBLS + ".\"TBL_NAME\", " + COLUMNS_V2 + ".\"COLUMN_NAME\","
-      + "" + KEY_CONSTRAINTS + ".\"POSITION\", "
-      + "" + KEY_CONSTRAINTS + ".\"CONSTRAINT_NAME\", " + KEY_CONSTRAINTS + ".\"ENABLE_VALIDATE_RELY\" "
+      "SELECT " + DBS + ".\"NAME\", " + TBLS + ".\"TBL_NAME\", "
+      + "CASE WHEN " + COLUMNS_V2 + ".\"COLUMN_NAME\" IS NOT NULL THEN " + COLUMNS_V2 + ".\"COLUMN_NAME\" "
+      + "ELSE " + PARTITION_KEYS + ".\"PKEY_NAME\" END, " + KEY_CONSTRAINTS + ".\"POSITION\", "
+      + KEY_CONSTRAINTS + ".\"CONSTRAINT_NAME\", " + KEY_CONSTRAINTS + ".\"ENABLE_VALIDATE_RELY\" "
       + " from " + TBLS + " "
-      + " INNER  join " + KEY_CONSTRAINTS + " ON " + TBLS + ".\"TBL_ID\" = " + KEY_CONSTRAINTS + ".\"PARENT_TBL_ID\" "
-      + " INNER join " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
-      + " INNER JOIN " + COLUMNS_V2 + " ON " + COLUMNS_V2 + ".\"CD_ID\" = " + KEY_CONSTRAINTS + ".\"PARENT_CD_ID\" AND "
+      + " INNER JOIN " + KEY_CONSTRAINTS + " ON " + TBLS + ".\"TBL_ID\" = " + KEY_CONSTRAINTS + ".\"PARENT_TBL_ID\" "
+      + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
+      + " LEFT OUTER JOIN " + COLUMNS_V2 + " ON " + COLUMNS_V2 + ".\"CD_ID\" = " + KEY_CONSTRAINTS + ".\"PARENT_CD_ID\" AND "
       + " " + COLUMNS_V2 + ".\"INTEGER_IDX\" = " + KEY_CONSTRAINTS + ".\"PARENT_INTEGER_IDX\" "
+      + " LEFT OUTER JOIN " + PARTITION_KEYS + " ON " + TBLS + ".\"TBL_ID\" = " + PARTITION_KEYS + ".\"TBL_ID\" AND "
+      + " " + PARTITION_KEYS + ".\"INTEGER_IDX\" = " + KEY_CONSTRAINTS + ".\"PARENT_INTEGER_IDX\" "
       + " WHERE " + KEY_CONSTRAINTS + ".\"CONSTRAINT_TYPE\" = "+ MConstraint.UNIQUE_CONSTRAINT + " AND"
       + (db_name == null ? "" : " " + DBS + ".\"NAME\" = ? AND")
       + (tbl_name == null ? "" : " " + TBLS + ".\"TBL_NAME\" = ? ") ;
@@ -2188,13 +2200,17 @@ class MetaStoreDirectSql {
           throws MetaException {
     List<SQLNotNullConstraint> ret = new ArrayList<SQLNotNullConstraint>();
     String queryText =
-      "SELECT " + DBS + ".\"NAME\", " + TBLS + ".\"TBL_NAME\", " + COLUMNS_V2 + ".\"COLUMN_NAME\","
+      "SELECT " + DBS + ".\"NAME\", " + TBLS + ".\"TBL_NAME\","
+      + "CASE WHEN " + COLUMNS_V2 + ".\"COLUMN_NAME\" IS NOT NULL THEN " + COLUMNS_V2 + ".\"COLUMN_NAME\" "
+      + "ELSE " + PARTITION_KEYS + ".\"PKEY_NAME\" END, "
       + "" + KEY_CONSTRAINTS + ".\"CONSTRAINT_NAME\", " + KEY_CONSTRAINTS + ".\"ENABLE_VALIDATE_RELY\" "
       + " from " + TBLS + " "
-      + " INNER join " + KEY_CONSTRAINTS + " ON " + TBLS + ".\"TBL_ID\" = " + KEY_CONSTRAINTS + ".\"PARENT_TBL_ID\" "
-      + " INNER join " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
-      + " INNER JOIN " + COLUMNS_V2 + " ON " + COLUMNS_V2 + ".\"CD_ID\" = " + KEY_CONSTRAINTS + ".\"PARENT_CD_ID\" AND "
+      + " INNER JOIN " + KEY_CONSTRAINTS + " ON " + TBLS + ".\"TBL_ID\" = " + KEY_CONSTRAINTS + ".\"PARENT_TBL_ID\" "
+      + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
+      + " LEFT OUTER JOIN " + COLUMNS_V2 + " ON " + COLUMNS_V2 + ".\"CD_ID\" = " + KEY_CONSTRAINTS + ".\"PARENT_CD_ID\" AND "
       + " " + COLUMNS_V2 + ".\"INTEGER_IDX\" = " + KEY_CONSTRAINTS + ".\"PARENT_INTEGER_IDX\" "
+      + " LEFT OUTER JOIN " + PARTITION_KEYS + " ON " + TBLS + ".\"TBL_ID\" = " + PARTITION_KEYS + ".\"TBL_ID\" AND "
+      + " " + PARTITION_KEYS + ".\"INTEGER_IDX\" = " + KEY_CONSTRAINTS + ".\"PARENT_INTEGER_IDX\" "
       + " WHERE " + KEY_CONSTRAINTS + ".\"CONSTRAINT_TYPE\" = "+ MConstraint.NOT_NULL_CONSTRAINT + " AND"
       + (db_name == null ? "" : " " + DBS + ".\"NAME\" = ? AND")
       + (tbl_name == null ? "" : " " + TBLS + ".\"TBL_NAME\" = ? ") ;

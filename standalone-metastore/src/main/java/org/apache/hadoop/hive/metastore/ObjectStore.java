@@ -78,8 +78,6 @@ import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 import javax.sql.DataSource;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -124,9 +122,6 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
@@ -144,10 +139,13 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProviderFactory;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
@@ -160,6 +158,7 @@ import org.apache.hadoop.hive.metastore.model.MFunction;
 import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
 import org.apache.hadoop.hive.metastore.model.MIndex;
 import org.apache.hadoop.hive.metastore.model.MMasterKey;
+import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.metastore.model.MOrder;
@@ -168,9 +167,6 @@ import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MPartitionEvent;
 import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
-import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
-import org.apache.hadoop.hive.metastore.model.MWMTrigger;
-import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
 import org.apache.hadoop.hive.metastore.model.MResourceUri;
 import org.apache.hadoop.hive.metastore.model.MRole;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
@@ -183,7 +179,9 @@ import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.model.MType;
 import org.apache.hadoop.hive.metastore.model.MVersionTable;
-import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
+import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
+import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
+import org.apache.hadoop.hive.metastore.model.MWMTrigger;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -206,6 +204,8 @@ import org.datanucleus.util.WeakValueMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -3959,8 +3959,12 @@ public class ObjectStore implements RawStore, Configurable {
         if (childTable == null) {
           throw new InvalidObjectException("Child table not found: " + fkTableName);
         }
-        final MColumnDescriptor childCD = retrieveCD ? nChildTable.mcd : childTable.getSd().getCD();
-        final List<MFieldSchema> childCols = childCD.getCols();
+        MColumnDescriptor childCD = retrieveCD ? nChildTable.mcd : childTable.getSd().getCD();
+        final List<MFieldSchema> childCols = childCD == null || childCD.getCols() == null ?
+            new ArrayList<>() : new ArrayList<>(childCD.getCols());
+        if (childTable.getPartitionKeys() != null) {
+          childCols.addAll(childTable.getPartitionKeys());
+        }
 
         final String pkTableDB = normalizeIdentifier(foreignKeys.get(i).getPktable_db());
         final String pkTableName = normalizeIdentifier(foreignKeys.get(i).getPktable_name());
@@ -3969,7 +3973,7 @@ public class ObjectStore implements RawStore, Configurable {
         // referencing another table instead of self for the primary key.
         final AttachedMTableInfo nParentTable;
         final MTable parentTable;
-        final MColumnDescriptor parentCD;
+        MColumnDescriptor parentCD;
         final List<MFieldSchema> parentCols;
         final List<SQLPrimaryKey> existingTablePrimaryKeys;
         final List<SQLUniqueConstraint> existingTableUniqueConstraints;
@@ -3988,7 +3992,11 @@ public class ObjectStore implements RawStore, Configurable {
             throw new InvalidObjectException("Parent table not found: " + pkTableName);
           }
           parentCD = nParentTable.mcd;
-          parentCols = parentCD == null ? null : parentCD.getCols();
+          parentCols = parentCD == null || parentCD.getCols() == null ?
+              new ArrayList<>() : new ArrayList<>(parentCD.getCols());
+          if (parentTable.getPartitionKeys() != null) {
+            parentCols.addAll(parentTable.getPartitionKeys());
+          }
           existingTablePrimaryKeys = getPrimaryKeys(pkTableDB, pkTableName);
           existingTableUniqueConstraints = getUniqueConstraints(pkTableDB, pkTableName);
         }
@@ -4008,15 +4016,27 @@ public class ObjectStore implements RawStore, Configurable {
         for (; i < foreignKeys.size(); i++) {
           final SQLForeignKey foreignKey = foreignKeys.get(i);
           final String fkColumnName = normalizeIdentifier(foreignKey.getFkcolumn_name());
-          int childIntegerIndex = getColumnIndexFromTableColumns(childCols, fkColumnName);
+          int childIntegerIndex = getColumnIndexFromTableColumns(childCD.getCols(), fkColumnName);
           if (childIntegerIndex == -1) {
-            throw new InvalidObjectException("Child column not found: " + fkColumnName);
+            if (childTable.getPartitionKeys() != null) {
+              childCD = null;
+              childIntegerIndex = getColumnIndexFromTableColumns(childTable.getPartitionKeys(), fkColumnName);
+            }
+            if (childIntegerIndex == -1) {
+              throw new InvalidObjectException("Child column not found: " + fkColumnName);
+            }
           }
 
           final String pkColumnName = normalizeIdentifier(foreignKey.getPkcolumn_name());
-          int parentIntegerIndex = getColumnIndexFromTableColumns(parentCols, pkColumnName);
+          int parentIntegerIndex = getColumnIndexFromTableColumns(parentCD.getCols(), pkColumnName);
           if (parentIntegerIndex == -1) {
-            throw new InvalidObjectException("Parent column not found: " + pkColumnName);
+            if (parentTable.getPartitionKeys() != null) {
+              parentCD = null;
+              parentIntegerIndex = getColumnIndexFromTableColumns(parentTable.getPartitionKeys(), pkColumnName);
+            }
+            if (parentIntegerIndex == -1) {
+              throw new InvalidObjectException("Parent column not found: " + pkColumnName);
+            }
           }
 
           if (foreignKey.getFk_name() == null) {
@@ -4163,11 +4183,15 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
-      int parentIntegerIndex =
-        getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
-
+      int parentIntegerIndex = getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
       if (parentIntegerIndex == -1) {
-        throw new InvalidObjectException("Parent column not found: " + columnName);
+        if (parentTable.getPartitionKeys() != null) {
+          parentCD = null;
+          parentIntegerIndex = getColumnIndexFromTableColumns(parentTable.getPartitionKeys(), columnName);
+        }
+        if (parentIntegerIndex == -1) {
+          throw new InvalidObjectException("Parent column not found: " + columnName);
+        }
       }
       if (getPrimaryKeyConstraintName(
           parentTable.getDatabase().getName(), parentTable.getTableName()) != null) {
@@ -4229,10 +4253,15 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
-      int parentIntegerIndex =
-          getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
+      int parentIntegerIndex = getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
       if (parentIntegerIndex == -1) {
-        throw new InvalidObjectException("Parent column not found: " + columnName);
+        if (parentTable.getPartitionKeys() != null) {
+          parentCD = null;
+          parentIntegerIndex = getColumnIndexFromTableColumns(parentTable.getPartitionKeys(), columnName);
+        }
+        if (parentIntegerIndex == -1) {
+          throw new InvalidObjectException("Parent column not found: " + columnName);
+        }
       }
       if (uks.get(i).getUk_name() == null) {
         if (uks.get(i).getKey_seq() == 1) {
@@ -4290,10 +4319,15 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
-      int parentIntegerIndex =
-          getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
+      int parentIntegerIndex = getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
       if (parentIntegerIndex == -1) {
-        throw new InvalidObjectException("Parent column not found: " + columnName);
+        if (parentTable.getPartitionKeys() != null) {
+          parentCD = null;
+          parentIntegerIndex = getColumnIndexFromTableColumns(parentTable.getPartitionKeys(), columnName);
+        }
+        if (parentIntegerIndex == -1) {
+          throw new InvalidObjectException("Parent column not found: " + columnName);
+        }
       }
       if (nns.get(i).getNn_name() == null) {
         constraintName = generateConstraintName(tableDB, tableName, columnName, "nn");
@@ -9058,13 +9092,15 @@ public class ObjectStore implements RawStore, Configurable {
       primaryKeys = new ArrayList<>();
       for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
         MConstraint currPK = (MConstraint) i.next();
+        List<MFieldSchema> cols = currPK.getParentColumn() != null ?
+            currPK.getParentColumn().getCols() : currPK.getParentTable().getPartitionKeys();
         int enableValidateRely = currPK.getEnableValidateRely();
         boolean enable = (enableValidateRely & 4) != 0;
         boolean validate = (enableValidateRely & 2) != 0;
         boolean rely = (enableValidateRely & 1) != 0;
         primaryKeys.add(new SQLPrimaryKey(db_name,
          tbl_name,
-         currPK.getParentColumn().getCols().get(currPK.getParentIntegerIndex()).getName(),
+         cols.get(currPK.getParentIntegerIndex()).getName(),
          currPK.getPosition(),
          currPK.getConstraintName(), enable, validate, rely));
       }
@@ -9199,6 +9235,10 @@ public class ObjectStore implements RawStore, Configurable {
       foreignKeys = new ArrayList<>();
       for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
         MConstraint currPKFK = (MConstraint) i.next();
+        List<MFieldSchema> parentCols = currPKFK.getParentColumn() != null ?
+            currPKFK.getParentColumn().getCols() : currPKFK.getParentTable().getPartitionKeys();
+        List<MFieldSchema> childCols = currPKFK.getChildColumn() != null ?
+            currPKFK.getChildColumn().getCols() : currPKFK.getChildTable().getPartitionKeys();
         int enableValidateRely = currPKFK.getEnableValidateRely();
         boolean enable = (enableValidateRely & 4) != 0;
         boolean validate = (enableValidateRely & 2) != 0;
@@ -9217,10 +9257,10 @@ public class ObjectStore implements RawStore, Configurable {
         foreignKeys.add(new SQLForeignKey(
           currPKFK.getParentTable().getDatabase().getName(),
           currPKFK.getParentTable().getDatabase().getName(),
-          currPKFK.getParentColumn().getCols().get(currPKFK.getParentIntegerIndex()).getName(),
+          parentCols.get(currPKFK.getParentIntegerIndex()).getName(),
           currPKFK.getChildTable().getDatabase().getName(),
           currPKFK.getChildTable().getTableName(),
-          currPKFK.getChildColumn().getCols().get(currPKFK.getChildIntegerIndex()).getName(),
+          childCols.get(currPKFK.getChildIntegerIndex()).getName(),
           currPKFK.getPosition(),
           currPKFK.getUpdateRule(),
           currPKFK.getDeleteRule(),
@@ -9279,16 +9319,18 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieveAll(constraints);
       uniqueConstraints = new ArrayList<>();
       for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
-        MConstraint currPK = (MConstraint) i.next();
-        int enableValidateRely = currPK.getEnableValidateRely();
+        MConstraint currConstraint = (MConstraint) i.next();
+        List<MFieldSchema> cols = currConstraint.getParentColumn() != null ?
+            currConstraint.getParentColumn().getCols() : currConstraint.getParentTable().getPartitionKeys();
+        int enableValidateRely = currConstraint.getEnableValidateRely();
         boolean enable = (enableValidateRely & 4) != 0;
         boolean validate = (enableValidateRely & 2) != 0;
         boolean rely = (enableValidateRely & 1) != 0;
         uniqueConstraints.add(new SQLUniqueConstraint(db_name,
          tbl_name,
-         currPK.getParentColumn().getCols().get(currPK.getParentIntegerIndex()).getName(),
-         currPK.getPosition(),
-         currPK.getConstraintName(), enable, validate, rely));
+         cols.get(currConstraint.getParentIntegerIndex()).getName(),
+         currConstraint.getPosition(),
+         currConstraint.getConstraintName(), enable, validate, rely));
       }
       commited = commitTransaction();
     } finally {
@@ -9348,15 +9390,17 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieveAll(constraints);
       notNullConstraints = new ArrayList<>();
       for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
-        MConstraint currPK = (MConstraint) i.next();
-        int enableValidateRely = currPK.getEnableValidateRely();
+        MConstraint currConstraint = (MConstraint) i.next();
+        List<MFieldSchema> cols = currConstraint.getParentColumn() != null ?
+            currConstraint.getParentColumn().getCols() : currConstraint.getParentTable().getPartitionKeys();
+        int enableValidateRely = currConstraint.getEnableValidateRely();
         boolean enable = (enableValidateRely & 4) != 0;
         boolean validate = (enableValidateRely & 2) != 0;
         boolean rely = (enableValidateRely & 1) != 0;
         notNullConstraints.add(new SQLNotNullConstraint(db_name,
          tbl_name,
-         currPK.getParentColumn().getCols().get(currPK.getParentIntegerIndex()).getName(),
-         currPK.getConstraintName(), enable, validate, rely));
+         cols.get(currConstraint.getParentIntegerIndex()).getName(),
+         currConstraint.getConstraintName(), enable, validate, rely));
       }
       commited = commitTransaction();
     } finally {

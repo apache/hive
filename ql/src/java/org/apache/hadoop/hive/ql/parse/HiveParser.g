@@ -2112,8 +2112,8 @@ tableComment
 tablePartition
 @init { pushMsg("table partition specification", state); }
 @after { popMsg(state); }
-    : KW_PARTITIONED KW_BY LPAREN columnNameTypeList RPAREN
-    -> ^(TOK_TABLEPARTCOLS columnNameTypeList)
+    : KW_PARTITIONED KW_BY LPAREN columnNameTypeConstraint (COMMA columnNameTypeConstraint)* RPAREN
+    -> ^(TOK_TABLEPARTCOLS columnNameTypeConstraint+)
     ;
 
 tableBuckets
@@ -2280,8 +2280,9 @@ columnNameTypeList
 @after { popMsg(state); }
     : columnNameType (COMMA columnNameType)* -> ^(TOK_TABCOLLIST columnNameType+)
     ;
+
 columnNameTypeOrConstraintList
-@init { pushMsg("column name type list with PK and FK", state); }
+@init { pushMsg("column name type and constraints list", state); }
 @after { popMsg(state); }
     : columnNameTypeOrConstraint (COMMA columnNameTypeOrConstraint)* -> ^(TOK_TABCOLLIST columnNameTypeOrConstraint+)
     ;
