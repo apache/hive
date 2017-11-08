@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.common.ndv.hll;
 
+import java.util.stream.IntStream;
+
 public class HLLConstants {
 
   // range of register index bits
@@ -926,4 +928,6 @@ public class HLLConstants {
           -680.306000000099, -704.050000000047, -850.486000000034, -757.43200000003,
           -713.308999999892, } };
 
+  public static double[] inversePow2Data = IntStream.rangeClosed(0, Byte.MAX_VALUE).mapToDouble(v -> Math.pow
+    (2, -v)).toArray();
 }

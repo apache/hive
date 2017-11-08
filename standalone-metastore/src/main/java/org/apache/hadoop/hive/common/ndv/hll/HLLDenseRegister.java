@@ -29,12 +29,6 @@ public class HLLDenseRegister implements HLLRegister {
   // bit packing
   private int maxRegisterValue;
 
-  // keep count of number of zeroes in registers
-  private int numZeroes;
-
-  // compute and cache inverse power of 2 for register values
-  private double[] invPow2Register;
-
   // number of register bits
   private int p;
 
@@ -49,10 +43,7 @@ public class HLLDenseRegister implements HLLRegister {
     this.p = p;
     this.m = 1 << p;
     this.register = new byte[m];
-    this.invPow2Register = new double[m];
-    Arrays.fill(invPow2Register, 1.0);
     this.maxRegisterValue = 0;
-    this.numZeroes = m;
     if (bitPack == false) {
       this.maxRegisterValue = 0xff;
     }
@@ -80,14 +71,8 @@ public class HLLDenseRegister implements HLLRegister {
         maxRegisterValue = value;
       }
 
-      // update number of zeros
-      if (register[idx] == 0 && value > 0) {
-        numZeroes--;
-      }
-
       // set register value and compute inverse pow of 2 for register value
       register[idx] = value;
-      invPow2Register[idx] = Math.pow(2, -value);
 
       updated = true;
     }
@@ -99,6 +84,12 @@ public class HLLDenseRegister implements HLLRegister {
   }
 
   public int getNumZeroes() {
+    int numZeroes = 0;
+    for (byte b : register) {
+      if (b == 0) {
+        numZeroes++;
+      }
+    }
     return numZeroes;
   }
 
@@ -115,13 +106,9 @@ public class HLLDenseRegister implements HLLRegister {
 
       // compare register values and store the max register value
       for (int i = 0; i < inRegister.length; i++) {
-        if (inRegister[i] > register[i]) {
-          if (register[i] == 0) {
-            numZeroes--;
-          }
-          register[i] = inRegister[i];
-          invPow2Register[i] = Math.pow(2, -inRegister[i]);
-        }
+        final byte cb = register[i];
+        final byte ob = inRegister[i];
+        register[i] = ob > cb ? ob : cb;
       }
 
       // update max register value
@@ -147,8 +134,8 @@ public class HLLDenseRegister implements HLLRegister {
 
   public double getSumInversePow2() {
     double sum = 0;
-    for (double d : invPow2Register) {
-      sum += d;
+    for (byte b : register) {
+      sum += HLLConstants.inversePow2Data[b];
     }
     return sum;
   }
@@ -160,7 +147,7 @@ public class HLLDenseRegister implements HLLRegister {
     sb.append("p: ");
     sb.append(p);
     sb.append(" numZeroes: ");
-    sb.append(numZeroes);
+    sb.append(getNumZeroes());
     sb.append(" maxRegisterValue: ");
     sb.append(maxRegisterValue);
     return sb.toString();
@@ -176,14 +163,12 @@ public class HLLDenseRegister implements HLLRegister {
       return false;
     }
     HLLDenseRegister other = (HLLDenseRegister) obj;
-    return numZeroes == other.numZeroes && maxRegisterValue == other.maxRegisterValue
-        && Arrays.equals(register, other.register);
+    return maxRegisterValue == other.maxRegisterValue && Arrays.equals(register, other.register);
   }
 
   @Override
   public int hashCode() {
     int hashcode = 0;
-    hashcode += 31 * numZeroes;
     hashcode += 31 * maxRegisterValue;
     hashcode += Arrays.hashCode(register);
     return hashcode;
