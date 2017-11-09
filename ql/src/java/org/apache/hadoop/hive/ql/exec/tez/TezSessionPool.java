@@ -312,8 +312,6 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       HiveConf conf = session.getConf();
       conf.set(ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME.varname, amRegistryName);
       conf.set(ConfVars.HIVESESSIONID.varname, session.getSessionId());
-      // TODO: can be enable temporarily for testing
-      // conf.set(LlapTaskSchedulerService.LLAP_PLUGIN_ENDPOINT_ENABLED, "true");
     }
   }
 

@@ -9686,20 +9686,21 @@ public class ObjectStore implements RawStore, Configurable {
   public WMFullResourcePlan getActiveResourcePlan() throws MetaException {
     boolean commited = false;
     Query query = null;
+    WMFullResourcePlan result = null;
     try {
       openTransaction();
       query = pm.newQuery(MWMResourcePlan.class, "status == activeStatus");
       query.declareParameters("java.lang.String activeStatus");
       query.setUnique(true);
       MWMResourcePlan mResourcePlan = (MWMResourcePlan) query.execute(Status.ACTIVE.toString());
-      commited = commitTransaction();
-      if (mResourcePlan == null) {
-        return null; // No active plan.
+      if (mResourcePlan != null) {
+        result = fullFromMResourcePlan(mResourcePlan);
       }
-      return fullFromMResourcePlan(mResourcePlan);
+      commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, query);
     }
+    return result;
   }
 
   private WMFullResourcePlan switchStatus(String name, MWMResourcePlan mResourcePlan,

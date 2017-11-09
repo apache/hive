@@ -147,6 +147,7 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
     //       HS2 session pool paths, and this patch removes the last one (reopen).
     UpdateQueryRequestProto request = UpdateQueryRequestProto
         .newBuilder().setGuaranteedTaskCount(intAlloc).build();
+    LOG.info("Updating {} with {} guaranteed tasks", session.getSessionId(), intAlloc);
     amCommunicator.sendUpdateQuery(request, (AmPluginNode)session, new UpdateCallback(session));
   }
 

@@ -16,28 +16,37 @@
  * limitations under the License.
  */package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.slf4j.LoggerFactory;
+
+import org.slf4j.Logger;
+
 import java.util.Set;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 
 public class WorkloadManagerFederation {
+  private static final Logger LOG = LoggerFactory.getLogger(WorkloadManagerFederation.class);
 
   public static TezSessionState getSession(TezSessionState session, HiveConf conf,
       MappingInput input, boolean isUnmanagedLlapMode, Set<String> desiredCounters) throws Exception {
     // 1. If WM is not present just go to unmanaged.
-    if (!WorkloadManager.isInUse(conf)) {
+    WorkloadManager wm = WorkloadManager.getInstance();
+    if (wm == null) {
+      LOG.debug("Using unmanaged session - WM is not initialized");
       return getUnmanagedSession(session, conf, desiredCounters, isUnmanagedLlapMode);
     }
-    WorkloadManager wm = WorkloadManager.getInstance();
-    // We will ask WM for preliminary mapping. This allows us to escape to the unmanaged path
-    // quickly in the common case. It's still possible that resource plan will be updated and
-    // so our preliminary mapping won't work out. We'll handle that below.
+    // 2. We will ask WM for a preliminary mapping. This allows us to escape to the unmanaged path
+    //    quickly in the common case. It's still possible that resource plan will be updated and
+    //    our preliminary mapping won't work out. We'll handle that below.
     if (!wm.isManaged(input)) {
+      LOG.info("Using unmanaged session - no mapping for " + input);
       return getUnmanagedSession(session, conf, desiredCounters, isUnmanagedLlapMode);
     }
 
+    // 3. Finally, try WM.
     try {
       // Note: this may just block to wait for a session based on parallelism.
+      LOG.info("Getting a WM session for " + input);
       TezSessionState result = wm.getSession(session, input, conf);
       desiredCounters.addAll(wm.getTriggerCounterNames());
       return result;
