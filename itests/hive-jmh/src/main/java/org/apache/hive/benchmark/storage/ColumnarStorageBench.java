@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.VectorizedColumnReaderTestBase;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
@@ -332,15 +333,7 @@ public class ColumnarStorageBench {
       // types.
       conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
       conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0,1,2,3,6");
-      conf.set(ReadSupport.PARQUET_READ_SCHEMA, "test schema");
-      HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
-      HiveConf.setVar(conf, HiveConf.ConfVars.PLAN, "//tmp");
-      Job vectorJob = new Job(conf, "read vector");
-      ParquetInputFormat.setInputPaths(vectorJob, inputPath);
-      ParquetInputFormat parquetInputFormat = new ParquetInputFormat(GroupReadSupport.class);
-      InputSplit split = (InputSplit) parquetInputFormat.getSplits(vectorJob).get(0);
-      initialVectorizedRowBatchCtx(conf);
-      return new VectorizedParquetRecordReader(split, new JobConf(conf));
+      return VectorizedColumnReaderTestBase.createTestParquetReader("test schema", conf);
     }
   }
 
