@@ -6,9 +6,9 @@ PREHOOK: query: drop table if exists src_multi1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists src_multi1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table if exists src_multi1
+PREHOOK: query: drop table if exists src_multi2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists src_multi1
+POSTHOOK: query: drop table if exists src_multi2
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE src2 as SELECT * FROM src
 PREHOOK: type: CREATETABLE_AS_SELECT
