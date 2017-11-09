@@ -52,7 +52,7 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
   public void initialize(Configuration configuration, Properties tableProperties,
                          Properties partitionProperties) throws SerDeException {
     initialize(configuration,
-               SerDeUtils.createOverlayedProperties(tableProperties, partitionProperties));
+               createOverlayedProperties(tableProperties, partitionProperties));
   }
 
   /**
@@ -123,5 +123,21 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
    */
   public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {
     return false; // The default, unless SerDe overrides it.
+  }
+
+  /**
+   * Returns the union of table and partition properties,
+   * with partition properties taking precedence.
+   * @param tblProps
+   * @param partProps
+   * @return the overlayed properties
+   */
+  private static Properties createOverlayedProperties(Properties tblProps, Properties partProps) {
+    Properties props = new Properties();
+    props.putAll(tblProps);
+    if (partProps != null) {
+      props.putAll(partProps);
+    }
+    return props;
   }
 }
