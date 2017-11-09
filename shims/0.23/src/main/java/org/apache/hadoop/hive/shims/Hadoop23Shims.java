@@ -66,7 +66,7 @@ import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.DirectoryListing;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
-import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
+import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.InputSplit;
@@ -758,7 +758,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     while (current != null) {
       org.apache.hadoop.hdfs.protocol.HdfsFileStatus[] hfss = current.getPartialListing();
       for (int i = 0; i < hfss.length; ++i) {
-        HdfsLocatedFileStatus next = (HdfsLocatedFileStatus)(hfss[i]);
+        HdfsFileStatus next = hfss[i];
         if (filter != null) {
           Path filterPath = next.getFullPath(p).makeQualified(fsUri, null);
           if (!filter.accept(filterPath)) continue;
