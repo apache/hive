@@ -1,8 +1,8 @@
 
-Release Notes - Hive - Version 2.3.1
+Release Notes - Hive - Version 2.3.2
 
 ** Sub-task
-    * [HIVE-17514] - Use SHA-256 for cookie signer to improve security
+    * [HIVE-16312] - Flaky test: TestHCatClient.testTransportFailure
 
 
 
@@ -11,10 +11,25 @@ Release Notes - Hive - Version 2.3.1
 
 
 ** Bug
-    * [HIVE-17562] - ACID 1.0 + ETL strategy should treat empty compacted files as uncovered deltas
-    * [HIVE-17664] - Refactor and add new tests
-    * [HIVE-17665] - Update netty-all to latest 4.0.x.Final
-    * [HIVE-17705] - HIVE-17562 is returning incorrect results
+    * [HIVE-10378] - Hive Update statement set keyword work with lower case only and doesn't give any error if wrong column name specified in the set clause.
+    * [HIVE-15761] - ObjectStore.getNextNotification could return an empty NotificationEventResponse causing TProtocolException 
+    * [HIVE-16213] - ObjectStore can leak Queries when rollbackTransaction throws an exception
+    * [HIVE-16487] - Serious Zookeeper exception is logged when a race condition happens
+    * [HIVE-16646] - Alias in transform ... as clause shouldn't be case sensitive
+    * [HIVE-16930] - HoS should verify the value of Kerberos principal and keytab file before adding them to spark-submit command parameters
+    * [HIVE-16991] - HiveMetaStoreClient needs a 2-arg constructor for backwards compatibility
+    * [HIVE-17008] - Fix boolean flag switchup in DropTableEvent
+    * [HIVE-17150] - CREATE INDEX execute HMS out-of-transaction listener calls inside a transaction
+    * [HIVE-17169] - Avoid extra call to KeyProvider::getMetadata()
+    * [HIVE-17184] - Unexpected new line in beeline output when running with -f option
+    * [HIVE-17189] - Fix backwards incompatibility in HiveMetaStoreClient
+    * [HIVE-17472] - Drop-partition for multi-level partition fails, if data does not exist.
+    * [HIVE-17640] - Comparison of date return null if time part is provided in string.
+    * [HIVE-17831] - HiveSemanticAnalyzerHookContext does not update the HiveOperation after sem.analyze() is called
+    * [HIVE-17891] - HIVE-13076 uses create table if not exists for the postgres script
+    * [HIVE-17928] - branch-2.3 does not compile due to using incorrect storage-api version
+    * [HIVE-17948] - Hive 2.3.2 Release Planning
+    * [HIVE-17966] - org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveArrayInspector - Review
 
 
 
@@ -23,8 +38,6 @@ Release Notes - Hive - Version 2.3.1
 
 
 
-** Improvement
-    * [HIVE-17048] - Pass HiveOperation info to HiveSemanticAnalyzerHook through HiveSemanticAnalyzerHookContext
 
 
 
@@ -44,8 +57,9 @@ Release Notes - Hive - Version 2.3.1
 
 
 
-** Task
-    * [HIVE-17862] - Update copyright date in NOTICE
+
+
+
 
 
 
