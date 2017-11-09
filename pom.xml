@@ -201,7 +201,7 @@
     <scala.binary.version>2.11</scala.binary.version>
     <scala.version>2.11.8</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
-    <snappy.version>0.2</snappy.version>
+    <snappy.version>1.1.4</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
     <velocity.version>1.5</velocity.version>
     <xerces.version>2.9.1</xerces.version>
@@ -937,6 +937,11 @@
         <groupId>org.jamon</groupId>
         <artifactId>jamon-runtime</artifactId>
         <version>${jamon-runtime.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xerial.snappy</groupId>
+        <artifactId>snappy-java</artifactId>
+        <version>${snappy.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
