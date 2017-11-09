@@ -77,3 +77,20 @@ group by m1["color"];
 
 select m1["color"], count(*) from parquet_project_test
 group by m1["color"];
+
+
+create table if not exists parquet_nullsplit(key string, val string) partitioned by (len string)
+stored as parquet;
+
+insert into table parquet_nullsplit partition(len='1')
+values ('one', 'red');
+
+explain vectorization select count(*) from parquet_nullsplit where len = '1';
+select count(*) from parquet_nullsplit where len = '1';
+
+explain vectorization select count(*) from parquet_nullsplit where len = '99';
+select count(*) from parquet_nullsplit where len = '99';
+
+drop table parquet_nullsplit;
+drop table parquet_project_test;
+drop table parquet_types_staging;

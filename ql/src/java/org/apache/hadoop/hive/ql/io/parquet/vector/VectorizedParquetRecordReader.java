@@ -118,20 +118,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
    */
   protected long totalRowCount = 0;
 
-  @VisibleForTesting
-  public VectorizedParquetRecordReader(
-    InputSplit inputSplit,
-    JobConf conf) {
-    try {
-      serDeStats = new SerDeStats();
-      projectionPusher = new ProjectionPusher();
-      initialize(inputSplit, conf);
-    } catch (Throwable e) {
-      LOG.error("Failed to create the vectorized reader due to exception " + e);
-      throw new RuntimeException(e);
-    }
-  }
-
   public VectorizedParquetRecordReader(
       org.apache.hadoop.mapred.InputSplit oldInputSplit, JobConf conf) {
     this(oldInputSplit, conf, null, null, null);
@@ -146,6 +132,10 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       this.cacheConf = cacheConf;
       serDeStats = new SerDeStats();
       projectionPusher = new ProjectionPusher();
+      colsToInclude = ColumnProjectionUtils.getReadColumnIDs(conf);
+      //initialize the rowbatchContext
+      jobConf = conf;
+      rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
       ParquetInputSplit inputSplit = getSplit(oldInputSplit, conf);
       if (inputSplit != null) {
         initialize(inputSplit, conf);
@@ -171,10 +161,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   public void initialize(
     InputSplit oldSplit,
     JobConf configuration) throws IOException, InterruptedException {
-    colsToInclude = ColumnProjectionUtils.getReadColumnIDs(configuration);
-    //initialize the rowbatchContext
-    jobConf = configuration;
-    rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
     // the oldSplit may be null during the split phase
     if (oldSplit == null) {
       return;
