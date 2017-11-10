@@ -114,6 +114,10 @@ where b.key in
         )
 ;
 
+-- Right side shouldn't have aggregate
+explain select * from src b where b.key in (select distinct key from src a where a.value > b.value);
+select * from src b where b.key in (select distinct key from src a where a.value > b.value);
+
 
 -- non agg, non corr, windowing
 select p_mfgr, p_name, p_size 
