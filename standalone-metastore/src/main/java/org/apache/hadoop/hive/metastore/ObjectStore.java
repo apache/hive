@@ -3559,7 +3559,13 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setOwner(newt.getOwner());
       // Fully copy over the contents of the new SD into the old SD,
       // so we don't create an extra SD in the metastore db that has no references.
+      MColumnDescriptor oldCD = null;
+      MStorageDescriptor oldSD = oldt.getSd();
+      if (oldSD != null) {
+        oldCD = oldSD.getCD();
+      }
       copyMSD(newt.getSd(), oldt.getSd());
+      removeUnusedColumnDescriptor(oldCD);
       oldt.setRetention(newt.getRetention());
       oldt.setPartitionKeys(newt.getPartitionKeys());
       oldt.setTableType(newt.getTableType());
@@ -3608,12 +3614,27 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private void alterPartitionNoTxn(String dbname, String name, List<String> part_vals,
+  /**
+   * Alters an existing partition. Initiates copy of SD. Returns the old CD.
+   * @param dbname
+   * @param name
+   * @param part_vals Partition values (of the original partition instance)
+   * @param newPart Partition object containing new information
+   * @return The column descriptor of the old partition instance (null if table is a view)
+   * @throws InvalidObjectException
+   * @throws MetaException
+   */
+  private MColumnDescriptor alterPartitionNoTxn(String dbname, String name, List<String> part_vals,
       Partition newPart) throws InvalidObjectException, MetaException {
     name = normalizeIdentifier(name);
     dbname = normalizeIdentifier(dbname);
     MPartition oldp = getMPartition(dbname, name, part_vals);
     MPartition newp = convertToMPart(newPart, false);
+    MColumnDescriptor oldCD = null;
+    MStorageDescriptor oldSD = oldp.getSd();
+    if (oldSD != null) {
+      oldCD = oldSD.getCD();
+    }
     if (oldp == null || newp == null) {
       throw new InvalidObjectException("partition does not exist.");
     }
@@ -3629,6 +3650,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (newp.getLastAccessTime() != oldp.getLastAccessTime()) {
       oldp.setLastAccessTime(newp.getLastAccessTime());
     }
+    return oldCD;
   }
 
   @Override
@@ -3638,7 +3660,8 @@ public class ObjectStore implements RawStore, Configurable {
     Exception e = null;
     try {
       openTransaction();
-      alterPartitionNoTxn(dbname, name, part_vals, newPart);
+      MColumnDescriptor oldCd = alterPartitionNoTxn(dbname, name, part_vals, newPart);
+      removeUnusedColumnDescriptor(oldCd);
       // commit the changes
       success = commitTransaction();
     } catch (Exception exception) {
@@ -3664,9 +3687,16 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       Iterator<List<String>> part_val_itr = part_vals.iterator();
+      Set<MColumnDescriptor> oldCds = new HashSet<>();
       for (Partition tmpPart: newParts) {
         List<String> tmpPartVals = part_val_itr.next();
-        alterPartitionNoTxn(dbname, name, tmpPartVals, tmpPart);
+        MColumnDescriptor oldCd = alterPartitionNoTxn(dbname, name, tmpPartVals, tmpPart);
+        if (oldCd != null) {
+          oldCds.add(oldCd);
+        }
+      }
+      for (MColumnDescriptor oldCd : oldCds) {
+        removeUnusedColumnDescriptor(oldCd);
       }
       // commit the changes
       success = commitTransaction();
@@ -3687,7 +3717,6 @@ public class ObjectStore implements RawStore, Configurable {
 
   private void copyMSD(MStorageDescriptor newSd, MStorageDescriptor oldSd) {
     oldSd.setLocation(newSd.getLocation());
-    MColumnDescriptor oldCD = oldSd.getCD();
     // If the columns of the old column descriptor != the columns of the new one,
     // then change the old storage descriptor's column descriptor.
     // Convert the MFieldSchema's to their thrift object counterparts, because we maintain
@@ -3703,9 +3732,6 @@ public class ObjectStore implements RawStore, Configurable {
         oldSd.setCD(newSd.getCD());
     }
 
-    //If oldCd does not have any more references, then we should delete it
-    // from the backend db
-    removeUnusedColumnDescriptor(oldCD);
     oldSd.setBucketCols(newSd.getBucketCols());
     oldSd.setCompressed(newSd.isCompressed());
     oldSd.setInputFormat(newSd.getInputFormat());

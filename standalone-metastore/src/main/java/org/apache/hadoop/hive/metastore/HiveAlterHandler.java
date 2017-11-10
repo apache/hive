@@ -57,6 +57,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -260,8 +261,21 @@ public class HiveAlterHandler implements AlterHandler {
           msdb.alterTable(dbname, name, newt);
           // alterPartition is only for changing the partition location in the table rename
           if (dataWasMoved) {
-            for (Partition part : parts) {
-              msdb.alterPartition(newDbName, newTblName, part.getValues(), part);
+
+            int partsToProcess = parts.size();
+            int partitionBatchSize = MetastoreConf.getIntVar(hiveConf,
+                MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+            int batchStart = 0;
+            while (partsToProcess > 0) {
+              int batchEnd = Math.min(batchStart + partitionBatchSize, parts.size());
+              List<Partition> partBatch = parts.subList(batchStart, batchEnd);
+              partsToProcess -= partBatch.size();
+              batchStart += partBatch.size();
+              List<List<String>> partValues = new LinkedList<>();
+              for (Partition part : partBatch) {
+                partValues.add(part.getValues());
+              }
+              msdb.alterPartitions(newDbName, newTblName, partValues, partBatch);
             }
           }
 
