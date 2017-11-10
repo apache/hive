@@ -48,6 +48,8 @@
     <!-- Plugin versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
+    <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
+    <maven.checkstyle.plugin.version>2.12.1</maven.checkstyle.plugin.version>
 
     <!-- Dependency versions -->
     <antlr.version>3.5.2</antlr.version>
@@ -403,6 +405,11 @@
             </dependency>
           </dependencies>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>${maven.checkstyle.plugin.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -444,6 +451,14 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
+          <propertyExpansion>basedir=${checkstyle.conf.dir}</propertyExpansion>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>com.github.os72</groupId>
