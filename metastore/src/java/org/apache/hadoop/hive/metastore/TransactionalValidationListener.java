@@ -18,10 +18,10 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
@@ -30,9 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.regex.Pattern;
 
 final class TransactionalValidationListener extends MetaStorePreEventListener {
@@ -90,7 +92,14 @@ final class TransactionalValidationListener extends MetaStorePreEventListener {
       //normalize prop name
       parameters.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, transactionalValue);
     }
-    if ("true".equalsIgnoreCase(transactionalValue)) {
+    Table oldTable = context.getOldTable();
+    String oldTransactionalValue = null;
+    for (String key : oldTable.getParameters().keySet()) {
+      if (hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.equalsIgnoreCase(key)) {
+        oldTransactionalValue = oldTable.getParameters().get(key);
+      }
+    }
+    if ("true".equalsIgnoreCase(transactionalValue) && !"true".equalsIgnoreCase(oldTransactionalValue)) {
       if (!conformToAcid(newTable)) {
         throw new MetaException("The table must be bucketed and stored using an ACID compliant" +
             " format (such as ORC)");
@@ -101,19 +110,12 @@ final class TransactionalValidationListener extends MetaStorePreEventListener {
                 " cannot be declared transactional because it's an external table");
       }
 
-      if (containsCopyNFiles(context.getHandler().getMS(), newTable)) {
+      if (containsCopyNFiles(context.getHandler(), newTable)) {
         throw new MetaException(newTable.getDbName() + "." + newTable.getTableName() +
                 " cannot be declared transactional because it has _COPY_N files.");
       }
 
       return;
-    }
-    Table oldTable = context.getOldTable();
-    String oldTransactionalValue = null;
-    for (String key : oldTable.getParameters().keySet()) {
-      if (hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.equalsIgnoreCase(key)) {
-        oldTransactionalValue = oldTable.getParameters().get(key);
-      }
     }
     if (oldTransactionalValue == null ? transactionalValue == null
                                      : oldTransactionalValue.equalsIgnoreCase(transactionalValue)) {
@@ -209,9 +211,9 @@ final class TransactionalValidationListener extends MetaStorePreEventListener {
    * @return True if table contains files named *_copy_N. False otherwise.
    * @throws MetaException
    */
-  boolean containsCopyNFiles(RawStore ms, Table table) throws MetaException {
-    Warehouse wh = new Warehouse(getConf());
-
+  boolean containsCopyNFiles(HiveMetaStore.HMSHandler handler, Table table) throws MetaException {
+    Warehouse wh = handler.getWh();
+    RawStore ms = handler.getMS();
     try {
       Path tablePath;
       if (table.getSd().getLocation() == null
@@ -222,21 +224,44 @@ final class TransactionalValidationListener extends MetaStorePreEventListener {
         tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
       }
       FileSystem fs = wh.getFs(tablePath);
-      RemoteIterator<LocatedFileStatus> iterator = fs.listFiles(tablePath, true);
-      while (iterator.hasNext()) {
-        LocatedFileStatus fileStatus = iterator.next();
-        if (COPY_N_PATTERN.matcher(fileStatus.getPath().getName()).matches()) {
+      return containsCopyNFiles(fs, tablePath);
+    } catch (IOException e) {
+      String errorMessage = "Unable to list files for " + table.getDbName() + "."+
+          table.getTableName();
+      LOG.error("IOException during listing copyNFiles: ", e);
+      throw new MetaException(errorMessage);
+    } catch (NoSuchObjectException e) {
+      String errorMessage = "Unable to get location for " + table.getDbName() + "."+
+          table.getTableName();
+      LOG.error(errorMessage, e);
+      throw new MetaException(errorMessage);
+    }
+  }
+
+  /**
+   * Check if there are files named *_copy_N under a path on a given FileSystem.
+   * @param fs
+   * @param rootPath
+   * @return True if there is at least one file named *_copy_N. False otherwise.
+   * @throws IOException On exception during listing the files.
+   */
+  boolean containsCopyNFiles(FileSystem fs, Path rootPath) throws IOException {
+    if (!fs.isDirectory(rootPath)) {
+      return COPY_N_PATTERN.matcher(rootPath.getName()).matches();
+    }
+
+    Stack<FileStatus> stack = new Stack<>();
+    stack.push(fs.getFileStatus(rootPath));
+    while (!stack.isEmpty()) {
+      FileStatus dir = stack.pop();
+      for (FileStatus child : fs.listStatus(dir.getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER)) {
+        if (child.isDirectory()) {
+          stack.push(child);
+        } else if (COPY_N_PATTERN.matcher(child.getPath().getName()).matches()) {
           return true;
         }
       }
-    } catch (IOException e) {
-      throw new MetaException("Unable to list files for " + table.getDbName() + "."+
-              table.getTableName());
-    } catch (NoSuchObjectException e) {
-      throw new MetaException("Unable to get location for " + table.getDbName() + "."+
-              table.getTableName());
     }
-
     return false;
   }
 }
