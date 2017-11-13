@@ -71,6 +71,9 @@ public class HiveAlterHandler implements AlterHandler {
   private static final Logger LOG = LoggerFactory.getLogger(HiveAlterHandler.class
       .getName());
 
+  // hiveConf, getConf and setConf are in this class because AlterHandler extends Configurable.
+  // Always use the configuration from HMS Handler.  Making AlterHandler not extend Configurable
+  // is not in the scope of the fix for HIVE-17942.
   @Override
   public Configuration getConf() {
     return hiveConf;
@@ -107,7 +110,7 @@ public class HiveAlterHandler implements AlterHandler {
     String newTblName = newt.getTableName().toLowerCase();
     String newDbName = newt.getDbName().toLowerCase();
 
-    if (!MetaStoreUtils.validateName(newTblName, hiveConf)) {
+    if (!MetaStoreUtils.validateName(newTblName, handler.getConf())) {
       throw new InvalidOperationException(newTblName + " is not a valid object name");
     }
     String validate = MetaStoreUtils.validateTblColumns(newt.getSd().getCols());
@@ -156,7 +159,7 @@ public class HiveAlterHandler implements AlterHandler {
       // Views derive the column type from the base table definition.  So the view definition
       // can be altered to change the column types.  The column type compatibility checks should
       // be done only for non-views.
-      if (MetastoreConf.getBoolVar(hiveConf,
+      if (MetastoreConf.getBoolVar(handler.getConf(),
             MetastoreConf.ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES) &&
           !oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())) {
         // Throws InvalidOperationException if the new column types are not
@@ -290,7 +293,7 @@ public class HiveAlterHandler implements AlterHandler {
         }
       } else {
         // operations other than table rename
-        if (MetaStoreUtils.requireCalStats(hiveConf, null, null, newt, environmentContext) &&
+        if (MetaStoreUtils.requireCalStats(handler.getConf(), null, null, newt, environmentContext) &&
             !isPartitionedTable) {
           Database db = msdb.getDatabase(newDbName);
           // Update table stats. For partitioned table, we update stats in alterPartition()
@@ -436,7 +439,7 @@ public class HiveAlterHandler implements AlterHandler {
       try {
         msdb.openTransaction();
         oldPart = msdb.getPartition(dbname, name, new_part.getValues());
-        if (MetaStoreUtils.requireCalStats(hiveConf, oldPart, new_part, tbl, environmentContext)) {
+        if (MetaStoreUtils.requireCalStats(handler.getConf(), oldPart, new_part, tbl, environmentContext)) {
           // if stats are same, no need to update
           if (MetaStoreUtils.isFastStatsSame(oldPart, new_part)) {
             MetaStoreUtils.updateBasicState(environmentContext, new_part.getParameters());
@@ -569,7 +572,7 @@ public class HiveAlterHandler implements AlterHandler {
         new_part.getSd().setLocation(oldPart.getSd().getLocation());
       }
 
-      if (MetaStoreUtils.requireCalStats(hiveConf, oldPart, new_part, tbl, environmentContext)) {
+      if (MetaStoreUtils.requireCalStats(handler.getConf(), oldPart, new_part, tbl, environmentContext)) {
         MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
       }
 
@@ -661,7 +664,7 @@ public class HiveAlterHandler implements AlterHandler {
         oldParts.add(oldTmpPart);
         partValsList.add(tmpPart.getValues());
 
-        if (MetaStoreUtils.requireCalStats(hiveConf, oldTmpPart, tmpPart, tbl, environmentContext)) {
+        if (MetaStoreUtils.requireCalStats(handler.getConf(), oldTmpPart, tmpPart, tbl, environmentContext)) {
           // Check if stats are same, no need to update
           if (MetaStoreUtils.isFastStatsSame(oldTmpPart, tmpPart)) {
             MetaStoreUtils.updateBasicState(environmentContext, tmpPart.getParameters());
