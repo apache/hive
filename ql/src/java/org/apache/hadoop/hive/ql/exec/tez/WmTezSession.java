@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
-import org.apache.hadoop.hive.ql.exec.Utilities;
-
 import com.google.common.annotations.VisibleForTesting;
 
 import com.google.common.util.concurrent.SettableFuture;
@@ -186,6 +184,11 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
 
   void setIsIrrelevantForWm(String killReason) {
     this.killReason = killReason;
+  }
+
+  @Override
+  public String toString() {
+    return super.toString() + ", poolName: " + poolName + ", clusterFraction: " + clusterFraction;
   }
 
   private final class TimeoutRunnable implements Runnable {

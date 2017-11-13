@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,8 +19,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.hadoop.hive.ql.QueryInfo;
 
 /**
  * Some context information that are required for rule evaluation.
@@ -44,14 +42,6 @@ public class TriggerContext {
 
   public void setQueryId(final String queryId) {
     this.queryId = queryId;
-  }
-
-  public long getQueryStartTime() {
-    return queryStartTime;
-  }
-
-  public void setQueryStartTime(final long queryStartTime) {
-    this.queryStartTime = queryStartTime;
   }
 
   public Set<String> getDesiredCounters() {

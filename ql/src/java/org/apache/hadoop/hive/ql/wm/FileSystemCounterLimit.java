@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,13 +30,13 @@ public class FileSystemCounterLimit implements CounterLimit {
   private FSCounter fsCounter;
   private long limit;
 
-  public FileSystemCounterLimit(final String scheme, final FSCounter fsCounter, final long limit) {
+  FileSystemCounterLimit(final String scheme, final FSCounter fsCounter, final long limit) {
     this.scheme = scheme == null || scheme.isEmpty() ? "" : scheme.toUpperCase();
     this.fsCounter = fsCounter;
     this.limit = limit;
   }
 
-  public static FileSystemCounterLimit fromName(final String counterName, final long limit) {
+  static FileSystemCounterLimit fromName(final String counterName, final long limit) {
     String counterNameStr = counterName.toUpperCase();
     for (FSCounter fsCounter : FSCounter.values()) {
       if (counterNameStr.endsWith(fsCounter.name())) {

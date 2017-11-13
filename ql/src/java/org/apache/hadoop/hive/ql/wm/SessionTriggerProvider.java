@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -15,9 +15,6 @@
  */
 package org.apache.hadoop.hive.ql.wm;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
@@ -26,31 +23,27 @@ import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
  * Implementation for providing current open sessions and active trigger.
  */
 public class SessionTriggerProvider {
-  private List<TezSessionState> openSessions = new ArrayList<>();
-  private List<Trigger> activeTriggers = new ArrayList<>();
-
-  public SessionTriggerProvider() {
-
-  }
+  private List<TezSessionState> sessions;
+  private List<Trigger> triggers;
 
   public SessionTriggerProvider(final List<TezSessionState> openSessions, final List<Trigger> triggers) {
-    this.openSessions = openSessions;
-    this.activeTriggers = triggers;
+    this.sessions = openSessions;
+    this.triggers = triggers;
   }
 
-  public void setOpenSessions(final List<TezSessionState> openSessions) {
-    this.openSessions = openSessions;
+  public List<TezSessionState> getSessions() {
+    return sessions;
   }
 
-  public void setActiveTriggers(final List<Trigger> activeTriggers) {
-    this.activeTriggers = activeTriggers;
+  public List<Trigger> getTriggers() {
+    return triggers;
   }
 
-  public List<TezSessionState> getOpenSessions() {
-    return Collections.unmodifiableList(openSessions);
+  public void setSessions(final List<TezSessionState> sessions) {
+    this.sessions = sessions;
   }
 
-  public List<Trigger> getActiveTriggers() {
-    return Collections.unmodifiableList(activeTriggers);
+  public void setTriggers(final List<Trigger> triggers) {
+    this.triggers = triggers;
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,31 +19,44 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 
-import static org.junit.Assert.*;
+import static org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-
-import com.google.common.util.concurrent.SettableFuture;
-
-import com.google.common.collect.Lists;
 import java.lang.Thread.State;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.SettableFuture;
 
 public class TestWorkloadManager {
   @SuppressWarnings("unused")
@@ -621,6 +634,208 @@ public class TestWorkloadManager {
     pool.returnSession(oob3);
     pool.returnSession(oob4);
     assertEquals(2, pool.getCurrentSize());
+  }
+
+  @Test(timeout=10000)
+  public void testMoveSessions() throws Exception {
+    final HiveConf conf = createConf();
+    MockQam qam = new MockQam();
+    WMFullResourcePlan plan = new WMFullResourcePlan(plan(), Lists.newArrayList(
+      pool("A", 1, 0.6f), pool("B", 2, 0.4f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "A"), mapping("B", "B")));
+    final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
+    wm.start();
+
+    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf);
+
+    // [A: 1, B: 0]
+    Map<String, SessionTriggerProvider> allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(1, allSessionProviders.get("A").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B").getSessions().size());
+    assertTrue(allSessionProviders.get("A").getSessions().contains(sessionA1));
+    assertFalse(allSessionProviders.get("B").getSessions().contains(sessionA1));
+    assertEquals(0.6f, sessionA1.getClusterFraction(), EPSILON);
+    assertEquals("A", sessionA1.getPoolName());
+
+    // [A: 0, B: 1]
+    Future<Boolean> future = wm.applyMoveSessionAsync(sessionA1, "B");
+    assertNotNull(future.get());
+    assertTrue(future.get());
+    wm.addTestEvent().get();
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(0, allSessionProviders.get("A").getSessions().size());
+    assertEquals(1, allSessionProviders.get("B").getSessions().size());
+    assertFalse(allSessionProviders.get("A").getSessions().contains(sessionA1));
+    assertTrue(allSessionProviders.get("B").getSessions().contains(sessionA1));
+    assertEquals(0.4f, sessionA1.getClusterFraction(), EPSILON);
+    assertEquals("B", sessionA1.getPoolName());
+
+    WmTezSession sessionA2 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf);
+    // [A: 1, B: 1]
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(1, allSessionProviders.get("A").getSessions().size());
+    assertEquals(1, allSessionProviders.get("B").getSessions().size());
+    assertTrue(allSessionProviders.get("A").getSessions().contains(sessionA2));
+    assertTrue(allSessionProviders.get("B").getSessions().contains(sessionA1));
+    assertEquals(0.6f, sessionA2.getClusterFraction(), EPSILON);
+    assertEquals(0.4f, sessionA1.getClusterFraction(), EPSILON);
+    assertEquals("A", sessionA2.getPoolName());
+    assertEquals("B", sessionA1.getPoolName());
+
+    // [A: 0, B: 2]
+    future = wm.applyMoveSessionAsync(sessionA2, "B");
+    assertNotNull(future.get());
+    assertTrue(future.get());
+    wm.addTestEvent().get();
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(0, allSessionProviders.get("A").getSessions().size());
+    assertEquals(2, allSessionProviders.get("B").getSessions().size());
+    assertTrue(allSessionProviders.get("B").getSessions().contains(sessionA2));
+    assertTrue(allSessionProviders.get("B").getSessions().contains(sessionA1));
+    assertEquals(0.2f, sessionA2.getClusterFraction(), EPSILON);
+    assertEquals(0.2f, sessionA1.getClusterFraction(), EPSILON);
+    assertEquals("B", sessionA2.getPoolName());
+    assertEquals("B", sessionA1.getPoolName());
+
+    WmTezSession sessionA3 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf);
+    // [A: 1, B: 2]
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(1, allSessionProviders.get("A").getSessions().size());
+    assertEquals(2, allSessionProviders.get("B").getSessions().size());
+    assertTrue(allSessionProviders.get("A").getSessions().contains(sessionA3));
+    assertTrue(allSessionProviders.get("B").getSessions().contains(sessionA2));
+    assertTrue(allSessionProviders.get("B").getSessions().contains(sessionA1));
+    assertEquals(0.6f, sessionA3.getClusterFraction(), EPSILON);
+    assertEquals(0.2f, sessionA2.getClusterFraction(), EPSILON);
+    assertEquals(0.2f, sessionA1.getClusterFraction(), EPSILON);
+    assertEquals("A", sessionA3.getPoolName());
+    assertEquals("B", sessionA2.getPoolName());
+    assertEquals("B", sessionA1.getPoolName());
+
+    // B is maxed out on capacity, so this move should fail the session
+    future = wm.applyMoveSessionAsync(sessionA3, "B");
+    assertNotNull(future.get());
+    assertFalse(future.get());
+    wm.addTestEvent().get();
+    while(sessionA3.isOpen()) {
+      Thread.sleep(100);
+    }
+    assertNull(sessionA3.getPoolName());
+    assertEquals("Destination pool B is full. Killing query.", sessionA3.getReasonForKill());
+    assertEquals(0, allSessionProviders.get("A").getSessions().size());
+    assertEquals(2, allSessionProviders.get("B").getSessions().size());
+  }
+
+  @Test(timeout=10000)
+  public void testMoveSessionsMultiPool() throws Exception {
+    final HiveConf conf = createConf();
+    MockQam qam = new MockQam();
+    WMFullResourcePlan plan = new WMFullResourcePlan(plan(), Lists.newArrayList(
+      pool("A", 1, 0.4f), pool("B", 1, 0.4f), pool("B.x", 1, 0.2f),
+      pool("B.y", 1, 0.8f), pool("C", 1, 0.2f)));
+    plan.setMappings(Lists.newArrayList(mapping("A", "A"), mapping("B", "B"), mapping("C", "C")));
+    final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
+    wm.start();
+
+    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf);
+
+    // [A: 1, B: 0, B.x: 0, B.y: 0, C: 0]
+    Map<String, SessionTriggerProvider> allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(1, allSessionProviders.get("A").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B.x").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B.y").getSessions().size());
+    assertEquals(0, allSessionProviders.get("C").getSessions().size());
+    assertEquals(0.4f, sessionA1.getClusterFraction(), EPSILON);
+    assertTrue(allSessionProviders.get("A").getSessions().contains(sessionA1));
+    assertEquals("A", sessionA1.getPoolName());
+
+    // [A: 0, B: 1, B.x: 0, B.y: 0, C: 0]
+    Future<Boolean> future = wm.applyMoveSessionAsync(sessionA1, "B.y");
+    assertNotNull(future.get());
+    assertTrue(future.get());
+    wm.addTestEvent().get();
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(0, allSessionProviders.get("A").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B.x").getSessions().size());
+    assertEquals(1, allSessionProviders.get("B.y").getSessions().size());
+    assertEquals(0, allSessionProviders.get("C").getSessions().size());
+    assertEquals(0.32f, sessionA1.getClusterFraction(), EPSILON);
+    assertTrue(allSessionProviders.get("B.y").getSessions().contains(sessionA1));
+    assertEquals("B.y", sessionA1.getPoolName());
+
+    // [A: 0, B: 0, B.x: 0, B.y: 0, C: 1]
+    future = wm.applyMoveSessionAsync(sessionA1, "C");
+    assertNotNull(future.get());
+    assertTrue(future.get());
+    wm.addTestEvent().get();
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(0, allSessionProviders.get("A").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B.x").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B.y").getSessions().size());
+    assertEquals(1, allSessionProviders.get("C").getSessions().size());
+    assertEquals(0.2f, sessionA1.getClusterFraction(), EPSILON);
+    assertTrue(allSessionProviders.get("C").getSessions().contains(sessionA1));
+    assertEquals("C", sessionA1.getPoolName());
+
+    // [A: 0, B: 0, B.x: 1, B.y: 0, C: 0]
+    future = wm.applyMoveSessionAsync(sessionA1, "B.x");
+    assertNotNull(future.get());
+    assertTrue(future.get());
+    wm.addTestEvent().get();
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(0, allSessionProviders.get("A").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B").getSessions().size());
+    assertEquals(1, allSessionProviders.get("B.x").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B.y").getSessions().size());
+    assertEquals(0, allSessionProviders.get("C").getSessions().size());
+    assertEquals(0.08f, sessionA1.getClusterFraction(), EPSILON);
+    assertTrue(allSessionProviders.get("B.x").getSessions().contains(sessionA1));
+    assertEquals("B.x", sessionA1.getPoolName());
+
+    WmTezSession sessionA2 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf);
+    // [A: 1, B: 0, B.x: 1, B.y: 0, C: 0]
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(1, allSessionProviders.get("A").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B").getSessions().size());
+    assertEquals(1, allSessionProviders.get("B.x").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B.y").getSessions().size());
+    assertEquals(0, allSessionProviders.get("C").getSessions().size());
+    assertEquals(0.4f, sessionA2.getClusterFraction(), EPSILON);
+    assertEquals(0.08f, sessionA1.getClusterFraction(), EPSILON);
+    assertTrue(allSessionProviders.get("A").getSessions().contains(sessionA2));
+    assertTrue(allSessionProviders.get("B.x").getSessions().contains(sessionA1));
+    assertEquals("A", sessionA2.getPoolName());
+    assertEquals("B.x", sessionA1.getPoolName());
+
+    // A is maxed out on capacity, so this move should fail the session
+    // [A: 1, B: 0, B.x: 0, B.y: 0, C: 0]
+    future = wm.applyMoveSessionAsync(sessionA1, "A");
+    assertNotNull(future.get());
+    assertFalse(future.get());
+    wm.addTestEvent().get();
+    while(sessionA1.isOpen()) {
+      Thread.sleep(100);
+    }
+    assertNull(sessionA1.getPoolName());
+    assertEquals("Destination pool A is full. Killing query.", sessionA1.getReasonForKill());
+    assertEquals(1, allSessionProviders.get("A").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B.x").getSessions().size());
+
+    // return a loaned session goes back to tez am pool
+    // [A: 0, B: 0, B.x: 0, B.y: 0, C: 0]
+    wm.returnAfterUse(sessionA2);
+    wm.addTestEvent().get();
+    allSessionProviders = wm.getAllSessionTriggerProviders();
+    assertEquals(0, allSessionProviders.get("A").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B.x").getSessions().size());
+    assertEquals(0, allSessionProviders.get("B.y").getSessions().size());
+    assertEquals(0, allSessionProviders.get("C").getSessions().size());
+    assertEquals(0.0f, sessionA1.getClusterFraction(), EPSILON);
+    assertFalse(allSessionProviders.get("A").getSessions().contains(sessionA1));
   }
 
   @Test(timeout=10000)

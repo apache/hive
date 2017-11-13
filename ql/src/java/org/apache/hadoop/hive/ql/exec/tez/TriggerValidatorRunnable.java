@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.wm.Action;
 import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
@@ -41,28 +42,50 @@ public class TriggerValidatorRunnable implements Runnable {
   @Override
   public void run() {
     try {
-      Map<TezSessionState, Trigger.Action> violatedSessions = new HashMap<>();
-      final List<TezSessionState> sessions = sessionTriggerProvider.getOpenSessions();
-      final List<Trigger> triggers = sessionTriggerProvider.getActiveTriggers();
-      for (TezSessionState s : sessions) {
-        TriggerContext triggerContext = s.getTriggerContext();
-        if (triggerContext != null && !triggerContext.isQueryCompleted()) {
+      Map<TezSessionState, Trigger> violatedSessions = new HashMap<>();
+      final List<TezSessionState> sessions = sessionTriggerProvider.getSessions();
+      final List<Trigger> triggers = sessionTriggerProvider.getTriggers();
+      for (TezSessionState sessionState : sessions) {
+        TriggerContext triggerContext = sessionState.getTriggerContext();
+        if (triggerContext != null && !triggerContext.isQueryCompleted()
+          && !triggerContext.getCurrentCounters().isEmpty()) {
           Map<String, Long> currentCounters = triggerContext.getCurrentCounters();
-          for (Trigger t : triggers) {
-            String desiredCounter = t.getExpression().getCounterLimit().getName();
+          for (Trigger currentTrigger : triggers) {
+            String desiredCounter = currentTrigger.getExpression().getCounterLimit().getName();
             // there could be interval where desired counter value is not populated by the time we make this check
             if (currentCounters.containsKey(desiredCounter)) {
               long currentCounterValue = currentCounters.get(desiredCounter);
-              if (t.apply(currentCounterValue)) {
-                String queryId = s.getTriggerContext().getQueryId();
-                LOG.info("Query {} violated trigger {}. Current counter value: {}. Going to apply action {}", queryId,
-                  t, currentCounterValue, t.getAction());
-                Trigger.Action action = t.getAction();
-                String msg = "Trigger " + t + " violated. Current value: " + currentCounterValue;
-                action.setMsg(msg);
-                violatedSessions.put(s, action);
+              if (currentTrigger.apply(currentCounterValue)) {
+                String queryId = sessionState.getTriggerContext().getQueryId();
+                if (violatedSessions.containsKey(sessionState)) {
+                  // session already has a violation
+                  Trigger existingTrigger = violatedSessions.get(sessionState);
+                  // KILL always takes priority over MOVE
+                  if (existingTrigger.getAction().getType().equals(Action.Type.MOVE_TO_POOL) &&
+                    currentTrigger.getAction().getType().equals(Action.Type.KILL_QUERY)) {
+                    currentTrigger.setViolationMsg("Trigger " + currentTrigger + " violated. Current value: " +
+                      currentCounterValue);
+                    violatedSessions.put(sessionState, currentTrigger);
+                    LOG.info("KILL trigger replacing MOVE for query {}", queryId);
+                  } else {
+                    // if multiple MOVE happens, only first move will be chosen
+                    LOG.warn("Conflicting MOVE triggers ({} and {}). Choosing the first MOVE trigger: {}",
+                      existingTrigger, currentTrigger, existingTrigger.getName());
+                  }
+                } else {
+                  // first violation for the session
+                  currentTrigger.setViolationMsg("Trigger " + currentTrigger + " violated. Current value: " +
+                    currentCounterValue);
+                  violatedSessions.put(sessionState, currentTrigger);
+                }
               }
             }
+          }
+
+          Trigger chosenTrigger = violatedSessions.get(sessionState);
+          if (chosenTrigger != null) {
+            LOG.info("Query: {}. {}. Applying action.", sessionState.getTriggerContext().getQueryId(),
+              chosenTrigger.getViolationMsg());
           }
         }
       }

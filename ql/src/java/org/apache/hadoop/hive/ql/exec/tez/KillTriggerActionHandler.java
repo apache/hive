@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,9 +32,9 @@ public class KillTriggerActionHandler implements TriggerActionHandler {
   private static final Logger LOG = LoggerFactory.getLogger(KillTriggerActionHandler.class);
 
   @Override
-  public void applyAction(final Map<TezSessionState, Trigger.Action> queriesViolated) {
-    for (Map.Entry<TezSessionState, Trigger.Action> entry : queriesViolated.entrySet()) {
-      switch (entry.getValue()) {
+  public void applyAction(final Map<TezSessionState, Trigger> queriesViolated) {
+    for (Map.Entry<TezSessionState, Trigger> entry : queriesViolated.entrySet()) {
+      switch (entry.getValue().getAction().getType()) {
         case KILL_QUERY:
           TezSessionState sessionState = entry.getKey();
           String queryId = sessionState.getTriggerContext().getQueryId();
@@ -42,7 +42,7 @@ public class KillTriggerActionHandler implements TriggerActionHandler {
             KillQuery killQuery = sessionState.getKillQuery();
             // if kill query is null then session might have been released to pool or closed already
             if (killQuery != null) {
-              sessionState.getKillQuery().killQuery(queryId, entry.getValue().getMsg());
+              sessionState.getKillQuery().killQuery(queryId, entry.getValue().getViolationMsg());
             }
           } catch (HiveException e) {
             LOG.warn("Unable to kill query {} for trigger violation");

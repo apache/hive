@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,7 +26,7 @@ public class VertexCounterLimit implements CounterLimit {
   private VertexCounter vertexCounter;
   private long limit;
 
-  public VertexCounterLimit(final VertexCounter vertexCounter, final long limit) {
+  VertexCounterLimit(final VertexCounter vertexCounter, final long limit) {
     this.vertexCounter = vertexCounter;
     this.limit = limit;
   }

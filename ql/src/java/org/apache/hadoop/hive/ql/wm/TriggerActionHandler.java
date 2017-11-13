@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,5 +28,5 @@ public interface TriggerActionHandler {
    *
    * @param queriesViolated - violated queries and the rule it violated
    */
-  void applyAction(Map<TezSessionState, Trigger.Action> queriesViolated);
+  void applyAction(Map<TezSessionState, Trigger> queriesViolated);
 }

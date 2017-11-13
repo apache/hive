@@ -18,11 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import javax.security.auth.login.LoginException;
-import org.apache.tez.dag.api.TezException;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -193,10 +189,12 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     }
 
     if (triggerValidatorRunnable == null) {
+      final long triggerValidationIntervalMs = HiveConf.getTimeVar(conf, ConfVars
+        .HIVE_TRIGGER_VALIDATION_INTERVAL_MS, TimeUnit.MILLISECONDS);
       sessionTriggerProvider = new SessionTriggerProvider(openSessions, globalTriggersFetcher.fetch());
       triggerActionHandler = new KillTriggerActionHandler();
-      triggerValidatorRunnable = new TriggerValidatorRunnable(getSessionTriggerProvider(), getTriggerActionHandler());
-      startTriggerValidator(conf);
+      triggerValidatorRunnable = new TriggerValidatorRunnable(sessionTriggerProvider, triggerActionHandler);
+      startTriggerValidator(triggerValidationIntervalMs);
     }
   }
 
@@ -370,16 +368,6 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   }
 
   @Override
-  SessionTriggerProvider getSessionTriggerProvider() {
-    return sessionTriggerProvider;
-  }
-
-  @Override
-  TriggerActionHandler getTriggerActionHandler() {
-    return triggerActionHandler;
-  }
-
-  @Override
   TriggerValidatorRunnable getTriggerValidatorRunnable() {
     return triggerValidatorRunnable;
   }
@@ -520,8 +508,8 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
 
   private void updateSessionsTriggers() {
     if (sessionTriggerProvider != null && globalTriggersFetcher != null) {
-      sessionTriggerProvider.setOpenSessions(Collections.unmodifiableList(openSessions));
-      sessionTriggerProvider.setActiveTriggers(Collections.unmodifiableList(globalTriggersFetcher.fetch()));
+      sessionTriggerProvider.setSessions(Collections.unmodifiableList(openSessions));
+      sessionTriggerProvider.setTriggers(Collections.unmodifiableList(globalTriggersFetcher.fetch()));
     }
   }
 
@@ -552,7 +540,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   public List<String> getTriggerCounterNames() {
     List<String> counterNames = new ArrayList<>();
     if (sessionTriggerProvider != null) {
-      List<Trigger> activeTriggers = sessionTriggerProvider.getActiveTriggers();
+      List<Trigger> activeTriggers = sessionTriggerProvider.getTriggers();
       for (Trigger trigger : activeTriggers) {
         counterNames.add(trigger.getExpression().getCounterLimit().getName());
       }
