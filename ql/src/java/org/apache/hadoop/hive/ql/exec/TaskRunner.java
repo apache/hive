@@ -46,9 +46,9 @@ public class TaskRunner extends Thread {
 
   private static transient final Logger LOG = LoggerFactory.getLogger(TaskRunner.class);
 
-  public TaskRunner(Task<? extends Serializable> tsk, TaskResult result) {
+  public TaskRunner(Task<? extends Serializable> tsk) {
     this.tsk = tsk;
-    this.result = result;
+    this.result = new TaskResult();
     ss = SessionState.get();
   }
 
@@ -94,7 +94,7 @@ public class TaskRunner extends Thread {
   public void runSequential() {
     int exitVal = -101;
     try {
-      exitVal = tsk.executeTask();
+      exitVal = tsk.executeTask(ss == null ? null : ss.getHiveHistory());
     } catch (Throwable t) {
       if (tsk.getException() == null) {
         tsk.setException(t);

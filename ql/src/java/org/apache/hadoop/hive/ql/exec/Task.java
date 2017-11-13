@@ -25,13 +25,13 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryDisplay;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
@@ -196,17 +196,16 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
    *
    * @return return value of execute()
    */
-  public int executeTask() {
+  public int executeTask(HiveHistory hiveHistory) {
     try {
-      SessionState ss = SessionState.get();
       this.setStarted();
-      if (ss != null) {
-        ss.getHiveHistory().logPlanProgress(queryPlan);
+      if (hiveHistory != null) {
+        hiveHistory.logPlanProgress(queryPlan);
       }
       int retval = execute(driverContext);
       this.setDone();
-      if (ss != null) {
-        ss.getHiveHistory().logPlanProgress(queryPlan);
+      if (hiveHistory != null) {
+        hiveHistory.logPlanProgress(queryPlan);
       }
       return retval;
     } catch (IOException e) {

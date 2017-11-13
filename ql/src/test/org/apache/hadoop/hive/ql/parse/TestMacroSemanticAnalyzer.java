@@ -57,7 +57,7 @@ public class TestMacroSemanticAnalyzer {
     List<Task<? extends Serializable>> rootTasks = analyzer.getRootTasks();
     Assert.assertEquals(1, rootTasks.size());
     for(Task<? extends Serializable> task : rootTasks) {
-      Assert.assertEquals(0, task.executeTask());
+      Assert.assertEquals(0, task.executeTask(null));
     }
   }
   @Test
