@@ -2774,7 +2774,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String dbName      = showDesc.getDbName();
     String pattern     = showDesc.getPattern(); // if null, all tables/views are returned
     String resultsFile = showDesc.getResFile();
-    TableType type     = showDesc.getType(); // will be null for tables, VIRTUAL_VIEW for views
+    TableType type     = showDesc.getType(); // null for tables, VIRTUAL_VIEW for views, MATERIALIZED_VIEW for MVs
 
     if (!db.databaseExists(dbName)) {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
