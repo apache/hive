@@ -76,6 +76,7 @@ public enum HiveOperation {
   SHOWLOCKS("SHOWLOCKS", null, null, true, false),
   SHOWCONF("SHOWCONF", null, null),
   SHOWVIEWS("SHOWVIEWS", null, null, true, false),
+  SHOWMATERIALIZEDVIEWS("SHOWMATERIALIZEDVIEWS", null, null, true, false),
   CREATEFUNCTION("CREATEFUNCTION", null, null),
   DROPFUNCTION("DROPFUNCTION", null, null),
   RELOADFUNCTION("RELOADFUNCTION", null, null),
