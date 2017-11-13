@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
+import org.apache.hadoop.hive.ql.wm.Action;
 import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 import org.apache.hadoop.hive.ql.wm.Expression;
 import org.apache.hadoop.hive.ql.wm.ExpressionFactory;
@@ -36,7 +37,7 @@ public class TestTriggersNoTezSessionPool extends AbstractJdbcTriggersTest {
   @Test(timeout = 60000)
   public void testTriggerSlowQueryExecutionTime() throws Exception {
     Expression expression = ExpressionFactory.fromString("EXECUTION_TIME > 1000");
-    Trigger trigger = new ExecutionTrigger("slow_query", expression, Trigger.Action.KILL_QUERY);
+    Trigger trigger = new ExecutionTrigger("slow_query", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
@@ -46,7 +47,7 @@ public class TestTriggersNoTezSessionPool extends AbstractJdbcTriggersTest {
   @Test(timeout = 60000)
   public void testTriggerTotalTasks() throws Exception {
     Expression expression = ExpressionFactory.fromString("TOTAL_TASKS > 50");
-    Trigger trigger = new ExecutionTrigger("highly_parallel", expression, Trigger.Action.KILL_QUERY);
+    Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";

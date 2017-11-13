@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,35 +21,6 @@ package org.apache.hadoop.hive.ql.wm;
  * if the expression defined in trigger evaluates to true.
  */
 public interface Trigger {
-
-  enum Action {
-    KILL_QUERY(""),
-    MOVE_TO_POOL("");
-
-    String poolName;
-    String msg;
-
-    Action(final String poolName) {
-      this.poolName = poolName;
-    }
-
-    public Action setPoolName(final String poolName) {
-      this.poolName = poolName;
-      return this;
-    }
-
-    public String getPoolName() {
-      return poolName;
-    }
-
-    public String getMsg() {
-      return msg;
-    }
-
-    public void setMsg(final String msg) {
-      this.msg = msg;
-    }
-  }
 
   /**
    * Based on current value, returns true if trigger is applied else false.
@@ -86,4 +57,19 @@ public interface Trigger {
    * @return clone copy
    */
   Trigger clone();
+
+  /**
+   * Set trigger violation message. When {@link #apply(long)} returns false, this can be used
+   * to set message for trigger violation which will be sent as response to clients.
+   *
+   * @param violationMsg violation message
+   */
+  void setViolationMsg(String violationMsg);
+
+  /**
+   * Get error message set during trigger violation.
+   *
+   * @return trigger violation message
+   */
+  String getViolationMsg();
 }

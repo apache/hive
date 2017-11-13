@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,9 +23,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-/**
- *
- */
 public class TestTrigger {
   @org.junit.Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -34,55 +31,55 @@ public class TestTrigger {
   public void testSimpleQueryTrigger() {
     Expression expression = ExpressionFactory.createExpression(new FileSystemCounterLimit("hdfs",
       FileSystemCounterLimit.FSCounter.BYTES_READ, 1024));
-    Trigger trigger = new ExecutionTrigger("hdfs_read_heavy", expression, Trigger.Action.KILL_QUERY);
+    Trigger trigger = new ExecutionTrigger("hdfs_read_heavy", expression, new Action(Action.Type.KILL_QUERY));
     assertEquals("counter: HDFS_BYTES_READ limit: 1024", expression.getCounterLimit().toString());
     assertFalse(trigger.apply(1000));
     assertTrue(trigger.apply(1025));
 
     expression = ExpressionFactory.createExpression(new FileSystemCounterLimit("hdfs",
       FileSystemCounterLimit.FSCounter.BYTES_WRITTEN, 1024));
-    trigger = new ExecutionTrigger("hdfs_write_heavy", expression, Trigger.Action.KILL_QUERY);
+    trigger = new ExecutionTrigger("hdfs_write_heavy", expression, new Action(Action.Type.KILL_QUERY));
     assertEquals("counter: HDFS_BYTES_WRITTEN limit: 1024", expression.getCounterLimit().toString());
     assertFalse(trigger.apply(1000));
     assertTrue(trigger.apply(1025));
 
     expression = ExpressionFactory.createExpression(new FileSystemCounterLimit("",
       FileSystemCounterLimit.FSCounter.BYTES_READ, 1024));
-    trigger = new ExecutionTrigger("local_read_heavy", expression, Trigger.Action.KILL_QUERY);
+    trigger = new ExecutionTrigger("local_read_heavy", expression, new Action(Action.Type.KILL_QUERY));
     assertEquals("counter: BYTES_READ limit: 1024", expression.getCounterLimit().toString());
     assertFalse(trigger.apply(1000));
     assertTrue(trigger.apply(1025));
 
     expression = ExpressionFactory.createExpression(new FileSystemCounterLimit("",
       FileSystemCounterLimit.FSCounter.BYTES_WRITTEN, 1024));
-    trigger = new ExecutionTrigger("local_write_heavy", expression, Trigger.Action.KILL_QUERY);
+    trigger = new ExecutionTrigger("local_write_heavy", expression, new Action(Action.Type.KILL_QUERY));
     assertEquals("counter: BYTES_WRITTEN limit: 1024", expression.getCounterLimit().toString());
     assertFalse(trigger.apply(1000));
     assertTrue(trigger.apply(1025));
 
     expression = ExpressionFactory.createExpression(new FileSystemCounterLimit("",
       FileSystemCounterLimit.FSCounter.SHUFFLE_BYTES, 1024));
-    trigger = new ExecutionTrigger("shuffle_heavy", expression, Trigger.Action.KILL_QUERY);
+    trigger = new ExecutionTrigger("shuffle_heavy", expression, new Action(Action.Type.KILL_QUERY));
     assertEquals("counter: SHUFFLE_BYTES limit: 1024", expression.getCounterLimit().toString());
     assertFalse(trigger.apply(1000));
     assertTrue(trigger.apply(1025));
 
     expression = ExpressionFactory.createExpression(new TimeCounterLimit(TimeCounterLimit.TimeCounter
       .EXECUTION_TIME, 10000));
-    trigger = new ExecutionTrigger("slow_query", expression, Trigger.Action.MOVE_TO_POOL.setPoolName("fake_pool"));
+    trigger = new ExecutionTrigger("slow_query", expression, new Action(Action.Type.MOVE_TO_POOL,"fake_pool"));
     assertEquals("counter: EXECUTION_TIME limit: 10000", expression.getCounterLimit().toString());
     assertFalse(trigger.apply(1000));
     assertTrue(trigger.apply(100000));
 
     expression = ExpressionFactory.createExpression(new VertexCounterLimit(VertexCounterLimit.VertexCounter
       .TOTAL_TASKS,10000));
-    trigger = new ExecutionTrigger("highly_parallel", expression, Trigger.Action.KILL_QUERY);
+    trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
     assertEquals("counter: TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
     assertFalse(trigger.apply(1000));
     assertTrue(trigger.apply(100000));
 
     expression = ExpressionFactory.createExpression(new CustomCounterLimit("HDFS_WRITE_OPS",10000));
-    trigger = new ExecutionTrigger("write_heavy", expression, Trigger.Action.KILL_QUERY);
+    trigger = new ExecutionTrigger("write_heavy", expression, new Action(Action.Type.KILL_QUERY));
     assertEquals("counter: HDFS_WRITE_OPS limit: 10000", expression.getCounterLimit().toString());
     assertFalse(trigger.apply(1000));
     assertTrue(trigger.apply(100000));
@@ -293,10 +290,21 @@ public class TestTrigger {
   }
 
   @Test
+  public void testActionFromMetastoreStr() {
+    assertEquals(Action.Type.KILL_QUERY, Action.fromMetastoreExpression("KILL").getType());
+    assertEquals(Action.Type.MOVE_TO_POOL, Action.fromMetastoreExpression("MOVE TO bi").getType());
+    assertEquals("MOVE TO etl", Action.fromMetastoreExpression("MOVE TO etl").toString());
+
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Invalid move action expression (MOVE TO    ). Pool name is empty");
+    assertEquals(Action.Type.MOVE_TO_POOL, Action.fromMetastoreExpression("MOVE TO    ").getType());
+  }
+
+  @Test
   public void testTriggerClone() {
     Expression expression = ExpressionFactory.createExpression(new FileSystemCounterLimit("hdfs",
       FileSystemCounterLimit.FSCounter.BYTES_READ, 1024));
-    Trigger trigger = new ExecutionTrigger("hdfs_read_heavy", expression, Trigger.Action.KILL_QUERY);
+    Trigger trigger = new ExecutionTrigger("hdfs_read_heavy", expression, new Action(Action.Type.KILL_QUERY));
     Trigger clonedTrigger = trigger.clone();
     assertNotEquals(System.identityHashCode(trigger), System.identityHashCode(clonedTrigger));
     assertNotEquals(System.identityHashCode(trigger.getExpression()), System.identityHashCode(clonedTrigger.getExpression()));
@@ -306,7 +314,7 @@ public class TestTrigger {
     assertEquals(trigger.hashCode(), clonedTrigger.hashCode());
 
     expression = ExpressionFactory.fromString(" ELAPSED_TIME > 300");
-    trigger = new ExecutionTrigger("slow_query", expression, Trigger.Action.KILL_QUERY);
+    trigger = new ExecutionTrigger("slow_query", expression, new Action(Action.Type.KILL_QUERY));
     clonedTrigger = trigger.clone();
     assertNotEquals(System.identityHashCode(trigger), System.identityHashCode(clonedTrigger));
     assertNotEquals(System.identityHashCode(trigger.getExpression()), System.identityHashCode(clonedTrigger.getExpression()));

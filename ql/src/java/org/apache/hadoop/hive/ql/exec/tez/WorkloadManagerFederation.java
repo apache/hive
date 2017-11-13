@@ -48,7 +48,7 @@ public class WorkloadManagerFederation {
       // Note: this may just block to wait for a session based on parallelism.
       LOG.info("Getting a WM session for " + input);
       TezSessionState result = wm.getSession(session, input, conf);
-      desiredCounters.addAll(wm.getTriggerCounterNames());
+      desiredCounters.addAll(wm.getTriggerCounterNames(result));
       return result;
     } catch (WorkloadManager.NoPoolMappingException ex) {
       return getUnmanagedSession(session, conf, desiredCounters, isUnmanagedLlapMode);

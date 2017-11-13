@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
@@ -102,7 +103,7 @@ public abstract class AbstractJdbcTriggersTest {
     }
   }
 
-  private void createSleepUDF() throws SQLException {
+  void createSleepUDF() throws SQLException {
     String udfName = TestJdbcWithMiniHS2.SleepMsUDF.class.getName();
     Connection con = hs2Conn;
     Statement stmt = con.createStatement();
@@ -110,7 +111,7 @@ public abstract class AbstractJdbcTriggersTest {
     stmt.close();
   }
 
-  protected void runQueryWithTrigger(final String query, final List<String> setCmds,
+  void runQueryWithTrigger(final String query, final List<String> setCmds,
     final String expect)
     throws Exception {
 
@@ -149,7 +150,7 @@ public abstract class AbstractJdbcTriggersTest {
 
   abstract void setupTriggers(final List<Trigger> triggers) throws Exception;
 
-  protected List<String> getConfigs(String... more) {
+  List<String> getConfigs(String... more) {
     List<String> setCmds = new ArrayList<>();
     setCmds.add("set hive.exec.dynamic.partition.mode=nonstrict");
     setCmds.add("set mapred.min.split.size=100");
@@ -160,5 +161,12 @@ public abstract class AbstractJdbcTriggersTest {
       setCmds.addAll(Arrays.asList(more));
     }
     return setCmds;
+  }
+
+  WMTrigger wmTriggerFromTrigger(Trigger trigger) {
+    WMTrigger result = new WMTrigger("rp", trigger.getName());
+    result.setTriggerExpression(trigger.getExpression().toString());
+    result.setActionExpression(trigger.getAction().toString());
+    return result;
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -15,6 +15,7 @@
  */
 package org.apache.hadoop.hive.ql.wm;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -22,21 +23,16 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 /**
  * Fetch global (non-llap) rules from metastore
  */
-public class MetastoreGlobalTriggersFetcher implements TriggersFetcher {
-  public static final String GLOBAL_TRIGGER_NAME = "global";
-  private final MetastoreResourcePlanTriggersFetcher rpTriggersFetcher;
+public class MetastoreGlobalTriggersFetcher {
+  private static final String GLOBAL_TRIGGER_NAME = "global";
+  private Hive db;
 
   public MetastoreGlobalTriggersFetcher(final Hive db) {
-    this.rpTriggersFetcher = new MetastoreResourcePlanTriggersFetcher(db);
-  }
-
-  @Override
-  public List<Trigger> fetch(final String ignore) {
-    return fetch();
+    this.db = db;
   }
 
   public List<Trigger> fetch() {
-    // TODO:
-    return rpTriggersFetcher.fetch(GLOBAL_TRIGGER_NAME);
+    // TODO: this entire class will go away, DDLTask will push RP to TezSessionPoolManager where triggers are available
+    return new ArrayList<>();
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,44 +16,37 @@
 
 package org.apache.hive.jdbc;
 
-import org.slf4j.Logger;
-
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.junit.BeforeClass;
 
+import com.google.common.collect.Lists;
+
 public class TestTriggersWorkloadManager extends TestTriggersTezSessionPoolManager {
-  private final static Logger LOG = LoggerFactory.getLogger(TestTriggersWorkloadManager.class);
 
   @BeforeClass
   public static void beforeTest() throws Exception {
     Class.forName(MiniHS2.getJdbcDriverName());
 
     String confDir = "../../data/conf/llap/";
-    if (confDir != null && !confDir.isEmpty()) {
-      HiveConf.setHiveSiteLocation(new URL("file://" + new File(confDir).toURI().getPath() + "/hive-site.xml"));
-      System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
-    }
+    HiveConf.setHiveSiteLocation(new URL("file://" + new File(confDir).toURI().getPath() + "/hive-site.xml"));
+    System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
 
     conf = new HiveConf();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
@@ -73,7 +66,7 @@ public class TestTriggersWorkloadManager extends TestTriggersTezSessionPoolManag
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");
 
-    Map<String, String> confOverlay = new HashMap<String, String>();
+    Map<String, String> confOverlay = new HashMap<>();
     miniHS2.start(confOverlay);
     miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
   }
@@ -92,13 +85,5 @@ public class TestTriggersWorkloadManager extends TestTriggersTezSessionPoolManag
       rp.addToPoolTriggers(new WMPoolTrigger("llap", trigger.getName()));
     }
     wm.updateResourcePlanAsync(rp).get(10, TimeUnit.SECONDS);
-  }
-
-  private WMTrigger wmTriggerFromTrigger(Trigger trigger) {
-    WMTrigger result = new WMTrigger("rp", trigger.getName());
-    result.setTriggerExpression(trigger.getExpression().toString()); // TODO: hmm
-    result.setActionExpression(trigger.getAction().toString()); // TODO: hmm
-    LOG.debug("Produced " + result + " from " + trigger);
-    return result;
   }
 }

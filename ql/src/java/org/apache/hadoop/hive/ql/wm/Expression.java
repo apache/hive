@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -47,7 +47,7 @@ public interface Expression {
    * else false otherwise
    *
    * @param current - current value against which expression will be evaluated
-   * @return
+   * @return true if current value exceeds limit
    */
   boolean evaluate(final long current);
 

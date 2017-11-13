@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,8 @@ package org.apache.hadoop.hive.ql.wm;
 
 import java.util.Objects;
 
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
+
 /**
  * Trigger with query level scope that contains a name, trigger expression violating which defined action will be
  * executed.
@@ -25,6 +27,7 @@ public class ExecutionTrigger implements Trigger {
   private String name;
   private Expression expression;
   private Action action;
+  private String violationMsg;
 
   public ExecutionTrigger(final String name, final Expression expression, final Action action) {
     this.name = name;
@@ -50,6 +53,16 @@ public class ExecutionTrigger implements Trigger {
   @Override
   public Trigger clone() {
     return new ExecutionTrigger(name, expression.clone(), action);
+  }
+
+  @Override
+  public String getViolationMsg() {
+    return violationMsg;
+  }
+
+  @Override
+  public void setViolationMsg(final String violationMsg) {
+    this.violationMsg = violationMsg;
   }
 
   @Override
@@ -84,5 +97,12 @@ public class ExecutionTrigger implements Trigger {
     return Objects.equals(name, otherQR.name) &&
       Objects.equals(expression, otherQR.expression) &&
       Objects.equals(action, otherQR.action);
+  }
+
+  public static ExecutionTrigger fromWMTrigger(final WMTrigger trigger) {
+    final Action action = Action.fromMetastoreExpression(trigger.getActionExpression());
+    ExecutionTrigger execTrigger = new ExecutionTrigger(trigger.getTriggerName(),
+      ExpressionFactory.fromString(trigger.getTriggerExpression()), action);
+    return execTrigger;
   }
 }

@@ -73,18 +73,12 @@ class TezSessionPoolSession extends TezSessionState {
   }
 
   public static abstract class AbstractTriggerValidator {
-    abstract SessionTriggerProvider getSessionTriggerProvider();
+    abstract Runnable getTriggerValidatorRunnable();
 
-    abstract TriggerActionHandler getTriggerActionHandler();
-
-    abstract TriggerValidatorRunnable getTriggerValidatorRunnable();
-
-    public void startTriggerValidator(Configuration conf) {
-      long triggerValidationIntervalMs = HiveConf.getTimeVar(conf,
-        HiveConf.ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL_MS, TimeUnit.MILLISECONDS);
+    public void startTriggerValidator(long triggerValidationIntervalMs) {
       final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("TriggerValidator").build());
-      TriggerValidatorRunnable triggerValidatorRunnable = getTriggerValidatorRunnable();
+      Runnable triggerValidatorRunnable = getTriggerValidatorRunnable();
       scheduledExecutorService.scheduleWithFixedDelay(triggerValidatorRunnable, triggerValidationIntervalMs,
         triggerValidationIntervalMs, TimeUnit.MILLISECONDS);
     }
