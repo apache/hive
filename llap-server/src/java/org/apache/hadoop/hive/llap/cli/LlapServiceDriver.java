@@ -467,7 +467,7 @@ public class LlapServiceDriver {
         private void addAuxJarsToSet(HashSet<String> auxJarSet, String auxJars) {
           if (auxJars != null && !auxJars.isEmpty()) {
             // TODO: transitive dependencies warning?
-            String[] jarPaths = auxJars.split(",");
+            String[] jarPaths = auxJars.split(":");
             for (String jarPath : jarPaths) {
               if (!jarPath.isEmpty()) {
                 auxJarSet.add(jarPath);
