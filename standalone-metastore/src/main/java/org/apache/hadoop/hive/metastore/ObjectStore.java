@@ -188,7 +188,6 @@ import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.datanucleus.AbstractNucleusContext;
 import org.datanucleus.ClassLoaderResolver;
@@ -1296,6 +1295,34 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<String> getTables(String dbName, String pattern, TableType tableType) throws MetaException {
+    try {
+      // We only support pattern matching via jdo since pattern matching in Java
+      // might be different than the one used by the metastore backends
+      return getTablesInternal(dbName, pattern, tableType, (pattern == null || pattern.equals(".*")), true);
+    } catch (NoSuchObjectException e) {
+      throw new MetaException(ExceptionUtils.getStackTrace(e));
+    }
+  }
+
+  protected List<String> getTablesInternal(String dbName, String pattern, TableType tableType,
+      boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
+    final String db_name = normalizeIdentifier(dbName);
+    return new GetListHelper<String>(dbName, null, allowSql, allowJdo) {
+      @Override
+      protected List<String> getSqlResult(GetHelper<List<String>> ctx)
+              throws MetaException {
+        return directSql.getTables(db_name, tableType);
+      }
+
+      @Override
+      protected List<String> getJdoResult(GetHelper<List<String>> ctx)
+              throws MetaException, NoSuchObjectException {
+        return getTablesInternalViaJdo(db_name, pattern, tableType);
+      }
+    }.run(false);
+  }
+
+  private List<String> getTablesInternalViaJdo(String dbName, String pattern, TableType tableType) throws MetaException {
     boolean commited = false;
     Query query = null;
     List<String> tbls = null;

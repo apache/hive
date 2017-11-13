@@ -1402,12 +1402,36 @@ public class Hive {
   /**
    * Get all tables for the specified database.
    * @param dbName
-   * @return List of table names
+   * @return List of all tables
    * @throws HiveException
    */
   public List<Table> getAllTableObjects(String dbName) throws HiveException {
+    return getTableObjects(dbName, ".*", null);
+  }
+
+  /**
+   * Get all materialized view names for the specified database.
+   * @param dbName
+   * @return List of materialized view table names
+   * @throws HiveException
+   */
+  public List<String> getAllMaterializedViews(String dbName) throws HiveException {
+    return getTablesByType(dbName, ".*", TableType.MATERIALIZED_VIEW);
+  }
+
+  /**
+   * Get all materialized views for the specified database.
+   * @param dbName
+   * @return List of materialized view table objects
+   * @throws HiveException
+   */
+  public List<Table> getAllMaterializedViewObjects(String dbName) throws HiveException {
+    return getTableObjects(dbName, ".*", TableType.MATERIALIZED_VIEW);
+  }
+
+  private List<Table> getTableObjects(String dbName, String pattern, TableType tableType) throws HiveException {
     try {
-      return Lists.transform(getMSC().getTableObjectsByName(dbName, getMSC().getAllTables(dbName)),
+      return Lists.transform(getMSC().getTableObjectsByName(dbName, getTablesByType(dbName, pattern, tableType)),
         new com.google.common.base.Function<org.apache.hadoop.hive.metastore.api.Table, Table>() {
           @Override
           public Table apply(org.apache.hadoop.hive.metastore.api.Table table) {
@@ -1510,7 +1534,7 @@ public class Hive {
       List<RelOptMaterialization> result = new ArrayList<>();
       for (String dbName : getMSC().getAllDatabases()) {
         // From metastore (for security)
-        List<String> tables = getMSC().getAllTables(dbName);
+        List<String> tables = getAllMaterializedViews(dbName);
         // Cached views (includes all)
         Collection<RelOptMaterialization> cachedViews =
             HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(dbName);

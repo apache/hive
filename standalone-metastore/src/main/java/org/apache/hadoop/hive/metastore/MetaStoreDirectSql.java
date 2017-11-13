@@ -383,6 +383,39 @@ class MetaStoreDirectSql {
   }
 
   /**
+   * Get table names by using direct SQL queries.
+   *
+   * @param dbName Metastore database namme
+   * @param tableType Table type, or null if we want to get all tables
+   * @return list of table names
+   */
+  public List<String> getTables(String db_name, TableType tableType) throws MetaException {
+    List<String> ret = new ArrayList<String>();
+    String queryText = "SELECT " + TBLS + ".\"TBL_NAME\","
+      + " FROM " + TBLS + " "
+      + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
+      + " WHERE " + DBS + ".\"NAME\" = ? "
+      + (tableType == null ? "" : "AND " + TBLS + ".\"TBL_TYPE\" = ? ") ;
+
+    List<String> pms = new ArrayList<String>();
+    pms.add(db_name);
+    if (tableType != null) {
+      pms.add(tableType.toString());
+    }
+
+    Query<?> queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
+    List<Object[]> sqlResult = ensureList(executeWithArray(
+        queryParams, pms.toArray(), queryText));
+
+    if (!sqlResult.isEmpty()) {
+      for (Object[] line : sqlResult) {
+        ret.add(extractSqlString(line[0]));
+      }
+    }
+    return ret;
+  }
+
+  /**
    * Gets partitions by using direct SQL queries.
    * Note that batching is not needed for this method - list of names implies the batch size;
    * @param dbName Metastore db name.
@@ -2250,4 +2283,5 @@ class MetaStoreDirectSql {
     }
     return ret;
   }
+
 }
