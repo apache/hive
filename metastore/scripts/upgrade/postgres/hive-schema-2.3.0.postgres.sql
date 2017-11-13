@@ -373,7 +373,7 @@ CREATE TABLE "TBLS" (
     "TBL_TYPE" character varying(128) DEFAULT NULL::character varying,
     "VIEW_EXPANDED_TEXT" text,
     "VIEW_ORIGINAL_TEXT" text,
-    "IS_REWRITE_ENABLED" boolean NOT NULL
+    "IS_REWRITE_ENABLED" boolean NOT NULL DEFAULT false
 );
 
 
