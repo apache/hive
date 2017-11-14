@@ -37,8 +37,6 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorDeserializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
@@ -295,6 +293,9 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
    */
   @Override
   public void processRow(Object key, final Object value) throws IOException {
+    if (!anyRow) {
+      anyRow = true;
+    }
     if (vectorized) {
       processVectorRow(key, value);
     } else {
@@ -307,6 +308,9 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
 
   @Override
   public <E> void processRow(Object key, Iterator<E> values) throws IOException {
+    if (!anyRow) {
+      anyRow = true;
+    }
     if (vectorized) {
       processVectorRows(key, values);
       return;
@@ -577,7 +581,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
   public void close() {
 
     // No row was processed
-    if (oc == null) {
+    if (!anyRow) {
       LOG.trace("Close called without any rows processed");
     }
 
