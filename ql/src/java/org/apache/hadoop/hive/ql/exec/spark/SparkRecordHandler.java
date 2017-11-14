@@ -49,6 +49,8 @@ public abstract class SparkRecordHandler {
   private long rowNumber = 0;
   private long nextLogThreshold = 1;
 
+  protected boolean anyRow = false;
+
   public <K, V> void init(JobConf job, OutputCollector<K, V> output, Reporter reporter) throws Exception {
     jc = job;
     MapredContext.init(false, new JobConf(jc));

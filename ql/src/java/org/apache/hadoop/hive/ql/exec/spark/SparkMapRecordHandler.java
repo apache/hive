@@ -94,7 +94,6 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
       mo.initializeLocalWork(jc);
       mo.initializeMapOperator(jc);
 
-      OperatorUtils.setChildrenCollector(mo.getChildOperators(), output);
       mo.setReporter(rp);
 
       if (localWork == null) {
@@ -124,6 +123,10 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
 
   @Override
   public void processRow(Object key, Object value) throws IOException {
+    if (!anyRow) {
+      OperatorUtils.setChildrenCollector(mo.getChildOperators(), oc);
+      anyRow = true;
+    }
     // reset the execContext for each new row
     execContext.resetRow();
 
@@ -156,7 +159,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
   @Override
   public void close() {
     // No row was processed
-    if (oc == null) {
+    if (!anyRow) {
       LOG.trace("Close called. no row processed by map.");
     }
 
