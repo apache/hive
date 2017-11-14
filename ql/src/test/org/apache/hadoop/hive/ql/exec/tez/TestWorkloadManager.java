@@ -506,6 +506,8 @@ public class TestWorkloadManager {
             mapping("C", "C"), mapping("D", "D")));
     final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
+    TezSessionPool<WmTezSession> tezAmPool = wm.getTezAmPool();
+    assertEquals(6, tezAmPool.getCurrentSize());
  
     // A: 1/1 running, 1 queued; B: 2/2 running, C: 1/2 running, D: 1/1 running, 1 queued.
     // Total: 5/6 running.
@@ -525,6 +527,7 @@ public class TestWorkloadManager {
     checkError(error);
     assertEquals(0.3f, sessionC1.getClusterFraction(), EPSILON);
     assertEquals(0.3f, sessionD1.getClusterFraction(), EPSILON);
+    assertEquals(1, tezAmPool.getCurrentSize());
 
     // Change the resource plan - resize B and C down, D up, and remove A remapping users to B.
     // Everything will be killed in A and B, C won't change, D will start one more query from
@@ -549,14 +552,16 @@ public class TestWorkloadManager {
     assertEquals(0.3f, sessionA2.get().getClusterFraction(), EPSILON);
     assertEquals(0.2f, sessionC1.getClusterFraction(), EPSILON);
     assertEquals(0.25f, sessionD1.getClusterFraction(), EPSILON);
-
     assertKilledByWm(sessionA1);
     assertKilledByWm(sessionB1);
     assertKilledByWm(sessionB2);
+    assertEquals(0, tezAmPool.getCurrentSize());
 
     // Wait for another iteration to make sure event gets processed for D2 to receive allocation.
     sessionA2.get().returnToSessionManager();
     assertEquals(0.25f, sessionD2.get().getClusterFraction(), EPSILON);
+    // Return itself should be a no-op - the pool went from 6 to 4 with 1 session in the pool.
+
     sessionD2.get().returnToSessionManager();
     sessionC1.returnToSessionManager();
     sessionD1.returnToSessionManager();
@@ -564,8 +569,8 @@ public class TestWorkloadManager {
     // Try to "return" stuff that was killed from "under" us. Should be a no-op.
     sessionA1.returnToSessionManager();
     sessionB1.returnToSessionManager();
-    sessionB2.returnToSessionManager(); 
-    assertEquals(4, wm.getTezAmPool().getCurrentSize());
+    sessionB2.returnToSessionManager();
+    assertEquals(4, tezAmPool.getCurrentSize());
   }
 
   @Test(timeout=10000)
