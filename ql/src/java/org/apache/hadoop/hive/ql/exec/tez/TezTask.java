@@ -159,8 +159,15 @@ public class TezTask extends Task<TezWork> {
         LOG.warn("The session: " + session + " has not been opened");
       }
       Set<String> desiredCounters = new HashSet<>();
-      session = WorkloadManagerFederation.getSession(session, conf,
-          new MappingInput(ss.getUserName()), getWork().getLlapMode(), desiredCounters);
+      // We only need a username for UGI to use for groups; getGroups will fetch the groups
+      // based on Hadoop configuration, as documented at
+      // https://hadoop.apache.org/docs/r2.8.0/hadoop-project-dist/hadoop-common/GroupsMapping.html
+      String userName = ss.getUserName();
+      MappingInput mi = (userName == null) ? new MappingInput("anonymous", null)
+        : new MappingInput(ss.getUserName(),
+            UserGroupInformation.createRemoteUser(ss.getUserName()).getGroups());
+      session = WorkloadManagerFederation.getSession(
+          session, conf, mi, getWork().getLlapMode(), desiredCounters);
 
       TriggerContext triggerContext = ctx.getTriggerContext();
       triggerContext.setDesiredCounters(desiredCounters);
