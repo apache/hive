@@ -32,12 +32,17 @@ import org.apache.hadoop.hive.registry.impl.TezAmInstance;
 public class WmTezSession extends TezSessionPoolSession implements AmPluginNode {
   private String poolName;
   private double clusterFraction;
+  /**
+   * The reason to kill an AM. Note that this is for the entire session, not just for a query.
+   * Once set, this can never be unset because you can only kill the session once.
+   */
   private String killReason = null;
 
   private final Object amPluginInfoLock = new Object();
   private AmPluginInfo amPluginInfo = null;
   private SettableFuture<WmTezSession> amRegistryFuture = null;
   private ScheduledFuture<?> timeoutTimer = null;
+  private String queryId;
 
   private final WorkloadManager wmParent;
 
@@ -124,6 +129,7 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
   void clearWm() {
     this.poolName = null;
     this.clusterFraction = 0f;
+    this.queryId = null;
   }
 
   double getClusterFraction() {
@@ -183,12 +189,10 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
   }
 
   void setIsIrrelevantForWm(String killReason) {
+    if (killReason == null) {
+      throw new AssertionError("Cannot reset the kill reason " + this.killReason);
+    }
     this.killReason = killReason;
-  }
-
-  @Override
-  public String toString() {
-    return super.toString() + ", poolName: " + poolName + ", clusterFraction: " + clusterFraction;
   }
 
   private final class TimeoutRunnable implements Runnable {
@@ -202,4 +206,19 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
       }
     }
   }
+
+  public void setQueryId(String queryId) {
+    this.queryId = queryId;
+  }
+
+  public String getQueryId() {
+    return this.queryId;
+  }
+
+  @Override
+  public String toString() {
+    return super.toString() +  ", WM state poolName=" + poolName + ", clusterFraction="
+        + clusterFraction + ", queryId=" + queryId + ", killReason=" + killReason;
+  }
+
 }

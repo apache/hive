@@ -459,7 +459,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
 
   @VisibleForTesting
   int getCurrentSize() {
-    poolLock.tryLock();
+    poolLock.lock();
     try {
       return pool.size();
     } finally {
