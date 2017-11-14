@@ -100,6 +100,8 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_ALTERVIEW_DROPPARTS, HiveOperation.ALTERTABLE_DROPPARTS);
     commandType.put(HiveParser.TOK_ALTERVIEW_RENAME, HiveOperation.ALTERVIEW_RENAME);
     commandType.put(HiveParser.TOK_ALTERVIEW, HiveOperation.ALTERVIEW_AS);
+    commandType.put(HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REWRITE,
+        HiveOperation.ALTER_MATERIALIZED_VIEW_REWRITE);
     commandType.put(HiveParser.TOK_QUERY, HiveOperation.QUERY);
     commandType.put(HiveParser.TOK_LOCKTABLE, HiveOperation.LOCKTABLE);
     commandType.put(HiveParser.TOK_UNLOCKTABLE, HiveOperation.UNLOCKTABLE);
@@ -263,6 +265,18 @@ public final class SemanticAnalyzerFactory {
         assert child.getType() == HiveParser.TOK_QUERY;
         queryState.setCommandType(HiveOperation.ALTERVIEW_AS);
         return new SemanticAnalyzer(queryState);
+      }
+      case HiveParser.TOK_ALTER_MATERIALIZED_VIEW: {
+        Tree child = tree.getChild(1);
+        switch (child.getType()) {
+          case HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REWRITE:
+            opType = commandType.get(child.getType());
+            queryState.setCommandType(opType);
+            return new DDLSemanticAnalyzer(queryState);
+        }
+        // Operation not recognized, set to null and let upper level handle this case
+        queryState.setCommandType(null);
+        return new DDLSemanticAnalyzer(queryState);
       }
       case HiveParser.TOK_CREATEDATABASE:
       case HiveParser.TOK_DROPDATABASE:

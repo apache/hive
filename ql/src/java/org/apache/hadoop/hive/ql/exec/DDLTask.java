@@ -21,15 +21,6 @@ package org.apache.hadoop.hive.ql.exec;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
-import java.util.concurrent.ExecutionException;
-
-import com.google.common.util.concurrent.FutureCallback;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
@@ -57,6 +48,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -172,6 +165,7 @@ import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
+import org.apache.hadoop.hive.ql.plan.AlterMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.plan.AlterResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
@@ -281,6 +275,11 @@ import org.apache.hive.common.util.RetryUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.ST;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ListenableFuture;
 
 /**
  * DDLTask implementation.
@@ -649,6 +648,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (work.getDropWMTriggerDesc() != null) {
         return dropWMTrigger(db, work.getDropWMTriggerDesc());
       }
+
+      if (work.getAlterMaterializedViewDesc() != null) {
+        return alterMaterializedView(db, work.getAlterMaterializedViewDesc());
+      }
+
     } catch (Throwable e) {
       failed(e);
       return 1;
@@ -1294,6 +1298,52 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (HiveException e) {
       console.printError("Invalid alter operation: " + e.getMessage());
       return 1;
+    }
+    return 0;
+  }
+
+  /**
+   * Alters a materialized view.
+   *
+   * @param db
+   *          Database that the materialized view belongs to.
+   * @param alterMVDesc
+   *          Descriptor of the changes.
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   * @throws HiveException
+   * @throws InvalidOperationException
+   */
+  private int alterMaterializedView(Hive db, AlterMaterializedViewDesc alterMVDesc) throws HiveException {
+    String mvName = alterMVDesc.getMaterializedViewName();
+    // It can be fully qualified name or use default database
+    Table oldMV = db.getTable(mvName);
+    Table mv = oldMV.copy(); // Do not mess with Table instance
+    EnvironmentContext environmentContext = new EnvironmentContext();
+    environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+
+    switch (alterMVDesc.getOp()) {
+    case UPDATE_REWRITE_FLAG:
+      if (mv.isRewriteEnabled() == alterMVDesc.isRewriteEnable()) {
+        // This is a noop, return successfully
+        return 0;
+      }
+      mv.setRewriteEnabled(alterMVDesc.isRewriteEnable());
+      break;
+
+    default:
+      throw new AssertionError("Unsupported alter materialized view type! : " + alterMVDesc.getOp());
+    }
+
+    try {
+      db.alterTable(mv, environmentContext);
+      // Remove or add to materialized view rewriting cache
+      if (alterMVDesc.isRewriteEnable()) {
+        HiveMaterializedViewsRegistry.get().addMaterializedView(mv);
+      } else {
+        HiveMaterializedViewsRegistry.get().dropMaterializedView(oldMV);
+      }
+    } catch (InvalidOperationException e) {
+      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "Unable to alter " + mv.getFullyQualifiedName());
     }
     return 0;
   }
