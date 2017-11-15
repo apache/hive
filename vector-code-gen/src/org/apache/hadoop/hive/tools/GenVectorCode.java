@@ -232,7 +232,6 @@ public class GenVectorCode extends Task {
       {"ScalarDivideColumn", "Modulo", "long", "double", "%"},
       {"ScalarDivideColumn", "Modulo", "double", "long", "%"},
       {"ScalarDivideColumn", "Modulo", "double", "double", "%"},
-      {"ColumnDivideColumn", "Modulo", "long", "long", "%"},
       {"ColumnDivideColumn", "Modulo", "long", "double", "%"},
       {"ColumnDivideColumn", "Modulo", "double", "long", "%"},
       {"ColumnDivideColumn", "Modulo", "double", "double", "%"},
