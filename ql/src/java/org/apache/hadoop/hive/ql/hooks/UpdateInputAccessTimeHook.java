@@ -19,8 +19,7 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.Set;
 
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -34,14 +33,16 @@ public class UpdateInputAccessTimeHook {
 
   private static final String LAST_ACCESS_TIME = "lastAccessTime";
 
-  public static class PreExec implements PreExecute {
-    public void run(SessionState sess, Set<ReadEntity> inputs,
-                    Set<WriteEntity> outputs, UserGroupInformation ugi)
-      throws Exception {
+  public static class PreExec implements ExecuteWithHookContext {
+
+    @Override
+    public void run(HookContext hookContext) throws Exception {
+      HiveConf conf = hookContext.getConf();
+      Set<ReadEntity> inputs = hookContext.getQueryPlan().getInputs();
 
       Hive db;
       try {
-        db = Hive.get(sess.getConf());
+        db = Hive.get(conf);
       } catch (HiveException e) {
         // ignore
         db = null;
