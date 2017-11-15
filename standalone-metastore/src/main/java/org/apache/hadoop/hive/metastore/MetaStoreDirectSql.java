@@ -391,7 +391,7 @@ class MetaStoreDirectSql {
    */
   public List<String> getTables(String db_name, TableType tableType) throws MetaException {
     List<String> ret = new ArrayList<String>();
-    String queryText = "SELECT " + TBLS + ".\"TBL_NAME\","
+    String queryText = "SELECT " + TBLS + ".\"TBL_NAME\""
       + " FROM " + TBLS + " "
       + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
       + " WHERE " + DBS + ".\"NAME\" = ? "
