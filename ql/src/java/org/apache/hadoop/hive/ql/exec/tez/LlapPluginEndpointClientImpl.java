@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hive.common.util.Ref;
+
 import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.hive.ql.exec.tez.AmPluginNode.AmPluginInfo;
@@ -84,19 +86,21 @@ public class LlapPluginEndpointClientImpl extends
    */
   @Override
   public void sendUpdateQuery(UpdateQueryRequestProto request,
-      AmPluginNode node, ExecuteRequestCallback<UpdateQueryResponseProto> callback) {
+      AmPluginNode node, UpdateRequestContext callback) {
     queueRequest(new SendUpdateQueryCallable(node, request, callback));
   }
 
   private class SendUpdateQueryCallable
       extends CallableRequest<UpdateQueryRequestProto, UpdateQueryResponseProto> {
-    private AmPluginNode node;
+    private final AmPluginNode node;
     private AmPluginInfo info;
+    private final UpdateRequestContext context;
 
-    protected SendUpdateQueryCallable(AmPluginNode node, UpdateQueryRequestProto request,
-        ExecuteRequestCallback<UpdateQueryResponseProto> callback) {
+    protected SendUpdateQueryCallable(
+        AmPluginNode node, UpdateQueryRequestProto request, UpdateRequestContext callback) {
       super(request, callback);
       this.node = node;
+      this.context = callback;
     }
 
     @Override
@@ -112,11 +116,14 @@ public class LlapPluginEndpointClientImpl extends
       return getProxy(nodeId, info.amPluginToken).updateQuery(null, request);
     }
 
-    private void ensureInfo() throws InterruptedException, TimeoutException {
+    private void ensureInfo() {
       if (info != null) return;
-      info = node.getAmPluginInfo(); // Don't wait - should already be initialized.
+      Ref<Integer> endpointVersion = new Ref<>(-1);
+      info = node.getAmPluginInfo(endpointVersion);
+      context.setNodeInfo(info, endpointVersion.value); // Give the caller context for future errors.
       if (info == null) {
-        throw new AssertionError("A request was created without AM plugin info for " + node);
+        // RequestManager will catch this and handle like any other error.
+        throw new RuntimeException("No AM plugin info for " + node);
       }
     }
   }

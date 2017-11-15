@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.ql.exec.tez.AmPluginNode.AmPluginInfo;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.KillQuery;
@@ -57,6 +58,7 @@ import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
+import org.apache.hive.common.util.Ref;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -272,11 +274,12 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   /** Represent a single iteration of work for the master thread. */
   private final static class EventState {
     private final Set<WmTezSession> toReturn = Sets.newIdentityHashSet(),
-        toDestroy = Sets.newIdentityHashSet(), updateErrors = Sets.newIdentityHashSet();
+        toDestroy = Sets.newIdentityHashSet();
     private final Map<WmTezSession, Boolean> killQueryResults = new IdentityHashMap<>();
     private final LinkedList<SessionInitContext> initResults = new LinkedList<>();
     private final IdentityHashMap<WmTezSession, SettableFuture<WmTezSession>> toReopen =
-      new IdentityHashMap<>();
+        new IdentityHashMap<>();
+    private final IdentityHashMap<WmTezSession, Integer> updateErrors = new IdentityHashMap<>();
     private final LinkedList<GetRequest> getRequests = new LinkedList<>();
     private final IdentityHashMap<WmTezSession, GetRequest> toReuse = new IdentityHashMap<>();
     private WMFullResourcePlan resourcePlanToApply = null;
@@ -512,9 +515,12 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     e.toReopen.clear();
 
     // 5. All the sessions in use that were not destroyed or returned with a failed update now die.
-    for (WmTezSession sessionWithUpdateError : e.updateErrors) {
+    for (Map.Entry<WmTezSession, Integer> entry : e.updateErrors.entrySet()) {
+      WmTezSession sessionWithUpdateError = entry.getKey();
+      int failedEndpointVersion = entry.getValue();
       LOG.info("Update failed for {}", sessionWithUpdateError);
-      handleUpdateErrorOnMasterThread(sessionWithUpdateError, e, syncWork, poolsToRedistribute);
+      handleUpdateErrorOnMasterThread(
+          sessionWithUpdateError, failedEndpointVersion, e.toReuse, syncWork, poolsToRedistribute);
     }
     e.updateErrors.clear();
 
@@ -711,7 +717,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // This handles the common logic for destroy and return - everything except
     // the invalid combination of destroy and return themselves, as well as the actual
     // statement that destroys or returns it.
-    if (e.updateErrors.remove(session)) {
+    if (e.updateErrors.remove(session) != null) {
       LOG.info("Ignoring an update error for a session being destroyed or returned");
     }
     SettableFuture<WmTezSession> future = e.toReopen.remove(session);
@@ -726,9 +732,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   }
 
   private void handeReopenRequestOnMasterThread(EventState e, WmTezSession session,
-    SettableFuture<WmTezSession> future, HashSet<String> poolsToRedistribute,
-    WmThreadSyncWork syncWork) throws Exception {
-    if (e.updateErrors.remove(session)) {
+      SettableFuture<WmTezSession> future, HashSet<String> poolsToRedistribute,
+      WmThreadSyncWork syncWork) throws Exception {
+    if (e.updateErrors.remove(session) != null) {
       LOG.info("Ignoring an update error for a session being reopened");
     }
     GetRequest reuseRequest = e.toReuse.remove(session);
@@ -767,9 +773,18 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     }
   }
 
-  private void handleUpdateErrorOnMasterThread(WmTezSession sessionWithUpdateError,
-    EventState e, WmThreadSyncWork syncWork, HashSet<String> poolsToRedistribute) {
-    GetRequest reuseRequest = e.toReuse.remove(sessionWithUpdateError);
+  private void handleUpdateErrorOnMasterThread(WmTezSession session,
+      int failedEndpointVersion, IdentityHashMap<WmTezSession, GetRequest> toReuse,
+      WmThreadSyncWork syncWork, HashSet<String> poolsToRedistribute) {
+    // First, check if the registry has been updated since the error, and skip the error if
+    // we have received new, valid registry info (TODO: externally, add a grace period for this?).
+    Ref<Integer> endpointVersion = new Ref<>(-1);
+    AmPluginInfo info = session.getAmPluginInfo(endpointVersion);
+    if (info != null && endpointVersion.value > failedEndpointVersion) {
+      LOG.info("Ignoring an update error; endpoint information has been updated to {}", info);
+      return;
+    }
+    GetRequest reuseRequest = toReuse.remove(session);
     if (reuseRequest != null) {
       // This session is bad, so don't allow reuse; just convert it to normal get.
       reuseRequest.sessionToReuse = null;
@@ -777,17 +792,17 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // TODO: we should communicate this to the user more explicitly (use kill query API, or
     //       add an option for bg kill checking to TezTask/monitor?
     // We are assuming the update-error AM is bad and just try to kill it.
-    RemoveSessionResult rr = checkAndRemoveSessionFromItsPool(
-        sessionWithUpdateError, poolsToRedistribute, null);
+    RemoveSessionResult rr = checkAndRemoveSessionFromItsPool(session, poolsToRedistribute, null);
     switch (rr) {
     case OK:
     case NOT_FOUND:
       // Regardless whether it was removed successfully or after failing to remove, restart it.
       // Since we just restart this from under the user, mark it so we handle it properly when
       // the user tries to actually use this session and fails, proceeding to return/destroy it.
-      sessionWithUpdateError.setIsIrrelevantForWm("Failed to update resource allocation");
+      session.setIsIrrelevantForWm("Failed to update resource allocation");
       // We assume AM might be bad so we will not try to kill the query here; just scrap the AM.
-      syncWork.toRestartInUse.add(sessionWithUpdateError);
+      // TODO: propagate this error to TezJobMonitor somehow? Without using killQuery
+      syncWork.toRestartInUse.add(session);
       break;
     case IGNORE:
       return; // An update error for some session that was actually already killed by us.
@@ -1226,10 +1241,13 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     }
   }
 
-  public void addUpdateError(WmTezSession wmTezSession) {
+  void addUpdateError(WmTezSession wmTezSession, int endpointVersion) {
     currentLock.lock();
     try {
-      current.updateErrors.add(wmTezSession);
+      Integer existing = current.updateErrors.get(wmTezSession);
+      // Only store the latest error, if there are multiple.
+      if (existing != null && existing >= endpointVersion) return;
+      current.updateErrors.put(wmTezSession, endpointVersion);
       notifyWmThreadUnderLock();
     } finally {
       currentLock.unlock();
@@ -1402,6 +1420,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     synchronized (openSessions) {
       openSessions.remove(session);
     }
+    tezAmPool.notifyClosed(session);
   }
 
   @VisibleForTesting

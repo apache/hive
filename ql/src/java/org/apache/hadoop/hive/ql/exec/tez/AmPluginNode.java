@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hive.common.util.Ref;
+
 import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.security.token.Token;
@@ -39,5 +41,5 @@ public interface AmPluginNode {
     }
   }
 
-  AmPluginInfo getAmPluginInfo() throws InterruptedException, TimeoutException;
+  AmPluginInfo getAmPluginInfo(Ref<Integer> endpointVersion);
 }

@@ -92,7 +92,7 @@ import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
  */
 public class TezSessionState {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TezSessionState.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(TezSessionState.class.getName());
   private static final String TEZ_DIR = "_tez_session_dir";
   public static final String LLAP_SERVICE = "LLAP";
   private static final String LLAP_SCHEDULER = LlapTaskSchedulerService.class.getName();

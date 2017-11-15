@@ -42,7 +42,7 @@ public class TestGuaranteedTaskAllocator {
     @Override
     public void sendUpdateQuery(UpdateQueryRequestProto request,
         AmPluginNode node,
-        ExecuteRequestCallback<UpdateQueryResponseProto> callback) {
+        UpdateRequestContext callback) {
       WmTezSession session = (WmTezSession)node;
       messages.put(Integer.parseInt(session.getSessionId()), request.getGuaranteedTaskCount());
       callback.setResponse(UpdateQueryResponseProto.getDefaultInstance());

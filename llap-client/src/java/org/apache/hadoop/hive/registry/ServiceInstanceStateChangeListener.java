@@ -24,19 +24,19 @@ public interface ServiceInstanceStateChangeListener<InstanceType extends Service
    *
    * @param serviceInstance - created service instance
    */
-  void onCreate(InstanceType serviceInstance);
+  void onCreate(InstanceType serviceInstance, int ephSeqVersion);
 
   /**
    * Called when an existing {@link ServiceInstance} is updated.
    *
    * @param serviceInstance - updated service instance
    */
-  void onUpdate(InstanceType serviceInstance);
+  void onUpdate(InstanceType serviceInstance, int ephSeqVersion);
 
   /**
    * Called when an existing {@link ServiceInstance} is removed.
    *
    * @param serviceInstance - removed service instance
    */
-  void onRemove(InstanceType serviceInstance);
+  void onRemove(InstanceType serviceInstance, int ephSeqVersion);
 }

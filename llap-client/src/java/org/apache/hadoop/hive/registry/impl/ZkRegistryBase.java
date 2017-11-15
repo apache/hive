@@ -382,13 +382,16 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     for (ChildData childData : instancesCache.getCurrentData()) {
       byte[] data = getWorkerData(childData, workerNodePrefix);
       if (data == null) continue;
+      String nodeName = extractNodeName(childData);
+      if (!nodeName.startsWith(workerNodePrefix)) continue;
+      int ephSeqVersion = extractSeqNum(nodeName);
       try {
         ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
         InstanceType instance = createServiceInstance(srv);
         addToCache(childData.getPath(), instance.getHost(), instance);
         if (doInvokeListeners) {
           for (ServiceInstanceStateChangeListener<InstanceType> listener : stateChangeListeners) {
-            listener.onCreate(instance);
+            listener.onCreate(instance, ephSeqVersion);
           }
         }
       } catch (IOException e) {
@@ -424,23 +427,24 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
         if (!nodeName.startsWith(workerNodePrefix)) return;
         LOG.info("{} for zknode {}", event.getType(), childData.getPath());
         InstanceType instance = extractServiceInstance(event, childData);
+        int ephSeqVersion = extractSeqNum(nodeName);
         switch (event.getType()) {
         case CHILD_ADDED:
           addToCache(childData.getPath(), instance.getHost(), instance);
           for (ServiceInstanceStateChangeListener<InstanceType> listener : stateChangeListeners) {
-            listener.onCreate(instance);
+            listener.onCreate(instance, ephSeqVersion);
           }
           break;
         case CHILD_UPDATED:
           addToCache(childData.getPath(), instance.getHost(), instance);
           for (ServiceInstanceStateChangeListener<InstanceType> listener : stateChangeListeners) {
-            listener.onUpdate(instance);
+            listener.onUpdate(instance, ephSeqVersion);
           }
           break;
         case CHILD_REMOVED:
           removeFromCache(childData.getPath(), instance.getHost());
           for (ServiceInstanceStateChangeListener<InstanceType> listener : stateChangeListeners) {
-            listener.onRemove(instance);
+            listener.onRemove(instance, ephSeqVersion);
           }
           break;
         default:
@@ -572,5 +576,16 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
   protected final String getRegistrationZnodePath() {
     return znodePath;
+  }
+
+  private int extractSeqNum(String nodeName) {
+    // Extract the sequence number of this ephemeral-sequential znode.
+    String ephSeqVersionStr = nodeName.substring(workerNodePrefix.length() + 1);
+    try {
+      return Integer.parseInt(ephSeqVersionStr);
+    } catch (NumberFormatException e) {
+      LOG.error("Cannot parse " + ephSeqVersionStr + " from " + nodeName, e);
+      throw e;
+    }
   }
 }

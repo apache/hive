@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.hive.ql.exec.tez.AmPluginNode.AmPluginInfo;
+
 import org.apache.hadoop.hive.llap.AsyncPbRpcProxy.ExecuteRequestCallback;
 import org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto;
 import org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryResponseProto;
@@ -25,6 +27,13 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.tez.common.security.JobTokenIdentifier;
 
 public interface LlapPluginEndpointClient {
-  void sendUpdateQuery(UpdateQueryRequestProto request, AmPluginNode node,
-      ExecuteRequestCallback<UpdateQueryResponseProto> callback);
+  // Note: this could be made more generic; it may be a common problem for the endpoints that
+  //       can move around dynamically. For now we only handle this for the update.
+  public static interface UpdateRequestContext
+    extends ExecuteRequestCallback<UpdateQueryResponseProto> {
+    void setNodeInfo(AmPluginInfo info, int version);
+  }
+
+  void sendUpdateQuery(
+      UpdateQueryRequestProto request, AmPluginNode node, UpdateRequestContext callback);
 }
