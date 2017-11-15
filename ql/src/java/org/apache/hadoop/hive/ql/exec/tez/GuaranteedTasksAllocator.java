@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.hive.ql.exec.tez.AmPluginNode.AmPluginInfo;
+
+import org.apache.hadoop.hive.ql.exec.tez.LlapPluginEndpointClient.UpdateRequestContext;
+
 import com.google.common.annotations.VisibleForTesting;
 import java.util.List;
 import org.apache.hadoop.conf.Configuration;
@@ -151,8 +155,9 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
     amCommunicator.sendUpdateQuery(request, (AmPluginNode)session, new UpdateCallback(session));
   }
 
-  private final class UpdateCallback implements ExecuteRequestCallback<UpdateQueryResponseProto> {
+  private final class UpdateCallback implements UpdateRequestContext {
     private final WmTezSession session;
+    private int endpointVersion = -1;
 
     private UpdateCallback(WmTezSession session) {
       this.session = session;
@@ -174,10 +179,15 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
       // RPC already handles retries, so we will just try to kill the session here.
       // This will cause the current query to fail. We could instead keep retrying.
       try {
-        session.handleUpdateError();
+        session.handleUpdateError(endpointVersion);
       } catch (Exception e) {
         LOG.error("Failed to kill the session " + session);
       }
+    }
+
+    @Override
+    public void setNodeInfo(AmPluginInfo info, int version) {
+      endpointVersion = version;
     }
   }
 }

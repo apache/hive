@@ -615,7 +615,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     private final Logger LOG = LoggerFactory.getLogger(NodeStateChangeListener.class);
 
     @Override
-    public void onCreate(LlapServiceInstance serviceInstance) {
+    public void onCreate(LlapServiceInstance serviceInstance, int ephSeqVersion) {
       LOG.info("Added node with identity: {} as a result of registry callback",
           serviceInstance.getWorkerIdentity());
       addNode(new NodeInfo(serviceInstance, nodeBlacklistConf, clock,
@@ -623,15 +623,13 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
 
     @Override
-    public void onUpdate(LlapServiceInstance serviceInstance) {
-      // TODO In what situations will this be invoked?
-      LOG.warn(
-          "Not expecing Updates from the registry. Received update for instance={}. Ignoring",
-          serviceInstance);
+    public void onUpdate(LlapServiceInstance serviceInstance, int ephSeqVersion) {
+      // Registry uses ephemeral sequential znodes that are never updated as of now.
+      LOG.warn("Unexpected update for instance={}. Ignoring", serviceInstance);
     }
 
     @Override
-    public void onRemove(LlapServiceInstance serviceInstance) {
+    public void onRemove(LlapServiceInstance serviceInstance, int ephSeqVersion) {
       NodeReport nodeReport = constructNodeReport(serviceInstance, false);
       LOG.info("Sending out nodeReport for onRemove: {}", nodeReport);
       getContext().nodesUpdated(Collections.singletonList(nodeReport));

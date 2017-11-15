@@ -210,7 +210,7 @@ class TezSessionPoolSession extends TezSessionState {
     return this.parent == parent;
   }
 
-  void updateFromRegistry(TezAmInstance si) {
+  void updateFromRegistry(TezAmInstance si, int ephSeqVersion) {
     // Nothing to do.
   }
 }

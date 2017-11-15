@@ -265,7 +265,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
         poolLock.unlock();
       }
 
-      bySessionId.remove(oldSession.getSessionId());
+      notifyClosed(oldSession);
       // There's some bogus code that can modify the queue name. Force-set it for pool sessions.
       // TODO: this might only be applicable to TezSessionPoolManager; try moving it there?
       newSession.getConf().set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
@@ -320,34 +320,38 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     implements ServiceInstanceStateChangeListener<TezAmInstance> {
 
     @Override
-    public void onCreate(TezAmInstance si) {
+    public void onCreate(TezAmInstance si, int ephSeqVersion) {
       String sessionId = si.getSessionId();
       SessionType session = bySessionId.get(sessionId);
       if (session != null) {
-        LOG.info("AM for " + sessionId + " has registered; updating [" + session
-            + "] with an endpoint at " + si.getPluginPort());
-        session.updateFromRegistry(si);
+        LOG.info("AM for " + sessionId + ", v." + ephSeqVersion + " has registered; updating ["
+            + session + "] with an endpoint at " + si.getPluginPort());
+        session.updateFromRegistry(si, ephSeqVersion);
       } else {
         LOG.warn("AM for an unknown " + sessionId + " has registered; ignoring");
       }
     }
 
     @Override
-    public void onUpdate(TezAmInstance serviceInstance) {
-      // Presumably we'd get those later if AM updates its stuff.
-      LOG.info("Received an unexpected update for instance={}. Ignoring", serviceInstance);
+    public void onUpdate(TezAmInstance serviceInstance, int ephSeqVersion) {
+      // We currently never update the znode once registered.
+      // AM recovery will create a new node when it calls register.
+      LOG.warn("Received an unexpected update for instance={}. Ignoring", serviceInstance);
     }
 
     @Override
-    public void onRemove(TezAmInstance serviceInstance) {
+    public void onRemove(TezAmInstance serviceInstance, int ephSeqVersion) {
       String sessionId = serviceInstance.getSessionId();
-      // For now, we don't take any action. In future, we might restore the session based
+      // For now, we don't take any pool action. In future, we might restore the session based
       // on this and get rid of the logic outside of the pool that replaces/reopens/etc.
-      LOG.warn("AM for " + sessionId + " has disappeared from the registry");
-      // TODO: this might race if AM for the same session is restarted internally by Tez.
-      //        It is possible to receive the create before remove and remove the wrong one.
-      //        We need some identity in the value to make sure that doesn't happen.
-      bySessionId.remove(sessionId);
+      SessionType session = bySessionId.get(sessionId);
+      if (session != null) {
+        LOG.info("AM for " + sessionId + ", v." + ephSeqVersion
+            + " has unregistered; updating [" + session + "]");
+        session.updateFromRegistry(null, ephSeqVersion);
+      } else {
+        LOG.warn("AM for an unknown " + sessionId + " has unregistered; ignoring");
+      }
     }
   }
 
@@ -465,5 +469,12 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     } finally {
       poolLock.unlock();
     }
+  }
+
+  /**
+   * Should be called when the session is no longer needed, to remove it from bySessionId.
+   */
+  public void notifyClosed(TezSessionState session) {
+    bySessionId.remove(session.getSessionId());
   }
 }

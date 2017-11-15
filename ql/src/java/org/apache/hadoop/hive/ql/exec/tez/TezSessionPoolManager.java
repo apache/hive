@@ -522,6 +522,9 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     synchronized (openSessions) {
       openSessions.remove(session);
     }
+    if (defaultSessionPool != null) {
+      defaultSessionPool.notifyClosed(session);
+    }
     updateSessionsTriggers();
   }
 
