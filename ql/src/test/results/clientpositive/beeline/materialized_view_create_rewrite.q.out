@@ -52,6 +52,7 @@ PREHOOK: query: show tblproperties cmv_mat_view
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view
 POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{}
 numFiles	1
 totalSize	453
 #### A masked pattern was here ####
@@ -75,12 +76,13 @@ POSTHOOK: query: select * from cmv_mat_view2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_mat_view2
 #### A masked pattern was here ####
-3	978.76
 3	9.80
+3	978.76
 PREHOOK: query: show tblproperties cmv_mat_view2
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view2
 POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{}
 numFiles	1
 totalSize	322
 #### A masked pattern was here ####
@@ -117,8 +119,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_mat_view2
 #### A masked pattern was here ####
-3	978.76
 3	9.80
+3	978.76
 PREHOOK: query: alter materialized view cmv_mat_view2 disable rewrite
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
 PREHOOK: Input: default@cmv_mat_view2

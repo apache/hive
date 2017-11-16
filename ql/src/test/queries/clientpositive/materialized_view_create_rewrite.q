@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 set hive.strict.checks.cartesian.product=false;
 set hive.materializedview.rewriting=true;
 set hive.stats.column.autogather=true;

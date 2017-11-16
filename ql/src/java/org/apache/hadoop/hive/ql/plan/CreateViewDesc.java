@@ -22,10 +22,20 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -35,6 +45,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Create View", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CreateViewDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
+  private static Logger LOG = LoggerFactory.getLogger(CreateViewDesc.class);
 
   private String viewName;
   private String originalText;
@@ -46,7 +57,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private List<FieldSchema> partCols;
   private String comment;
   private boolean ifNotExists;
-  private boolean orReplace;
+  private boolean replace;
   private boolean isAlterViewAs;
   private boolean isMaterialized;
   private String inputFormat;
@@ -83,7 +94,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
    */
   public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment,
           Map<String, String> tblProps, List<String> partColNames,
-          boolean ifNotExists, boolean orReplace, boolean rewriteEnabled, boolean isAlterViewAs,
+          boolean ifNotExists, boolean replace, boolean rewriteEnabled, boolean isAlterViewAs,
           String inputFormat, String outputFormat, String location,
           String serde, String storageHandler, Map<String, String> serdeProps) {
     this.viewName = viewName;
@@ -92,7 +103,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.partColNames = partColNames;
     this.comment = comment;
     this.ifNotExists = ifNotExists;
-    this.orReplace = orReplace;
+    this.replace = replace;
     this.isMaterialized = true;
     this.rewriteEnabled = rewriteEnabled;
     this.isAlterViewAs = isAlterViewAs;
@@ -128,7 +139,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.partColNames = partColNames;
     this.comment = comment;
     this.ifNotExists = ifNotExists;
-    this.orReplace = orReplace;
+    this.replace = orReplace;
     this.isAlterViewAs = isAlterViewAs;
     this.isMaterialized = false;
     this.rewriteEnabled = false;
@@ -164,7 +175,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.expandedText = expandedText;
   }
 
-  @Explain(displayName = "rewrite enabled")
+  @Explain(displayName = "rewrite enabled", displayOnlyOnTrue = true)
   public boolean isRewriteEnabled() {
     return rewriteEnabled;
   }
@@ -234,13 +245,13 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.ifNotExists = ifNotExists;
   }
 
-  @Explain(displayName = "or replace")
-  public boolean getOrReplace() {
-    return orReplace;
+  @Explain(displayName = "replace", displayOnlyOnTrue = true)
+  public boolean isReplace() {
+    return replace;
   }
 
-  public void setOrReplace(boolean orReplace) {
-    this.orReplace = orReplace;
+  public void setReplace(boolean replace) {
+    this.replace = replace;
   }
 
   @Explain(displayName = "is alter view as select", displayOnlyOnTrue = true)
@@ -307,5 +318,89 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
       this.replicationSpec = new ReplicationSpec();
     }
     return this.replicationSpec;
+  }
+
+  public Table toTable(HiveConf conf) throws HiveException {
+    String[] names = Utilities.getDbTableName(getViewName());
+    String databaseName = names[0];
+    String tableName = names[1];
+
+    Table tbl = new Table(databaseName, tableName);
+    tbl.setViewOriginalText(getViewOriginalText());
+    tbl.setViewExpandedText(getViewExpandedText());
+    if (isMaterialized()) {
+      tbl.setRewriteEnabled(isRewriteEnabled());
+      tbl.setTableType(TableType.MATERIALIZED_VIEW);
+    } else {
+      tbl.setTableType(TableType.VIRTUAL_VIEW);
+    }
+    tbl.setSerializationLib(null);
+    tbl.clearSerDeInfo();
+    tbl.setFields(getSchema());
+    if (getComment() != null) {
+      tbl.setProperty("comment", getComment());
+    }
+    if (getTblProps() != null) {
+      tbl.getTTable().getParameters().putAll(getTblProps());
+    }
+
+    if (getPartCols() != null) {
+      tbl.setPartCols(getPartCols());
+    }
+
+    if (getInputFormat() != null) {
+      tbl.setInputFormatClass(getInputFormat());
+    }
+
+    if (getOutputFormat() != null) {
+      tbl.setOutputFormatClass(getOutputFormat());
+    }
+
+    if (isMaterialized()) {
+      if (getLocation() != null) {
+        tbl.setDataLocation(new Path(getLocation()));
+      }
+
+      if (getStorageHandler() != null) {
+        tbl.setProperty(
+                org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
+                getStorageHandler());
+      }
+      HiveStorageHandler storageHandler = tbl.getStorageHandler();
+
+      /*
+       * If the user didn't specify a SerDe, we use the default.
+       */
+      String serDeClassName;
+      if (getSerde() == null) {
+        if (storageHandler == null) {
+          serDeClassName = PlanUtils.getDefaultSerDe().getName();
+          LOG.info("Default to {} for materialized view {}", serDeClassName,
+            getViewName());
+        } else {
+          serDeClassName = storageHandler.getSerDeClass().getName();
+          LOG.info("Use StorageHandler-supplied {} for materialized view {}",
+            serDeClassName, getViewName());
+        }
+      } else {
+        // let's validate that the serde exists
+        serDeClassName = getSerde();
+        DDLTask.validateSerDe(serDeClassName, conf);
+      }
+      tbl.setSerializationLib(serDeClassName);
+
+      // To remain consistent, we need to set input and output formats both
+      // at the table level and the storage handler level.
+      tbl.setInputFormatClass(getInputFormat());
+      tbl.setOutputFormatClass(getOutputFormat());
+      if (getInputFormat() != null && !getInputFormat().isEmpty()) {
+        tbl.getSd().setInputFormat(tbl.getInputFormatClass().getName());
+      }
+      if (getOutputFormat() != null && !getOutputFormat().isEmpty()) {
+        tbl.getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
+      }
+    }
+
+    return tbl;
   }
 }

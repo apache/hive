@@ -179,6 +179,11 @@ public class BasicStatsWork implements Serializable {
     if (getLoadFileDesc() != null && getLoadFileDesc().getCtasCreateTableDesc() != null) {
       return true;
     }
+    // ALTER MV ... REBUILD
+    if (getLoadFileDesc() != null && getLoadFileDesc().getCreateViewDesc() != null &&
+        getLoadFileDesc().getCreateViewDesc().isReplace()) {
+      return true;
+    }
     return false;
   }
 
@@ -188,8 +193,10 @@ public class BasicStatsWork implements Serializable {
       return work.getLoadTableDesc().getTable().getTableName();
     } else if (work.getTableSpecs() != null) {
       return work.getTableSpecs().tableName;
-    } else {
+    } else if (getLoadFileDesc().getCtasCreateTableDesc() != null) {
       return getLoadFileDesc().getCtasCreateTableDesc().getTableName();
+    } else {
+      return getLoadFileDesc().getCreateViewDesc().getViewName();
     }
   }
 

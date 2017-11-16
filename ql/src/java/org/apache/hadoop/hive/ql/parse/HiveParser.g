@@ -262,6 +262,7 @@ TOK_CREATE_MATERIALIZED_VIEW;
 TOK_DROP_MATERIALIZED_VIEW;
 TOK_ALTER_MATERIALIZED_VIEW;
 TOK_ALTER_MATERIALIZED_VIEW_REWRITE;
+TOK_ALTER_MATERIALIZED_VIEW_REBUILD;
 TOK_REWRITE_ENABLED;
 TOK_REWRITE_DISABLED;
 TOK_VIEWPARTCOLS;
@@ -1366,6 +1367,7 @@ alterMaterializedViewStatementSuffix
 @init { pushMsg("alter materialized view statement", state); }
 @after { popMsg(state); }
     : alterMaterializedViewSuffixRewrite
+    | alterMaterializedViewSuffixRebuild
     ;
 
 alterIndexStatementSuffix
@@ -1540,6 +1542,12 @@ alterMaterializedViewSuffixRewrite
 @after { popMsg(state); }
     : (mvRewriteFlag=rewriteEnabled | mvRewriteFlag=rewriteDisabled)
     -> ^(TOK_ALTER_MATERIALIZED_VIEW_REWRITE $mvRewriteFlag)
+    ;
+
+alterMaterializedViewSuffixRebuild
+@init { pushMsg("alter materialized view rebuild statement", state); }
+@after { popMsg(state); }
+    : KW_REBUILD -> ^(TOK_ALTER_MATERIALIZED_VIEW_REBUILD)
     ;
 
 alterStatementSuffixSerdeProperties

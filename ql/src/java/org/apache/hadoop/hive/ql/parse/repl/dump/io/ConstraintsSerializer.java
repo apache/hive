@@ -64,8 +64,8 @@ public class ConstraintsSerializer implements JsonWriter.Serializer {
       nnsString = MessageFactory.getInstance().buildAddNotNullConstraintMessage(nns).toString();
     }
     writer.jsonGenerator.writeStringField("pks", pksString);
-    writer.jsonGenerator.writeStringField("fks", fksString);
     writer.jsonGenerator.writeStringField("uks", uksString);
     writer.jsonGenerator.writeStringField("nns", nnsString);
+    writer.jsonGenerator.writeStringField("fks", fksString);
   }
 }
