@@ -1618,6 +1618,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               DruidRules.AGGREGATE_PROJECT,
               DruidRules.PROJECT,
               DruidRules.AGGREGATE,
+              DruidRules.POST_AGGREGATION_PROJECT,
               DruidRules.FILTER_AGGREGATE_TRANSPOSE,
               DruidRules.FILTER_PROJECT_TRANSPOSE,
               DruidRules.SORT_PROJECT_TRANSPOSE,
