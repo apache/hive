@@ -18,6 +18,20 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import com.google.common.collect.Lists;
+
+import java.util.concurrent.ExecutionException;
+
+import java.util.Collection;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,7 +53,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -63,14 +76,6 @@ import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 
 /** Workload management entry point for HS2.
  * Note on how this class operates.
@@ -84,7 +89,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * with background operations like init, need to go thru eventstate; see e.g. returnAfterUse.
  */
 public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValidator
-  implements TezSessionPoolSession.Manager, SessionExpirationTracker.RestartImpl {
+  implements TezSessionPoolSession.Manager, SessionExpirationTracker.RestartImpl,
+             WorkloadManagerMxBean {
   private static final Logger LOG = LoggerFactory.getLogger(WorkloadManager.class);
   private static final char POOL_SEPARATOR = '.';
   private static final String POOL_SEPARATOR_STR = "" + POOL_SEPARATOR;
@@ -107,6 +113,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
   // The below group of fields (pools, etc.) can only be modified by the master thread.
   private Map<String, PoolState> pools;
+  private String rpName, defaultPool; // For information only.
   private int totalQueryParallelism;
   /**
    * The queries being killed. This is used to sync between the background kill finishing and the
@@ -208,7 +215,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     TriggerActionHandler triggerActionHandler = new KillMoveTriggerActionHandler(this);
     triggerValidatorRunnable = new PerPoolTriggerValidatorRunnable(perPoolProviders, triggerActionHandler,
       triggerValidationIntervalMs);
-    startTriggerValidator(triggerValidationIntervalMs);
+    startTriggerValidator(triggerValidationIntervalMs); // TODO: why is this not in start
+
+    org.apache.hadoop.metrics2.util.MBeans.register("HiveServer2", "WorkloadManager", this);
   }
 
   private static int determineQueryParallelism(WMFullResourcePlan plan) {
@@ -285,6 +294,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     private WMFullResourcePlan resourcePlanToApply = null;
     private boolean hasClusterStateChanged = false;
     private SettableFuture<Boolean> testEvent, applyRpFuture;
+    private SettableFuture<List<String>> dumpStateFuture;
     private final List<MoveSession> moveSessions = new LinkedList<>();
   }
 
@@ -601,6 +611,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       processPoolChangesOnMasterThread(poolName, syncWork, hasRequeues);
     }
 
+
     // 12. Save state for future iterations.
     for (KillQueryContext killCtx : syncWork.toKillQuery.values()) {
       if (killQueryInProgress.put(killCtx.session, killCtx) != null) {
@@ -609,6 +620,15 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     }
 
     // 13. Notify tests and global async ops.
+    if (e.dumpStateFuture != null) {
+      List<String> result = new ArrayList<>();
+      result.add("RESOURCE PLAN " + rpName + "; default pool " + defaultPool);
+      for (PoolState ps : pools.values()) {
+        dumpPoolState(ps, result);
+      }
+      e.dumpStateFuture.set(result);
+      e.dumpStateFuture = null;
+    }
     if (e.testEvent != null) {
       e.testEvent.set(true);
       e.testEvent = null;
@@ -616,6 +636,31 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     if (e.applyRpFuture != null) {
       e.applyRpFuture.set(true);
       e.applyRpFuture = null;
+    }
+  }
+
+  private void dumpPoolState(PoolState ps, List<String> set) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("POOL ").append(ps.fullName).append(": qp ").append(ps.queryParallelism).append(", %% ")
+      .append(ps.finalFraction).append(", sessions: ").append(ps.sessions.size())
+      .append(", initializing: ").append(ps.initializingSessions.size()).append(", queued: ").append(ps.queue.size());
+    set.add(sb.toString());
+    sb.setLength(0);
+    for (WmTezSession session : ps.sessions) {
+      sb.append("RUNNING: ").append(session.getClusterFraction()).append(" (")
+        .append(session.getAllocationState()).append(") => ").append(session.getSessionId());
+      set.add(sb.toString());
+      sb.setLength(0);
+    }
+    for (SessionInitContext session : ps.initializingSessions) {
+      sb.append("INITIALIZING: state ").append(session.state);
+      set.add(sb.toString());
+      sb.setLength(0);
+    }
+    for (GetRequest session : ps.queue) {
+      sb.append("QUEUED: from ").append(session.mappingInput);
+      set.add(sb.toString());
+      sb.setLength(0);
     }
   }
 
@@ -817,8 +862,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // FIXME: Add Triggers from metastore to poolstate
     // Note: we assume here that plan has been validated beforehand, so we don't verify
     //       that fractions or query parallelism add up, etc.
-    this.userPoolMapping = new UserPoolMapping(e.resourcePlanToApply.getMappings(),
-        e.resourcePlanToApply.getPlan().getDefaultPoolPath());
+    this.rpName = e.resourcePlanToApply.getPlan().getName();
+    this.defaultPool = e.resourcePlanToApply.getPlan().getDefaultPoolPath();
+    this.userPoolMapping = new UserPoolMapping(e.resourcePlanToApply.getMappings(), defaultPool);
     Map<String, PoolState> oldPools = pools;
     pools = new HashMap<>();
 
@@ -1251,6 +1297,29 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       notifyWmThreadUnderLock();
     } finally {
       currentLock.unlock();
+    }
+  }
+
+
+  @Override
+  public List<String> getWmStateDescription() {
+    Future<List<String>> future = null;
+    currentLock.lock();
+    try {
+      if (current.dumpStateFuture != null) {
+        future = current.dumpStateFuture;
+      } else {
+        future = current.dumpStateFuture = SettableFuture.create();
+        notifyWmThreadUnderLock();
+      }
+    } finally {
+      currentLock.unlock();
+    }
+    try {
+      return future.get();
+    } catch (InterruptedException | ExecutionException e) {
+      LOG.error("Error getting description", e);
+      return Lists.newArrayList("Error: " + e.toString());
     }
   }
 
@@ -1752,6 +1821,11 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       } finally {
         lock.unlock();
       }
+    }
+
+    @Override
+    public String toString() {
+      return "[state=" + state + ", session=" + session + "]";
     }
   }
 
