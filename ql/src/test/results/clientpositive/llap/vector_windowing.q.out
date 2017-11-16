@@ -4418,7 +4418,6 @@ STAGE PLANS:
       Create View Operator:
         Create View
           if not exists: true
-          or replace: false
           columns: p_mfgr string, p_brand string, s double
           expanded text: select `part`.`p_mfgr`, `part`.`p_brand`, 
 round(sum(`part`.`p_retailprice`),2) as `s` 
@@ -4429,7 +4428,6 @@ group by `part`.`p_mfgr`, `part`.`p_brand`
 round(sum(p_retailprice),2) as s 
 from part 
 group by p_mfgr, p_brand
-          rewrite enabled: false
 
 PREHOOK: query: create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
@@ -4762,7 +4760,6 @@ STAGE PLANS:
       Create View Operator:
         Create View
           if not exists: true
-          or replace: false
           columns: p_mfgr string, p_brand string, s double
           expanded text: select `part`.`p_mfgr`, `part`.`p_brand`, 
 round(sum(`part`.`p_retailprice`) over w1,2) as `s`
@@ -4773,7 +4770,6 @@ window w1 as (distribute by `part`.`p_mfgr` sort by `part`.`p_name` rows between
 round(sum(p_retailprice) over w1,2) as s
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and current row)
-          rewrite enabled: false
 
 PREHOOK: query: create view IF NOT EXISTS mfgr_brand_price_view as 
 select p_mfgr, p_brand, 

@@ -142,7 +142,6 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreChecker;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
@@ -205,7 +204,6 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.OrcFileMergeDesc;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
@@ -5043,8 +5041,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int createView(Hive db, CreateViewDesc crtView) throws HiveException {
     Table oldview = db.getTable(crtView.getViewName(), false);
-    if (crtView.getOrReplace() && oldview != null) {
-      if (!crtView.isMaterialized()) {
+    if (oldview != null) {
+      // Check whether we are replicating
+      if (crtView.getReplicationSpec().isInReplicationScope()) {
+        // if this is a replication spec, then replace-mode semantics might apply.
+        if (crtView.getReplicationSpec().allowEventReplacementInto(oldview.getParameters())){
+          crtView.setReplace(true); // we replace existing view.
+        } else {
+          LOG.debug("DDLTask: Create View is skipped as view {} is newer than update",
+              crtView.getViewName()); // no replacement, the existing table state is newer than our update.
+          return 0;
+        }
+      }
+
+      if (!crtView.isReplace()) {
+        // View already exists, thus we should be replacing
+        throw new HiveException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(crtView.getViewName()));
+      }
+
+      if (crtView.isMaterialized()) {
+        // This is a replace/rebuild, so we need an exclusive lock
+        addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_EXCLUSIVE));
+      } else {
         // replace existing view
         // remove the existing partition columns from the field schema
         oldview.setViewOriginalText(crtView.getViewOriginalText());
@@ -5070,88 +5088,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           throw new HiveException(e);
         }
         addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK));
-      } else {
-        // This is a replace, so we need an exclusive lock
-        addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_EXCLUSIVE));
       }
     } else {
-      // create new view
-      Table tbl = db.newTable(crtView.getViewName());
-      tbl.setViewOriginalText(crtView.getViewOriginalText());
-      tbl.setViewExpandedText(crtView.getViewExpandedText());
-      if (crtView.isMaterialized()) {
-        tbl.setRewriteEnabled(crtView.isRewriteEnabled());
-        tbl.setTableType(TableType.MATERIALIZED_VIEW);
-      } else {
-        tbl.setTableType(TableType.VIRTUAL_VIEW);
-      }
-      tbl.setSerializationLib(null);
-      tbl.clearSerDeInfo();
-      tbl.setFields(crtView.getSchema());
-      if (crtView.getComment() != null) {
-        tbl.setProperty("comment", crtView.getComment());
-      }
-      if (crtView.getTblProps() != null) {
-        tbl.getTTable().getParameters().putAll(crtView.getTblProps());
-      }
-
-      if (crtView.getPartCols() != null) {
-        tbl.setPartCols(crtView.getPartCols());
-      }
-
-      if (crtView.getInputFormat() != null) {
-        tbl.setInputFormatClass(crtView.getInputFormat());
-      }
-
-      if (crtView.getOutputFormat() != null) {
-        tbl.setOutputFormatClass(crtView.getOutputFormat());
-      }
-
-      if (crtView.isMaterialized()) {
-        if (crtView.getLocation() != null) {
-          tbl.setDataLocation(new Path(crtView.getLocation()));
-        }
-
-        if (crtView.getStorageHandler() != null) {
-          tbl.setProperty(
-                  org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
-                  crtView.getStorageHandler());
-        }
-        HiveStorageHandler storageHandler = tbl.getStorageHandler();
-
-        /*
-         * If the user didn't specify a SerDe, we use the default.
-         */
-        String serDeClassName;
-        if (crtView.getSerde() == null) {
-          if (storageHandler == null) {
-            serDeClassName = PlanUtils.getDefaultSerDe().getName();
-            LOG.info("Default to {} for materialized view {}", serDeClassName,
-              crtView.getViewName());
-          } else {
-            serDeClassName = storageHandler.getSerDeClass().getName();
-            LOG.info("Use StorageHandler-supplied {} for materialized view {}",
-              serDeClassName, crtView.getViewName());
-          }
-        } else {
-          // let's validate that the serde exists
-          serDeClassName = crtView.getSerde();
-          DDLTask.validateSerDe(serDeClassName, conf);
-        }
-        tbl.setSerializationLib(serDeClassName);
-
-        // To remain consistent, we need to set input and output formats both
-        // at the table level and the storage handler level.
-        tbl.setInputFormatClass(crtView.getInputFormat());
-        tbl.setOutputFormatClass(crtView.getOutputFormat());
-        if (crtView.getInputFormat() != null && !crtView.getInputFormat().isEmpty()) {
-          tbl.getSd().setInputFormat(tbl.getInputFormatClass().getName());
-        }
-        if (crtView.getOutputFormat() != null && !crtView.getOutputFormat().isEmpty()) {
-          tbl.getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
-        }
-      }
-
+      // We create new view
+      Table tbl = crtView.toTable(conf);
       db.createTable(tbl, crtView.getIfNotExists());
       // Add to cache if it is a materialized view
       if (tbl.isMaterializedView()) {

@@ -370,6 +370,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         disableJoinMerge = true;
         boolean reAnalyzeAST = false;
         final boolean materializedView = getQB().isMaterializedView();
+        final boolean rebuild = materializedView && createVwDesc.isReplace();
 
         try {
           if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
@@ -389,7 +390,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ASTNode newAST = getOptimizedAST();
 
             // 1.1. Fix up the query for insert/ctas/materialized views
-            newAST = fixUpAfterCbo(ast, newAST, cboCtx);
+            if (!rebuild) {
+              // If it is not a MATERIALIZED VIEW...REBUILD
+              newAST = fixUpAfterCbo(ast, newAST, cboCtx);
+            }
 
             // 2. Regen OP plan from optimized AST
             if (cboCtx.type == PreCboCtx.Type.VIEW && !materializedView) {
@@ -399,25 +403,32 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 throw new CalciteViewSemanticException(e.getMessage());
               }
             } else if (cboCtx.type == PreCboCtx.Type.VIEW && materializedView) {
-              // Store text of the ORIGINAL QUERY
-              String originalText = ctx.getTokenRewriteStream().toString(
-                  cboCtx.nodeOfInterest.getTokenStartIndex(),
-                  cboCtx.nodeOfInterest.getTokenStopIndex());
-              unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
-              String expandedText = ctx.getTokenRewriteStream().toString(
-                  cboCtx.nodeOfInterest.getTokenStartIndex(),
-                  cboCtx.nodeOfInterest.getTokenStopIndex());
-              // Redo create-table/view analysis, because it's not part of
-              // doPhase1.
-              // Use the REWRITTEN AST
-              init(false);
-              setAST(newAST);
-              newAST = reAnalyzeViewAfterCbo(newAST);
+              if (rebuild) {
+                // Use the CREATE MATERIALIZED VIEW...REBUILD
+                init(false);
+                setAST(ast);
+                reAnalyzeViewAfterCbo(ast);
+              } else {
+                // Store text of the ORIGINAL QUERY
+                String originalText = ctx.getTokenRewriteStream().toString(
+                    cboCtx.nodeOfInterest.getTokenStartIndex(),
+                    cboCtx.nodeOfInterest.getTokenStopIndex());
+                unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
+                String expandedText = ctx.getTokenRewriteStream().toString(
+                    cboCtx.nodeOfInterest.getTokenStartIndex(),
+                    cboCtx.nodeOfInterest.getTokenStopIndex());
+                // Redo create-table/view analysis, because it's not part of
+                // doPhase1.
+                // Use the REWRITTEN AST
+                init(false);
+                setAST(newAST);
+                newAST = reAnalyzeViewAfterCbo(newAST);
+                createVwDesc.setViewOriginalText(originalText);
+                createVwDesc.setViewExpandedText(expandedText);
+              }
               viewSelect = newAST;
               viewsExpanded = new ArrayList<>();
               viewsExpanded.add(createVwDesc.getViewName());
-              createVwDesc.setViewOriginalText(originalText);
-              createVwDesc.setViewExpandedText(expandedText);
             } else if (cboCtx.type == PreCboCtx.Type.CTAS) {
               // CTAS
               init(false);

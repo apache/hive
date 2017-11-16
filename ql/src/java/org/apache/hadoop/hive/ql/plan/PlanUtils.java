@@ -442,6 +442,11 @@ public final class PlanUtils {
                 crtViewDesc.getStorageHandler());
       }
 
+      if (crtViewDesc.getViewName() != null && crtViewDesc.isMaterialized()) {
+        properties.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
+            crtViewDesc.getViewName());
+      }
+
       if (crtViewDesc.getTblProps() != null) {
         properties.putAll(crtViewDesc.getTblProps());
       }

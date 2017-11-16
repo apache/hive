@@ -273,6 +273,11 @@ public final class SemanticAnalyzerFactory {
             opType = commandType.get(child.getType());
             queryState.setCommandType(opType);
             return new DDLSemanticAnalyzer(queryState);
+          case HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD:
+            opType = commandType.get(child.getType());
+            queryState.setCommandType(opType);
+            return HiveConf.getBoolVar(queryState.getConf(), HiveConf.ConfVars.HIVE_CBO_ENABLED) ?
+                new CalcitePlanner(queryState) : new SemanticAnalyzer(queryState);
         }
         // Operation not recognized, set to null and let upper level handle this case
         queryState.setCommandType(null);

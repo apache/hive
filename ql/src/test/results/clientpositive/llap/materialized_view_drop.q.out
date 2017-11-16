@@ -1,0 +1,39 @@
+PREHOOK: query: create materialized view dmv_mat_view as select cint, cstring1 from alltypesorc where cint < 0
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dmv_mat_view
+POSTHOOK: query: create materialized view dmv_mat_view as select cint, cstring1 from alltypesorc where cint < 0
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dmv_mat_view
+PREHOOK: query: show table extended like dmv_mat_view
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like dmv_mat_view
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:dmv_mat_view
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+columns:struct columns { i32 cint, string cstring1}
+partitioned:false
+partitionColumns:
+totalNumberFiles:1
+totalFileSize:47120
+maxFileSize:47120
+minFileSize:47120
+#### A masked pattern was here ####
+
+PREHOOK: query: drop materialized view dmv_mat_view
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@dmv_mat_view
+PREHOOK: Output: default@dmv_mat_view
+POSTHOOK: query: drop materialized view dmv_mat_view
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@dmv_mat_view
+POSTHOOK: Output: default@dmv_mat_view
+PREHOOK: query: show table extended like dmv_mat_view
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like dmv_mat_view
+POSTHOOK: type: SHOW_TABLESTATUS

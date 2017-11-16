@@ -36,6 +36,7 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   private String columns;
   private String columnTypes;
   private transient CreateTableDesc ctasCreateTableDesc;
+  private transient CreateViewDesc createViewDesc;
   private boolean isMmCtas;
 
   public LoadFileDesc(final LoadFileDesc o) {
@@ -47,21 +48,26 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     this.columnTypes = o.columnTypes;
     this.isMmCtas = o.isMmCtas;
     this.ctasCreateTableDesc = o.ctasCreateTableDesc;
+    this.createViewDesc = o.createViewDesc;
   }
 
-  public LoadFileDesc(final CreateTableDesc createTableDesc, final CreateViewDesc  createViewDesc,
-                      final Path sourcePath, final Path targetDir, final boolean isDfsDir,
+  public LoadFileDesc(final CreateTableDesc createTableDesc, final CreateViewDesc createViewDesc,
+      final Path sourcePath, final Path targetDir, final boolean isDfsDir,
       final String columns, final String columnTypes, AcidUtils.Operation writeType, boolean isMmCtas) {
     this(sourcePath, targetDir, isDfsDir, columns, columnTypes, writeType, isMmCtas);
-      if (createTableDesc != null && createTableDesc.isCTAS()) {
-        ctasCreateTableDesc = createTableDesc;
+    if (createTableDesc != null && createTableDesc.isCTAS()) {
+      this.ctasCreateTableDesc = createTableDesc;
+    }
+    if (createViewDesc != null && createViewDesc.isMaterialized()) {
+      this.createViewDesc = createViewDesc;
     }
   }
 
   public LoadFileDesc(final Path sourcePath, final Path targetDir,
-                      final boolean isDfsDir, final String columns, final String columnTypes, boolean isMmCtas) {
+      final boolean isDfsDir, final String columns, final String columnTypes, boolean isMmCtas) {
     this(sourcePath, targetDir, isDfsDir, columns, columnTypes, AcidUtils.Operation.NOT_ACID, isMmCtas);
   }
+
   private LoadFileDesc(final Path sourcePath, final Path targetDir,
       final boolean isDfsDir, final String columns,
       final String columnTypes, AcidUtils.Operation writeType, boolean isMmCtas) {
@@ -126,6 +132,10 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
 
   public CreateTableDesc getCtasCreateTableDesc() {
     return ctasCreateTableDesc;
+  }
+
+  public CreateViewDesc getCreateViewDesc() {
+    return createViewDesc;
   }
 
   public boolean isMmCtas() {

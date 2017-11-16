@@ -1114,14 +1114,6 @@ public class DDLWork implements Serializable {
     this.showTblPropertiesDesc = showTblPropertiesDesc;
   }
 
-  public CreateViewDesc getCreateVwDesc() {
-    return createVwDesc;
-  }
-
-  public void setCreateVwDesc(CreateViewDesc createVwDesc) {
-    this.createVwDesc = createVwDesc;
-  }
-
   public void setDescFunctionDesc(DescFunctionDesc descFunctionDesc) {
     this.descFunctionDesc = descFunctionDesc;
   }

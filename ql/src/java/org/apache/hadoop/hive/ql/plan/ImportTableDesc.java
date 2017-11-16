@@ -303,7 +303,7 @@ public class ImportTableDesc {
         createTblDesc.setReplaceMode(replaceMode);
         break;
       case VIEW:
-        createViewDesc.setOrReplace(replaceMode);
+        createViewDesc.setReplace(replaceMode);
     }
   }
 
