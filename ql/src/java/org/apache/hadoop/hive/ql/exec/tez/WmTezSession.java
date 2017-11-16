@@ -161,6 +161,13 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
     }
   }
 
+  public String getAllocationState() {
+    synchronized (actualState) {
+      return "actual/target " + actualState.sent + "/" + actualState.target
+          + (actualState.sending >= 0 ? "; sending" : "");
+    }
+  }
+
   int setSentGuaranteed() {
     // Only one send can be active at the same time.
     synchronized (actualState) {

@@ -167,6 +167,7 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
     public void setResponse(UpdateQueryResponseProto response) {
       int nextUpdate = session.setSentGuaranteed();
       if (nextUpdate >= 0) {
+        LOG.info("Sending a new update " + nextUpdate + " to " + session + " in the response");
         updateSessionAsync(session, nextUpdate);
       }
     }

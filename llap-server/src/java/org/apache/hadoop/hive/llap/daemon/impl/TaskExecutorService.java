@@ -276,7 +276,7 @@ public class TaskExecutorService extends AbstractService
     if (c != null && c.getVertexSpec() != null) {
       SignableVertexSpec fs = c.getVertexSpec();
       value.append(isFirst ? " (" : ", ").append(c.getQueryId())
-        .append("/").append(fs.getVertexName());
+        .append("/").append(fs.getVertexName()).append(c.isGuaranteed() ? ", guaranteed" : "");
       isFirst = false;
     }
     value.append(isFirst ? " (" : ", ");
