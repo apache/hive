@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.plan.VectorTableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -255,9 +254,6 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     }
 
     rowLimit = conf.getRowLimit();
-    if (!conf.isGatherStats()) {
-      return;
-    }
 
     if (hconf instanceof JobConf) {
       jc = (JobConf) hconf;
