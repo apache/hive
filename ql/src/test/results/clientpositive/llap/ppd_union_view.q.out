@@ -258,6 +258,8 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
+                      insideView TRUE
+#### A masked pattern was here ####
                       name default.t1_old
                       partition_columns ds
                       partition_columns.types string
@@ -336,6 +338,8 @@ STAGE PLANS:
                       columns key,keymap
                       columns.comments 
                       columns.types string:string
+#### A masked pattern was here ####
+                      insideView TRUE
 #### A masked pattern was here ####
                       name default.t1_mapping
                       partition_columns ds
@@ -535,6 +539,8 @@ STAGE PLANS:
                       columns key,value
                       columns.comments 
                       columns.types string:string
+#### A masked pattern was here ####
+                      insideView TRUE
 #### A masked pattern was here ####
                       name default.t1_new
                       partition_columns ds

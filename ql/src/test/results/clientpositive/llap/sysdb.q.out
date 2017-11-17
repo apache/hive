@@ -2190,18 +2190,20 @@ POSTHOOK: Lineage: PARTITION_STATS_VIEW.transient_last_ddl_time EXPRESSION [(par
 PREHOOK: query: CREATE TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
   `NAME` string,
   `STATUS` string,
-  `QUERY_PARALLELISM` int
+  `QUERY_PARALLELISM` int,
+  `DEFAULT_POOL_PATH` string
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  \"NAME\",
+  \"WM_RESOURCEPLAN\".\"NAME\",
   \"STATUS\",
-  \"QUERY_PARALLELISM\"
+  \"WM_RESOURCEPLAN\".\"QUERY_PARALLELISM\",
+  \"WM_POOL\".\"PATH\"
 FROM
-  \"WM_RESOURCEPLAN\""
+  \"WM_RESOURCEPLAN\" LEFT OUTER JOIN \"WM_POOL\" ON \"WM_RESOURCEPLAN\".\"DEFAULT_POOL_ID\" = \"WM_POOL\".\"POOL_ID\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@WM_RESOURCEPLANS
@@ -2209,21 +2211,73 @@ PREHOOK: Output: database:sys
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS `WM_RESOURCEPLANS` (
   `NAME` string,
   `STATUS` string,
-  `QUERY_PARALLELISM` int
+  `QUERY_PARALLELISM` int,
+  `DEFAULT_POOL_PATH` string
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  \"NAME\",
+  \"WM_RESOURCEPLAN\".\"NAME\",
   \"STATUS\",
-  \"QUERY_PARALLELISM\"
+  \"WM_RESOURCEPLAN\".\"QUERY_PARALLELISM\",
+  \"WM_POOL\".\"PATH\"
 FROM
-  \"WM_RESOURCEPLAN\""
+  \"WM_RESOURCEPLAN\" LEFT OUTER JOIN \"WM_POOL\" ON \"WM_RESOURCEPLAN\".\"DEFAULT_POOL_ID\" = \"WM_POOL\".\"POOL_ID\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_RESOURCEPLANS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `WM_TRIGGERS` (
+  `RP_NAME` string,
+  `NAME` string,
+  `TRIGGER_EXPRESSION` string,
+  `ACTION_EXPRESSION` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  r.NAME RP_NAME,
+  t.NAME NAME,
+  TRIGGER_EXPRESSION,
+  ACTION_EXPRESSION
+FROM
+  WM_TRIGGER t
+JOIN
+  WM_RESOURCEPLAN r
+ON
+  t.RP_ID = r.RP_ID"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@WM_TRIGGERS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `WM_TRIGGERS` (
+  `RP_NAME` string,
+  `NAME` string,
+  `TRIGGER_EXPRESSION` string,
+  `ACTION_EXPRESSION` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  r.NAME RP_NAME,
+  t.NAME NAME,
+  TRIGGER_EXPRESSION,
+  ACTION_EXPRESSION
+FROM
+  WM_TRIGGER t
+JOIN
+  WM_RESOURCEPLAN r
+ON
+  t.RP_ID = r.RP_ID"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@WM_TRIGGERS
 POSTHOOK: Output: database:sys
 PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
 PREHOOK: type: DROPDATABASE
@@ -3005,7 +3059,7 @@ POSTHOOK: query: select count(*) from cds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@cds
 #### A masked pattern was here ####
-66
+67
 PREHOOK: query: select column_name, type_name, integer_idx from columns_v2 order by column_name, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@columns_v2
@@ -3015,10 +3069,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@columns_v2
 #### A masked pattern was here ####
 a	decimal(10,2)	0
+action_expression	string	3
 add_time	int	1
 aint	int	0
 astring	string	1
-attributes	map<string,map<string,map<string,uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>>>>	6
 PREHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@database_params
@@ -3159,7 +3213,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-72
+73
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -3269,10 +3323,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@table_params
 #### A masked pattern was here ####
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","e":"true","f":"true","g":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","rp_name":"true","trigger_expression":"true"}}
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"add_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","role_grant_id":"true","role_id":"true"}}
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"avg_col_len":"true","big_decimal_high_value":"true","big_decimal_low_value":"true","column_name":"true","column_type":"true","cs_id":"true","db_name":"true","double_high_value":"true","double_low_value":"true","last_analyzed":"true","long_high_value":"true","long_low_value":"true","max_col_len":"true","num_distincts":"true","num_falses":"true","num_nulls":"true","num_trues":"true","part_id":"true","partition_name":"true","table_name":"true"}}
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"avg_col_len":"true","big_decimal_high_value":"true","big_decimal_low_value":"true","column_name":"true","column_type":"true","cs_id":"true","db_name":"true","double_high_value":"true","double_low_value":"true","last_analyzed":"true","long_high_value":"true","long_low_value":"true","max_col_len":"true","num_distincts":"true","num_falses":"true","num_nulls":"true","num_trues":"true","table_name":"true","tbl_id":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"bucket_col_name":"true","integer_idx":"true","sd_id":"true"}}
 PREHOOK: query: select tbl_name from tbls order by tbl_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tbls
@@ -3385,7 +3439,7 @@ POSTHOOK: Input: sys@table_params
 POSTHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
 {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"name":"true","query_parallelism":"true","status":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","rp_name":"true","trigger_expression":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"next_val":"true","sequence_name":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
 #### A masked pattern was here ####
@@ -3591,6 +3645,7 @@ default	sys	tbl_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	tbls	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	version	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	wm_resourceplans	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	wm_triggers	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 PREHOOK: query: select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, PRIVILEGE_TYPE limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@table_privileges
