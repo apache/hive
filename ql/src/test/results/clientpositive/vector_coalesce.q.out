@@ -32,7 +32,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [6, 2, 4, 1, 17]
-                    selectExpressions: VectorCoalesce(columns [13, 6, 14, 15, 16])(children: ConstantVectorExpression(val null) -> 13:string, col 6:string, CastLongToString(col 2:int) -> 14:string, VectorUDFAdaptor(null(cfloat)) -> 15:string, CastLongToString(col 1:smallint) -> 16:string) -> 17:string
+                    selectExpressions: VectorCoalesce(columns [13, 6, 14, 15, 16])(children: ConstantVectorExpression(val null) -> 13:string, col 6:string, CastLongToString(col 2:int) -> 14:string, CastFloatToString(col 4:float) -> 15:string, CastLongToString(col 1:smallint) -> 16:string) -> 17:string
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
@@ -46,7 +46,7 @@ STAGE PLANS:
           featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
-          usesVectorUDFAdaptor: true
+          usesVectorUDFAdaptor: false
           vectorized: true
       Reduce Vectorization:
           enabled: false

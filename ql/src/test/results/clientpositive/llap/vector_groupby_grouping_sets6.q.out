@@ -67,7 +67,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 4:double, val 5.0)(children: VectorUDFAdaptor(UDFToDouble(a)) -> 4:double)
+                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 4:double, val 5.0)(children: CastStringToDouble(col 0:string) -> 4:double)
                     predicate: (UDFToDouble(a) = 5.0) (type: boolean)
                     Statistics: Num rows: 3 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
@@ -102,7 +102,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 3
@@ -210,7 +210,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 4:double, val 5.0)(children: VectorUDFAdaptor(UDFToDouble(a)) -> 4:double)
+                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 4:double, val 5.0)(children: CastStringToDouble(col 0:string) -> 4:double)
                     predicate: (UDFToDouble(a) = 5.0) (type: boolean)
                     Statistics: Num rows: 3 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
@@ -245,7 +245,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 3
