@@ -292,7 +292,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
   public void startFunction(ThriftCliFunctions function, String... extraLogInfo)
       throws HiveSQLException {
-    logAuditEvent(function.toString() + Joiner.on("").join(extraLogInfo));
+    logAuditEvent(function.toString() + Joiner.on("").skipNulls().join(extraLogInfo));
   }
 
   public void startFunction(ThriftCliFunctions function) throws HiveSQLException {
@@ -897,7 +897,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 	}
     return resp;
   }
-  
+
   @Override
   public abstract void run();
 
