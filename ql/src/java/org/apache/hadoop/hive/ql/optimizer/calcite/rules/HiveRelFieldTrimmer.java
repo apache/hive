@@ -266,7 +266,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
         if (this.columnAccessInfo != null && this.viewProjectToTableSchema != null
             && this.viewProjectToTableSchema.containsKey(project)) {
           Table tab = this.viewProjectToTableSchema.get(project);
-          this.columnAccessInfo.add(tab.getCompleteName(), tab.getCols().get(ord.i).getName());
+          this.columnAccessInfo.add(tab.getCompleteName(), tab.getAllCols().get(ord.i).getName());
         }
       }
     }
