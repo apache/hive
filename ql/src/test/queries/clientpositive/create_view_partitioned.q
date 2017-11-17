@@ -81,3 +81,15 @@ ADD PARTITION (v='val_86');
 DROP VIEW vp1;
 DROP VIEW vp2;
 DROP VIEW vp3;
+
+
+-- HIVE-16828
+set hive.security.authorization.enabled=true;
+CREATE TABLE table1 (id int) PARTITIONED BY (year int);
+-- create partitioned view
+CREATE VIEW view1 partitioned on (year) as select id, year from table1;
+
+select year from view1;
+
+Drop view view1;
+drop table table1;
