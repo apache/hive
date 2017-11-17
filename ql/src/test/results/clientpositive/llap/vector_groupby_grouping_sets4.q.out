@@ -73,7 +73,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDoubleColLessDoubleScalar(col 4:double, val 3.0)(children: VectorUDFAdaptor(UDFToDouble(a)) -> 4:double)
+                        predicateExpression: FilterDoubleColLessDoubleScalar(col 4:double, val 3.0)(children: CastStringToDouble(col 0:string) -> 4:double)
                     predicate: (UDFToDouble(a) < 3.0) (type: boolean)
                     Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
@@ -123,7 +123,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 3
@@ -317,7 +317,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDoubleColLessDoubleScalar(col 4:double, val 3.0)(children: VectorUDFAdaptor(UDFToDouble(a)) -> 4:double)
+                        predicateExpression: FilterDoubleColLessDoubleScalar(col 4:double, val 3.0)(children: CastStringToDouble(col 0:string) -> 4:double)
                     predicate: (UDFToDouble(a) < 3.0) (type: boolean)
                     Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
@@ -367,7 +367,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 3
@@ -593,7 +593,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDoubleColLessDoubleScalar(col 4:double, val 3.0)(children: VectorUDFAdaptor(UDFToDouble(a)) -> 4:double)
+                        predicateExpression: FilterDoubleColLessDoubleScalar(col 4:double, val 3.0)(children: CastStringToDouble(col 0:string) -> 4:double)
                     predicate: (UDFToDouble(a) < 3.0) (type: boolean)
                     Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
@@ -643,7 +643,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 3

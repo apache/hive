@@ -157,7 +157,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [14, 15, 16, 17, 18, 19, 20]
-                  selectExpressions: CastLongToVarChar(col 0:tinyint, maxLength 10) -> 14:varchar(10), CastLongToVarChar(col 1:smallint, maxLength 10) -> 15:varchar(10), CastLongToVarChar(col 2:int, maxLength 20) -> 16:varchar(20), CastLongToVarChar(col 3:bigint, maxLength 30) -> 17:varchar(30), VectorUDFAdaptor(CAST( f AS varchar(20))) -> 18:varchar(20), VectorUDFAdaptor(CAST( d AS varchar(20))) -> 19:varchar(20), CastStringGroupToVarChar(col 8:string, maxLength 50) -> 20:varchar(50)
+                  selectExpressions: CastLongToVarChar(col 0:tinyint, maxLength 10) -> 14:varchar(10), CastLongToVarChar(col 1:smallint, maxLength 10) -> 15:varchar(10), CastLongToVarChar(col 2:int, maxLength 20) -> 16:varchar(20), CastLongToVarChar(col 3:bigint, maxLength 30) -> 17:varchar(30), CastFloatToVarChar(col 4:float, maxLength 20) -> 18:varchar(20), CastDoubleToVarChar(col 5:double, maxLength 20) -> 19:varchar(20), CastStringGroupToVarChar(col 8:string, maxLength 50) -> 20:varchar(50)
               Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -178,7 +178,7 @@ STAGE PLANS:
           featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
-          usesVectorUDFAdaptor: true
+          usesVectorUDFAdaptor: false
           vectorized: true
 
   Stage: Stage-7

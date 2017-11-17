@@ -1887,7 +1887,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), SelectColumnIsNotNull(col 0:string))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:string))
                     predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -1931,7 +1931,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -2057,7 +2057,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), SelectColumnIsNotNull(col 0:string))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:string))
                     predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -2087,7 +2087,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -2339,7 +2339,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), SelectColumnIsNotNull(col 0:string))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:string))
                     predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -2369,7 +2369,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -2528,7 +2528,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
                     predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -2597,7 +2597,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
@@ -2670,7 +2670,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
                     predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -2700,7 +2700,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
@@ -2873,7 +2873,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
                     predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -2903,7 +2903,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
@@ -3524,7 +3524,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), SelectColumnIsNotNull(col 0:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
                     predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -3569,7 +3569,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -3609,7 +3609,7 @@ STAGE PLANS:
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkMultiKeyOperator
                           keyColumnNums: [5]
-                          keyExpressions: VectorUDFAdaptor(UDFToDouble(_col0)) -> 5:double
+                          keyExpressions: CastStringToDouble(col 3:string) -> 5:double
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
@@ -3622,7 +3622,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -3644,7 +3644,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), SelectColumnIsNotNull(col 0:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
                     predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -3675,7 +3675,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -3801,7 +3801,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), SelectColumnIsNotNull(col 0:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
                     predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -3845,7 +3845,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -3885,7 +3885,7 @@ STAGE PLANS:
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkMultiKeyOperator
                           keyColumnNums: [6]
-                          keyExpressions: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: VectorUDFAdaptor(UDFToDouble(_col0)) -> 5:double) -> 6:double
+                          keyExpressions: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: CastStringToDouble(col 3:string) -> 5:double) -> 6:double
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
@@ -3898,7 +3898,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -3920,7 +3920,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), SelectColumnIsNotNull(col 0:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
                     predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -3950,7 +3950,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -4089,7 +4089,7 @@ STAGE PLANS:
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkMultiKeyOperator
                           keyColumnNums: [5]
-                          keyExpressions: VectorUDFAdaptor(UDFToDouble(_col0)) -> 5:double
+                          keyExpressions: CastStringToDouble(col 3:string) -> 5:double
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
@@ -4102,7 +4102,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -4124,7 +4124,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), SelectColumnIsNotNull(col 0:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
                     predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -4155,7 +4155,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -4294,7 +4294,7 @@ STAGE PLANS:
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkMultiKeyOperator
                           keyColumnNums: [6]
-                          keyExpressions: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: VectorUDFAdaptor(UDFToDouble(_col0)) -> 5:double) -> 6:double
+                          keyExpressions: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: CastStringToDouble(col 3:string) -> 5:double) -> 6:double
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
@@ -4307,7 +4307,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -4329,7 +4329,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), SelectColumnIsNotNull(col 0:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
                     predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -4359,7 +4359,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -4494,7 +4494,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), SelectColumnIsNotNull(col 0:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
                     predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -4512,7 +4512,7 @@ STAGE PLANS:
                             className: VectorSelectOperator
                             native: true
                             projectedOutputColumnNums: [4]
-                            selectExpressions: VectorUDFAdaptor(UDFToString(_col0)) -> 4:string
+                            selectExpressions: CastDoubleToString(col 0:double) -> 4:string
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           Group By Vectorization:
@@ -4539,7 +4539,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -4579,7 +4579,7 @@ STAGE PLANS:
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkStringOperator
                           keyColumnNums: [7]
-                          keyExpressions: VectorUDFAdaptor(UDFToString((UDFToDouble(_col0) * 2.0)))(children: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: VectorUDFAdaptor(UDFToDouble(_col0)) -> 5:double) -> 6:double) -> 7:string
+                          keyExpressions: CastDoubleToString(col 6:double)(children: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: CastStringToDouble(col 3:string) -> 5:double) -> 6:double) -> 7:string
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
@@ -4592,7 +4592,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -4614,7 +4614,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), SelectColumnIsNotNull(col 0:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
                     predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -4632,7 +4632,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
                             keyColumnNums: [4]
-                            keyExpressions: VectorUDFAdaptor(UDFToString(_col0)) -> 4:string
+                            keyExpressions: CastDoubleToString(col 0:double) -> 4:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: []
@@ -4645,7 +4645,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -5078,7 +5078,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 5:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double))
                     predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -5107,7 +5107,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
@@ -5240,7 +5240,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
                     predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -5309,7 +5309,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
@@ -5382,7 +5382,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
                     predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -5412,7 +5412,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
@@ -6368,7 +6368,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hr)) -> 3:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 0:string) -> 3:double))
                     predicate: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -6412,7 +6412,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -6538,7 +6538,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hr)) -> 3:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 0:string) -> 3:double))
                     predicate: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -6568,7 +6568,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -6719,7 +6719,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 3:double, val 13.0)(children: VectorUDFAdaptor(UDFToDouble(hr)) -> 3:double)
+                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 3:double, val 13.0)(children: CastStringToDouble(col 0:string) -> 3:double)
                     predicate: (UDFToDouble(hr) = 13.0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -6749,7 +6749,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -6770,7 +6770,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 5:double, val 13.0)(children: VectorUDFAdaptor(UDFToDouble(hr)) -> 5:double), SelectColumnIsNotNull(col 2:string))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 5:double, val 13.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 2:string))
                     predicate: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
@@ -6799,7 +6799,7 @@ STAGE PLANS:
                 inputFormatFeatureSupport: []
                 featureSupportInUse: []
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
@@ -9482,7 +9482,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), SelectColumnIsNotNull(col 0:string))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:string))
                     predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -9533,7 +9533,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -9747,7 +9747,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
+                        predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
                     predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -9823,7 +9823,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
@@ -10250,7 +10250,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), SelectColumnIsNotNull(col 0:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
                     predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -10302,7 +10302,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -10344,7 +10344,7 @@ STAGE PLANS:
                         1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
                       Map Join Vectorization:
                           bigTableKeyColumnNums: [5]
-                          bigTableKeyExpressions: VectorUDFAdaptor(UDFToDouble(_col0)) -> 5:double
+                          bigTableKeyExpressions: CastStringToDouble(col 3:string) -> 5:double
                           className: VectorMapJoinInnerBigOnlyMultiKeyOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
@@ -10381,7 +10381,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -10487,7 +10487,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), SelectColumnIsNotNull(col 0:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
                     predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -10538,7 +10538,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -10580,7 +10580,7 @@ STAGE PLANS:
                         1 _col0 (type: double)
                       Map Join Vectorization:
                           bigTableKeyColumnNums: [6]
-                          bigTableKeyExpressions: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: VectorUDFAdaptor(UDFToDouble(_col0)) -> 5:double) -> 6:double
+                          bigTableKeyExpressions: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: CastStringToDouble(col 3:string) -> 5:double) -> 6:double
                           className: VectorMapJoinInnerBigOnlyMultiKeyOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
@@ -10617,7 +10617,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -11667,7 +11667,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hour)) -> 3:double), FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: VectorUDFAdaptor(UDFToDouble(hr)) -> 3:double))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 0:string) -> 3:double))
                     predicate: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -11718,7 +11718,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
@@ -11921,7 +11921,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 5:double, val 13.0)(children: VectorUDFAdaptor(UDFToDouble(hr)) -> 5:double), SelectColumnIsNotNull(col 2:string))
+                        predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 5:double, val 13.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 2:string))
                     predicate: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
@@ -11945,7 +11945,7 @@ STAGE PLANS:
                 inputFormatFeatureSupport: []
                 featureSupportInUse: []
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
@@ -12024,7 +12024,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 3:double, val 13.0)(children: VectorUDFAdaptor(UDFToDouble(hr)) -> 3:double)
+                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 3:double, val 13.0)(children: CastStringToDouble(col 0:string) -> 3:double)
                     predicate: (UDFToDouble(hr) = 13.0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -12096,7 +12096,7 @@ STAGE PLANS:
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
