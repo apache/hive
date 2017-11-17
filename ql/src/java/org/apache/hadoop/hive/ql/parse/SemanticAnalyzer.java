@@ -7151,6 +7151,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // hive.stats.autogather=true
     // and it is an insert overwrite or insert into table
     if (dest_tab != null
+        && !dest_tab.isNonNative()
         && conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
         && conf.getBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER)
         && ColumnStatsAutoGatherContext.canRunAutogatherStats(fso)) {

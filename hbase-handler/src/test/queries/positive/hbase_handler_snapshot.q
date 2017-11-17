@@ -1,3 +1,4 @@
+set hive.stats.column.autogather=true;
 SET hive.hbase.snapshot.name=src_hbase_snapshot;
 SET hive.hbase.snapshot.restoredir=/tmp;
 
