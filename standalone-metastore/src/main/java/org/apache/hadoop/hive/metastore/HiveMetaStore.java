@@ -21,9 +21,6 @@ import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
-import com.google.common.collect.Sets;
-import org.apache.hadoop.hive.metastore.model.MWMPool;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -32,12 +29,12 @@ import java.security.PrivilegedExceptionAction;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +42,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Timer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -96,7 +92,6 @@ import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
-import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddIndexEvent;
@@ -122,14 +117,9 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
 import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
-import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
-import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
-import org.apache.hadoop.hive.metastore.txn.AcidCompactionHistoryService;
-import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.security.SecurityUtil;
@@ -540,19 +530,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       ThreadPool.initialize(conf);
-      long cleanFreq = MetastoreConf.getTimeVar(conf, ConfVars.EVENT_CLEAN_FREQ, TimeUnit.MILLISECONDS);
-      if (cleanFreq > 0) {
-        ThreadPool.getPool().scheduleAtFixedRate(new EventCleanerTask(this), cleanFreq,
-            cleanFreq, TimeUnit.MILLISECONDS);
-      }
+      Collection<String> taskNames =
+          MetastoreConf.getStringCollection(conf, ConfVars.TASK_THREADS_ALWAYS);
+      for (String taskName : taskNames) {
+        MetastoreTaskThread task =
+            JavaUtils.newInstance(JavaUtils.getClass(taskName, MetastoreTaskThread.class));
+        task.setConf(conf);
+        long freq = task.runFrequency(TimeUnit.MILLISECONDS);
+        // For backwards compatibility, since some threads used to be hard coded but only run if
+        // frequency was > 0
+        if (freq > 0) {
+          ThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
 
-      cleanFreq = MetastoreConf.getTimeVar(conf, ConfVars.REPL_DUMPDIR_CLEAN_FREQ,
-          TimeUnit.MILLISECONDS);
-      if (cleanFreq > 0) {
-        DumpDirCleanerTask ddc = new DumpDirCleanerTask();
-        ddc.setConf(conf);
-        ThreadPool.getPool().scheduleAtFixedRate(ddc, cleanFreq, cleanFreq,
-            TimeUnit.MILLISECONDS);
+        }
       }
       expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
       fileMetadataManager = new FileMetadataManager(this.getMS(), conf);
@@ -7277,7 +7267,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public WMCreateResourcePlanResponse create_resource_plan(WMCreateResourcePlanRequest request)
         throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
       int defaultPoolSize = MetastoreConf.getIntVar(
-          hiveConf, MetastoreConf.ConfVars.WM_DEFAULT_POOL_SIZE);
+          conf, MetastoreConf.ConfVars.WM_DEFAULT_POOL_SIZE);
 
       try {
         getMS().createResourcePlan(request.getResourcePlan(), defaultPoolSize);
@@ -7564,7 +7554,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         LoggerContext context =  (LoggerContext)LogManager.getContext(false);
         context.reconfigure();
       }
-    } catch (LogInitializationException e) {
+    } catch (LogUtils.LogInitializationException e) {
       HMSHandler.LOG.warn(e.getMessage());
     }
     startupShutdownMessage(HiveMetaStore.class, args, LOG);
@@ -7907,7 +7897,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           startCompactorInitiator(conf);
           startCompactorWorkers(conf);
           startCompactorCleaner(conf);
-          startHouseKeeperService(conf);
+          startRemoteOnlyTasks(conf);
         } catch (Throwable e) {
           LOG.error("Failure when starting the compactor, compactions may not happen, " +
               StringUtils.stringifyException(e));
@@ -7970,30 +7960,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     thread.init(new AtomicBoolean(), new AtomicBoolean());
     thread.start();
   }
-  private static void startHouseKeeperService(Configuration conf) throws Exception {
+
+  private static void startRemoteOnlyTasks(Configuration conf) throws Exception {
     if(!MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON)) {
       return;
     }
 
     ThreadPool.initialize(conf);
-    startOneHouseKeeperService(new AcidHouseKeeperService(), conf,
-        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TIMEDOUT_TXN_REAPER_INTERVAL,
-            TimeUnit.MILLISECONDS));
-    startOneHouseKeeperService(new AcidOpenTxnsCounterService(), conf,
-        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COUNT_OPEN_TXNS_INTERVAL,
-            TimeUnit.MILLISECONDS));
-    startOneHouseKeeperService(new AcidCompactionHistoryService(), conf,
-        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_REAPER_INTERVAL,
-            TimeUnit.MILLISECONDS));
-    startOneHouseKeeperService(new AcidWriteSetService(), conf,
-        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.WRITE_SET_REAPER_INTERVAL,
-            TimeUnit.MILLISECONDS));
-  }
-
-  private static void startOneHouseKeeperService(RunnableConfigurable rc, Configuration conf,
-                                                 long interval) {
-    rc.setConf(conf);
-    ThreadPool.getPool().scheduleAtFixedRate(rc, 0, interval, TimeUnit.MILLISECONDS);
+    Collection<String> taskNames =
+        MetastoreConf.getStringCollection(conf, ConfVars.TASK_THREADS_REMOTE_ONLY);
+    for (String taskName : taskNames) {
+      MetastoreTaskThread task =
+          JavaUtils.newInstance(JavaUtils.getClass(taskName, MetastoreTaskThread.class));
+      task.setConf(conf);
+      long freq = task.runFrequency(TimeUnit.MILLISECONDS);
+      ThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
+    }
   }
 
   /**

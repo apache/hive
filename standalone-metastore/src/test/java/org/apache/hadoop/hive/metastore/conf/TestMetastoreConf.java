@@ -146,7 +146,7 @@ public class TestMetastoreConf {
         "test.double", "1.8",
         "test.bool", "false",
         "test.time", "30s",
-        "test.str.list", "d,e",
+        "test.str.list", "d",
         "test.class", TestClass2.class.getName()
     ));
     conf = MetastoreConf.newMetastoreConf();
@@ -160,9 +160,8 @@ public class TestMetastoreConf {
     Assert.assertEquals(30000,
         MetastoreConf.getTimeVar(conf, ConfVars.TIME_TEST_ENTRY, TimeUnit.MILLISECONDS));
     Collection<String> list = MetastoreConf.getStringCollection(conf, ConfVars.STR_LIST_ENTRY);
-    Assert.assertEquals(2, list.size());
+    Assert.assertEquals(1, list.size());
     Assert.assertTrue(list.contains("d"));
-    Assert.assertTrue(list.contains("e"));
     Assert.assertSame(TestClass2.class,
         MetastoreConf.getClass(conf, ConfVars.CLASS_TEST_ENTRY, TestClass1.class, Runnable.class));
     Assert.assertEquals("1.8", MetastoreConf.get(conf, ConfVars.DOUBLE_TEST_ENTRY.getVarname()));
@@ -182,7 +181,7 @@ public class TestMetastoreConf {
     Assert.assertEquals(24, MetastoreConf.getLongVar(conf, ConfVars.LONG_TEST_ENTRY));
   }
 
-  @Ignore // Ignore for now as Hive's tests create a hive-site.xml in the test directory
+  @Test
   public void readHiveSiteWithHiveConfDir() throws IOException {
     createConfFile("hive-site.xml", false, "HIVE_CONF_DIR", instaMap(
         "test.double", "1.8"
@@ -192,7 +191,7 @@ public class TestMetastoreConf {
         0.01);
   }
 
-  @Ignore // Ignore for now as Hive's tests create a hive-site.xml in the test directory
+  @Test
   public void readHiveSiteWithHiveHomeDir() throws IOException {
     createConfFile("hive-site.xml", true, "HIVE_HOME", instaMap(
         "test.bool", "false"
@@ -201,7 +200,7 @@ public class TestMetastoreConf {
     Assert.assertFalse(MetastoreConf.getBoolVar(conf, ConfVars.BOOLEAN_TEST_ENTRY));
   }
 
-  @Ignore // Ignore for now as Hive's tests create a hive-metastoresite.xml in the test directory
+  @Test
   public void readHiveMetastoreSiteWithHiveConfDir() throws IOException {
     createConfFile("hivemetastore-site.xml", false, "HIVE_CONF_DIR", instaMap(
         "test.double", "1.8"
@@ -211,7 +210,7 @@ public class TestMetastoreConf {
         0.01);
   }
 
-  @Ignore // Ignore for now as Hive's tests create a hive-metastoresite.xml in the test directory
+  @Test
   public void readHiveMetastoreSiteWithHiveHomeDir() throws IOException {
     createConfFile("hivemetastore-site.xml", true, "HIVE_HOME", instaMap(
         "test.bool", "false"

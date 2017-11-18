@@ -21,7 +21,13 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader;
 import org.apache.hadoop.hive.metastore.HiveAlterHandler;
+import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
+import org.apache.hadoop.hive.metastore.txn.AcidCompactionHistoryService;
+import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
+import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -597,10 +603,6 @@ public class MetastoreConf {
         "hive.exec.copyfile.maxsize", 32L * 1024 * 1024 /*32M*/,
         "Maximum file size (in bytes) that Hive uses to do single HDFS copies between directories." +
             "Distributed copies (distcp) will be used instead for bigger files so that copies can be done faster."),
-    REPL_DUMPDIR_CLEAN_FREQ("metastore.repl.dumpdir.clean.freq", "hive.repl.dumpdir.clean.freq",
-        0, TimeUnit.SECONDS, "Frequency at which timer task runs to purge expired dump dirs."),
-    REPL_DUMPDIR_TTL("metastore.repl.dumpdir.ttl", "hive.repl.dumpdir.ttl", 7, TimeUnit.DAYS,
-        "TTL of dump dirs before cleanup."),
     SCHEMA_INFO_CLASS("metastore.schema.info.class", "hive.metastore.schema.info.class",
         "org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo",
         "Fully qualified class name for the metastore schema information class \n"
@@ -674,6 +676,19 @@ public class MetastoreConf {
             + "When it is set to false, only [a-zA-Z_0-9]+ are supported.\n"
             + "The only supported special character right now is '/'. This flag applies only to quoted table names.\n"
             + "The default value is true."),
+    TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
+        EventCleanerTask.class.getName() + "," + "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask",
+        "Comma separated list of tasks that will be started in separate threads.  These will " +
+            "always be started, regardless of whether the metastore is running in embedded mode " +
+            "or in server mode.  They must implement " + MetastoreTaskThread.class.getName()),
+    TASK_THREADS_REMOTE_ONLY("metastore.task.threads.remote", "metastore.task.threads.remote",
+        AcidHouseKeeperService.class.getName() + "," +
+            AcidOpenTxnsCounterService.class.getName() + "," +
+            AcidCompactionHistoryService.class.getName() + "," +
+            AcidWriteSetService.class.getName(),
+        "Command separated list of tasks that will be started in separate threads.  These will be" +
+            " started only when the metastore is running as a separate service.  They must " +
+            "implement " + MetastoreTaskThread.class.getName()),
     TCP_KEEP_ALIVE("metastore.server.tcp.keepalive",
         "hive.metastore.server.tcp.keepalive", true,
         "Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections."),
@@ -816,7 +831,8 @@ public class MetastoreConf {
     // These are all values that we put here just for testing
     STR_TEST_ENTRY("test.str", "hive.test.str", "defaultval", "comment"),
     STR_SET_ENTRY("test.str.set", NO_SUCH_KEY, "a", new Validator.StringSet("a", "b", "c"), ""),
-    STR_LIST_ENTRY("test.str.list", "hive.test.str.list", "a,b,c", "no comment"),
+    STR_LIST_ENTRY("test.str.list", "hive.test.str.list", "a,b,c",
+        "no comment"),
     LONG_TEST_ENTRY("test.long", "hive.test.long", 42, "comment"),
     DOUBLE_TEST_ENTRY("test.double", "hive.test.double", 3.141592654, "comment"),
     TIME_TEST_ENTRY("test.time", "hive.test.time", 1, TimeUnit.SECONDS, "comment"),

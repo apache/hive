@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFa
 import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMerger;
 import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMergerFactory;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.security.SaslRpcServer;
@@ -921,7 +922,7 @@ public class MetaStoreUtils {
     return getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern) == null;
   }
 
-  protected static void getMergableCols(ColumnStatistics csNew, Map<String, String> parameters) {
+  public static void getMergableCols(ColumnStatistics csNew, Map<String, String> parameters) {
     List<ColumnStatisticsObj> list = new ArrayList<>();
     for (int index = 0; index < csNew.getStatsObj().size(); index++) {
       ColumnStatisticsObj statsObjNew = csNew.getStatsObj().get(index);
@@ -1058,5 +1059,17 @@ public class MetaStoreUtils {
     MachineList machineList = new MachineList(hostEntries);
     ipAddress = (ipAddress == null) ? StringUtils.EMPTY : ipAddress;
     return machineList.includes(ipAddress);
+  }
+
+  // TODO This should be moved to MetaStoreTestUtils once it is moved into standalone-metastore.
+  /**
+   * Setup a configuration file for standalone mode.  There are a few config variables that have
+   * defaults that require parts of Hive that aren't present in standalone mode.  This method
+   * sets them to something that will work without the rest of Hive.
+   * @param conf Configuration object
+   */
+  public static void setConfForStandloneMode(Configuration conf) {
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TASK_THREADS_ALWAYS,
+        EventCleanerTask.class.getName());
   }
 }

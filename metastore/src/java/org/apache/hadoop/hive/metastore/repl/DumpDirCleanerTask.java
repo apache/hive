@@ -21,16 +21,16 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.RunnableConfigurable;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class DumpDirCleanerTask implements RunnableConfigurable {
+public class DumpDirCleanerTask implements MetastoreTaskThread {
   public static final Logger LOG = LoggerFactory.getLogger(DumpDirCleanerTask.class);
   private Configuration conf;
   private Path dumpRoot;
@@ -39,13 +39,18 @@ public class DumpDirCleanerTask implements RunnableConfigurable {
   @Override
   public void setConf(Configuration conf) {
     this.conf = conf;
-    dumpRoot = new Path(MetastoreConf.getVar(conf, ConfVars.REPLDIR));
-    ttl = MetastoreConf.getTimeVar(conf, ConfVars.REPL_DUMPDIR_TTL, TimeUnit.MILLISECONDS);
+    dumpRoot = new Path(HiveConf.getVar(conf, ConfVars.REPLDIR));
+    ttl = HiveConf.getTimeVar(conf, ConfVars.REPL_DUMPDIR_TTL, TimeUnit.MILLISECONDS);
   }
 
   @Override
   public Configuration getConf() {
     return conf;
+  }
+
+  @Override
+  public long runFrequency(TimeUnit unit) {
+    return HiveConf.getTimeVar(conf, ConfVars.REPL_DUMPDIR_CLEAN_FREQ, unit);
   }
 
   @Override

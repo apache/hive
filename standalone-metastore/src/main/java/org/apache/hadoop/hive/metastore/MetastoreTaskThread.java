@@ -18,9 +18,21 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.conf.Configuration;
+
+import java.util.concurrent.TimeUnit;
 
 /**
- * Combination of Runnable and Configurable
+ * Any task that will run as a separate thread in the metastore should implement this
+ * interface.
  */
-public interface RunnableConfigurable extends Configurable, Runnable {
+public interface MetastoreTaskThread extends Configurable, Runnable {
+
+  /**
+   * Get the frequency at which the thread should be scheduled in the thread pool.  You must call
+   * {@link #setConf(Configuration)} before calling this method.
+   * @param unit TimeUnit to express the frequency in.
+   * @return frequency
+   */
+  long runFrequency(TimeUnit unit);
 }

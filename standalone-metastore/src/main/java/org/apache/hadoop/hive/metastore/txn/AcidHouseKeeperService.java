@@ -18,15 +18,18 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.RunnableConfigurable;
+import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Performs background tasks for Transaction management in Hive.
  * Runs inside Hive Metastore Service.
  */
-public class AcidHouseKeeperService implements RunnableConfigurable {
+public class AcidHouseKeeperService implements MetastoreTaskThread {
   private static final Logger LOG = LoggerFactory.getLogger(AcidHouseKeeperService.class);
 
   private Configuration conf;
@@ -41,6 +44,11 @@ public class AcidHouseKeeperService implements RunnableConfigurable {
   @Override
   public Configuration getConf() {
     return conf;
+  }
+
+  @Override
+  public long runFrequency(TimeUnit unit) {
+    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TIMEDOUT_TXN_REAPER_INTERVAL, unit);
   }
 
   @Override
