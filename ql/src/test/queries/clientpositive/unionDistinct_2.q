@@ -6,21 +6,6 @@ CREATE TABLE u2 as select key, value from src order by key limit 3;
 
 CREATE TABLE u3 as select key, value from src order by key desc limit 5;
 
-select * from u1;
-
-select * from u2;
-
-select * from u3;
-
-select key, value from 
-(
-select key, value from u1
-union all
-select key, value from u2
-union all
-select key as key, value from u3
-) tab;
-
 select key, value from 
 (
 select key, value from u1
@@ -57,14 +42,6 @@ union
 select key as key, value from u3
 ) tab;
 
-select distinct * from 
-(
-select key, value from u1
-union all 
-select key, value from u2
-union all
-select key as key, value from u3
-) tab;
 
 select distinct * from 
 (

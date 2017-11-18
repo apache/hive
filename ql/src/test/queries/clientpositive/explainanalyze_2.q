@@ -1,7 +1,6 @@
 set hive.map.aggr=false;
 
 set hive.strict.checks.bucketing=false;
-
 set hive.explain.user=true;
 
 explain analyze
@@ -139,13 +138,6 @@ INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT
 
 explain analyze FROM UNIQUEJOIN PRESERVE src a (a.key), PRESERVE src1 b (b.key), PRESERVE srcpart c (c.key) SELECT a.key, b.key, c.key;
 
-set hive.entity.capture.transform=true;
-
-explain analyze
-SELECT 
-TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
-FROM src a join src b
-on a.key = b.key;
 
 explain analyze
 FROM (
