@@ -273,6 +273,17 @@ public class MetastoreConf {
     CACHED_RAW_STORE_CACHE_UPDATE_FREQUENCY("metastore.cached.rawstore.cache.update.frequency",
         "hive.metastore.cached.rawstore.cache.update.frequency", 60, TimeUnit.SECONDS,
         "The time after which metastore cache is updated from metastore DB."),
+    CACHED_RAW_STORE_CACHED_OBJECTS_WHITELIST("metastore.cached.rawstore.cached.object.whitelist",
+        "hive.metastore.cached.rawstore.cached.object.whitelist", ".*", "Comma separated list of regular expressions \n " +
+        "to select the tables (and its partitions, stats etc) that will be cached by CachedStore. \n" +
+        "This can be used in conjunction with hive.metastore.cached.rawstore.cached.object.blacklist. \n" +
+        "Example: .*, db1.*, db2\\.tbl.*. The last item can potentially override patterns specified before."),
+    CACHED_RAW_STORE_CACHED_OBJECTS_BLACKLIST("metastore.cached.rawstore.cached.object.blacklist",
+         "hive.metastore.cached.rawstore.cached.object.blacklist", "", "Comma separated list of regular expressions \n " +
+         "to filter out the tables (and its partitions, stats etc) that will be cached by CachedStore. \n" +
+         "This can be used in conjunction with hive.metastore.cached.rawstore.cached.object.whitelist. \n" +
+         "Example: db2.*, db3\\.tbl1, db3\\..*. The last item can potentially override patterns specified before. \n" +
+         "The blacklist also overrides the whitelist."),
     CAPABILITY_CHECK("metastore.client.capability.check",
         "hive.metastore.client.capability.check", true,
         "Whether to check client capabilities for potentially breaking API usage."),

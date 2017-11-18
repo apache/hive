@@ -900,6 +900,17 @@ public class HiveConf extends Configuration {
         "hive.metastore.cached.rawstore.cache.update.frequency", "60", new TimeValidator(
             TimeUnit.SECONDS),
         "The time after which metastore cache is updated from metastore DB."),
+    METASTORE_CACHED_RAW_STORE_CACHED_OBJECTS_WHITELIST(
+        "hive.metastore.cached.rawstore.cached.object.whitelist", ".*", "Comma separated list of regular expressions \n " +
+        "to select the tables (and its partitions, stats etc) that will be cached by CachedStore. \n" +
+        "This can be used in conjunction with hive.metastore.cached.rawstore.cached.object.blacklist. \n" +
+        "Example: .*, db1.*, db2\\.tbl.*. The last item can potentially override patterns specified before."),
+    METASTORE_CACHED_RAW_STORE_CACHED_OBJECTS_BLACKLIST(
+         "hive.metastore.cached.rawstore.cached.object.blacklist", "", "Comma separated list of regular expressions \n " +
+         "to filter out the tables (and its partitions, stats etc) that will be cached by CachedStore. \n" +
+         "This can be used in conjunction with hive.metastore.cached.rawstore.cached.object.whitelist. \n" +
+         "Example: db2.*, db3\\.tbl1, db3\\..*. The last item can potentially override patterns specified before. \n" +
+         "The blacklist also overrides the whitelist."),
     METASTORE_TXN_STORE_IMPL("hive.metastore.txn.store.impl",
         "org.apache.hadoop.hive.metastore.txn.CompactionTxnHandler",
         "Name of class that implements org.apache.hadoop.hive.metastore.txn.TxnStore.  This " +

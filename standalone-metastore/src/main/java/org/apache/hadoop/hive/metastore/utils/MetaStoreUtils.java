@@ -307,10 +307,13 @@ public class MetaStoreUtils {
     // Note all maps and lists have to be absolutely sorted.  Otherwise we'll produce different
     // results for hashes based on the OS or JVM being used.
     md.reset();
-    for (FieldSchema fs : sd.getCols()) {
-      md.update(fs.getName().getBytes(ENCODING));
-      md.update(fs.getType().getBytes(ENCODING));
-      if (fs.getComment() != null) md.update(fs.getComment().getBytes(ENCODING));
+    // In case cols are null
+    if (sd.getCols() != null) {
+      for (FieldSchema fs : sd.getCols()) {
+        md.update(fs.getName().getBytes(ENCODING));
+        md.update(fs.getType().getBytes(ENCODING));
+        if (fs.getComment() != null) md.update(fs.getComment().getBytes(ENCODING));
+      }
     }
     if (sd.getInputFormat() != null) {
       md.update(sd.getInputFormat().getBytes(ENCODING));
