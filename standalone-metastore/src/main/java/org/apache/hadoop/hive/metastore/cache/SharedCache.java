@@ -318,6 +318,28 @@ public class SharedCache {
     return wrapper.getPartition();
   }
 
+  /**
+   * Given a db + table, remove all partitions for this table from the cache
+   * @param dbName
+   * @param tblName
+   * @return
+   */
+  public synchronized void removePartitionsFromCache(String dbName, String tblName) {
+    String partialKey = CacheUtils.buildKeyWithDelimit(dbName, tblName);
+    Iterator<Entry<String, PartitionWrapper>> iterator = partitionCache.entrySet().iterator();
+    while (iterator.hasNext()) {
+      Entry<String, PartitionWrapper> entry = iterator.next();
+      String key = entry.getKey();
+      PartitionWrapper wrapper = entry.getValue();
+      if (key.toLowerCase().startsWith(partialKey.toLowerCase())) {
+        iterator.remove();
+        if (wrapper.getSdHash() != null) {
+          decrSd(wrapper.getSdHash());
+        }
+      }
+    }
+  }
+
   // Remove cached column stats for all partitions of a table
   public synchronized void removePartitionColStatsFromCache(String dbName, String tblName) {
     String partialKey = CacheUtils.buildKeyWithDelimit(dbName, tblName);
