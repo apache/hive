@@ -1,6 +1,10 @@
 set hive.spark.job.max.tasks=2;
 
-EXPLAIN
-SELECT key, sum(value) AS s FROM src1 GROUP BY key ORDER BY s;
+add file ../../data/scripts/sleep.py;
 
-SELECT key, sum(value) AS s FROM src1 GROUP BY key ORDER BY s;
+EXPLAIN
+SELECT TRANSFORM(key) USING 'python sleep.py' AS k
+  FROM (SELECT key FROM src1 GROUP BY key) a ORDER BY k;
+
+SELECT TRANSFORM(key) USING 'python sleep.py' AS k
+  FROM (SELECT key FROM src1 GROUP BY key) a ORDER BY k;
