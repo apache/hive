@@ -36,13 +36,7 @@ class ReaderImpl extends org.apache.hadoop.hive.ql.io.orc.ReaderImpl implements 
   @Override
   public EncodedReader encodedReader(Object fileKey, DataCache dataCache, DataReader dataReader,
       PoolFactory pf, IoTrace trace) throws IOException {
-    return new EncodedReaderImpl(fileKey, types, getSchema(), codec, getWriterVersion(),
+    return new EncodedReaderImpl(fileKey, types, getSchema(), compressionKind, getWriterVersion(),
         bufferSize, rowIndexStride, dataCache, dataReader, pf, trace);
   }
-
-  @Override
-  public CompressionCodec getCodec() {
-    return codec;
-  }
-
 }
