@@ -91,6 +91,7 @@ public class HiveConf extends Configuration {
   private static final Map<String, ConfVars> metaConfs = new HashMap<String, ConfVars>();
   private final List<String> restrictList = new ArrayList<String>();
   private final Set<String> hiddenSet = new HashSet<String>();
+  private final List<String> rscList = new ArrayList<>();
 
   private Pattern modWhiteListPattern = null;
   private volatile boolean isSparkConfigUpdated = false;
@@ -3580,6 +3581,7 @@ public class HiveConf extends Configuration {
             "hive.spark.client.secret.bits," +
             "hive.spark.client.rpc.server.address," +
             "hive.spark.client.rpc.server.port," +
+            "hive.spark.client.rpc.sasl.mechanisms," +
             "bonecp.,"+
             "hive.druid.broker.address.default,"+
             "hive.druid.coordinator.address.default,"+
@@ -3599,6 +3601,12 @@ public class HiveConf extends Configuration {
     HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
         "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
         "Comma separated list of variables which are used internally and should not be configurable."),
+
+    HIVE_SPARK_RSC_CONF_LIST("hive.spark.rsc.conf.list",
+        SPARK_OPTIMIZE_SHUFFLE_SERDE.varname + "," +
+            SPARK_CLIENT_FUTURE_TIMEOUT.varname,
+        "Comma separated list of variables which are related to remote spark context.\n" +
+            "Changing these variables will result in re-creating the spark session."),
 
     HIVE_QUERY_TIMEOUT_SECONDS("hive.query.timeout.seconds", "0s",
         new TimeValidator(TimeUnit.SECONDS),
@@ -3927,7 +3935,7 @@ public class HiveConf extends Configuration {
       if (sparkMaster != null && sparkMaster.startsWith("yarn")) {
         result = true;
       }
-    } else if (name.startsWith("hive.spark")) { // Remote Spark Context property.
+    } else if (rscList.stream().anyMatch(rscVar -> rscVar.equals(name))) { // Remote Spark Context property.
       result = true;
     } else if (name.equals("mapreduce.job.queuename")) {
       // a special property starting with mapreduce that we would also like to effect if it changes
@@ -4409,6 +4417,7 @@ public class HiveConf extends Configuration {
     setupRestrictList();
     hiddenSet.clear();
     hiddenSet.addAll(HiveConfUtil.getHiddenSet(this));
+    setupRSCList();
   }
 
   /**
@@ -4799,6 +4808,17 @@ public class HiveConf extends Configuration {
     restrictList.add(ConfVars.HIVE_CONF_RESTRICTED_LIST.varname);
     restrictList.add(ConfVars.HIVE_CONF_HIDDEN_LIST.varname);
     restrictList.add(ConfVars.HIVE_CONF_INTERNAL_VARIABLE_LIST.varname);
+    restrictList.add(ConfVars.HIVE_SPARK_RSC_CONF_LIST.varname);
+  }
+
+  private void setupRSCList() {
+    rscList.clear();
+    String vars = this.getVar(ConfVars.HIVE_SPARK_RSC_CONF_LIST);
+    if (vars != null) {
+      for (String var : vars.split(",")) {
+        rscList.add(var.trim());
+      }
+    }
   }
 
   /**
