@@ -101,13 +101,23 @@ public class DynamicValue implements LiteralDelegate, Serializable {
     return objectInspector.getPrimitiveWritableObject(getValue());
   }
 
+  /**
+   * An exception that indicates that the dynamic values are (intentionally)
+   * not available in this context.
+   */
+  public static class NoDynamicValuesException extends RuntimeException {
+    public NoDynamicValuesException(String message) {
+      super(message);
+    }
+  }
+
   public Object getValue() {
     if (initialized) {
       return val;
     }
 
     if (conf == null) {
-      throw new IllegalStateException("Cannot retrieve dynamic value " + id + " - no conf set");
+      throw new NoDynamicValuesException("Cannot retrieve dynamic value " + id + " - no conf set");
     }
 
     try {
@@ -122,10 +132,12 @@ public class DynamicValue implements LiteralDelegate, Serializable {
       // Get the registry
       DynamicValueRegistry valueRegistry = cache.retrieve(DYNAMIC_VALUE_REGISTRY_CACHE_KEY);
       if (valueRegistry == null) {
-        throw new IllegalStateException("DynamicValueRegistry not available");
+        throw new NoDynamicValuesException("DynamicValueRegistry not available");
       }
       val = valueRegistry.getValue(id);
       initialized = true;
+    } catch (NoDynamicValuesException err) {
+      throw err;
     } catch (Exception err) {
       throw new IllegalStateException("Failed to retrieve dynamic value for " + id, err);
     }

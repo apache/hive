@@ -36,6 +36,7 @@ import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.BufferChunk;
 import org.apache.orc.impl.DataReaderProperties;
 import org.apache.orc.impl.InStream;
+import org.apache.orc.impl.OrcCodecPool;
 import org.apache.orc.impl.OrcIndex;
 import org.apache.orc.impl.OrcTail;
 import org.apache.orc.impl.ReaderImpl;
@@ -742,8 +743,15 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       metadataCache.decRefBuffer(cacheBuf); // We don't use this one.
     }
     ByteBuffer bb = footerRange.getData();
-    return buildStripeFooter(Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)),
-        bb.remaining(), orcReader.getCodec(), orcReader.getCompressionSize());
+
+    CompressionKind kind = orcReader.getCompressionKind();
+    CompressionCodec codec = OrcCodecPool.getCodec(kind);
+    try {
+      return buildStripeFooter(Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)),
+          bb.remaining(), codec, orcReader.getCompressionSize());
+    } finally {
+      OrcCodecPool.returnCodec(kind, codec);
+    }
   }
 
   private void ensureRawDataReader(boolean isOpen) throws IOException {
@@ -921,6 +929,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     public DataWrapperForOrc() throws IOException {
       ensureRawDataReader(false);
       this.orcDataReader = rawDataReader.clone();
+    }
+
+    @Override
+    public CompressionCodec getCompressionCodec() {
+      return orcDataReader.getCompressionCodec();
     }
 
     @Override

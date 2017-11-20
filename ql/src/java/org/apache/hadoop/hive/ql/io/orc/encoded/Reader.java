@@ -48,9 +48,6 @@ public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
   EncodedReader encodedReader(Object fileKey, DataCache dataCache, DataReader dataReader,
       PoolFactory pf, IoTrace trace) throws IOException;
 
-  /** Gets the compression codec for the underlying ORC file. */
-  CompressionCodec getCodec();
-
   /** The factory that can create (or return) the pools used by encoded reader. */
   public interface PoolFactory {
     <T> Pool<T> createPool(int size, PoolObjectHelper<T> helper);

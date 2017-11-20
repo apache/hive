@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import org.apache.hadoop.hive.ql.plan.DynamicValue.NoDynamicValuesException;
+
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 
 import java.io.IOException;
@@ -80,6 +82,7 @@ import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.ExternalCache.ExternalFooterCachesByConf;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
+import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf.Operator;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -2115,7 +2118,14 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         } else {
           // column statistics at index 0 contains only the number of rows
           ColumnStatistics stats = stripeStatistics.getColumnStatistics()[filterColumns[pred]];
-          truthValues[pred] = RecordReaderImpl.evaluatePredicate(stats, predLeaves.get(pred), null);
+          PredicateLeaf leaf = predLeaves.get(pred);
+          try {
+            truthValues[pred] = RecordReaderImpl.evaluatePredicate(stats, leaf, null);
+          } catch (NoDynamicValuesException dve) {
+            LOG.debug("Dynamic values are not available here {}", dve.getMessage());
+            boolean hasNulls = stats.hasNull() || leaf.getOperator() != Operator.NULL_SAFE_EQUALS;
+            truthValues[pred] = hasNulls ? TruthValue.YES_NO_NULL : TruthValue.YES_NO;
+          }
         }
       } else {
 
