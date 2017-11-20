@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 import junit.framework.Assert;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -305,6 +306,54 @@ public class TestVectorArithmeticExpressions {
     }
     assertFalse(out.noNulls);
     assertFalse(out.isRepeating);
+  }
+
+  @Test
+  public void testLongColModuloLongColumn() {
+    VectorizedRowBatch batch = getVectorizedRowBatch2LongInLongOut();
+    LongColModuloLongColumn expr = new LongColModuloLongColumn(0, 1, 2);
+    batch.cols[0].isNull[1] = true;
+    batch.cols[0].noNulls = false;
+    batch.cols[1].noNulls = false;
+    LongColumnVector out = (LongColumnVector) batch.cols[2];
+
+    // Set so we can verify they are reset by operation
+    out.noNulls = true;
+    out.isRepeating = true;
+
+    expr.evaluate(batch);
+
+    // 0/0 for entry 0 should be set as NULL
+    assertFalse(out.noNulls);
+    assertTrue(out.isNull[0]);
+
+    // verify NULL output in entry 1 is correct
+    assertTrue(out.isNull[1]);
+
+    // check entries beyond first 2
+    for (int i = 2; i != batch.size; i++) {
+      assertTrue(out.vector[i] == 0L);
+    }
+    assertFalse(out.noNulls);
+    assertFalse(out.isRepeating);
+  }
+
+  private VectorizedRowBatch getVectorizedRowBatch2LongInLongOut() {
+    VectorizedRowBatch batch = new VectorizedRowBatch(3);
+    LongColumnVector lcv, lcv2;
+    lcv = new LongColumnVector();
+    for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
+      lcv.vector[i] = i * 37;
+    }
+    batch.cols[0] = lcv;
+    lcv2 = new LongColumnVector();
+    batch.cols[1] = lcv2;
+    for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
+      lcv2.vector[i] = i * 37;
+    }
+    batch.cols[2] = new LongColumnVector();
+    batch.size = VectorizedRowBatch.DEFAULT_SIZE;
+    return batch;
   }
 
   @Test
