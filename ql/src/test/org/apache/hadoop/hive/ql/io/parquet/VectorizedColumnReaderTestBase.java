@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.IOConstants;
@@ -115,6 +116,15 @@ public class VectorizedColumnReaderTestBase {
       + "    optional int32 array_element;\n"
       + "  }\n"
       + "}\n"
+      + "repeated int32 list_int32_field;"
+      + "repeated int64 list_int64_field;"
+      + "repeated double list_double_field;"
+      + "repeated float list_float_field;"
+      + "repeated boolean list_boolean_field;"
+      + "repeated fixed_len_byte_array(3) list_byte_array_field;"
+      + "repeated binary list_binary_field;"
+      + "repeated binary list_decimal_field (DECIMAL(5,2));"
+      + "repeated int32 list_int32_field_for_repeat_test;"
       + "} ");
 
   protected static void removeFile() throws IOException {

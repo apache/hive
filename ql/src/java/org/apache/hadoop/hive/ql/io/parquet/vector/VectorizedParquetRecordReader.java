@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.NullWritable;
@@ -493,10 +495,34 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       }
       return new VectorizedStructColumnReader(fieldReaders);
     case LIST:
+      checkListColumnSupport(((ListTypeInfo) typeInfo).getListElementTypeInfo());
+      if (columnDescriptors == null || columnDescriptors.isEmpty()) {
+        throw new RuntimeException(
+            "Failed to find related Parquet column descriptor with type " + type);
+      }
+      return new VectorizedListColumnReader(descriptors.get(0),
+          pages.getPageReader(descriptors.get(0)), skipTimestampConversion, type);
     case MAP:
     case UNION:
     default:
       throw new RuntimeException("Unsupported category " + typeInfo.getCategory().name());
+    }
+  }
+
+  /**
+   * Check if the element type in list is supported by vectorization read.
+   * Supported type: INT, BYTE, SHORT, DATE, INTERVAL_YEAR_MONTH, LONG, BOOLEAN, DOUBLE, BINARY, STRING, CHAR, VARCHAR,
+   *                 FLOAT, DECIMAL
+   */
+  private void checkListColumnSupport(TypeInfo elementType) {
+    if (elementType instanceof PrimitiveTypeInfo) {
+      switch (((PrimitiveTypeInfo)elementType).getPrimitiveCategory()) {
+        case INTERVAL_DAY_TIME:
+        case TIMESTAMP:
+          throw new RuntimeException("Unsupported primitive type used in list:: " + elementType);
+      }
+    } else {
+      throw new RuntimeException("Unsupported type used in list:" + elementType);
     }
   }
 }
