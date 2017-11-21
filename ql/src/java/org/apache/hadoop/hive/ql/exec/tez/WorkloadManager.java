@@ -155,6 +155,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
   // The initial plan initalization future, to wait for the plan to apply during setup.
   private ListenableFuture<Boolean> initRpFuture;
+  private LlapPluginEndpointClientImpl amComm;
 
   private static final FutureCallback<Object> FATAL_ERROR_CALLBACK = new FutureCallback<Object>() {
     @Override
@@ -178,18 +179,22 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   public static WorkloadManager create(String yarnQueue, HiveConf conf, WMFullResourcePlan plan) {
     assert INSTANCE == null;
     // We could derive the expected number of AMs to pass in.
-    LlapPluginEndpointClient amComm = new LlapPluginEndpointClientImpl(conf, null, -1);
+    LlapPluginEndpointClientImpl amComm = new LlapPluginEndpointClientImpl(conf, null, -1);
     QueryAllocationManager qam = new GuaranteedTasksAllocator(conf, amComm);
-    return (INSTANCE = new WorkloadManager(yarnQueue, conf, qam, plan));
+    return (INSTANCE = new WorkloadManager(amComm, yarnQueue, conf, qam, plan));
   }
 
   @VisibleForTesting
-  WorkloadManager(String yarnQueue, HiveConf conf,
+  WorkloadManager(LlapPluginEndpointClientImpl amComm, String yarnQueue, HiveConf conf,
       QueryAllocationManager qam, WMFullResourcePlan plan) {
     this.yarnQueue = yarnQueue;
     this.conf = conf;
     this.totalQueryParallelism = determineQueryParallelism(plan);
     this.initRpFuture = this.updateResourcePlanAsync(plan);
+    this.amComm = amComm;
+    if (this.amComm != null) {
+      this.amComm.init(conf);
+    }
     LOG.info("Initializing with " + totalQueryParallelism + " total query parallelism");
 
     this.amRegistryTimeoutMs = (int)HiveConf.getTimeVar(
@@ -224,6 +229,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     if (expirationTracker != null) {
       expirationTracker.start();
     }
+    if (amComm != null) {
+      amComm.start();
+    }
     allocationManager.start();
     wmThread.start();
     initRpFuture.get(); // Wait for the initial resource plan to be applied.
@@ -250,6 +258,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     allocationManager.stop();
     if (wmThread != null) {
       wmThread.interrupt();
+    }
+    if (amComm != null) {
+      amComm.stop();
     }
     workPool.shutdownNow();
     timeoutPool.shutdownNow();

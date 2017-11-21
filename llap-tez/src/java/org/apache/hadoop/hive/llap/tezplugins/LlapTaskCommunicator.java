@@ -14,6 +14,8 @@
 
 package org.apache.hadoop.hive.llap.tezplugins;
 
+import org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService.NodeInfo;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.io.Writable;
@@ -116,6 +118,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private final SourceStateTracker sourceStateTracker;
   private final Set<LlapNodeId> nodesForQuery = new HashSet<>();
 
+  private LlapTaskSchedulerService scheduler;
   private LlapProtocolClientProxy communicator;
   private long deleteDelayOnDagComplete;
   private final LlapTaskUmbilicalProtocol umbilical;
@@ -138,7 +141,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   //       We are going to register a thread-local here for now, so that the scheduler, initializing
   //       in the same thread after the communicator, will pick up. Or the other way around.
   //       This only lives for the duration of the service init.
-  static final ThreadLocal<LlapTaskCommunicator> instance = new ThreadLocal<>();
+  static final Object pluginInitLock = new Object();
+  static LlapTaskCommunicator instance = null;
 
   public LlapTaskCommunicator(
       TaskCommunicatorContext taskCommunicatorContext) {
@@ -167,14 +171,21 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     credentialMap = new ConcurrentHashMap<>();
     sourceStateTracker = new SourceStateTracker(getContext(), this);
-    LlapTaskSchedulerService peer = LlapTaskSchedulerService.instance.get();
-    if (peer != null) {
-      // We are the last to initialize.
-      peer.setTaskCommunicator(this);
-      LlapTaskSchedulerService.instance.set(null);
-    } else {
-      instance.set(this);
+    synchronized (pluginInitLock) {
+      LlapTaskSchedulerService peer = LlapTaskSchedulerService.instance;
+      if (peer != null) {
+        // We are the last to initialize.
+        peer.setTaskCommunicator(this);
+        this.setScheduler(peer);
+        LlapTaskSchedulerService.instance = null;
+      } else {
+        instance = this;
+      }
     }
+  }
+
+  void setScheduler(LlapTaskSchedulerService peer) {
+    this.scheduler = peer;
   }
 
   private static final String LLAP_TOKEN_NAME = LlapTokenIdentifier.KIND_NAME.toString();
@@ -293,12 +304,18 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     void setError(CtxType ctx, Throwable t);
   }
 
-  public <T> void startUpdateGuaranteed(final TezTaskAttemptID attemptId, boolean newState,
-      final OperationCallback<Boolean, T> callback, final T ctx) {
+  public <T> void startUpdateGuaranteed(TezTaskAttemptID attemptId, NodeInfo assignedNode,
+      boolean newState, final OperationCallback<Boolean, T> callback, final T ctx) {
     LlapNodeId nodeId = entityTracker.getNodeIdForTaskAttempt(attemptId);
     if (nodeId == null) {
-      callback.setDone(ctx, false);
-      return;
+      if (assignedNode != null) {
+        nodeId = LlapNodeId.getInstance(assignedNode.getHost(), assignedNode.getRpcPort());
+      }
+      LOG.warn("Untracked node for " + attemptId + "; NodeInfo points to " + nodeId);
+      if (nodeId == null) {
+        callback.setDone(ctx, false); // TODO: danger of stack overflow... needs a retry limit?
+        return;
+      }
     }
     UpdateFragmentRequestProto request = UpdateFragmentRequestProto.newBuilder()
         .setIsGuaranteed(newState).setFragmentIdentifierString(attemptId.toString())
@@ -344,7 +361,6 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
       resetCurrentDag(dagId, hiveQueryId);
     }
-
 
     ContainerInfo containerInfo = getContainerInfo(containerId);
     String host;
@@ -417,6 +433,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                   taskSpec.getTaskAttemptID(), response.getUniqueNodeId());
             }
             LOG.info("Successfully launched task: " + taskSpec.getTaskAttemptID());
+            scheduler.notifyStarted(taskSpec.getTaskAttemptID());
           }
 
           @Override
@@ -781,6 +798,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
         taskSpec, currentQueryIdentifierProto, getTokenIdentifier(), user, hiveQueryId)).build());
     // Don't call builder.setWorkSpecSignature() - Tez doesn't sign fragments
     builder.setFragmentRuntimeInfo(fragmentRuntimeInfo);
+    if (scheduler != null) { // May be null in tests
+      // TODO: see javadoc
+      builder.setIsGuaranteed(scheduler.isInitialGuaranteed(taskSpec.getTaskAttemptID()));
+    }
     return builder.build();
   }
 

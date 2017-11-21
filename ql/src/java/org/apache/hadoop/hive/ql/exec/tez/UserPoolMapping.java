@@ -23,7 +23,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spark_project.guava.collect.Lists;
+import com.google.common.collect.Lists;
 
 class UserPoolMapping {
   @SuppressWarnings("unused")

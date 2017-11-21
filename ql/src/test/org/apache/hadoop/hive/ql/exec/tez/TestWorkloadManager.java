@@ -149,12 +149,12 @@ public class TestWorkloadManager {
 
     public WorkloadManagerForTest(String yarnQueue, HiveConf conf, int numSessions,
         QueryAllocationManager qam) {
-      super(yarnQueue, conf, qam, createDummyPlan(numSessions));
+      super(null, yarnQueue, conf, qam, createDummyPlan(numSessions));
     }
 
     public WorkloadManagerForTest(String yarnQueue, HiveConf conf,
         QueryAllocationManager qam, WMFullResourcePlan plan) {
-      super(yarnQueue, conf, qam, plan);
+      super(null, yarnQueue, conf, qam, plan);
     }
 
     private static WMFullResourcePlan createDummyPlan(int numSessions) {
