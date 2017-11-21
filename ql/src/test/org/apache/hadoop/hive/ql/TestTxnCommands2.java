@@ -169,8 +169,8 @@ public class TestTxnCommands2 {
     try {
       if (d != null) {
         dropTables();
-        d.destroy();
         d.close();
+        d.destroy();
         d = null;
       }
       TxnDbUtil.cleanDb(hiveConf);
@@ -364,7 +364,7 @@ public class TestTxnCommands2 {
     Assert.assertEquals(536870912, BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(0)));
     Assert.assertEquals(536936448, BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(1)));
     /*
-     * All ROW__IDs are unique on read after conversion to acid 
+     * All ROW__IDs are unique on read after conversion to acid
      * ROW__IDs are exactly the same before and after compaction
      * Also check the file name (only) after compaction for completeness
      * Note: order of rows in a file ends up being the reverse of order in values clause (why?!)
@@ -1523,7 +1523,7 @@ public class TestTxnCommands2 {
     runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(vals));
     List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
     Assert.assertEquals(stringifyValues(vals), r);
-    String query = "merge into " + Table.ACIDTBL + 
+    String query = "merge into " + Table.ACIDTBL +
       " using " + Table.NONACIDPART2 + " source ON " + Table.ACIDTBL + ".a = a2 and b + 1 = source.b2 + 1 " +
       "WHEN MATCHED THEN UPDATE set b = source.b2 " +
       "WHEN NOT MATCHED THEN INSERT VALUES(source.a2, source.b2)";
@@ -1647,7 +1647,7 @@ public class TestTxnCommands2 {
     // 1 ReadEntity: default@values__tmp__table__1
     // 1 WriteEntity: default@acidtblpart Type=TABLE WriteType=INSERT isDP=false
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1'),(3,3,'p1'),(4,4,'p2')");
-    
+
     List<String> r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
     Assert.assertEquals("4", r1.get(0));
     //In DbTxnManager.acquireLocks() we have
@@ -1655,12 +1655,12 @@ public class TestTxnCommands2 {
     // 1 WriteEntity: default@acidtblpart Type=TABLE WriteType=INSERT isDP=false
     //todo: side note on the above: LockRequestBuilder combines the both default@acidtblpart entries to 1
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) select * from " + Table.ACIDTBLPART + " where p='p1'");
-    
+
     //In DbTxnManager.acquireLocks() we have
     // 2 ReadEntity: [default@acidtblpart@p=p1, default@acidtblpart]
     // 1 WriteEntity: default@acidtblpart@p=p2 Type=PARTITION WriteType=INSERT isDP=false
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p2') select a,b from " + Table.ACIDTBLPART + " where p='p1'");
-    
+
     //In UpdateDeleteSemanticAnalyzer, after super analyze
     // 3 ReadEntity: [default@acidtblpart, default@acidtblpart@p=p1, default@acidtblpart@p=p2]
     // 1 WriteEntity: [default@acidtblpart TABLE/INSERT]
@@ -1670,7 +1670,7 @@ public class TestTxnCommands2 {
     //todo: Why acquire per partition locks - if you have many partitions that's hugely inefficient.
     //could acquire 1 table level Shared_write intead
     runStatementOnDriver("update " + Table.ACIDTBLPART + " set b = 1");
-    
+
     //In UpdateDeleteSemanticAnalyzer, after super analyze
     // Read [default@acidtblpart, default@acidtblpart@p=p1]
     // Write default@acidtblpart TABLE/INSERT

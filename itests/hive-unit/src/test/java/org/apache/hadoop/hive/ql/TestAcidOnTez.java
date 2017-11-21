@@ -150,8 +150,8 @@ public class TestAcidOnTez {
     try {
       if (d != null) {
         dropTables();
-        d.destroy();
         d.close();
+        d.destroy();
         d = null;
       }
       TxnDbUtil.cleanDb(hiveConf);
@@ -785,8 +785,8 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
       ss.close();
     }
     if (d != null) {
-      d.destroy();
       d.close();
+      d.destroy();
     }
 
     SessionState.start(conf);
