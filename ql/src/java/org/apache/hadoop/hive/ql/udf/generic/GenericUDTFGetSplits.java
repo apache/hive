@@ -115,7 +115,7 @@ import com.google.common.base.Preconditions;
 
 /**
  * GenericUDTFGetSplits.
- * 
+ *
  */
 @Description(name = "get_splits", value = "_FUNC_(string,int) - "
     + "Returns an array of length int serialized splits for the referenced tables string.")
@@ -301,9 +301,10 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         // Table will be queried directly by LLAP
         // Acquire locks if necessary - they will be released during session cleanup.
         // The read will have READ_COMMITTED level semantics.
-        cpr = driver.lockAndRespond();
-        if (cpr.getResponseCode() != 0) {
-          throw new HiveException("Failed to acquire locks: " + cpr.getException());
+        try {
+          driver.lockAndRespond();
+        } catch (CommandProcessorResponse cpr1) {
+          throw new HiveException("Failed to acquire locks", cpr1);
         }
 
         // Attach the resources to the session cleanup.
@@ -394,7 +395,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       LlapSigner signer = null;
       if (UserGroupInformation.isSecurityEnabled()) {
         signer = coordinator.getLlapSigner(job);
- 
+
         // 1. Generate the token for query user (applies to all splits).
         queryUser = SessionState.getUserFromAuthenticator();
         if (queryUser == null) {
@@ -563,7 +564,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   /**
    * Returns a local resource representing a jar. This resource will be used to
    * execute the plan on the cluster.
-   * 
+   *
    * @param localJarPath
    *          Local path to the jar to be localized.
    * @return LocalResource corresponding to the localized hive exec resource.
