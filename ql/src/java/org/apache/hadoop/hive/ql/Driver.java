@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -189,12 +188,15 @@ public class Driver implements CommandProcessor {
   // either initTxnMgr or from the SessionState, in that order.
   private HiveTxnManager queryTxnMgr;
 
-  private enum DriverState {
+  public enum DriverState {
     INITIALIZED,
     COMPILING,
     COMPILED,
     EXECUTING,
     EXECUTED,
+    // a state that the driver enters after close() has been called to interrupt its running
+    // query in the query cancellation
+    INTERRUPT,
     // a state that the driver enters after close() has been called to clean the query results
     // and release the resources after the query has been executed
     CLOSED,
@@ -208,7 +210,6 @@ public class Driver implements CommandProcessor {
     // resource releases
     public final ReentrantLock stateLock = new ReentrantLock();
     public DriverState driverState = DriverState.INITIALIZED;
-    public AtomicBoolean aborted = new AtomicBoolean();
     private static ThreadLocal<LockedDriverState> lds = new ThreadLocal<LockedDriverState>() {
       @Override
       protected LockedDriverState initialValue() {
@@ -228,19 +229,6 @@ public class Driver implements CommandProcessor {
       if (lds != null) {
         lds.remove();
       }
-    }
-
-    public boolean isAborted() {
-      return aborted.get();
-    }
-
-    public void abort() {
-      aborted.set(true);
-    }
-
-    @Override
-    public String toString() {
-      return String.format("%s(aborted:%s)", driverState, aborted.get());
     }
   }
 
@@ -442,18 +430,13 @@ public class Driver implements CommandProcessor {
    * @return 0 for ok
    */
   public int compile(String command, boolean resetTaskIds) {
-    try {
-      compile(command, resetTaskIds, false);
-      return 0;
-    } catch (CommandProcessorResponse cpr) {
-      return cpr.getErrorCode();
-    }
+    return compile(command, resetTaskIds, false);
   }
 
   // deferClose indicates if the close/destroy should be deferred when the process has been
   // interrupted, it should be set to true if the compile is called within another method like
   // runInternal, which defers the close to the called in that method.
-  private void compile(String command, boolean resetTaskIds, boolean deferClose) throws CommandProcessorResponse {
+  private int compile(String command, boolean resetTaskIds, boolean deferClose) {
     PerfLogger perfLogger = SessionState.getPerfLogger(true);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_RUN);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.COMPILE);
@@ -480,7 +463,9 @@ public class Driver implements CommandProcessor {
       LOG.warn("WARNING! Query command could not be redacted." + e);
     }
 
-    checkInterrupted("at beginning of compilation.", null, null);
+    if (isInterrupted()) {
+      return handleInterruption("at beginning of compilation."); //indicate if need clean resource
+    }
 
     if (ctx != null && ctx.getExplainAnalyze() != AnalyzeState.RUNNING) {
       // close the existing ctx etc before compiling a new query, but does not destroy driver
@@ -537,8 +522,9 @@ public class Driver implements CommandProcessor {
       };
       ShutdownHookManager.addShutdownHook(shutdownRunner, SHUTDOWN_HOOK_PRIORITY);
 
-      checkInterrupted("before parsing and analysing the query", null, null);
-
+      if (isInterrupted()) {
+        return handleInterruption("before parsing and analysing the query");
+      }
       if (ctx == null) {
         ctx = new Context(conf);
         setTriggerContext(queryId);
@@ -581,7 +567,7 @@ public class Driver implements CommandProcessor {
         String userFromUGI = getUserFromUGI();
         if (!queryTxnMgr.isTxnOpen()) {
           if(userFromUGI == null) {
-            throw createProcessorResponse(10);
+            return 10;
           }
           long txnid = queryTxnMgr.openTxn(ctx, userFromUGI);
         }
@@ -611,7 +597,9 @@ public class Driver implements CommandProcessor {
       sem.validate();
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
 
-      checkInterrupted("after analyzing query.", null, null);
+      if (isInterrupted()) {
+        return handleInterruption("after analyzing query.");
+      }
 
       // get the output schema
       schema = getSchema(sem, conf);
@@ -640,7 +628,7 @@ public class Driver implements CommandProcessor {
               + ". Use SHOW GRANT to get more details.");
           errorMessage = authExp.getMessage();
           SQLState = "42000";
-          throw createProcessorResponse(403);
+          return 403;
         } finally {
           perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
         }
@@ -656,8 +644,11 @@ public class Driver implements CommandProcessor {
           }
         }
       }
+      return 0;
     } catch (Exception e) {
-      checkInterrupted("during query compilation: " + e.getMessage(), null, null);
+      if (isInterrupted()) {
+        return handleInterruption("during query compilation: " + e.getMessage());
+      }
 
       compileError = true;
       ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
@@ -681,7 +672,8 @@ public class Driver implements CommandProcessor {
       downstreamError = e;
       console.printError(errorMessage, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      throw createProcessorResponse(error.getErrorCode());
+      return error.getErrorCode();//todo: this is bad if returned as cmd shell exit
+      // since it exceeds valid range of shell return values
     } finally {
       // Trigger post compilation hook. Note that if the compilation fails here then
       // before/after execution hook will never be executed.
@@ -697,7 +689,7 @@ public class Driver implements CommandProcessor {
       ImmutableMap<String, Long> compileHMSTimings = dumpMetaCallTimingWithoutEx("compilation");
       queryDisplay.setHmsTimings(QueryDisplay.Phase.COMPILATION, compileHMSTimings);
 
-      boolean isInterrupted = lDrvState.isAborted();
+      boolean isInterrupted = isInterrupted();
       if (isInterrupted && !deferClose) {
         closeInProcess(true);
       }
@@ -768,6 +760,9 @@ public class Driver implements CommandProcessor {
     }
     return shouldOpenImplicitTxn;
   }
+  private int handleInterruption(String msg) {
+    return handleInterruptionWithHook(msg, null, null);
+  }
 
   private int handleInterruptionWithHook(String msg, HookContext hookContext,
       PerfLogger perfLogger) {
@@ -784,9 +779,16 @@ public class Driver implements CommandProcessor {
     return 1000;
   }
 
-  private void checkInterrupted(String msg, HookContext hookContext, PerfLogger perfLogger) throws CommandProcessorResponse {
-    if (lDrvState.isAborted()) {
-      throw createProcessorResponse(handleInterruptionWithHook(msg, hookContext, perfLogger));
+  private boolean isInterrupted() {
+    lDrvState.stateLock.lock();
+    try {
+      if (lDrvState.driverState == DriverState.INTERRUPT) {
+        return true;
+      } else {
+        return false;
+      }
+    } finally {
+      lDrvState.stateLock.unlock();
     }
   }
 
@@ -1221,9 +1223,8 @@ public class Driver implements CommandProcessor {
    *
    * This method also records the list of valid transactions.  This must be done after any
    * transactions have been opened.
-   * @throws CommandProcessorResponse
    **/
-  private void acquireLocks() throws CommandProcessorResponse {
+  private int acquireLocks() {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
@@ -1232,12 +1233,12 @@ public class Driver implements CommandProcessor {
         acid txn manager requires all locks to be associated with a txn so if we
         end up here w/o an open txn it's because we are processing something like "use <database>
         which by definition needs no locks*/
-      return;
+      return 0;
     }
     try {
       String userFromUGI = getUserFromUGI();
       if(userFromUGI == null) {
-        throw createProcessorResponse(10);
+        return 10;
       }
       // Set the transaction id in all of the acid file sinks
       if (haveAcidWrite()) {
@@ -1259,13 +1260,14 @@ public class Driver implements CommandProcessor {
       if(queryTxnMgr.recordSnapshot(plan)) {
         recordValidTxns(queryTxnMgr);
       }
+      return 0;
     } catch (Exception e) {
       errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
       SQLState = ErrorMsg.findSQLState(e.getMessage());
       downstreamError = e;
       console.printError(errorMessage, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      throw createProcessorResponse(10);
+      return 10;
     } finally {
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
     }
@@ -1351,12 +1353,11 @@ public class Driver implements CommandProcessor {
 
   public CommandProcessorResponse run(String command, boolean alreadyCompiled)
         throws CommandNeedRetryException {
+    CommandProcessorResponse cpr = runInternal(command, alreadyCompiled);
 
-    try {
-      runInternal(command, alreadyCompiled);
-      return createProcessorResponse(0);
-    } catch (CommandProcessorResponse cpr) {
-
+    if(cpr.getResponseCode() == 0) {
+      return cpr;
+    }
     SessionState ss = SessionState.get();
     if(ss == null) {
       return cpr;
@@ -1407,38 +1408,31 @@ public class Driver implements CommandProcessor {
               org.apache.hadoop.util.StringUtils.stringifyException(ex));
     }
     return cpr;
-    }
   }
 
   public CommandProcessorResponse compileAndRespond(String command) {
-    try {
-      compileInternal(command, false);
-      return createProcessorResponse(0);
-    } catch (CommandProcessorResponse e) {
-      return e;
-    }
+    return createProcessorResponse(compileInternal(command, false));
   }
 
-  public void lockAndRespond() throws CommandProcessorResponse {
+  public CommandProcessorResponse lockAndRespond() {
     // Assumes the query has already been compiled
     if (plan == null) {
       throw new IllegalStateException(
           "No previously compiled query for driver - queryId=" + queryState.getQueryId());
     }
 
+    int ret = 0;
     if (requiresLock()) {
-      try {
-        acquireLocks();
-      } catch (CommandProcessorResponse cpr) {
-        rollback(cpr);
-        throw cpr;
-      }
+      ret = acquireLocks();
     }
+    if (ret != 0) {
+      return rollback(createProcessorResponse(ret));
+    }
+    return createProcessorResponse(ret);
   }
 
   private static final ReentrantLock globalCompileLock = new ReentrantLock();
-
-  private void compileInternal(String command, boolean deferClose) throws CommandProcessorResponse {
+  private int compileInternal(String command, boolean deferClose) {
     int ret;
 
     Metrics metrics = MetricsFactory.getInstance();
@@ -1456,21 +1450,22 @@ public class Driver implements CommandProcessor {
     }
 
     if (compileLock == null) {
-      throw createProcessorResponse(ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode());
+      return ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode();
     }
 
-
     try {
-      compile(command, true, deferClose);
-    } catch (CommandProcessorResponse cpr) {
+      ret = compile(command, true, deferClose);
+    } finally {
+      compileLock.unlock();
+    }
+
+    if (ret != 0) {
       try {
         releaseLocksAndCommitOrRollback(false);
       } catch (LockException e) {
-        LOG.warn("Exception in releasing locks. " + org.apache.hadoop.util.StringUtils.stringifyException(e));
+        LOG.warn("Exception in releasing locks. "
+            + org.apache.hadoop.util.StringUtils.stringifyException(e));
       }
-      throw cpr;
-    } finally {
-      compileLock.unlock();
     }
 
     //Save compile-time PerfLogging for WebUI.
@@ -1478,6 +1473,7 @@ public class Driver implements CommandProcessor {
     //or a reset PerfLogger.
     queryDisplay.setPerfLogStarts(QueryDisplay.Phase.COMPILATION, perfLogger.getStartTimes());
     queryDisplay.setPerfLogEnds(QueryDisplay.Phase.COMPILATION, perfLogger.getEndTimes());
+    return ret;
   }
 
   /**
@@ -1539,8 +1535,8 @@ public class Driver implements CommandProcessor {
     return compileLock;
   }
 
-  private void runInternal(String command, boolean alreadyCompiled)
-      throws CommandNeedRetryException, CommandProcessorResponse {
+  private CommandProcessorResponse runInternal(String command, boolean alreadyCompiled)
+      throws CommandNeedRetryException {
     errorMessage = null;
     SQLState = null;
     downstreamError = null;
@@ -1554,7 +1550,7 @@ public class Driver implements CommandProcessor {
         } else {
           errorMessage = "FAILED: Precompiled query has been cancelled or closed.";
           console.printError(errorMessage);
-          throw createProcessorResponse(12);
+          return createProcessorResponse(12);
         }
       } else {
         lDrvState.driverState = DriverState.COMPILING;
@@ -1582,16 +1578,20 @@ public class Driver implements CommandProcessor {
         downstreamError = e;
         console.printError(errorMessage + "\n"
             + org.apache.hadoop.util.StringUtils.stringifyException(e));
-        throw createProcessorResponse(12);
+        return createProcessorResponse(12);
       }
 
       PerfLogger perfLogger = null;
 
+      int ret;
       if (!alreadyCompiled) {
         // compile internal will automatically reset the perf logger
-        compileInternal(command, true);
+        ret = compileInternal(command, true);
         // then we continue to use this perf logger
         perfLogger = SessionState.getPerfLogger();
+        if (ret != 0) {
+          return createProcessorResponse(ret);
+        }
       } else {
         // reuse existing perf logger.
         perfLogger = SessionState.getPerfLogger();
@@ -1603,17 +1603,20 @@ public class Driver implements CommandProcessor {
       // same instance of Driver, which can run multiple queries.
       ctx.setHiveTxnManager(queryTxnMgr);
 
-      checkInterrupted("at acquiring the lock.", null, null);
-
-      lockAndRespond();
-
-      try {
-        execute();
-      } catch (CommandProcessorResponse cpr) {
-        rollback(cpr);
-        throw cpr;
+      if (isInterrupted()) {
+        return createProcessorResponse(handleInterruption("at acquiring the lock."));
       }
 
+      CommandProcessorResponse resp = lockAndRespond();
+      if (resp.failed()) {
+        return resp;
+      }
+
+      ret = execute();
+      if (ret != 0) {
+        //if needRequireLock is false, the release here will do nothing because there is no lock
+        return rollback(createProcessorResponse(ret));
+      }
 
       //if needRequireLock is false, the release here will do nothing because there is no lock
       try {
@@ -1628,7 +1631,7 @@ public class Driver implements CommandProcessor {
           //txn (if there is one started) is not finished
         }
       } catch (LockException e) {
-        throw handleHiveException(e, 12);
+        return handleHiveException(e, 12);
       }
 
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_RUN);
@@ -1646,27 +1649,31 @@ public class Driver implements CommandProcessor {
         downstreamError = e;
         console.printError(errorMessage + "\n"
             + org.apache.hadoop.util.StringUtils.stringifyException(e));
-        throw createProcessorResponse(12);
+        return createProcessorResponse(12);
       }
       isFinishedWithError = false;
+      return createProcessorResponse(ret);
     } finally {
-      if (lDrvState.isAborted()) {
+      if (isInterrupted()) {
         closeInProcess(true);
       } else {
         // only release the related resources ctx, driverContext as normal
         releaseResources();
       }
-
       lDrvState.stateLock.lock();
       try {
-        lDrvState.driverState = isFinishedWithError ? DriverState.ERROR : DriverState.EXECUTED;
+        if (lDrvState.driverState == DriverState.INTERRUPT) {
+          lDrvState.driverState = DriverState.ERROR;
+        } else {
+          lDrvState.driverState = isFinishedWithError ? DriverState.ERROR : DriverState.EXECUTED;
+        }
       } finally {
         lDrvState.stateLock.unlock();
       }
     }
   }
 
-  private CommandProcessorResponse rollback(CommandProcessorResponse cpr) throws CommandProcessorResponse {
+  private CommandProcessorResponse rollback(CommandProcessorResponse cpr) {
 
     //console.printError(cpr.toString());
     try {
@@ -1678,12 +1685,10 @@ public class Driver implements CommandProcessor {
     }
     return cpr;
   }
-
-  private CommandProcessorResponse handleHiveException(HiveException e, int ret) throws CommandProcessorResponse {
+  private CommandProcessorResponse handleHiveException(HiveException e, int ret) {
     return handleHiveException(e, ret, null);
   }
-
-  private CommandProcessorResponse handleHiveException(HiveException e, int ret, String rootMsg) throws CommandProcessorResponse {
+  private CommandProcessorResponse handleHiveException(HiveException e, int ret, String rootMsg) {
     errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
     if(rootMsg != null) {
       errorMessage += "\n" + rootMsg;
@@ -1693,7 +1698,7 @@ public class Driver implements CommandProcessor {
     downstreamError = e;
     console.printError(errorMessage + "\n"
       + org.apache.hadoop.util.StringUtils.stringifyException(e));
-    throw createProcessorResponse(ret);
+    return createProcessorResponse(ret);
   }
   private boolean requiresLock() {
     if (!checkConcurrency()) {
@@ -1754,7 +1759,7 @@ public class Driver implements CommandProcessor {
     return new CommandProcessorResponse(ret, errorMessage, SQLState, downstreamError);
   }
 
-  private void execute() throws CommandNeedRetryException, CommandProcessorResponse {
+  private int execute() throws CommandNeedRetryException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
 
@@ -1774,9 +1779,10 @@ public class Driver implements CommandProcessor {
       if (lDrvState.driverState != DriverState.COMPILED &&
           lDrvState.driverState != DriverState.EXECUTING) {
         SQLState = "HY008";
-        errorMessage = "FAILED: unexpected driverstate: " + lDrvState + ", for query " + queryStr;
+        errorMessage = "FAILED: query " + queryStr + " has " +
+            (lDrvState.driverState == DriverState.INTERRUPT ? "been cancelled" : "not been compiled.");
         console.printError(errorMessage);
-        throw createProcessorResponse(1000);
+        return 1000;
       } else {
         lDrvState.driverState = DriverState.EXECUTING;
       }
@@ -1846,8 +1852,9 @@ public class Driver implements CommandProcessor {
       // At any time, at most maxthreads tasks can be running
       // The main thread polls the TaskRunners to check if they have finished.
 
-      checkInterrupted("before running tasks.", hookContext, perfLogger);
-
+      if (isInterrupted()) {
+        return handleInterruptionWithHook("before running tasks.", hookContext, perfLogger);
+      }
       DriverContext driverCxt = new DriverContext(ctx);
       driverCxt.prepare(plan);
 
@@ -1907,8 +1914,9 @@ public class Driver implements CommandProcessor {
         TaskResult result = tskRun.getTaskResult();
 
         int exitVal = result.getExitVal();
-        checkInterrupted("when checking the execution result.", hookContext, perfLogger);
-
+        if (isInterrupted()) {
+          return handleInterruptionWithHook("when checking the execution result.", hookContext, perfLogger);
+        }
         if (exitVal != 0) {
           if (tsk.ifRetryCmdWhenFail()) {
             driverCxt.shutdown();
@@ -1954,7 +1962,7 @@ public class Driver implements CommandProcessor {
             // in case we decided to run everything in local mode, restore the
             // the jobtracker setting to its initial value
             ctx.restoreOriginalTracker();
-            throw createProcessorResponse(exitVal);
+            return exitVal;
           }
         }
 
@@ -1985,7 +1993,7 @@ public class Driver implements CommandProcessor {
         errorMessage = "FAILED: Operation cancelled";
         invokeFailureHooks(perfLogger, hookContext, errorMessage, null);
         console.printError(errorMessage);
-        throw createProcessorResponse(1000);
+        return 1000;
       }
 
       // remove incomplete outputs.
@@ -2021,13 +2029,11 @@ public class Driver implements CommandProcessor {
     } catch (CommandNeedRetryException e) {
       executionError = true;
       throw e;
-    } catch (CommandProcessorResponse cpr) {
-      executionError = true;
-      throw cpr;
     } catch (Throwable e) {
       executionError = true;
-
-      checkInterrupted("during query execution: \n" + e.getMessage(), hookContext, perfLogger);
+      if (isInterrupted()) {
+        return handleInterruptionWithHook("during query execution: \n" + e.getMessage(), hookContext, perfLogger);
+      }
 
       ctx.restoreOriginalTracker();
       if (SessionState.get() != null) {
@@ -2047,7 +2053,7 @@ public class Driver implements CommandProcessor {
       downstreamError = e;
       console.printError(errorMessage + "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      throw createProcessorResponse(12);
+      return (12);
     } finally {
       // Trigger query hooks after query completes its execution.
       try {
@@ -2077,13 +2083,17 @@ public class Driver implements CommandProcessor {
         }
         console.printInfo("Total MapReduce CPU Time Spent: " + Utilities.formatMsecToStr(totalCpu));
       }
+      boolean isInterrupted = isInterrupted();
       lDrvState.stateLock.lock();
       try {
-        lDrvState.driverState = executionError ? DriverState.ERROR : DriverState.EXECUTED;
+        if (isInterrupted) {
+        } else {
+          lDrvState.driverState = executionError ? DriverState.ERROR : DriverState.EXECUTED;
+        }
       } finally {
         lDrvState.stateLock.unlock();
       }
-      if (lDrvState.isAborted()) {
+      if (isInterrupted) {
         LOG.info("Executing command(queryId=" + queryId + ") has been interrupted after " + duration + " seconds");
       } else {
         LOG.info("Completed executing command(queryId=" + queryId + "); Time taken: " + duration + " seconds");
@@ -2093,6 +2103,8 @@ public class Driver implements CommandProcessor {
     if (console != null) {
       console.printInfo("OK");
     }
+
+    return (0);
   }
 
   private void releasePlan(QueryPlan plan) {
@@ -2424,8 +2436,9 @@ public class Driver implements CommandProcessor {
     try {
       releaseDriverContext();
       if (lDrvState.driverState == DriverState.COMPILING ||
-          lDrvState.driverState == DriverState.EXECUTING) {
-        lDrvState.abort();
+          lDrvState.driverState == DriverState.EXECUTING ||
+          lDrvState.driverState == DriverState.INTERRUPT) {
+        lDrvState.driverState = DriverState.INTERRUPT;
         return 0;
       }
       releasePlan();
@@ -2450,7 +2463,8 @@ public class Driver implements CommandProcessor {
     try {
       // in the cancel case where the driver state is INTERRUPTED, destroy will be deferred to
       // the query process
-      if (lDrvState.driverState == DriverState.DESTROYED) {
+      if (lDrvState.driverState == DriverState.DESTROYED ||
+          lDrvState.driverState == DriverState.INTERRUPT) {
         return;
       } else {
         lDrvState.driverState = DriverState.DESTROYED;

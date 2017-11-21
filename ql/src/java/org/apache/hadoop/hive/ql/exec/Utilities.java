@@ -110,6 +110,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Driver.DriverState;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -3282,7 +3283,7 @@ public final class Utilities {
       boolean hasLogged = false;
 
       for (Map.Entry<Path, ArrayList<String>> e : pathToAliases) {
-        if (lDrvStat != null && lDrvStat.isAborted()) {
+        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT) {
           throw new IOException("Operation is Canceled.");
         }
 
@@ -3338,7 +3339,7 @@ public final class Utilities {
       finalPathsToAdd.addAll(getInputPathsWithPool(job, work, hiveScratchDir, ctx, skipDummy, pathsToAdd, pool));
     } else {
       for (final Path path : pathsToAdd) {
-        if (lDrvStat != null && lDrvStat.isAborted()) {
+        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT) {
           throw new IOException("Operation is Canceled.");
         }
         Path newPath = new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy).call();
@@ -3359,7 +3360,7 @@ public final class Utilities {
     try {
       Map<GetInputPathsCallable, Future<Path>> getPathsCallableToFuture = new LinkedHashMap<>();
       for (final Path path : pathsToAdd) {
-        if (lDrvStat != null && lDrvStat.isAborted()) {
+        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT) {
           throw new IOException("Operation is Canceled.");
         }
         GetInputPathsCallable callable = new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy);
@@ -3368,7 +3369,7 @@ public final class Utilities {
       pool.shutdown();
 
       for (Map.Entry<GetInputPathsCallable, Future<Path>> future : getPathsCallableToFuture.entrySet()) {
-        if (lDrvStat != null && lDrvStat.isAborted()) {
+        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT) {
           throw new IOException("Operation is Canceled.");
         }
 
@@ -3959,7 +3960,7 @@ public final class Utilities {
     String[] classNames = org.apache.hadoop.util.StringUtils.getStrings(HiveConf.getVar(hiveConf,
         confVar));
     if (classNames == null) {
-      return new ArrayList<>(0);
+      return Collections.emptyList();
     }
     Collection<Class<?>> classList = new ArrayList<Class<?>>(classNames.length);
     for (String className : classNames) {
