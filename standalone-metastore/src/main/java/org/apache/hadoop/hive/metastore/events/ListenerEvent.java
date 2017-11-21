@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 
@@ -97,6 +98,15 @@ public abstract class ListenerEvent {
    */
   public EnvironmentContext getEnvironmentContext() {
     return environmentContext;
+  }
+
+  /**
+   * You should use {@link #getIHMSHandler()} instead.
+   * @return handler.
+   */
+  @Deprecated
+  public HiveMetaStore.HMSHandler getHandler() {
+    return (HiveMetaStore.HMSHandler)handler;
   }
 
   /**

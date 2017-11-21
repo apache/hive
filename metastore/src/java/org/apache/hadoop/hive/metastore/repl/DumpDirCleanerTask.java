@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,28 +17,40 @@
  */
 package org.apache.hadoop.hive.metastore.repl;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-public class DumpDirCleanerTask extends TimerTask {
+public class DumpDirCleanerTask implements MetastoreTaskThread {
   public static final Logger LOG = LoggerFactory.getLogger(DumpDirCleanerTask.class);
-  private final HiveConf conf;
-  private final Path dumpRoot;
-  private final long ttl;
+  private Configuration conf;
+  private Path dumpRoot;
+  private long ttl;
 
-  public DumpDirCleanerTask(HiveConf conf) {
+  @Override
+  public void setConf(Configuration conf) {
     this.conf = conf;
-    dumpRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR));
-    ttl = conf.getTimeVar(ConfVars.REPL_DUMPDIR_TTL, TimeUnit.MILLISECONDS);
+    dumpRoot = new Path(HiveConf.getVar(conf, ConfVars.REPLDIR));
+    ttl = HiveConf.getTimeVar(conf, ConfVars.REPL_DUMPDIR_TTL, TimeUnit.MILLISECONDS);
+  }
+
+  @Override
+  public Configuration getConf() {
+    return conf;
+  }
+
+  @Override
+  public long runFrequency(TimeUnit unit) {
+    return HiveConf.getTimeVar(conf, ConfVars.REPL_DUMPDIR_CLEAN_FREQ, unit);
   }
 
   @Override
