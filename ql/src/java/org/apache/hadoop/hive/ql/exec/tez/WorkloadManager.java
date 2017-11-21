@@ -209,15 +209,6 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
     wmThread = new Thread(() -> runWmThread(), "Workload management master");
     wmThread.setDaemon(true);
-
-    final long triggerValidationIntervalMs = HiveConf.getTimeVar(conf,
-      HiveConf.ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL_MS, TimeUnit.MILLISECONDS);
-    TriggerActionHandler triggerActionHandler = new KillMoveTriggerActionHandler(this);
-    triggerValidatorRunnable = new PerPoolTriggerValidatorRunnable(perPoolProviders, triggerActionHandler,
-      triggerValidationIntervalMs);
-    startTriggerValidator(triggerValidationIntervalMs); // TODO: why is this not in start
-
-    org.apache.hadoop.metrics2.util.MBeans.register("HiveServer2", "WorkloadManager", this);
   }
 
   private static int determineQueryParallelism(WMFullResourcePlan plan) {
@@ -236,6 +227,13 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     allocationManager.start();
     wmThread.start();
     initRpFuture.get(); // Wait for the initial resource plan to be applied.
+
+    final long triggerValidationIntervalMs = HiveConf.getTimeVar(conf,
+      HiveConf.ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL_MS, TimeUnit.MILLISECONDS);
+    TriggerActionHandler triggerActionHandler = new KillMoveTriggerActionHandler(this);
+    triggerValidatorRunnable = new PerPoolTriggerValidatorRunnable(perPoolProviders, triggerActionHandler,
+      triggerValidationIntervalMs);
+    startTriggerValidator(triggerValidationIntervalMs);
   }
 
   public void stop() throws Exception {
@@ -256,6 +254,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     workPool.shutdownNow();
     timeoutPool.shutdownNow();
 
+    if (triggerValidatorRunnable != null) {
+      stopTriggerValidator();
+    }
     INSTANCE = null;
   }
 

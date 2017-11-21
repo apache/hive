@@ -18,16 +18,6 @@
 
 package org.apache.hive.service.server;
 
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-
-import org.apache.hadoop.hive.metastore.api.WMPool;
-
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-
-import com.google.common.collect.Lists;
-
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -66,11 +56,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.RawStore;
-import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
@@ -107,6 +96,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 /**
  * HiveServer2.
@@ -195,29 +185,31 @@ public class HiveServer2 extends CompositeService {
       throw new RuntimeException("Failed to get metastore connection", e);
     }
 
-    // Initialize workload management.
-    String wmQueue = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE);
-    if (wmQueue != null && !wmQueue.isEmpty()) {
-      WMFullResourcePlan resourcePlan;
-      try {
-        resourcePlan = sessionHive.getActiveResourcePlan();
-      } catch (HiveException e) {
-        throw new RuntimeException(e);
+    WMFullResourcePlan resourcePlan;
+    try {
+      resourcePlan = sessionHive.getActiveResourcePlan();
+    } catch (HiveException e) {
+      throw new RuntimeException(e);
+    }
+
+    if (resourcePlan == null) {
+      if (!HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_IN_TEST)) {
+        LOG.error("Cannot activate workload management - no active resource plan");
+      } else {
+        LOG.info("Creating a default resource plan for test");
+        resourcePlan = createTestResourcePlan();
       }
-      if (resourcePlan == null) {
-        if (!HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_IN_TEST)) {
-          LOG.error("Cannot activate workload management - no active resource plan");
-        } else {
-          LOG.info("Creating a default resource plan for test");
-          resourcePlan = createTestResourcePlan();
-        }
-      }
-      if (resourcePlan != null) {
+    }
+
+    if (resourcePlan != null) {
+      // Initialize workload management.
+      String wmQueue = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE);
+      if (wmQueue != null && !wmQueue.isEmpty()) {
         LOG.info("Initializing workload management");
         wm = WorkloadManager.create(wmQueue, hiveConf, resourcePlan);
-      } else {
-        wm = null;
       }
+      tezSessionPoolManager.updateTriggers(resourcePlan);
+      LOG.info("Updated tez session pool manager with active resource plan: {}", resourcePlan.getPlan().getName());
     }
 
     // Create views registry

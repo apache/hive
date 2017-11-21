@@ -73,14 +73,24 @@ class TezSessionPoolSession extends TezSessionState {
   }
 
   public static abstract class AbstractTriggerValidator {
+    private ScheduledExecutorService scheduledExecutorService = null;
     abstract Runnable getTriggerValidatorRunnable();
 
-    public void startTriggerValidator(long triggerValidationIntervalMs) {
-      final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
-        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("TriggerValidator").build());
-      Runnable triggerValidatorRunnable = getTriggerValidatorRunnable();
-      scheduledExecutorService.scheduleWithFixedDelay(triggerValidatorRunnable, triggerValidationIntervalMs,
-        triggerValidationIntervalMs, TimeUnit.MILLISECONDS);
+    void startTriggerValidator(long triggerValidationIntervalMs) {
+      if (scheduledExecutorService == null) {
+        scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
+          new ThreadFactoryBuilder().setDaemon(true).setNameFormat("TriggerValidator").build());
+        Runnable triggerValidatorRunnable = getTriggerValidatorRunnable();
+        scheduledExecutorService.scheduleWithFixedDelay(triggerValidatorRunnable, triggerValidationIntervalMs,
+          triggerValidationIntervalMs, TimeUnit.MILLISECONDS);
+      }
+    }
+
+    void stopTriggerValidator() {
+      if (scheduledExecutorService != null) {
+        scheduledExecutorService.shutdownNow();
+        scheduledExecutorService = null;
+      }
     }
   }
 

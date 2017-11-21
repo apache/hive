@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
@@ -713,48 +714,51 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       resourcePlan.setDefaultPoolPath(desc.getDefaultPoolPath());
     }
 
+    final WorkloadManager wm = WorkloadManager.getInstance();
+    final TezSessionPoolManager pm = TezSessionPoolManager.getInstance();
     boolean isActivate = false, isInTest = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
-    WorkloadManager wm = null;
     if (desc.getStatus() != null) {
       resourcePlan.setStatus(desc.getStatus());
       isActivate = desc.getStatus() == WMResourcePlanStatus.ACTIVE;
-      if (isActivate) {
-        wm = WorkloadManager.getInstance();
-        if (wm == null && !isInTest) {
-          throw new HiveException("Resource plan can only be activated when WM is enabled");
-        }
-      }
     }
 
     WMFullResourcePlan appliedRp = db.alterResourcePlan(
-        desc.getRpName(), resourcePlan, desc.isEnableActivate());
-    if (!isActivate || (wm == null && isInTest)) return 0;
-    assert wm != null;
+      desc.getRpName(), resourcePlan, desc.isEnableActivate());
+    if (!isActivate || (wm == null && isInTest) || (pm == null && isInTest)) {
+      return 0;
+    }
     if (appliedRp == null) {
       throw new HiveException("Cannot get a resource plan to apply");
       // TODO: shut down HS2?
     }
     final String name = (desc.getNewName() != null) ? desc.getNewName() : desc.getRpName();
     LOG.info("Activating a new resource plan " + name + ": " + appliedRp);
-    // Note: as per our current constraints, the behavior of two parallel activates is
-    //       undefined; although only one will succeed and the other will receive exception.
-    //       We need proper (semi-)transactional modifications to support this without hacks.
-    ListenableFuture<Boolean> future = wm.updateResourcePlanAsync(appliedRp);
-    boolean isOk = false;
-    try {
-      // Note: we may add an async option in future. For now, let the task fail for the user.
-      future.get();
-      isOk = true;
-      LOG.info("Successfully activated resource plan " + name);
-      return 0;
-    } catch (InterruptedException | ExecutionException e) {
-      throw new HiveException(e);
-    } finally {
-      if (!isOk) {
-        LOG.error("Failed to activate resource plan " + name);
-        // TODO: shut down HS2?
+    if (wm != null) {
+      // Note: as per our current constraints, the behavior of two parallel activates is
+      //       undefined; although only one will succeed and the other will receive exception.
+      //       We need proper (semi-)transactional modifications to support this without hacks.
+      ListenableFuture<Boolean> future = wm.updateResourcePlanAsync(appliedRp);
+      boolean isOk = false;
+      try {
+        // Note: we may add an async option in future. For now, let the task fail for the user.
+        future.get();
+        isOk = true;
+        LOG.info("Successfully activated resource plan " + name);
+        return 0;
+      } catch (InterruptedException | ExecutionException e) {
+        throw new HiveException(e);
+      } finally {
+        if (!isOk) {
+          LOG.error("Failed to activate resource plan " + name);
+          // TODO: shut down HS2?
+        }
       }
     }
+    if (pm != null) {
+      pm.updateTriggers(appliedRp);
+      LOG.info("Updated tez session pool manager with active resource plan: {}", appliedRp.getPlan().getName());
+    }
+    return 0;
   }
 
   private int dropResourcePlan(Hive db, DropResourcePlanDesc desc) throws HiveException {
