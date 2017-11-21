@@ -22,9 +22,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang.*;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -35,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -45,26 +49,38 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
+import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMerger;
+import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMergerFactory;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.security.SaslRpcServer;
+import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
+import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.hadoop.util.MachineList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -206,12 +222,12 @@ public class MetaStoreUtils {
         singleObj.add(obj);
         ColumnStatistics singleCS = new ColumnStatistics(css.getStatsDesc(), singleObj);
         if (!map.containsKey(obj.getColName())) {
-          map.put(obj.getColName(), new ArrayList<ColumnStatistics>());
+          map.put(obj.getColName(), new ArrayList<>());
         }
         map.get(obj.getColName()).add(singleCS);
       }
     }
-    return MetaStoreUtils.aggrPartitionStats(map,dbName,tableName,partNames,colNames,useDensityFunctionForNDVEstimation, ndvTuner);
+    return aggrPartitionStats(map,dbName,tableName,partNames,colNames,useDensityFunctionForNDVEstimation, ndvTuner);
   }
 
   public static List<ColumnStatisticsObj> aggrPartitionStats(
@@ -404,7 +420,7 @@ public class MetaStoreUtils {
    *              if it doesn't match the pattern.
    */
   public static boolean validateName(String name, Configuration conf) {
-    Pattern tpat = null;
+    Pattern tpat;
     String allowedCharacters = "\\w_";
     if (conf != null
         && MetastoreConf.getBoolVar(conf,
@@ -493,7 +509,7 @@ public class MetaStoreUtils {
       return false;
     }
 
-    if (MetaStoreUtils.isView(tbl)) {
+    if (isView(tbl)) {
       return false;
     }
 
@@ -605,7 +621,7 @@ public class MetaStoreUtils {
         params == null ||
         !containsAllFastStats(params)) {
       if (params == null) {
-        params = new HashMap<String,String>();
+        params = new HashMap<>();
       }
       if (!newDir) {
         // The table location already exists and may contain data.
@@ -704,7 +720,7 @@ public class MetaStoreUtils {
         params == null ||
         !containsAllFastStats(params)) {
       if (params == null) {
-        params = new HashMap<String,String>();
+        params = new HashMap<>();
       }
       if (!madeDir) {
         // The partition location already existed and may contain data. Lets try to
@@ -731,7 +747,7 @@ public class MetaStoreUtils {
       return false;
     }
 
-    Map<String, String> columnNameTypePairMap = new HashMap<String, String>(newCols.size());
+    Map<String, String> columnNameTypePairMap = new HashMap<>(newCols.size());
     for (FieldSchema newCol : newCols) {
       columnNameTypePairMap.put(newCol.getName().toLowerCase(), newCol.getType());
     }
@@ -749,5 +765,314 @@ public class MetaStoreUtils {
   public static boolean isInsertOnlyTableParam(Map<String, String> params) {
     String transactionalProp = params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
     return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
+  }
+
+  /**
+   * create listener instances as per the configuration.
+   *
+   * @param clazz Class of the listener
+   * @param conf configuration object
+   * @param listenerImplList Implementation class name
+   * @return instance of the listener
+   * @throws MetaException if there is any failure instantiating the class
+   */
+  public static <T> List<T> getMetaStoreListeners(Class<T> clazz,
+      Configuration conf, String listenerImplList) throws MetaException {
+    List<T> listeners = new ArrayList<T>();
+
+    if (StringUtils.isBlank(listenerImplList)) {
+      return listeners;
+    }
+
+    String[] listenerImpls = listenerImplList.split(",");
+    for (String listenerImpl : listenerImpls) {
+      try {
+        T listener = (T) Class.forName(
+            listenerImpl.trim(), true, JavaUtils.getClassLoader()).getConstructor(
+                Configuration.class).newInstance(conf);
+        listeners.add(listener);
+      } catch (InvocationTargetException ie) {
+        throw new MetaException("Failed to instantiate listener named: "+
+            listenerImpl + ", reason: " + ie.getCause());
+      } catch (Exception e) {
+        throw new MetaException("Failed to instantiate listener named: "+
+            listenerImpl + ", reason: " + e);
+      }
+    }
+
+    return listeners;
+  }
+
+  public static String validateSkewedColNames(List<String> cols) {
+    if (CollectionUtils.isEmpty(cols)) {
+      return null;
+    }
+    for (String col : cols) {
+      if (!validateColumnName(col)) {
+        return col;
+      }
+    }
+    return null;
+  }
+
+  public static String validateSkewedColNamesSubsetCol(List<String> skewedColNames,
+      List<FieldSchema> cols) {
+    if (CollectionUtils.isEmpty(skewedColNames)) {
+      return null;
+    }
+    List<String> colNames = new ArrayList<>(cols.size());
+    for (FieldSchema fieldSchema : cols) {
+      colNames.add(fieldSchema.getName());
+    }
+    // make a copy
+    List<String> copySkewedColNames = new ArrayList<>(skewedColNames);
+    // remove valid columns
+    copySkewedColNames.removeAll(colNames);
+    if (copySkewedColNames.isEmpty()) {
+      return null;
+    }
+    return copySkewedColNames.toString();
+  }
+
+  public static boolean isNonNativeTable(Table table) {
+    if (table == null || table.getParameters() == null) {
+      return false;
+    }
+    return (table.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE) != null);
+  }
+
+  public static boolean isIndexTable(Table table) {
+    if (table == null) {
+      return false;
+    }
+    return TableType.INDEX_TABLE.toString().equals(table.getTableType());
+  }
+
+  /**
+   * Given a list of partition columns and a partial mapping from
+   * some partition columns to values the function returns the values
+   * for the column.
+   * @param partCols the list of table partition columns
+   * @param partSpec the partial mapping from partition column to values
+   * @return list of values of for given partition columns, any missing
+   *         values in partSpec is replaced by an empty string
+   */
+  public static List<String> getPvals(List<FieldSchema> partCols,
+                                      Map<String, String> partSpec) {
+    List<String> pvals = new ArrayList<>(partCols.size());
+    for (FieldSchema field : partCols) {
+      String val = StringUtils.defaultString(partSpec.get(field.getName()));
+      pvals.add(val);
+    }
+    return pvals;
+  }
+
+  /**
+   * @param schema1: The first schema to be compared
+   * @param schema2: The second schema to be compared
+   * @return true if the two schemas are the same else false
+   *         for comparing a field we ignore the comment it has
+   */
+  public static boolean compareFieldColumns(List<FieldSchema> schema1, List<FieldSchema> schema2) {
+    if (schema1.size() != schema2.size()) {
+      return false;
+    }
+    Iterator<FieldSchema> its1 = schema1.iterator();
+    Iterator<FieldSchema> its2 = schema2.iterator();
+    while (its1.hasNext()) {
+      FieldSchema f1 = its1.next();
+      FieldSchema f2 = its2.next();
+      // The default equals provided by thrift compares the comments too for
+      // equality, thus we need to compare the relevant fields here.
+      if (!StringUtils.equals(f1.getName(), f2.getName()) ||
+          !StringUtils.equals(f1.getType(), f2.getType())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public static boolean isArchived(Partition part) {
+    Map<String, String> params = part.getParameters();
+    return "TRUE".equalsIgnoreCase(params.get(hive_metastoreConstants.IS_ARCHIVED));
+  }
+
+  public static Path getOriginalLocation(Partition part) {
+    Map<String, String> params = part.getParameters();
+    assert(isArchived(part));
+    String originalLocation = params.get(hive_metastoreConstants.ORIGINAL_LOCATION);
+    assert( originalLocation != null);
+
+    return new Path(originalLocation);
+  }
+
+  private static String ARCHIVING_LEVEL = "archiving_level";
+  public static int getArchivingLevel(Partition part) throws MetaException {
+    if (!isArchived(part)) {
+      throw new MetaException("Getting level of unarchived partition");
+    }
+
+    String lv = part.getParameters().get(ARCHIVING_LEVEL);
+    if (lv != null) {
+      return Integer.parseInt(lv);
+    }
+    // partitions archived before introducing multiple archiving
+    return part.getValues().size();
+  }
+
+  public static boolean partitionNameHasValidCharacters(List<String> partVals,
+      Pattern partitionValidationPattern) {
+    return getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern) == null;
+  }
+
+  public static void getMergableCols(ColumnStatistics csNew, Map<String, String> parameters) {
+    List<ColumnStatisticsObj> list = new ArrayList<>();
+    for (int index = 0; index < csNew.getStatsObj().size(); index++) {
+      ColumnStatisticsObj statsObjNew = csNew.getStatsObj().get(index);
+      // canColumnStatsMerge guarantees that it is accurate before we do merge
+      if (StatsSetupConst.canColumnStatsMerge(parameters, statsObjNew.getColName())) {
+        list.add(statsObjNew);
+      }
+      // in all the other cases, we can not merge
+    }
+    csNew.setStatsObj(list);
+  }
+
+  // this function will merge csOld into csNew.
+  public static void mergeColStats(ColumnStatistics csNew, ColumnStatistics csOld)
+      throws InvalidObjectException {
+    List<ColumnStatisticsObj> list = new ArrayList<>();
+    if (csNew.getStatsObj().size() != csOld.getStatsObjSize()) {
+      // Some of the columns' stats are missing
+      // This implies partition schema has changed. We will merge columns
+      // present in both, overwrite stats for columns absent in metastore and
+      // leave alone columns stats missing from stats task. This last case may
+      // leave stats in stale state. This will be addressed later.
+      LOG.debug("New ColumnStats size is {}, but old ColumnStats size is {}",
+          csNew.getStatsObj().size(), csOld.getStatsObjSize());
+    }
+    // In this case, we have to find out which columns can be merged.
+    Map<String, ColumnStatisticsObj> map = new HashMap<>();
+    // We build a hash map from colName to object for old ColumnStats.
+    for (ColumnStatisticsObj obj : csOld.getStatsObj()) {
+      map.put(obj.getColName(), obj);
+    }
+    for (int index = 0; index < csNew.getStatsObj().size(); index++) {
+      ColumnStatisticsObj statsObjNew = csNew.getStatsObj().get(index);
+      ColumnStatisticsObj statsObjOld = map.get(statsObjNew.getColName());
+      if (statsObjOld != null) {
+        // If statsObjOld is found, we can merge.
+        ColumnStatsMerger merger = ColumnStatsMergerFactory.getColumnStatsMerger(statsObjNew,
+            statsObjOld);
+        merger.merge(statsObjNew, statsObjOld);
+      }
+      list.add(statsObjNew);
+    }
+    csNew.setStatsObj(list);
+  }
+
+  /**
+   * Read and return the meta store Sasl configuration. Currently it uses the default
+   * Hadoop SASL configuration and can be configured using "hadoop.rpc.protection"
+   * HADOOP-10211, made a backward incompatible change due to which this call doesn't
+   * work with Hadoop 2.4.0 and later.
+   * @param conf
+   * @return The SASL configuration
+   */
+  public static Map<String, String> getMetaStoreSaslProperties(Configuration conf, boolean useSSL) {
+    // As of now Hive Meta Store uses the same configuration as Hadoop SASL configuration
+
+    // If SSL is enabled, override the given value of "hadoop.rpc.protection" and set it to "authentication"
+    // This disables any encryption provided by SASL, since SSL already provides it
+    String hadoopRpcProtectionVal = conf.get(CommonConfigurationKeysPublic.HADOOP_RPC_PROTECTION);
+    String hadoopRpcProtectionAuth = SaslRpcServer.QualityOfProtection.AUTHENTICATION.toString();
+
+    if (useSSL && hadoopRpcProtectionVal != null && !hadoopRpcProtectionVal.equals(hadoopRpcProtectionAuth)) {
+      LOG.warn("Overriding value of " + CommonConfigurationKeysPublic.HADOOP_RPC_PROTECTION + " setting it from "
+          + hadoopRpcProtectionVal + " to " + hadoopRpcProtectionAuth + " because SSL is enabled");
+      conf.set(CommonConfigurationKeysPublic.HADOOP_RPC_PROTECTION, hadoopRpcProtectionAuth);
+    }
+    return HadoopThriftAuthBridge.getBridge().getHadoopSaslProperties(conf);
+  }
+
+  /**
+   * Add new elements to the classpath.
+   *
+   * @param newPaths
+   *          Array of classpath elements
+   */
+  public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
+    URLClassLoader loader = (URLClassLoader) cloader;
+    List<URL> curPath = Arrays.asList(loader.getURLs());
+    ArrayList<URL> newPath = new ArrayList<>(curPath.size());
+
+    // get a list with the current classpath components
+    for (URL onePath : curPath) {
+      newPath.add(onePath);
+    }
+    curPath = newPath;
+
+    for (String onestr : newPaths) {
+      URL oneurl = urlFromPathString(onestr);
+      if (oneurl != null && !curPath.contains(oneurl)) {
+        curPath.add(oneurl);
+      }
+    }
+
+    return new URLClassLoader(curPath.toArray(new URL[0]), loader);
+  }
+
+  /**
+   * Create a URL from a string representing a path to a local file.
+   * The path string can be just a path, or can start with file:/, file:///
+   * @param onestr  path string
+   * @return
+   */
+  private static URL urlFromPathString(String onestr) {
+    URL oneurl = null;
+    try {
+      if (onestr.startsWith("file:/")) {
+        oneurl = new URL(onestr);
+      } else {
+        oneurl = new File(onestr).toURL();
+      }
+    } catch (Exception err) {
+      LOG.error("Bad URL " + onestr + ", ignoring path");
+    }
+    return oneurl;
+  }
+
+  /**
+   * Verify if the user is allowed to make DB notification related calls.
+   * Only the superusers defined in the Hadoop proxy user settings have the permission.
+   *
+   * @param user the short user name
+   * @param conf that contains the proxy user settings
+   * @return if the user has the permission
+   */
+  public static boolean checkUserHasHostProxyPrivileges(String user, Configuration conf, String ipAddress) {
+    DefaultImpersonationProvider sip = ProxyUsers.getDefaultImpersonationProvider();
+    // Just need to initialize the ProxyUsers for the first time, given that the conf will not change on the fly
+    if (sip == null) {
+      ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
+      sip = ProxyUsers.getDefaultImpersonationProvider();
+    }
+    Map<String, Collection<String>> proxyHosts = sip.getProxyHosts();
+    Collection<String> hostEntries = proxyHosts.get(sip.getProxySuperuserIpConfKey(user));
+    MachineList machineList = new MachineList(hostEntries);
+    ipAddress = (ipAddress == null) ? StringUtils.EMPTY : ipAddress;
+    return machineList.includes(ipAddress);
+  }
+
+  // TODO This should be moved to MetaStoreTestUtils once it is moved into standalone-metastore.
+  /**
+   * Setup a configuration file for standalone mode.  There are a few config variables that have
+   * defaults that require parts of Hive that aren't present in standalone mode.  This method
+   * sets them to something that will work without the rest of Hive.
+   * @param conf Configuration object
+   */
+  public static void setConfForStandloneMode(Configuration conf) {
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TASK_THREADS_ALWAYS,
+        EventCleanerTask.class.getName());
   }
 }

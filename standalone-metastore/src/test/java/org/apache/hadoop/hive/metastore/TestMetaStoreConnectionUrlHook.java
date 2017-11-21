@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,45 +18,30 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import junit.framework.TestCase;
-
-import org.apache.hadoop.hive.cli.CliSessionState;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.junit.Test;
 
 /**
  * TestMetaStoreConnectionUrlHook
  * Verifies that when an instance of an implementation of RawStore is initialized, the connection
  * URL has already been updated by any metastore connect URL hooks.
  */
-public class TestMetaStoreConnectionUrlHook extends TestCase {
-  private HiveConf hiveConf;
+public class TestMetaStoreConnectionUrlHook {
 
-  @Override
-  protected void setUp() throws Exception {
-
-    super.setUp();
-  }
-
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
-  }
-
+  @Test
   public void testUrlHook() throws Exception {
-    hiveConf = new HiveConf(this.getClass());
-    hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLHOOK,
-        DummyJdoConnectionUrlHook.class.getName());
-    hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY,
-        DummyJdoConnectionUrlHook.initialUrl);
-    hiveConf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
-        DummyRawStoreForJdoConnection.class.getName());
-    hiveConf.setBoolean("hive.metastore.checkForDefaultDb", true);
-    SessionState.start(new CliSessionState(hiveConf));
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(conf, ConfVars.CONNECTURLHOOK, DummyJdoConnectionUrlHook.class.getName());
+    MetastoreConf.setVar(conf, ConfVars.CONNECTURLKEY, DummyJdoConnectionUrlHook.initialUrl);
+    MetastoreConf.setVar(conf, ConfVars.RAW_STORE_IMPL, DummyRawStoreForJdoConnection.class.getName());
+    MetaStoreUtils.setConfForStandloneMode(conf);
 
     // Instantiating the HMSHandler with hive.metastore.checkForDefaultDb will cause it to
     // initialize an instance of the DummyRawStoreForJdoConnection
     HiveMetaStore.HMSHandler hms = new HiveMetaStore.HMSHandler(
-        "test_metastore_connection_url_hook_hms_handler", hiveConf);
+        "test_metastore_connection_url_hook_hms_handler", conf);
   }
 }
