@@ -84,10 +84,12 @@ public class MetadataReader {
           byte[] buffer = new byte[len];
           file.readFully(offset, buffer, 0, buffer.length);
           ByteBuffer[] bb = new ByteBuffer[] {ByteBuffer.wrap(buffer)};
+          bb[0].limit((int) (bb[0].position() + stream.getLength()));
           indexes[col] = OrcProto.RowIndex.parseFrom(InStream.create("index",
               bb, new long[]{0}, stream.getLength(), codec, bufferSize));
           if (readBloomFilter) {
             bb[0].position((int) stream.getLength());
+            bb[0].limit((int) (bb[0].position() + nextStream.getLength()));
             bloomFilterIndices[col] = OrcProto.BloomFilterIndex.parseFrom(
                 InStream.create("bloom_filter", bb, new long[]{0}, nextStream.getLength(),
                     codec, bufferSize));

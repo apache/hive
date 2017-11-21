@@ -1,0 +1,77 @@
+PREHOOK: query: drop table if exists numtab_tmp_hive_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists numtab_tmp_hive_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table numtab_tmp_hive_table 
+(c0 string, c1 string, c2 int, c3 float, c4 double, c5 string)
+row format delimited fields terminated by ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@numtab_tmp_hive_table
+POSTHOOK: query: create table numtab_tmp_hive_table 
+(c0 string, c1 string, c2 int, c3 float, c4 double, c5 string)
+row format delimited fields terminated by ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@numtab_tmp_hive_table
+PREHOOK: query: load data local inpath '../../data/files/numtab_100k.csv' overwrite into table numtab_tmp_hive_table
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@numtab_tmp_hive_table
+POSTHOOK: query: load data local inpath '../../data/files/numtab_100k.csv' overwrite into table numtab_tmp_hive_table
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@numtab_tmp_hive_table
+PREHOOK: query: drop table if exists numtab_hive_orc_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists numtab_hive_orc_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table numtab_hive_orc_table 
+(c0 string, c1 string, c2 int, c3 float, c4 double, c5 string)
+stored as orc
+TBLPROPERTIES ("orc.compress"="NONE", 
+               "orc.row.index.stride"="1000",
+               "orc.stripe.size"="524288",
+               "orc.bloom.filter.columns"="c2")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@numtab_hive_orc_table
+POSTHOOK: query: create table numtab_hive_orc_table 
+(c0 string, c1 string, c2 int, c3 float, c4 double, c5 string)
+stored as orc
+TBLPROPERTIES ("orc.compress"="NONE", 
+               "orc.row.index.stride"="1000",
+               "orc.stripe.size"="524288",
+               "orc.bloom.filter.columns"="c2")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@numtab_hive_orc_table
+PREHOOK: query: insert overwrite table numtab_hive_orc_table 
+select * from numtab_tmp_hive_table sort by c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@numtab_tmp_hive_table
+PREHOOK: Output: default@numtab_hive_orc_table
+POSTHOOK: query: insert overwrite table numtab_hive_orc_table 
+select * from numtab_tmp_hive_table sort by c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@numtab_tmp_hive_table
+POSTHOOK: Output: default@numtab_hive_orc_table
+POSTHOOK: Lineage: numtab_hive_orc_table.c0 SIMPLE [(numtab_tmp_hive_table)numtab_tmp_hive_table.FieldSchema(name:c0, type:string, comment:null), ]
+POSTHOOK: Lineage: numtab_hive_orc_table.c1 SIMPLE [(numtab_tmp_hive_table)numtab_tmp_hive_table.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: numtab_hive_orc_table.c2 SIMPLE [(numtab_tmp_hive_table)numtab_tmp_hive_table.FieldSchema(name:c2, type:int, comment:null), ]
+POSTHOOK: Lineage: numtab_hive_orc_table.c3 SIMPLE [(numtab_tmp_hive_table)numtab_tmp_hive_table.FieldSchema(name:c3, type:float, comment:null), ]
+POSTHOOK: Lineage: numtab_hive_orc_table.c4 SIMPLE [(numtab_tmp_hive_table)numtab_tmp_hive_table.FieldSchema(name:c4, type:double, comment:null), ]
+POSTHOOK: Lineage: numtab_hive_orc_table.c5 SIMPLE [(numtab_tmp_hive_table)numtab_tmp_hive_table.FieldSchema(name:c5, type:string, comment:null), ]
+PREHOOK: query: select * from numtab_hive_orc_table where c2=100 limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@numtab_hive_orc_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from numtab_hive_orc_table where c2=100 limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@numtab_hive_orc_table
+#### A masked pattern was here ####
+989.25	1.1	100	0.0	50.2	AA
+989.25	1.1	100	0.0	50.2	AA
+989.25	1.1	100	0.0	50.2	AA
+989.25	1.1	100	0.0	50.2	AA
+989.25	1.1	100	0.0	50.2	AA
