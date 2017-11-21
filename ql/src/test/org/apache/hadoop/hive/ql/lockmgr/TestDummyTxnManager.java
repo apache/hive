@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.Driver.DriverState;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -82,9 +83,7 @@ public class TestDummyTxnManager {
 
   @After
   public void tearDown() throws Exception {
-    if (txnMgr != null) {
-      txnMgr.closeTxnManager();
-    }
+    if (txnMgr != null) txnMgr.closeTxnManager();
   }
 
   /**
@@ -101,7 +100,7 @@ public class TestDummyTxnManager {
     expectedLocks.add(new ZooKeeperHiveLock("default.table1", new HiveLockObject(), HiveLockMode.SHARED));
     LockedDriverState lDrvState = new LockedDriverState();
     LockedDriverState lDrvInp = new LockedDriverState();
-    lDrvInp.abort();
+    lDrvInp.driverState = DriverState.INTERRUPT;
     LockException lEx = new LockException(ErrorMsg.LOCK_ACQUIRE_CANCELLED.getMsg());
     when(mockLockManager.lock(anyListOf(HiveLockObj.class), eq(false), eq(lDrvState))).thenReturn(expectedLocks);
     when(mockLockManager.lock(anyListOf(HiveLockObj.class), eq(false), eq(lDrvInp))).thenThrow(lEx);

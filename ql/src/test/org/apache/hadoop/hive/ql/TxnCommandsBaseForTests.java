@@ -111,8 +111,8 @@ public abstract class TxnCommandsBaseForTests {
     try {
       if (d != null) {
         dropTables();
-        d.close();
         d.destroy();
+        d.close();
         d = null;
       }
     } finally {
