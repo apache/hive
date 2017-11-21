@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
  * is not 0.  Note that often {@code responseCode} ends up the exit value of
  * command shell process so should keep it to < 127.
  */
-public class CommandProcessorResponse {
+public class CommandProcessorResponse extends Exception {
   private final int responseCode;
   private final String errorMessage;
   private final int hiveErrorCode;
