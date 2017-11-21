@@ -64,7 +64,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 13 <- Map 12 (SIMPLE_EDGE), Map 18 (SIMPLE_EDGE)
-Reducer 14 <- Map 19 (SIMPLE_EDGE), Reducer 13 (SIMPLE_EDGE)
+Reducer 14 <- Map 19 (SIMPLE_EDGE), Reducer 13 (ONE_TO_ONE_EDGE)
 Reducer 15 <- Reducer 14 (SIMPLE_EDGE)
 Reducer 16 <- Map 12 (SIMPLE_EDGE), Map 18 (SIMPLE_EDGE)
 Reducer 17 <- Reducer 16 (SIMPLE_EDGE)
@@ -126,8 +126,8 @@ Stage-0
                                               predicate:wr_order_number is not null
                                               TableScan [TS_38] (rows=14398467 width=92)
                                                 default@web_returns,web_returns,Tbl:COMPLETE,Col:NONE,Output:["wr_order_number"]
-                                      <-Reducer 13 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_41]
+                                      <-Reducer 13 [ONE_TO_ONE_EDGE]
+                                        FORWARD [RS_41]
                                           PartitionCols:_col0
                                           Select Operator [SEL_37] (rows=158402938 width=135)
                                             Output:["_col0"]

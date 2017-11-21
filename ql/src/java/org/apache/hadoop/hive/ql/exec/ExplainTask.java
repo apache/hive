@@ -906,6 +906,10 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
             continue;
           }
 
+          if(xpl_note.jsonOnly() && !jsonOutput) {
+            continue;
+          }
+
           String header = null;
           boolean skipHeader = xpl_note.skipHeader();
           boolean emptyHeader = false;

@@ -46,6 +46,8 @@ public @interface Explain {
 
   boolean skipHeader() default false;
 
+  boolean jsonOnly() default false;
+
   // By default, many existing @Explain classes/methods are NON_VECTORIZED.
   //
   // Vectorized methods/classes have detail levels:
