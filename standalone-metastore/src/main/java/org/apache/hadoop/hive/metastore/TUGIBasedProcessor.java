@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,6 +25,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +90,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
     // Store ugi in transport if the rpc is set_ugi
     if (msg.name.equalsIgnoreCase("set_ugi")){
       try {
-        handleSetUGI(ugiTrans, (set_ugi<Iface>)fn, msg, in, out);
+        handleSetUGI(ugiTrans, (ThriftHiveMetastore.Processor.set_ugi<Iface>)fn, msg, in, out);
       } catch (TException e) {
         throw e;
       } catch (Exception e) {
@@ -137,7 +138,7 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
   }
 
   private void handleSetUGI(TUGIContainingTransport ugiTrans,
-      set_ugi<Iface> fn, TMessage msg, TProtocol iprot, TProtocol oprot)
+                            ThriftHiveMetastore.Processor.set_ugi<Iface> fn, TMessage msg, TProtocol iprot, TProtocol oprot)
       throws TException, SecurityException, NoSuchMethodException, IllegalArgumentException,
       IllegalAccessException, InvocationTargetException{
 

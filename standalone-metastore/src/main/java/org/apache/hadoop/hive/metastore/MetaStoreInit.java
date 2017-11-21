@@ -60,7 +60,7 @@ public class MetaStoreInit {
     try {
       // We always call init because the hook name in the configuration could
       // have changed.
-      MetaStoreInit.initConnectionUrlHook(originalConf, updateData);
+      initConnectionUrlHook(originalConf, updateData);
       if (updateData.urlHook != null) {
         if (badUrl != null) {
           updateData.urlHook.notifyBadConnectionUrl(badUrl);

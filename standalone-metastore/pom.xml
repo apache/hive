@@ -192,7 +192,7 @@
         </exclusion>
       </exclusions>
     </dependency>
-   <dependency>
+    <dependency>
      <groupId>org.apache.hadoop</groupId>
      <artifactId>hadoop-hdfs-client</artifactId>
      <version>${hadoop.version}</version>

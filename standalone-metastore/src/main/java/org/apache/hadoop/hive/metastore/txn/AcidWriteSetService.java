@@ -18,14 +18,17 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.RunnableConfigurable;
+import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Periodically cleans WriteSet tracking information used in Transaction management
  */
-public class AcidWriteSetService implements RunnableConfigurable {
+public class AcidWriteSetService implements MetastoreTaskThread {
   private static final Logger LOG = LoggerFactory.getLogger(AcidWriteSetService.class);
 
   private Configuration conf;
@@ -40,6 +43,11 @@ public class AcidWriteSetService implements RunnableConfigurable {
   @Override
   public Configuration getConf() {
     return conf;
+  }
+
+  @Override
+  public long runFrequency(TimeUnit unit) {
+    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.WRITE_SET_REAPER_INTERVAL, unit);
   }
 
   @Override

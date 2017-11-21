@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.Test;
 
 public class TestHiveMetastoreCli {
@@ -26,14 +28,14 @@ public class TestHiveMetastoreCli {
 
   @Test
   public void testDefaultCliPortValue() {
-    HiveConf configuration = new HiveConf();
+    Configuration configuration = MetastoreConf.newMetastoreConf();
     HiveMetaStore.HiveMetastoreCli cli = new HiveMetaStore.HiveMetastoreCli(configuration);
-    assert (cli.getPort() == HiveConf.getIntVar(configuration, HiveConf.ConfVars.METASTORE_SERVER_PORT));
+    assert (cli.getPort() == MetastoreConf.getIntVar(configuration, ConfVars.SERVER_PORT));
   }
 
   @Test
   public void testOverriddenCliPortValue() {
-    HiveConf configuration = new HiveConf();
+    Configuration configuration = MetastoreConf.newMetastoreConf();
     HiveMetaStore.HiveMetastoreCli cli = new HiveMetaStore.HiveMetastoreCli(configuration);
     cli.parse(TestHiveMetastoreCli.CLI_ARGUMENTS);
 
@@ -42,8 +44,8 @@ public class TestHiveMetastoreCli {
 
   @Test
   public void testOverriddenMetastoreServerPortValue() {
-    HiveConf configuration = new HiveConf();
-    HiveConf.setIntVar(configuration, HiveConf.ConfVars.METASTORE_SERVER_PORT, 12345);
+    Configuration configuration = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setLongVar(configuration, ConfVars.SERVER_PORT, 12345);
 
     HiveMetaStore.HiveMetastoreCli cli = new HiveMetaStore.HiveMetastoreCli(configuration);
 
@@ -52,8 +54,8 @@ public class TestHiveMetastoreCli {
 
   @Test
   public void testCliOverridesConfiguration() {
-    HiveConf configuration = new HiveConf();
-    HiveConf.setIntVar(configuration, HiveConf.ConfVars.METASTORE_SERVER_PORT, 12345);
+    Configuration configuration = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setLongVar(configuration, ConfVars.SERVER_PORT, 12345);
 
     HiveMetaStore.HiveMetastoreCli cli = new HiveMetaStore.HiveMetastoreCli(configuration);
     cli.parse(CLI_ARGUMENTS);

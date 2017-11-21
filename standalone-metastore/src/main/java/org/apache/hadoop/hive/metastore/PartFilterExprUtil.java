@@ -80,10 +80,18 @@ public class PartFilterExprUtil {
     try {
       @SuppressWarnings("unchecked")
       Class<? extends PartitionExpressionProxy> clazz =
-           JavaUtils.getClass(className, PartitionExpressionProxy.class);
+          JavaUtils.getClass(className, PartitionExpressionProxy.class);
       return JavaUtils.newInstance(
           clazz, new Class<?>[0], new Object[0]);
     } catch (MetaException e) {
+      if (e.getMessage().matches(".* class not found")) {
+        // TODO MS-SPLIT For now if we cannot load the default PartitionExpressionForMetastore
+        // class (since it's from ql) load the DefaultPartitionExpressionProxy, which just throws
+        // UnsupportedOperationExceptions.  This allows existing Hive instances to work but also
+        // allows us to instantiate the metastore stand alone for testing.  Not sure if this is
+        // the best long term solution.
+        return new DefaultPartitionExpressionProxy();
+      }
       LOG.error("Error loading PartitionExpressionProxy", e);
       throw new RuntimeException("Error loading PartitionExpressionProxy: " + e.getMessage());
     }

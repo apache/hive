@@ -18,28 +18,42 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
-import java.util.TimerTask;
-
-import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.RawStore;
 
-public class EventCleanerTask extends TimerTask{
+import java.util.concurrent.TimeUnit;
 
-  public static final Logger LOG = LoggerFactory.getLogger(EventCleanerTask.class);
-  private final IHMSHandler handler;
+public class EventCleanerTask implements MetastoreTaskThread {
+  private static final Logger LOG = LoggerFactory.getLogger(EventCleanerTask.class);
 
-  public EventCleanerTask(IHMSHandler handler) {
-    super();
-    this.handler = handler;
+  private Configuration conf;
+
+  @Override
+  public long runFrequency(TimeUnit unit) {
+    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_FREQ, unit);
+  }
+
+  @Override
+  public void setConf(Configuration configuration) {
+    conf = configuration;
+
+  }
+
+  @Override
+  public Configuration getConf() {
+    return conf;
   }
 
   @Override
   public void run() {
 
     try {
-      RawStore ms = handler.getMS();
+      RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(conf);
       long deleteCnt = ms.cleanupEvents();
 
       if (deleteCnt > 0L){

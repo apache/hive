@@ -18,14 +18,17 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.RunnableConfigurable;
+import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Purges obsolete items from compaction history data
  */
-public class AcidCompactionHistoryService implements RunnableConfigurable {
+public class AcidCompactionHistoryService implements MetastoreTaskThread {
   private static final Logger LOG = LoggerFactory.getLogger(AcidCompactionHistoryService.class);
 
   private Configuration conf;
@@ -40,6 +43,12 @@ public class AcidCompactionHistoryService implements RunnableConfigurable {
   @Override
   public Configuration getConf() {
     return conf;
+  }
+
+  @Override
+  public long runFrequency(TimeUnit unit) {
+    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_REAPER_INTERVAL,
+        unit);
   }
 
   @Override
