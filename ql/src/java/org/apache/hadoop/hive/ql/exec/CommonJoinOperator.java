@@ -180,7 +180,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     this.alias = clone.alias;
     this.childOperatorsArray = clone.childOperatorsArray;
     this.childOperatorsTag = clone.childOperatorsTag;
-    this.colExprMap = clone.colExprMap;
+    this.setColumnExprMap(clone.getColumnExprMap());
     this.dummyObj = clone.dummyObj;
     this.dummyObjVectors = clone.dummyObjVectors;
     this.forwardCache = clone.forwardCache;

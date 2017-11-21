@@ -300,6 +300,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       mapJoinDesc.setNullSafes(joinDesc.getNullSafes());
       mapJoinDesc.setFilterMap(joinDesc.getFilterMap());
       mapJoinDesc.setResidualFilterExprs(joinDesc.getResidualFilterExprs());
+      // keep column expression map, explain plan uses this to display
+      mapJoinDesc.setColumnExprMap(joinDesc.getColumnExprMap());
+      mapJoinDesc.setReversedExprs(joinDesc.getReversedExprs());
       mapJoinDesc.resetOrder();
     }
 

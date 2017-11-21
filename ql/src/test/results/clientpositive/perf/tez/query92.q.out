@@ -60,7 +60,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
-Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 8 (ONE_TO_ONE_EDGE)
 Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
 Reducer 6 <- Map 1 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
@@ -116,8 +116,8 @@ Stage-0
                                       predicate:(CAST( d_date AS TIMESTAMP) BETWEEN 1998-03-18 00:00:00.0 AND 1998-06-16 01:00:00.0 and d_date_sk is not null)
                                       TableScan [TS_3] (rows=73049 width=1119)
                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
-                          <-Reducer 8 [SIMPLE_EDGE]
-                            SHUFFLE [RS_31]
+                          <-Reducer 8 [ONE_TO_ONE_EDGE]
+                            FORWARD [RS_31]
                               PartitionCols:_col2
                               Merge Join Operator [MERGEJOIN_63] (rows=87121617 width=135)
                                 Conds:RS_23._col1=RS_24._col0(Inner),Output:["_col0","_col2"]

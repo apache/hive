@@ -152,6 +152,26 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return alias;
   }
 
+  @Explain(displayName = "table", jsonOnly = true)
+  public String getTableName() {
+    return this.tableMetadata.getTableName();
+  }
+
+  @Explain(displayName = "database", jsonOnly = true)
+  public String getDatabaseName() {
+    return this.tableMetadata.getDbName();
+  }
+
+  @Explain(displayName = "columns", jsonOnly = true)
+  public List<String> getColumnNamesForExplain() {
+    return this.neededColumns;
+  }
+
+  @Explain(displayName = "isTempTable", jsonOnly = true)
+  public boolean isTemporary() {
+    return tableMetadata.isTemporary();
+  }
+
   @Explain(explainLevels = { Level.USER })
   public String getTbl() {
     StringBuilder sb = new StringBuilder();
@@ -179,6 +199,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   public List<String> getOutputColumnNames() {
     return this.neededColumns;
   }
+
 
   @Explain(displayName = "filterExpr")
   public String getFilterExprString() {

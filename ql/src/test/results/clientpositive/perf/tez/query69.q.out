@@ -101,7 +101,7 @@ Reducer 16 <- Reducer 15 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
 Reducer 3 <- Map 9 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 11 (SIMPLE_EDGE), Reducer 14 (ONE_TO_ONE_EDGE), Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 16 (ONE_TO_ONE_EDGE), Reducer 4 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 16 (ONE_TO_ONE_EDGE), Reducer 4 (ONE_TO_ONE_EDGE)
 Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
 Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
 
@@ -164,8 +164,8 @@ Stage-0
                                               predicate:(cs_ship_customer_sk is not null and cs_sold_date_sk is not null)
                                               TableScan [TS_47] (rows=287989836 width=135)
                                                 default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:NONE,Output:["cs_sold_date_sk","cs_ship_customer_sk"]
-                          <-Reducer 4 [SIMPLE_EDGE]
-                            SHUFFLE [RS_61]
+                          <-Reducer 4 [ONE_TO_ONE_EDGE]
+                            FORWARD [RS_61]
                               PartitionCols:_col0
                               Select Operator [SEL_46] (rows=696954748 width=88)
                                 Output:["_col0","_col6","_col7","_col8","_col9","_col10"]

@@ -237,12 +237,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // for output rows of this operator
   protected transient ObjectInspector outputObjInspector;
 
-  /**
-   * A map of output column name to input expression map. This is used by
-   * optimizer and built during semantic analysis contains only key elements for
-   * reduce sink and group by op
-   */
-  protected Map<String, ExprNodeDesc> colExprMap;
 
   public void setId(String id) {
     this.id = id;
@@ -1025,11 +1019,16 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * @return null if the operator doesn't change columns
    */
   public Map<String, ExprNodeDesc> getColumnExprMap() {
-    return colExprMap;
+    if(this.getConf() == null) {
+      return null;
+    }
+    return this.getConf().getColumnExprMap();
   }
 
   public void setColumnExprMap(Map<String, ExprNodeDesc> colExprMap) {
-    this.colExprMap = colExprMap;
+    if(this.getConf() != null) {
+      this.getConf().setColumnExprMap(colExprMap);
+    }
   }
 
   private String getLevelString(int level) {

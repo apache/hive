@@ -35,4 +35,6 @@ public interface OperatorDesc extends Serializable, Cloneable {
   public String getRuntimeStatsTmpDir();
   public void setRuntimeStatsTmpDir(String runtimeStatsTmpDir);
   boolean isSame(OperatorDesc other);
+  public Map<String, ExprNodeDesc> getColumnExprMap();
+  public void setColumnExprMap(Map<String, ExprNodeDesc> colExprMap);
 }
