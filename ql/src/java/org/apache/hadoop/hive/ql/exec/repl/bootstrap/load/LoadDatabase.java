@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -59,6 +60,7 @@ public class LoadDatabase {
       Task<? extends Serializable> dbRootTask = existEmptyDb(dbInMetadata.getName())
           ? alterDbTask(dbInMetadata, context.hiveConf)
           : createDbTask(dbInMetadata);
+      dbRootTask.addDependentTask(setOwnerInfoTask(dbInMetadata));
       tracker.addTask(dbRootTask);
       return tracker;
     } catch (Exception e) {
@@ -97,6 +99,14 @@ public class LoadDatabase {
         new AlterDatabaseDesc(dbObj.getName(), dbObj.getParameters(), null);
     DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc);
     return TaskFactory.get(work, hiveConf);
+  }
+
+  private Task<? extends Serializable> setOwnerInfoTask(Database dbObj) {
+    AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(dbObj.getName(),
+            new PrincipalDesc(dbObj.getOwnerName(), dbObj.getOwnerType()),
+            null);
+    DDLWork work = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc);
+    return TaskFactory.get(work, context.hiveConf);
   }
 
   private boolean existEmptyDb(String dbName) throws InvalidOperationException, HiveException {

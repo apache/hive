@@ -1183,15 +1183,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
 
+    Map<String, String> params = database.getParameters();
+    if ((null != alterDbDesc.getReplicationSpec())
+    && !alterDbDesc.getReplicationSpec().allowEventReplacementInto(params)) {
+      LOG.debug("DDLTask: Alter Database {} is skipped as database is newer than update", dbName);
+      return 0; // no replacement, the existing database state is newer than our update.
+    }
+
     switch (alterDbDesc.getAlterType()) {
     case ALTER_PROPERTY:
       Map<String, String> newParams = alterDbDesc.getDatabaseProperties();
-      Map<String, String> params = database.getParameters();
-
-      if (!alterDbDesc.getReplicationSpec().allowEventReplacementInto(params)) {
-        LOG.debug("DDLTask: Alter Database {} is skipped as database is newer than update", dbName);
-        return 0; // no replacement, the existing database state is newer than our update.
-      }
 
       // if both old and new params are not null, merge them
       if (params != null && newParams != null) {

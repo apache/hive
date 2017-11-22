@@ -32,6 +32,8 @@ public abstract class MessageDeserializer {
     switch (EventMessage.EventType.valueOf(eventTypeString)) {
     case CREATE_DATABASE:
       return getCreateDatabaseMessage(messageBody);
+    case ALTER_DATABASE:
+      return getAlterDatabaseMessage(messageBody);
     case DROP_DATABASE:
       return getDropDatabaseMessage(messageBody);
     case CREATE_TABLE:
@@ -77,6 +79,11 @@ public abstract class MessageDeserializer {
    * Method to de-serialize CreateDatabaseMessage instance.
    */
   public abstract CreateDatabaseMessage getCreateDatabaseMessage(String messageBody);
+
+  /**
+   * Method to de-serialize AlterDatabaseMessage instance.
+   */
+  public abstract AlterDatabaseMessage getAlterDatabaseMessage(String messageBody);
 
   /**
    * Method to de-serialize DropDatabaseMessage instance.

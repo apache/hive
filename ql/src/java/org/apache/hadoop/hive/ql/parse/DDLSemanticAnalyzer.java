@@ -818,7 +818,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Owner type " + nullCmdMsg);
     }
 
-    AlterDatabaseDesc alterDesc = new AlterDatabaseDesc(dbName, principalDesc);
+    AlterDatabaseDesc alterDesc = new AlterDatabaseDesc(dbName, principalDesc, null);
     addAlterDbDesc(alterDesc);
   }
 

@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
@@ -64,6 +65,16 @@ public class JSONMessageDeserializer extends MessageDeserializer {
     }
     catch (Exception exception) {
       throw new IllegalArgumentException("Could not construct JSONCreateDatabaseMessage.", exception);
+    }
+  }
+
+  @Override
+  public AlterDatabaseMessage getAlterDatabaseMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONAlterDatabaseMessage.class);
+    }
+    catch (Exception exception) {
+      throw new IllegalArgumentException("Could not construct JSONAlterDatabaseMessage.", exception);
     }
   }
 

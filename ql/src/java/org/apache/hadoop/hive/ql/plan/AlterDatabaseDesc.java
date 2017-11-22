@@ -59,8 +59,9 @@ public class AlterDatabaseDesc extends DDLDesc implements Serializable {
     this.setAlterType(ALTER_DB_TYPES.ALTER_PROPERTY);
   }
 
-  public AlterDatabaseDesc(String databaseName, PrincipalDesc ownerPrincipal) {
+  public AlterDatabaseDesc(String databaseName, PrincipalDesc ownerPrincipal, ReplicationSpec replicationSpec) {
     this.databaseName = databaseName;
+    this.replicationSpec = replicationSpec;
     this.setOwnerPrincipal(ownerPrincipal);
     this.setAlterType(ALTER_DB_TYPES.ALTER_OWNER);
   }
@@ -119,9 +120,6 @@ public class AlterDatabaseDesc extends DDLDesc implements Serializable {
    * This can result in a "ALTER IF NEWER THAN" kind of semantic
    */
   public ReplicationSpec getReplicationSpec() {
-    if (replicationSpec == null) {
-      this.replicationSpec = new ReplicationSpec();
-    }
     return this.replicationSpec;
   }
 }
