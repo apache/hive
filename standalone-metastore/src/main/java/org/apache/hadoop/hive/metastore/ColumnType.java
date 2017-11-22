@@ -86,8 +86,6 @@ public class ColumnType {
 
   public static final String COLUMN_NAME_DELIMITER = "column.name.delimiter";
 
-  public static final String SERIALIZATION_FORMAT = "serialization.format";
-
   public static final Set<String> PrimitiveTypes = StringUtils.asSet(
     VOID_TYPE_NAME,
     BOOLEAN_TYPE_NAME,
@@ -238,5 +236,66 @@ public class ColumnType {
 
     }
     return false;
+  }
+
+  // These aren't column types, they are info for how things are stored in thrift.
+  // It didn't seem useful to create another Constants class just for these though.
+  public static final String SERIALIZATION_FORMAT = "serialization.format";
+
+  public static final String SERIALIZATION_LIB = "serialization.lib";
+
+  public static final String SERIALIZATION_DDL = "serialization.ddl";
+
+  public static final char COLUMN_COMMENTS_DELIMITER = '\0';
+
+  private static HashMap<String, String> typeToThriftTypeMap;
+  static {
+    typeToThriftTypeMap = new HashMap<>();
+    typeToThriftTypeMap.put(BOOLEAN_TYPE_NAME, "bool");
+    typeToThriftTypeMap.put(TINYINT_TYPE_NAME, "byte");
+    typeToThriftTypeMap.put(SMALLINT_TYPE_NAME, "i16");
+    typeToThriftTypeMap.put(INT_TYPE_NAME, "i32");
+    typeToThriftTypeMap.put(BIGINT_TYPE_NAME, "i64");
+    typeToThriftTypeMap.put(DOUBLE_TYPE_NAME, "double");
+    typeToThriftTypeMap.put(FLOAT_TYPE_NAME, "float");
+    typeToThriftTypeMap.put(LIST_TYPE_NAME, "list");
+    typeToThriftTypeMap.put(MAP_TYPE_NAME, "map");
+    typeToThriftTypeMap.put(STRING_TYPE_NAME, "string");
+    typeToThriftTypeMap.put(BINARY_TYPE_NAME, "binary");
+    // These 4 types are not supported yet.
+    // We should define a complex type date in thrift that contains a single int
+    // member, and DynamicSerDe
+    // should convert it to date type at runtime.
+    typeToThriftTypeMap.put(DATE_TYPE_NAME, "date");
+    typeToThriftTypeMap.put(DATETIME_TYPE_NAME, "datetime");
+    typeToThriftTypeMap.put(TIMESTAMP_TYPE_NAME, "timestamp");
+    typeToThriftTypeMap.put(DECIMAL_TYPE_NAME, "decimal");
+    typeToThriftTypeMap.put(INTERVAL_YEAR_MONTH_TYPE_NAME, INTERVAL_YEAR_MONTH_TYPE_NAME);
+    typeToThriftTypeMap.put(INTERVAL_DAY_TIME_TYPE_NAME, INTERVAL_DAY_TIME_TYPE_NAME);
+  }
+
+  /**
+   * Convert type to ThriftType. We do that by tokenizing the type and convert
+   * each token.
+   */
+  public static String typeToThriftType(String type) {
+    StringBuilder thriftType = new StringBuilder();
+    int last = 0;
+    boolean lastAlphaDigit = Character.isLetterOrDigit(type.charAt(last));
+    for (int i = 1; i <= type.length(); i++) {
+      if (i == type.length()
+          || Character.isLetterOrDigit(type.charAt(i)) != lastAlphaDigit) {
+        String token = type.substring(last, i);
+        last = i;
+        String thriftToken = typeToThriftTypeMap.get(token);
+        thriftType.append(thriftToken == null ? token : thriftToken);
+        lastAlphaDigit = !lastAlphaDigit;
+      }
+    }
+    return thriftType.toString();
+  }
+
+  public static String getListType(String t) {
+    return "array<" + t + ">";
   }
 }

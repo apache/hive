@@ -124,7 +124,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   public void onConfigChange(ConfigChangeEvent tableEvent) throws MetaException {
     String key = tableEvent.getKey();
     if (key.equals(HiveConf.ConfVars.METASTORE_EVENT_DB_LISTENER_TTL.toString())) {
-      // This weirdness of setting it in our hiveConf and then reading back does two things.
+      // This weirdness of setting it in our conf and then reading back does two things.
       // One, it handles the conversion of the TimeUnit.  Two, it keeps the value around for
       // later in case we need it again.
       hiveConf.set(HiveConf.ConfVars.METASTORE_EVENT_DB_LISTENER_TTL.name(),

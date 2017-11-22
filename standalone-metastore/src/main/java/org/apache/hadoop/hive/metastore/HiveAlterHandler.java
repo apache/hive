@@ -67,7 +67,7 @@ import java.util.Map.Entry;
  */
 public class HiveAlterHandler implements AlterHandler {
 
-  protected Configuration hiveConf;
+  protected Configuration conf;
   private static final Logger LOG = LoggerFactory.getLogger(HiveAlterHandler.class
       .getName());
 
@@ -76,13 +76,13 @@ public class HiveAlterHandler implements AlterHandler {
   // is not in the scope of the fix for HIVE-17942.
   @Override
   public Configuration getConf() {
-    return hiveConf;
+    return conf;
   }
 
   @Override
   @SuppressWarnings("nls")
   public void setConf(Configuration conf) {
-    hiveConf = conf;
+    this.conf = conf;
   }
 
   @Override
@@ -266,7 +266,7 @@ public class HiveAlterHandler implements AlterHandler {
           if (dataWasMoved) {
 
             int partsToProcess = parts.size();
-            int partitionBatchSize = MetastoreConf.getIntVar(hiveConf,
+            int partitionBatchSize = MetastoreConf.getIntVar(handler.getConf(),
                 MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
             int batchStart = 0;
             while (partsToProcess > 0) {
@@ -293,7 +293,7 @@ public class HiveAlterHandler implements AlterHandler {
         }
       } else {
         // operations other than table rename
-        if (MetaStoreUtils.requireCalStats(handler.getConf(), null, null, newt, environmentContext) &&
+        if (MetaStoreUtils.requireCalStats(null, null, newt, environmentContext) &&
             !isPartitionedTable) {
           Database db = msdb.getDatabase(newDbName);
           // Update table stats. For partitioned table, we update stats in alterPartition()
@@ -439,7 +439,7 @@ public class HiveAlterHandler implements AlterHandler {
       try {
         msdb.openTransaction();
         oldPart = msdb.getPartition(dbname, name, new_part.getValues());
-        if (MetaStoreUtils.requireCalStats(handler.getConf(), oldPart, new_part, tbl, environmentContext)) {
+        if (MetaStoreUtils.requireCalStats(oldPart, new_part, tbl, environmentContext)) {
           // if stats are same, no need to update
           if (MetaStoreUtils.isFastStatsSame(oldPart, new_part)) {
             MetaStoreUtils.updateBasicState(environmentContext, new_part.getParameters());
@@ -572,7 +572,7 @@ public class HiveAlterHandler implements AlterHandler {
         new_part.getSd().setLocation(oldPart.getSd().getLocation());
       }
 
-      if (MetaStoreUtils.requireCalStats(handler.getConf(), oldPart, new_part, tbl, environmentContext)) {
+      if (MetaStoreUtils.requireCalStats(oldPart, new_part, tbl, environmentContext)) {
         MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
       }
 
@@ -664,7 +664,7 @@ public class HiveAlterHandler implements AlterHandler {
         oldParts.add(oldTmpPart);
         partValsList.add(tmpPart.getValues());
 
-        if (MetaStoreUtils.requireCalStats(handler.getConf(), oldTmpPart, tmpPart, tbl, environmentContext)) {
+        if (MetaStoreUtils.requireCalStats(oldTmpPart, tmpPart, tbl, environmentContext)) {
           // Check if stats are same, no need to update
           if (MetaStoreUtils.isFastStatsSame(oldTmpPart, tmpPart)) {
             MetaStoreUtils.updateBasicState(environmentContext, tmpPart.getParameters());

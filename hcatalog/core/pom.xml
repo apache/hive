@@ -69,7 +69,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
+      <artifactId>hive-standalone-metastore</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>
       <scope>test</scope>

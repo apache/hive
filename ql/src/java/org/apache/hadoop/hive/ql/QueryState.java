@@ -138,8 +138,8 @@ public class QueryState {
 
     /**
      * The source HiveConf object used to create the QueryState. If runAsync is false, and the
-     * confOverLay is empty then we will reuse the hiveConf object as a backing datastore for the
-     * QueryState. We will create a clone of the hiveConf object otherwise.
+     * confOverLay is empty then we will reuse the conf object as a backing datastore for the
+     * QueryState. We will create a clone of the conf object otherwise.
      * @param hiveConf The source HiveConf
      * @return The builder
      */
@@ -153,7 +153,7 @@ public class QueryState {
      * - runAsync false
      * - confOverlay null
      * - generateNewQueryId false
-     * - hiveConf null
+     * - conf null
      * @return The generated QueryState object
      */
     public QueryState build() {

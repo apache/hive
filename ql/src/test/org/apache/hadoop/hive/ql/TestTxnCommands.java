@@ -95,7 +95,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Path bucket = AcidUtils.createBucketFile(new Path(new Path(getWarehouseDir(), table.toString().toLowerCase()), AcidUtils.deltaSubdir(txnId, txnId, stmtId)), bucketNum);
     FileOutputStream delta = new FileOutputStream(testName.getMethodName() + "_" + bucket.getParent().getName() + "_" +  bucket.getName());
 //    try {
-//      FileDump.printJsonData(hiveConf, bucket.toString(), delta);
+//      FileDump.printJsonData(conf, bucket.toString(), delta);
 //    }
 //    catch(FileNotFoundException ex) {
       ;//this happens if you change BUCKET_COUNT
@@ -350,7 +350,6 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 1, TimeUnit.SECONDS);
     // Have to reset the conf when we change it so that the change takes affect
     houseKeeperService.setConf(hiveConf);
-    //hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILHEARTBEATER, true);
     runStatementOnDriver("start transaction");
     runStatementOnDriver("select count(*) from " + Table.ACIDTBL + " where a = 17");
     pause(750);
