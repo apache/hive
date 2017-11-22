@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
@@ -142,9 +143,14 @@ public class AbstractOperatorDesc implements OperatorDesc {
   }
 
   @Explain(displayName = "columnExprMap", jsonOnly = true)
-  public Map<String, ExprNodeDesc> getColumnExprMapForExplain() {
-    return this.colExprMap;
+  public Map<String, String> getColumnExprMapForExplain() {
+    Map<String, String> colExprMapForExplain = new HashMap<>();
+    for(String col:this.colExprMap.keySet()) {
+      colExprMapForExplain.put(col, this.colExprMap.get(col).toString());
+    }
+    return colExprMapForExplain;
   }
+
   @Override
   public Map<String, ExprNodeDesc> getColumnExprMap() {
     return this.colExprMap;

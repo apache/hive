@@ -380,14 +380,14 @@ public class JoinDesc extends AbstractOperatorDesc {
 
   @Override
   @Explain(displayName = "columnExprMap", jsonOnly = true)
-  public Map<String, ExprNodeDesc> getColumnExprMapForExplain() {
+  public Map<String, String> getColumnExprMapForExplain() {
     if(this.reversedExprs == null) {
-      return this.colExprMap;
+      return super.getColumnExprMapForExplain();
     }
-    Map<String, ExprNodeDesc> explainColMap = new HashMap<>();
+    Map<String, String> explainColMap = new HashMap<>();
     for(String col:this.colExprMap.keySet()){
-      String taggedCol = this.reversedExprs.get(col) + " " + col;
-      explainColMap.put(taggedCol, this.colExprMap.get(col));
+      String taggedCol = this.reversedExprs.get(col) + ":" + this.colExprMap.get(col);
+      explainColMap.put(col, taggedCol);
     }
     return explainColMap;
   }
