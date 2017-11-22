@@ -283,7 +283,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     static final Logger auditLog = LoggerFactory.getLogger(
         HiveMetaStore.class.getName() + ".audit");
-    
+
     private static void logAuditEvent(String cmd) {
       if (cmd == null) {
         return;
@@ -4327,6 +4327,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (org.apache.commons.lang.StringUtils.isNotEmpty(newLocation)) {
           Path tblPath = wh.getDnsPath(new Path(newLocation));
           newTable.getSd().setLocation(tblPath.toString());
+          // Also update storage description parameters
+          if (newTable.getSd().getSerdeInfo().getParameters().containsKey("path")) {
+            newTable.getSd().getSerdeInfo().getParameters().put("path", tblPath.toString());
+          }
         }
       }
 
@@ -6810,7 +6814,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           newStatsMap.put(partName, csNew);
         }
-        
+
         Map<String, ColumnStatistics> oldStatsMap = new HashMap<>();
         Map<String, Partition> mapToPart = new HashMap<>();
         if (request.isSetNeedMerge() && request.isNeedMerge()) {
