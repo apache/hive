@@ -261,10 +261,10 @@ partitionedTableFunction
 @init { gParent.pushMsg("ptf clause", state); }
 @after { gParent.popMsg(state); } 
    :
-   name=Identifier LPAREN KW_ON 
+   name=identifier LPAREN KW_ON
    ((partitionTableFunctionSource) => (ptfsrc=partitionTableFunctionSource spec=partitioningSpec?))
    ((Identifier LPAREN expression RPAREN ) => Identifier LPAREN expression RPAREN ( COMMA Identifier LPAREN expression RPAREN)*)?
-   ((RPAREN) => (RPAREN)) ((Identifier) => alias=Identifier)?
+   ((RPAREN) => (RPAREN)) ((Identifier) => alias=identifier)?
    ->   ^(TOK_PTBLFUNCTION $name $alias? $ptfsrc $spec? expression*)
    ; 
 
