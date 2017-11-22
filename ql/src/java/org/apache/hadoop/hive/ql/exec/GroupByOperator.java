@@ -1098,26 +1098,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
         if (firstRow && GroupByOperator.shouldEmitSummaryRow(conf)) {
           firstRow = false;
 
-          // There is no grouping key - simulate a null row
-          // This is based on the assumption that a null row is ignored by
-          // aggregation functions
-          for (int ai = 0; ai < aggregations.length; ai++) {
-
-            // o is set to NULL in order to distinguish no rows at all
-            Object[] o;
-            if (aggregationParameterFields[ai].length > 0) {
-              o = new Object[aggregationParameterFields[ai].length];
-            } else {
-              o = null;
-            }
-
-            // Calculate the parameters
-            for (int pi = 0; pi < aggregationParameterFields[ai].length; pi++) {
-              o[pi] = null;
-            }
-            aggregationEvaluators[ai].aggregate(aggregations[ai], o);
-          }
-
           Object[] keys=new Object[outputKeyLength];
           int pos = conf.getGroupingSetPosition();
           if (pos >= 0 && pos < outputKeyLength) {
