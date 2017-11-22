@@ -16,7 +16,7 @@
 
 # Override these to match Apache Hadoop's requirements
 
-personality_plugins "maven,asflicense,author,checkstyle,findbugs,javac,compile,javadoc,whitespace,xml"
+personality_plugins "maven,asflicense,author,checkstyle,findbugs,javac,compile,javadoc,whitespace,xml,jira"
 
 ## @description  Globals specific to this personality
 ## @audience     private

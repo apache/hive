@@ -78,6 +78,10 @@ cd $workingDir/
     echo "Unknown repository type '${repositoryType}'"
     exit 1
   fi
+  rm -rf ../yetus
+  mkdir ../yetus
+  cp -R . ../yetus
+  mkdir $logDir/yetus
   patchCommandPath=$workingDir/scratch/smart-apply-patch.sh
   patchFilePath=$workingDir/scratch/build.patch
   if [[ -f $patchFilePath ]]

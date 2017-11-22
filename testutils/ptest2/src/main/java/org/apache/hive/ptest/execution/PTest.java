@@ -158,6 +158,8 @@ public class PTest {
     mPhases = Lists.newArrayList();
     mPhases.add(new TestCheckPhase(mHostExecutors, localCommandFactory, templateDefaults, patchFile, logger, mAddedTests));
     mPhases.add(new PrepPhase(mHostExecutors, localCommandFactory, templateDefaults, scratchDir, patchFile, logger));
+    mPhases.add(new YetusPhase(configuration, mHostExecutors, localCommandFactory, templateDefaults,
+        mExecutionContext.getLocalWorkingDirectory(), scratchDir, logger, logDir, patchFile));
     mPhases.add(new ExecutionPhase(mHostExecutors, mExecutionContext, hostExecutorBuilder, localCommandFactory, templateDefaults,
         succeededLogDir, failedLogDir, testParser.parse(), mExecutedTests, mFailedTests, logger));
     mPhases.add(new ReportingPhase(mHostExecutors, localCommandFactory, templateDefaults, logger));
