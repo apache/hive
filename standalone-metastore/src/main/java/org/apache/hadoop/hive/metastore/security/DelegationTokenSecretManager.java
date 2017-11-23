@@ -93,7 +93,13 @@ public class DelegationTokenSecretManager
   public synchronized long renewDelegationToken(String tokenStrForm) throws IOException {
     Token<DelegationTokenIdentifier> t= new Token<>();
     t.decodeFromUrlString(tokenStrForm);
-    String user = UserGroupInformation.getCurrentUser().getUserName();
+    //when a token is created the renewer of the token is stored
+    //as shortName in AbstractDelegationTokenIdentifier.setRenewer()
+    //this seems like an inconsistency because while cancelling the token
+    //it uses the shortname to compare the renewer while it does not use
+    //shortname during token renewal. Use getShortUserName() until its fixed
+    //in HADOOP-15068
+    String user = UserGroupInformation.getCurrentUser().getShortUserName();
     return renewToken(t, user);
   }
 
