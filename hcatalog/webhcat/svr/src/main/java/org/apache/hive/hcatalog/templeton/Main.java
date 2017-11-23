@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
 import org.apache.hadoop.security.authentication.server.PseudoAuthenticationHandler;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.eclipse.jetty.rewrite.handler.RedirectPatternRule;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
@@ -176,7 +177,8 @@ public class Main {
 
     //Authenticate using keytab
     if (UserGroupInformation.isSecurityEnabled()) {
-      UserGroupInformation.loginUserFromKeytab(conf.kerberosPrincipal(),
+      String serverPrincipal = SecurityUtil.getServerPrincipal(conf.kerberosPrincipal(), "0.0.0.0");
+      UserGroupInformation.loginUserFromKeytab(serverPrincipal,
         conf.kerberosKeytab());
     }
 
@@ -252,7 +254,7 @@ public class Main {
 
   // Configure the AuthFilter with the Kerberos params iff security
   // is enabled.
-  public FilterHolder makeAuthFilter() {
+  public FilterHolder makeAuthFilter() throws IOException {
     FilterHolder authFilter = new FilterHolder(AuthFilter.class);
     UserNameHandler.allowAnonymous(authFilter);
     if (UserGroupInformation.isSecurityEnabled()) {
@@ -260,8 +262,9 @@ public class Main {
       authFilter.setInitParameter("dfs.web.authentication.signature.secret",
         conf.kerberosSecret());
       //https://svn.apache.org/repos/asf/hadoop/common/branches/branch-1.2/src/packages/templates/conf/hdfs-site.xml
+      String serverPrincipal = SecurityUtil.getServerPrincipal(conf.kerberosPrincipal(), "0.0.0.0");
       authFilter.setInitParameter("dfs.web.authentication.kerberos.principal",
-        conf.kerberosPrincipal());
+        serverPrincipal);
       //http://https://svn.apache.org/repos/asf/hadoop/common/branches/branch-1.2/src/packages/templates/conf/hdfs-site.xml
       authFilter.setInitParameter("dfs.web.authentication.kerberos.keytab",
         conf.kerberosKeytab());
