@@ -175,6 +175,22 @@ public class TestJdbcWithMiniKdc {
   }
 
   @Test
+  public void testRenewDelegationToken() throws Exception {
+    UserGroupInformation currentUGI = miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_SUPER_USER);
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL());
+    String currentUser = currentUGI.getUserName();
+    // retrieve token and store in the cache
+    String token = ((HiveConnection) hs2Conn)
+        .getDelegationToken(MiniHiveKdc.HIVE_TEST_USER_1,
+            miniHiveKdc.getFullyQualifiedServicePrincipal(MiniHiveKdc.HIVE_TEST_SUPER_USER));
+    assertTrue(token != null && !token.isEmpty());
+
+    ((HiveConnection) hs2Conn).renewDelegationToken(token);
+
+    hs2Conn.close();
+  }
+
+  @Test
   public void testCancelRenewTokenFlow() throws Exception {
     miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_SUPER_USER);
     hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL());
