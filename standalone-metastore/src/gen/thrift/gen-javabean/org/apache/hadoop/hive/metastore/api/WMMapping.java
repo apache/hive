@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField RESOURCE_PLAN_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("resourcePlanName", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField ENTITY_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("entityType", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField ENTITY_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("entityName", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField POOL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("poolName", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField POOL_PATH_FIELD_DESC = new org.apache.thrift.protocol.TField("poolPath", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField ORDERING_FIELD_DESC = new org.apache.thrift.protocol.TField("ordering", org.apache.thrift.protocol.TType.I32, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
   private String resourcePlanName; // required
   private String entityType; // required
   private String entityName; // required
-  private String poolName; // optional
+  private String poolPath; // optional
   private int ordering; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
     RESOURCE_PLAN_NAME((short)1, "resourcePlanName"),
     ENTITY_TYPE((short)2, "entityType"),
     ENTITY_NAME((short)3, "entityName"),
-    POOL_NAME((short)4, "poolName"),
+    POOL_PATH((short)4, "poolPath"),
     ORDERING((short)5, "ordering");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -83,8 +83,8 @@ import org.slf4j.LoggerFactory;
           return ENTITY_TYPE;
         case 3: // ENTITY_NAME
           return ENTITY_NAME;
-        case 4: // POOL_NAME
-          return POOL_NAME;
+        case 4: // POOL_PATH
+          return POOL_PATH;
         case 5: // ORDERING
           return ORDERING;
         default:
@@ -129,7 +129,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __ORDERING_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.POOL_NAME,_Fields.ORDERING};
+  private static final _Fields optionals[] = {_Fields.POOL_PATH,_Fields.ORDERING};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -139,7 +139,7 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.ENTITY_NAME, new org.apache.thrift.meta_data.FieldMetaData("entityName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.POOL_NAME, new org.apache.thrift.meta_data.FieldMetaData("poolName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.POOL_PATH, new org.apache.thrift.meta_data.FieldMetaData("poolPath", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.ORDERING, new org.apache.thrift.meta_data.FieldMetaData("ordering", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
@@ -175,8 +175,8 @@ import org.slf4j.LoggerFactory;
     if (other.isSetEntityName()) {
       this.entityName = other.entityName;
     }
-    if (other.isSetPoolName()) {
-      this.poolName = other.poolName;
+    if (other.isSetPoolPath()) {
+      this.poolPath = other.poolPath;
     }
     this.ordering = other.ordering;
   }
@@ -190,7 +190,7 @@ import org.slf4j.LoggerFactory;
     this.resourcePlanName = null;
     this.entityType = null;
     this.entityName = null;
-    this.poolName = null;
+    this.poolPath = null;
     setOrderingIsSet(false);
     this.ordering = 0;
   }
@@ -264,26 +264,26 @@ import org.slf4j.LoggerFactory;
     }
   }
 
-  public String getPoolName() {
-    return this.poolName;
+  public String getPoolPath() {
+    return this.poolPath;
   }
 
-  public void setPoolName(String poolName) {
-    this.poolName = poolName;
+  public void setPoolPath(String poolPath) {
+    this.poolPath = poolPath;
   }
 
-  public void unsetPoolName() {
-    this.poolName = null;
+  public void unsetPoolPath() {
+    this.poolPath = null;
   }
 
-  /** Returns true if field poolName is set (has been assigned a value) and false otherwise */
-  public boolean isSetPoolName() {
-    return this.poolName != null;
+  /** Returns true if field poolPath is set (has been assigned a value) and false otherwise */
+  public boolean isSetPoolPath() {
+    return this.poolPath != null;
   }
 
-  public void setPoolNameIsSet(boolean value) {
+  public void setPoolPathIsSet(boolean value) {
     if (!value) {
-      this.poolName = null;
+      this.poolPath = null;
     }
   }
 
@@ -335,11 +335,11 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case POOL_NAME:
+    case POOL_PATH:
       if (value == null) {
-        unsetPoolName();
+        unsetPoolPath();
       } else {
-        setPoolName((String)value);
+        setPoolPath((String)value);
       }
       break;
 
@@ -365,8 +365,8 @@ import org.slf4j.LoggerFactory;
     case ENTITY_NAME:
       return getEntityName();
 
-    case POOL_NAME:
-      return getPoolName();
+    case POOL_PATH:
+      return getPoolPath();
 
     case ORDERING:
       return getOrdering();
@@ -388,8 +388,8 @@ import org.slf4j.LoggerFactory;
       return isSetEntityType();
     case ENTITY_NAME:
       return isSetEntityName();
-    case POOL_NAME:
-      return isSetPoolName();
+    case POOL_PATH:
+      return isSetPoolPath();
     case ORDERING:
       return isSetOrdering();
     }
@@ -436,12 +436,12 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_poolName = true && this.isSetPoolName();
-    boolean that_present_poolName = true && that.isSetPoolName();
-    if (this_present_poolName || that_present_poolName) {
-      if (!(this_present_poolName && that_present_poolName))
+    boolean this_present_poolPath = true && this.isSetPoolPath();
+    boolean that_present_poolPath = true && that.isSetPoolPath();
+    if (this_present_poolPath || that_present_poolPath) {
+      if (!(this_present_poolPath && that_present_poolPath))
         return false;
-      if (!this.poolName.equals(that.poolName))
+      if (!this.poolPath.equals(that.poolPath))
         return false;
     }
 
@@ -476,10 +476,10 @@ import org.slf4j.LoggerFactory;
     if (present_entityName)
       list.add(entityName);
 
-    boolean present_poolName = true && (isSetPoolName());
-    list.add(present_poolName);
-    if (present_poolName)
-      list.add(poolName);
+    boolean present_poolPath = true && (isSetPoolPath());
+    list.add(present_poolPath);
+    if (present_poolPath)
+      list.add(poolPath);
 
     boolean present_ordering = true && (isSetOrdering());
     list.add(present_ordering);
@@ -527,12 +527,12 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetPoolName()).compareTo(other.isSetPoolName());
+    lastComparison = Boolean.valueOf(isSetPoolPath()).compareTo(other.isSetPoolPath());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetPoolName()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.poolName, other.poolName);
+    if (isSetPoolPath()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.poolPath, other.poolPath);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -590,13 +590,13 @@ import org.slf4j.LoggerFactory;
       sb.append(this.entityName);
     }
     first = false;
-    if (isSetPoolName()) {
+    if (isSetPoolPath()) {
       if (!first) sb.append(", ");
-      sb.append("poolName:");
-      if (this.poolName == null) {
+      sb.append("poolPath:");
+      if (this.poolPath == null) {
         sb.append("null");
       } else {
-        sb.append(this.poolName);
+        sb.append(this.poolPath);
       }
       first = false;
     }
@@ -687,10 +687,10 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // POOL_NAME
+          case 4: // POOL_PATH
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.poolName = iprot.readString();
-              struct.setPoolNameIsSet(true);
+              struct.poolPath = iprot.readString();
+              struct.setPoolPathIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -731,10 +731,10 @@ import org.slf4j.LoggerFactory;
         oprot.writeString(struct.entityName);
         oprot.writeFieldEnd();
       }
-      if (struct.poolName != null) {
-        if (struct.isSetPoolName()) {
-          oprot.writeFieldBegin(POOL_NAME_FIELD_DESC);
-          oprot.writeString(struct.poolName);
+      if (struct.poolPath != null) {
+        if (struct.isSetPoolPath()) {
+          oprot.writeFieldBegin(POOL_PATH_FIELD_DESC);
+          oprot.writeString(struct.poolPath);
           oprot.writeFieldEnd();
         }
       }
@@ -764,15 +764,15 @@ import org.slf4j.LoggerFactory;
       oprot.writeString(struct.entityType);
       oprot.writeString(struct.entityName);
       BitSet optionals = new BitSet();
-      if (struct.isSetPoolName()) {
+      if (struct.isSetPoolPath()) {
         optionals.set(0);
       }
       if (struct.isSetOrdering()) {
         optionals.set(1);
       }
       oprot.writeBitSet(optionals, 2);
-      if (struct.isSetPoolName()) {
-        oprot.writeString(struct.poolName);
+      if (struct.isSetPoolPath()) {
+        oprot.writeString(struct.poolPath);
       }
       if (struct.isSetOrdering()) {
         oprot.writeI32(struct.ordering);
@@ -790,8 +790,8 @@ import org.slf4j.LoggerFactory;
       struct.setEntityNameIsSet(true);
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
-        struct.poolName = iprot.readString();
-        struct.setPoolNameIsSet(true);
+        struct.poolPath = iprot.readString();
+        struct.setPoolPathIsSet(true);
       }
       if (incoming.get(1)) {
         struct.ordering = iprot.readI32();

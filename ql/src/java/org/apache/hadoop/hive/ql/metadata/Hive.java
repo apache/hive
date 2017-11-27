@@ -134,6 +134,8 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
@@ -4808,6 +4810,57 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public void dropWMTrigger(String rpName, String triggerName) throws HiveException {
     try {
       getMSC().dropWMTrigger(rpName, triggerName);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void createWMPool(WMPool pool) throws HiveException {
+    try {
+      getMSC().createWMPool(pool);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void alterWMPool(WMPool pool, String poolPath) throws HiveException {
+    try {
+      getMSC().alterWMPool(pool, poolPath);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void dropWMPool(String resourcePlanName, String poolPath) throws HiveException {
+    try {
+      getMSC().dropWMPool(resourcePlanName, poolPath);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void createOrUpdateWMMapping(WMMapping mapping, boolean isUpdate)
+      throws HiveException {
+    try {
+      getMSC().createOrUpdateWMMapping(mapping, isUpdate);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void dropWMMapping(WMMapping mapping) throws HiveException {
+    try {
+      getMSC().dropWMMapping(mapping);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+
+  public void createOrDropTriggerToPoolMapping(String resourcePlanName, String triggerName,
+      String poolPath, boolean shouldDrop) throws HiveException {
+    try {
+      getMSC().createOrDropTriggerToPoolMapping(resourcePlanName, triggerName, poolPath, shouldDrop);
     } catch (Exception e) {
       throw new HiveException(e);
     }

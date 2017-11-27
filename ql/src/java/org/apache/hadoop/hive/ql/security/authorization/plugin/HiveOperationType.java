@@ -141,6 +141,12 @@ public enum HiveOperationType {
   CREATE_TRIGGER,
   ALTER_TRIGGER,
   DROP_TRIGGER,
+  CREATE_POOL,
+  ALTER_POOL,
+  DROP_POOL,
+  CREATE_MAPPING,
+  ALTER_MAPPING,
+  DROP_MAPPING,
 
   // ==== Hive command operation types starts here ==== //
   SET,

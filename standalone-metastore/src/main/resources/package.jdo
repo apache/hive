@@ -1123,19 +1123,17 @@
       <field name="path">
         <column name="PATH" length="1024" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
-      <field name="parentPool">
-        <column name="PARENT_POOL_ID" jdbc-type="integer" allows-null="true" target="POOL_ID"/>
-      </field>
       <field name="allocFraction">
         <column name="ALLOC_FRACTION" jdbc-type="double" allows-null="true"/>
-      </field>
-      <field name="schedulingPolicy">
-        <column name="SCHEDULING_POLICY" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="queryParallelism">
         <column name="QUERY_PARALLELISM" jdbc-type="integer" allows-null="true"/>
       </field>
+      <field name="schedulingPolicy">
+        <column name="SCHEDULING_POLICY" jdbc-type="string" allows-null="true"/>
+      </field>
       <field name="triggers" table="WM_POOL_TO_TRIGGER">
+        <collection element-type="MWMTrigger" />
         <join>
           <column name="POOL_ID" />
         </join>

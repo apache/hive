@@ -21,6 +21,13 @@ package org.apache.hadoop.hive.ql.exec;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
+import java.util.concurrent.ExecutionException;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
@@ -48,7 +55,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -104,7 +110,6 @@ import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
@@ -177,6 +182,7 @@ import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
+import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMMappingDesc;
 import org.apache.hadoop.hive.ql.plan.CreateResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
@@ -190,6 +196,8 @@ import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
+import org.apache.hadoop.hive.ql.plan.DropWMMappingDesc;
+import org.apache.hadoop.hive.ql.plan.DropWMPoolDesc;
 import org.apache.hadoop.hive.ql.plan.DropWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.GrantDesc;
@@ -232,6 +240,8 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
+import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMPoolDesc;
+import org.apache.hadoop.hive.ql.plan.CreateOrDropTriggerToPoolMappingDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationTranslator;
@@ -274,11 +284,6 @@ import org.apache.hive.common.util.RetryUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.ST;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.ListenableFuture;
 
 /**
  * DDLTask implementation.
@@ -648,10 +653,29 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return dropWMTrigger(db, work.getDropWMTriggerDesc());
       }
 
+      if (work.getWmPoolDesc() != null) {
+        return createOrAlterWMPool(db, work.getWmPoolDesc());
+      }
+
+      if (work.getDropWMPoolDesc() != null) {
+        return dropWMPool(db, work.getDropWMPoolDesc());
+      }
+
+      if (work.getWmMappingDesc() != null) {
+        return createOrAlterWMMapping(db, work.getWmMappingDesc());
+      }
+
+      if (work.getDropWMMappingDesc() != null) {
+        return dropWMMapping(db, work.getDropWMMappingDesc());
+      }
+
+      if (work.getTriggerToPoolMappingDesc() != null) {
+        return createOrDropTriggerToPoolMapping(db, work.getTriggerToPoolMappingDesc());
+      }
+
       if (work.getAlterMaterializedViewDesc() != null) {
         return alterMaterializedView(db, work.getAlterMaterializedViewDesc());
       }
-
     } catch (Throwable e) {
       failed(e);
       return 1;
@@ -662,12 +686,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int createResourcePlan(Hive db, CreateResourcePlanDesc createResourcePlanDesc)
       throws HiveException {
-    WMResourcePlan resourcePlan = new WMResourcePlan();
-    resourcePlan.setName(createResourcePlanDesc.getName());
-    if (createResourcePlanDesc.getQueryParallelism() != null) {
-      resourcePlan.setQueryParallelism(createResourcePlanDesc.getQueryParallelism());
-    }
-    db.createResourcePlan(resourcePlan);
+    db.createResourcePlan(createResourcePlanDesc.getResourcePlan());
     return 0;
   }
 
@@ -694,42 +713,29 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int alterResourcePlan(Hive db, AlterResourcePlanDesc desc) throws HiveException {
     if (desc.shouldValidate()) {
-      return db.validateResourcePlan(desc.getRpName()) ? 0 : 1;
+      return db.validateResourcePlan(desc.getResourcePlanName()) ? 0 : 1;
     }
 
-    WMResourcePlan resourcePlan = new WMResourcePlan();
-    if (desc.getNewName() != null) {
-      resourcePlan.setName(desc.getNewName());
-    } else {
-      resourcePlan.setName(desc.getRpName());
-    }
-
-    if (desc.getQueryParallelism() != null) {
-      resourcePlan.setQueryParallelism(desc.getQueryParallelism());
-    }
-
-    if (desc.getDefaultPoolPath() != null) {
-      resourcePlan.setDefaultPoolPath(desc.getDefaultPoolPath());
-    }
-
+    WMResourcePlan resourcePlan = desc.getResourcePlan();
     final WorkloadManager wm = WorkloadManager.getInstance();
     final TezSessionPoolManager pm = TezSessionPoolManager.getInstance();
     boolean isActivate = false, isInTest = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
-    if (desc.getStatus() != null) {
-      resourcePlan.setStatus(desc.getStatus());
-      isActivate = desc.getStatus() == WMResourcePlanStatus.ACTIVE;
+    if (resourcePlan.getStatus() != null) {
+      resourcePlan.setStatus(resourcePlan.getStatus());
+      isActivate = resourcePlan.getStatus() == WMResourcePlanStatus.ACTIVE;
     }
 
     WMFullResourcePlan appliedRp = db.alterResourcePlan(
-      desc.getRpName(), resourcePlan, desc.isEnableActivate());
+      desc.getResourcePlanName(), resourcePlan, desc.isEnableActivate());
     if (!isActivate || (wm == null && isInTest) || (pm == null && isInTest)) {
       return 0;
     }
+
     if (appliedRp == null) {
       throw new HiveException("Cannot get a resource plan to apply");
       // TODO: shut down HS2?
     }
-    final String name = (desc.getNewName() != null) ? desc.getNewName() : desc.getRpName();
+    final String name = resourcePlan.getName();
     LOG.info("Activating a new resource plan " + name + ": " + appliedRp);
     if (wm != null) {
       // Note: as per our current constraints, the behavior of two parallel activates is
@@ -765,23 +771,48 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int createWMTrigger(Hive db, CreateWMTriggerDesc desc) throws HiveException {
-    WMTrigger trigger = new WMTrigger(desc.getRpName(), desc.getTriggerName());
-    trigger.setTriggerExpression(desc.getTriggerExpression());
-    trigger.setActionExpression(desc.getActionExpression());
-    db.createWMTrigger(trigger);
+    db.createWMTrigger(desc.getTrigger());
     return 0;
   }
 
   private int alterWMTrigger(Hive db, AlterWMTriggerDesc desc) throws HiveException {
-    WMTrigger trigger = new WMTrigger(desc.getRpName(), desc.getTriggerName());
-    trigger.setTriggerExpression(desc.getTriggerExpression());
-    trigger.setActionExpression(desc.getActionExpression());
-    db.alterWMTrigger(trigger);
+    db.alterWMTrigger(desc.getTrigger());
     return 0;
   }
 
   private int dropWMTrigger(Hive db, DropWMTriggerDesc desc) throws HiveException {
     db.dropWMTrigger(desc.getRpName(), desc.getTriggerName());
+    return 0;
+  }
+
+  private int createOrAlterWMPool(Hive db, CreateOrAlterWMPoolDesc desc) throws HiveException {
+    if (desc.isUpdate()) {
+      db.alterWMPool(desc.getPool(), desc.getPoolPath());
+    } else {
+      db.createWMPool(desc.getPool());
+    }
+    return 0;
+  }
+
+  private int dropWMPool(Hive db, DropWMPoolDesc desc) throws HiveException {
+    db.dropWMPool(desc.getResourcePlanName(), desc.getPoolPath());
+    return 0;
+  }
+
+  private int createOrAlterWMMapping(Hive db, CreateOrAlterWMMappingDesc desc) throws HiveException {
+    db.createOrUpdateWMMapping(desc.getMapping(), desc.isUpdate());
+    return 0;
+  }
+
+  private int dropWMMapping(Hive db, DropWMMappingDesc desc) throws HiveException {
+    db.dropWMMapping(desc.getMapping());
+    return 0;
+  }
+
+  private int createOrDropTriggerToPoolMapping(Hive db, CreateOrDropTriggerToPoolMappingDesc desc)
+      throws HiveException {
+    db.createOrDropTriggerToPoolMapping(desc.getResourcePlanName(), desc.getTriggerName(),
+        desc.getPoolPath(), desc.shouldDrop());
     return 0;
   }
 

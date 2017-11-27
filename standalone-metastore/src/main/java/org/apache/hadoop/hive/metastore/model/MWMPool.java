@@ -25,14 +25,13 @@ public class MWMPool {
   private String path;
   private Double allocFraction;
   private Integer queryParallelism;
-  private Set<MWMTrigger> triggers;
   private String schedulingPolicy;
-  private MWMPool parentPool;
+  private Set<MWMTrigger> triggers;
 
   public MWMPool() {}
 
-  public MWMPool(MWMResourcePlan resourcePlan, String path, MWMPool parentPool,
-      Double allocFraction, Integer queryParallelism, String schedulingPolicy) {
+  public MWMPool(MWMResourcePlan resourcePlan, String path, Double allocFraction,
+      Integer queryParallelism, String schedulingPolicy) {
     this.resourcePlan = resourcePlan;
     this.path = path;
     this.allocFraction = allocFraction;
@@ -72,14 +71,6 @@ public class MWMPool {
     this.queryParallelism = queryParallelism;
   }
 
-  public Set<MWMTrigger> getTriggers() {
-    return triggers;
-  }
-
-  public void setTriggers(Set<MWMTrigger> triggers) {
-    this.triggers = triggers;
-  }
-
   public String getSchedulingPolicy() {
     return schedulingPolicy;
   }
@@ -88,11 +79,11 @@ public class MWMPool {
     this.schedulingPolicy = schedulingPolicy;
   }
 
-  public MWMPool getParentPool() {
-    return parentPool;
+  public Set<MWMTrigger> getTriggers() {
+    return triggers;
   }
 
-  public void setParentPool(MWMPool parentPool) {
-    this.parentPool = parentPool;
+  public void setTriggers(Set<MWMTrigger> triggers) {
+    this.triggers = triggers;
   }
 }

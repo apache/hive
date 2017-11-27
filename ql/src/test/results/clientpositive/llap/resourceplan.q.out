@@ -2211,6 +2211,154 @@ ON
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_TRIGGERS
 POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `WM_POOLS` (
+  `RP_NAME` string,
+  `PATH` string,
+  `ALLOC_FRACTION` double,
+  `QUERY_PARALLELISM` int,
+  `SCHEDULING_POLICY` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  WM_RESOURCEPLAN.NAME,
+  WM_POOL.PATH,
+  WM_POOL.ALLOC_FRACTION,
+  WM_POOL.QUERY_PARALLELISM,
+  WM_POOL.SCHEDULING_POLICY
+FROM
+  WM_POOL
+JOIN
+  WM_RESOURCEPLAN
+ON
+  WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@WM_POOLS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `WM_POOLS` (
+  `RP_NAME` string,
+  `PATH` string,
+  `ALLOC_FRACTION` double,
+  `QUERY_PARALLELISM` int,
+  `SCHEDULING_POLICY` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  WM_RESOURCEPLAN.NAME,
+  WM_POOL.PATH,
+  WM_POOL.ALLOC_FRACTION,
+  WM_POOL.QUERY_PARALLELISM,
+  WM_POOL.SCHEDULING_POLICY
+FROM
+  WM_POOL
+JOIN
+  WM_RESOURCEPLAN
+ON
+  WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@WM_POOLS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
+  `RP_NAME` string,
+  `POOL_PATH` string,
+  `TRIGGER_NAME` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  WM_RESOURCEPLAN.NAME RP_NAME,
+  WM_POOL.PATH POOL_PATH,
+  WM_TRIGGER.NAME TRIGGER_NAME
+FROM
+  WM_POOL_TO_TRIGGER
+JOIN WM_POOL ON WM_POOL_TO_TRIGGER.POOL_ID = WM_POOL.POOL_ID
+JOIN WM_TRIGGER ON WM_POOL_TO_TRIGGER.TRIGGER_ID = WM_TRIGGER.TRIGGER_ID
+JOIN WM_RESOURCEPLAN ON WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@WM_POOLS_TO_TRIGGERS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
+  `RP_NAME` string,
+  `POOL_PATH` string,
+  `TRIGGER_NAME` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  WM_RESOURCEPLAN.NAME RP_NAME,
+  WM_POOL.PATH POOL_PATH,
+  WM_TRIGGER.NAME TRIGGER_NAME
+FROM
+  WM_POOL_TO_TRIGGER
+JOIN WM_POOL ON WM_POOL_TO_TRIGGER.POOL_ID = WM_POOL.POOL_ID
+JOIN WM_TRIGGER ON WM_POOL_TO_TRIGGER.TRIGGER_ID = WM_TRIGGER.TRIGGER_ID
+JOIN WM_RESOURCEPLAN ON WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@WM_POOLS_TO_TRIGGERS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `WM_MAPPINGS` (
+  `RP_NAME` string,
+  `ENTITY_TYPE` string,
+  `ENTITY_NAME` string,
+  `POOL_PATH` string,
+  `ORDERING` int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  WM_RESOURCEPLAN.NAME,
+  ENTITY_TYPE,
+  ENTITY_NAME,
+  WM_POOL.PATH,
+  ORDERING
+FROM
+  WM_MAPPING
+JOIN WM_RESOURCEPLAN ON WM_MAPPING.RP_ID = WM_RESOURCEPLAN.RP_ID
+LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@WM_MAPPINGS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `WM_MAPPINGS` (
+  `RP_NAME` string,
+  `ENTITY_TYPE` string,
+  `ENTITY_NAME` string,
+  `POOL_PATH` string,
+  `ORDERING` int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  WM_RESOURCEPLAN.NAME,
+  ENTITY_TYPE,
+  ENTITY_NAME,
+  WM_POOL.PATH,
+  ORDERING
+FROM
+  WM_MAPPING
+JOIN WM_RESOURCEPLAN ON WM_MAPPING.RP_ID = WM_RESOURCEPLAN.RP_ID
+LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@WM_MAPPINGS
+POSTHOOK: Output: database:sys
 PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
 PREHOOK: type: DROPDATABASE
 POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
@@ -3000,9 +3148,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	DISABLED	NULL	default
-PREHOOK: query: CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM 10
+PREHOOK: query: CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=10
 PREHOOK: type: CREATE RESOURCEPLAN
-POSTHOOK: query: CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM 10
+POSTHOOK: query: CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=10
 POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: SHOW RESOURCE PLANS
 PREHOOK: type: SHOW RESOURCEPLAN
@@ -3025,6 +3173,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	DISABLED	NULL	default
 plan_2	DISABLED	10	default
+FAILED: SemanticException Invalid set in create resource plan: TOK_DEFAULT_POOL
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 RENAME TO plan_2
 PREHOOK: type: ALTER RESOURCEPLAN
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. AlreadyExistsException(message:Resource plan name should be unique: )
@@ -3066,9 +3215,9 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_3	DISABLED	20	default
 plan_2	DISABLED	10	default
-PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = 'default'
+PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = default1
 PREHOOK: type: ALTER RESOURCEPLAN
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Portion of expression could not be parsed: and resourcePlan == rp)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find pool: default1)
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -3246,6 +3395,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	ACTIVE	10	default
+PREHOOK: query: CREATE RESOURCE PLAN `table`
+PREHOOK: type: CREATE RESOURCEPLAN
+POSTHOOK: query: CREATE RESOURCE PLAN `table`
+POSTHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: query: ALTER RESOURCE PLAN `table` SET QUERY_PARALLELISM = 1
+PREHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: query: ALTER RESOURCE PLAN `table` SET QUERY_PARALLELISM = 1
+POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+plan_2	ACTIVE	10	default
+table	DISABLED	1	default
 PREHOOK: query: CREATE RESOURCE PLAN plan_1
 PREHOOK: type: CREATE RESOURCEPLAN
 POSTHOOK: query: CREATE RESOURCE PLAN plan_1
@@ -3310,6 +3477,57 @@ plan_1	trigger_2	BYTES_READ > 100	MOVE TO slow_pool
 PREHOOK: query: CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ = 0m DO MOVE TO null_pool
 PREHOOK: type: CREATE TRIGGER
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
+PREHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > 100K DO MOVE TO `table`
+PREHOOK: type: CREATE TRIGGER
+POSTHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > 100K DO MOVE TO `table`
+POSTHOOK: type: CREATE TRIGGER
+PREHOOK: query: CREATE TRIGGER `table`.`trigger` WHEN BYTES_WRITTEN > 100K DO MOVE TO `default`
+PREHOOK: type: CREATE TRIGGER
+POSTHOOK: query: CREATE TRIGGER `table`.`trigger` WHEN BYTES_WRITTEN > 100K DO MOVE TO `default`
+POSTHOOK: type: CREATE TRIGGER
+PREHOOK: query: CREATE TRIGGER `table`.`database` WHEN BYTES_WRITTEN > 1M DO MOVE TO `default`
+PREHOOK: type: CREATE TRIGGER
+POSTHOOK: query: CREATE TRIGGER `table`.`database` WHEN BYTES_WRITTEN > 1M DO MOVE TO `default`
+POSTHOOK: type: CREATE TRIGGER
+PREHOOK: query: CREATE TRIGGER `table`.`trigger1` WHEN ELAPSED_TIME > 10 DO KILL
+PREHOOK: type: CREATE TRIGGER
+POSTHOOK: query: CREATE TRIGGER `table`.`trigger1` WHEN ELAPSED_TIME > 10 DO KILL
+POSTHOOK: type: CREATE TRIGGER
+PREHOOK: query: CREATE TRIGGER `table`.`trigger2` WHEN BYTES_READ > 100 DO KILL
+PREHOOK: type: CREATE TRIGGER
+POSTHOOK: query: CREATE TRIGGER `table`.`trigger2` WHEN BYTES_READ > 100 DO KILL
+POSTHOOK: type: CREATE TRIGGER
+PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_triggers
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_triggers
+#### A masked pattern was here ####
+plan_1	trigger_2	BYTES_READ > 100	MOVE TO slow_pool
+table	table	BYTES_WRITTEN > 100K	MOVE TO table
+table	trigger	BYTES_WRITTEN > 100K	MOVE TO default
+table	database	BYTES_WRITTEN > 1M	MOVE TO default
+table	trigger1	ELAPSED_TIME > 10	KILL
+table	trigger2	BYTES_READ > 100	KILL
+PREHOOK: query: DROP TRIGGER `table`.`database`
+PREHOOK: type: DROP TRIGGER
+POSTHOOK: query: DROP TRIGGER `table`.`database`
+POSTHOOK: type: DROP TRIGGER
+PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_triggers
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_triggers
+#### A masked pattern was here ####
+plan_1	trigger_2	BYTES_READ > 100	MOVE TO slow_pool
+table	table	BYTES_WRITTEN > 100K	MOVE TO table
+table	trigger	BYTES_WRITTEN > 100K	MOVE TO default
+table	trigger1	ELAPSED_TIME > 10	KILL
+table	trigger2	BYTES_READ > 100	KILL
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_1 ENABLE
@@ -3323,6 +3541,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	ACTIVE	10	default
+table	DISABLED	1	default
 plan_1	ENABLED	NULL	default
 PREHOOK: query: DROP TRIGGER plan_1.trigger_2
 PREHOOK: type: DROP TRIGGER
@@ -3343,6 +3562,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	ENABLED	10	default
+table	DISABLED	1	default
 plan_1	ACTIVE	NULL	default
 PREHOOK: query: DROP TRIGGER plan_1.trigger_2
 PREHOOK: type: DROP TRIGGER
@@ -3366,5 +3586,425 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_2	trigger_1	BYTES_READ = 0	MOVE TO null_pool
 plan_1	trigger_2	BYTES_READ > 100	MOVE TO slow_pool
+table	table	BYTES_WRITTEN > 100K	MOVE TO table
+table	trigger	BYTES_WRITTEN > 100K	MOVE TO default
+table	trigger1	ELAPSED_TIME > 10	KILL
+table	trigger2	BYTES_READ > 100	KILL
+plan_2	trigger_1	BYTES_READ = 0	MOVE TO null_pool
+PREHOOK: query: CREATE POOL plan_1.default WITH
+   ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
+PREHOOK: type: CREATE POOL
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
+PREHOOK: query: CREATE POOL plan_2.default WITH
+   ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
+PREHOOK: type: CREATE POOL
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. AlreadyExistsException(message:Pool already exists: )
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+plan_2	default	1.0	4	NULL
+table	default	1.0	4	NULL
+plan_1	default	1.0	4	NULL
+PREHOOK: query: CREATE POOL plan_2.default.c1 WITH
+    ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='priority'
+PREHOOK: type: CREATE POOL
+POSTHOOK: query: CREATE POOL plan_2.default.c1 WITH
+    ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='priority'
+POSTHOOK: type: CREATE POOL
+PREHOOK: query: CREATE POOL plan_2.default.c2 WITH
+    QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.7
+PREHOOK: type: CREATE POOL
+POSTHOOK: query: CREATE POOL plan_2.default.c2 WITH
+    QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.7
+POSTHOOK: type: CREATE POOL
+PREHOOK: query: ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.2
+PREHOOK: type: ALTER POOL
+POSTHOOK: query: ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.2
+POSTHOOK: type: ALTER POOL
+PREHOOK: query: ALTER POOL plan_2.default SET path = def
+PREHOOK: type: ALTER POOL
+POSTHOOK: query: ALTER POOL plan_2.default SET path = def
+POSTHOOK: type: ALTER POOL
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+plan_2	def	1.0	4	NULL
+table	default	1.0	4	NULL
+plan_1	default	1.0	4	NULL
+plan_2	def.c1	0.3	3	priority
+plan_2	def.c2	0.2	2	fair
+PREHOOK: query: DROP POOL plan_2.default
+PREHOOK: type: DROP POOL
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot delete pool: default)
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+plan_2	def	1.0	4	NULL
+table	default	1.0	4	NULL
+plan_1	default	1.0	4	NULL
+plan_2	def.c1	0.3	3	priority
+plan_2	def.c2	0.2	2	fair
+PREHOOK: query: CREATE POOL plan_2.child1.child2 WITH
+    QUERY_PARALLELISM=2, SCHEDULING_POLICY='fcfs', ALLOC_FRACTION=0.8
+PREHOOK: type: CREATE POOL
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Pool path is invalid, the parent does not exist)
+PREHOOK: query: CREATE POOL `table`.`table` WITH
+  SCHEDULING_POLICY='random', ALLOC_FRACTION=0.5, QUERY_PARALLELISM=1
+PREHOOK: type: CREATE POOL
+POSTHOOK: query: CREATE POOL `table`.`table` WITH
+  SCHEDULING_POLICY='random', ALLOC_FRACTION=0.5, QUERY_PARALLELISM=1
+POSTHOOK: type: CREATE POOL
+PREHOOK: query: CREATE POOL `table`.`table`.pool1 WITH
+  SCHEDULING_POLICY='priority', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.9
+PREHOOK: type: CREATE POOL
+POSTHOOK: query: CREATE POOL `table`.`table`.pool1 WITH
+  SCHEDULING_POLICY='priority', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.9
+POSTHOOK: type: CREATE POOL
+PREHOOK: query: CREATE POOL `table`.`table`.pool1.child1 WITH
+  SCHEDULING_POLICY='random', QUERY_PARALLELISM=1, ALLOC_FRACTION=0.3
+PREHOOK: type: CREATE POOL
+POSTHOOK: query: CREATE POOL `table`.`table`.pool1.child1 WITH
+  SCHEDULING_POLICY='random', QUERY_PARALLELISM=1, ALLOC_FRACTION=0.3
+POSTHOOK: type: CREATE POOL
+PREHOOK: query: CREATE POOL `table`.`table`.pool1.child2 WITH
+  SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.7
+PREHOOK: type: CREATE POOL
+POSTHOOK: query: CREATE POOL `table`.`table`.pool1.child2 WITH
+  SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.7
+POSTHOOK: type: CREATE POOL
+PREHOOK: query: ALTER POOL `table`.`table` SET ALLOC_FRACTION=0.0
+PREHOOK: type: ALTER POOL
+POSTHOOK: query: ALTER POOL `table`.`table` SET ALLOC_FRACTION=0.0
+POSTHOOK: type: ALTER POOL
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+plan_2	def	1.0	4	NULL
+table	default	1.0	4	NULL
+plan_1	default	1.0	4	NULL
+plan_2	def.c1	0.3	3	priority
+plan_2	def.c2	0.2	2	fair
+table	table	0.0	1	random
+table	table.pool1	0.9	3	priority
+table	table.pool1.child1	0.3	1	random
+table	table.pool1.child2	0.7	3	fair
+PREHOOK: query: ALTER POOL `table`.`table`.pool1 SET PATH = `table`.pool
+PREHOOK: type: ALTER POOL
+POSTHOOK: query: ALTER POOL `table`.`table`.pool1 SET PATH = `table`.pool
+POSTHOOK: type: ALTER POOL
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+plan_2	def	1.0	4	NULL
+table	default	1.0	4	NULL
+plan_1	default	1.0	4	NULL
+plan_2	def.c1	0.3	3	priority
+plan_2	def.c2	0.2	2	fair
+table	table	0.0	1	random
+table	table.pool	0.9	3	priority
+table	table.pool.child1	0.3	1	random
+table	table.pool.child2	0.7	3	fair
+PREHOOK: query: DROP POOL `table`.`table`
+PREHOOK: type: DROP POOL
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Pool has children cannot drop.)
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+plan_2	def	1.0	4	NULL
+table	default	1.0	4	NULL
+plan_1	default	1.0	4	NULL
+plan_2	def.c1	0.3	3	priority
+plan_2	def.c2	0.2	2	fair
+table	table	0.0	1	random
+table	table.pool	0.9	3	priority
+table	table.pool.child1	0.3	1	random
+table	table.pool.child2	0.7	3	fair
+PREHOOK: query: DROP POOL `table`.default
+PREHOOK: type: DROP POOL
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Cannot drop default pool of a resource plan)
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+plan_2	def	1.0	4	NULL
+table	default	1.0	4	NULL
+plan_1	default	1.0	4	NULL
+plan_2	def.c1	0.3	3	priority
+plan_2	def.c2	0.2	2	fair
+table	table	0.0	1	random
+table	table.pool	0.9	3	priority
+table	table.pool.child1	0.3	1	random
+table	table.pool.child2	0.7	3	fair
+PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+plan_2	DISABLED	10	def
+table	DISABLED	1	default
+plan_1	ACTIVE	NULL	default
+PREHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool
+PREHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool
+POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: DROP POOL `table`.default
+PREHOOK: type: DROP POOL
+POSTHOOK: query: DROP POOL `table`.default
+POSTHOOK: type: DROP POOL
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+plan_2	def	1.0	4	NULL
+plan_1	default	1.0	4	NULL
+plan_2	def.c1	0.3	3	priority
+plan_2	def.c2	0.2	2	fair
+table	table	0.0	1	random
+table	table.pool	0.9	3	priority
+table	table.pool.child1	0.3	1	random
+table	table.pool.child2	0.7	3	fair
+PREHOOK: query: ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
+PREHOOK: type: ALTER POOL
+POSTHOOK: query: ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
+POSTHOOK: type: ALTER POOL
+PREHOOK: query: ALTER POOL plan_2.def.c2 ADD TRIGGER trigger_1
+PREHOOK: type: ALTER POOL
+POSTHOOK: query: ALTER POOL plan_2.def.c2 ADD TRIGGER trigger_1
+POSTHOOK: type: ALTER POOL
+PREHOOK: query: ALTER POOL `table`.`table` ADD TRIGGER `table`
+PREHOOK: type: ALTER POOL
+POSTHOOK: query: ALTER POOL `table`.`table` ADD TRIGGER `table`
+POSTHOOK: type: ALTER POOL
+PREHOOK: query: ALTER POOL `table`.`table`.pool.child1 ADD TRIGGER `table`
+PREHOOK: type: ALTER POOL
+POSTHOOK: query: ALTER POOL `table`.`table`.pool.child1 ADD TRIGGER `table`
+POSTHOOK: type: ALTER POOL
+PREHOOK: query: ALTER POOL `table`.`table`.pool.child1 ADD TRIGGER `trigger1`
+PREHOOK: type: ALTER POOL
+POSTHOOK: query: ALTER POOL `table`.`table`.pool.child1 ADD TRIGGER `trigger1`
+POSTHOOK: type: ALTER POOL
+PREHOOK: query: ALTER POOL `table`.`table`.pool.child2 ADD TRIGGER `trigger1`
+PREHOOK: type: ALTER POOL
+POSTHOOK: query: ALTER POOL `table`.`table`.pool.child2 ADD TRIGGER `trigger1`
+POSTHOOK: type: ALTER POOL
+PREHOOK: query: ALTER POOL `table`.`table`.pool.child2 ADD TRIGGER `trigger2`
+PREHOOK: type: ALTER POOL
+POSTHOOK: query: ALTER POOL `table`.`table`.pool.child2 ADD TRIGGER `trigger2`
+POSTHOOK: type: ALTER POOL
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools_to_triggers
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools_to_triggers
+#### A masked pattern was here ####
+table	table	table
+table	table.pool.child1	table
+table	table.pool.child1	trigger1
+table	table.pool.child2	trigger1
+table	table.pool.child2	trigger2
+plan_2	def.c1	trigger_1
+plan_2	def.c2	trigger_1
+PREHOOK: query: ALTER POOL plan_2.default ADD TRIGGER trigger_1
+PREHOOK: type: ALTER POOL
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find pool: default)
+PREHOOK: query: ALTER POOL plan_2.def ADD TRIGGER trigger_2
+PREHOOK: type: ALTER POOL
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find trigger with name: trigger_2)
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools_to_triggers
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools_to_triggers
+#### A masked pattern was here ####
+table	table	table
+table	table.pool.child1	table
+table	table.pool.child1	trigger1
+table	table.pool.child2	trigger1
+table	table.pool.child2	trigger2
+plan_2	def.c1	trigger_1
+plan_2	def.c2	trigger_1
+PREHOOK: query: ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_1
+PREHOOK: type: ALTER POOL
+POSTHOOK: query: ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_1
+POSTHOOK: type: ALTER POOL
+PREHOOK: query: ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_2
+PREHOOK: type: ALTER POOL
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find trigger with name: trigger_2)
+PREHOOK: query: DROP POOL `table`.`table`.pool.child1
+PREHOOK: type: DROP POOL
+POSTHOOK: query: DROP POOL `table`.`table`.pool.child1
+POSTHOOK: type: DROP POOL
+PREHOOK: query: DROP POOL `table`.`table`.pool.child2
+PREHOOK: type: DROP POOL
+POSTHOOK: query: DROP POOL `table`.`table`.pool.child2
+POSTHOOK: type: DROP POOL
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools_to_triggers
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools_to_triggers
+#### A masked pattern was here ####
+table	table	table
+plan_2	def.c2	trigger_1
+PREHOOK: query: CREATE USER MAPPING "user1" IN plan_2 TO def
+PREHOOK: type: CREATE MAPPING
+POSTHOOK: query: CREATE USER MAPPING "user1" IN plan_2 TO def
+POSTHOOK: type: CREATE MAPPING
+PREHOOK: query: CREATE USER MAPPING 'user2' IN plan_2 TO def WITH ORDER 1
+PREHOOK: type: CREATE MAPPING
+POSTHOOK: query: CREATE USER MAPPING 'user2' IN plan_2 TO def WITH ORDER 1
+POSTHOOK: type: CREATE MAPPING
+PREHOOK: query: CREATE GROUP MAPPING "group1" IN plan_2 TO def.c1
+PREHOOK: type: CREATE MAPPING
+POSTHOOK: query: CREATE GROUP MAPPING "group1" IN plan_2 TO def.c1
+POSTHOOK: type: CREATE MAPPING
+PREHOOK: query: CREATE GROUP MAPPING 'group2' IN plan_2 TO def.c2 WITH ORDER 1
+PREHOOK: type: CREATE MAPPING
+POSTHOOK: query: CREATE GROUP MAPPING 'group2' IN plan_2 TO def.c2 WITH ORDER 1
+POSTHOOK: type: CREATE MAPPING
+PREHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_mappings
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_mappings
+#### A masked pattern was here ####
+plan_2	USER	user1	def	0
+plan_2	USER	user2	def	1
+plan_2	GROUP	group1	def.c1	0
+plan_2	GROUP	group2	def.c2	1
+PREHOOK: query: DROP POOL plan_2.def.c1
+PREHOOK: type: DROP POOL
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Exception thrown flushing changes to datastore)
+PREHOOK: query: DROP USER MAPPING "user2" in plan_2
+PREHOOK: type: DROP MAPPING
+POSTHOOK: query: DROP USER MAPPING "user2" in plan_2
+POSTHOOK: type: DROP MAPPING
+PREHOOK: query: DROP GROUP MAPPING "group2" in plan_2
+PREHOOK: type: DROP MAPPING
+POSTHOOK: query: DROP GROUP MAPPING "group2" in plan_2
+POSTHOOK: type: DROP MAPPING
+PREHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_mappings
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_mappings
+#### A masked pattern was here ####
+plan_2	USER	user1	def	0
+plan_2	GROUP	group1	def.c1	0
+PREHOOK: query: CREATE RESOURCE PLAN plan_4
+PREHOOK: type: CREATE RESOURCEPLAN
+POSTHOOK: query: CREATE RESOURCE PLAN plan_4
+POSTHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: query: ALTER RESOURCE PLAN plan_4 ENABLE ACTIVATE
+PREHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: query: ALTER RESOURCE PLAN plan_4 ENABLE ACTIVATE
+POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: DROP RESOURCE PLAN plan_2
+PREHOOK: type: DROP RESOURCEPLAN
+POSTHOOK: query: DROP RESOURCE PLAN plan_2
+POSTHOOK: type: DROP RESOURCEPLAN
+PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+table	DISABLED	1	table.pool
+plan_1	ENABLED	NULL	default
+plan_4	ACTIVE	NULL	default
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+table	table	0.0	1	random
+table	table.pool	0.9	3	priority
+plan_1	default	1.0	4	NULL
+plan_4	default	1.0	4	NULL
+PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_triggers
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_triggers
+#### A masked pattern was here ####
+plan_1	trigger_2	BYTES_READ > 100	MOVE TO slow_pool
+table	table	BYTES_WRITTEN > 100K	MOVE TO table
+table	trigger	BYTES_WRITTEN > 100K	MOVE TO default
+table	trigger1	ELAPSED_TIME > 10	KILL
+table	trigger2	BYTES_READ > 100	KILL
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools_to_triggers
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools_to_triggers
+#### A masked pattern was here ####
+table	table	table
+PREHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_mappings
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_mappings
+#### A masked pattern was here ####

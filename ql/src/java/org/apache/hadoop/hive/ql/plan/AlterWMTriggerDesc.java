@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 @Explain(displayName="Alter WM Trigger",
@@ -27,58 +28,21 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AlterWMTriggerDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = -2105736261687539210L;
 
-  private String rpName;
-  private String triggerName;
-  private String triggerExpression;
-  private String actionExpression;
+  private WMTrigger trigger;
 
   public AlterWMTriggerDesc() {}
 
-  public AlterWMTriggerDesc(String rpName, String triggerName, String triggerExpression,
-      String actionExpression) {
-    this.rpName = rpName;
-    this.triggerName = triggerName;
-    this.triggerExpression = triggerExpression;
-    this.actionExpression = actionExpression;
+  public AlterWMTriggerDesc(WMTrigger trigger) {
+    this.trigger = trigger;
   }
 
-  @Explain(displayName="resourcePlanName",
+  @Explain(displayName="trigger",
       explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getRpName() {
-    return rpName;
+  public WMTrigger getTrigger() {
+    return trigger;
   }
 
-  public void setRpName(String rpName) {
-    this.rpName = rpName;
-  }
-
-  @Explain(displayName="triggerName",
-      explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getTriggerName() {
-    return triggerName;
-  }
-
-  public void setTriggerName(String triggerName) {
-    this.triggerName = triggerName;
-  }
-
-  @Explain(displayName="triggerExpression",
-      explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getTriggerExpression() {
-    return triggerExpression;
-  }
-
-  public void setTriggerExpression(String triggerExpression) {
-    this.triggerExpression = triggerExpression;
-  }
-
-  @Explain(displayName="actionExpression",
-      explainLevels={ Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getActionExpression() {
-    return actionExpression;
-  }
-
-  public void setActionExpression(String actionExpression) {
-    this.actionExpression = actionExpression;
+  public void setTrigger(WMTrigger trigger) {
+    this.trigger = trigger;
   }
 }

@@ -1065,7 +1065,7 @@ struct WMMapping {
   1: required string resourcePlanName;
   2: required string entityType;
   3: required string entityName;
-  4: optional string poolName;
+  4: optional string poolPath;
   5: optional i32 ordering;
 }
 
@@ -1168,6 +1168,53 @@ struct WMGetTriggersForResourePlanResponse {
   1: optional list<WMTrigger> triggers;
 }
 
+struct WMCreatePoolRequest {
+  1: optional WMPool pool;
+}
+
+struct WMCreatePoolResponse {
+}
+
+struct WMAlterPoolRequest {
+  1: optional WMPool pool;
+  2: optional string poolPath;
+}
+
+struct WMAlterPoolResponse {
+}
+
+struct WMDropPoolRequest {
+  1: optional string resourcePlanName;
+  2: optional string poolPath;
+}
+
+struct WMDropPoolResponse {
+}
+
+struct WMCreateOrUpdateMappingRequest {
+  1: optional WMMapping mapping;
+  2: optional bool update;
+}
+
+struct WMCreateOrUpdateMappingResponse {
+}
+
+struct WMDropMappingRequest {
+  1: optional WMMapping mapping;
+}
+
+struct WMDropMappingResponse {
+}
+
+struct WMCreateOrDropTriggerToPoolMappingRequest {
+  1: optional string resourcePlanName;
+  2: optional string triggerName;
+  3: optional string poolPath;
+  4: optional bool drop;
+}
+
+struct WMCreateOrDropTriggerToPoolMappingResponse {
+}
 
 // Exceptions.
 
@@ -1767,6 +1814,24 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   WMGetTriggersForResourePlanResponse get_triggers_for_resourceplan(1:WMGetTriggersForResourePlanRequest request)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
+
+  WMCreatePoolResponse create_wm_pool(1:WMCreatePoolRequest request)
+      throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3, 4:MetaException o4)
+
+  WMAlterPoolResponse alter_wm_pool(1:WMAlterPoolRequest request)
+      throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3, 4:MetaException o4)
+
+  WMDropPoolResponse drop_wm_pool(1:WMDropPoolRequest request)
+      throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+
+  WMCreateOrUpdateMappingResponse create_or_update_wm_mapping(1:WMCreateOrUpdateMappingRequest request)
+      throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3, 4:MetaException o4)
+
+  WMDropMappingResponse drop_wm_mapping(1:WMDropMappingRequest request)
+      throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+
+  WMCreateOrDropTriggerToPoolMappingResponse create_or_drop_wm_trigger_to_pool_mapping(1:WMCreateOrDropTriggerToPoolMappingRequest request)
+      throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3, 4:MetaException o4)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

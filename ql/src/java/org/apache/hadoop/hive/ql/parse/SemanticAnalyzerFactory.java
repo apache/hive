@@ -137,13 +137,19 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_REPL_LOAD, HiveOperation.REPLLOAD);
     commandType.put(HiveParser.TOK_REPL_STATUS, HiveOperation.REPLSTATUS);
     commandType.put(HiveParser.TOK_KILL_QUERY, HiveOperation.KILL_QUERY);
-    commandType.put(HiveParser.TOK_CREATERESOURCEPLAN, HiveOperation.CREATE_RESOURCEPLAN);
-    commandType.put(HiveParser.TOK_SHOWRESOURCEPLAN, HiveOperation.SHOW_RESOURCEPLAN);
+    commandType.put(HiveParser.TOK_CREATE_RP, HiveOperation.CREATE_RESOURCEPLAN);
+    commandType.put(HiveParser.TOK_SHOW_RP, HiveOperation.SHOW_RESOURCEPLAN);
     commandType.put(HiveParser.TOK_ALTER_RP, HiveOperation.ALTER_RESOURCEPLAN);
     commandType.put(HiveParser.TOK_DROP_RP, HiveOperation.DROP_RESOURCEPLAN);
     commandType.put(HiveParser.TOK_CREATE_TRIGGER, HiveOperation.CREATE_TRIGGER);
     commandType.put(HiveParser.TOK_ALTER_TRIGGER, HiveOperation.ALTER_TRIGGER);
     commandType.put(HiveParser.TOK_DROP_TRIGGER, HiveOperation.DROP_TRIGGER);
+    commandType.put(HiveParser.TOK_CREATE_POOL, HiveOperation.CREATE_POOL);
+    commandType.put(HiveParser.TOK_ALTER_POOL, HiveOperation.ALTER_POOL);
+    commandType.put(HiveParser.TOK_DROP_POOL, HiveOperation.DROP_POOL);
+    commandType.put(HiveParser.TOK_CREATE_MAPPING, HiveOperation.CREATE_MAPPING);
+    commandType.put(HiveParser.TOK_ALTER_MAPPING, HiveOperation.ALTER_MAPPING);
+    commandType.put(HiveParser.TOK_DROP_MAPPING, HiveOperation.DROP_MAPPING);
   }
 
   static {
@@ -337,13 +343,19 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOW_SET_ROLE:
       case HiveParser.TOK_CACHE_METADATA:
       case HiveParser.TOK_KILL_QUERY:
-      case HiveParser.TOK_CREATERESOURCEPLAN:
-      case HiveParser.TOK_SHOWRESOURCEPLAN:
+      case HiveParser.TOK_CREATE_RP:
+      case HiveParser.TOK_SHOW_RP:
       case HiveParser.TOK_ALTER_RP:
       case HiveParser.TOK_DROP_RP:
       case HiveParser.TOK_CREATE_TRIGGER:
       case HiveParser.TOK_ALTER_TRIGGER:
       case HiveParser.TOK_DROP_TRIGGER:
+      case HiveParser.TOK_CREATE_POOL:
+      case HiveParser.TOK_ALTER_POOL:
+      case HiveParser.TOK_DROP_POOL:
+      case HiveParser.TOK_CREATE_MAPPING:
+      case HiveParser.TOK_ALTER_MAPPING:
+      case HiveParser.TOK_DROP_MAPPING:
         return new DDLSemanticAnalyzer(queryState);
 
       case HiveParser.TOK_CREATEFUNCTION:

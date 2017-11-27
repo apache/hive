@@ -20,32 +20,28 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 @Explain(displayName = "Create ResourcePlan", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CreateResourcePlanDesc extends DDLDesc implements Serializable {
+  private static final long serialVersionUID = -3492803425541479414L;
 
-  private static final long serialVersionUID = -3649343104271794404L;
-
-  private String planName;
-  private Integer queryParallelism;
+  private WMResourcePlan resourcePlan;
 
   // For serialization only.
   public CreateResourcePlanDesc() {
   }
 
   public CreateResourcePlanDesc(String planName, Integer queryParallelism) {
-    this.planName = planName;
-    this.queryParallelism = queryParallelism;
+    resourcePlan = new WMResourcePlan(planName);
+    if (queryParallelism != null) {
+      resourcePlan.setQueryParallelism(queryParallelism);
+    }
   }
 
-  @Explain(displayName="name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public String getName() {
-    return planName;
-  }
-
-  @Explain(displayName="queryParallelism")
-  public Integer getQueryParallelism() {
-    return queryParallelism;
+  @Explain(displayName="resourcePlan", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public WMResourcePlan getResourcePlan() {
+    return resourcePlan;
   }
 }

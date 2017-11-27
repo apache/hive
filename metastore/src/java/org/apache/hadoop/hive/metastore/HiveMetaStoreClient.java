@@ -2724,4 +2724,59 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     request.setResourcePlanName(resourcePlan);
     return client.get_triggers_for_resourceplan(request).getTriggers();
   }
+
+  @Override
+  public void createWMPool(WMPool pool)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
+    WMCreatePoolRequest request = new WMCreatePoolRequest();
+    request.setPool(pool);
+    client.create_wm_pool(request);
+  }
+
+  @Override
+  public void alterWMPool(WMPool pool, String poolPath)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
+    WMAlterPoolRequest request = new WMAlterPoolRequest();
+    request.setPool(pool);
+    request.setPoolPath(poolPath);
+    client.alter_wm_pool(request);
+  }
+
+  @Override
+  public void dropWMPool(String resourcePlanName, String poolPath)
+      throws NoSuchObjectException, MetaException, TException {
+    WMDropPoolRequest request = new WMDropPoolRequest();
+    request.setResourcePlanName(resourcePlanName);
+    request.setPoolPath(poolPath);
+    client.drop_wm_pool(request);
+  }
+
+  @Override
+  public void createOrUpdateWMMapping(WMMapping mapping, boolean isUpdate)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
+    WMCreateOrUpdateMappingRequest request = new WMCreateOrUpdateMappingRequest();
+    request.setMapping(mapping);
+    request.setUpdate(isUpdate);
+    client.create_or_update_wm_mapping(request);
+  }
+
+  @Override
+  public void dropWMMapping(WMMapping mapping)
+      throws NoSuchObjectException, MetaException, TException {
+    WMDropMappingRequest request = new WMDropMappingRequest();
+    request.setMapping(mapping);
+    client.drop_wm_mapping(request);
+  }
+
+  @Override
+  public void createOrDropTriggerToPoolMapping(String resourcePlanName, String triggerName,
+      String poolPath, boolean shouldDrop) throws AlreadyExistsException, NoSuchObjectException,
+      InvalidObjectException, MetaException, TException {
+    WMCreateOrDropTriggerToPoolMappingRequest request = new WMCreateOrDropTriggerToPoolMappingRequest();
+    request.setResourcePlanName(resourcePlanName);
+    request.setTriggerName(triggerName);
+    request.setPoolPath(poolPath);
+    request.setDrop(shouldDrop);
+    client.create_or_drop_wm_trigger_to_pool_mapping(request);
+  }
 }
