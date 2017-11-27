@@ -197,6 +197,12 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  WMAlterTriggerResponse alter_wm_trigger(WMAlterTriggerRequest request)')
   print('  WMDropTriggerResponse drop_wm_trigger(WMDropTriggerRequest request)')
   print('  WMGetTriggersForResourePlanResponse get_triggers_for_resourceplan(WMGetTriggersForResourePlanRequest request)')
+  print('  WMCreatePoolResponse create_wm_pool(WMCreatePoolRequest request)')
+  print('  WMAlterPoolResponse alter_wm_pool(WMAlterPoolRequest request)')
+  print('  WMDropPoolResponse drop_wm_pool(WMDropPoolRequest request)')
+  print('  WMCreateOrUpdateMappingResponse create_or_update_wm_mapping(WMCreateOrUpdateMappingRequest request)')
+  print('  WMDropMappingResponse drop_wm_mapping(WMDropMappingRequest request)')
+  print('  WMCreateOrDropTriggerToPoolMappingResponse create_or_drop_wm_trigger_to_pool_mapping(WMCreateOrDropTriggerToPoolMappingRequest request)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -1303,6 +1309,42 @@ elif cmd == 'get_triggers_for_resourceplan':
     print('get_triggers_for_resourceplan requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_triggers_for_resourceplan(eval(args[0]),))
+
+elif cmd == 'create_wm_pool':
+  if len(args) != 1:
+    print('create_wm_pool requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.create_wm_pool(eval(args[0]),))
+
+elif cmd == 'alter_wm_pool':
+  if len(args) != 1:
+    print('alter_wm_pool requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.alter_wm_pool(eval(args[0]),))
+
+elif cmd == 'drop_wm_pool':
+  if len(args) != 1:
+    print('drop_wm_pool requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.drop_wm_pool(eval(args[0]),))
+
+elif cmd == 'create_or_update_wm_mapping':
+  if len(args) != 1:
+    print('create_or_update_wm_mapping requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.create_or_update_wm_mapping(eval(args[0]),))
+
+elif cmd == 'drop_wm_mapping':
+  if len(args) != 1:
+    print('drop_wm_mapping requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.drop_wm_mapping(eval(args[0]),))
+
+elif cmd == 'create_or_drop_wm_trigger_to_pool_mapping':
+  if len(args) != 1:
+    print('create_or_drop_wm_trigger_to_pool_mapping requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.create_or_drop_wm_trigger_to_pool_mapping(eval(args[0]),))
 
 elif cmd == 'getName':
   if len(args) != 0:

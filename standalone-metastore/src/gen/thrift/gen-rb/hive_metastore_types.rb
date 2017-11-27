@@ -3334,14 +3334,14 @@ class WMMapping
   RESOURCEPLANNAME = 1
   ENTITYTYPE = 2
   ENTITYNAME = 3
-  POOLNAME = 4
+  POOLPATH = 4
   ORDERING = 5
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName'},
     ENTITYTYPE => {:type => ::Thrift::Types::STRING, :name => 'entityType'},
     ENTITYNAME => {:type => ::Thrift::Types::STRING, :name => 'entityName'},
-    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true},
+    POOLPATH => {:type => ::Thrift::Types::STRING, :name => 'poolPath', :optional => true},
     ORDERING => {:type => ::Thrift::Types::I32, :name => 'ordering', :optional => true}
   }
 
@@ -3743,6 +3743,204 @@ class WMGetTriggersForResourePlanResponse
 
   FIELDS = {
     TRIGGERS => {:type => ::Thrift::Types::LIST, :name => 'triggers', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WMTrigger}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMCreatePoolRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  POOL = 1
+
+  FIELDS = {
+    POOL => {:type => ::Thrift::Types::STRUCT, :name => 'pool', :class => ::WMPool, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMCreatePoolResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMAlterPoolRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  POOL = 1
+  POOLPATH = 2
+
+  FIELDS = {
+    POOL => {:type => ::Thrift::Types::STRUCT, :name => 'pool', :class => ::WMPool, :optional => true},
+    POOLPATH => {:type => ::Thrift::Types::STRING, :name => 'poolPath', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMAlterPoolResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMDropPoolRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RESOURCEPLANNAME = 1
+  POOLPATH = 2
+
+  FIELDS = {
+    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
+    POOLPATH => {:type => ::Thrift::Types::STRING, :name => 'poolPath', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMDropPoolResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMCreateOrUpdateMappingRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  MAPPING = 1
+  UPDATE = 2
+
+  FIELDS = {
+    MAPPING => {:type => ::Thrift::Types::STRUCT, :name => 'mapping', :class => ::WMMapping, :optional => true},
+    UPDATE => {:type => ::Thrift::Types::BOOL, :name => 'update', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMCreateOrUpdateMappingResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMDropMappingRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  MAPPING = 1
+
+  FIELDS = {
+    MAPPING => {:type => ::Thrift::Types::STRUCT, :name => 'mapping', :class => ::WMMapping, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMDropMappingResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMCreateOrDropTriggerToPoolMappingRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RESOURCEPLANNAME = 1
+  TRIGGERNAME = 2
+  POOLPATH = 3
+  DROP = 4
+
+  FIELDS = {
+    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
+    TRIGGERNAME => {:type => ::Thrift::Types::STRING, :name => 'triggerName', :optional => true},
+    POOLPATH => {:type => ::Thrift::Types::STRING, :name => 'poolPath', :optional => true},
+    DROP => {:type => ::Thrift::Types::BOOL, :name => 'drop', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMCreateOrDropTriggerToPoolMappingResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
   }
 
   def struct_fields; FIELDS; end

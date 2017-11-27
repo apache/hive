@@ -24,7 +24,7 @@ ASTLabelType=ASTNode;
 backtrack=false;
 k=3;
 }
-import SelectClauseParser, FromClauseParser, IdentifiersParser;
+import SelectClauseParser, FromClauseParser, IdentifiersParser, ResourcePlanParser;
 
 tokens {
 TOK_INSERT;
@@ -409,8 +409,8 @@ TOK_EXPRESSION;
 TOK_DETAIL;
 TOK_BLOCKING;
 TOK_KILL_QUERY;
-TOK_CREATERESOURCEPLAN;
-TOK_SHOWRESOURCEPLAN;
+TOK_CREATE_RP;
+TOK_SHOW_RP;
 TOK_ALTER_RP;
 TOK_DROP_RP;
 TOK_VALIDATE;
@@ -422,6 +422,16 @@ TOK_CREATE_TRIGGER;
 TOK_ALTER_TRIGGER;
 TOK_DROP_TRIGGER;
 TOK_TRIGGER_EXPRESSION;
+TOK_CREATE_POOL;
+TOK_ALTER_POOL;
+TOK_DROP_POOL;
+TOK_ALLOC_FRACTION;
+TOK_SCHEDULING_POLICY;
+TOK_PATH;
+TOK_CREATE_MAPPING;
+TOK_ALTER_MAPPING;
+TOK_DROP_MAPPING;
+TOK_ADD_TRIGGER;
 }
 
 
@@ -603,6 +613,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_POOL", "POOL");
     xlateMap.put("KW_MOVE", "MOVE");
     xlateMap.put("KW_DO", "DO");
+    xlateMap.put("KW_ALLOC_FRACTION", "ALLOC_FRACTION");
+    xlateMap.put("KW_SCHEDULING_POLICY", "SCHEDULING_POLICY");
+    xlateMap.put("KW_PATH", "PATH");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -941,12 +954,7 @@ ddlStatement
     | showCurrentRole
     | abortTransactionStatement
     | killQueryStatement
-    | createResourcePlanStatement
-    | alterResourcePlanStatement
-    | dropResourcePlanStatement
-    | createTriggerStatement
-    | alterTriggerStatement
-    | dropTriggerStatement
+    | resourcePlanDdlStatements
     ;
 
 ifExists
@@ -998,129 +1006,6 @@ orReplace
 @after { popMsg(state); }
     : KW_OR KW_REPLACE
     -> ^(TOK_ORREPLACE)
-    ;
-
-createResourcePlanStatement
-@init { pushMsg("create resource plan statement", state); }
-@after { popMsg(state); }
-    : KW_CREATE KW_RESOURCE KW_PLAN
-        name=identifier
-        (KW_WITH KW_QUERY_PARALLELISM parallelism=Number)?
-    -> ^(TOK_CREATERESOURCEPLAN $name $parallelism?)
-    ;
-
-alterRpSet
-@init { pushMsg("alterRpSet", state); }
-@after { popMsg(state); }
-  : (
-     (KW_QUERY_PARALLELISM EQUAL parallelism=Number -> ^(TOK_QUERY_PARALLELISM $parallelism))
-   | (KW_DEFAULT KW_POOL EQUAL poolName=StringLiteral -> ^(TOK_DEFAULT_POOL $poolName))
-    )
-  ;
-
-alterRpSetList
-@init { pushMsg("alterRpSetList", state); }
-@after { popMsg(state); }
-  :
-  alterRpSet (COMMA alterRpSet)* -> alterRpSet+
-  ;
-
-activate : KW_ACTIVATE -> ^(TOK_ACTIVATE);
-enable : KW_ENABLE -> ^(TOK_ENABLE);
-
-alterResourcePlanStatement
-@init { pushMsg("alter resource plan statement", state); }
-@after { popMsg(state); }
-    : KW_ALTER KW_RESOURCE KW_PLAN name=identifier (
-          (KW_VALIDATE -> ^(TOK_ALTER_RP $name TOK_VALIDATE))
-        | (KW_DISABLE -> ^(TOK_ALTER_RP $name TOK_DISABLE))
-        | (KW_SET setList=alterRpSetList -> ^(TOK_ALTER_RP $name $setList))
-        | (KW_RENAME KW_TO newName=identifier
-           -> ^(TOK_ALTER_RP $name TOK_RENAME $newName))
-        | ((activate+ enable? | enable+ activate?) -> ^(TOK_ALTER_RP $name activate? enable?))
-      )
-    ;
-
-dropResourcePlanStatement
-@init { pushMsg("drop resource plan statement", state); }
-@after { popMsg(state); }
-    : KW_DROP KW_RESOURCE KW_PLAN name=identifier
-    -> ^(TOK_DROP_RP $name)
-    ;
-
-poolPath
-@init { pushMsg("poolPath", state); }
-@after { popMsg(state); }
-    : identifier^ (DOT identifier)*
-    ;
-
-triggerExpression
-@init { pushMsg("triggerExpression", state); }
-@after { popMsg(state); }
-    : triggerOrExpression -> ^(TOK_TRIGGER_EXPRESSION triggerOrExpression)
-    ;
-
-triggerOrExpression
-@init { pushMsg("triggerOrExpression", state); }
-@after { popMsg(state); }
-    : triggerAndExpression (KW_OR triggerAndExpression)*
-    ;
-
-triggerAndExpression
-@init { pushMsg("triggerAndExpression", state); }
-@after { popMsg(state); }
-    : triggerAtomExpression (KW_AND triggerAtomExpression)*
-    ;
-
-triggerAtomExpression
-@init { pushMsg("triggerAtomExpression", state); }
-@after { popMsg(state); }
-    : (identifier comparisionOperator triggerLiteral)
-    | (LPAREN triggerOrExpression RPAREN)
-    ;
-
-triggerLiteral
-@init { pushMsg("triggerLiteral", state); }
-@after { popMsg(state); }
-    : (Number (KW_HOUR|KW_MINUTE|KW_SECOND)?)
-    | ByteLengthLiteral
-    | StringLiteral
-    ;
-
-comparisionOperator
-@init { pushMsg("comparisionOperator", state); }
-@after { popMsg(state); }
-    : EQUAL | LESSTHAN | LESSTHANOREQUALTO | GREATERTHAN | GREATERTHANOREQUALTO
-    ;
-
-triggerActionExpression
-@init { pushMsg("triggerActionExpression", state); }
-@after { popMsg(state); }
-    : KW_KILL
-    | (KW_MOVE^ KW_TO! poolPath)
-    ;
-
-createTriggerStatement
-@init { pushMsg("create trigger statement", state); }
-@after { popMsg(state); }
-    : KW_CREATE KW_TRIGGER rpName=identifier DOT triggerName=identifier
-      KW_WHEN triggerExpression KW_DO triggerActionExpression
-    -> ^(TOK_CREATE_TRIGGER $rpName $triggerName triggerExpression triggerActionExpression)
-    ;
-
-alterTriggerStatement
-@init { pushMsg("alter trigger statement", state); }
-@after { popMsg(state); }
-    : KW_ALTER KW_TRIGGER rpName=identifier DOT triggerName=identifier
-      KW_WHEN triggerExpression KW_DO triggerActionExpression
-    -> ^(TOK_ALTER_TRIGGER $rpName $triggerName triggerExpression triggerActionExpression)
-    ;
-
-dropTriggerStatement
-@init { pushMsg("drop trigger statement", state); }
-@after { popMsg(state); }
-    : KW_DROP KW_TRIGGER rpName=identifier DOT triggerName=identifier
-    -> ^(TOK_DROP_TRIGGER $rpName $triggerName)
     ;
 
 createDatabaseStatement
@@ -1775,8 +1660,8 @@ showStatement
     | KW_SHOW KW_CONF StringLiteral -> ^(TOK_SHOWCONF StringLiteral)
     | KW_SHOW KW_RESOURCE
       (
-        (KW_PLAN rp_name=identifier -> ^(TOK_SHOWRESOURCEPLAN $rp_name))
-        | (KW_PLANS -> ^(TOK_SHOWRESOURCEPLAN))
+        (KW_PLAN rp_name=identifier -> ^(TOK_SHOW_RP $rp_name))
+        | (KW_PLANS -> ^(TOK_SHOW_RP))
       )
     ;
 

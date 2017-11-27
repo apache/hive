@@ -505,6 +505,30 @@ class WMGetTriggersForResourePlanRequest;
 
 class WMGetTriggersForResourePlanResponse;
 
+class WMCreatePoolRequest;
+
+class WMCreatePoolResponse;
+
+class WMAlterPoolRequest;
+
+class WMAlterPoolResponse;
+
+class WMDropPoolRequest;
+
+class WMDropPoolResponse;
+
+class WMCreateOrUpdateMappingRequest;
+
+class WMCreateOrUpdateMappingResponse;
+
+class WMDropMappingRequest;
+
+class WMDropMappingResponse;
+
+class WMCreateOrDropTriggerToPoolMappingRequest;
+
+class WMCreateOrDropTriggerToPoolMappingResponse;
+
 class MetaException;
 
 class UnknownTableException;
@@ -8718,8 +8742,8 @@ inline std::ostream& operator<<(std::ostream& out, const WMTrigger& obj)
 }
 
 typedef struct _WMMapping__isset {
-  _WMMapping__isset() : poolName(false), ordering(false) {}
-  bool poolName :1;
+  _WMMapping__isset() : poolPath(false), ordering(false) {}
+  bool poolPath :1;
   bool ordering :1;
 } _WMMapping__isset;
 
@@ -8728,14 +8752,14 @@ class WMMapping {
 
   WMMapping(const WMMapping&);
   WMMapping& operator=(const WMMapping&);
-  WMMapping() : resourcePlanName(), entityType(), entityName(), poolName(), ordering(0) {
+  WMMapping() : resourcePlanName(), entityType(), entityName(), poolPath(), ordering(0) {
   }
 
   virtual ~WMMapping() throw();
   std::string resourcePlanName;
   std::string entityType;
   std::string entityName;
-  std::string poolName;
+  std::string poolPath;
   int32_t ordering;
 
   _WMMapping__isset __isset;
@@ -8746,7 +8770,7 @@ class WMMapping {
 
   void __set_entityName(const std::string& val);
 
-  void __set_poolName(const std::string& val);
+  void __set_poolPath(const std::string& val);
 
   void __set_ordering(const int32_t val);
 
@@ -8758,9 +8782,9 @@ class WMMapping {
       return false;
     if (!(entityName == rhs.entityName))
       return false;
-    if (__isset.poolName != rhs.__isset.poolName)
+    if (__isset.poolPath != rhs.__isset.poolPath)
       return false;
-    else if (__isset.poolName && !(poolName == rhs.poolName))
+    else if (__isset.poolPath && !(poolPath == rhs.poolPath))
       return false;
     if (__isset.ordering != rhs.__isset.ordering)
       return false;
@@ -9891,6 +9915,552 @@ class WMGetTriggersForResourePlanResponse {
 void swap(WMGetTriggersForResourePlanResponse &a, WMGetTriggersForResourePlanResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const WMGetTriggersForResourePlanResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMCreatePoolRequest__isset {
+  _WMCreatePoolRequest__isset() : pool(false) {}
+  bool pool :1;
+} _WMCreatePoolRequest__isset;
+
+class WMCreatePoolRequest {
+ public:
+
+  WMCreatePoolRequest(const WMCreatePoolRequest&);
+  WMCreatePoolRequest& operator=(const WMCreatePoolRequest&);
+  WMCreatePoolRequest() {
+  }
+
+  virtual ~WMCreatePoolRequest() throw();
+  WMPool pool;
+
+  _WMCreatePoolRequest__isset __isset;
+
+  void __set_pool(const WMPool& val);
+
+  bool operator == (const WMCreatePoolRequest & rhs) const
+  {
+    if (__isset.pool != rhs.__isset.pool)
+      return false;
+    else if (__isset.pool && !(pool == rhs.pool))
+      return false;
+    return true;
+  }
+  bool operator != (const WMCreatePoolRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMCreatePoolRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMCreatePoolRequest &a, WMCreatePoolRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMCreatePoolRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class WMCreatePoolResponse {
+ public:
+
+  WMCreatePoolResponse(const WMCreatePoolResponse&);
+  WMCreatePoolResponse& operator=(const WMCreatePoolResponse&);
+  WMCreatePoolResponse() {
+  }
+
+  virtual ~WMCreatePoolResponse() throw();
+
+  bool operator == (const WMCreatePoolResponse & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const WMCreatePoolResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMCreatePoolResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMCreatePoolResponse &a, WMCreatePoolResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMCreatePoolResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMAlterPoolRequest__isset {
+  _WMAlterPoolRequest__isset() : pool(false), poolPath(false) {}
+  bool pool :1;
+  bool poolPath :1;
+} _WMAlterPoolRequest__isset;
+
+class WMAlterPoolRequest {
+ public:
+
+  WMAlterPoolRequest(const WMAlterPoolRequest&);
+  WMAlterPoolRequest& operator=(const WMAlterPoolRequest&);
+  WMAlterPoolRequest() : poolPath() {
+  }
+
+  virtual ~WMAlterPoolRequest() throw();
+  WMPool pool;
+  std::string poolPath;
+
+  _WMAlterPoolRequest__isset __isset;
+
+  void __set_pool(const WMPool& val);
+
+  void __set_poolPath(const std::string& val);
+
+  bool operator == (const WMAlterPoolRequest & rhs) const
+  {
+    if (__isset.pool != rhs.__isset.pool)
+      return false;
+    else if (__isset.pool && !(pool == rhs.pool))
+      return false;
+    if (__isset.poolPath != rhs.__isset.poolPath)
+      return false;
+    else if (__isset.poolPath && !(poolPath == rhs.poolPath))
+      return false;
+    return true;
+  }
+  bool operator != (const WMAlterPoolRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMAlterPoolRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMAlterPoolRequest &a, WMAlterPoolRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMAlterPoolRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class WMAlterPoolResponse {
+ public:
+
+  WMAlterPoolResponse(const WMAlterPoolResponse&);
+  WMAlterPoolResponse& operator=(const WMAlterPoolResponse&);
+  WMAlterPoolResponse() {
+  }
+
+  virtual ~WMAlterPoolResponse() throw();
+
+  bool operator == (const WMAlterPoolResponse & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const WMAlterPoolResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMAlterPoolResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMAlterPoolResponse &a, WMAlterPoolResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMAlterPoolResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMDropPoolRequest__isset {
+  _WMDropPoolRequest__isset() : resourcePlanName(false), poolPath(false) {}
+  bool resourcePlanName :1;
+  bool poolPath :1;
+} _WMDropPoolRequest__isset;
+
+class WMDropPoolRequest {
+ public:
+
+  WMDropPoolRequest(const WMDropPoolRequest&);
+  WMDropPoolRequest& operator=(const WMDropPoolRequest&);
+  WMDropPoolRequest() : resourcePlanName(), poolPath() {
+  }
+
+  virtual ~WMDropPoolRequest() throw();
+  std::string resourcePlanName;
+  std::string poolPath;
+
+  _WMDropPoolRequest__isset __isset;
+
+  void __set_resourcePlanName(const std::string& val);
+
+  void __set_poolPath(const std::string& val);
+
+  bool operator == (const WMDropPoolRequest & rhs) const
+  {
+    if (__isset.resourcePlanName != rhs.__isset.resourcePlanName)
+      return false;
+    else if (__isset.resourcePlanName && !(resourcePlanName == rhs.resourcePlanName))
+      return false;
+    if (__isset.poolPath != rhs.__isset.poolPath)
+      return false;
+    else if (__isset.poolPath && !(poolPath == rhs.poolPath))
+      return false;
+    return true;
+  }
+  bool operator != (const WMDropPoolRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMDropPoolRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMDropPoolRequest &a, WMDropPoolRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMDropPoolRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class WMDropPoolResponse {
+ public:
+
+  WMDropPoolResponse(const WMDropPoolResponse&);
+  WMDropPoolResponse& operator=(const WMDropPoolResponse&);
+  WMDropPoolResponse() {
+  }
+
+  virtual ~WMDropPoolResponse() throw();
+
+  bool operator == (const WMDropPoolResponse & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const WMDropPoolResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMDropPoolResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMDropPoolResponse &a, WMDropPoolResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMDropPoolResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMCreateOrUpdateMappingRequest__isset {
+  _WMCreateOrUpdateMappingRequest__isset() : mapping(false), update(false) {}
+  bool mapping :1;
+  bool update :1;
+} _WMCreateOrUpdateMappingRequest__isset;
+
+class WMCreateOrUpdateMappingRequest {
+ public:
+
+  WMCreateOrUpdateMappingRequest(const WMCreateOrUpdateMappingRequest&);
+  WMCreateOrUpdateMappingRequest& operator=(const WMCreateOrUpdateMappingRequest&);
+  WMCreateOrUpdateMappingRequest() : update(0) {
+  }
+
+  virtual ~WMCreateOrUpdateMappingRequest() throw();
+  WMMapping mapping;
+  bool update;
+
+  _WMCreateOrUpdateMappingRequest__isset __isset;
+
+  void __set_mapping(const WMMapping& val);
+
+  void __set_update(const bool val);
+
+  bool operator == (const WMCreateOrUpdateMappingRequest & rhs) const
+  {
+    if (__isset.mapping != rhs.__isset.mapping)
+      return false;
+    else if (__isset.mapping && !(mapping == rhs.mapping))
+      return false;
+    if (__isset.update != rhs.__isset.update)
+      return false;
+    else if (__isset.update && !(update == rhs.update))
+      return false;
+    return true;
+  }
+  bool operator != (const WMCreateOrUpdateMappingRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMCreateOrUpdateMappingRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMCreateOrUpdateMappingRequest &a, WMCreateOrUpdateMappingRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMCreateOrUpdateMappingRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class WMCreateOrUpdateMappingResponse {
+ public:
+
+  WMCreateOrUpdateMappingResponse(const WMCreateOrUpdateMappingResponse&);
+  WMCreateOrUpdateMappingResponse& operator=(const WMCreateOrUpdateMappingResponse&);
+  WMCreateOrUpdateMappingResponse() {
+  }
+
+  virtual ~WMCreateOrUpdateMappingResponse() throw();
+
+  bool operator == (const WMCreateOrUpdateMappingResponse & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const WMCreateOrUpdateMappingResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMCreateOrUpdateMappingResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMCreateOrUpdateMappingResponse &a, WMCreateOrUpdateMappingResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMCreateOrUpdateMappingResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMDropMappingRequest__isset {
+  _WMDropMappingRequest__isset() : mapping(false) {}
+  bool mapping :1;
+} _WMDropMappingRequest__isset;
+
+class WMDropMappingRequest {
+ public:
+
+  WMDropMappingRequest(const WMDropMappingRequest&);
+  WMDropMappingRequest& operator=(const WMDropMappingRequest&);
+  WMDropMappingRequest() {
+  }
+
+  virtual ~WMDropMappingRequest() throw();
+  WMMapping mapping;
+
+  _WMDropMappingRequest__isset __isset;
+
+  void __set_mapping(const WMMapping& val);
+
+  bool operator == (const WMDropMappingRequest & rhs) const
+  {
+    if (__isset.mapping != rhs.__isset.mapping)
+      return false;
+    else if (__isset.mapping && !(mapping == rhs.mapping))
+      return false;
+    return true;
+  }
+  bool operator != (const WMDropMappingRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMDropMappingRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMDropMappingRequest &a, WMDropMappingRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMDropMappingRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class WMDropMappingResponse {
+ public:
+
+  WMDropMappingResponse(const WMDropMappingResponse&);
+  WMDropMappingResponse& operator=(const WMDropMappingResponse&);
+  WMDropMappingResponse() {
+  }
+
+  virtual ~WMDropMappingResponse() throw();
+
+  bool operator == (const WMDropMappingResponse & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const WMDropMappingResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMDropMappingResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMDropMappingResponse &a, WMDropMappingResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMDropMappingResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMCreateOrDropTriggerToPoolMappingRequest__isset {
+  _WMCreateOrDropTriggerToPoolMappingRequest__isset() : resourcePlanName(false), triggerName(false), poolPath(false), drop(false) {}
+  bool resourcePlanName :1;
+  bool triggerName :1;
+  bool poolPath :1;
+  bool drop :1;
+} _WMCreateOrDropTriggerToPoolMappingRequest__isset;
+
+class WMCreateOrDropTriggerToPoolMappingRequest {
+ public:
+
+  WMCreateOrDropTriggerToPoolMappingRequest(const WMCreateOrDropTriggerToPoolMappingRequest&);
+  WMCreateOrDropTriggerToPoolMappingRequest& operator=(const WMCreateOrDropTriggerToPoolMappingRequest&);
+  WMCreateOrDropTriggerToPoolMappingRequest() : resourcePlanName(), triggerName(), poolPath(), drop(0) {
+  }
+
+  virtual ~WMCreateOrDropTriggerToPoolMappingRequest() throw();
+  std::string resourcePlanName;
+  std::string triggerName;
+  std::string poolPath;
+  bool drop;
+
+  _WMCreateOrDropTriggerToPoolMappingRequest__isset __isset;
+
+  void __set_resourcePlanName(const std::string& val);
+
+  void __set_triggerName(const std::string& val);
+
+  void __set_poolPath(const std::string& val);
+
+  void __set_drop(const bool val);
+
+  bool operator == (const WMCreateOrDropTriggerToPoolMappingRequest & rhs) const
+  {
+    if (__isset.resourcePlanName != rhs.__isset.resourcePlanName)
+      return false;
+    else if (__isset.resourcePlanName && !(resourcePlanName == rhs.resourcePlanName))
+      return false;
+    if (__isset.triggerName != rhs.__isset.triggerName)
+      return false;
+    else if (__isset.triggerName && !(triggerName == rhs.triggerName))
+      return false;
+    if (__isset.poolPath != rhs.__isset.poolPath)
+      return false;
+    else if (__isset.poolPath && !(poolPath == rhs.poolPath))
+      return false;
+    if (__isset.drop != rhs.__isset.drop)
+      return false;
+    else if (__isset.drop && !(drop == rhs.drop))
+      return false;
+    return true;
+  }
+  bool operator != (const WMCreateOrDropTriggerToPoolMappingRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMCreateOrDropTriggerToPoolMappingRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMCreateOrDropTriggerToPoolMappingRequest &a, WMCreateOrDropTriggerToPoolMappingRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMCreateOrDropTriggerToPoolMappingRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class WMCreateOrDropTriggerToPoolMappingResponse {
+ public:
+
+  WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse&);
+  WMCreateOrDropTriggerToPoolMappingResponse& operator=(const WMCreateOrDropTriggerToPoolMappingResponse&);
+  WMCreateOrDropTriggerToPoolMappingResponse() {
+  }
+
+  virtual ~WMCreateOrDropTriggerToPoolMappingResponse() throw();
+
+  bool operator == (const WMCreateOrDropTriggerToPoolMappingResponse & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const WMCreateOrDropTriggerToPoolMappingResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMCreateOrDropTriggerToPoolMappingResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMCreateOrDropTriggerToPoolMappingResponse &a, WMCreateOrDropTriggerToPoolMappingResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMCreateOrDropTriggerToPoolMappingResponse& obj)
 {
   obj.printTo(out);
   return out;

@@ -107,6 +107,8 @@ import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -1802,4 +1804,23 @@ public interface IMetaStoreClient {
 
   List<WMTrigger> getTriggersForResourcePlan(String resourcePlan)
       throws NoSuchObjectException, MetaException, TException;
+
+  void createWMPool(WMPool pool)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+
+  void alterWMPool(WMPool pool, String poolPath)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+
+  void dropWMPool(String resourcePlanName, String poolPath)
+      throws NoSuchObjectException, MetaException, TException;
+
+  void createOrUpdateWMMapping(WMMapping mapping, boolean isUpdate)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+
+  void dropWMMapping(WMMapping mapping)
+      throws NoSuchObjectException, MetaException, TException;
+
+  void createOrDropTriggerToPoolMapping(String resourcePlanName, String triggerName,
+      String poolPath, boolean shouldDrop) throws AlreadyExistsException, NoSuchObjectException,
+      InvalidObjectException, MetaException, TException;
 }

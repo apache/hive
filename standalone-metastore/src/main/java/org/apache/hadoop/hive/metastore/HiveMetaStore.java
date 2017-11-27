@@ -7395,7 +7395,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         getMS().dropWMTrigger(request.getResourcePlanName(), request.getTriggerName());
         return new WMDropTriggerResponse();
       } catch (MetaException e) {
-        LOG.error("Exception while trying to retrieve resource plans", e);
+        LOG.error("Exception while trying to drop trigger.", e);
         throw e;
       }
     }
@@ -7411,6 +7411,88 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return response;
       } catch (MetaException e) {
         LOG.error("Exception while trying to retrieve triggers plans", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMCreatePoolResponse create_wm_pool(WMCreatePoolRequest request)
+        throws AlreadyExistsException, NoSuchObjectException, InvalidObjectException, MetaException,
+        TException {
+      try {
+        getMS().createPool(request.getPool());
+        return new WMCreatePoolResponse();
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to create WMPool", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMAlterPoolResponse alter_wm_pool(WMAlterPoolRequest request)
+        throws AlreadyExistsException, NoSuchObjectException, InvalidObjectException, MetaException,
+        TException {
+      try {
+        getMS().alterPool(request.getPool(), request.getPoolPath());
+        return new WMAlterPoolResponse();
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to alter WMPool", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMDropPoolResponse drop_wm_pool(WMDropPoolRequest request)
+        throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+      try {
+        getMS().dropWMPool(request.getResourcePlanName(), request.getPoolPath());
+        return new WMDropPoolResponse();
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to drop WMPool", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMCreateOrUpdateMappingResponse create_or_update_wm_mapping(
+        WMCreateOrUpdateMappingRequest request) throws AlreadyExistsException,
+        NoSuchObjectException, InvalidObjectException, MetaException, TException {
+      try {
+        getMS().createOrUpdateWMMapping(request.getMapping(), request.isUpdate());
+        return new WMCreateOrUpdateMappingResponse();
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to create or update WMMapping", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMDropMappingResponse drop_wm_mapping(WMDropMappingRequest request)
+        throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+      try {
+        getMS().dropWMMapping(request.getMapping());
+        return new WMDropMappingResponse();
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to drop WMMapping", e);
+        throw e;
+      }
+    }
+
+    @Override
+    public WMCreateOrDropTriggerToPoolMappingResponse create_or_drop_wm_trigger_to_pool_mapping(
+        WMCreateOrDropTriggerToPoolMappingRequest request) throws AlreadyExistsException,
+        NoSuchObjectException, InvalidObjectException, MetaException, TException {
+      try {
+        if (request.isDrop()) {
+          getMS().dropWMTriggerToPoolMapping(
+              request.getResourcePlanName(), request.getTriggerName(), request.getPoolPath());
+        } else {
+          getMS().createWMTriggerToPoolMapping(
+              request.getResourcePlanName(), request.getTriggerName(), request.getPoolPath());
+        }
+        return new WMCreateOrDropTriggerToPoolMappingResponse();
+      } catch (MetaException e) {
+        LOG.error("Exception while trying to create or drop pool mappings", e);
         throw e;
       }
     }

@@ -99,7 +99,7 @@ class UserPoolMapping {
   }
 
   private static void addMapping(WMMapping mapping, Map<String, Mapping> map, String text) {
-    Mapping val = new Mapping(mapping.getPoolName(), mapping.getOrdering());
+    Mapping val = new Mapping(mapping.getPoolPath(), mapping.getOrdering());
     Mapping oldValue = map.put(mapping.getEntityName(), val);
     if (oldValue != null) {
       throw new AssertionError("Duplicate mapping for " + text + " " + mapping.getEntityName()

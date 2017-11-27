@@ -2279,6 +2279,154 @@ ON
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_TRIGGERS
 POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `WM_POOLS` (
+  `RP_NAME` string,
+  `PATH` string,
+  `ALLOC_FRACTION` double,
+  `QUERY_PARALLELISM` int,
+  `SCHEDULING_POLICY` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  WM_RESOURCEPLAN.NAME,
+  WM_POOL.PATH,
+  WM_POOL.ALLOC_FRACTION,
+  WM_POOL.QUERY_PARALLELISM,
+  WM_POOL.SCHEDULING_POLICY
+FROM
+  WM_POOL
+JOIN
+  WM_RESOURCEPLAN
+ON
+  WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@WM_POOLS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `WM_POOLS` (
+  `RP_NAME` string,
+  `PATH` string,
+  `ALLOC_FRACTION` double,
+  `QUERY_PARALLELISM` int,
+  `SCHEDULING_POLICY` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  WM_RESOURCEPLAN.NAME,
+  WM_POOL.PATH,
+  WM_POOL.ALLOC_FRACTION,
+  WM_POOL.QUERY_PARALLELISM,
+  WM_POOL.SCHEDULING_POLICY
+FROM
+  WM_POOL
+JOIN
+  WM_RESOURCEPLAN
+ON
+  WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@WM_POOLS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
+  `RP_NAME` string,
+  `POOL_PATH` string,
+  `TRIGGER_NAME` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  WM_RESOURCEPLAN.NAME RP_NAME,
+  WM_POOL.PATH POOL_PATH,
+  WM_TRIGGER.NAME TRIGGER_NAME
+FROM
+  WM_POOL_TO_TRIGGER
+JOIN WM_POOL ON WM_POOL_TO_TRIGGER.POOL_ID = WM_POOL.POOL_ID
+JOIN WM_TRIGGER ON WM_POOL_TO_TRIGGER.TRIGGER_ID = WM_TRIGGER.TRIGGER_ID
+JOIN WM_RESOURCEPLAN ON WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@WM_POOLS_TO_TRIGGERS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `WM_POOLS_TO_TRIGGERS` (
+  `RP_NAME` string,
+  `POOL_PATH` string,
+  `TRIGGER_NAME` string
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  WM_RESOURCEPLAN.NAME RP_NAME,
+  WM_POOL.PATH POOL_PATH,
+  WM_TRIGGER.NAME TRIGGER_NAME
+FROM
+  WM_POOL_TO_TRIGGER
+JOIN WM_POOL ON WM_POOL_TO_TRIGGER.POOL_ID = WM_POOL.POOL_ID
+JOIN WM_TRIGGER ON WM_POOL_TO_TRIGGER.TRIGGER_ID = WM_TRIGGER.TRIGGER_ID
+JOIN WM_RESOURCEPLAN ON WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@WM_POOLS_TO_TRIGGERS
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `WM_MAPPINGS` (
+  `RP_NAME` string,
+  `ENTITY_TYPE` string,
+  `ENTITY_NAME` string,
+  `POOL_PATH` string,
+  `ORDERING` int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  WM_RESOURCEPLAN.NAME,
+  ENTITY_TYPE,
+  ENTITY_NAME,
+  WM_POOL.PATH,
+  ORDERING
+FROM
+  WM_MAPPING
+JOIN WM_RESOURCEPLAN ON WM_MAPPING.RP_ID = WM_RESOURCEPLAN.RP_ID
+LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@WM_MAPPINGS
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `WM_MAPPINGS` (
+  `RP_NAME` string,
+  `ENTITY_TYPE` string,
+  `ENTITY_NAME` string,
+  `POOL_PATH` string,
+  `ORDERING` int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  WM_RESOURCEPLAN.NAME,
+  ENTITY_TYPE,
+  ENTITY_NAME,
+  WM_POOL.PATH,
+  ORDERING
+FROM
+  WM_MAPPING
+JOIN WM_RESOURCEPLAN ON WM_MAPPING.RP_ID = WM_RESOURCEPLAN.RP_ID
+LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@WM_MAPPINGS
+POSTHOOK: Output: database:sys
 PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
 PREHOOK: type: DROPDATABASE
 POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
@@ -3059,7 +3207,7 @@ POSTHOOK: query: select count(*) from cds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@cds
 #### A masked pattern was here ####
-67
+70
 PREHOOK: query: select column_name, type_name, integer_idx from columns_v2 order by column_name, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@columns_v2
@@ -3072,7 +3220,7 @@ a	decimal(10,2)	0
 action_expression	string	3
 add_time	int	1
 aint	int	0
-astring	string	1
+alloc_fraction	double	2
 PREHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@database_params
@@ -3213,7 +3361,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-73
+76
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -3325,8 +3473,8 @@ POSTHOOK: Input: sys@table_params
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","e":"true","f":"true","g":"true"}}
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","rp_name":"true","trigger_expression":"true"}}
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"add_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","role_grant_id":"true","role_id":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"alloc_fraction":"true","path":"true","query_parallelism":"true","rp_name":"true","scheduling_policy":"true"}}
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"avg_col_len":"true","big_decimal_high_value":"true","big_decimal_low_value":"true","column_name":"true","column_type":"true","cs_id":"true","db_name":"true","double_high_value":"true","double_low_value":"true","last_analyzed":"true","long_high_value":"true","long_low_value":"true","max_col_len":"true","num_distincts":"true","num_falses":"true","num_nulls":"true","num_trues":"true","part_id":"true","partition_name":"true","table_name":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"avg_col_len":"true","big_decimal_high_value":"true","big_decimal_low_value":"true","column_name":"true","column_type":"true","cs_id":"true","db_name":"true","double_high_value":"true","double_low_value":"true","last_analyzed":"true","long_high_value":"true","long_low_value":"true","max_col_len":"true","num_distincts":"true","num_falses":"true","num_nulls":"true","num_trues":"true","table_name":"true","tbl_id":"true"}}
 PREHOOK: query: select tbl_name from tbls order by tbl_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tbls
@@ -3439,7 +3587,7 @@ POSTHOOK: Input: sys@table_params
 POSTHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
 {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","rp_name":"true","trigger_expression":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"entity_name":"true","entity_type":"true","ordering":"true","pool_path":"true","rp_name":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"next_val":"true","sequence_name":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
 #### A masked pattern was here ####
@@ -3644,6 +3792,9 @@ default	sys	tbl_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	tbl_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	tbls	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	version	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	wm_mappings	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	wm_pools	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	wm_pools_to_triggers	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	wm_resourceplans	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	wm_triggers	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 PREHOOK: query: select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, PRIVILEGE_TYPE limit 10

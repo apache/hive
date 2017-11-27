@@ -2885,6 +2885,118 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_triggers_for_resourceplan failed: unknown result')
     end
 
+    def create_wm_pool(request)
+      send_create_wm_pool(request)
+      return recv_create_wm_pool()
+    end
+
+    def send_create_wm_pool(request)
+      send_message('create_wm_pool', Create_wm_pool_args, :request => request)
+    end
+
+    def recv_create_wm_pool()
+      result = receive_message(Create_wm_pool_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'create_wm_pool failed: unknown result')
+    end
+
+    def alter_wm_pool(request)
+      send_alter_wm_pool(request)
+      return recv_alter_wm_pool()
+    end
+
+    def send_alter_wm_pool(request)
+      send_message('alter_wm_pool', Alter_wm_pool_args, :request => request)
+    end
+
+    def recv_alter_wm_pool()
+      result = receive_message(Alter_wm_pool_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'alter_wm_pool failed: unknown result')
+    end
+
+    def drop_wm_pool(request)
+      send_drop_wm_pool(request)
+      return recv_drop_wm_pool()
+    end
+
+    def send_drop_wm_pool(request)
+      send_message('drop_wm_pool', Drop_wm_pool_args, :request => request)
+    end
+
+    def recv_drop_wm_pool()
+      result = receive_message(Drop_wm_pool_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'drop_wm_pool failed: unknown result')
+    end
+
+    def create_or_update_wm_mapping(request)
+      send_create_or_update_wm_mapping(request)
+      return recv_create_or_update_wm_mapping()
+    end
+
+    def send_create_or_update_wm_mapping(request)
+      send_message('create_or_update_wm_mapping', Create_or_update_wm_mapping_args, :request => request)
+    end
+
+    def recv_create_or_update_wm_mapping()
+      result = receive_message(Create_or_update_wm_mapping_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'create_or_update_wm_mapping failed: unknown result')
+    end
+
+    def drop_wm_mapping(request)
+      send_drop_wm_mapping(request)
+      return recv_drop_wm_mapping()
+    end
+
+    def send_drop_wm_mapping(request)
+      send_message('drop_wm_mapping', Drop_wm_mapping_args, :request => request)
+    end
+
+    def recv_drop_wm_mapping()
+      result = receive_message(Drop_wm_mapping_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'drop_wm_mapping failed: unknown result')
+    end
+
+    def create_or_drop_wm_trigger_to_pool_mapping(request)
+      send_create_or_drop_wm_trigger_to_pool_mapping(request)
+      return recv_create_or_drop_wm_trigger_to_pool_mapping()
+    end
+
+    def send_create_or_drop_wm_trigger_to_pool_mapping(request)
+      send_message('create_or_drop_wm_trigger_to_pool_mapping', Create_or_drop_wm_trigger_to_pool_mapping_args, :request => request)
+    end
+
+    def recv_create_or_drop_wm_trigger_to_pool_mapping()
+      result = receive_message(Create_or_drop_wm_trigger_to_pool_mapping_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'create_or_drop_wm_trigger_to_pool_mapping failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -5027,6 +5139,104 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_triggers_for_resourceplan', seqid)
+    end
+
+    def process_create_wm_pool(seqid, iprot, oprot)
+      args = read_args(iprot, Create_wm_pool_args)
+      result = Create_wm_pool_result.new()
+      begin
+        result.success = @handler.create_wm_pool(args.request)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      rescue ::InvalidObjectException => o3
+        result.o3 = o3
+      rescue ::MetaException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'create_wm_pool', seqid)
+    end
+
+    def process_alter_wm_pool(seqid, iprot, oprot)
+      args = read_args(iprot, Alter_wm_pool_args)
+      result = Alter_wm_pool_result.new()
+      begin
+        result.success = @handler.alter_wm_pool(args.request)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      rescue ::InvalidObjectException => o3
+        result.o3 = o3
+      rescue ::MetaException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'alter_wm_pool', seqid)
+    end
+
+    def process_drop_wm_pool(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_wm_pool_args)
+      result = Drop_wm_pool_result.new()
+      begin
+        result.success = @handler.drop_wm_pool(args.request)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::InvalidOperationException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'drop_wm_pool', seqid)
+    end
+
+    def process_create_or_update_wm_mapping(seqid, iprot, oprot)
+      args = read_args(iprot, Create_or_update_wm_mapping_args)
+      result = Create_or_update_wm_mapping_result.new()
+      begin
+        result.success = @handler.create_or_update_wm_mapping(args.request)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      rescue ::InvalidObjectException => o3
+        result.o3 = o3
+      rescue ::MetaException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'create_or_update_wm_mapping', seqid)
+    end
+
+    def process_drop_wm_mapping(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_wm_mapping_args)
+      result = Drop_wm_mapping_result.new()
+      begin
+        result.success = @handler.drop_wm_mapping(args.request)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::InvalidOperationException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'drop_wm_mapping', seqid)
+    end
+
+    def process_create_or_drop_wm_trigger_to_pool_mapping(seqid, iprot, oprot)
+      args = read_args(iprot, Create_or_drop_wm_trigger_to_pool_mapping_args)
+      result = Create_or_drop_wm_trigger_to_pool_mapping_result.new()
+      begin
+        result.success = @handler.create_or_drop_wm_trigger_to_pool_mapping(args.request)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      rescue ::InvalidObjectException => o3
+        result.o3 = o3
+      rescue ::MetaException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'create_or_drop_wm_trigger_to_pool_mapping', seqid)
     end
 
   end
@@ -11480,6 +11690,242 @@ module ThriftHiveMetastore
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::WMGetTriggersForResourePlanResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_wm_pool_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::WMCreatePoolRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_wm_pool_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::WMCreatePoolResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::InvalidObjectException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_wm_pool_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::WMAlterPoolRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_wm_pool_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::WMAlterPoolResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::InvalidObjectException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_wm_pool_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::WMDropPoolRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_wm_pool_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::WMDropPoolResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidOperationException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_or_update_wm_mapping_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::WMCreateOrUpdateMappingRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_or_update_wm_mapping_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::WMCreateOrUpdateMappingResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::InvalidObjectException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_wm_mapping_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::WMDropMappingRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_wm_mapping_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::WMDropMappingResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidOperationException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_or_drop_wm_trigger_to_pool_mapping_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::WMCreateOrDropTriggerToPoolMappingRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_or_drop_wm_trigger_to_pool_mapping_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::WMCreateOrDropTriggerToPoolMappingResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::InvalidObjectException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

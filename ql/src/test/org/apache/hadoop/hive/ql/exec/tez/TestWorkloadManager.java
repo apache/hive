@@ -136,7 +136,7 @@ public class TestWorkloadManager {
 
   public static WMMapping mapping(String type, String user, String pool, int ordering) {
     WMMapping mapping = new WMMapping("rp", type, user);
-    mapping.setPoolName(pool);
+    mapping.setPoolPath(pool);
     mapping.setOrdering(ordering);
     return mapping;
   }

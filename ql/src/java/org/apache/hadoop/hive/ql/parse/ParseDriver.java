@@ -31,6 +31,9 @@ import org.antlr.runtime.tree.CommonTreeAdaptor;
 import org.antlr.runtime.tree.TreeAdaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.sun.tools.extcheck.Main;
+
 import org.apache.hadoop.hive.ql.Context;
 
 /**

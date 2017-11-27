@@ -362,6 +362,10 @@ KW_DEFAULT: 'DEFAULT';
 KW_POOL: 'POOL';
 KW_MOVE: 'MOVE';
 KW_DO: 'DO';
+KW_ALLOC_FRACTION: 'ALLOC_FRACTION';
+KW_SCHEDULING_POLICY: 'SCHEDULING_POLICY';
+KW_PATH: 'PATH';
+KW_MAPPING: 'MAPPING';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

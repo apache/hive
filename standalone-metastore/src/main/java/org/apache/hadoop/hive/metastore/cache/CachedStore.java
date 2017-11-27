@@ -91,6 +91,8 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -2382,7 +2384,7 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public void createResourcePlan(WMResourcePlan resourcePlan, int defaultPoolSize)
-      throws AlreadyExistsException, MetaException {
+      throws AlreadyExistsException, InvalidObjectException, MetaException {
     rawStore.createResourcePlan(resourcePlan, defaultPoolSize);
   }
 
@@ -2443,6 +2445,50 @@ public class CachedStore implements RawStore, Configurable {
   public List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName)
       throws NoSuchObjectException, MetaException {
     return rawStore.getTriggersForResourcePlan(resourcePlanName);
+  }
+
+  @Override
+  public void createPool(WMPool pool) throws AlreadyExistsException, NoSuchObjectException,
+      InvalidOperationException, MetaException {
+    rawStore.createPool(pool);
+  }
+
+  @Override
+  public void alterPool(WMPool pool, String poolPath) throws AlreadyExistsException,
+      NoSuchObjectException, InvalidOperationException, MetaException {
+    rawStore.alterPool(pool, poolPath);
+  }
+
+  @Override
+  public void dropWMPool(String resourcePlanName, String poolPath)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    rawStore.dropWMPool(resourcePlanName, poolPath);
+  }
+
+  @Override
+  public void createOrUpdateWMMapping(WMMapping mapping, boolean update)
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
+      MetaException {
+    rawStore.createOrUpdateWMMapping(mapping, update);
+  }
+
+  @Override
+  public void dropWMMapping(WMMapping mapping)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    rawStore.dropWMMapping(mapping);
+  }
+
+  @Override
+  public void createWMTriggerToPoolMapping(String resourcePlanName, String triggerName,
+      String poolPath) throws AlreadyExistsException, NoSuchObjectException,
+      InvalidOperationException, MetaException {
+    rawStore.createWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath);
+  }
+
+  @Override
+  public void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName,
+      String poolPath) throws NoSuchObjectException, InvalidOperationException, MetaException {
+    rawStore.dropWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath);
   }
 
   static boolean isNotInBlackList(String dbName, String tblName) {

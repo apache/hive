@@ -149,7 +149,14 @@ public enum HiveOperation {
   DROP_RESOURCEPLAN("DROP RESOURCEPLAN", null, null, false, false),
   CREATE_TRIGGER("CREATE TRIGGER", null, null, false, false),
   ALTER_TRIGGER("ALTER TRIGGER", null, null, false, false),
-  DROP_TRIGGER("DROP TRIGGER", null, null, false, false);
+  DROP_TRIGGER("DROP TRIGGER", null, null, false, false),
+  CREATE_POOL("CREATE POOL", null, null, false, false),
+  ALTER_POOL("ALTER POOL", null, null, false, false),
+  DROP_POOL("DROP POOL", null, null, false, false),
+  CREATE_MAPPING("CREATE MAPPING", null, null, false, false),
+  ALTER_MAPPING("ALTER MAPPING", null, null, false, false),
+  DROP_MAPPING("DROP MAPPING", null, null, false, false);
+
 
   private String operationName;
 

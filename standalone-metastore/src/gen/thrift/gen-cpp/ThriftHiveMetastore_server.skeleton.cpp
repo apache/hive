@@ -887,6 +887,36 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_triggers_for_resourceplan\n");
   }
 
+  void create_wm_pool(WMCreatePoolResponse& _return, const WMCreatePoolRequest& request) {
+    // Your implementation goes here
+    printf("create_wm_pool\n");
+  }
+
+  void alter_wm_pool(WMAlterPoolResponse& _return, const WMAlterPoolRequest& request) {
+    // Your implementation goes here
+    printf("alter_wm_pool\n");
+  }
+
+  void drop_wm_pool(WMDropPoolResponse& _return, const WMDropPoolRequest& request) {
+    // Your implementation goes here
+    printf("drop_wm_pool\n");
+  }
+
+  void create_or_update_wm_mapping(WMCreateOrUpdateMappingResponse& _return, const WMCreateOrUpdateMappingRequest& request) {
+    // Your implementation goes here
+    printf("create_or_update_wm_mapping\n");
+  }
+
+  void drop_wm_mapping(WMDropMappingResponse& _return, const WMDropMappingRequest& request) {
+    // Your implementation goes here
+    printf("drop_wm_mapping\n");
+  }
+
+  void create_or_drop_wm_trigger_to_pool_mapping(WMCreateOrDropTriggerToPoolMappingResponse& _return, const WMCreateOrDropTriggerToPoolMappingRequest& request) {
+    // Your implementation goes here
+    printf("create_or_drop_wm_trigger_to_pool_mapping\n");
+  }
+
 };
 
 int main(int argc, char **argv) {
