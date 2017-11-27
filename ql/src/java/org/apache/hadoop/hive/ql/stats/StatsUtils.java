@@ -1981,15 +1981,14 @@ public class StatsUtils {
       long min2 = range2.minValue.longValue();
       long max2 = range2.maxValue.longValue();
 
-      if (   (min1 < min2 && max1 < max2)
-          || (min1 > min2 && max1 > max2)) {
+      if (max1 < min2 || max2 < min1) {
         // No overlap between the two ranges
         return null;
       } else {
         // There is an overlap of ranges - create combined range.
         return new ColStatistics.Range(
             Math.min(min1, min2),
-            Math.max(max1,  max2));
+            Math.max(max1, max2));
       }
     }
     return null;
