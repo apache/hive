@@ -865,6 +865,18 @@ public class BeeLine implements Closeable {
 
 
     if (url != null) {
+      // Specifying username/password/driver explicitly will override the values from the url;
+      // make sure we don't override the values present in the url with empty values.
+      if (user == null) {
+        user = Utils.parsePropertyFromUrl(url, JdbcConnectionParams.AUTH_USER);
+      }
+      if (pass == null) {
+        pass = Utils.parsePropertyFromUrl(url, JdbcConnectionParams.AUTH_PASSWD);
+      }
+      if (driver == null) {
+        driver = Utils.parsePropertyFromUrl(url, JdbcConnectionParams.PROPERTY_DRIVER);
+      }
+
       String com;
       String comForDebug;
       if(pass != null) {
