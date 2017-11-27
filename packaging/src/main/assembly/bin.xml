@@ -172,6 +172,7 @@
         <include>beeline</include>
         <include>hiveserver2</include>
         <include>hive-config.sh</include>
+        <include>init-hive-dfs.sh</include>
         <include>hive-config.cmd</include>
         <include>hive.cmd</include>
         <include>hplsql.cmd</include>
