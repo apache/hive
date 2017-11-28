@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
@@ -75,6 +74,7 @@ public class MiniHS2 extends AbstractHiveService {
   private final boolean cleanupLocalDirOnStartup;
   private final boolean isMetastoreSecure;
   private MiniClusterType miniClusterType = MiniClusterType.LOCALFS_ONLY;
+  private boolean usePortsFromConf = false;
 
   public enum MiniClusterType {
     MR,
@@ -227,6 +227,7 @@ public class MiniHS2 extends AbstractHiveService {
     this.isMetastoreRemote = isMetastoreRemote;
     this.isMetastoreSecure = isMetastoreSecure;
     this.cleanupLocalDirOnStartup = cleanupLocalDirOnStartup;
+    this.usePortsFromConf = usePortsFromConf;
     baseDir = getBaseDir();
     localFS = FileSystem.getLocal(hiveConf);
     FileSystem fs;
@@ -334,18 +335,42 @@ public class MiniHS2 extends AbstractHiveService {
 
   public void start(Map<String, String> confOverlay) throws Exception {
     if (isMetastoreRemote) {
-      int metaStorePort = MetaStoreTestUtils.findFreePort();
+      int metaStorePort = MetaStoreTestUtils.startMetaStoreWithRetry(getHiveConf());
       getHiveConf().setVar(ConfVars.METASTOREURIS, "thrift://localhost:" + metaStorePort);
-      MetaStoreTestUtils.startMetaStore(metaStorePort, HadoopThriftAuthBridge.getBridge(), getHiveConf());
     }
 
-    hiveServer2 = new HiveServer2();
     // Set confOverlay parameters
     for (Map.Entry<String, String> entry : confOverlay.entrySet()) {
       setConfProperty(entry.getKey(), entry.getValue());
     }
-    hiveServer2.init(getHiveConf());
-    hiveServer2.start();
+
+    Exception hs2Exception = null;
+    boolean hs2Started = false;
+    for (int tryCount = 0; (tryCount < MetaStoreTestUtils.RETRY_COUNT); tryCount++) {
+      try {
+        hiveServer2 = new HiveServer2();
+        hiveServer2.init(getHiveConf());
+        hiveServer2.start();
+        hs2Started = true;
+        break;
+      } catch (Exception t) {
+        hs2Exception = t;
+        if (usePortsFromConf) {
+          hs2Started = false;
+          break;
+        } else {
+          HiveConf.setIntVar(getHiveConf(), HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT,
+              MetaStoreTestUtils.findFreePort());
+          HiveConf.setIntVar(getHiveConf(), HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT,
+              MetaStoreTestUtils.findFreePort());
+        }
+      }
+    }
+
+    if (!hs2Started) {
+      throw(hs2Exception);
+    }
+
     waitForStartup();
     setStarted(true);
   }
