@@ -474,7 +474,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     public void submissionFailed(String fragmentId, Throwable throwable) {
       try {
         sendOrQueueEvent(ReaderEvent.errorEvent(
-            "Received submission failed event for fragment ID " + fragmentId));
+            "Received submission failed event for fragment ID " + fragmentId + ": " + throwable.toString()));
       } catch (Exception err) {
         LOG.error("Error during heartbeat responder:", err);
       }
