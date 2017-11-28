@@ -296,8 +296,9 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
             keyWritable.get()[keyLength] = reduceTagByte;
           }
           keyWritable.setDistKeyLength(keyLength);
-          keyWritable.setHashCode(hashCode);
         }
+
+        keyWritable.setHashCode(hashCode);
 
         if (!isEmptyValue) {
           valueLazyBinarySerializeWrite.reset();
