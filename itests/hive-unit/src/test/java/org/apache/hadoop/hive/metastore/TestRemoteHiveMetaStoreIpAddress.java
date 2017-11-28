@@ -48,11 +48,10 @@ public class TestRemoteHiveMetaStoreIpAddress extends TestCase {
       return;
     }
 
-    int port = MetaStoreTestUtils.findFreePort();
-    System.out.println("Starting MetaStore Server on port " + port);
     System.setProperty(ConfVars.METASTORE_EVENT_LISTENERS.varname,
         IpAddressListener.class.getName());
-    MetaStoreTestUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
+    int port = MetaStoreTestUtils.startMetaStoreWithRetry();
+    System.out.println("Started MetaStore Server on port " + port);
     isServerStarted = true;
 
     // This is default case with setugi off for both client and server

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -35,6 +36,7 @@ import org.slf4j.LoggerFactory;
 public class MetaStoreTestUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger("hive.log");
+  public static final int RETRY_COUNT = 10;
 
   public static int startMetaStore() throws Exception {
     return MetaStoreTestUtils.startMetaStore(HadoopThriftAuthBridge.getBridge(), null);
@@ -74,6 +76,36 @@ public class MetaStoreTestUtils {
     thread.setDaemon(true);
     thread.start();
     MetaStoreTestUtils.loopUntilHMSReady(port);
+  }
+
+  public static int startMetaStoreWithRetry(final HadoopThriftAuthBridge bridge) throws Exception {
+    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, null);
+  }
+
+  public static int startMetaStoreWithRetry(HiveConf conf) throws Exception {
+    return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
+  }
+
+  public static int startMetaStoreWithRetry() throws Exception {
+    return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), null);
+  }
+
+  public static int startMetaStoreWithRetry(final HadoopThriftAuthBridge bridge, HiveConf conf)
+      throws Exception {
+    Exception metaStoreException = null;
+    int metaStorePort = 0;
+
+    for (int tryCount = 0; tryCount < MetaStoreTestUtils.RETRY_COUNT; tryCount++) {
+      try {
+        metaStorePort = MetaStoreTestUtils.findFreePort();
+        MetaStoreTestUtils.startMetaStore(metaStorePort, bridge, conf);
+        return metaStorePort;
+      } catch (ConnectException ce) {
+        metaStoreException = ce;
+      }
+    }
+
+    throw metaStoreException;
   }
 
   /**

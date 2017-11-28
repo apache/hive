@@ -80,8 +80,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
       SessionState.start(conf);
 
       // Test with remote metastore service
-      int port = MetaStoreTestUtils.findFreePort();
-      MetaStoreTestUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
+      int port = MetaStoreTestUtils.startMetaStoreWithRetry();
       conf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
       conf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
       conf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");

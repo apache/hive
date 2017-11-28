@@ -80,9 +80,7 @@ public class TestPermsGrp extends TestCase {
       return;
     }
 
-
-    msPort = MetaStoreTestUtils.findFreePort();
-    MetaStoreTestUtils.startMetaStore(msPort, HadoopThriftAuthBridge.getBridge());
+    msPort = MetaStoreTestUtils.startMetaStoreWithRetry();
 
     isServerRunning = true;
 
