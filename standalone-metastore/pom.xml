@@ -229,10 +229,15 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- This is our one and only Hive dependency.-->
+    <!-- This and serde API is our only Hive dependency.-->
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-storage-api</artifactId>
+      <version>${storage-api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-serde-api</artifactId>
       <version>${storage-api.version}</version>
     </dependency>
     <dependency>

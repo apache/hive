@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMergerFacto
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
 import org.apache.hadoop.security.authorize.ProxyUsers;
@@ -1560,4 +1561,5 @@ public class MetaStoreUtils {
     }
     return cols;
   }
+
 }

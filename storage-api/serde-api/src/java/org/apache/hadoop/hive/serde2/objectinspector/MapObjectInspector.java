@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 
 import java.util.Map;
 
