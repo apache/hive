@@ -10,6 +10,8 @@ show grant user hive_test_user;
 -- Initialize the hive schema.
 source ../../metastore/scripts/upgrade/hive/hive-schema-3.0.0.hive.sql;
 
+-- SORT_QUERY_RESULTS
+
 --
 -- Actual tests.
 --
@@ -51,6 +53,13 @@ SELECT * FROM SYS.WM_RESOURCEPLANS;
 
 -- Will fail for now; there are no pools.
 ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = default1;
+SELECT * FROM SYS.WM_RESOURCEPLANS;
+
+-- Shouldn't be able to rename or modify an enabled plan.
+ALTER RESOURCE PLAN plan_3 ENABLE;
+ALTER RESOURCE PLAN plan_3 RENAME TO plan_4;
+ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30;
+ALTER RESOURCE PLAN plan_3 DISABLE;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
 
 --
