@@ -41,12 +41,12 @@ public class VectorMapJoinInfo {
   private int[] bigTableKeyColumnMap;
   private String[] bigTableKeyColumnNames;
   private TypeInfo[] bigTableKeyTypeInfos;
-  private VectorExpression[] bigTableKeyExpressions;
+  private VectorExpression[] slimmedBigTableKeyExpressions;
 
   private int[] bigTableValueColumnMap;
   private String[] bigTableValueColumnNames;
   private TypeInfo[] bigTableValueTypeInfos;
-  private VectorExpression[] bigTableValueExpressions;
+  private VectorExpression[] slimmedBigTableValueExpressions;
 
   private VectorColumnOutputMapping bigTableRetainedMapping;
   private VectorColumnOutputMapping bigTableOuterKeyMapping;
@@ -58,12 +58,12 @@ public class VectorMapJoinInfo {
     bigTableKeyColumnMap = null;
     bigTableKeyColumnNames = null;
     bigTableKeyTypeInfos = null;
-    bigTableKeyExpressions = null;
+    slimmedBigTableKeyExpressions = null;
 
     bigTableValueColumnMap = null;
     bigTableValueColumnNames = null;
     bigTableValueTypeInfos = null;
-    bigTableValueExpressions = null;
+    slimmedBigTableValueExpressions = null;
 
     bigTableRetainedMapping = null;
     bigTableOuterKeyMapping = null;
@@ -96,12 +96,12 @@ public class VectorMapJoinInfo {
     this.bigTableKeyTypeInfos = bigTableKeyTypeInfos;
   }
 
-  public VectorExpression[] getBigTableKeyExpressions() {
-    return bigTableKeyExpressions;
+  public VectorExpression[] getSlimmedBigTableKeyExpressions() {
+    return slimmedBigTableKeyExpressions;
   }
 
-  public void setBigTableKeyExpressions(VectorExpression[] bigTableKeyExpressions) {
-    this.bigTableKeyExpressions = bigTableKeyExpressions;
+  public void setSlimmedBigTableKeyExpressions(VectorExpression[] slimmedBigTableKeyExpressions) {
+    this.slimmedBigTableKeyExpressions = slimmedBigTableKeyExpressions;
   }
 
 
@@ -129,12 +129,13 @@ public class VectorMapJoinInfo {
     this.bigTableValueTypeInfos = bigTableValueTypeInfos;
   }
 
-  public VectorExpression[] getBigTableValueExpressions() {
-    return bigTableValueExpressions;
+  public VectorExpression[] getSlimmedBigTableValueExpressions() {
+    return slimmedBigTableValueExpressions;
   }
 
-  public void setBigTableValueExpressions(VectorExpression[] bigTableValueExpressions) {
-    this.bigTableValueExpressions = bigTableValueExpressions;
+  public void setSlimmedBigTableValueExpressions(
+      VectorExpression[] slimmedBigTableValueExpressions) {
+    this.slimmedBigTableValueExpressions = slimmedBigTableValueExpressions;
   }
 
   public void setBigTableRetainedMapping(VectorColumnOutputMapping bigTableRetainedMapping) {

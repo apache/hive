@@ -127,6 +127,7 @@ STAGE PLANS:
                 0 
                 1 
               Map Join Vectorization:
+                  bigTableValueExpressions: col 0:bigint, col 1:bigint
                   className: VectorMapJoinOperator
                   native: false
                   nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
@@ -185,6 +186,8 @@ STAGE PLANS:
                 0 _col0 (type: string)
                 1 _col0 (type: string)
               Map Join Vectorization:
+                  bigTableKeyExpressions: col 0:string
+                  bigTableValueExpressions: col 0:string, col 1:string, col 2:bigint, col 3:bigint
                   className: VectorMapJoinOperator
                   native: false
                   nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
