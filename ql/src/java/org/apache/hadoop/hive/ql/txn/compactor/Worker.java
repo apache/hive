@@ -273,8 +273,9 @@ public class Worker extends CompactorThread {
           sb.append(" partition(");
           Map<String, String> partitionColumnValues = Warehouse.makeEscSpecFromName(ci.partName);
           for(Map.Entry<String, String> ent : partitionColumnValues.entrySet()) {
-            sb.append(ent.getKey()).append("='").append(ent.getValue()).append("'");
+            sb.append(ent.getKey()).append("='").append(ent.getValue()).append("',");
           }
+          sb.setLength(sb.length() - 1); //remove trailing ,
           sb.append(")");
         }
         catch(MetaException ex) {
@@ -285,7 +286,7 @@ public class Worker extends CompactorThread {
       for(String colName : columnList) {
         sb.append(colName).append(",");
       }
-      sb.setLength(sb.length() - 1);//remove trailing ,
+      sb.setLength(sb.length() - 1); //remove trailing ,
       LOG.info("running '" + sb.toString() + "'");
       Driver d = new Driver(conf, userName);
       SessionState localSession = null;
