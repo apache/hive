@@ -19,9 +19,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.util.Collection;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,15 +37,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.security.auth.login.LoginException;
+
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.impl.LlapProtocolClientImpl;
 import org.apache.hadoop.hive.llap.security.LlapTokenClient;
@@ -87,6 +89,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 /**
  * Holds session state related to Tez
  */
@@ -121,6 +126,7 @@ public class TezSessionState {
   private TriggerContext triggerContext;
   private KillQuery killQuery;
 
+  private static final Cache<String, String> shaCache = CacheBuilder.newBuilder().maximumSize(100).build();
   /**
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
@@ -698,8 +704,7 @@ public class TezSessionState {
    * @throws URISyntaxException when current jar location cannot be determined.
    */
   private LocalResource createJarLocalResource(String localJarPath)
-      throws IOException, LoginException, IllegalArgumentException,
-      FileNotFoundException {
+      throws IOException, LoginException, IllegalArgumentException {
     // TODO Reduce the number of lookups that happen here. This shouldn't go to HDFS for each call.
     // The hiveJarDir can be determined once per client.
     FileStatus destDirStatus = utils.getHiveJarDirectory(conf);
@@ -726,6 +731,10 @@ public class TezSessionState {
     return utils.localizeResource(localFile, destFile, LocalResourceType.FILE, conf);
   }
 
+  private String getKey(final FileStatus fileStatus) {
+    return fileStatus.getPath() + ":" + fileStatus.getLen() + ":" + fileStatus.getModificationTime();
+  }
+
   private void addJarLRByClassName(String className, final Map<String, LocalResource> lrMap) throws
       IOException, LoginException {
     Class<?> clazz;
@@ -741,22 +750,34 @@ public class TezSessionState {
       LoginException {
     final File jar =
         new File(Utilities.jarFinderGetJar(clazz));
+    final String localJarPath = jar.toURI().toURL().toExternalForm();
     final LocalResource jarLr =
-        createJarLocalResource(jar.toURI().toURL().toExternalForm());
+      createJarLocalResource(localJarPath);
     lrMap.put(utils.getBaseName(jarLr), jarLr);
   }
 
-  private String getSha(Path localFile) throws IOException, IllegalArgumentException {
-    InputStream is = null;
-    try {
-      FileSystem localFs = FileSystem.getLocal(conf);
-      is = localFs.open(localFile);
-      return DigestUtils.sha256Hex(is);
-    } finally {
-      if (is != null) {
-        is.close();
+  private String getSha(final Path localFile) throws IOException, IllegalArgumentException {
+    FileSystem localFs = FileSystem.getLocal(conf);
+    FileStatus fileStatus = localFs.getFileStatus(localFile);
+    String key = getKey(fileStatus);
+    String sha256 = shaCache.getIfPresent(key);
+    if (sha256 == null) {
+      FSDataInputStream is = null;
+      try {
+        is = localFs.open(localFile);
+        long start = System.currentTimeMillis();
+        sha256 = DigestUtils.sha256Hex(is);
+        long end = System.currentTimeMillis();
+        LOG.info("Computed sha: {} for file: {} of length: {} in {} ms", sha256, localFile,
+          LlapUtil.humanReadableByteCount(fileStatus.getLen()), end - start);
+        shaCache.put(key, sha256);
+      } finally {
+        if (is != null) {
+          is.close();
+        }
       }
     }
+    return sha256;
   }
   public void setQueueName(String queueName) {
     this.queueName = queueName;
