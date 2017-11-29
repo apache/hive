@@ -1,0 +1,203 @@
+WARNING: Comparing a bigint and a double may result in a loss of precision.
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT STDDEV_SAMP(csmallint),
+       (STDDEV_SAMP(csmallint) - 10.175),
+       STDDEV_POP(ctinyint),
+       (STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)),
+       (-(STDDEV_POP(ctinyint))),
+       (STDDEV_SAMP(csmallint) % 79.553),
+       (-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))),
+       STDDEV_SAMP(cfloat),
+       (-(STDDEV_SAMP(csmallint))),
+       SUM(cfloat),
+       ((-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))) / (STDDEV_SAMP(csmallint) - 10.175)),
+       (-((STDDEV_SAMP(csmallint) - 10.175))),
+       AVG(cint),
+       (-3728 - STDDEV_SAMP(csmallint)),
+       STDDEV_POP(cint),
+       (AVG(cint) / STDDEV_SAMP(cfloat))
+FROM   alltypesparquet
+WHERE  (((cint <= cfloat)
+         AND ((79.553 != cbigint)
+              AND (ctimestamp2 = -29071)))
+        OR ((cbigint > cdouble)
+            AND ((79.553 <= csmallint)
+                 AND (ctimestamp1 > ctimestamp2))))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT STDDEV_SAMP(csmallint),
+       (STDDEV_SAMP(csmallint) - 10.175),
+       STDDEV_POP(ctinyint),
+       (STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)),
+       (-(STDDEV_POP(ctinyint))),
+       (STDDEV_SAMP(csmallint) % 79.553),
+       (-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))),
+       STDDEV_SAMP(cfloat),
+       (-(STDDEV_SAMP(csmallint))),
+       SUM(cfloat),
+       ((-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))) / (STDDEV_SAMP(csmallint) - 10.175)),
+       (-((STDDEV_SAMP(csmallint) - 10.175))),
+       AVG(cint),
+       (-3728 - STDDEV_SAMP(csmallint)),
+       STDDEV_POP(cint),
+       (AVG(cint) / STDDEV_SAMP(cfloat))
+FROM   alltypesparquet
+WHERE  (((cint <= cfloat)
+         AND ((79.553 != cbigint)
+              AND (ctimestamp2 = -29071)))
+        OR ((cbigint > cdouble)
+            AND ((79.553 <= csmallint)
+                 AND (ctimestamp1 > ctimestamp2))))
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesparquet
+            Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+            Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleColumn(col 13:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 13:float), FilterDecimalScalarNotEqualDecimalColumn(val 79.553, col 14:decimal(22,3))(children: CastLongToDecimal(col 3:bigint) -> 14:decimal(22,3)), FilterDoubleColEqualDoubleScalar(col 13:double, val -29071.0)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double)), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 13:double), FilterDecimalScalarLessEqualDecimalColumn(val 79.553, col 15:decimal(8,3))(children: CastLongToDecimal(col 1:smallint) -> 15:decimal(8,3)), FilterTimestampColGreaterTimestampColumn(col 8:timestamp, col 9:timestamp)))
+              predicate: (((UDFToDouble(cbigint) > cdouble) and (79.553 <= CAST( csmallint AS decimal(8,3))) and (ctimestamp1 > ctimestamp2)) or ((UDFToFloat(cint) <= cfloat) and (79.553 <> CAST( cbigint AS decimal(22,3))) and (UDFToDouble(ctimestamp2) = -29071.0))) (type: boolean)
+              Statistics: Num rows: 2503 Data size: 30036 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cfloat (type: float)
+                outputColumnNames: ctinyint, csmallint, cint, cfloat
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2, 4]
+                Statistics: Num rows: 2503 Data size: 30036 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: stddev_samp(csmallint), stddev_pop(ctinyint), stddev_samp(cfloat), sum(cfloat), avg(cint), stddev_pop(cint)
+                  Group By Vectorization:
+                      aggregators: VectorUDAFVarLong(col 1:smallint) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_samp, VectorUDAFVarLong(col 0:tinyint) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop, VectorUDAFVarDouble(col 4:float) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_samp, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFAvgLong(col 2:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFVarLong(col 2:int) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop
+                      className: VectorGroupByOperator
+                      groupByMode: HASH
+                      native: false
+                      vectorProcessingMode: HASH
+                      projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkOperator
+                        native: false
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                    Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: struct<count:bigint,sum:double,variance:double>), _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>), _col3 (type: double), _col4 (type: struct<count:bigint,sum:double,input:int>), _col5 (type: struct<count:bigint,sum:double,variance:double>)
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 12
+              includeColumns: [0, 1, 2, 3, 4, 5, 8, 9]
+              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [double, decimal(22,3), decimal(8,3)]
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: stddev_samp(VALUE._col0), stddev_pop(VALUE._col1), stddev_samp(VALUE._col2), sum(VALUE._col3), avg(VALUE._col4), stddev_pop(VALUE._col5)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: double), (_col0 - 10.175) (type: double), _col1 (type: double), (_col0 * (_col0 - 10.175)) (type: double), (- _col1) (type: double), (_col0 % 79.553) (type: double), (- (_col0 * (_col0 - 10.175))) (type: double), _col2 (type: double), (- _col0) (type: double), _col3 (type: double), ((- (_col0 * (_col0 - 10.175))) / (_col0 - 10.175)) (type: double), (- (_col0 - 10.175)) (type: double), _col4 (type: double), (-3728.0 - _col0) (type: double), _col5 (type: double), (_col4 / _col2) (type: double)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
+            Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+WARNING: Comparing a bigint and a double may result in a loss of precision.
+PREHOOK: query: SELECT STDDEV_SAMP(csmallint),
+       (STDDEV_SAMP(csmallint) - 10.175),
+       STDDEV_POP(ctinyint),
+       (STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)),
+       (-(STDDEV_POP(ctinyint))),
+       (STDDEV_SAMP(csmallint) % 79.553),
+       (-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))),
+       STDDEV_SAMP(cfloat),
+       (-(STDDEV_SAMP(csmallint))),
+       SUM(cfloat),
+       ((-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))) / (STDDEV_SAMP(csmallint) - 10.175)),
+       (-((STDDEV_SAMP(csmallint) - 10.175))),
+       AVG(cint),
+       (-3728 - STDDEV_SAMP(csmallint)),
+       STDDEV_POP(cint),
+       (AVG(cint) / STDDEV_SAMP(cfloat))
+FROM   alltypesparquet
+WHERE  (((cint <= cfloat)
+         AND ((79.553 != cbigint)
+              AND (ctimestamp2 = -29071)))
+        OR ((cbigint > cdouble)
+            AND ((79.553 <= csmallint)
+                 AND (ctimestamp1 > ctimestamp2))))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT STDDEV_SAMP(csmallint),
+       (STDDEV_SAMP(csmallint) - 10.175),
+       STDDEV_POP(ctinyint),
+       (STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)),
+       (-(STDDEV_POP(ctinyint))),
+       (STDDEV_SAMP(csmallint) % 79.553),
+       (-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))),
+       STDDEV_SAMP(cfloat),
+       (-(STDDEV_SAMP(csmallint))),
+       SUM(cfloat),
+       ((-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))) / (STDDEV_SAMP(csmallint) - 10.175)),
+       (-((STDDEV_SAMP(csmallint) - 10.175))),
+       AVG(cint),
+       (-3728 - STDDEV_SAMP(csmallint)),
+       STDDEV_POP(cint),
+       (AVG(cint) / STDDEV_SAMP(cfloat))
+FROM   alltypesparquet
+WHERE  (((cint <= cfloat)
+         AND ((79.553 != cbigint)
+              AND (ctimestamp2 = -29071)))
+        OR ((cbigint > cdouble)
+            AND ((79.553 <= csmallint)
+                 AND (ctimestamp1 > ctimestamp2))))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+0.0	-10.175	34.287285216637066	-0.0	-34.287285216637066	0.0	0.0	34.34690095515641	-0.0	197.89499950408936	-0.0	10.175	NULL	-3728.0	NULL	NULL

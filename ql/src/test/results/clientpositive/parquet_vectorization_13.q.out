@@ -1,0 +1,646 @@
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)) as c1,
+         MAX(ctinyint) as c2,
+         ((-(ctinyint)) + MAX(ctinyint)) as c3,
+         SUM(cfloat) as c4,
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) as c5,
+         (-(SUM(cfloat))) as c6,
+         (79.553 * cfloat) as c7,
+         STDDEV_POP(cfloat) as c8,
+         (-(SUM(cfloat))) as c9,
+         STDDEV_POP(ctinyint) as c10,
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175) as c11,
+         (-((-(SUM(cfloat))))) as c12,
+         (-26.28 / (-((-(SUM(cfloat)))))) as c13,
+         MAX(cfloat) as c14,
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint) as c15,
+         MIN(ctinyint) as c16
+FROM     alltypesparquet
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > 11)
+              AND ((ctimestamp2 != 12)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
+LIMIT 40
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)) as c1,
+         MAX(ctinyint) as c2,
+         ((-(ctinyint)) + MAX(ctinyint)) as c3,
+         SUM(cfloat) as c4,
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) as c5,
+         (-(SUM(cfloat))) as c6,
+         (79.553 * cfloat) as c7,
+         STDDEV_POP(cfloat) as c8,
+         (-(SUM(cfloat))) as c9,
+         STDDEV_POP(ctinyint) as c10,
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175) as c11,
+         (-((-(SUM(cfloat))))) as c12,
+         (-26.28 / (-((-(SUM(cfloat)))))) as c13,
+         MAX(cfloat) as c14,
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint) as c15,
+         MIN(ctinyint) as c16
+FROM     alltypesparquet
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > 11)
+              AND ((ctimestamp2 != 12)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
+LIMIT 40
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesparquet
+            Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+            Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessDoubleScalar(col 4:float, val 3569.0), FilterDoubleScalarGreaterEqualDoubleColumn(val 10.175, col 5:double), FilterLongColNotEqualLongScalar(col 10:boolean, val 1)), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 13:double, val 11.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 13:double, val 12.0)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDecimalColLessDecimalScalar(col 14:decimal(11,4), val 9763215.5639)(children: CastLongToDecimal(col 0:tinyint) -> 14:decimal(11,4))))
+              predicate: (((UDFToDouble(ctimestamp1) > 11.0) and (UDFToDouble(ctimestamp2) <> 12.0) and (CAST( ctinyint AS decimal(11,4)) < 9763215.5639)) or ((cfloat < 3569) and (10.175 >= cdouble) and (cboolean1 <> 1))) (type: boolean)
+              Statistics: Num rows: 2730 Data size: 32760 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: ctinyint (type: tinyint), cfloat (type: float), cstring1 (type: string), ctimestamp1 (type: timestamp), cboolean1 (type: boolean)
+                outputColumnNames: ctinyint, cfloat, cstring1, ctimestamp1, cboolean1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 4, 6, 8, 10]
+                Statistics: Num rows: 2730 Data size: 32760 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: max(ctinyint), sum(cfloat), stddev_pop(cfloat), stddev_pop(ctinyint), max(cfloat), min(ctinyint)
+                  Group By Vectorization:
+                      aggregators: VectorUDAFMaxLong(col 0:tinyint) -> tinyint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFVarDouble(col 4:float) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop, VectorUDAFVarLong(col 0:tinyint) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop, VectorUDAFMaxDouble(col 4:float) -> float, VectorUDAFMinLong(col 0:tinyint) -> tinyint
+                      className: VectorGroupByOperator
+                      groupByMode: HASH
+                      keyExpressions: col 10:boolean, col 0:tinyint, col 8:timestamp, col 4:float, col 6:string
+                      native: false
+                      vectorProcessingMode: HASH
+                      projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
+                  keys: cboolean1 (type: boolean), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cfloat (type: float), cstring1 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                  Statistics: Num rows: 2730 Data size: 32760 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
+                    sort order: +++++
+                    Map-reduce partition columns: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkOperator
+                        native: false
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                    Statistics: Num rows: 2730 Data size: 32760 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col5 (type: tinyint), _col6 (type: double), _col7 (type: struct<count:bigint,sum:double,variance:double>), _col8 (type: struct<count:bigint,sum:double,variance:double>), _col9 (type: float), _col10 (type: tinyint)
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 12
+              includeColumns: [0, 4, 5, 6, 8, 9, 10]
+              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [double, decimal(11,4)]
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0), sum(VALUE._col1), stddev_pop(VALUE._col2), stddev_pop(VALUE._col3), max(VALUE._col4), min(VALUE._col5)
+          keys: KEY._col0 (type: boolean), KEY._col1 (type: tinyint), KEY._col2 (type: timestamp), KEY._col3 (type: float), KEY._col4 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+          Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string), (- _col1) (type: tinyint), _col5 (type: tinyint), ((- _col1) + _col5) (type: tinyint), _col6 (type: double), (_col6 * UDFToDouble(((- _col1) + _col5))) (type: double), (- _col6) (type: double), (79.553 * _col3) (type: float), _col7 (type: double), (- _col6) (type: double), _col8 (type: double), (CAST( ((- _col1) + _col5) AS decimal(3,0)) - 10.175) (type: decimal(7,3)), (- (- _col6)) (type: double), (-26.28 / (- (- _col6))) (type: double), _col9 (type: float), ((_col6 * UDFToDouble(((- _col1) + _col5))) / UDFToDouble(_col1)) (type: double), _col10 (type: tinyint)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+            Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:_col0:boolean, 1:_col1:tinyint, 2:_col2:timestamp, 3:_col3:float, 4:_col4:string, 5:_col5:tinyint, 6:_col6:tinyint, 7:_col7:tinyint, 8:_col8:double, 9:_col9:double, 10:_col10:double, 11:_col11:float, 12:_col12:double, 13:_col13:double, 14:_col14:double, 15:_col15:decimal(7,3), 16:_col16:double, 17:_col17:double, 18:_col18:float, 19:_col19:double, 20:_col20:tinyint]
+            Reduce Output Operator
+              key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string), _col5 (type: tinyint), _col6 (type: tinyint), _col7 (type: tinyint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: decimal(7,3)), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: tinyint)
+              sort order: +++++++++++++++++++++
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 21
+              includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+              dataColumns: _col0:boolean, _col1:tinyint, _col2:timestamp, _col3:float, _col4:string, _col5:tinyint, _col6:tinyint, _col7:tinyint, _col8:double, _col9:double, _col10:double, _col11:float, _col12:double, _col13:double, _col14:double, _col15:decimal(7,3), _col16:double, _col17:double, _col18:float, _col19:double, _col20:tinyint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: boolean), KEY.reducesinkkey1 (type: tinyint), KEY.reducesinkkey2 (type: timestamp), KEY.reducesinkkey3 (type: float), KEY.reducesinkkey4 (type: string), KEY.reducesinkkey5 (type: tinyint), KEY.reducesinkkey6 (type: tinyint), KEY.reducesinkkey7 (type: tinyint), KEY.reducesinkkey8 (type: double), KEY.reducesinkkey9 (type: double), KEY.reducesinkkey10 (type: double), KEY.reducesinkkey11 (type: float), KEY.reducesinkkey12 (type: double), KEY.reducesinkkey10 (type: double), KEY.reducesinkkey14 (type: double), KEY.reducesinkkey15 (type: decimal(7,3)), KEY.reducesinkkey16 (type: double), KEY.reducesinkkey17 (type: double), KEY.reducesinkkey18 (type: float), KEY.reducesinkkey19 (type: double), KEY.reducesinkkey20 (type: tinyint)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+          Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 40
+            Statistics: Num rows: 40 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 40 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 40
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)) as c1,
+         MAX(ctinyint) as c2,
+         ((-(ctinyint)) + MAX(ctinyint)) as c3,
+         SUM(cfloat) as c4,
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) as c5,
+         (-(SUM(cfloat))) as c6,
+         (79.553 * cfloat) as c7,
+         STDDEV_POP(cfloat) as c8,
+         (-(SUM(cfloat))) as c9,
+         STDDEV_POP(ctinyint) as c10,
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175) as c11,
+         (-((-(SUM(cfloat))))) as c12,
+         (-26.28 / (-((-(SUM(cfloat)))))) as c13,
+         MAX(cfloat) as c14,
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint) as c15,
+         MIN(ctinyint) as c16
+FROM     alltypesparquet
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > 11)
+              AND ((ctimestamp2 != 12)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
+LIMIT 40
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)) as c1,
+         MAX(ctinyint) as c2,
+         ((-(ctinyint)) + MAX(ctinyint)) as c3,
+         SUM(cfloat) as c4,
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) as c5,
+         (-(SUM(cfloat))) as c6,
+         (79.553 * cfloat) as c7,
+         STDDEV_POP(cfloat) as c8,
+         (-(SUM(cfloat))) as c9,
+         STDDEV_POP(ctinyint) as c10,
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175) as c11,
+         (-((-(SUM(cfloat))))) as c12,
+         (-26.28 / (-((-(SUM(cfloat)))))) as c13,
+         MAX(cfloat) as c14,
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint) as c15,
+         MIN(ctinyint) as c16
+FROM     alltypesparquet
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > 11)
+              AND ((ctimestamp2 != 12)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
+LIMIT 40
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+NULL	-55	1969-12-31 16:00:11.38	-55.0	NULL	55	-55	0	-55.0	-0.0	55.0	-4375.415	0.0	55.0	0.0	-10.175	-55.0	0.47781818181818186	-55.0	0.0	-55
+NULL	-55	1969-12-31 16:00:11.751	-55.0	NULL	55	-55	0	-55.0	-0.0	55.0	-4375.415	0.0	55.0	0.0	-10.175	-55.0	0.47781818181818186	-55.0	0.0	-55
+NULL	-56	1969-12-31 16:00:13.602	-56.0	NULL	56	-56	0	-56.0	-0.0	56.0	-4454.9683	0.0	56.0	0.0	-10.175	-56.0	0.4692857142857143	-56.0	0.0	-56
+NULL	-56	1969-12-31 16:00:13.958	-56.0	NULL	56	-56	0	-56.0	-0.0	56.0	-4454.9683	0.0	56.0	0.0	-10.175	-56.0	0.4692857142857143	-56.0	0.0	-56
+NULL	-56	1969-12-31 16:00:15.038	-56.0	NULL	56	-56	0	-56.0	-0.0	56.0	-4454.9683	0.0	56.0	0.0	-10.175	-56.0	0.4692857142857143	-56.0	0.0	-56
+NULL	-57	1969-12-31 16:00:11.451	-57.0	NULL	57	-57	0	-57.0	-0.0	57.0	-4534.521	0.0	57.0	0.0	-10.175	-57.0	0.4610526315789474	-57.0	0.0	-57
+NULL	-57	1969-12-31 16:00:11.883	-57.0	NULL	57	-57	0	-57.0	-0.0	57.0	-4534.521	0.0	57.0	0.0	-10.175	-57.0	0.4610526315789474	-57.0	0.0	-57
+NULL	-57	1969-12-31 16:00:12.626	-57.0	NULL	57	-57	0	-57.0	-0.0	57.0	-4534.521	0.0	57.0	0.0	-10.175	-57.0	0.4610526315789474	-57.0	0.0	-57
+NULL	-57	1969-12-31 16:00:13.578	-57.0	NULL	57	-57	0	-57.0	-0.0	57.0	-4534.521	0.0	57.0	0.0	-10.175	-57.0	0.4610526315789474	-57.0	0.0	-57
+NULL	-57	1969-12-31 16:00:15.39	-57.0	NULL	57	-57	0	-57.0	-0.0	57.0	-4534.521	0.0	57.0	0.0	-10.175	-57.0	0.4610526315789474	-57.0	0.0	-57
+NULL	-58	1969-12-31 16:00:12.065	-58.0	NULL	58	-58	0	-58.0	-0.0	58.0	-4614.074	0.0	58.0	0.0	-10.175	-58.0	0.4531034482758621	-58.0	0.0	-58
+NULL	-58	1969-12-31 16:00:12.683	-58.0	NULL	58	-58	0	-58.0	-0.0	58.0	-4614.074	0.0	58.0	0.0	-10.175	-58.0	0.4531034482758621	-58.0	0.0	-58
+NULL	-58	1969-12-31 16:00:12.948	-58.0	NULL	58	-58	0	-58.0	-0.0	58.0	-4614.074	0.0	58.0	0.0	-10.175	-58.0	0.4531034482758621	-58.0	0.0	-58
+NULL	-58	1969-12-31 16:00:14.066	-58.0	NULL	58	-58	0	-58.0	-0.0	58.0	-4614.074	0.0	58.0	0.0	-10.175	-58.0	0.4531034482758621	-58.0	0.0	-58
+NULL	-58	1969-12-31 16:00:15.658	-58.0	NULL	58	-58	0	-58.0	-0.0	58.0	-4614.074	0.0	58.0	0.0	-10.175	-58.0	0.4531034482758621	-58.0	0.0	-58
+NULL	-59	1969-12-31 16:00:12.008	-59.0	NULL	59	-59	0	-59.0	-0.0	59.0	-4693.627	0.0	59.0	0.0	-10.175	-59.0	0.44542372881355935	-59.0	0.0	-59
+NULL	-59	1969-12-31 16:00:13.15	-59.0	NULL	59	-59	0	-59.0	-0.0	59.0	-4693.627	0.0	59.0	0.0	-10.175	-59.0	0.44542372881355935	-59.0	0.0	-59
+NULL	-59	1969-12-31 16:00:13.625	-59.0	NULL	59	-59	0	-59.0	-0.0	59.0	-4693.627	0.0	59.0	0.0	-10.175	-59.0	0.44542372881355935	-59.0	0.0	-59
+NULL	-59	1969-12-31 16:00:15.296	-59.0	NULL	59	-59	0	-59.0	-0.0	59.0	-4693.627	0.0	59.0	0.0	-10.175	-59.0	0.44542372881355935	-59.0	0.0	-59
+NULL	-59	1969-12-31 16:00:15.861	-59.0	NULL	59	-59	0	-59.0	-0.0	59.0	-4693.627	0.0	59.0	0.0	-10.175	-59.0	0.44542372881355935	-59.0	0.0	-59
+NULL	-60	1969-12-31 16:00:11.504	-60.0	NULL	60	-60	0	-60.0	-0.0	60.0	-4773.18	0.0	60.0	0.0	-10.175	-60.0	0.438	-60.0	0.0	-60
+NULL	-60	1969-12-31 16:00:11.641	-60.0	NULL	60	-60	0	-60.0	-0.0	60.0	-4773.18	0.0	60.0	0.0	-10.175	-60.0	0.438	-60.0	0.0	-60
+NULL	-60	1969-12-31 16:00:11.996	-60.0	NULL	60	-60	0	-60.0	-0.0	60.0	-4773.18	0.0	60.0	0.0	-10.175	-60.0	0.438	-60.0	0.0	-60
+NULL	-60	1969-12-31 16:00:12.779	-60.0	NULL	60	-60	0	-60.0	-0.0	60.0	-4773.18	0.0	60.0	0.0	-10.175	-60.0	0.438	-60.0	0.0	-60
+NULL	-61	1969-12-31 16:00:11.842	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-61	1969-12-31 16:00:12.454	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-61	1969-12-31 16:00:14.192	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-61	1969-12-31 16:00:16.558	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-62	1969-12-31 16:00:12.388	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:12.591	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.154	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.247	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.517	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.965	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-63	1969-12-31 16:00:11.946	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:12.188	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:15.436	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-64	1969-12-31 16:00:11.912	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:12.339	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:13.274	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)) as c1,
+         MAX(ctinyint) as c2,
+         ((-(ctinyint)) + MAX(ctinyint)) as c3,
+         SUM(cfloat) as c4,
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) as c5,
+         (-(SUM(cfloat))) as c6,
+         (79.553 * cfloat) as c7,
+         STDDEV_POP(cfloat) as c8,
+         (-(SUM(cfloat))) as c9,
+         STDDEV_POP(ctinyint) as c10,
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175) as c11,
+         (-((-(SUM(cfloat))))) as c12,
+         (-26.28 / (-((-(SUM(cfloat)))))) as c13,
+         MAX(cfloat) as c14,
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint) as c15,
+         MIN(ctinyint) as c16
+FROM     alltypesparquet
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > -1.388)
+              AND ((ctimestamp2 != -1.3359999999999999)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
+LIMIT 40
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)) as c1,
+         MAX(ctinyint) as c2,
+         ((-(ctinyint)) + MAX(ctinyint)) as c3,
+         SUM(cfloat) as c4,
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) as c5,
+         (-(SUM(cfloat))) as c6,
+         (79.553 * cfloat) as c7,
+         STDDEV_POP(cfloat) as c8,
+         (-(SUM(cfloat))) as c9,
+         STDDEV_POP(ctinyint) as c10,
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175) as c11,
+         (-((-(SUM(cfloat))))) as c12,
+         (-26.28 / (-((-(SUM(cfloat)))))) as c13,
+         MAX(cfloat) as c14,
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint) as c15,
+         MIN(ctinyint) as c16
+FROM     alltypesparquet
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > -1.388)
+              AND ((ctimestamp2 != -1.3359999999999999)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
+LIMIT 40
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesparquet
+            Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+            Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessDoubleScalar(col 4:float, val 3569.0), FilterDoubleScalarGreaterEqualDoubleColumn(val 10.175, col 5:double), FilterLongColNotEqualLongScalar(col 10:boolean, val 1)), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 13:double, val -1.388)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 13:double, val -1.3359999999999999)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDecimalColLessDecimalScalar(col 14:decimal(11,4), val 9763215.5639)(children: CastLongToDecimal(col 0:tinyint) -> 14:decimal(11,4))))
+              predicate: (((UDFToDouble(ctimestamp1) > -1.388) and (UDFToDouble(ctimestamp2) <> -1.3359999999999999) and (CAST( ctinyint AS decimal(11,4)) < 9763215.5639)) or ((cfloat < 3569) and (10.175 >= cdouble) and (cboolean1 <> 1))) (type: boolean)
+              Statistics: Num rows: 2730 Data size: 32760 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: ctinyint (type: tinyint), cfloat (type: float), cstring1 (type: string), ctimestamp1 (type: timestamp), cboolean1 (type: boolean)
+                outputColumnNames: ctinyint, cfloat, cstring1, ctimestamp1, cboolean1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 4, 6, 8, 10]
+                Statistics: Num rows: 2730 Data size: 32760 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: max(ctinyint), sum(cfloat), stddev_pop(cfloat), stddev_pop(ctinyint), max(cfloat), min(ctinyint)
+                  Group By Vectorization:
+                      aggregators: VectorUDAFMaxLong(col 0:tinyint) -> tinyint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFVarDouble(col 4:float) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop, VectorUDAFVarLong(col 0:tinyint) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop, VectorUDAFMaxDouble(col 4:float) -> float, VectorUDAFMinLong(col 0:tinyint) -> tinyint
+                      className: VectorGroupByOperator
+                      groupByMode: HASH
+                      keyExpressions: col 10:boolean, col 0:tinyint, col 8:timestamp, col 4:float, col 6:string
+                      native: false
+                      vectorProcessingMode: HASH
+                      projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
+                  keys: cboolean1 (type: boolean), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cfloat (type: float), cstring1 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                  Statistics: Num rows: 2730 Data size: 32760 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
+                    sort order: +++++
+                    Map-reduce partition columns: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string)
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkOperator
+                        native: false
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                    Statistics: Num rows: 2730 Data size: 32760 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col5 (type: tinyint), _col6 (type: double), _col7 (type: struct<count:bigint,sum:double,variance:double>), _col8 (type: struct<count:bigint,sum:double,variance:double>), _col9 (type: float), _col10 (type: tinyint)
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0), sum(VALUE._col1), stddev_pop(VALUE._col2), stddev_pop(VALUE._col3), max(VALUE._col4), min(VALUE._col5)
+          keys: KEY._col0 (type: boolean), KEY._col1 (type: tinyint), KEY._col2 (type: timestamp), KEY._col3 (type: float), KEY._col4 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+          Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string), (- _col1) (type: tinyint), _col5 (type: tinyint), ((- _col1) + _col5) (type: tinyint), _col6 (type: double), (_col6 * UDFToDouble(((- _col1) + _col5))) (type: double), (- _col6) (type: double), (79.553 * _col3) (type: float), _col7 (type: double), (- _col6) (type: double), _col8 (type: double), (CAST( ((- _col1) + _col5) AS decimal(3,0)) - 10.175) (type: decimal(7,3)), (- (- _col6)) (type: double), (-26.28 / (- (- _col6))) (type: double), _col9 (type: float), ((_col6 * UDFToDouble(((- _col1) + _col5))) / UDFToDouble(_col1)) (type: double), _col10 (type: tinyint)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+            Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            TableScan Vectorization:
+                native: true
+            Reduce Output Operator
+              key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string), _col5 (type: tinyint), _col6 (type: tinyint), _col7 (type: tinyint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: decimal(7,3)), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: tinyint)
+              sort order: +++++++++++++++++++++
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+              Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: boolean), KEY.reducesinkkey1 (type: tinyint), KEY.reducesinkkey2 (type: timestamp), KEY.reducesinkkey3 (type: float), KEY.reducesinkkey4 (type: string), KEY.reducesinkkey5 (type: tinyint), KEY.reducesinkkey6 (type: tinyint), KEY.reducesinkkey7 (type: tinyint), KEY.reducesinkkey8 (type: double), KEY.reducesinkkey9 (type: double), KEY.reducesinkkey10 (type: double), KEY.reducesinkkey11 (type: float), KEY.reducesinkkey12 (type: double), KEY.reducesinkkey10 (type: double), KEY.reducesinkkey14 (type: double), KEY.reducesinkkey15 (type: decimal(7,3)), KEY.reducesinkkey16 (type: double), KEY.reducesinkkey17 (type: double), KEY.reducesinkkey18 (type: float), KEY.reducesinkkey19 (type: double), KEY.reducesinkkey20 (type: tinyint)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+          Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 40
+            Statistics: Num rows: 40 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 40 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 40
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)) as c1,
+         MAX(ctinyint) as c2,
+         ((-(ctinyint)) + MAX(ctinyint)) as c3,
+         SUM(cfloat) as c4,
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) as c5,
+         (-(SUM(cfloat))) as c6,
+         (79.553 * cfloat) as c7,
+         STDDEV_POP(cfloat) as c8,
+         (-(SUM(cfloat))) as c9,
+         STDDEV_POP(ctinyint) as c10,
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175) as c11,
+         (-((-(SUM(cfloat))))) as c12,
+         (-26.28 / (-((-(SUM(cfloat)))))) as c13,
+         MAX(cfloat) as c14,
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint) as c15,
+         MIN(ctinyint) as c16
+FROM     alltypesparquet
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > -1.388)
+              AND ((ctimestamp2 != -1.3359999999999999)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
+LIMIT 40
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT   cboolean1,
+         ctinyint,
+         ctimestamp1,
+         cfloat,
+         cstring1,
+         (-(ctinyint)) as c1,
+         MAX(ctinyint) as c2,
+         ((-(ctinyint)) + MAX(ctinyint)) as c3,
+         SUM(cfloat) as c4,
+         (SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) as c5,
+         (-(SUM(cfloat))) as c6,
+         (79.553 * cfloat) as c7,
+         STDDEV_POP(cfloat) as c8,
+         (-(SUM(cfloat))) as c9,
+         STDDEV_POP(ctinyint) as c10,
+         (((-(ctinyint)) + MAX(ctinyint)) - 10.175) as c11,
+         (-((-(SUM(cfloat))))) as c12,
+         (-26.28 / (-((-(SUM(cfloat)))))) as c13,
+         MAX(cfloat) as c14,
+         ((SUM(cfloat) * ((-(ctinyint)) + MAX(ctinyint))) / ctinyint) as c15,
+         MIN(ctinyint) as c16
+FROM     alltypesparquet
+WHERE    (((cfloat < 3569)
+           AND ((10.175 >= cdouble)
+                AND (cboolean1 != 1)))
+          OR ((ctimestamp1 > -1.388)
+              AND ((ctimestamp2 != -1.3359999999999999)
+                   AND (ctinyint < 9763215.5639))))
+GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
+ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
+LIMIT 40
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+NULL	-61	1969-12-31 16:00:00.142	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-61	1969-12-31 16:00:02.698	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-61	1969-12-31 16:00:03.049	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-61	1969-12-31 16:00:04.165	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-61	1969-12-31 16:00:04.977	-61.0	NULL	61	-61	0	-61.0	-0.0	61.0	-4852.733	0.0	61.0	0.0	-10.175	-61.0	0.4308196721311476	-61.0	0.0	-61
+NULL	-62	1969-12-31 16:00:00.037	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:01.22	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:01.515	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:01.734	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:02.373	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:03.85	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:08.198	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:09.025	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:09.889	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:10.069	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:10.225	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:10.485	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:12.388	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:12.591	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.154	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.247	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.517	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-62	1969-12-31 16:00:14.965	-62.0	NULL	62	-62	0	-62.0	-0.0	62.0	-4932.286	0.0	62.0	0.0	-10.175	-62.0	0.4238709677419355	-62.0	0.0	-62
+NULL	-63	1969-12-31 16:00:01.843	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:03.552	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:06.852	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:07.375	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:10.205	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:11.946	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:12.188	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-63	1969-12-31 16:00:15.436	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0.0	63.0	0.0	-10.175	-63.0	0.41714285714285715	-63.0	0.0	-63
+NULL	-64	1969-12-31 16:00:00.199	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:00.29	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:01.785	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:03.944	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:05.997	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:10.858	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:11.912	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:12.339	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
+NULL	-64	1969-12-31 16:00:13.274	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64

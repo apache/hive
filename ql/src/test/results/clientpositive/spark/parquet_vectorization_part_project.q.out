@@ -1,0 +1,143 @@
+PREHOOK: query: CREATE TABLE alltypesparquet_part(ctinyint tinyint, csmallint smallint, cint int, cbigint bigint, cfloat float, cdouble double, cstring1 string, cstring2 string, ctimestamp1 timestamp, ctimestamp2 timestamp, cboolean1 boolean, cboolean2 boolean) partitioned by (ds string) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypesparquet_part
+POSTHOOK: query: CREATE TABLE alltypesparquet_part(ctinyint tinyint, csmallint smallint, cint int, cbigint bigint, cfloat float, cdouble double, cstring1 string, cstring2 string, ctimestamp1 timestamp, ctimestamp2 timestamp, cboolean1 boolean, cboolean2 boolean) partitioned by (ds string) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypesparquet_part
+PREHOOK: query: insert overwrite table alltypesparquet_part partition (ds='2011') select * from alltypesparquet order by ctinyint, cint, cbigint limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+PREHOOK: Output: default@alltypesparquet_part@ds=2011
+POSTHOOK: query: insert overwrite table alltypesparquet_part partition (ds='2011') select * from alltypesparquet order by ctinyint, cint, cbigint limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+POSTHOOK: Output: default@alltypesparquet_part@ds=2011
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2011).cbigint SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2011).cboolean1 SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2011).cboolean2 SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2011).cdouble SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2011).cfloat SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2011).cint SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2011).csmallint SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2011).cstring1 SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2011).cstring2 SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2011).ctimestamp1 SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2011).ctimestamp2 SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2011).ctinyint SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: insert overwrite table alltypesparquet_part partition (ds='2012') select * from alltypesparquet order by ctinyint, cint, cbigint limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+PREHOOK: Output: default@alltypesparquet_part@ds=2012
+POSTHOOK: query: insert overwrite table alltypesparquet_part partition (ds='2012') select * from alltypesparquet order by ctinyint, cint, cbigint limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+POSTHOOK: Output: default@alltypesparquet_part@ds=2012
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2012).cbigint SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2012).cboolean1 SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2012).cboolean2 SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2012).cdouble SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2012).cfloat SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2012).cint SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2012).csmallint SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2012).cstring1 SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2012).cstring2 SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2012).ctimestamp1 SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2012).ctimestamp2 SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypesparquet_part PARTITION(ds=2012).ctinyint SIMPLE [(alltypesparquet)alltypesparquet.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: explain vectorization select (cdouble+2) c1 from alltypesparquet_part order by c1 limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization select (cdouble+2) c1 from alltypesparquet_part order by c1 limit 10
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesparquet_part
+                  Statistics: Num rows: 200 Data size: 2400 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: (cdouble + 2.0) (type: double)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 200 Data size: 2400 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: double)
+                      sort order: +
+                      Statistics: Num rows: 200 Data size: 2400 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: double)
+                outputColumnNames: _col0
+                Statistics: Num rows: 200 Data size: 2400 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 10 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select (cdouble+2) c1 from alltypesparquet_part order by c1 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet_part
+PREHOOK: Input: default@alltypesparquet_part@ds=2011
+PREHOOK: Input: default@alltypesparquet_part@ds=2012
+#### A masked pattern was here ####
+POSTHOOK: query: select (cdouble+2) c1 from alltypesparquet_part order by c1 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet_part
+POSTHOOK: Input: default@alltypesparquet_part@ds=2011
+POSTHOOK: Input: default@alltypesparquet_part@ds=2012
+#### A masked pattern was here ####
+NULL
+NULL
+-15863.0
+-15863.0
+-14988.0
+-14988.0
+-14646.0
+-14646.0
+-14236.0
+-14236.0

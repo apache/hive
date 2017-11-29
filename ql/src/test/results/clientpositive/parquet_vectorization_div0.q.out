@@ -1,0 +1,569 @@
+PREHOOK: query: explain vectorization expression
+select cdouble / 0.0 from alltypesparquet limit 100
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization expression
+select cdouble / 0.0 from alltypesparquet limit 100
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesparquet
+            Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+            Select Operator
+              expressions: (cdouble / 0.0) (type: double)
+              outputColumnNames: _col0
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumnNums: [13]
+                  selectExpressions: DoubleColDivideDoubleScalar(col 5:double, val 0.0) -> 13:double
+              Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
+              Limit
+                Number of rows: 100
+                Limit Vectorization:
+                    className: VectorLimitOperator
+                    native: true
+                Statistics: Num rows: 100 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 100 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 100
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cdouble / 0.0 from alltypesparquet limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: select cdouble / 0.0 from alltypesparquet limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+PREHOOK: query: explain vectorization expression
+select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L)
+from alltypesparquet where cbigint > 0 and cbigint < 100000000 order by s1, s2 limit 100
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization expression
+select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L)
+from alltypesparquet where cbigint > 0 and cbigint < 100000000 order by s1, s2 limit 100
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesparquet
+            Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+            Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterExprAndExpr(children: FilterLongColGreaterLongScalar(col 3:bigint, val 0), FilterLongColLessLongScalar(col 3:bigint, val 100000000))
+              predicate: ((cbigint < 100000000) and (cbigint > 0)) (type: boolean)
+              Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: (cbigint - 988888) (type: bigint), (cdouble / UDFToDouble((cbigint - 988888))) (type: double), (1.2 / CAST( (cbigint - 988888) AS decimal(19,0))) (type: decimal(22,21))
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [13, 16, 18]
+                    selectExpressions: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 13:bigint, DoubleColDivideDoubleColumn(col 5:double, col 15:double)(children: CastLongToDouble(col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 14:bigint) -> 15:double) -> 16:double, DecimalScalarDivideDecimalColumn(val 1.2, col 17:decimal(19,0))(children: CastLongToDecimal(col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 14:bigint) -> 17:decimal(19,0)) -> 18:decimal(22,21)
+                Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: bigint), _col1 (type: double)
+                  sort order: ++
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                  Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
+                  value expressions: _col2 (type: decimal(22,21))
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: bigint), KEY.reducesinkkey1 (type: double), VALUE._col0 (type: decimal(22,21))
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 100
+            Statistics: Num rows: 100 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 100 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 100
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L)
+from alltypesparquet where cbigint > 0 and cbigint < 100000000 order by s1, s2 limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L)
+from alltypesparquet where cbigint > 0 and cbigint < 100000000 order by s1, s2 limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+-985319	NULL	-0.000001217879691754650
+-985319	2.0297994862577501E-4	-0.000001217879691754650
+-63925	0.11256941728588189	-0.000018771998435666797
+0	NULL	NULL
+0	NULL	NULL
+0	NULL	NULL
+0	NULL	NULL
+0	NULL	NULL
+0	NULL	NULL
+0	NULL	NULL
+0	NULL	NULL
+0	NULL	NULL
+392309	NULL	0.000003058813333367320
+673083	-0.010691103474608629	0.000001782841046349410
+2331159	NULL	0.000000514765402102559
+2342037	NULL	0.000000512374484263058
+3533105	-5.660743170667161E-5	0.000000339644590240030
+3768727	0.004139594085748318	0.000000318409903397089
+4728619	NULL	0.000000253773881972728
+5391403	NULL	0.000000222576572369010
+7022666	-0.0010246820794268159	0.000000170875277280736
+7470430	NULL	0.000000160633323650714
+8276429	NULL	0.000000144990067576246
+8286860	-8.683626850218298E-4	0.000000144807562816314
+8299981	-8.669899364829872E-4	0.000000144578644216174
+9247593	NULL	0.000000129763496295739
+9821695	-7.326637611939691E-4	0.000000122178503812224
+10000738	0.001559984873116364	0.000000119991144653525
+10081828	0.0015474376273826532	0.000000119026033770860
+10745355	-6.696847149303117E-4	0.000000111676161466978
+11127199	-1.797397530142132E-5	0.000000107843851808528
+11722580	NULL	0.000000102366543883684
+12649396	NULL	0.000000094866189658384
+13126214	-1.5236685917203544E-5	0.000000091420115503221
+14042667	NULL	0.000000085453852889910
+14943972	-1.3383322720358416E-5	0.000000080299936322150
+16259022	NULL	0.000000073805177211766
+16531556	-1.2098074736582569E-5	0.000000072588448419495
+16596157	NULL	0.000000072305895876979
+17058489	-1.1724367849930905E-5	0.000000070346207099585
+17247320	-4.172242412154468E-4	0.000000069576026884177
+19004427	8.209139901981786E-4	0.000000063143182375349
+19498517	NULL	0.000000061543141973310
+20165679	7.736411950224934E-4	0.000000059507046601307
+20547875	NULL	0.000000058400199534015
+23264783	NULL	0.000000051580107151655
+23475527	6.645644206411213E-4	0.000000051117063314489
+24379905	NULL	0.000000049220864478348
+24514624	-2.935390728407664E-4	0.000000048950373458716
+25154198	-2.860755091456305E-4	0.000000047705754721339
+25245192	-7.922300610745999E-6	0.000000047533803664476
+26610943	NULL	0.000000045094230595286
+27520143	5.668938566198584E-4	0.000000043604424584567
+27818379	NULL	0.000000043136949137115
+28400244	NULL	0.000000042253158106670
+28698999	5.43607810153936E-4	0.000000041813305056389
+28806400	-6.9429015774272385E-6	0.000000041657409464563
+29920877	5.214085135271938E-4	0.000000040105776311303
+33126539	NULL	0.000000036224732079617
+34603086	NULL	0.000000034678987879867
+35156265	NULL	0.000000034133318769784
+35862260	NULL	0.000000033461360215447
+36123797	-1.992038655294182E-4	0.000000033219099310075
+36341671	-1.980096072082101E-4	0.000000033019945615599
+36413215	-5.4925114412446145E-6	0.000000032955068647468
+36578596	4.2650625518814335E-4	0.000000032806070522772
+36796441	-1.955623914823719E-4	0.000000032611849607955
+39723587	NULL	0.000000030208752296211
+39985709	-1.7996429674411925E-4	0.000000030010722080731
+40018606	NULL	0.000000029986051987918
+41003161	NULL	0.000000029266036342905
+41158231	3.790493328053871E-4	0.000000029155772025285
+41848817	NULL	0.000000028674645689507
+44047567	-1.633688416888043E-4	0.000000027243275434487
+45125678	NULL	0.000000026592398234992
+45180154	NULL	0.000000026560334433566
+45717793	3.4124569399052136E-4	0.000000026247986205283
+46163162	NULL	0.000000025994753132379
+46525838	3.353190543284787E-4	0.000000025792120068853
+48626663	NULL	0.000000024677819244969
+49102701	-1.465499830650864E-4	0.000000024438574163161
+50300445	-1.4306036457530346E-4	0.000000023856647789100
+50929325	-1.412938420055636E-4	0.000000023562063702984
+52422534	-1.3726921327381848E-4	0.000000022890919389742
+52667422	2.9621727070673783E-4	0.000000022784483356713
+52962061	2.945693522010029E-4	0.000000022657728520044
+53695172	NULL	0.000000022348377988248
+54760317	NULL	0.000000021913678841560
+55020655	2.835480602693661E-4	0.000000021809991175132
+56102034	NULL	0.000000021389598815615
+56131313	NULL	0.000000021378441655195
+56838351	-3.5187509222426247E-6	0.000000021112505533456
+56997841	-3.5089048372902406E-6	0.000000021053429023741
+57778807	-1.2454393528755274E-4	0.000000020768860803928
+58080381	NULL	0.000000020661021490200
+58307527	NULL	0.000000020580533281749
+58536385	-1.2293208745295768E-4	0.000000020500070170032
+59347745	NULL	0.000000020219807846111
+60229567	NULL	0.000000019923769334088
+60330397	NULL	0.000000019890470801974
+PREHOOK: query: explain vectorization expression
+select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0), cbigint / (cdouble + 200.0), 3 / (cdouble + 200.0), 1.2 / (cdouble + 200.0)
+from alltypesparquet where cdouble >= -500 and cdouble < -199 order by s1, s2 limit 100
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization expression
+select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0), cbigint / (cdouble + 200.0), 3 / (cdouble + 200.0), 1.2 / (cdouble + 200.0)
+from alltypesparquet where cdouble >= -500 and cdouble < -199 order by s1, s2 limit 100
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: alltypesparquet
+            Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+            Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterExprAndExpr(children: FilterDoubleColGreaterEqualDoubleScalar(col 5:double, val -500.0), FilterDoubleColLessDoubleScalar(col 5:double, val -199.0))
+              predicate: ((cdouble < -199.0) and (cdouble >= -500.0)) (type: boolean)
+              Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: (cdouble + 200.0) (type: double), (UDFToDouble(cbigint) / (cdouble + 200.0)) (type: double), ((cdouble + 200.0) / (cdouble + 200.0)) (type: double), (3.0 / (cdouble + 200.0)) (type: double), (1.2 / (cdouble + 200.0)) (type: double)
+                outputColumnNames: _col0, _col1, _col2, _col4, _col5
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [13, 16, 17, 15, 18]
+                    selectExpressions: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 13:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: CastLongToDouble(col 3:bigint) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 16:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 17:double, DoubleScalarDivideDoubleColumn(val 3.0, col 14:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double) -> 15:double, DoubleScalarDivideDoubleColumn(val 1.2, col 14:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double) -> 18:double
+                Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: double), _col1 (type: double)
+                  sort order: ++
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                  Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
+                  value expressions: _col2 (type: double), _col4 (type: double), _col5 (type: double)
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: double), VALUE._col0 (type: double), KEY.reducesinkkey1 (type: double), VALUE._col1 (type: double), VALUE._col2 (type: double)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          Statistics: Num rows: 1365 Data size: 16380 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 100
+            Statistics: Num rows: 100 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 100 Data size: 1200 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 100
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0), cbigint / (cdouble + 200.0), 3 / (cdouble + 200.0), 1.2 / (cdouble + 200.0)
+from alltypesparquet where cdouble >= -500 and cdouble < -199 order by s1, s2 limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0), cbigint / (cdouble + 200.0), 3 / (cdouble + 200.0), 1.2 / (cdouble + 200.0)
+from alltypesparquet where cdouble >= -500 and cdouble < -199 order by s1, s2 limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+-292.0	NULL	1.0	NULL	-0.010273972602739725	-0.00410958904109589
+-290.0	NULL	1.0	NULL	-0.010344827586206896	-0.004137931034482759
+-289.0	NULL	1.0	NULL	-0.010380622837370242	-0.004152249134948096
+-281.0	NULL	1.0	NULL	-0.010676156583629894	-0.004270462633451957
+-279.0	NULL	1.0	NULL	-0.010752688172043012	-0.004301075268817204
+-274.0	6888911.518248175	1.0	6888911.518248175	-0.010948905109489052	-0.00437956204379562
+-273.0	6028764.868131869	1.0	6028764.868131869	-0.01098901098901099	-0.004395604395604396
+-257.0	6404096.53307393	1.0	6404096.53307393	-0.011673151750972763	-0.004669260700389105
+-250.0	6583411.236	1.0	6583411.236	-0.012	-0.0048
+-247.0	NULL	1.0	NULL	-0.012145748987854251	-0.004858299595141701
+-247.0	-7546669.174089069	1.0	-7546669.174089069	-0.012145748987854251	-0.004858299595141701
+-246.0	NULL	1.0	NULL	-0.012195121951219513	-0.004878048780487805
+-237.0	NULL	1.0	NULL	-0.012658227848101266	-0.005063291139240506
+-236.0	NULL	1.0	NULL	-0.012711864406779662	-0.005084745762711864
+-229.0	7187130.170305677	1.0	7187130.170305677	-0.013100436681222707	-0.005240174672489083
+-228.0	8278779.631578947	1.0	8278779.631578947	-0.013157894736842105	-0.005263157894736842
+-225.0	NULL	1.0	NULL	-0.013333333333333334	-0.005333333333333333
+-210.0	-8876320.40952381	1.0	-8876320.40952381	-0.014285714285714285	-0.005714285714285714
+-201.0	NULL	1.0	NULL	-0.014925373134328358	-0.005970149253731343
+-199.0	NULL	1.0	NULL	-0.01507537688442211	-0.006030150753768844
+-189.0	NULL	1.0	NULL	-0.015873015873015872	-0.006349206349206349
+-188.0	NULL	1.0	NULL	-0.015957446808510637	-0.006382978723404255
+-184.0	8944852.222826088	1.0	8944852.222826088	-0.016304347826086956	-0.006521739130434782
+-183.0	8993731.196721312	1.0	8993731.196721312	-0.01639344262295082	-0.006557377049180328
+-181.0	NULL	1.0	NULL	-0.016574585635359115	-0.0066298342541436465
+-179.0	NULL	1.0	NULL	-0.01675977653631285	-0.0067039106145251395
+-169.0	9738774.01775148	1.0	9738774.01775148	-0.01775147928994083	-0.007100591715976331
+-164.0	NULL	1.0	NULL	-0.018292682926829267	-0.007317073170731707
+-161.0	NULL	1.0	NULL	-0.018633540372670808	-0.007453416149068323
+-154.0	1.2256894519480519E7	1.0	1.2256894519480519E7	-0.01948051948051948	-0.007792207792207792
+-152.0	NULL	1.0	NULL	-0.019736842105263157	-0.007894736842105263
+-148.0	NULL	1.0	NULL	-0.02027027027027027	-0.008108108108108109
+-140.0	NULL	1.0	NULL	-0.02142857142857143	-0.008571428571428572
+-138.0	NULL	1.0	NULL	-0.021739130434782608	-0.008695652173913044
+-137.0	NULL	1.0	NULL	-0.021897810218978103	-0.00875912408759124
+-132.0	NULL	1.0	NULL	-0.022727272727272728	-0.00909090909090909
+-129.0	1.2758548906976745E7	1.0	1.2758548906976745E7	-0.023255813953488372	-0.009302325581395349
+-128.0	NULL	1.0	NULL	-0.0234375	-0.009375
+-126.0	NULL	1.0	NULL	-0.023809523809523808	-0.009523809523809523
+-126.0	-1.4793867349206349E7	1.0	-1.4793867349206349E7	-0.023809523809523808	-0.009523809523809523
+-116.0	NULL	1.0	NULL	-0.02586206896551724	-0.010344827586206896
+-113.0	NULL	1.0	NULL	-0.02654867256637168	-0.010619469026548672
+-113.0	-1.6495816690265486E7	1.0	-1.6495816690265486E7	-0.02654867256637168	-0.010619469026548672
+-96.0	NULL	1.0	NULL	-0.03125	-0.012499999999999999
+-94.0	-1.9830077510638297E7	1.0	-1.9830077510638297E7	-0.031914893617021274	-0.01276595744680851
+-93.0	NULL	1.0	NULL	-0.03225806451612903	-0.012903225806451613
+-77.0	2.4513789038961038E7	1.0	2.4513789038961038E7	-0.03896103896103896	-0.015584415584415584
+-69.0	2.735596747826087E7	1.0	2.735596747826087E7	-0.043478260869565216	-0.017391304347826087
+-62.0	NULL	1.0	NULL	-0.04838709677419355	-0.01935483870967742
+-62.0	3.0444544451612905E7	1.0	3.0444544451612905E7	-0.04838709677419355	-0.01935483870967742
+-60.0	NULL	1.0	NULL	-0.05	-0.02
+-57.0	-3.27022330877193E7	1.0	-3.27022330877193E7	-0.05263157894736842	-0.021052631578947368
+-49.0	3.35888328367347E7	1.0	3.35888328367347E7	-0.061224489795918366	-0.024489795918367346
+-46.0	3.577940889130435E7	1.0	3.577940889130435E7	-0.06521739130434782	-0.02608695652173913
+-38.0	4.3311916026315786E7	1.0	4.3311916026315786E7	-0.07894736842105263	-0.031578947368421054
+-28.0	5.878045746428572E7	1.0	5.878045746428572E7	-0.10714285714285714	-0.04285714285714286
+-28.0	6.741291985714285E7	1.0	6.741291985714285E7	-0.10714285714285714	-0.04285714285714286
+-21.0	8.988389314285715E7	1.0	8.988389314285715E7	-0.14285714285714285	-0.05714285714285714
+-20.0	NULL	1.0	NULL	-0.15	-0.06
+-17.0	NULL	1.0	NULL	-0.17647058823529413	-0.07058823529411765
+-12.0	-1.5533560716666666E8	1.0	-1.5533560716666666E8	-0.25	-0.09999999999999999
+-3.0	NULL	1.0	NULL	-1.0	-0.39999999999999997
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
+0.0	NULL	NULL	NULL	NULL	NULL
