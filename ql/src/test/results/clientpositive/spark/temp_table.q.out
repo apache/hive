@@ -376,6 +376,7 @@ POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 alltypesorc
+alltypesparquet
 bar
 bay
 baz

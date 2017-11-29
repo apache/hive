@@ -134,6 +134,7 @@ POSTHOOK: query: SHOW TABLES FROM default
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 alltypesorc
+alltypesparquet
 cbo_t1
 cbo_t2
 cbo_t3
@@ -166,6 +167,7 @@ POSTHOOK: query: SHOW TABLES IN default
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 alltypesorc
+alltypesparquet
 cbo_t1
 cbo_t2
 cbo_t3

@@ -71,6 +71,7 @@ POSTHOOK: Input: default@dbs
 POSTHOOK: Input: default@tables
 #### A masked pattern was here ####
 alltypesorc	default	MANAGED_TABLE
+alltypesparquet	default	MANAGED_TABLE
 cbo_t1	default	MANAGED_TABLE
 cbo_t2	default	MANAGED_TABLE
 cbo_t3	default	MANAGED_TABLE
@@ -231,6 +232,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@tables
 #### A masked pattern was here ####
 alltypesorc	2
+alltypesparquet	2
 cbo_t1	2
 cbo_t2	2
 cbo_t3	2
@@ -254,6 +256,7 @@ POSTHOOK: query: show tables
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 alltypesorc
+alltypesparquet
 cbo_t1
 cbo_t2
 cbo_t3
