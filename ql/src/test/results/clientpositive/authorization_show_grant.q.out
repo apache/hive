@@ -107,6 +107,10 @@ default	alltypesorc			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	alltypesorc			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	alltypesorc			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	alltypesorc			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	alltypesparquet			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	cbo_t1			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	cbo_t1			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	cbo_t1			hive_test_user	USER	SELECT	true	-1	hive_test_user

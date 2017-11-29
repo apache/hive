@@ -1,7 +1,7 @@
 -- This test makes sure that parquet can read older parquet files written by Hive <= 0.12
 -- alltypesparquet is a files written by older version of Hive
 
-CREATE TABLE alltypesparquet (
+CREATE TABLE alltypesparquet_old (
     bo1 boolean,
     ti1 tinyint,
     si1 smallint,
@@ -15,6 +15,6 @@ CREATE TABLE alltypesparquet (
     st1 struct<c1:int,c2:string>
 ) STORED AS PARQUET;
 
-LOAD DATA LOCAL INPATH '../../data/files/alltypesparquet' OVERWRITE INTO TABLE alltypesparquet;
+LOAD DATA LOCAL INPATH '../../data/files/alltypesparquet' OVERWRITE INTO TABLE alltypesparquet_old;
 
-SELECT * FROM alltypesparquet;
+SELECT * FROM alltypesparquet_old;

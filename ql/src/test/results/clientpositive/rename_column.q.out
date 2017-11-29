@@ -149,6 +149,7 @@ POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 alltypesorc
+alltypesparquet
 cbo_t1
 cbo_t2
 cbo_t3

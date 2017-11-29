@@ -1,0 +1,213 @@
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT MAX(csmallint),
+       (MAX(csmallint) * -75),
+       COUNT(*),
+       ((MAX(csmallint) * -75) / COUNT(*)),
+       (6981 * MAX(csmallint)),
+       MIN(csmallint),
+       (-(MIN(csmallint))),
+       (197 % ((MAX(csmallint) * -75) / COUNT(*))),
+       SUM(cint),
+       MAX(ctinyint),
+       (-(MAX(ctinyint))),
+       ((-(MAX(ctinyint))) + MAX(ctinyint))
+FROM   alltypesparquet
+WHERE  (((cboolean2 IS NOT NULL)
+         AND (cstring1 LIKE '%b%'))
+        OR ((ctinyint = cdouble)
+            AND ((ctimestamp2 IS NOT NULL)
+                 AND (cstring2 LIKE 'a'))))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT MAX(csmallint),
+       (MAX(csmallint) * -75),
+       COUNT(*),
+       ((MAX(csmallint) * -75) / COUNT(*)),
+       (6981 * MAX(csmallint)),
+       MIN(csmallint),
+       (-(MIN(csmallint))),
+       (197 % ((MAX(csmallint) * -75) / COUNT(*))),
+       SUM(cint),
+       MAX(ctinyint),
+       (-(MAX(ctinyint))),
+       ((-(MAX(ctinyint))) + MAX(ctinyint))
+FROM   alltypesparquet
+WHERE  (((cboolean2 IS NOT NULL)
+         AND (cstring1 LIKE '%b%'))
+        OR ((ctinyint = cdouble)
+            AND ((ctimestamp2 IS NOT NULL)
+                 AND (cstring2 LIKE 'a'))))
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesparquet
+                  Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: SelectColumnIsNotNull(col 11:boolean), FilterStringColLikeStringScalar(col 6:string, pattern %b%)), FilterExprAndExpr(children: FilterDoubleColEqualDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 0:tinyint) -> 13:double), SelectColumnIsNotNull(col 9:timestamp), FilterStringColLikeStringScalar(col 7:string, pattern a)))
+                    predicate: (((UDFToDouble(ctinyint) = cdouble) and ctimestamp2 is not null and (cstring2 like 'a')) or (cboolean2 is not null and (cstring1 like '%b%'))) (type: boolean)
+                    Statistics: Num rows: 9216 Data size: 110592 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int)
+                      outputColumnNames: ctinyint, csmallint, cint
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1, 2]
+                      Statistics: Num rows: 9216 Data size: 110592 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: max(csmallint), count(), min(csmallint), sum(cint), max(ctinyint)
+                        Group By Vectorization:
+                            aggregators: VectorUDAFMaxLong(col 1:smallint) -> smallint, VectorUDAFCountStar(*) -> bigint, VectorUDAFMinLong(col 1:smallint) -> smallint, VectorUDAFSumLong(col 2:int) -> bigint, VectorUDAFMaxLong(col 0:tinyint) -> tinyint
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                        Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              keyColumnNums: []
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumnNums: [0, 1, 2, 3, 4]
+                          Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: smallint), _col1 (type: bigint), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: tinyint)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: [0, 1, 2, 5, 6, 7, 9, 11]
+                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [double]
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    dataColumns: VALUE._col0:smallint, VALUE._col1:bigint, VALUE._col2:smallint, VALUE._col3:bigint, VALUE._col4:tinyint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), count(VALUE._col1), min(VALUE._col2), sum(VALUE._col3), max(VALUE._col4)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMaxLong(col 0:smallint) -> smallint, VectorUDAFCountMerge(col 1:bigint) -> bigint, VectorUDAFMinLong(col 2:smallint) -> smallint, VectorUDAFSumLong(col 3:bigint) -> bigint, VectorUDAFMaxLong(col 4:tinyint) -> tinyint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: smallint), (UDFToInteger(_col0) * -75) (type: int), _col1 (type: bigint), (UDFToDouble((UDFToInteger(_col0) * -75)) / UDFToDouble(_col1)) (type: double), (6981 * UDFToInteger(_col0)) (type: int), _col2 (type: smallint), (- _col2) (type: smallint), (197.0 % (UDFToDouble((UDFToInteger(_col0) * -75)) / UDFToDouble(_col1))) (type: double), _col3 (type: bigint), _col4 (type: tinyint), (- _col4) (type: tinyint), ((- _col4) + _col4) (type: tinyint)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [0, 5, 1, 9, 6, 2, 10, 7, 3, 4, 11, 14]
+                      selectExpressions: LongColMultiplyLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 5:int, DoubleColDivideDoubleColumn(col 7:double, col 8:double)(children: CastLongToDouble(col 6:int)(children: LongColMultiplyLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 6:int) -> 7:double, CastLongToDouble(col 1:bigint) -> 8:double) -> 9:double, LongScalarMultiplyLongColumn(val 6981, col 0:int)(children: col 0:smallint) -> 6:int, LongColUnaryMinus(col 2:smallint) -> 10:smallint, DoubleScalarModuloDoubleColumn(val 197.0, col 12:double)(children: DoubleColDivideDoubleColumn(col 7:double, col 8:double)(children: CastLongToDouble(col 11:int)(children: LongColMultiplyLongScalar(col 0:int, val -75)(children: col 0:smallint) -> 11:int) -> 7:double, CastLongToDouble(col 1:bigint) -> 8:double) -> 12:double) -> 7:double, LongColUnaryMinus(col 4:tinyint) -> 11:tinyint, LongColAddLongColumn(col 13:tinyint, col 4:tinyint)(children: LongColUnaryMinus(col 4:tinyint) -> 13:tinyint) -> 14:tinyint
+                  Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+                    Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT MAX(csmallint),
+       (MAX(csmallint) * -75),
+       COUNT(*),
+       ((MAX(csmallint) * -75) / COUNT(*)),
+       (6981 * MAX(csmallint)),
+       MIN(csmallint),
+       (-(MIN(csmallint))),
+       (197 % ((MAX(csmallint) * -75) / COUNT(*))),
+       SUM(cint),
+       MAX(ctinyint),
+       (-(MAX(ctinyint))),
+       ((-(MAX(ctinyint))) + MAX(ctinyint))
+FROM   alltypesparquet
+WHERE  (((cboolean2 IS NOT NULL)
+         AND (cstring1 LIKE '%b%'))
+        OR ((ctinyint = cdouble)
+            AND ((ctimestamp2 IS NOT NULL)
+                 AND (cstring2 LIKE 'a'))))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MAX(csmallint),
+       (MAX(csmallint) * -75),
+       COUNT(*),
+       ((MAX(csmallint) * -75) / COUNT(*)),
+       (6981 * MAX(csmallint)),
+       MIN(csmallint),
+       (-(MIN(csmallint))),
+       (197 % ((MAX(csmallint) * -75) / COUNT(*))),
+       SUM(cint),
+       MAX(ctinyint),
+       (-(MAX(ctinyint))),
+       ((-(MAX(ctinyint))) + MAX(ctinyint))
+FROM   alltypesparquet
+WHERE  (((cboolean2 IS NOT NULL)
+         AND (cstring1 LIKE '%b%'))
+        OR ((ctinyint = cdouble)
+            AND ((ctimestamp2 IS NOT NULL)
+                 AND (cstring2 LIKE 'a'))))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+16343	-1225725	1070	-1145.53738317757	114090483	-16307	16307	197.0	-26853917571	11	-11	0

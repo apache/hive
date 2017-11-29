@@ -21,6 +21,7 @@ POSTHOOK: query: show tables
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 alltypesorc
+alltypesparquet
 cbo_t1
 cbo_t2
 cbo_t3
@@ -220,6 +221,7 @@ POSTHOOK: query: show tables
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 alltypesorc
+alltypesparquet
 cbo_t1
 cbo_t2
 cbo_t3
@@ -260,6 +262,7 @@ POSTHOOK: query: show tables
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 alltypesorc
+alltypesparquet
 cbo_t1
 cbo_t2
 cbo_t3
@@ -458,6 +461,7 @@ POSTHOOK: query: show tables
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 alltypesorc
+alltypesparquet
 cbo_t1
 cbo_t2
 cbo_t3
