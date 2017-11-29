@@ -9698,9 +9698,13 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       MWMResourcePlan mResourcePlan = getMWMResourcePlan(name, !resourcePlan.isSetStatus());
-      if (resourcePlan.isSetStatus() && (resourcePlan.isSetQueryParallelism() ||
-          resourcePlan.isSetDefaultPoolPath() || !resourcePlan.getName().equals(name))) {
-        throw new InvalidOperationException("Cannot change values during status switch.");
+      if (resourcePlan.isSetQueryParallelism() || resourcePlan.isSetDefaultPoolPath()
+        || !resourcePlan.getName().equals(name)) {
+        if (resourcePlan.isSetStatus()) {
+          throw new InvalidOperationException("Cannot change values during status switch.");
+        } else if (resourcePlan.getStatus() == WMResourcePlanStatus.DISABLED) {
+          throw new InvalidOperationException("Resource plan must be disabled to edit it.");
+        }
       }
       if (!resourcePlan.getName().equals(name)) {
         String newName = normalizeIdentifier(resourcePlan.getName());

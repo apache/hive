@@ -3203,8 +3203,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_3	DISABLED	NULL	default
 plan_2	DISABLED	10	default
+plan_3	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 20
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 20
@@ -3217,8 +3217,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_3	DISABLED	20	default
 plan_2	DISABLED	10	default
+plan_3	DISABLED	20	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = default1
 PREHOOK: type: ALTER RESOURCEPLAN
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find pool: default1)
@@ -3230,21 +3230,18 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_3	DISABLED	20	default
 plan_2	DISABLED	10	default
-PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
+plan_3	DISABLED	20	default
+PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is disabled and should be enabled before activation (or in the same command))
-PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
-PREHOOK: type: QUERY
-PREHOOK: Input: sys@wm_resourceplans
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
-POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@wm_resourceplans
-#### A masked pattern was here ####
-plan_3	DISABLED	20	default
-plan_2	DISABLED	10	default
+POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
+POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: ALTER RESOURCE PLAN plan_3 RENAME TO plan_4
+PREHOOK: type: ALTER RESOURCEPLAN
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
+PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30
+PREHOOK: type: ALTER RESOURCEPLAN
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
@@ -3257,8 +3254,35 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_3	DISABLED	20	default
 plan_2	DISABLED	10	default
+plan_3	DISABLED	20	default
+PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
+PREHOOK: type: ALTER RESOURCEPLAN
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is disabled and should be enabled before activation (or in the same command))
+PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+plan_2	DISABLED	10	default
+plan_3	DISABLED	20	default
+PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
+PREHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
+POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+plan_2	DISABLED	10	default
+plan_3	DISABLED	20	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
@@ -3271,8 +3295,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
+plan_2	DISABLED	10	default
 plan_3	ENABLED	20	default
-plan_2	DISABLED	10	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
@@ -3285,8 +3309,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_3	ACTIVE	20	default
 plan_2	DISABLED	10	default
+plan_3	ACTIVE	20	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
@@ -3299,8 +3323,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_3	ACTIVE	20	default
 plan_2	DISABLED	10	default
+plan_3	ACTIVE	20	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is active, activate another plan first.)
@@ -3312,8 +3336,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_3	ACTIVE	20	default
 plan_2	DISABLED	10	default
+plan_3	ACTIVE	20	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is active, activate another plan first.)
@@ -3325,8 +3349,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_3	ACTIVE	20	default
 plan_2	DISABLED	10	default
+plan_3	ACTIVE	20	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE
@@ -3339,8 +3363,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_3	ACTIVE	20	default
 plan_2	ENABLED	10	default
+plan_3	ACTIVE	20	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 ACTIVATE
@@ -3353,8 +3377,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_3	ENABLED	20	default
 plan_2	ACTIVE	10	default
+plan_3	ENABLED	20	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
@@ -3367,8 +3391,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_3	ENABLED	20	default
 plan_2	ACTIVE	10	default
+plan_3	ENABLED	20	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
@@ -3381,8 +3405,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_3	DISABLED	20	default
 plan_2	ACTIVE	10	default
+plan_3	DISABLED	20	default
 PREHOOK: query: DROP RESOURCE PLAN plan_2
 PREHOOK: type: DROP RESOURCEPLAN
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Cannot drop an active resource plan)
@@ -3510,9 +3534,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	trigger_2	BYTES_READ > 100	MOVE TO slow_pool
+table	database	BYTES_WRITTEN > 1M	MOVE TO default
 table	table	BYTES_WRITTEN > 100K	MOVE TO table
 table	trigger	BYTES_WRITTEN > 100K	MOVE TO default
-table	database	BYTES_WRITTEN > 1M	MOVE TO default
 table	trigger1	ELAPSED_TIME > 10	KILL
 table	trigger2	BYTES_READ > 100	KILL
 PREHOOK: query: DROP TRIGGER `table`.`database`
@@ -3544,9 +3568,9 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
+plan_1	ENABLED	NULL	default
 plan_2	ACTIVE	10	default
 table	DISABLED	1	default
-plan_1	ENABLED	NULL	default
 PREHOOK: query: DROP TRIGGER plan_1.trigger_2
 PREHOOK: type: DROP TRIGGER
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
@@ -3565,9 +3589,9 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
+plan_1	ACTIVE	NULL	default
 plan_2	ENABLED	10	default
 table	DISABLED	1	default
-plan_1	ACTIVE	NULL	default
 PREHOOK: query: DROP TRIGGER plan_1.trigger_2
 PREHOOK: type: DROP TRIGGER
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
@@ -3591,11 +3615,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	trigger_2	BYTES_READ > 100	MOVE TO slow_pool
+plan_2	trigger_1	BYTES_READ = 0	MOVE TO null_pool
 table	table	BYTES_WRITTEN > 100K	MOVE TO table
 table	trigger	BYTES_WRITTEN > 100K	MOVE TO default
 table	trigger1	ELAPSED_TIME > 10	KILL
 table	trigger2	BYTES_READ > 100	KILL
-plan_2	trigger_1	BYTES_READ = 0	MOVE TO null_pool
 PREHOOK: query: CREATE POOL plan_1.default WITH
    ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
 PREHOOK: type: CREATE POOL
@@ -3612,9 +3636,9 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
+plan_1	default	1.0	4	NULL
 plan_2	default	1.0	4	NULL
 table	default	1.0	4	NULL
-plan_1	default	1.0	4	NULL
 PREHOOK: query: CREATE POOL plan_2.default.c1 WITH
     ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='priority'
 PREHOOK: type: CREATE POOL
@@ -3643,11 +3667,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_2	def	1.0	4	NULL
-table	default	1.0	4	NULL
 plan_1	default	1.0	4	NULL
+plan_2	def	1.0	4	NULL
 plan_2	def.c1	0.3	3	priority
 plan_2	def.c2	0.2	2	fair
+table	default	1.0	4	NULL
 PREHOOK: query: DROP POOL plan_2.default
 PREHOOK: type: DROP POOL
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot delete pool: default)
@@ -3659,11 +3683,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_2	def	1.0	4	NULL
-table	default	1.0	4	NULL
 plan_1	default	1.0	4	NULL
+plan_2	def	1.0	4	NULL
 plan_2	def.c1	0.3	3	priority
 plan_2	def.c2	0.2	2	fair
+table	default	1.0	4	NULL
 PREHOOK: query: CREATE POOL plan_2.child1.child2 WITH
     QUERY_PARALLELISM=2, SCHEDULING_POLICY='fcfs', ALLOC_FRACTION=0.8
 PREHOOK: type: CREATE POOL
@@ -3704,11 +3728,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_2	def	1.0	4	NULL
-table	default	1.0	4	NULL
 plan_1	default	1.0	4	NULL
+plan_2	def	1.0	4	NULL
 plan_2	def.c1	0.3	3	priority
 plan_2	def.c2	0.2	2	fair
+table	default	1.0	4	NULL
 table	table	0.0	1	random
 table	table.pool1	0.9	3	priority
 table	table.pool1.child1	0.3	1	random
@@ -3725,11 +3749,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_2	def	1.0	4	NULL
-table	default	1.0	4	NULL
 plan_1	default	1.0	4	NULL
+plan_2	def	1.0	4	NULL
 plan_2	def.c1	0.3	3	priority
 plan_2	def.c2	0.2	2	fair
+table	default	1.0	4	NULL
 table	table	0.0	1	random
 table	table.pool	0.9	3	priority
 table	table.pool.child1	0.3	1	random
@@ -3745,11 +3769,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_2	def	1.0	4	NULL
-table	default	1.0	4	NULL
 plan_1	default	1.0	4	NULL
+plan_2	def	1.0	4	NULL
 plan_2	def.c1	0.3	3	priority
 plan_2	def.c2	0.2	2	fair
+table	default	1.0	4	NULL
 table	table	0.0	1	random
 table	table.pool	0.9	3	priority
 table	table.pool.child1	0.3	1	random
@@ -3765,11 +3789,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_2	def	1.0	4	NULL
-table	default	1.0	4	NULL
 plan_1	default	1.0	4	NULL
+plan_2	def	1.0	4	NULL
 plan_2	def.c1	0.3	3	priority
 plan_2	def.c2	0.2	2	fair
+table	default	1.0	4	NULL
 table	table	0.0	1	random
 table	table.pool	0.9	3	priority
 table	table.pool.child1	0.3	1	random
@@ -3782,9 +3806,9 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
+plan_1	ACTIVE	NULL	default
 plan_2	DISABLED	10	def
 table	DISABLED	1	default
-plan_1	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool
@@ -3801,8 +3825,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-plan_2	def	1.0	4	NULL
 plan_1	default	1.0	4	NULL
+plan_2	def	1.0	4	NULL
 plan_2	def.c1	0.3	3	priority
 plan_2	def.c2	0.2	2	fair
 table	table	0.0	1	random
@@ -3845,13 +3869,13 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools_to_triggers
 #### A masked pattern was here ####
+plan_2	def.c1	trigger_1
+plan_2	def.c2	trigger_1
 table	table	table
 table	table.pool.child1	table
 table	table.pool.child1	trigger1
 table	table.pool.child2	trigger1
 table	table.pool.child2	trigger2
-plan_2	def.c1	trigger_1
-plan_2	def.c2	trigger_1
 PREHOOK: query: ALTER POOL plan_2.default ADD TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find pool: default)
@@ -3866,13 +3890,13 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools_to_triggers
 #### A masked pattern was here ####
+plan_2	def.c1	trigger_1
+plan_2	def.c2	trigger_1
 table	table	table
 table	table.pool.child1	table
 table	table.pool.child1	trigger1
 table	table.pool.child2	trigger1
 table	table.pool.child2	trigger2
-plan_2	def.c1	trigger_1
-plan_2	def.c2	trigger_1
 PREHOOK: query: ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
 POSTHOOK: query: ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_1
@@ -3896,8 +3920,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools_to_triggers
 #### A masked pattern was here ####
-table	table	table
 plan_2	def.c2	trigger_1
+table	table	table
 PREHOOK: query: CREATE USER MAPPING "user1" IN plan_2 TO def
 PREHOOK: type: CREATE MAPPING
 POSTHOOK: query: CREATE USER MAPPING "user1" IN plan_2 TO def
@@ -3922,10 +3946,10 @@ POSTHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_mappings
 #### A masked pattern was here ####
-plan_2	USER	user1	def	0
-plan_2	USER	user2	def	1
 plan_2	GROUP	group1	def.c1	0
 plan_2	GROUP	group2	def.c2	1
+plan_2	USER	user1	def	0
+plan_2	USER	user2	def	1
 PREHOOK: query: DROP POOL plan_2.def.c1
 PREHOOK: type: DROP POOL
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Exception thrown flushing changes to datastore)
@@ -3945,8 +3969,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_mappings
 #### A masked pattern was here ####
-plan_2	USER	user1	def	0
 plan_2	GROUP	group1	def.c1	0
+plan_2	USER	user1	def	0
 PREHOOK: query: CREATE RESOURCE PLAN plan_4
 PREHOOK: type: CREATE RESOURCEPLAN
 POSTHOOK: query: CREATE RESOURCE PLAN plan_4
@@ -3967,9 +3991,9 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-table	DISABLED	1	table.pool
 plan_1	ENABLED	NULL	default
 plan_4	ACTIVE	NULL	default
+table	DISABLED	1	table.pool
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools
@@ -3978,10 +4002,10 @@ POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
-table	table	0.0	1	random
-table	table.pool	0.9	3	priority
 plan_1	default	1.0	4	NULL
 plan_4	default	1.0	4	NULL
+table	table	0.0	1	random
+table	table.pool	0.9	3	priority
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_triggers
