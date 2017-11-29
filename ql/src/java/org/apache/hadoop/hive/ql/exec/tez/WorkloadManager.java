@@ -1,5 +1,4 @@
 /**
-/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -396,18 +395,22 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         //       query is being killed until both the kill, and the user, return it.
         String queryId = toKill.getQueryId();
         KillQuery kq = toKill.getKillQuery();
-        if (kq != null && queryId != null) {
-          LOG.info("Invoking KillQuery for " + queryId + ": " + reason);
-          try {
-            kq.killQuery(queryId, reason);
-            addKillQueryResult(toKill, true);
-            LOG.debug("Killed " + queryId);
-            return;
-          } catch (HiveException ex) {
-            LOG.error("Failed to kill " + queryId + "; will try to restart AM instead" , ex);
+        try {
+          if (kq != null && queryId != null) {
+            LOG.info("Invoking KillQuery for " + queryId + ": " + reason);
+            try {
+              kq.killQuery(queryId, reason);
+              addKillQueryResult(toKill, true);
+              LOG.debug("Killed " + queryId);
+              return;
+            } catch (HiveException ex) {
+              LOG.error("Failed to kill " + queryId + "; will try to restart AM instead" , ex);
+            }
+          } else {
+            LOG.info("Will queue restart for {}; queryId {}, killQuery {}", toKill, queryId, kq);
           }
-        } else {
-          LOG.info("Will queue restart for {}; queryId {}, killQuery {}", toKill, queryId, kq);
+        } finally {
+          toKill.setQueryId(null);
         }
         // We cannot restart in place because the user might receive a failure and return the
         // session to the master thread without the "irrelevant" flag set. In fact, the query might
@@ -421,12 +424,13 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // 2. Restart pool sessions.
     for (final WmTezSession toRestart : context.toRestartInUse) {
       LOG.info("Replacing {} with a new session", toRestart);
+      toRestart.setQueryId(null);
       workPool.submit(() -> {
         try {
           // Note: sessions in toRestart are always in use, so they cannot expire in parallel.
           tezAmPool.replaceSession(toRestart, false, null);
         } catch (Exception ex) {
-          LOG.error("Failed to restart an old session; ignoring " + ex.getMessage());
+          LOG.error("Failed to restart an old session; ignoring", ex);
         }
       });
     }
@@ -564,7 +568,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // May be change command to support ... DELAYED MOVE TO etl ... which will run under src cluster fraction as long
     // as possible
     for (MoveSession moveSession : e.moveSessions) {
-      handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute);
+      handleMoveSessionOnMasterThread(moveSession, syncWork, poolsToRedistribute, e.toReuse);
     }
     e.moveSessions.clear();
 
@@ -676,9 +680,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     }
   }
 
-  private void handleMoveSessionOnMasterThread(final MoveSession moveSession,
-    final WmThreadSyncWork syncWork,
-    final HashSet<String> poolsToRedistribute) {
+  private void handleMoveSessionOnMasterThread(MoveSession moveSession, WmThreadSyncWork syncWork,
+      Set<String> poolsToRedistribute, Map<WmTezSession, GetRequest> toReuse) {
     String destPoolName = moveSession.destPool;
     LOG.info("Handling move session event: {}", moveSession);
     if (validMove(moveSession.srcSession, destPoolName)) {
@@ -689,7 +692,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         // check if there is capacity in dest pool, if so move else kill the session
         if (capacityAvailable(destPoolName)) {
           // add to destination pool
-          Boolean added = checkAndAddSessionToAnotherPool(moveSession.srcSession, destPoolName, poolsToRedistribute);
+          Boolean added = checkAndAddSessionToAnotherPool(
+              moveSession.srcSession, destPoolName, poolsToRedistribute);
           if (added != null && added) {
             moveSession.future.set(true);
             return;
@@ -697,10 +701,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
             LOG.error("Failed to move session: {}. Session is not added to destination.", moveSession);
           }
         } else {
-          moveSession.srcSession.clearWm();
-          moveSession.srcSession.setIsIrrelevantForWm("Destination pool "
-          + destPoolName + " is full. Killing query.");
-          syncWork.toRestartInUse.add(moveSession.srcSession);
+          WmTezSession session = moveSession.srcSession;
+          resetRemovedSessionToKill(session, toReuse);
+          syncWork.toKillQuery.put(session, new KillQueryContext(session, "Destination pool "
+              + destPoolName + " is full. Killing query."));
         }
       } else {
         LOG.error("Failed to move session: {}. Session is not removed from its pool.", moveSession);
@@ -785,6 +789,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     if (reuseRequest != null) {
       reuseRequest.future.setException(new AssertionError("Invalid reuse attempt"));
     }
+    session.setQueryId(null);
     return checkAndRemoveSessionFromItsPool(session, poolsToRedistribute, isReturn);
   }
 
@@ -1086,6 +1091,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     WmTezSession session = req.sessionToReuse;
     if (session == null) return;
     req.sessionToReuse = null;
+    session.setQueryId(null);
     if (poolsToRedistribute != null) {
       RemoveSessionResult rr = checkAndRemoveSessionFromItsPool(
           session, poolsToRedistribute, true);
@@ -1119,7 +1125,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
    *         in WM but wasn't found in the requisite pool (internal error?).
    */
   private RemoveSessionResult checkAndRemoveSessionFromItsPool(
-      WmTezSession session, HashSet<String> poolsToRedistribute, Boolean isSessionOk) {
+      WmTezSession session, Set<String> poolsToRedistribute, Boolean isSessionOk) {
     // It is possible for some request to be queued after a main thread has decided to kill this
     // session; on the next iteration, we'd be processing that request with an irrelevant session.
     if (session.isIrrelevantForWm()) {
@@ -1146,7 +1152,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   }
 
   private Boolean checkAndAddSessionToAnotherPool(
-    WmTezSession session, String destPoolName, HashSet<String> poolsToRedistribute) {
+    WmTezSession session, String destPoolName, Set<String> poolsToRedistribute) {
     if (session.isIrrelevantForWm()) {
       // This is called only during move session handling, removing session already checks this.
       // So this is not expected as remove failing will not even invoke this method
@@ -1624,7 +1630,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         IdentityHashMap<WmTezSession, GetRequest> toReuse,
         Map<WmTezSession, KillQueryContext> toKill) {
       for (WmTezSession sessionToKill : sessions) {
-        resetRemovedSession(sessionToKill, toReuse);
+        resetRemovedSessionToKill(sessionToKill, toReuse);
         toKill.put(sessionToKill, new KillQueryContext(sessionToKill, killReason));
       }
       sessions.clear();
@@ -1635,19 +1641,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         if (sessionToKill == null) {
           continue; // Async op in progress; the callback will take care of this.
         }
-        resetRemovedSession(sessionToKill, toReuse);
+        resetRemovedSessionToKill(sessionToKill, toReuse);
         toKill.put(sessionToKill, new KillQueryContext(sessionToKill, killReason));
       }
       initializingSessions.clear();
-    }
-
-    private void resetRemovedSession(WmTezSession sessionToKill,
-        IdentityHashMap<WmTezSession, GetRequest> toReuse) {
-      sessionToKill.clearWm();
-      GetRequest req = toReuse.remove(sessionToKill);
-      if (req != null) {
-        req.sessionToReuse = null;
-      }
     }
 
     public void setTriggers(final LinkedList<Trigger> triggers) {
@@ -1786,6 +1783,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       }
       if (session != null) {
         session.clearWm();
+        session.setQueryId(null);
         // We can just restart the session if we have received one.
         try {
           tezAmPool.replaceSession(session, false, null);
@@ -1911,6 +1909,15 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       return "KillQueryContext [isUserDone=" + isUserDone + ", isKillDone=" + isKillDone
           + ", hasKillFailed=" + hasKillFailed + ", hasUserFailed=" + hasUserFailed
           + ", session=" + session + ", reason=" + reason + "]";
+    }
+  }
+
+  private static void resetRemovedSessionToKill(
+      WmTezSession sessionToKill, Map<WmTezSession, GetRequest> toReuse) {
+    sessionToKill.clearWm();
+    GetRequest req = toReuse.remove(sessionToKill);
+    if (req != null) {
+      req.sessionToReuse = null;
     }
   }
 

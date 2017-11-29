@@ -429,7 +429,6 @@ public class TestLlapTaskSchedulerService {
       TaskInfo ti1 = tsWrapper.ts.getTaskInfo(task1), ti2 = tsWrapper.ts.getTaskInfo(task2);
       assertFalse(ti1.isGuaranteed() || ti2.isGuaranteed());
 
-      // TODO#       ts.notifyStarted(task);
       tsWrapper.ts.updateGuaranteedCount(1);
       tsWrapper.ts.waitForMessagesSent(1);
       TaskInfo tiHigher = ti1.isGuaranteed() ? ti1 : ti2, tiLower = (tiHigher == ti1) ? ti2 : ti1;
