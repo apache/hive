@@ -171,9 +171,10 @@ public class TezTask extends Task<TezWork> {
 
       TriggerContext triggerContext = ctx.getTriggerContext();
       triggerContext.setDesiredCounters(desiredCounters);
-      session.setTriggerContext(triggerContext);
-      LOG.info("Subscribed to counters: {} for queryId: {}", desiredCounters, triggerContext.getQueryId());
+      LOG.info("Subscribed to counters: {} for queryId: {}",
+          desiredCounters, triggerContext.getQueryId());
       ss.setTezSession(session);
+      session.setTriggerContext(triggerContext);
       try {
         // jobConf will hold all the configuration for hadoop, tez, and hive
         JobConf jobConf = utils.createConfiguration(conf);
@@ -190,8 +191,7 @@ public class TezTask extends Task<TezWork> {
 
         // This is used to compare global and vertex resources. Global resources are originally
         // derived from session conf via localizeTempFilesFromConf. So, use that here.
-        Configuration sessionConf =
-            (session != null && session.getConf() != null) ? session.getConf() : conf;
+        Configuration sessionConf = (session.getConf() != null) ? session.getConf() : conf;
         Map<String,LocalResource> inputOutputLocalResources =
             getExtraLocalResources(jobConf, scratchDir, inputOutputJars, sessionConf);
 
@@ -584,7 +584,10 @@ public class TezTask extends Task<TezWork> {
       try {
         console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
             + Arrays.toString(e.getStackTrace()) + " retrying...");
+        // TODO: this is temporary, need to refactor how reopen is invoked.
+        TriggerContext oldCtx = sessionState.getTriggerContext();
         sessionState = sessionState.reopen(conf, inputOutputJars);
+        sessionState.setTriggerContext(oldCtx);
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (Exception retryException) {
         // we failed to submit after retrying. Destroy session and bail.

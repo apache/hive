@@ -143,7 +143,6 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
   void clearWm() {
     this.poolName = null;
     this.clusterFraction = 0f;
-    this.queryId = null;
   }
 
   double getClusterFraction() {
