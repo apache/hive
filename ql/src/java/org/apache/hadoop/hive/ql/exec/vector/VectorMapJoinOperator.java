@@ -98,12 +98,9 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
     bigTableFilterExpressions = vContext.getVectorExpressions(filterExpressions.get(posBigTable),
         VectorExpressionDescriptor.Mode.FILTER);
 
-    List<ExprNodeDesc> keyDesc = desc.getKeys().get(posBigTable);
-    keyExpressions = vContext.getVectorExpressions(keyDesc);
+    keyExpressions = this.vectorDesc.getAllBigTableKeyExpressions();
 
-    // We're only going to evaluate the big table vectorized expressions,
-    Map<Byte, List<ExprNodeDesc>> exprs = desc.getExprs();
-    bigTableValueExpressions = vContext.getVectorExpressions(exprs.get(posBigTable));
+    bigTableValueExpressions = this.vectorDesc.getAllBigTableValueExpressions();
   }
 
   @Override

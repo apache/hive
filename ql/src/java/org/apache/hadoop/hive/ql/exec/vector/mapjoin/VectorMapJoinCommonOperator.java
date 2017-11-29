@@ -253,12 +253,12 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     bigTableKeyColumnMap = vectorMapJoinInfo.getBigTableKeyColumnMap();
     bigTableKeyColumnNames = vectorMapJoinInfo.getBigTableKeyColumnNames();
     bigTableKeyTypeInfos = vectorMapJoinInfo.getBigTableKeyTypeInfos();
-    bigTableKeyExpressions = vectorMapJoinInfo.getBigTableKeyExpressions();
+    bigTableKeyExpressions = vectorMapJoinInfo.getSlimmedBigTableKeyExpressions();
 
     bigTableValueColumnMap = vectorMapJoinInfo.getBigTableValueColumnMap();
     bigTableValueColumnNames = vectorMapJoinInfo.getBigTableValueColumnNames();
     bigTableValueTypeInfos = vectorMapJoinInfo.getBigTableValueTypeInfos();
-    bigTableValueExpressions = vectorMapJoinInfo.getBigTableValueExpressions();
+    bigTableValueExpressions = vectorMapJoinInfo.getSlimmedBigTableValueExpressions();
 
     bigTableRetainedMapping = vectorMapJoinInfo.getBigTableRetainedMapping();
 

@@ -1007,6 +1007,8 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
     case DECIMAL:
       return keyOutputWriter.writeValue(
           kw.getDecimal(columnTypeSpecificIndex));
+    case DECIMAL_64:
+      throw new RuntimeException("Getting writable for DECIMAL_64 not supported");
     case TIMESTAMP:
       return keyOutputWriter.writeValue(
           kw.getTimestamp(columnTypeSpecificIndex));

@@ -696,6 +696,20 @@ public class VectorizationContext {
     return expr;
   }
 
+  public VectorExpression[] getVectorExpressionsUpConvertDecimal64(List<ExprNodeDesc> exprNodes)
+      throws HiveException {
+    VectorExpression[] vecExprs =
+        getVectorExpressions(exprNodes, VectorExpressionDescriptor.Mode.PROJECTION);
+    final int size = vecExprs.length;
+    for (int i = 0; i < size; i++) {
+      VectorExpression vecExpr = vecExprs[i];
+      if (vecExpr.getOutputColumnVectorType() == ColumnVector.Type.DECIMAL_64) {
+        vecExprs[i] = wrapWithDecimal64ToDecimalConversion(vecExpr);
+      }
+    }
+    return vecExprs;
+  }
+
   public VectorExpression[] getVectorExpressions(List<ExprNodeDesc> exprNodes) throws HiveException {
     return getVectorExpressions(exprNodes, VectorExpressionDescriptor.Mode.PROJECTION);
   }

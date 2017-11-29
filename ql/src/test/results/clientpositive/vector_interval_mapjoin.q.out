@@ -244,6 +244,8 @@ STAGE PLANS:
                     0 _col0 (type: string), _col1 (type: interval_day_time)
                     1 _col0 (type: string), _col1 (type: interval_day_time)
                   Map Join Vectorization:
+                      bigTableKeyExpressions: col 8:string, col 15:interval_day_time
+                      bigTableValueExpressions: col 8:string, col 15:interval_day_time
                       className: VectorMapJoinOperator
                       native: false
                       nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true

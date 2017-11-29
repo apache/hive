@@ -404,7 +404,8 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       super(vectorMapJoinDesc, vectorMapJoinDesc.getHashTableImplementationType() != HashTableImplementationType.NONE);
       this.mapJoinDesc = mapJoinDesc;
       this.vectorMapJoinDesc = vectorMapJoinDesc;
-      vectorMapJoinInfo = vectorMapJoinDesc.getVectorMapJoinInfo();
+      vectorMapJoinInfo =
+          (vectorMapJoinDesc != null ? vectorMapJoinDesc.getVectorMapJoinInfo() : null);
     }
 
     private VectorizationCondition[] createNativeConditions() {
@@ -480,10 +481,10 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
     @Explain(vectorization = Vectorization.EXPRESSION, displayName = "bigTableKeyExpressions", explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public List<String> getBigTableKeyExpressions() {
-      if (!isNative) {
-        return null;
-      }
-      return vectorExpressionsToStringList(vectorMapJoinInfo.getBigTableKeyExpressions());
+      return vectorExpressionsToStringList(
+          isNative ?
+              vectorMapJoinInfo.getSlimmedBigTableKeyExpressions() :
+              vectorMapJoinDesc.getAllBigTableKeyExpressions());
     }
 
     @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableKeyColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
@@ -500,10 +501,10 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
     @Explain(vectorization = Vectorization.EXPRESSION, displayName = "bigTableValueExpressions", explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public List<String> getBigTableValueExpressions() {
-      if (!isNative) {
-        return null;
-      }
-      return vectorExpressionsToStringList(vectorMapJoinInfo.getBigTableValueExpressions());
+      return vectorExpressionsToStringList(
+          isNative ?
+              vectorMapJoinInfo.getSlimmedBigTableValueExpressions() :
+              vectorMapJoinDesc.getAllBigTableValueExpressions());
     }
 
     @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableValueColumnNums", explainLevels = { Level.DEFAULT, Level.EXTENDED })
