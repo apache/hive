@@ -25,14 +25,12 @@ import java.util.Collection;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -140,9 +138,6 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   private PerPoolTriggerValidatorRunnable triggerValidatorRunnable;
   private Map<String, SessionTriggerProvider> perPoolProviders = new ConcurrentHashMap<>();
 
-  private SessionTriggerProvider sessionTriggerProvider;
-  private TriggerActionHandler triggerActionHandler;
-
   // The master thread and various workers.
   /** The master thread the processes the events from EventState. */
   @VisibleForTesting
@@ -152,8 +147,6 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   /** Used to schedule timeouts for some async operations. */
   private final ScheduledExecutorService timeoutPool;
 
-  // The initial plan initalization future, to wait for the plan to apply during setup.
-  private ListenableFuture<Boolean> initRpFuture;
   private LlapPluginEndpointClientImpl amComm;
 
   private static final FutureCallback<Object> FATAL_ERROR_CALLBACK = new FutureCallback<Object>() {
@@ -175,7 +168,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   }
 
   /** Called once, when HS2 initializes. */
-  public static WorkloadManager create(String yarnQueue, HiveConf conf, WMFullResourcePlan plan) {
+  public static WorkloadManager create(String yarnQueue, HiveConf conf, WMFullResourcePlan plan)
+    throws ExecutionException, InterruptedException {
     assert INSTANCE == null;
     // We could derive the expected number of AMs to pass in.
     LlapPluginEndpointClientImpl amComm = new LlapPluginEndpointClientImpl(conf, null, -1);
@@ -185,11 +179,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
   @VisibleForTesting
   WorkloadManager(LlapPluginEndpointClientImpl amComm, String yarnQueue, HiveConf conf,
-      QueryAllocationManager qam, WMFullResourcePlan plan) {
+      QueryAllocationManager qam, WMFullResourcePlan plan) throws ExecutionException, InterruptedException {
     this.yarnQueue = yarnQueue;
     this.conf = conf;
     this.totalQueryParallelism = determineQueryParallelism(plan);
-    this.initRpFuture = this.updateResourcePlanAsync(plan);
     this.allocationManager = qam;
     this.allocationManager.setClusterChangedCallback(() -> notifyOfClusterStateChange());
 
@@ -215,6 +208,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
     wmThread = new Thread(() -> runWmThread(), "Workload management master");
     wmThread.setDaemon(true);
+    wmThread.start();
+
+    updateResourcePlanAsync(plan).get(); // Wait for the initial resource plan to be applied.
   }
 
   private static int determineQueryParallelism(WMFullResourcePlan plan) {
@@ -234,8 +230,6 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       amComm.start();
     }
     allocationManager.start();
-    wmThread.start();
-    initRpFuture.get(); // Wait for the initial resource plan to be applied.
 
     final long triggerValidationIntervalMs = HiveConf.getTimeVar(conf,
       HiveConf.ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL_MS, TimeUnit.MILLISECONDS);
@@ -1842,10 +1836,15 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
   boolean isManaged(MappingInput input) {
     // This is always replaced atomically, so we don't care about concurrency here.
-    return userPoolMapping.mapSessionToPoolName(input) != null;
+    if (userPoolMapping != null) {
+      String mappedPool = userPoolMapping.mapSessionToPoolName(input);
+      LOG.info("Mapping input: {} mapped to pool: {}", input, mappedPool);
+      return true;
+    }
+    return false;
   }
 
-  private static enum KillQueryResult {
+  private enum KillQueryResult {
     OK,
     RESTART_REQUIRED,
     IN_PROGRESS

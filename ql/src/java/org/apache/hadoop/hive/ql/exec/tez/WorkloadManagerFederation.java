@@ -51,6 +51,7 @@ public class WorkloadManagerFederation {
       desiredCounters.addAll(wm.getTriggerCounterNames(result));
       return result;
     } catch (WorkloadManager.NoPoolMappingException ex) {
+      LOG.info("NoPoolMappingException thrown. Getting an un-managed session..");
       return getUnmanagedSession(session, conf, desiredCounters, isUnmanagedLlapMode);
     }
   }
