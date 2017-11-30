@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE alltypesparquet_old (
+PREHOOK: query: CREATE TABLE alltypesparquet (
     bo1 boolean,
     ti1 tinyint,
     si1 smallint,
@@ -13,8 +13,8 @@ PREHOOK: query: CREATE TABLE alltypesparquet_old (
 ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@alltypesparquet_old
-POSTHOOK: query: CREATE TABLE alltypesparquet_old (
+PREHOOK: Output: default@alltypesparquet
+POSTHOOK: query: CREATE TABLE alltypesparquet (
     bo1 boolean,
     ti1 tinyint,
     si1 smallint,
@@ -29,21 +29,21 @@ POSTHOOK: query: CREATE TABLE alltypesparquet_old (
 ) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@alltypesparquet_old
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/alltypesparquet' OVERWRITE INTO TABLE alltypesparquet_old
+POSTHOOK: Output: default@alltypesparquet
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/alltypesparquet' OVERWRITE INTO TABLE alltypesparquet
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@alltypesparquet_old
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/alltypesparquet' OVERWRITE INTO TABLE alltypesparquet_old
+PREHOOK: Output: default@alltypesparquet
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/alltypesparquet' OVERWRITE INTO TABLE alltypesparquet
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@alltypesparquet_old
-PREHOOK: query: SELECT * FROM alltypesparquet_old
+POSTHOOK: Output: default@alltypesparquet
+PREHOOK: query: SELECT * FROM alltypesparquet
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesparquet_old
+PREHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM alltypesparquet_old
+POSTHOOK: query: SELECT * FROM alltypesparquet
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesparquet_old
+POSTHOOK: Input: default@alltypesparquet
 #### A masked pattern was here ####
 true	10	100	1000	10000	4.0	20.0	hello	{"k1":"v1"}	[100,200]	{"c1":10,"c2":"foo"}
