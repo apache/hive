@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableShortObje
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
@@ -1403,11 +1404,14 @@ public final class VectorExpressionWriterFactory {
       SettableListObjectInspector fieldObjInspector) throws HiveException {
 
     return new VectorExpressionWriterList() {
-      private Object obj;
+      private VectorExtractRow vectorExtractRow;
+      private ListTypeInfo listTypeInfo;
 
       public VectorExpressionWriter init(SettableListObjectInspector objInspector) throws HiveException {
         super.init(objInspector);
-        obj = initValue(null);
+        vectorExtractRow = new VectorExtractRow();
+        listTypeInfo = (ListTypeInfo)
+            TypeInfoUtils.getTypeInfoFromTypeString(objInspector.getTypeName());
         return this;
       }
 
@@ -1419,14 +1423,26 @@ public final class VectorExpressionWriterFactory {
       @Override
       public Object writeValue(ColumnVector column, int row)
           throws HiveException {
-        throw new HiveException("Not implemented yet");
+        return setValue(null, column, row);
       }
 
       @Override
       public Object setValue(Object row, ColumnVector column, int columnRow)
           throws HiveException {
-        throw new HiveException("Not implemented yet");
+        final ListColumnVector listColVector = (ListColumnVector) column;
+        final SettableListObjectInspector listOI =
+            (SettableListObjectInspector) this.objectInspector;
+        final List value = (List)vectorExtractRow.extractRowColumn(listColVector,
+            listTypeInfo, listOI, columnRow);
+        if (null == row) {
+          row = ((SettableListObjectInspector) this.objectInspector).create(value.size());
+        }
+        for (int i = 0; i < value.size(); i++) {
+          listOI.set(row, i, value.get(i));
+        }
+        return row;
       }
+
     }.init(fieldObjInspector);
   }
 

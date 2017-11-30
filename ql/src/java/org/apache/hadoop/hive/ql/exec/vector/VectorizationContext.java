@@ -423,6 +423,9 @@ public class VectorizationContext {
   public static final Pattern structTypePattern = Pattern.compile("struct.*",
       Pattern.CASE_INSENSITIVE);
 
+  public static final Pattern listTypePattern = Pattern.compile("array.*",
+      Pattern.CASE_INSENSITIVE);
+
   //Map column number to type
   private OutputColumnManager ocm;
 
@@ -3310,6 +3313,8 @@ public class VectorizationContext {
       return hiveTypeName;
     case STRUCT:
       return "Struct";
+    case LIST:
+      return "List";
     default:
       throw new HiveException("Unexpected hive type name " + hiveTypeName);
     }
