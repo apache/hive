@@ -503,6 +503,18 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       return new VectorizedListColumnReader(descriptors.get(0),
           pages.getPageReader(descriptors.get(0)), skipTimestampConversion, type);
     case MAP:
+      if (columnDescriptors == null || columnDescriptors.isEmpty()) {
+        throw new RuntimeException(
+            "Failed to find related Parquet column descriptor with type " + type);
+      }
+      List<Type> kvTypes = type.asGroupType().getFields();
+      VectorizedListColumnReader keyListColumnReader = new VectorizedListColumnReader(
+          descriptors.get(0), pages.getPageReader(descriptors.get(0)), skipTimestampConversion,
+          kvTypes.get(0));
+      VectorizedListColumnReader valueListColumnReader = new VectorizedListColumnReader(
+          descriptors.get(1), pages.getPageReader(descriptors.get(1)), skipTimestampConversion,
+          kvTypes.get(1));
+      return new VectorizedMapColumnReader(keyListColumnReader, valueListColumnReader);
     case UNION:
     default:
       throw new RuntimeException("Unsupported category " + typeInfo.getCategory().name());
