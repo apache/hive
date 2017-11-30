@@ -19,6 +19,10 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.util.List;
 
+/**
+ * Represents the mapping from logical resource allocations to queries from WM, to actual physical
+ * allocations performed using some implementation of a scheduler.
+ */
 interface QueryAllocationManager {
   void start();
   void stop();
@@ -30,4 +34,9 @@ interface QueryAllocationManager {
    * @param sessions Sessions to update based on their allocation fraction.
    */
   void updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessions);
+
+  /**
+   * Sets a callback to be invoked on cluster changes relevant to resource allocation.
+   */
+  void setClusterChangedCallback(Runnable clusterChangedCallback);
 }

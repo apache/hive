@@ -190,6 +190,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     this.conf = conf;
     this.totalQueryParallelism = determineQueryParallelism(plan);
     this.initRpFuture = this.updateResourcePlanAsync(plan);
+    this.allocationManager = qam;
+    this.allocationManager.setClusterChangedCallback(() -> notifyOfClusterStateChange());
+
     this.amComm = amComm;
     if (this.amComm != null) {
       this.amComm.init(conf);
@@ -201,7 +204,6 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     tezAmPool = new TezSessionPool<>(conf, totalQueryParallelism, true,
       oldSession -> createSession(oldSession == null ? null : oldSession.getConf()));
     restrictedConfig = new RestrictedConfigChecker(conf);
-    allocationManager = qam;
     // Only creates the expiration tracker if expiration is configured.
     expirationTracker = SessionExpirationTracker.create(conf, this);
 
@@ -1294,8 +1296,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     }
   }
 
-  // TODO: use this
-  public void nofityOfClusterStateChange() {
+  public void notifyOfClusterStateChange() {
     currentLock.lock();
     try {
       current.hasClusterStateChanged = true;
