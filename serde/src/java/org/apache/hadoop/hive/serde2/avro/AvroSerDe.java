@@ -90,6 +90,9 @@ public class AvroSerDe extends AbstractSerDe {
       LOG.debug("Resetting already initialized AvroSerDe");
     }
 
+    LOG.info("AvroSerde::initialize(): Preset value of avro.schema.literal == "
+        + properties.get(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName()));
+
     schema = null;
     oi = null;
     columnNames = null;
@@ -112,8 +115,9 @@ public class AvroSerDe extends AbstractSerDe {
       columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
 
       schema = getSchemaFromCols(properties, columnNames, columnTypes, columnCommentProperty);
-      properties.setProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
     }
+
+    properties.setProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Avro schema is " + schema);
