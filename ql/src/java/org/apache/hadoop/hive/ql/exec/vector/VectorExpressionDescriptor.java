@@ -78,13 +78,14 @@ public class VectorExpressionDescriptor {
     BINARY                  (0x400),
     STRUCT                  (0x800),
     DECIMAL_64              (0x1000),
+    LIST                    (0X2000),
     INT_DECIMAL_64_FAMILY   (INT_FAMILY.value | DECIMAL_64.value),
     DATETIME_FAMILY         (DATE.value | TIMESTAMP.value),
     INTERVAL_FAMILY         (INTERVAL_YEAR_MONTH.value | INTERVAL_DAY_TIME.value),
     INT_INTERVAL_YEAR_MONTH     (INT_FAMILY.value | INTERVAL_YEAR_MONTH.value),
     INT_DATE_INTERVAL_YEAR_MONTH  (INT_FAMILY.value | DATE.value | INTERVAL_YEAR_MONTH.value),
     STRING_DATETIME_FAMILY  (STRING_FAMILY.value | DATETIME_FAMILY.value),
-    ALL_FAMILY              (0xFFF);
+    ALL_FAMILY              (0xFFFF);
 
     private final int value;
 
@@ -127,6 +128,8 @@ public class VectorExpressionDescriptor {
         return INTERVAL_DAY_TIME;
       } else if (VectorizationContext.structTypePattern.matcher(lower).matches()) {
         return STRUCT;
+      } else if (VectorizationContext.listTypePattern.matcher(lower).matches()) {
+        return LIST;
       } else if (lower.equals("void")) {
         // The old code let void through...
         return INT_FAMILY;
