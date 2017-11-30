@@ -152,12 +152,12 @@ public class TestWorkloadManager {
   public static class WorkloadManagerForTest extends WorkloadManager {
 
     public WorkloadManagerForTest(String yarnQueue, HiveConf conf, int numSessions,
-        QueryAllocationManager qam) {
+        QueryAllocationManager qam) throws ExecutionException, InterruptedException {
       super(null, yarnQueue, conf, qam, createDummyPlan(numSessions));
     }
 
     public WorkloadManagerForTest(String yarnQueue, HiveConf conf,
-        QueryAllocationManager qam, WMFullResourcePlan plan) {
+        QueryAllocationManager qam, WMFullResourcePlan plan) throws ExecutionException, InterruptedException {
       super(null, yarnQueue, conf, qam, plan);
     }
 
