@@ -109,9 +109,13 @@ public class TestWorkloadManager {
       isCalled = true;
     }
 
-    void assertWasCalled() {
+    void assertWasCalledAndReset() {
       assertTrue(isCalled);
       isCalled = false;
+    }
+
+    @Override
+    public void setClusterChangedCallback(Runnable clusterChangedCallback) {
     }
   }
 
@@ -155,6 +159,16 @@ public class TestWorkloadManager {
     public WorkloadManagerForTest(String yarnQueue, HiveConf conf,
         QueryAllocationManager qam, WMFullResourcePlan plan) {
       super(null, yarnQueue, conf, qam, plan);
+    }
+
+    @Override
+    public void notifyOfClusterStateChange() {
+      super.notifyOfClusterStateChange();
+      try {
+        ensureWm();
+      } catch (InterruptedException | ExecutionException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     private static WMFullResourcePlan createDummyPlan(int numSessions) {
@@ -257,13 +271,13 @@ public class TestWorkloadManager {
     WmTezSession session = (WmTezSession) wm.getSession(
         null, new MappingInput("user", null), conf);
     assertEquals(1.0, session.getClusterFraction(), EPSILON);
-    qam.assertWasCalled();
+    qam.assertWasCalledAndReset();
     WmTezSession session2 = (WmTezSession) session.reopen(conf, null);
     assertNotSame(session, session2);
     wm.addTestEvent().get();
     assertEquals(session2.toString(), 1.0, session2.getClusterFraction(), EPSILON);
     assertEquals(0.0, session.getClusterFraction(), EPSILON);
-    qam.assertWasCalled();
+    qam.assertWasCalledAndReset();
   }
 
   @Test(timeout = 10000)
@@ -275,23 +289,23 @@ public class TestWorkloadManager {
     wm.start();
     WmTezSession session = (WmTezSession) wm.getSession(null, new MappingInput("user", null), conf);
     assertEquals(1.0, session.getClusterFraction(), EPSILON);
-    qam.assertWasCalled();
+    qam.assertWasCalledAndReset();
     WmTezSession session2 = (WmTezSession) wm.getSession(null, new MappingInput("user", null), conf);
     assertEquals(0.5, session.getClusterFraction(), EPSILON);
     assertEquals(0.5, session2.getClusterFraction(), EPSILON);
-    qam.assertWasCalled();
+    qam.assertWasCalledAndReset();
     assertNotSame(session, session2);
     session.destroy(); // Destroy before returning to the pool.
     assertEquals(1.0, session2.getClusterFraction(), EPSILON);
     assertEquals(0.0, session.getClusterFraction(), EPSILON);
-    qam.assertWasCalled();
+    qam.assertWasCalledAndReset();
 
     // We never lose pool session, so we should still be able to get.
     session = (WmTezSession) wm.getSession(null, new MappingInput("user", null), conf);
     session.returnToSessionManager();
     assertEquals(1.0, session2.getClusterFraction(), EPSILON);
     assertEquals(0.0, session.getClusterFraction(), EPSILON);
-    qam.assertWasCalled();
+    qam.assertWasCalledAndReset();
   }
 
   @Test(timeout = 10000)
@@ -401,6 +415,30 @@ public class TestWorkloadManager {
     assertNotNull(sessionA4.get());
     sessionA4.get().returnToSessionManager();
     sessionA2.returnToSessionManager();
+  }
+
+  @Test(timeout=10000)
+  public void testClusterChange() throws Exception {
+    final HiveConf conf = createConf();
+    MockQam qam = new MockQam();
+    WMFullResourcePlan plan = new WMFullResourcePlan(plan(), Lists.newArrayList(pool("A", 2, 1f)));
+    plan.getPlan().setDefaultPoolPath("A");
+    final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
+    wm.start();
+    WmTezSession session1 = (WmTezSession) wm.getSession(null, new MappingInput("A", null), conf),
+        session2 = (WmTezSession) wm.getSession(null, new MappingInput("A", null), conf);
+    assertEquals(0.5, session1.getClusterFraction(), EPSILON);
+    assertEquals(0.5, session2.getClusterFraction(), EPSILON);
+    qam.assertWasCalledAndReset();
+
+    // If cluster info changes, qam should be called with the same fractions.
+    wm.notifyOfClusterStateChange();
+    assertEquals(0.5, session1.getClusterFraction(), EPSILON);
+    assertEquals(0.5, session2.getClusterFraction(), EPSILON);
+    qam.assertWasCalledAndReset();
+
+    session1.returnToSessionManager();
+    session2.returnToSessionManager();
   }
 
   @Test(timeout=10000)
