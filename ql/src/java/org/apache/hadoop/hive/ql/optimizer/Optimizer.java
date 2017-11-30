@@ -232,6 +232,10 @@ public class Optimizer {
       transformations.add(new SimpleFetchAggregation());
     }
 
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_TABLE_PROPERTIES_FROM_SERDE)) {
+      transformations.add(new TablePropertyEnrichmentOptimizer());
+    }
+
     if (pctx.getContext().getExplainConfig() != null
         && pctx.getContext().getExplainConfig().isFormatted()) {
       transformations.add(new AnnotateReduceSinkOutputOperator());
