@@ -186,26 +186,26 @@ public class HiveServer2 extends CompositeService {
       throw new RuntimeException("Failed to get metastore connection", e);
     }
 
-    WMFullResourcePlan resourcePlan;
-    try {
-      resourcePlan = sessionHive.getActiveResourcePlan();
-    } catch (HiveException e) {
-      throw new RuntimeException(e);
-    }
-
-    if (resourcePlan == null) {
-      if (!HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_IN_TEST)) {
-        LOG.error("Cannot activate workload management - no active resource plan");
-      } else {
-        LOG.info("Creating a default resource plan for test");
-        resourcePlan = createTestResourcePlan();
+    String wmQueue = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE);
+    if (wmQueue != null && !wmQueue.isEmpty()) {
+      WMFullResourcePlan resourcePlan;
+      try {
+        resourcePlan = sessionHive.getActiveResourcePlan();
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
       }
-    }
 
-    if (resourcePlan != null) {
-      // Initialize workload management.
-      String wmQueue = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE);
-      if (wmQueue != null && !wmQueue.isEmpty()) {
+      if (resourcePlan == null) {
+        if (!HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_IN_TEST)) {
+          LOG.error("Cannot activate workload management - no active resource plan");
+        } else {
+          LOG.info("Creating a default resource plan for test");
+          resourcePlan = createTestResourcePlan();
+        }
+      }
+
+      if (resourcePlan != null) {
+        // Initialize workload management.
         LOG.info("Initializing workload management");
         try {
           wm = WorkloadManager.create(wmQueue, hiveConf, resourcePlan);
