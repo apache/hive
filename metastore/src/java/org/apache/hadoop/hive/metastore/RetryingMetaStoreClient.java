@@ -25,6 +25,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +59,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   private static final Logger LOG = LoggerFactory.getLogger(RetryingMetaStoreClient.class.getName());
 
   private final IMetaStoreClient base;
+  private final UserGroupInformation ugi;
   private final int retryLimit;
   private final long retryDelaySeconds;
   private final ConcurrentHashMap<String, Long> metaCallTimeMap;
@@ -69,6 +72,12 @@ public class RetryingMetaStoreClient implements InvocationHandler {
       Object[] constructorArgs, ConcurrentHashMap<String, Long> metaCallTimeMap,
       Class<? extends IMetaStoreClient> msClientClass) throws MetaException {
 
+    this.ugi = getUGI();
+
+    if (this.ugi == null) {
+      LOG.warn("RetryingMetaStoreClient unable to determine current user UGI.");
+    }
+
     this.retryLimit = hiveConf.getIntVar(HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES);
     this.retryDelaySeconds = hiveConf.getTimeVar(
         HiveConf.ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY, TimeUnit.SECONDS);
@@ -80,8 +89,13 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     localMetaStore = (msUri == null) || msUri.trim().isEmpty();
 
     reloginExpiringKeytabUser();
+
     this.base = (IMetaStoreClient) MetaStoreUtils.newInstance(
         msClientClass, constructorArgTypes, constructorArgs);
+
+    LOG.info("RetryingMetaStoreClient proxy=" + msClientClass + " ugi=" + this.ugi
+        + " retries=" + this.retryLimit + " delay=" + this.retryDelaySeconds
+        + " lifetime=" + this.connectionLifeTimeInMillis);
   }
 
   public static IMetaStoreClient getProxy(
@@ -160,8 +174,32 @@ public class RetryingMetaStoreClient implements InvocationHandler {
 
         if (allowReconnect) {
           if (retriesMade > 0 || hasConnectionLifeTimeReached(method)) {
-            base.reconnect();
-            lastConnectionTime = System.currentTimeMillis();
+            if (this.ugi != null) {
+              // Perform reconnect with the proper user context
+              try {
+                LOG.info("RetryingMetaStoreClient trying reconnect as " + this.ugi);
+
+                this.ugi.doAs(
+                  new PrivilegedExceptionAction<Object> () {
+                    @Override
+                    public Object run() throws MetaException {
+                      base.reconnect();
+                      return null;
+                    }
+                  });
+              } catch (UndeclaredThrowableException e) {
+                Throwable te = e.getCause();
+                if (te instanceof PrivilegedActionException) {
+                  throw te.getCause();
+                } else {
+                  throw te;
+                }
+              }
+              lastConnectionTime = System.currentTimeMillis();
+            } else {
+              LOG.warn("RetryingMetaStoreClient unable to reconnect. No UGI information.");
+              throw new MetaException("UGI information unavailable. Will not attempt a reconnect.");
+            }
           }
         }
 
@@ -220,6 +258,22 @@ public class RetryingMetaStoreClient implements InvocationHandler {
       Thread.sleep(retryDelaySeconds * 1000);
     }
     return ret;
+  }
+
+  /**
+   * Returns the UGI for the current user.
+   * @return the UGI for the current user.
+   */
+  private UserGroupInformation getUGI() {
+    UserGroupInformation ugi = null;
+
+    try {
+      ugi = UserGroupInformation.getCurrentUser();
+    } catch (IOException e) {
+      // Swallow the exception and let the call determine what to do.
+    }
+
+    return ugi;
   }
 
   private void addMethodTime(Method method, long timeTaken) {
