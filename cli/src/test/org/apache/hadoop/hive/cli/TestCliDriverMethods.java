@@ -104,6 +104,49 @@ public class TestCliDriverMethods extends TestCase {
     verify(mockOut, never()).print(anyString());
   }
 
+  // Test that CliDriver does not strip comments starting with '--'
+  public void testThatCliDriverDoesNotStripComments() throws Exception {
+    // We need to overwrite System.out and System.err as that is what is used in ShellCmdExecutor
+    // So save old values...
+    PrintStream oldOut = System.out;
+    PrintStream oldErr = System.err;
+
+    // Capture stdout and stderr
+    ByteArrayOutputStream dataOut = new ByteArrayOutputStream();
+    PrintStream out = new PrintStream(dataOut);
+    System.setOut(out);
+    ByteArrayOutputStream dataErr = new ByteArrayOutputStream();
+    PrintStream err = new PrintStream(dataErr);
+    System.setErr(err);
+
+    CliSessionState ss = new CliSessionState(new HiveConf());
+    ss.out = out;
+    ss.err = err;
+
+    // Save output as yo cannot print it while System.out and System.err are weird
+    String message;
+    String errors;
+    int ret;
+    try {
+      CliSessionState.start(ss);
+      CliDriver cliDriver = new CliDriver();
+      // issue a command with bad options
+      ret = cliDriver.processCmd("!ls --abcdefghijklmnopqrstuvwxyz123456789");
+    } finally {
+      // restore System.out and System.err
+      System.setOut(oldOut);
+      System.setErr(oldErr);
+    }
+    message = dataOut.toString("UTF-8");
+    errors = dataErr.toString("UTF-8");
+    assertTrue("Comments with '--; should not have been stripped,"
+        + " so command should fail", ret != 0);
+    assertTrue("Comments with '--; should not have been stripped,"
+        + " so we should have got an error in the output: '" + errors + "'.",
+        errors.contains("option"));
+    assertNotNull(message); // message kept around in for debugging
+  }
+
   /**
    * Do the actual testing against a mocked CliDriver based on what type of schema
    *

@@ -112,6 +112,13 @@ public class TestHiveCli {
   }
 
   @Test
+  public void testCommentStripping() {
+    // this should work as comments are stripped by HiveCli
+    verifyCMD("!ls --abcdefghijklmnopqrstuvwxyz\n", "src", os, null, ERRNO_OK, true);
+  }
+
+
+  @Test
   public void testSetPromptValue() {
     verifyCMD("set hive.cli.prompt=MYCLI;SHOW\nTABLES;", "MYCLI> ", errS, null,
         ERRNO_OK, true);
