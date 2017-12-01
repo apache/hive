@@ -10,7 +10,7 @@ PREHOOK: query: create table acid_ivot(
     ctimestamp1 TIMESTAMP,
     ctimestamp2 TIMESTAMP,
     cboolean1 BOOLEAN,
-    cboolean2 BOOLEAN) clustered by (cint) into 1 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+    cboolean2 BOOLEAN) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_ivot
@@ -26,8 +26,8 @@ POSTHOOK: query: create table acid_ivot(
     ctimestamp1 TIMESTAMP,
     ctimestamp2 TIMESTAMP,
     cboolean1 BOOLEAN,
-    cboolean2 BOOLEAN) clustered by (cint) into 1 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+    cboolean2 BOOLEAN) stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_ivot
-FAILED: SemanticException [Error 10266]: LOAD DATA... statement is not supported on transactional table default@acid_ivot.
+FAILED: SemanticException [Error 30023]: alltypesorc file name is not valid in Load Data into Acid table default.acid_ivot.  Examples of valid names are: 00000_0, 00000_0_copy_1

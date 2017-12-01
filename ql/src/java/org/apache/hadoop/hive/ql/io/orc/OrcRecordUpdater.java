@@ -196,7 +196,9 @@ public class OrcRecordUpdater implements RecordUpdater {
     fields.add(new OrcStruct.Field("row", rowInspector, ROW));
     return new OrcStruct.OrcStructInspector(fields);
   }
-
+  /**
+   * @param path - partition root
+   */
   OrcRecordUpdater(Path path,
                    AcidOutputFormat.Options options) throws IOException {
     this.options = options;

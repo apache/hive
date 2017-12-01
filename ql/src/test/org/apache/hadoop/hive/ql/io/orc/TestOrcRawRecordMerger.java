@@ -298,7 +298,7 @@ public class TestOrcRawRecordMerger {
     int BUCKET = 10;
     ReaderKey key = new ReaderKey();
     Configuration conf = new Configuration();
-    int bucketProperty = OrcRawRecordMerger.encodeBucketId(conf, BUCKET);
+    int bucketProperty = OrcRawRecordMerger.encodeBucketId(conf, BUCKET, 0);
     Reader reader = createMockOriginalReader();
     RecordIdentifier minKey = new RecordIdentifier(0, bucketProperty, 1);
     RecordIdentifier maxKey = new RecordIdentifier(0, bucketProperty, 3);
@@ -308,7 +308,7 @@ public class TestOrcRawRecordMerger {
     fs.makeQualified(root);
     fs.create(root);
     ReaderPair pair = new OrcRawRecordMerger.OriginalReaderPairToRead(key, reader, BUCKET, minKey, maxKey,
-        new Reader.Options().include(includes), new OrcRawRecordMerger.Options().rootPath(root), conf, new ValidReadTxnList());
+        new Reader.Options().include(includes), new OrcRawRecordMerger.Options().rootPath(root), conf, new ValidReadTxnList(), 0);
     RecordReader recordReader = pair.getRecordReader();
     assertEquals(0, key.getTransactionId());
     assertEquals(bucketProperty, key.getBucketProperty());
@@ -338,13 +338,13 @@ public class TestOrcRawRecordMerger {
     ReaderKey key = new ReaderKey();
     Reader reader = createMockOriginalReader();
     Configuration conf = new Configuration();
-    int bucketProperty = OrcRawRecordMerger.encodeBucketId(conf, BUCKET);
+    int bucketProperty = OrcRawRecordMerger.encodeBucketId(conf, BUCKET, 0);
     FileSystem fs = FileSystem.getLocal(conf);
     Path root = new Path(tmpDir, "testOriginalReaderPairNoMin");
     fs.makeQualified(root);
     fs.create(root);
     ReaderPair pair = new OrcRawRecordMerger.OriginalReaderPairToRead(key, reader, BUCKET, null, null,
-        new Reader.Options(), new OrcRawRecordMerger.Options().rootPath(root), conf, new ValidReadTxnList());
+        new Reader.Options(), new OrcRawRecordMerger.Options().rootPath(root), conf, new ValidReadTxnList(), 0);
     assertEquals("first", value(pair.nextRecord()));
     assertEquals(0, key.getTransactionId());
     assertEquals(bucketProperty, key.getBucketProperty());
@@ -835,6 +835,8 @@ public class TestOrcRawRecordMerger {
     assertEquals(null, merger.getMaxKey());
 
     assertEquals(true, merger.next(id, event));
+    //minor comp, so we ignore 'base_0000100' files so all Deletes end up first since
+    // they all modify primordial rows
     assertEquals(OrcRecordUpdater.DELETE_OPERATION,
       OrcRecordUpdater.getOperation(event));
     assertEquals(new ReaderKey(0, BUCKET_PROPERTY, 0, 200), id);
@@ -891,10 +893,10 @@ public class TestOrcRawRecordMerger {
     baseReader = OrcFile.createReader(basePath,
       OrcFile.readerOptions(conf));
     merger =
-      new OrcRawRecordMerger(conf, true, baseReader, false, BUCKET,
+      new OrcRawRecordMerger(conf, true, null, false, BUCKET,
         createMaximalTxnList(), new Reader.Options(),
         AcidUtils.getPaths(directory.getCurrentDirectories()), new OrcRawRecordMerger.Options()
-        .isCompacting(true).isMajorCompaction(true));
+        .isCompacting(true).isMajorCompaction(true).baseDir(new Path(root, "base_0000100")));
     assertEquals(null, merger.getMinKey());
     assertEquals(null, merger.getMaxKey());
 

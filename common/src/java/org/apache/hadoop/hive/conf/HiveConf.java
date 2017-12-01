@@ -1912,7 +1912,7 @@ public class HiveConf extends Configuration {
       "1: Enable split-update feature found in the newer version of Hive ACID subsystem\n" +
       "4: Make the table 'quarter-acid' as it only supports insert. But it doesn't require ORC or bucketing.\n" +
       "This is intended to be used as an internal property for future versions of ACID. (See\n" +
-        "HIVE-14035 for details.)"),
+        "HIVE-14035 for details.  User sets it tblproperites via transactional_properties.)", true),
 
     HIVE_MAX_OPEN_TXNS("hive.max.open.txns", 100000, "Maximum number of open transactions. If \n" +
         "current open transactions reach this limit, future open transaction requests will be \n" +

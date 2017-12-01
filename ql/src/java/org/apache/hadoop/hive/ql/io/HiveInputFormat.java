@@ -468,6 +468,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     try {
       Utilities.copyTablePropertiesToConf(table, conf);
+      if(tableScan != null) {
+        AcidUtils.setTransactionalTableScan(conf, tableScan.getConf().isAcidTable());
+      }
     } catch (HiveException e) {
       throw new IOException(e);
     }

@@ -48,7 +48,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.orc.TypeDescription;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+
 /**
  * This class tests the VectorizedOrcAcidRowBatchReader by creating an actual split and a set
  * of delete delta files. The split is on an insert delta and there are multiple delete deltas
@@ -186,7 +186,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(context, fs, root, false, null);
     OrcInputFormat.AcidDirInfo adi = gen.call();
     List<OrcInputFormat.SplitStrategy<?>> splitStrategies = OrcInputFormat.determineSplitStrategies(
-        null, context, adi.fs, adi.splitPath, adi.baseFiles, adi.parsedDeltas,
+        null, context, adi.fs, adi.splitPath, adi.baseFiles, adi.deleteEvents,
         null, null, true);
     assertEquals(1, splitStrategies.size());
     List<OrcSplit> splits = ((OrcInputFormat.ACIDSplitStrategy)splitStrategies.get(0)).getSplits();

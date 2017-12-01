@@ -33,6 +33,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -74,7 +75,6 @@ public abstract class TxnCommandsBaseForTests {
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, getWarehouseDir());
-    hiveConf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
     hiveConf
       .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
@@ -151,6 +151,21 @@ public abstract class TxnCommandsBaseForTests {
     }
     throw new RuntimeException("Didn't get expected failure!");
   }
+
+  /**
+   * Runs Vectorized Explain on the query and checks if the plan is vectorized as expected
+   * @param vectorized {@code true} - assert that it's vectorized
+   */
+  void assertVectorized(boolean vectorized, String query) throws Exception {
+    List<String> rs = runStatementOnDriver("EXPLAIN VECTORIZATION DETAIL " + query);
+    for(String line : rs) {
+      if(line != null && line.contains("Execution mode: vectorized")) {
+        Assert.assertTrue("Was vectorized when it wasn't expected", vectorized);
+        return;
+      }
+    }
+    Assert.assertTrue("Din't find expected 'vectorized' in plan", !vectorized);
+  }
   /**
    * Will assert that actual files match expected.
    * @param expectedFiles - suffixes of expected Paths.  Must be the same length
@@ -175,5 +190,19 @@ public abstract class TxnCommandsBaseForTests {
       }
     }
     Assert.assertEquals("Unexpected file list", expectedFiles, actualFiles);
+  }
+  void checkExpected(List<String> rs, String[][] expected, String msg, Logger LOG, boolean checkFileName) {
+    LOG.warn(testName.getMethodName() + ": read data(" + msg + "): ");
+    for(String s : rs) {
+      LOG.warn(s);
+    }
+    Assert.assertEquals( testName.getMethodName() + ": " + msg, expected.length, rs.size());
+    //verify data and layout
+    for(int i = 0; i < expected.length; i++) {
+      Assert.assertTrue("Actual line (data) " + i + " data: " + rs.get(i), rs.get(i).startsWith(expected[i][0]));
+      if(checkFileName) {
+        Assert.assertTrue("Actual line(file) " + i + " file: " + rs.get(i), rs.get(i).endsWith(expected[i][1]));
+      }
+    }
   }
 }

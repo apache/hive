@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -39,18 +41,17 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.impl.OrcAcidUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,13 +123,14 @@ public class AcidUtils {
   public static final Pattern BUCKET_DIGIT_PATTERN = Pattern.compile("[0-9]{5}$");
   public static final Pattern   LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
   /**
-   * This does not need to use ORIGINAL_PATTERN_COPY because it's used to read
-   * a "delta" dir written by a real Acid write - cannot have any copies
+   * A write into a non-aicd table produces files like 0000_0 or 0000_0_copy_1
+   * (Unless via Load Data statment)
    */
   public static final PathFilter originalBucketFilter = new PathFilter() {
     @Override
     public boolean accept(Path path) {
-      return ORIGINAL_PATTERN.matcher(path.getName()).matches();
+      return ORIGINAL_PATTERN.matcher(path.getName()).matches() ||
+        ORIGINAL_PATTERN_COPY.matcher(path.getName()).matches();
     }
   };
 
@@ -137,6 +139,7 @@ public class AcidUtils {
   }
   private static final Logger LOG = LoggerFactory.getLogger(AcidUtils.class);
 
+  public static final Pattern BUCKET_PATTERN = Pattern.compile(BUCKET_PREFIX + "_[0-9]{5}$");
   public static final Pattern ORIGINAL_PATTERN =
       Pattern.compile("[0-9]+_[0-9]+");
   /**
@@ -156,14 +159,30 @@ public class AcidUtils {
   private static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
 
   /**
-   * Create the bucket filename.
+   * Create the bucket filename in Acid format
    * @param subdir the subdirectory for the bucket.
    * @param bucket the bucket number
    * @return the filename
    */
   public static Path createBucketFile(Path subdir, int bucket) {
-    return new Path(subdir,
+    return createBucketFile(subdir, bucket, true);
+  }
+
+  /**
+   * Create acid or original bucket name
+   * @param subdir the subdirectory for the bucket.
+   * @param bucket the bucket number
+   * @return the filename
+   */
+  private static Path createBucketFile(Path subdir, int bucket, boolean isAcidSchema) {
+    if(isAcidSchema) {
+      return new Path(subdir,
         BUCKET_PREFIX + String.format(BUCKET_DIGITS, bucket));
+    }
+    else {
+      return new Path(subdir,
+        String.format(BUCKET_DIGITS, bucket));
+    }
   }
 
   /**
@@ -244,7 +263,7 @@ public class AcidUtils {
    * @param path the base directory name
    * @return the maximum transaction id that is included
    */
-  static long parseBase(Path path) {
+  public static long parseBase(Path path) {
     String filename = path.getName();
     if (filename.startsWith(BASE_PREFIX)) {
       return Long.parseLong(filename.substring(BASE_PREFIX.length()));
@@ -262,7 +281,7 @@ public class AcidUtils {
    */
   public static AcidOutputFormat.Options
                     parseBaseOrDeltaBucketFilename(Path bucketFile,
-                                                   Configuration conf) {
+                                                   Configuration conf) throws IOException {
     AcidOutputFormat.Options result = new AcidOutputFormat.Options(conf);
     String filename = bucketFile.getName();
     if (ORIGINAL_PATTERN.matcher(filename).matches()) {
@@ -273,7 +292,7 @@ public class AcidUtils {
           .minimumTransactionId(0)
           .maximumTransactionId(0)
           .bucket(bucket)
-          .writingBase(true);
+          .writingBase(!bucketFile.getParent().getName().startsWith(DELTA_PREFIX));
     }
     else if(ORIGINAL_PATTERN_COPY.matcher(filename).matches()) {
       //todo: define groups in regex and use parseInt(Matcher.group(2))....
@@ -286,7 +305,7 @@ public class AcidUtils {
         .maximumTransactionId(0)
         .bucket(bucket)
         .copyNumber(copyNumber)
-        .writingBase(true);
+        .writingBase(!bucketFile.getParent().getName().startsWith(DELTA_PREFIX));
     }
     else if (filename.startsWith(BUCKET_PREFIX)) {
       int bucket =
@@ -299,14 +318,16 @@ public class AcidUtils {
             .bucket(bucket)
             .writingBase(true);
       } else if (bucketFile.getParent().getName().startsWith(DELTA_PREFIX)) {
-        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), DELTA_PREFIX);
+        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), DELTA_PREFIX,
+          bucketFile.getFileSystem(conf));
         result
             .setOldStyle(false)
             .minimumTransactionId(parsedDelta.minTransaction)
             .maximumTransactionId(parsedDelta.maxTransaction)
             .bucket(bucket);
       } else if (bucketFile.getParent().getName().startsWith(DELETE_DELTA_PREFIX)) {
-        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), DELETE_DELTA_PREFIX);
+        ParsedDelta parsedDelta = parsedDelta(bucketFile.getParent(), DELETE_DELTA_PREFIX,
+          bucketFile.getFileSystem(conf));
         result
             .setOldStyle(false)
             .minimumTransactionId(parsedDelta.minTransaction)
@@ -344,11 +365,17 @@ public class AcidUtils {
         throw new IllegalArgumentException("Unexpected Operation: " + op);
     }
   }
-
   public enum AcidBaseFileType {
-    COMPACTED_BASE, // a regular base file generated through major compaction
-    ORIGINAL_BASE, // a non-acid schema file for tables that got converted to acid
-    INSERT_DELTA; // a delta file with only insert events that can be treated as base for split-update
+  /**
+   * File w/o Acid meta columns.  This this would be the case for files that were added to the table
+   * before it was converted to Acid but not yet major compacted.  May also be the the result of
+   * Load Data statement on an acid table.
+   */
+  ORIGINAL_BASE,
+  /**
+   * File that has Acid metadata columns embedded in it.  Found in base_x/ or delta_x_y/.
+   */
+  ACID_SCHEMA,
   }
 
   /**
@@ -366,16 +393,12 @@ public class AcidUtils {
       this.acidBaseFileType = acidBaseFileType;
     }
 
-    public boolean isCompactedBase() {
-      return this.acidBaseFileType == AcidBaseFileType.COMPACTED_BASE;
-    }
-
     public boolean isOriginal() {
       return this.acidBaseFileType == AcidBaseFileType.ORIGINAL_BASE;
     }
 
-    public boolean isInsertDelta() {
-      return this.acidBaseFileType == AcidBaseFileType.INSERT_DELTA;
+    public boolean isAcidSchema() {
+      return this.acidBaseFileType == AcidBaseFileType.ACID_SCHEMA;
     }
 
     public HdfsFileStatusWithId getHdfsFileStatusWithId() {
@@ -545,6 +568,7 @@ public class AcidUtils {
      * @return the base directory to read
      */
     Path getBaseDirectory();
+    boolean isBaseInRawFormat();
 
     /**
      * Get the list of original files.  Not {@code null}.  Must be sorted.
@@ -576,7 +600,10 @@ public class AcidUtils {
     List<FileStatus> getAbortedDirectories();
   }
 
-  public static class ParsedDelta implements Comparable<ParsedDelta> {
+  /**
+   * Immutable
+   */
+  public static final class ParsedDelta implements Comparable<ParsedDelta> {
     private final long minTransaction;
     private final long maxTransaction;
     private final FileStatus path;
@@ -584,19 +611,24 @@ public class AcidUtils {
     //had no statement ID
     private final int statementId;
     private final boolean isDeleteDelta; // records whether delta dir is of type 'delete_delta_x_y...'
+    private final boolean isRawFormat;
 
     /**
      * for pre 1.3.x delta files
      */
-    ParsedDelta(long min, long max, FileStatus path, boolean isDeleteDelta) {
-      this(min, max, path, -1, isDeleteDelta);
+    private ParsedDelta(long min, long max, FileStatus path, boolean isDeleteDelta,
+        boolean isRawFormat) {
+      this(min, max, path, -1, isDeleteDelta, isRawFormat);
     }
-    ParsedDelta(long min, long max, FileStatus path, int statementId, boolean isDeleteDelta) {
+    private ParsedDelta(long min, long max, FileStatus path, int statementId,
+        boolean isDeleteDelta, boolean isRawFormat) {
       this.minTransaction = min;
       this.maxTransaction = max;
       this.path = path;
       this.statementId = statementId;
       this.isDeleteDelta = isDeleteDelta;
+      this.isRawFormat = isRawFormat;
+      assert !isDeleteDelta || !isRawFormat : " deleteDelta should not be raw format";
     }
 
     public long getMinTransaction() {
@@ -618,7 +650,12 @@ public class AcidUtils {
     public boolean isDeleteDelta() {
       return isDeleteDelta;
     }
-
+    /**
+     * Files w/o Acid meta columns embedded in the file. See {@link AcidBaseFileType#ORIGINAL_BASE}
+     */
+    public boolean isRawFormat() {
+      return isRawFormat;
+    }
     /**
      * Compactions (Major/Minor) merge deltas/bases but delete of old files
      * happens in a different process; thus it's possible to have bases/deltas with
@@ -698,29 +735,6 @@ public class AcidUtils {
   }
 
   /**
-   * Convert the list of begin/end transaction id pairs to a list of delta
-   * directories.  Note that there may be multiple delta files for the exact same txn range starting
-   * with 1.3.x;
-   * see {@link org.apache.hadoop.hive.ql.io.AcidUtils#deltaSubdir(long, long, int)}
-   * @param root the root directory
-   * @param deltas list of begin/end transaction id pairs
-   * @return the list of delta paths
-   */
-  public static Path[] deserializeDeltas(Path root, final List<AcidInputFormat.DeltaMetaData> deltas) throws IOException {
-    List<Path> results = new ArrayList<Path>(deltas.size());
-    for(AcidInputFormat.DeltaMetaData dmd : deltas) {
-      if(dmd.getStmtIds().isEmpty()) {
-        results.add(new Path(root, deltaSubdir(dmd.getMinTxnId(), dmd.getMaxTxnId())));
-        continue;
-      }
-      for(Integer stmtId : dmd.getStmtIds()) {
-        results.add(new Path(root, deltaSubdir(dmd.getMinTxnId(), dmd.getMaxTxnId(), stmtId)));
-      }
-    }
-    return results.toArray(new Path[results.size()]);
-  }
-
-  /**
    * Convert the list of begin/end transaction id pairs to a list of delete delta
    * directories.  Note that there may be multiple delete_delta files for the exact same txn range starting
    * with 2.2.x;
@@ -743,25 +757,29 @@ public class AcidUtils {
     return results.toArray(new Path[results.size()]);
   }
 
-  public static ParsedDelta parsedDelta(Path deltaDir) {
+  public static ParsedDelta parsedDelta(Path deltaDir, FileSystem fs) throws IOException {
     String deltaDirName = deltaDir.getName();
     if (deltaDirName.startsWith(DELETE_DELTA_PREFIX)) {
-      return parsedDelta(deltaDir, DELETE_DELTA_PREFIX);
+      return parsedDelta(deltaDir, DELETE_DELTA_PREFIX, fs);
     }
-    return parsedDelta(deltaDir, DELTA_PREFIX); // default prefix is delta_prefix
+    return parsedDelta(deltaDir, DELTA_PREFIX, fs); // default prefix is delta_prefix
   }
 
-  private static ParsedDelta parseDelta(FileStatus path, String deltaPrefix) {
-    ParsedDelta p = parsedDelta(path.getPath(), deltaPrefix);
+  private static ParsedDelta parseDelta(FileStatus path, String deltaPrefix, FileSystem fs)
+    throws IOException {
+    ParsedDelta p = parsedDelta(path.getPath(), deltaPrefix, fs);
     boolean isDeleteDelta = deltaPrefix.equals(DELETE_DELTA_PREFIX);
     return new ParsedDelta(p.getMinTransaction(),
-        p.getMaxTransaction(), path, p.statementId, isDeleteDelta);
+        p.getMaxTransaction(), path, p.statementId, isDeleteDelta, p.isRawFormat());
   }
 
-  public static ParsedDelta parsedDelta(Path deltaDir, String deltaPrefix) {
+  public static ParsedDelta parsedDelta(Path deltaDir, String deltaPrefix, FileSystem fs)
+    throws IOException {
     String filename = deltaDir.getName();
     boolean isDeleteDelta = deltaPrefix.equals(DELETE_DELTA_PREFIX);
     if (filename.startsWith(deltaPrefix)) {
+      //small optimization - delete delta can't be in raw format
+      boolean isRawFormat = !isDeleteDelta && MetaDataFile.isRawFormat(deltaDir, fs);
       String rest = filename.substring(deltaPrefix.length());
       int split = rest.indexOf('_');
       int split2 = rest.indexOf('_', split + 1);//may be -1 if no statementId
@@ -770,10 +788,10 @@ public class AcidUtils {
         Long.parseLong(rest.substring(split + 1)) :
         Long.parseLong(rest.substring(split + 1, split2));
       if(split2 == -1) {
-        return new ParsedDelta(min, max, null, isDeleteDelta);
+        return new ParsedDelta(min, max, null, isDeleteDelta, isRawFormat);
       }
       int statementId = Integer.parseInt(rest.substring(split2 + 1));
-      return new ParsedDelta(min, max, null, statementId, isDeleteDelta);
+      return new ParsedDelta(min, max, null, statementId, isDeleteDelta, isRawFormat);
     }
     throw new IllegalArgumentException(deltaDir + " does not start with " +
                                        deltaPrefix);
@@ -871,13 +889,13 @@ public class AcidUtils {
     if (childrenWithId != null) {
       for (HdfsFileStatusWithId child : childrenWithId) {
         getChildState(child.getFileStatus(), child, txnList, working, originalDirectories, original,
-            obsolete, bestBase, ignoreEmptyFiles, abortedDirectories, tblproperties);
+            obsolete, bestBase, ignoreEmptyFiles, abortedDirectories, tblproperties, fs);
       }
     } else {
       List<FileStatus> children = HdfsUtils.listLocatedStatus(fs, directory, hiddenFileFilter);
       for (FileStatus child : children) {
         getChildState(child, null, txnList, working, originalDirectories, original, obsolete,
-            bestBase, ignoreEmptyFiles, abortedDirectories, tblproperties);
+            bestBase, ignoreEmptyFiles, abortedDirectories, tblproperties, fs);
       }
     }
 
@@ -976,11 +994,17 @@ public class AcidUtils {
       //this does "Path.uri.compareTo(that.uri)"
       return o1.getFileStatus().compareTo(o2.getFileStatus());
     });
-    return new Directory(){
+
+    final boolean isBaseInRawFormat = base != null && MetaDataFile.isRawFormat(base, fs);
+    return new Directory() {
 
       @Override
       public Path getBaseDirectory() {
         return base;
+      }
+      @Override
+      public boolean isBaseInRawFormat() {
+        return isBaseInRawFormat;
       }
 
       @Override
@@ -1022,7 +1046,8 @@ public class AcidUtils {
   private static void getChildState(FileStatus child, HdfsFileStatusWithId childWithId,
       ValidTxnList txnList, List<ParsedDelta> working, List<FileStatus> originalDirectories,
       List<HdfsFileStatusWithId> original, List<FileStatus> obsolete, TxnBase bestBase,
-      boolean ignoreEmptyFiles, List<FileStatus> aborted, Map<String, String> tblproperties) throws IOException {
+      boolean ignoreEmptyFiles, List<FileStatus> aborted, Map<String, String> tblproperties,
+      FileSystem fs) throws IOException {
     Path p = child.getPath();
     String fn = p.getName();
     if (fn.startsWith(BASE_PREFIX) && child.isDir()) {
@@ -1050,7 +1075,7 @@ public class AcidUtils {
                     && child.isDir()) {
       String deltaPrefix =
               (fn.startsWith(DELTA_PREFIX)) ? DELTA_PREFIX : DELETE_DELTA_PREFIX;
-      ParsedDelta delta = parseDelta(child, deltaPrefix);
+      ParsedDelta delta = parseDelta(child, deltaPrefix, fs);
       if (tblproperties != null && AcidUtils.isInsertOnlyTable(tblproperties) &&
           ValidTxnList.RangeResponse.ALL == txnList.isTxnRangeAborted(delta.minTransaction, delta.maxTransaction)) {
         aborted.add(child);
@@ -1171,8 +1196,11 @@ public class AcidUtils {
     parameters.put(ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname, Boolean.toString(isAcidTable));
   }
 
-  public static void setTransactionalTableScan(Configuration conf, boolean isAcidTable) {
-    HiveConf.setBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, isAcidTable);
+  /**
+   * Means it's a full acid table
+   */
+  public static void setTransactionalTableScan(Configuration conf, boolean isFullAcidTable) {
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, isFullAcidTable);
   }
   /**
    * @param p - not null
@@ -1185,6 +1213,8 @@ public class AcidUtils {
    * SessionState.get().getTxnMgr().supportsAcid() here
    * @param table table
    * @return true if table is a legit ACID table, false otherwise
+   * ToDo: this shoudl be renamed isTransactionalTable() since that is what it's checking and covers
+   * both Acid and MM tables. HIVE-18124
    */
   public static boolean isAcidTable(Table table) {
     if (table == null) {
@@ -1197,6 +1227,10 @@ public class AcidUtils {
 
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
+  /**
+   * ToDo: this shoudl be renamed isTransactionalTable() since that is what it's checking and convers
+   * both Acid and MM tables. HIVE-18124
+   */
   public static boolean isAcidTable(CreateTableDesc table) {
     if (table == null || table.getTblProps() == null) {
       return false;
@@ -1208,8 +1242,11 @@ public class AcidUtils {
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
 
+  /**
+   * after isTransactionalTable() then make this isAcid() HIVE-18124
+   */
   public static boolean isFullAcidTable(Table table) {
-    return isAcidTable(table) && !AcidUtils.isInsertOnlyTable(table.getParameters());
+    return isAcidTable(table) && !AcidUtils.isInsertOnlyTable(table);
   }
 
   /**
@@ -1336,6 +1373,9 @@ public class AcidUtils {
   public static boolean isInsertOnlyTable(Map<String, String> params) {
     return isInsertOnlyTable(params, false);
   }
+  public static boolean isInsertOnlyTable(Table table) {
+    return isAcidTable(table) && getAcidOperationalProperties(table).isInsertOnly();
+  }
 
   // TODO [MM gap]: CTAS may currently be broken. It used to work. See the old code, and why isCtas isn't used?
   public static boolean isInsertOnlyTable(Map<String, String> params, boolean isCtas) {
@@ -1349,13 +1389,21 @@ public class AcidUtils {
     return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
   }
 
-   /** The method for altering table props; may set the table to MM, non-MM, or not affect MM. */
-  public static Boolean isToInsertOnlyTable(Map<String, String> props) {
+   /**
+    * The method for altering table props; may set the table to MM, non-MM, or not affect MM.
+    * todo: All such validation logic should be TransactionValidationListener
+    * @param tbl object image before alter table command
+    * @param props prop values set in this alter table command
+    */
+  public static Boolean isToInsertOnlyTable(Table tbl, Map<String, String> props) {
     // Note: Setting these separately is a very hairy issue in certain combinations, since we
     //       cannot decide what type of table this becomes without taking both into account, and
     //       in many cases the conversion might be illegal.
     //       The only thing we allow is tx = true w/o tx-props, for backward compat.
     String transactional = props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    if(transactional == null) {
+      transactional = tbl.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    }
     String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
     if (transactional == null && transactionalProp == null) return null; // Not affected.
     boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
@@ -1377,5 +1425,82 @@ public class AcidUtils {
     boolean hasTxn = removedSet.contains(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL),
         hasProps = removedSet.contains(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
     return hasTxn || hasProps;
+  }
+
+  /**
+   * Load Data commands against Acid tables write {@link AcidBaseFileType#ORIGINAL_BASE} type files
+   * into delta_x_x/ (or base_x in case there is Overwrite clause).  {@link MetaDataFile} is a
+   * small JSON file in this directory that indicates that these files don't have Acid metadata
+   * columns and so the values for these columns need to be assigned at read time/compaction.
+   */
+  public static class MetaDataFile {
+    //export command uses _metadata....
+    private static final String METADATA_FILE = "_metadata_acid";
+    private static final String CURRENT_VERSION = "0";
+    //todo: enums? that have both field name and value list
+    private interface Field {
+      String VERSION = "thisFileVersion";
+      String DATA_FORMAT = "dataFormat";
+    }
+    private interface Value {
+      //plain ORC file
+      String RAW = "raw";
+      //result of acid write, i.e. decorated with ROW__ID info
+      String NATIVE = "native";
+    }
+
+    /**
+     * @param baseOrDeltaDir detla or base dir, must exist
+     */
+    public static void createMetaFile(Path baseOrDeltaDir, FileSystem fs, boolean isRawFormat)
+      throws IOException {
+      /**
+       * create _meta_data json file in baseOrDeltaDir
+       * write thisFileVersion, dataFormat
+       *
+       * on read if the file is not there, assume version 0 and dataFormat=acid
+       */
+      Path formatFile = new Path(baseOrDeltaDir, METADATA_FILE);
+      Map<String, String> metaData = new HashMap<>();
+      metaData.put(Field.VERSION, CURRENT_VERSION);
+      metaData.put(Field.DATA_FORMAT, isRawFormat ? Value.RAW : Value.NATIVE);
+      try (FSDataOutputStream strm = fs.create(formatFile, false)) {
+        new ObjectMapper().writeValue(strm, metaData);
+      } catch (IOException ioe) {
+        String msg = "Failed to create " + baseOrDeltaDir + "/" + METADATA_FILE
+            + ": " + ioe.getMessage();
+        LOG.error(msg, ioe);
+        throw ioe;
+      }
+    }
+    public static boolean isRawFormat(Path baseOrDeltaDir, FileSystem fs) throws IOException {
+      Path formatFile = new Path(baseOrDeltaDir, METADATA_FILE);
+      if(!fs.exists(formatFile)) {
+        return false;
+      }
+      try (FSDataInputStream strm = fs.open(formatFile)) {
+        Map<String, String> metaData = new ObjectMapper().readValue(strm, Map.class);
+        if(!CURRENT_VERSION.equalsIgnoreCase(metaData.get(Field.VERSION))) {
+          throw new IllegalStateException("Unexpected Meta Data version: "
+              + metaData.get(Field.VERSION));
+        }
+        String dataFormat = metaData.getOrDefault(Field.DATA_FORMAT, "null");
+        switch (dataFormat) {
+          case Value.NATIVE:
+            return false;
+          case Value.RAW:
+            return true;
+          default:
+            throw new IllegalArgumentException("Unexpected value for " + Field.DATA_FORMAT
+                + ": " + dataFormat);
+        }
+      }
+      catch(IOException e) {
+        String msg = "Failed to read " + baseOrDeltaDir + "/" + METADATA_FILE
+            + ": " + e.getMessage();
+        LOG.error(msg, e);
+        throw e;
+      }
+    }
   }
 }
