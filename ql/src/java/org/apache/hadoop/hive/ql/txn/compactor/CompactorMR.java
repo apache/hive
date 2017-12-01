@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.common.ValidCompactorTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -577,11 +576,16 @@ public class CompactorMR {
             dir.getName().startsWith(AcidUtils.DELTA_PREFIX) ||
             dir.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
           boolean sawBase = dir.getName().startsWith(AcidUtils.BASE_PREFIX);
+          boolean isRawFormat = !dir.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX)
+            && AcidUtils.MetaDataFile.isRawFormat(dir, fs);//deltes can't be raw format
 
-          FileStatus[] files = fs.listStatus(dir, AcidUtils.bucketFileFilter);
+          FileStatus[] files = fs.listStatus(dir, isRawFormat ? AcidUtils.originalBucketFilter
+            : AcidUtils.bucketFileFilter);
           for(FileStatus f : files) {
             // For each file, figure out which bucket it is.
-            Matcher matcher = AcidUtils.BUCKET_DIGIT_PATTERN.matcher(f.getPath().getName());
+            Matcher matcher = isRawFormat ?
+              AcidUtils.LEGACY_BUCKET_DIGIT_PATTERN.matcher(f.getPath().getName())
+              : AcidUtils.BUCKET_DIGIT_PATTERN.matcher(f.getPath().getName());
             addFileToMap(matcher, f.getPath(), sawBase, splitToBucketMap);
           }
         } else {
@@ -612,8 +616,12 @@ public class CompactorMR {
     private void addFileToMap(Matcher matcher, Path file, boolean sawBase,
                               Map<Integer, BucketTracker> splitToBucketMap) {
       if (!matcher.find()) {
-        LOG.warn("Found a non-bucket file that we thought matched the bucket pattern! " +
-            file.toString() + " Matcher=" + matcher.toString());
+        String msg = "Found a non-bucket file that we thought matched the bucket pattern! " +
+          file.toString() + " Matcher=" + matcher.toString();
+        LOG.error(msg);
+        //following matcher.group() would fail anyway and we don't want to skip files since that
+        //may be a data loss scenario
+        throw new IllegalArgumentException(msg);
       }
       int bucketNum = Integer.parseInt(matcher.group());
       BucketTracker bt = splitToBucketMap.get(bucketNum);

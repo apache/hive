@@ -77,7 +77,7 @@ public class TestTxnCommands2 {
   ).getPath().replaceAll("\\\\", "/");
   protected static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   //bucket count for test tables; set it to 1 for easier debugging
-  protected static int BUCKET_COUNT = 2;
+  static int BUCKET_COUNT = 2;
   @Rule
   public TestName testName = new TestName();
 
@@ -117,12 +117,11 @@ public class TestTxnCommands2 {
     setUpWithTableProperties("'transactional'='true'");
   }
 
-  protected void setUpWithTableProperties(String tableProperties) throws Exception {
+  void setUpWithTableProperties(String tableProperties) throws Exception {
     hiveConf = new HiveConf(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
-    hiveConf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
     hiveConf
         .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
@@ -406,7 +405,7 @@ public class TestTxnCommands2 {
     expectedException.expect(RuntimeException.class);
     expectedException.expectMessage("TBLPROPERTIES with 'transactional_properties' cannot be altered after the table is created");
     runStatementOnDriver("create table acidTblLegacy (a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
-    runStatementOnDriver("alter table acidTblLegacy SET TBLPROPERTIES ('transactional_properties' = 'default')");
+    runStatementOnDriver("alter table acidTblLegacy SET TBLPROPERTIES ('transactional_properties' = 'insert_only')");
   }
   /**
    * Test the query correctness and directory layout for ACID table conversion

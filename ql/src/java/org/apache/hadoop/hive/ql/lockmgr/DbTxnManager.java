@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
+import org.apache.hadoop.hive.ql.plan.api.Query;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
@@ -297,6 +298,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         break;
       default:
         if(!queryPlan.getOperation().isAllowedInTransaction() && isExplicitTransaction) {
+          if(allowOperationInATransaction(queryPlan)) {
+            break;
+          }
+          //look at queryPlan.outputs(WriteEntity.t - that's the table)
           //for example, drop table in an explicit txn is not allowed
           //in some cases this requires looking at more than just the operation
           //for example HiveOperation.LOAD - OK if target is MM table but not OK if non-acid table
@@ -310,6 +315,33 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     Can do this by checking ReadEntity/WriteEntity to determine whether it's reading/writing
     any non acid and raise an appropriate error
     * Driver.acidSinks and Driver.acidInQuery can be used if any acid is in the query*/
+  }
+
+  /**
+   * This modifies the logic wrt what operations are allowed in a transaction.  Multi-statement
+   * transaction support is incomplete but it makes some Acid tests cases much easier to write.
+   */
+  private boolean allowOperationInATransaction(QueryPlan queryPlan) {
+    //Acid and MM tables support Load Data with transactional semantics.  This will allow Load Data
+    //in a txn assuming we can determine the target is a suitable table type.
+    if(queryPlan.getOperation() == HiveOperation.LOAD && queryPlan.getOutputs() != null && queryPlan.getOutputs().size() == 1) {
+      WriteEntity writeEntity = queryPlan.getOutputs().iterator().next();
+      if(AcidUtils.isFullAcidTable(writeEntity.getTable()) || AcidUtils.isInsertOnlyTable(writeEntity.getTable())) {
+        switch (writeEntity.getWriteType()) {
+          case INSERT:
+            //allow operation in a txn
+            return true;
+          case INSERT_OVERWRITE:
+            //see HIVE-18154
+            return false;
+          default:
+            //not relevant for LOAD
+            return false;
+        }
+      }
+    }
+    //todo: handle Insert Overwrite as well: HIVE-18154
+    return false;
   }
   /**
    * Normally client should call {@link #acquireLocks(org.apache.hadoop.hive.ql.QueryPlan, org.apache.hadoop.hive.ql.Context, String)}

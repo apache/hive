@@ -29,6 +29,7 @@ Table Parameters:
 	rawDataSize         	0                   
 	totalSize           	0                   
 	transactional       	true                
+	transactional_properties	default             
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -198,6 +199,7 @@ Table Parameters:
 	rawDataSize         	0                   
 	totalSize           	1798                
 	transactional       	true                
+	transactional_properties	default             
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -241,6 +243,7 @@ Table Parameters:
 	rawDataSize         	0                   
 	totalSize           	2909                
 	transactional       	true                
+	transactional_properties	default             
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

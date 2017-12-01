@@ -836,16 +836,22 @@ public class TestInputOutputFormat {
   public void testEtlCombinedStrategy() throws Exception {
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "ETL");
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_DIRECTORY_BATCH_MS.varname, "1000000");
+    AcidUtils.setTransactionalTableScan(conf, true);
+    conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
+    conf.set(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES, "default");
+
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/a/1/part-00", 1000, new byte[1]),
         new MockFile("mock:/a/1/part-01", 1000, new byte[1]),
         new MockFile("mock:/a/2/part-00", 1000, new byte[1]),
         new MockFile("mock:/a/2/part-01", 1000, new byte[1]),
-        new MockFile("mock:/a/3/base_0/1", 1000, new byte[1]),
-        new MockFile("mock:/a/4/base_0/1", 1000, new byte[1]),
-        new MockFile("mock:/a/5/base_0/1", 1000, new byte[1]),
-        new MockFile("mock:/a/5/delta_0_25/1", 1000, new byte[1])
+        new MockFile("mock:/a/3/base_0/bucket_00001", 1000, new byte[1]),
+        new MockFile("mock:/a/4/base_0/bucket_00001", 1000, new byte[1]),
+        new MockFile("mock:/a/5/base_0/bucket_00001", 1000, new byte[1]),
+        new MockFile("mock:/a/5/delta_0_25/bucket_00001", 1000, new byte[1]),
+        new MockFile("mock:/a/6/delta_27_29/bucket_00001", 1000, new byte[1]),
+        new MockFile("mock:/a/6/delete_delta_27_29/bucket_00001", 1000, new byte[1])
     );
 
     OrcInputFormat.CombinedCtx combineCtx = new OrcInputFormat.CombinedCtx();
@@ -891,20 +897,27 @@ public class TestInputOutputFormat {
     assertTrue(combineCtx.combined instanceof OrcInputFormat.ETLSplitStrategy);
     assertEquals(2, etlSs.files.size());
     assertEquals(2, etlSs.dirs.size());
-    // The fifth will not be combined because of delta files.
+    // The fifth could be combined again.
     ss = createOrCombineStrategies(context, fs, "mock:/a/5", combineCtx);
+    assertTrue(ss.isEmpty());
+    assertTrue(combineCtx.combined instanceof OrcInputFormat.ETLSplitStrategy);
+    assertEquals(4, etlSs.files.size());
+    assertEquals(3, etlSs.dirs.size());
+
+    // The sixth will not be combined because of delete delta files.  Is that desired? HIVE-18110
+    ss = createOrCombineStrategies(context, fs, "mock:/a/6", combineCtx);
     assertEquals(1, ss.size());
     assertTrue(ss.get(0) instanceof OrcInputFormat.ETLSplitStrategy);
     assertNotSame(etlSs, ss);
-    assertEquals(2, etlSs.files.size());
-    assertEquals(2, etlSs.dirs.size());
+    assertEquals(4, etlSs.files.size());
+    assertEquals(3, etlSs.dirs.size());
   }
 
   public List<SplitStrategy<?>> createOrCombineStrategies(OrcInputFormat.Context context,
       MockFileSystem fs, String path, OrcInputFormat.CombinedCtx combineCtx) throws IOException {
     OrcInputFormat.AcidDirInfo adi = createAdi(context, fs, path);
     return OrcInputFormat.determineSplitStrategies(combineCtx, context,
-        adi.fs, adi.splitPath, adi.baseFiles, adi.parsedDeltas,
+        adi.fs, adi.splitPath, adi.baseFiles, adi.deleteEvents,
         null, null, true);
   }
 
@@ -918,7 +931,7 @@ public class TestInputOutputFormat {
       OrcInputFormat.Context context, OrcInputFormat.FileGenerator gen) throws IOException {
     OrcInputFormat.AcidDirInfo adi = gen.call();
     return OrcInputFormat.determineSplitStrategies(
-        null, context, adi.fs, adi.splitPath, adi.baseFiles, adi.parsedDeltas,
+        null, context, adi.fs, adi.splitPath, adi.baseFiles, adi.deleteEvents,
         null, null, true);
   }
 
@@ -3586,10 +3599,14 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: open to read data - split 1 => mock:/mocktable8/0_0
-    // call-2: split 2 - find hive.acid.key.index in footer of delta_x_y/bucket_00001
-    // call-3: split 2 - read delta_x_y/bucket_00001
-    assertEquals(5, readOpsDelta);
+    // call-1: open(mock:/mocktable7/0_0)
+    // call-2: open(mock:/mocktable7/0_0)
+    // call-3: listLocatedFileStatuses(mock:/mocktable7)
+    // call-4: getFileStatus(mock:/mocktable7/delta_0000001_0000001_0000/_metadata_acid)
+    // call-5: open(mock:/mocktable7/delta_0000001_0000001_0000/bucket_00001)
+    // call-6: getFileStatus(mock:/mocktable7/delta_0000001_0000001_0000/_metadata_acid)
+    // call-7: open(mock:/mocktable7/delta_0000001_0000001_0000/bucket_00001)
+    assertEquals(7, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3662,9 +3679,11 @@ public class TestInputOutputFormat {
       }
     }
     // call-1: open to read data - split 1 => mock:/mocktable8/0_0
-    // call-2: split 2 - find hive.acid.key.index in footer of delta_x_y/bucket_00001
-    // call-3: split 2 - read delta_x_y/bucket_00001
-    assertEquals(3, readOpsDelta);
+    // call-2: listLocatedFileStatus(mock:/mocktable8)
+    // call-3: getFileStatus(mock:/mocktable8/delta_0000001_0000001_0000/_metadata_acid)
+    // call-4: getFileStatus(mock:/mocktable8/delta_0000001_0000001_0000/_metadata_acid)
+    // call-5: open(mock:/mocktable8/delta_0000001_0000001_0000/bucket_00001)
+    assertEquals(5, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");

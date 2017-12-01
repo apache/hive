@@ -215,7 +215,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
     Context ctx = driverContext.getCtx();
     if(ctx.getHiveTxnManager().supportsAcid()) {
-      //Acid LM doesn't maintain getOutputLockObjects(); this 'if' just makes it more explicit
+      //Acid LM doesn't maintain getOutputLockObjects(); this 'if' just makes logic more explicit
       return;
     }
     HiveLockManager lockMgr = ctx.getHiveTxnManager().getLockManager();
@@ -290,7 +290,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         } else {
           Utilities.FILE_OP_LOGGER.debug("MoveTask moving " + sourcePath + " to " + targetPath);
           if(lfd.getWriteType() == AcidUtils.Operation.INSERT) {
-            //'targetPath' is table root of un-partitioned table/partition
+            //'targetPath' is table root of un-partitioned table or partition
             //'sourcePath' result of 'select ...' part of CTAS statement
             assert lfd.getIsDfsDir();
             FileSystem srcFs = sourcePath.getFileSystem(conf);
@@ -367,7 +367,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         checkFileFormats(db, tbd, table);
 
         boolean isFullAcidOp = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID
-            && !tbd.isMmTable();
+            && !tbd.isMmTable(); //it seems that LoadTableDesc has Operation.INSERT only for CTAS...
 
         // Create a data container
         DataContainer dc = null;
@@ -379,7 +379,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           }
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getLoadFileType(),
               work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp, hasFollowingStatsTask(),
-              tbd.getTxnId(), tbd.getStmtId(), tbd.isMmTable());
+              tbd.getTxnId(), tbd.getStmtId());
           if (work.getOutputs() != null) {
             DDLTask.addIfAbsentByName(new WriteEntity(table,
               getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());

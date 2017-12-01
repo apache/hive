@@ -4488,7 +4488,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       part.getTPartition().getParameters().putAll(alterTbl.getProps());
     } else {
       boolean isFromMmTable = AcidUtils.isInsertOnlyTable(tbl.getParameters());
-      Boolean isToMmTable = AcidUtils.isToInsertOnlyTable(alterTbl.getProps());
+      Boolean isToMmTable = AcidUtils.isToInsertOnlyTable(tbl, alterTbl.getProps());
       if (isToMmTable != null) {
         if (!isFromMmTable && isToMmTable) {
           result = generateAddMmTasks(tbl);

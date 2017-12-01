@@ -47,9 +47,22 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   private Map<String, String> partitionSpec; // NOTE: this partitionSpec has to be ordered map
 
   public enum LoadFileType {
-    REPLACE_ALL,        // Remove all existing data before copy/move
-    KEEP_EXISTING,      // If any file exist while copy, then just duplicate the file
-    OVERWRITE_EXISTING  // If any file exist while copy, then just overwrite the file
+    /**
+     * This corresponds to INSERT OVERWRITE and REPL LOAD for INSERT OVERWRITE event.
+     * Remove all existing data before copy/move
+     */
+    REPLACE_ALL,
+    /**
+     * This corresponds to INSERT INTO and LOAD DATA.
+     * If any file exist while copy, then just duplicate the file
+     */
+    KEEP_EXISTING,
+    /**
+     * This corresponds to REPL LOAD where if we re-apply the same event then need to overwrite
+     * the file instead of making a duplicate copy.
+     * If any file exist while copy, then just overwrite the file
+     */
+    OVERWRITE_EXISTING
   }
   public LoadTableDesc(final LoadTableDesc o) {
     super(o.getSourcePath(), o.getWriteType());
@@ -215,14 +228,10 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     return currentTransactionId == null ? 0 : currentTransactionId;
   }
 
-  public void setTxnId(Long txnId) {
-    this.currentTransactionId = txnId;
-  }
-
   public int getStmtId() {
     return stmtId;
   }
-
+  //todo: should this not be passed in the c'tor?
   public void setStmtId(int stmtId) {
     this.stmtId = stmtId;
   }

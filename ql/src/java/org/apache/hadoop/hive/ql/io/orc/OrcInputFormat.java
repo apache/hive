@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.hadoop.hive.ql.plan.DynamicValue.NoDynamicValuesException;
 
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 
 import java.io.IOException;
@@ -409,7 +410,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    * @param readerSchema the types for the reader
    * @param conf the configuration
    */
-  public static boolean[] genIncludedColumns(TypeDescription readerSchema,
+  static boolean[] genIncludedColumns(TypeDescription readerSchema,
                                              Configuration conf) {
      if (!ColumnProjectionUtils.isReadAllColumns(conf)) {
       List<Integer> included = ColumnProjectionUtils.getReadColumnIDs(conf);
@@ -419,7 +420,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
   }
 
-  public static String[] getSargColumnNames(String[] originalColumnNames,
+  private static String[] getSargColumnNames(String[] originalColumnNames,
       List<OrcProto.Type> types, boolean[] includedColumns, boolean isOriginal) {
     int rootColumn = getRootColumn(isOriginal);
     String[] columnNames = new String[types.size() - rootColumn];
@@ -695,21 +696,29 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    */
   @VisibleForTesting
   static final class AcidDirInfo {
-    public AcidDirInfo(FileSystem fs, Path splitPath, Directory acidInfo,
+    AcidDirInfo(FileSystem fs, Path splitPath, Directory acidInfo,
         List<AcidBaseFileInfo> baseFiles,
-        List<ParsedDelta> parsedDeltas) {
+        List<ParsedDelta> deleteEvents) {
       this.splitPath = splitPath;
       this.acidInfo = acidInfo;
       this.baseFiles = baseFiles;
       this.fs = fs;
-      this.parsedDeltas = parsedDeltas;
+      this.deleteEvents = deleteEvents;
     }
 
     final FileSystem fs;
     final Path splitPath;
     final AcidUtils.Directory acidInfo;
     final List<AcidBaseFileInfo> baseFiles;
-    final List<ParsedDelta> parsedDeltas;
+    final List<ParsedDelta> deleteEvents;
+
+    /**
+     * No (qualifying) data files found in {@link #splitPath}
+     * @return
+     */
+    boolean isEmpty() {
+      return (baseFiles == null || baseFiles.isEmpty());
+    }
   }
 
   @VisibleForTesting
@@ -884,7 +893,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     public CombineResult combineWith(FileSystem fs, Path dir,
         List<HdfsFileStatusWithId> otherFiles, boolean isOriginal) {
       if ((files.size() + otherFiles.size()) > ETL_COMBINE_FILE_LIMIT
-        || this.isOriginal != isOriginal) {
+        || this.isOriginal != isOriginal) {//todo: what is this checking????
         return (files.size() > otherFiles.size())
             ? CombineResult.NO_AND_SWAP : CombineResult.NO_AND_CONTINUE;
       }
@@ -1083,6 +1092,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   static final class FileGenerator implements Callable<AcidDirInfo> {
     private final Context context;
     private final FileSystem fs;
+    /**
+     * For plain or acid tables this is the root of the partition (or table if not partitioned).
+     * For MM table this is delta/ or base/ dir.  In MM case applying of the ValidTxnList that
+     * {@link AcidUtils#getAcidState(Path, Configuration, ValidTxnList)} normally does has already
+     * been done in {@link HiveInputFormat#processPathsForMmRead(List, JobConf, ValidTxnList)}.
+     */
     private final Path dir;
     private final Ref<Boolean> useFileIds;
     private final UserGroupInformation ugi;
@@ -1119,25 +1134,27 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     private AcidDirInfo callInternal() throws IOException {
+      //todo: shouldn't ignoreEmptyFiles be set based on ExecutionEngine?
       AcidUtils.Directory dirInfo = AcidUtils.getAcidState(dir, context.conf,
           context.transactionList, useFileIds, true, null);
-      Path base = dirInfo.getBaseDirectory();
       // find the base files (original or new style)
-      List<AcidBaseFileInfo> baseFiles = new ArrayList<AcidBaseFileInfo>();
-      if (base == null) {
+      List<AcidBaseFileInfo> baseFiles = new ArrayList<>();
+      if (dirInfo.getBaseDirectory() == null) {
+        //for non-acid tables, all data files are in getOriginalFiles() list
         for (HdfsFileStatusWithId fileId : dirInfo.getOriginalFiles()) {
           baseFiles.add(new AcidBaseFileInfo(fileId, AcidUtils.AcidBaseFileType.ORIGINAL_BASE));
         }
       } else {
-        List<HdfsFileStatusWithId> compactedBaseFiles = findBaseFiles(base, useFileIds);
+        List<HdfsFileStatusWithId> compactedBaseFiles = findBaseFiles(dirInfo.getBaseDirectory(), useFileIds);
         for (HdfsFileStatusWithId fileId : compactedBaseFiles) {
-          baseFiles.add(new AcidBaseFileInfo(fileId, AcidUtils.AcidBaseFileType.COMPACTED_BASE));
+          baseFiles.add(new AcidBaseFileInfo(fileId, dirInfo.isBaseInRawFormat() ?
+            AcidUtils.AcidBaseFileType.ORIGINAL_BASE : AcidUtils.AcidBaseFileType.ACID_SCHEMA));
         }
       }
 
       // Find the parsed deltas- some of them containing only the insert delta events
       // may get treated as base if split-update is enabled for ACID. (See HIVE-14035 for details)
-      List<ParsedDelta> parsedDeltas = new ArrayList<ParsedDelta>();
+      List<ParsedDelta> parsedDeltas = new ArrayList<>();
 
       if (context.acidOperationalProperties != null &&
           context.acidOperationalProperties.isSplitUpdate()) {
@@ -1154,15 +1171,26 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           if (parsedDelta.isDeleteDelta()) {
             parsedDeltas.add(parsedDelta);
           } else {
+            AcidUtils.AcidBaseFileType deltaType = parsedDelta.isRawFormat() ?
+              AcidUtils.AcidBaseFileType.ORIGINAL_BASE : AcidUtils.AcidBaseFileType.ACID_SCHEMA;
+            PathFilter bucketFilter = parsedDelta.isRawFormat() ?
+              AcidUtils.originalBucketFilter : AcidUtils.bucketFileFilter;
+            if(parsedDelta.isRawFormat() && parsedDelta.getMinTransaction() !=
+              parsedDelta.getMaxTransaction()) {
+              //delta/ with files in raw format are a result of Load Data (as opposed to compaction
+              //or streaming ingest so must have interval length == 1.
+              throw new IllegalStateException("Delta in " + AcidUtils.AcidBaseFileType.ORIGINAL_BASE
+               + " format but txnIds are out of range: " + parsedDelta.getPath());
+            }
             // This is a normal insert delta, which only has insert events and hence all the files
             // in this delta directory can be considered as a base.
             Boolean val = useFileIds.value;
             if (val == null || val) {
               try {
                 List<HdfsFileStatusWithId> insertDeltaFiles =
-                    SHIMS.listLocatedHdfsStatus(fs, parsedDelta.getPath(), AcidUtils.bucketFileFilter);
+                    SHIMS.listLocatedHdfsStatus(fs, parsedDelta.getPath(), bucketFilter);
                 for (HdfsFileStatusWithId fileId : insertDeltaFiles) {
-                  baseFiles.add(new AcidBaseFileInfo(fileId, AcidUtils.AcidBaseFileType.INSERT_DELTA));
+                  baseFiles.add(new AcidBaseFileInfo(fileId, deltaType));
                 }
                 if (val == null) {
                   useFileIds.value = true; // The call succeeded, so presumably the API is there.
@@ -1176,15 +1204,20 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
               }
             }
             // Fall back to regular API and create statuses without ID.
-            List<FileStatus> children = HdfsUtils.listLocatedStatus(fs, parsedDelta.getPath(), AcidUtils.bucketFileFilter);
+            List<FileStatus> children = HdfsUtils.listLocatedStatus(fs, parsedDelta.getPath(), bucketFilter);
             for (FileStatus child : children) {
               HdfsFileStatusWithId fileId = AcidUtils.createOriginalObj(null, child);
-              baseFiles.add(new AcidBaseFileInfo(fileId, AcidUtils.AcidBaseFileType.INSERT_DELTA));
+              baseFiles.add(new AcidBaseFileInfo(fileId, deltaType));
             }
           }
         }
 
       } else {
+        /*
+        We already handled all delete deltas above and there should not be any other deltas for
+        any table type.  (this was acid 1.0 code path).
+         */
+        assert dirInfo.getCurrentDirectories().isEmpty() : "Non empty curDir list?!: " + dir;
         // When split-update is not enabled, then all the deltas in the current directories
         // should be considered as usual.
         parsedDeltas.addAll(dirInfo.getCurrentDirectories());
@@ -1658,7 +1691,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       pathFutures.add(ecs.submit(fileGenerator));
     }
 
-    boolean isTransactionalTableScan =//this never seems to be set correctly
+    boolean isTransactionalTableScan =
         HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
     boolean isSchemaEvolution = HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION);
     TypeDescription readerSchema =
@@ -1700,13 +1733,16 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
         // We have received a new directory information, make split strategies.
         --resultsLeft;
-
+        if(adi.isEmpty()) {
+          //no files found, for example empty table/partition
+          continue;
+        }
         // The reason why we can get a list of split strategies here is because for ACID split-update
         // case when we have a mix of original base files & insert deltas, we will produce two
         // independent split strategies for them. There is a global flag 'isOriginal' that is set
         // on a per split strategy basis and it has to be same for all the files in that strategy.
         List<SplitStrategy<?>> splitStrategies = determineSplitStrategies(combinedCtx, context, adi.fs,
-            adi.splitPath, adi.baseFiles, adi.parsedDeltas, readerTypes, ugi,
+            adi.splitPath, adi.baseFiles, adi.deleteEvents, readerTypes, ugi,
             allowSyntheticFileIds);
 
         for (SplitStrategy<?> splitStrategy : splitStrategies) {
@@ -1790,6 +1826,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       boolean isOriginal, UserGroupInformation ugi, boolean allowSyntheticFileIds,
       boolean isDefaultFs) {
     if (!deltas.isEmpty() || combinedCtx == null) {
+      //why is this checking for deltas.isEmpty() - HIVE-18110
       return new ETLSplitStrategy(
           context, fs, dir, files, readerTypes, isOriginal, deltas, covered, ugi,
           allowSyntheticFileIds, isDefaultFs);
@@ -1955,6 +1992,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     final Reader reader = OrcInputFormat.createOrcReaderForSplit(conf, split);
     OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options().isCompacting(false);
     mergerOptions.rootPath(split.getRootDir());
+    mergerOptions.bucketPath(split.getPath());
     final int bucket;
     if (split.hasBase()) {
       AcidOutputFormat.Options acidIOOptions =
@@ -1968,8 +2006,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
     } else {
       bucket = (int) split.getStart();
+      assert false : "We should never have a split w/o base in acid 2.0 for full acid: " + split.getPath();
     }
-
+    //todo: createOptionsForReader() assumes it's !isOriginal.... why?
     final Reader.Options readOptions = OrcInputFormat.createOptionsForReader(conf);
     readOptions.range(split.getStart(), split.getLength());
 
@@ -2041,6 +2080,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     // TODO: Convert genIncludedColumns and setSearchArgument to use TypeDescription.
     final List<OrcProto.Type> schemaTypes = OrcUtils.getOrcTypes(schema);
     readerOptions.include(OrcInputFormat.genIncludedColumns(schema, conf));
+    //todo: last param is bogus. why is this hardcoded?
     OrcInputFormat.setSearchArgument(readerOptions, schemaTypes, conf, true);
     return readerOptions;
   }
@@ -2144,7 +2184,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       List<AcidBaseFileInfo> baseFiles,
       List<ParsedDelta> parsedDeltas,
       List<OrcProto.Type> readerTypes,
-      UserGroupInformation ugi, boolean allowSyntheticFileIds) {
+      UserGroupInformation ugi, boolean allowSyntheticFileIds) throws IOException {
     List<SplitStrategy<?>> splitStrategies = new ArrayList<SplitStrategy<?>>();
     SplitStrategy<?> splitStrategy;
 
@@ -2153,23 +2193,24 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     boolean isDefaultFs = (!checkDefaultFs) || ((fs instanceof DistributedFileSystem)
             && HdfsUtils.isDefaultFs((DistributedFileSystem) fs));
 
-    // When no baseFiles, we will just generate a single split strategy and return.
-    List<HdfsFileStatusWithId> acidSchemaFiles = new ArrayList<HdfsFileStatusWithId>();
     if (baseFiles.isEmpty()) {
-      splitStrategy = determineSplitStrategy(combinedCtx, context, fs, dir, acidSchemaFiles,
+      assert false : "acid 2.0 no base?!: " + dir;
+      splitStrategy = determineSplitStrategy(combinedCtx, context, fs, dir, Collections.emptyList(),
           false, parsedDeltas, readerTypes, ugi, allowSyntheticFileIds, isDefaultFs);
       if (splitStrategy != null) {
         splitStrategies.add(splitStrategy);
       }
-      return splitStrategies; // return here
+      return splitStrategies;
     }
 
+    List<HdfsFileStatusWithId> acidSchemaFiles = new ArrayList<>();
     List<HdfsFileStatusWithId> originalSchemaFiles = new ArrayList<HdfsFileStatusWithId>();
     // Separate the base files into acid schema and non-acid(original) schema files.
     for (AcidBaseFileInfo acidBaseFileInfo : baseFiles) {
       if (acidBaseFileInfo.isOriginal()) {
         originalSchemaFiles.add(acidBaseFileInfo.getHdfsFileStatusWithId());
       } else {
+        assert acidBaseFileInfo.isAcidSchema();
         acidSchemaFiles.add(acidBaseFileInfo.getHdfsFileStatusWithId());
       }
     }
@@ -2195,14 +2236,14 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return splitStrategies;
   }
 
-  @VisibleForTesting
-  static SplitStrategy<?> determineSplitStrategy(CombinedCtx combinedCtx, Context context,
+  private static SplitStrategy<?> determineSplitStrategy(CombinedCtx combinedCtx, Context context,
       FileSystem fs, Path dir,
       List<HdfsFileStatusWithId> baseFiles,
       boolean isOriginal,
       List<ParsedDelta> parsedDeltas,
       List<OrcProto.Type> readerTypes,
-      UserGroupInformation ugi, boolean allowSyntheticFileIds, boolean isDefaultFs) {
+      UserGroupInformation ugi, boolean allowSyntheticFileIds, boolean isDefaultFs)
+    throws IOException {
     List<DeltaMetaData> deltas = AcidUtils.serializeDeltas(parsedDeltas);
     boolean[] covered = new boolean[context.numBuckets];
 
@@ -2250,6 +2291,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
   }
 
+  /**
+   *
+   * @param bucket bucket/writer ID for this split of the compaction job
+   */
   @Override
   public RawReader<OrcStruct> getRawReader(Configuration conf,
                                            boolean collapseEvents,
@@ -2258,25 +2303,26 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                                            Path baseDirectory,
                                            Path[] deltaDirectory
                                            ) throws IOException {
-    Reader reader = null;
     boolean isOriginal = false;
+    OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options().isCompacting(true)
+      .isMajorCompaction(collapseEvents);
     if (baseDirectory != null) {//this is NULL for minor compaction
-      Path bucketFile = null;
+      //it may also be null if there is no base - only deltas
+      mergerOptions.baseDir(baseDirectory);
       if (baseDirectory.getName().startsWith(AcidUtils.BASE_PREFIX)) {
-        bucketFile = AcidUtils.createBucketFile(baseDirectory, bucket);
+        isOriginal = AcidUtils.MetaDataFile.isRawFormat(baseDirectory, baseDirectory.getFileSystem(conf));
+        mergerOptions.rootPath(baseDirectory.getParent());
       } else {
-        /**we don't know which file to start reading -
-         * {@link OrcRawRecordMerger.OriginalReaderPairToCompact} does*/
         isOriginal = true;
-      }
-      if(bucketFile != null) {
-        reader = OrcFile.createReader(bucketFile, OrcFile.readerOptions(conf));
+        mergerOptions.rootPath(baseDirectory);
       }
     }
-    OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options()
-      .isCompacting(true)
-      .rootPath(baseDirectory).isMajorCompaction(baseDirectory != null);
-    return new OrcRawRecordMerger(conf, collapseEvents, reader, isOriginal,
+    else {
+      //since we have no base, there must be at least 1 delta which must a result of acid write
+      //so it must be immediate child of the partition
+      mergerOptions.rootPath(deltaDirectory[0].getParent());
+    }
+    return new OrcRawRecordMerger(conf, collapseEvents, null, isOriginal,
         bucket, validTxnList, new Reader.Options(), deltaDirectory, mergerOptions);
   }
 

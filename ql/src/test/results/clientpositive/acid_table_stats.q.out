@@ -38,6 +38,7 @@ Table Parameters:
 	rawDataSize         	0                   
 	totalSize           	0                   
 	transactional       	true                
+	transactional_properties	default             
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
