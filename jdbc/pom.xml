@@ -255,7 +255,6 @@
                       <exclude>org.apache.directory.server:*</exclude>
                       <exclude>org.apache.geronimo.specs:*</exclude>
                       <exclude>org.apache.htrace:*</exclude>
-                      <exclude>org.apache.slider:*</exclude>
                       <exclude>org.codehaus.jackson:*</exclude>
                       <exclude>org.codehaus.jettison:*</exclude>
                       <exclude>org.datanucleus:*</exclude>

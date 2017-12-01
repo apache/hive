@@ -3262,15 +3262,15 @@ public class HiveConf extends Configuration {
       "Number of RPC handlers for AM LLAP plugin endpoint."),
     LLAP_DAEMON_WORK_DIRS("hive.llap.daemon.work.dirs", "",
         "Working directories for the daemon. This should not be set if running as a YARN\n" +
-        "application via Slider. It must be set when not running via Slider on YARN. If the value\n" +
-        "is set when running as a Slider YARN application, the specified value will be used.",
+        "Service. It must be set when not running on YARN. If the value is set when\n" +
+        "running as a YARN Service, the specified value will be used.",
         "llap.daemon.work.dirs"),
     LLAP_DAEMON_YARN_SHUFFLE_PORT("hive.llap.daemon.yarn.shuffle.port", 15551,
       "YARN shuffle port for LLAP-daemon-hosted shuffle.", "llap.daemon.yarn.shuffle.port"),
     LLAP_DAEMON_YARN_CONTAINER_MB("hive.llap.daemon.yarn.container.mb", -1,
       "llap server yarn container size in MB. Used in LlapServiceDriver and package.py", "llap.daemon.yarn.container.mb"),
     LLAP_DAEMON_QUEUE_NAME("hive.llap.daemon.queue.name", null,
-        "Queue name within which the llap slider application will run." +
+        "Queue name within which the llap application will run." +
         " Used in LlapServiceDriver and package.py"),
     // TODO Move the following 2 properties out of Configuration to a constant.
     LLAP_DAEMON_CONTAINER_ID("hive.llap.daemon.container.id", null,
