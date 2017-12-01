@@ -17,7 +17,7 @@ CREATE TABLE "WM_POOL" (
     "POOL_ID" bigint NOT NULL,
     "RP_ID" bigint NOT NULL,
     "PATH" character varying(1024) NOT NULL,
-    "ALLOC_FRACTION" DOUBLE,
+    "ALLOC_FRACTION" double precision,
     "QUERY_PARALLELISM" integer,
     "SCHEDULING_POLICY" character varying(1024)
 );
