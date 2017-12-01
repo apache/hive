@@ -176,8 +176,7 @@ public final class HushableRandomAccessFileAppender extends
       layout = PatternLayout.createDefaultLayout();
     }
     final RandomAccessFileManager manager = RandomAccessFileManager.getFileManager(
-        fileName, isAppend, isFlush, bufferSize, advertiseURI, layout
-        // , config  -- needed in later log4j versions
+        fileName, isAppend, isFlush, bufferSize, advertiseURI, layout, config
     );
     if (manager == null) {
       return null;
