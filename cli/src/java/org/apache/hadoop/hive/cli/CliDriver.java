@@ -158,8 +158,8 @@ public class CliDriver {
         }
       }
     } else if (cmd_trimmed.startsWith("!")) {
-
-      String shell_cmd = cmd_trimmed.substring(1);
+      // for shell commands, use unstripped command
+      String shell_cmd = cmd.trim().substring(1);
       shell_cmd = new VariableSubstitution(new HiveVariableSource() {
         @Override
         public Map<String, String> getHiveVariable() {
