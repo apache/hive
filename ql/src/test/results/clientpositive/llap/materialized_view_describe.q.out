@@ -64,10 +64,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	comment             	this is the first view
 	key                 	foo                 
 	numFiles            	1                   
+	numRows             	5                   
+	rawDataSize         	580                 
 	totalSize           	346                 
 #### A masked pattern was here ####
 	 	 
@@ -88,10 +90,12 @@ PREHOOK: query: show tblproperties cmv_mat_view
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 comment	this is the first view
 key	foo
 numFiles	1
+numRows	5
+rawDataSize	580
 totalSize	346
 #### A masked pattern was here ####
 PREHOOK: query: select a, c from cmv_mat_view
@@ -147,11 +151,13 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	comment             	this is the second view
 	key                 	alice               
 	key2                	bob                 
 	numFiles            	1                   
+	numRows             	5                   
+	rawDataSize         	5                   
 	totalSize           	10                  
 #### A masked pattern was here ####
 	 	 
@@ -225,9 +231,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	comment             	this is the third view
 	numFiles            	1                   
+	numRows             	5                   
+	rawDataSize         	1025                
 	totalSize           	497                 
 #### A masked pattern was here ####
 	 	 
@@ -312,9 +320,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	comment             	this is the last view
 	numFiles            	1                   
+	numRows             	5                   
+	rawDataSize         	5                   
 	totalSize           	10                  
 #### A masked pattern was here ####
 	 	 

@@ -76,8 +76,10 @@ PREHOOK: query: show tblproperties cmv_mat_view
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 numFiles	1
+numRows	2
+rawDataSize	408
 totalSize	453
 #### A masked pattern was here ####
 PREHOOK: query: create materialized view if not exists cmv_mat_view2 enable rewrite
@@ -106,8 +108,10 @@ PREHOOK: query: show tblproperties cmv_mat_view2
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view2
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 numFiles	1
+numRows	2
+rawDataSize	232
 totalSize	322
 #### A masked pattern was here ####
 PREHOOK: query: create database db3
@@ -138,11 +142,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: db2.cmv_mat_view2
-          Statistics: Num rows: 2 Data size: 322 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: a (type: int), c (type: decimal(10,2))
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 2 Data size: 322 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select a, c from db1.cmv_basetable where a = 3

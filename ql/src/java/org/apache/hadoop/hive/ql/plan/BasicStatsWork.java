@@ -179,9 +179,9 @@ public class BasicStatsWork implements Serializable {
     if (getLoadFileDesc() != null && getLoadFileDesc().getCtasCreateTableDesc() != null) {
       return true;
     }
+    // CREATE MV ... AS
     // ALTER MV ... REBUILD
-    if (getLoadFileDesc() != null && getLoadFileDesc().getCreateViewDesc() != null &&
-        getLoadFileDesc().getCreateViewDesc().isReplace()) {
+    if (getLoadFileDesc() != null && getLoadFileDesc().getCreateViewDesc() != null) {
       return true;
     }
     return false;

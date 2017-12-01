@@ -4,9 +4,13 @@ insert into cmv_basetable values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonn
 
 create materialized view cmv_mat_view as select a, b, c from cmv_basetable;
 
+desc formatted cmv_mat_view;
+
 select * from cmv_mat_view;
 
 create materialized view if not exists cmv_mat_view2 as select a, c from cmv_basetable;
+
+desc formatted cmv_mat_view2;
 
 select * from cmv_mat_view2;
 

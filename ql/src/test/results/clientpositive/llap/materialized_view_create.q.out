@@ -25,6 +25,44 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view
+PREHOOK: query: desc formatted cmv_mat_view
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@cmv_mat_view
+POSTHOOK: query: desc formatted cmv_mat_view
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@cmv_mat_view
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	varchar(256)        	                    
+c                   	decimal(10,2)       	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	5                   
+	rawDataSize         	1025                
+	totalSize           	497                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select a, b, c from cmv_basetable	 
+View Expanded Text: 	select `cmv_basetable`.`a`, `cmv_basetable`.`b`, `cmv_basetable`.`c` from `default`.`cmv_basetable`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from cmv_mat_view
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view
@@ -48,6 +86,43 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view2
+PREHOOK: query: desc formatted cmv_mat_view2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@cmv_mat_view2
+POSTHOOK: query: desc formatted cmv_mat_view2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@cmv_mat_view2
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+c                   	decimal(10,2)       	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	5                   
+	rawDataSize         	580                 
+	totalSize           	346                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select a, c from cmv_basetable	 
+View Expanded Text: 	select `cmv_basetable`.`a`, `cmv_basetable`.`c` from `default`.`cmv_basetable`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from cmv_mat_view2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view2
@@ -160,9 +235,11 @@ PREHOOK: query: show tblproperties cmv_mat_view5
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view5
 POSTHOOK: type: SHOW_TBLPROPERTIES
-COLUMN_STATS_ACCURATE	{}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 key	value
 numFiles	1
+numRows	5
+rawDataSize	1605
 totalSize	710
 #### A masked pattern was here ####
 PREHOOK: query: drop materialized view cmv_mat_view

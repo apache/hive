@@ -964,16 +964,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     aliasToWork.put(mergeFilesDesc.getInputDir().toString(), mergeOp);
     mergeWork.setAliasToWork(aliasToWork);
     DriverContext driverCxt = new DriverContext();
-    Task task;
+    Task<?> task;
     if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
       TezWork tezWork = new TezWork(queryState.getQueryId(), conf);
       mergeWork.setName("File Merge");
       tezWork.add(mergeWork);
       task = new TezTask();
-      task.setWork(tezWork);
+      ((TezTask) task).setWork(tezWork);
     } else {
       task = new MergeFileTask();
-      task.setWork(mergeWork);
+      ((MergeFileTask) task).setWork(mergeWork);
     }
 
     // initialize the task and execute
@@ -1369,12 +1369,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     try {
       db.alterTable(mv, environmentContext);
-      // Remove or add to materialized view rewriting cache
-      if (alterMVDesc.isRewriteEnable()) {
-        HiveMaterializedViewsRegistry.get().addMaterializedView(mv);
-      } else {
-        HiveMaterializedViewsRegistry.get().dropMaterializedView(oldMV);
-      }
     } catch (InvalidOperationException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "Unable to alter " + mv.getFullyQualifiedName());
     }
@@ -4004,7 +3998,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private void addChildTasks(List<Task<?>> extraTasks) {
-    if (extraTasks == null) return;
+    if (extraTasks == null) {
+      return;
+    }
     for (Task<?> newTask : extraTasks) {
       addDependentTask(newTask);
     }
@@ -4372,7 +4368,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private void checkMmLb(Table tbl) throws HiveException {
-    if (!tbl.isStoredAsSubDirectories()) return;
+    if (!tbl.isStoredAsSubDirectories()) {
+      return;
+    }
     // TODO [MM gap?]: by design; no-one seems to use LB tables. They will work, but not convert.
     //                 It's possible to work around this by re-creating and re-inserting the table.
     throw new HiveException("Converting list bucketed tables stored as subdirectories "
@@ -4380,7 +4378,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private void checkMmLb(Partition part) throws HiveException {
-    if (!part.isStoredAsSubDirectories()) return;
+    if (!part.isStoredAsSubDirectories()) {
+      return;
+    }
     throw new HiveException("Converting list bucketed tables stored as subdirectories "
         + " to MM is not supported. Please re-create a table in the desired format.");
   }
@@ -4416,7 +4416,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Utilities.FILE_OP_LOGGER.trace("Deleting " + what + " " + path);
     }
     try {
-      if (!fs.delete(path, true)) throw new IOException("delete returned false");
+      if (!fs.delete(path, true)) {
+        throw new IOException("delete returned false");
+      }
     } catch (Exception ex) {
       String error = "Couldn't delete " + path + "; cannot remove MM setting from the table";
       LOG.error(error, ex);
@@ -5124,10 +5126,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // We create new view
       Table tbl = crtView.toTable(conf);
       db.createTable(tbl, crtView.getIfNotExists());
-      // Add to cache if it is a materialized view
-      if (tbl.isMaterializedView()) {
-        HiveMaterializedViewsRegistry.get().addMaterializedView(tbl);
-      }
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
 
       //set lineage info
