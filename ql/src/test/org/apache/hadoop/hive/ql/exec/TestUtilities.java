@@ -218,7 +218,7 @@ public class TestUtilities {
     Path tempDirPath = setupTempDirWithSingleOutputFile(hconf);
     FileSinkDesc conf = getFileSinkDesc(tempDirPath);
 
-    List<Path> paths = Utilities.removeTempOrDuplicateFiles(localFs, tempDirPath, dpCtx, conf, hconf);
+    List<Path> paths = Utilities.removeTempOrDuplicateFiles(localFs, tempDirPath, dpCtx, conf, hconf, false);
 
     String expectedScheme = tempDirPath.toUri().getScheme();
     String expectedAuthority = tempDirPath.toUri().getAuthority();

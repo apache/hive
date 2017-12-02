@@ -1506,6 +1506,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               String fullTableName = getUnescapedName((ASTNode) ast.getChild(0).getChild(0),
                   SessionState.get().getCurrentDatabase());
               qbp.getInsertOverwriteTables().put(fullTableName.toLowerCase(), ast);
+              qbp.setDestToOpType(ctx_1.dest, true);
             }
           }
         }
@@ -6781,7 +6782,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Integer dest_type = qbm.getDestTypeForAlias(dest);
 
     Table dest_tab = null; // destination table if any
-    boolean destTableIsAcid = false; // should the destination table be written to using ACID
+    boolean destTableIsAcid = false;     // true for full ACID table and MM table
+    boolean destTableIsFullAcid = false; // should the destination table be written to using ACID
     boolean destTableIsTemporary = false;
     boolean destTableIsMaterialization = false;
     Partition dest_part = null;// destination partition if any
@@ -6802,7 +6804,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case QBMetaData.DEST_TABLE: {
 
       dest_tab = qbm.getDestTableForAlias(dest);
-      destTableIsAcid = AcidUtils.isFullAcidTable(dest_tab);
+      destTableIsAcid = AcidUtils.isAcidTable(dest_tab);
+      destTableIsFullAcid = AcidUtils.isFullAcidTable(dest_tab);
       destTableIsTemporary = dest_tab.isTemporary();
 
       // Is the user trying to insert into a external tables
@@ -6852,7 +6855,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // NOTE: specify Dynamic partitions in dest_tab for WriteEntity
       if (!isNonNativeTable) {
         AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
-        if (destTableIsAcid) {
+        if (destTableIsFullAcid) {
           acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
           checkAcidConstraints(qb, table_desc, dest_tab);
         }
@@ -6895,7 +6898,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       dest_part = qbm.getDestPartitionForAlias(dest);
       dest_tab = dest_part.getTable();
-      destTableIsAcid = AcidUtils.isFullAcidTable(dest_tab);
+      destTableIsAcid = AcidUtils.isAcidTable(dest_tab);
+      destTableIsFullAcid = AcidUtils.isFullAcidTable(dest_tab);
 
       checkExternalTable(dest_tab);
 
@@ -6928,7 +6932,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           dest_part.getSkewedColValues(), dest_part.getSkewedColValueLocationMaps(),
           dest_part.isStoredAsSubDirectories(), conf);
       AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
-      if (destTableIsAcid) {
+      if (destTableIsFullAcid) {
         acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
         checkAcidConstraints(qb, table_desc, dest_tab);
       }
@@ -6945,7 +6949,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
       // deltas and base and leave them up to the cleaner to clean up
       LoadFileType loadType = (!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
-              dest_tab.getTableName()) && !destTableIsAcid)
+              dest_tab.getTableName()) && !destTableIsAcid) // // Both Full-acid and MM tables are excluded.
               ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING;
       ltd.setLoadFileType(loadType);
       ltd.setLbCtx(lbCtx);
@@ -7019,6 +7023,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       destTableIsAcid = tblDesc != null && AcidUtils.isAcidTable(tblDesc);
+      destTableIsFullAcid = tblDesc != null && AcidUtils.isFullAcidTable(tblDesc);
 
       boolean isDestTempFile = true;
       if (!ctx.isMRTmpFileURI(dest_path.toUri().toString())) {
@@ -7109,7 +7114,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         (dest_tab.getSortCols() != null && dest_tab.getSortCols().size() > 0)));
 
     // If this table is working with ACID semantics, turn off merging
-    canBeMerged &= !destTableIsAcid;
+    canBeMerged &= !destTableIsFullAcid;
 
     // Generate the partition columns from the parent input
     if (dest_type.intValue() == QBMetaData.DEST_TABLE
@@ -7120,7 +7125,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     FileSinkDesc fileSinkDesc = createFileSinkDesc(dest, table_desc, dest_part,
         dest_path, currentTableId, destTableIsAcid, destTableIsTemporary,
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
-        canBeMerged, dest_tab, txnId, isMmCtas, dest_type);
+        canBeMerged, dest_tab, txnId, isMmCtas, dest_type, qb);
     if (isMmCtas) {
       // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
       tableDesc.setWriter(fileSinkDesc);
@@ -7231,7 +7236,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean destTableIsMaterialization, Path queryTmpdir,
       SortBucketRSCtx rsCtx, DynamicPartitionCtx dpCtx, ListBucketingCtx lbCtx,
       RowSchema fsRS, boolean canBeMerged, Table dest_tab, Long mmWriteId, boolean isMmCtas,
-      Integer dest_type) throws SemanticException {
+      Integer dest_type, QB qb) throws SemanticException {
     boolean isInsertOverwrite = false;
     switch (dest_type) {
       case QBMetaData.DEST_PARTITION:
@@ -7240,7 +7245,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         //INSERT [OVERWRITE] path
         String destTableFullName = dest_tab.getCompleteName().replace('@', '.');
         Map<String, ASTNode> iowMap = qb.getParseInfo().getInsertOverwriteTables();
-        if (iowMap.containsKey(destTableFullName)) {
+        if (iowMap.containsKey(destTableFullName) && 
+          qb.getParseInfo().isDestToOpTypeInsertOverwrite(dest)) {
           isInsertOverwrite = true;
         }
         break;

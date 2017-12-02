@@ -260,7 +260,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
           // There's always just one file that we have merged.
           // The union/DP/etc. should already be account for in the path.
           Utilities.writeMmCommitManifest(Lists.newArrayList(outPath),
-              tmpPath.getParent(), fs, taskId, conf.getTxnId(), conf.getStmtId(), null);
+              tmpPath.getParent(), fs, taskId, conf.getTxnId(), conf.getStmtId(), null, false);
           LOG.info("Merged into " + finalPath + "(" + fss.getLen() + " bytes).");
         }
       }
@@ -340,7 +340,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
         // We don't expect missing buckets from mere (actually there should be no buckets),
         // so just pass null as bucketing context. Union suffix should also be accounted for.
         Utilities.handleMmTableFinalPath(outputDir.getParent(), null, hconf, success,
-            dpLevels, lbLevels, null, mmWriteId, stmtId, reporter, isMmTable, false);
+            dpLevels, lbLevels, null, mmWriteId, stmtId, reporter, isMmTable, false, false);
       }
 
     } catch (IOException e) {

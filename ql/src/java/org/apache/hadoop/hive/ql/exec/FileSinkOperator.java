@@ -337,7 +337,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           }
           outPaths[filesIdx] = getTaskOutPath(taskId);
         } else {
-          String subdirPath = AcidUtils.deltaSubdir(txnId, txnId, stmtId);
+          String subdirPath = AcidUtils.baseOrDeltaSubdir(conf.getInsertOverwrite(), txnId, txnId, stmtId);
           if (unionPath != null) {
             // Create the union directory inside the MM directory.
             subdirPath += Path.SEPARATOR + unionPath;
@@ -1324,7 +1324,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
       if (conf.isMmTable()) {
         Utilities.writeMmCommitManifest(
-            commitPaths, specPath, fs, taskId, conf.getTransactionId(), conf.getStatementId(), unionPath);
+            commitPaths, specPath, fs, taskId, conf.getTransactionId(), conf.getStatementId(), unionPath, conf.getInsertOverwrite());
       }
       // Only publish stats if this operator's flag was set to gather stats
       if (conf.isGatherStats()) {
@@ -1383,7 +1383,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
               conf.getTableInfo(), numBuckets, conf.getCompressed());
           Utilities.handleMmTableFinalPath(specPath, unionSuffix, hconf, success,
               dpLevels, lbLevels, mbc, conf.getTransactionId(), conf.getStatementId(), reporter,
-              conf.isMmTable(), conf.isMmCtas());
+              conf.isMmTable(), conf.isMmCtas(), conf.getInsertOverwrite());
         }
       }
     } catch (IOException e) {

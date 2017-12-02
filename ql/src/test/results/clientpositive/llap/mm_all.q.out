@@ -1365,6 +1365,12 @@ POSTHOOK: query: select * from multi0_2_mm order by key, key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multi0_2_mm
 #### A masked pattern was here ####
+455	97
+455	98
+456	0
+456	10
+457	100
+457	103
 PREHOOK: query: from intermediate
 insert into table multi0_1_mm select p, key
 insert overwrite table multi0_2_mm select key, p
@@ -1417,6 +1423,12 @@ POSTHOOK: query: select * from multi0_2_mm order by key, key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multi0_2_mm
 #### A masked pattern was here ####
+0	456
+10	456
+97	455
+98	455
+100	457
+103	457
 PREHOOK: query: drop table multi0_1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multi0_1_mm
@@ -1541,17 +1553,11 @@ POSTHOOK: Input: default@multi1_mm@p=2
 100	457	2
 103	457	1
 103	457	2
-455	97	1
 455	97	2
-455	98	1
 455	98	2
-456	0	1
 456	0	2
-456	10	1
 456	10	2
-457	100	1
 457	100	2
-457	103	1
 457	103	2
 PREHOOK: query: from intermediate
 insert into table multi1_mm partition(p) select p, key, p
@@ -1621,22 +1627,16 @@ POSTHOOK: Input: default@multi1_mm@p=457
 103	457	1
 103	457	1
 103	457	2
-455	97	1
 455	97	2
 455	97	455
-455	98	1
 455	98	2
 455	98	455
-456	0	1
 456	0	2
 456	0	456
-456	10	1
 456	10	2
 456	10	456
-457	100	1
 457	100	2
 457	100	457
-457	103	1
 457	103	2
 457	103	457
 PREHOOK: query: from intermediate
@@ -1705,26 +1705,20 @@ POSTHOOK: Input: default@multi1_mm@p=457
 103	457	1
 103	457	2
 455	97	1
-455	97	1
 455	97	2
 455	97	455
-455	98	1
 455	98	1
 455	98	2
 455	98	455
 456	0	1
-456	0	1
 456	0	2
 456	0	456
-456	10	1
 456	10	1
 456	10	2
 456	10	456
 457	100	1
-457	100	1
 457	100	2
 457	100	457
-457	103	1
 457	103	1
 457	103	2
 457	103	457

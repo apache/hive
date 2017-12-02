@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -70,7 +71,7 @@ public abstract class TxnCommandsBaseForTests {
   public void setUp() throws Exception {
     setUpInternal();
   }
-  void setUpInternal() throws Exception {
+  protected void setUpInternal() throws Exception {
     hiveConf = new HiveConf(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
@@ -101,7 +102,7 @@ public abstract class TxnCommandsBaseForTests {
     runStatementOnDriver("create temporary  table " + Table.ACIDTBL2 + "(a int, b int, c int) clustered by (c) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     runStatementOnDriver("create table " + Table.NONACIDNONBUCKET + "(a int, b int) stored as orc");
   }
-  private void dropTables() throws Exception {
+  protected void dropTables() throws Exception {
     for(TxnCommandsBaseForTests.Table t : TxnCommandsBaseForTests.Table.values()) {
       runStatementOnDriver("drop table if exists " + t);
     }
@@ -133,6 +134,14 @@ public abstract class TxnCommandsBaseForTests {
   }
   String makeValuesClause(int[][] rows) {
     return TestTxnCommands2.makeValuesClause(rows);
+  }
+  
+  void runWorker(HiveConf hiveConf) throws MetaException {
+    TestTxnCommands2.runWorker(hiveConf);
+  }
+
+  void runCleaner(HiveConf hiveConf) throws MetaException {
+    TestTxnCommands2.runCleaner(hiveConf);
   }
 
   List<String> runStatementOnDriver(String stmt) throws Exception {
