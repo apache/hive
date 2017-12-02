@@ -223,6 +223,19 @@ public class AcidUtils {
   public static String baseDir(long txnId) {
     return BASE_PREFIX + String.format(DELTA_DIGITS, txnId);
   }
+
+  /**
+   * Return a base or delta directory string
+   * according to the given "baseDirRequired".
+   */
+  public static String baseOrDeltaSubdir(boolean baseDirRequired, long min, long max, int statementId) {
+    if (!baseDirRequired) {
+       return deltaSubdir(min, max, statementId);
+    } else {
+       return baseDir(min);
+    }
+  }
+
   /**
    * Create a filename for a bucket file.
    * @param directory the partition directory
@@ -1248,6 +1261,19 @@ public class AcidUtils {
   public static boolean isFullAcidTable(Table table) {
     return isAcidTable(table) && !AcidUtils.isInsertOnlyTable(table);
   }
+  
+  public static boolean isFullAcidTable(CreateTableDesc td) {
+    if (td == null || td.getTblProps() == null) {
+      return false;
+    }
+    String tableIsTransactional = td.getTblProps().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    if (tableIsTransactional == null) {
+      tableIsTransactional = td.getTblProps().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
+    }
+    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true") &&
+      !AcidUtils.isInsertOnlyTable(td.getTblProps());
+  }
+  
 
   /**
    * Sets the acidOperationalProperties in the configuration object argument.

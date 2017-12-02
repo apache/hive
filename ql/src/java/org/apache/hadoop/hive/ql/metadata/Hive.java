@@ -1779,12 +1779,6 @@ public class Hive {
           Utilities.FILE_OP_LOGGER.trace("maybe deleting stuff from " + oldPartPath
               + " (new " + newPartPath + ") for replace");
         }
-        if ((loadFileType == LoadFileType.REPLACE_ALL) && oldPartPath != null) {
-          boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
-          deleteOldPathForReplace(newPartPath, oldPartPath, getConf(), isAutoPurge,
-              new JavaUtils.IdPathFilter(txnId, stmtId, false, true), true,
-              tbl.isStoredAsSubDirectories() ? tbl.getSkewedColNames().size() : 0);
-        }
       } else {
         // Either a non-MM query, or a load into MM table from an external source.
         PathFilter filter = FileUtils.HIDDEN_FILES_PATH_FILTER;
@@ -1807,7 +1801,7 @@ public class Hive {
           // base_x.  (there is Insert Overwrite and Load Data Overwrite)
           boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(),
-              isSrcLocal, isAutoPurge, newFiles, filter, isMmTableWrite);
+              isSrcLocal, isAutoPurge, newFiles, filter, isMmTableWrite?true:false);
         } else {
           FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
           copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
@@ -2126,7 +2120,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         //       where this is used; we always want to load everything; also the only case where
         //       we have multiple statements anyway is union.
         Path[] leafStatus = Utilities.getMmDirectoryCandidates(
-            fs, loadPath, numDP, numLB, null, txnId, -1, conf);
+            fs, loadPath, numDP, numLB, null, txnId, -1, conf, false);
         for (Path p : leafStatus) {
           Path dpPath = p.getParent(); // Skip the MM directory that we have found.
           for (int i = 0; i < numLB; ++i) {
@@ -2330,13 +2324,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // Note: this assumes both paths are qualified; which they are, currently.
     if (isMmTable && loadPath.equals(tbl.getPath())) {
       Utilities.FILE_OP_LOGGER.debug("not moving " + loadPath + " to " + tbl.getPath());
-      if (loadFileType == LoadFileType.REPLACE_ALL) {
-        Path tableDest = tbl.getPath();
-        boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
-        deleteOldPathForReplace(tableDest, tableDest, sessionConf, isAutopurge,
-            new JavaUtils.IdPathFilter(txnId, stmtId, false, true), true,
-            tbl.isStoredAsSubDirectories() ? tbl.getSkewedColNames().size() : 0);
-      }
       newFiles = listFilesCreatedByQuery(loadPath, txnId, stmtId);
     } else {
       // Either a non-MM query, or a load into MM table from an external source.
@@ -2360,7 +2347,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         //todo:  should probably do the same for MM IOW
         boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
         replaceFiles(tblPath, loadPath, destPath, tblPath,
-            sessionConf, isSrcLocal, isAutopurge, newFiles, filter, isMmTable);
+            sessionConf, isSrcLocal, isAutopurge, newFiles, filter, isMmTable?true:false);
       } else {
         try {
           FileSystem fs = tbl.getDataLocation().getFileSystem(sessionConf);
@@ -3885,7 +3872,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   protected void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
           boolean isSrcLocal, boolean purge, List<Path> newFiles, PathFilter deletePathFilter,
-          boolean isMmTable) throws HiveException {
+          boolean isMmTableOverwrite) throws HiveException {
     try {
 
       FileSystem destFs = destf.getFileSystem(conf);
@@ -3906,7 +3893,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (oldPath != null) {
         // Note: we assume lbLevels is 0 here. Same as old code for non-MM.
         //       For MM tables, this can only be a LOAD command. Does LOAD even support LB?
-        deleteOldPathForReplace(destf, oldPath, conf, purge, deletePathFilter, isMmTable, 0);
+        deleteOldPathForReplace(destf, oldPath, conf, purge, deletePathFilter, isMmTableOverwrite, 0);
       }
 
       // first call FileUtils.mkdir to make sure that destf directory exists, if not, it creates
@@ -3952,7 +3939,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   private void deleteOldPathForReplace(Path destPath, Path oldPath, HiveConf conf, boolean purge,
-      PathFilter pathFilter, boolean isMmTable, int lbLevels) throws HiveException {
+      PathFilter pathFilter, boolean isMmTableOverwrite, int lbLevels) throws HiveException {
     Utilities.FILE_OP_LOGGER.debug("Deleting old paths for replace in " + destPath
         + " and old path " + oldPath);
     boolean isOldPathUnderDestf = false;
@@ -3964,32 +3951,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
       // not the destf or its subdir?
       isOldPathUnderDestf = isSubDir(oldPath, destPath, oldFs, destFs, false);
-      if (isOldPathUnderDestf || isMmTable) {
-        if (lbLevels == 0 || !isMmTable) {
+      if (isOldPathUnderDestf || isMmTableOverwrite) {
+        if (lbLevels == 0 || !isMmTableOverwrite) {
           cleanUpOneDirectoryForReplace(oldPath, oldFs, pathFilter, conf, purge);
-        } else {
-          // We need to clean up different MM IDs from each LB directory separately.
-          // Avoid temporary directories in the immediate table/part dir.
-          // Note: we could just find directories with any MM directories inside?
-          //       the rest doesn't have to be cleaned up. Play it safe.
-          String mask = "[^._]*";
-          for (int i = 0; i < lbLevels - 1; ++i) {
-            mask += Path.SEPARATOR + "*";
-          }
-          Path glob = new Path(oldPath, mask);
-          FileStatus[] lbDirs = oldFs.globStatus(glob);
-          for (FileStatus lbDir : lbDirs) {
-            Path lbPath = lbDir.getPath();
-            if (!lbDir.isDirectory()) {
-              throw new HiveException("Unexpected path during overwrite: " + lbPath);
-            }
-            Utilities.FILE_OP_LOGGER.info("Cleaning up LB directory " + lbPath);
-            cleanUpOneDirectoryForReplace(lbPath, oldFs, pathFilter, conf, purge);
-          }
         }
       }
     } catch (IOException e) {
-      if (isOldPathUnderDestf || isMmTable) {
+      if (isOldPathUnderDestf || isMmTableOverwrite) {
         // if oldPath is a subdir of destf but it could not be cleaned
         throw new HiveException("Directory " + oldPath.toString()
             + " could not be cleaned up.", e);

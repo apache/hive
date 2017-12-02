@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class JavaUtils {
 
+  public static final String BASE_PREFIX =  "base";
   public static final String DELTA_PREFIX = "delta";
   public static final String DELTA_DIGITS = "%07d";
   public static final int DELTA_DIGITS_LEN = 7;
@@ -167,8 +168,8 @@ public final class JavaUtils {
 
   public static Long extractTxnId(Path file) {
     String fileName = file.getName();
-    String[] parts = fileName.split("_", 4);  // e.g. delta_0000001_0000001_0000
-    if (parts.length < 4 || !DELTA_PREFIX.equals(parts[0])) {
+    String[] parts = fileName.split("_", 4);  // e.g. delta_0000001_0000001_0000 or base_0000022
+    if (parts.length < 2 || !(DELTA_PREFIX.equals(parts[0]) || BASE_PREFIX.equals(parts[0]))) {
       LOG.debug("Cannot extract transaction ID for a MM table: " + file
           + " (" + Arrays.toString(parts) + ")");
       return null;
@@ -185,20 +186,31 @@ public final class JavaUtils {
   }
 
   public static class IdPathFilter implements PathFilter {
-    private final String mmDirName;
+    private String mmDirName;
     private final boolean isMatch, isIgnoreTemp, isPrefix;
+
     public IdPathFilter(long writeId, int stmtId, boolean isMatch) {
-      this(writeId, stmtId, isMatch, false);
+      this(writeId, stmtId, isMatch, false, false);
     }
     public IdPathFilter(long writeId, int stmtId, boolean isMatch, boolean isIgnoreTemp) {
-      String mmDirName = DELTA_PREFIX + "_" + String.format(DELTA_DIGITS, writeId) + "_" +
-          String.format(DELTA_DIGITS, writeId) + "_";
-      if (stmtId >= 0) {
-        mmDirName += String.format(STATEMENT_DIGITS, stmtId);
-        isPrefix = false;
+      this(writeId, stmtId, isMatch, isIgnoreTemp, false);
+    }
+    public IdPathFilter(long writeId, int stmtId, boolean isMatch, boolean isIgnoreTemp, boolean isBaseDir) {
+      String mmDirName = null;
+      if (!isBaseDir) {
+        mmDirName = DELTA_PREFIX + "_" + String.format(DELTA_DIGITS, writeId) + "_" +
+                String.format(DELTA_DIGITS, writeId) + "_";
+        if (stmtId >= 0) {
+          mmDirName += String.format(STATEMENT_DIGITS, stmtId);
+          isPrefix = false;
+        } else {
+          isPrefix = true;
+        }
       } else {
-        isPrefix = true;
+        mmDirName = BASE_PREFIX + "_" + String.format(DELTA_DIGITS, writeId);
+        isPrefix = false;
       }
+
       this.mmDirName = mmDirName;
       this.isMatch = isMatch;
       this.isIgnoreTemp = isIgnoreTemp;
