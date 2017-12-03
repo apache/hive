@@ -9,7 +9,7 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
 max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 

@@ -114,9 +114,9 @@ Stage-3
                 <-Reducer 4 [CUSTOM_SIMPLE_EDGE]
                   File Output Operator [FS_19]
                     table:{"name:":"default.src_multi2_n7"}
-                    Select Operator [SEL_18] (rows=849/508 width=178)
+                    Select Operator [SEL_18] (rows=830/508 width=178)
                       Output:["_col0","_col1"]
-                      Merge Join Operator [MERGEJOIN_26] (rows=849/508 width=178)
+                      Merge Join Operator [MERGEJOIN_26] (rows=830/508 width=178)
                         Conds:RS_15._col0=RS_16._col0(Inner),Output:["_col0","_col3"]
                       <-Map 7 [SIMPLE_EDGE]
                         SHUFFLE [RS_16]
@@ -154,7 +154,7 @@ Stage-3
                                       TableScan [TS_3] (rows=25/25 width=175)
                                         Output:["key","value"]
                   PARTITION_ONLY_SHUFFLE [RS_2]
-                    Select Operator [SEL_1] (rows=849/508 width=178)
+                    Select Operator [SEL_1] (rows=830/508 width=178)
                       Output:["key","value"]
                        Please refer to the previous Select Operator [SEL_18]
 

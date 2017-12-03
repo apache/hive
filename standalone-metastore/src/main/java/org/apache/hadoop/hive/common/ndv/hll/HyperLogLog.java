@@ -18,10 +18,8 @@
 
 package org.apache.hadoop.hive.common.ndv.hll;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -157,6 +155,13 @@ public class HyperLogLog implements NumDistinctValueEstimator {
 
     public HyperLogLogBuilder setNumRegisterIndexBits(int b) {
       this.numRegisterIndexBits = b;
+      return this;
+    }
+
+    public HyperLogLogBuilder setSizeOptimized() {
+      // allowing this to be increased via config breaks the merge impl
+      // p=10 = ~1kb per vector or smaller
+      this.numRegisterIndexBits = 10;
       return this;
     }
 
@@ -431,10 +436,21 @@ public class HyperLogLog implements NumDistinctValueEstimator {
    * @throws IllegalArgumentException
    */
   public void merge(HyperLogLog hll) {
-    if (p != hll.p || chosenHashBits != hll.chosenHashBits) {
+    if (chosenHashBits != hll.chosenHashBits) {
       throw new IllegalArgumentException(
           "HyperLogLog cannot be merged as either p or hashbits are different. Current: "
               + toString() + " Provided: " + hll.toString());
+    }
+
+    if (p > hll.p) {
+      throw new IllegalArgumentException(
+          "HyperLogLog cannot merge a smaller p into a larger one : "
+              + toString() + " Provided: " + hll.toString());
+    }
+
+    if (p != hll.p) {
+      // invariant: p > hll.p
+      hll = hll.squash(p);
     }
 
     EncodingType otherEncoding = hll.getEncoding();
@@ -464,7 +480,37 @@ public class HyperLogLog implements NumDistinctValueEstimator {
   }
 
   /**
-   * Converts sparse to dense hll register
+   * Reduces the accuracy of the HLL provided to a smaller size
+   * @param p0 
+   *         - new p size for the new HyperLogLog (smaller or no change)
+   * @return reduced (or same) HyperLogLog instance
+   */
+  public HyperLogLog squash(final int p0) {
+    if (p0 > p) {
+      throw new IllegalArgumentException(
+          "HyperLogLog cannot be be squashed to be bigger. Current: "
+              + toString() + " Provided: " + p0);
+    }
+
+    if (p0 == p) {
+      return this;
+    }
+
+    final HyperLogLog hll = new HyperLogLogBuilder()
+        .setNumRegisterIndexBits(p0).setEncoding(EncodingType.DENSE)
+        .enableNoBias(noBias).build();
+    final HLLDenseRegister result = hll.denseRegister;
+
+    if (encoding == EncodingType.SPARSE) {
+      sparseRegister.extractLowBitsTo(result);
+    } else if (encoding == EncodingType.DENSE) {
+      denseRegister.extractLowBitsTo(result);
+    }
+    return hll;
+  }
+
+  /**
+   * Converts sparse to dense hll register.
    * @param sparseRegister
    *          - sparse register to be converted
    * @return converted dense register
@@ -576,14 +622,7 @@ public class HyperLogLog implements NumDistinctValueEstimator {
 
   @Override
   public NumDistinctValueEstimator deserialize(byte[] buf) {
-    InputStream is = new ByteArrayInputStream(buf);
-    try {
-      HyperLogLog result = HyperLogLogUtils.deserializeHLL(is);
-      is.close();
-      return result;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    return HyperLogLogUtils.deserializeHLL(buf);
   }
 
   @Override

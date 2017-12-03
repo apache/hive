@@ -51,7 +51,7 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 25057 Data size: 87772 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 24737 Data size: 86492 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Left Outer Join 0 to 1
@@ -60,7 +60,7 @@ STAGE PLANS:
                           1 _col0 (type: tinyint)
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 2424412 Data size: 19395296 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2338217 Data size: 18705736 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
                           mode: hash
