@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -100,6 +101,8 @@ public class MetaStoreUtils {
   public static final String DEFAULT_SERIALIZATION_FORMAT = "1";
 
   public static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
+
+  public static final int RETRY_COUNT = 10;
 
   // Right now we only support one special character '/'.
   // More special characters can be added accordingly in the future.
@@ -1248,6 +1251,36 @@ public class MetaStoreUtils {
     int port = findFreePort();
     startMetaStore(port, bridge, conf);
     return port;
+  }
+
+  public static int startMetaStoreWithRetry(final HadoopThriftAuthBridge bridge) throws Exception {
+    return startMetaStoreWithRetry(bridge, null);
+  }
+
+  public static int startMetaStoreWithRetry(HiveConf conf) throws Exception {
+    return startMetaStoreWithRetry(ShimLoader.getHadoopThriftAuthBridge(), conf);
+  }
+
+  public static int startMetaStoreWithRetry() throws Exception {
+    return startMetaStoreWithRetry(ShimLoader.getHadoopThriftAuthBridge(), null);
+  }
+
+  public static int startMetaStoreWithRetry(final HadoopThriftAuthBridge bridge, HiveConf conf)
+      throws Exception {
+    Exception metaStoreException = null;
+    int metaStorePort = 0;
+
+    for (int tryCount = 0; tryCount < MetaStoreUtils.RETRY_COUNT; tryCount++) {
+      try {
+        metaStorePort = findFreePort();
+        startMetaStore(metaStorePort, bridge, conf);
+        return metaStorePort;
+      } catch (ConnectException ce) {
+        metaStoreException = ce;
+      }
+    }
+
+    throw metaStoreException;
   }
 
   public static int startMetaStore(HiveConf conf) throws Exception {

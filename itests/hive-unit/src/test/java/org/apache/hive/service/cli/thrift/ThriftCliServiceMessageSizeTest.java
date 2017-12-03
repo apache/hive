@@ -68,13 +68,27 @@ public class ThriftCliServiceMessageSizeTest {
 
   protected static void startHiveServer2WithConf(HiveServer2 hiveServer2, HiveConf hiveConf)
       throws Exception {
-    hiveServer2.init(hiveConf);
     // Start HiveServer2 with given config
     // Fail if server doesn't start
-    try {
-      hiveServer2.start();
-    } catch (Throwable t) {
-      t.printStackTrace();
+
+    Throwable hs2Exception = null;
+    boolean hs2Started = false;
+    for (int tryCount = 0; tryCount < MetaStoreUtils.RETRY_COUNT; tryCount++) {
+      try {
+        hiveServer2.init(hiveConf);
+        hiveServer2.start();
+        hs2Started = true;
+        break;
+      } catch (Throwable t) {
+        hs2Exception = t;
+        port = MetaStoreUtils.findFreePort();
+        hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT, port);
+        hiveServer2 = new HiveServer2();
+      }
+    }
+
+    if (!hs2Started) {
+      hs2Exception.printStackTrace();
       fail();
     }
     // Wait for startup to complete

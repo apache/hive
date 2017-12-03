@@ -53,8 +53,6 @@ public class TestAuthorizationPreEventListener extends TestCase {
 
     super.setUp();
 
-    int port = MetaStoreUtils.findFreePort();
-
     System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
         AuthorizationPreEventListener.class.getName());
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_MANAGER.varname,
@@ -62,7 +60,7 @@ public class TestAuthorizationPreEventListener extends TestCase {
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHENTICATOR_MANAGER.varname,
         HadoopDefaultMetastoreAuthenticator.class.getName());
 
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+    int port = MetaStoreUtils.startMetaStoreWithRetry();
 
     clientHiveConf = new HiveConf(this.getClass());
 

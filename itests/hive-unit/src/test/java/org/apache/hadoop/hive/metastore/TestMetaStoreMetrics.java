@@ -42,10 +42,7 @@ public class TestMetaStoreMetrics {
 
   @BeforeClass
   public static void before() throws Exception {
-    int port = MetaStoreUtils.findFreePort();
-
     hiveConf = new HiveConf(TestMetaStoreMetrics.class);
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_METRICS, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
@@ -58,7 +55,9 @@ public class TestMetaStoreMetrics {
     metrics = (CodahaleMetrics) MetricsFactory.getInstance();
 
     //Increments one HMS connection
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), hiveConf);
+    int port = MetaStoreUtils.startMetaStoreWithRetry(hiveConf);
+
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
 
     //Increments one HMS connection (Hive.get())
     SessionState.start(new CliSessionState(hiveConf));

@@ -79,9 +79,7 @@ public class TestPermsGrp extends TestCase {
       return;
     }
 
-
-    msPort = MetaStoreUtils.findFreePort();
-    MetaStoreUtils.startMetaStore(msPort, ShimLoader.getHadoopThriftAuthBridge());
+    msPort = MetaStoreUtils.startMetaStoreWithRetry();
 
     isServerRunning = true;
 

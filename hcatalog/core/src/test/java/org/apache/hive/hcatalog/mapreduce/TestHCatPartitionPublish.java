@@ -104,10 +104,8 @@ public class TestHCatPartitionPublish {
       return;
     }
 
-    msPort = MetaStoreUtils.findFreePort();
+    msPort = MetaStoreUtils.startMetaStoreWithRetry();
 
-    MetaStoreUtils.startMetaStore(msPort, ShimLoader
-        .getHadoopThriftAuthBridge());
     Thread.sleep(10000);
     isServerRunning = true;
     securityManager = System.getSecurityManager();

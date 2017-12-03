@@ -47,8 +47,7 @@ public class TestMetaStoreEndFunctionListener extends TestCase {
         DummyPreListener.class.getName());
     System.setProperty("hive.metastore.end.function.listeners",
         DummyEndFunctionListener.class.getName());
-    int port = MetaStoreUtils.findFreePort();
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+    int port = MetaStoreUtils.startMetaStoreWithRetry();
     hiveConf = new HiveConf(this.getClass());
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
