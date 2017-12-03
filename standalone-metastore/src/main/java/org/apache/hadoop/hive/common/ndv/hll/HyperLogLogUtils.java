@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.common.ndv.hll;
 
+import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -126,7 +127,7 @@ public class HyperLogLogUtils {
   }
 
   /**
-   * Refer serializeHLL() for format of serialization. This funtions
+   * Refer serializeHLL() for format of serialization. This function
    * deserializes the serialized hyperloglogs
    * @param in
    *          - input stream
@@ -196,6 +197,22 @@ public class HyperLogLogUtils {
     result.setCount(estCount);
 
     return result;
+  }
+
+  /**
+   * This function deserializes the serialized hyperloglogs from a byte array.
+   * @param buf - to deserialize
+   * @return HyperLogLog
+   */
+  public static HyperLogLog deserializeHLL(final byte[] buf) {
+    InputStream is = new ByteArrayInputStream(buf); // TODO: use faster non-sync inputstream
+    try {
+      HyperLogLog result = deserializeHLL(is);
+      is.close();
+      return result;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private static void bitpackHLLRegister(OutputStream out, byte[] register, int bitWidth)
