@@ -37,14 +37,18 @@ public class TestHyperLogLog {
     HyperLogLog hll3 = HyperLogLog.builder().setEncoding(EncodingType.DENSE).build();
     HyperLogLog hll4 = HyperLogLog.builder().setNumRegisterIndexBits(16)
         .setEncoding(EncodingType.DENSE).build();
+    HyperLogLog hll5 = HyperLogLog.builder().setNumRegisterIndexBits(12)
+        .setEncoding(EncodingType.DENSE).build();
     int size = 1000;
     for (int i = 0; i < size; i++) {
       hll.addLong(i);
       hll2.addLong(size + i);
       hll3.addLong(2 * size + i);
+      hll4.addLong(3 * size + i);
     }
     double threshold = size > 40000 ? longRangeTolerance : shortRangeTolerance;
     double delta = threshold * size / 100;
+    double delta4 = threshold * (4*size) / 100;
     assertEquals((double) size, (double) hll.count(), delta);
     assertEquals((double) size, (double) hll2.count(), delta);
 
@@ -63,8 +67,13 @@ public class TestHyperLogLog {
     assertEquals((double) 3 * size, (double) hll.count(), delta);
     assertEquals(EncodingType.DENSE, hll.getEncoding());
 
-    // invalid merge -- register set size doesn't match
+    // valid merge -- register set size gets bigger (also 4k items 
     hll.merge(hll4);
+    assertEquals((double) 4 * size, (double) hll.count(), delta4);
+    assertEquals(EncodingType.DENSE, hll.getEncoding());
+
+    // invalid merge -- smaller register merge to bigger
+    hll.merge(hll5);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -74,14 +83,18 @@ public class TestHyperLogLog {
     HyperLogLog hll3 = HyperLogLog.builder().setEncoding(EncodingType.SPARSE).build();
     HyperLogLog hll4 = HyperLogLog.builder().setNumRegisterIndexBits(16)
         .setEncoding(EncodingType.SPARSE).build();
+    HyperLogLog hll5 = HyperLogLog.builder().setNumRegisterIndexBits(12)
+        .setEncoding(EncodingType.SPARSE).build();
     int size = 500;
     for (int i = 0; i < size; i++) {
       hll.addLong(i);
       hll2.addLong(size + i);
       hll3.addLong(2 * size + i);
+      hll4.addLong(3 * size + i);
     }
     double threshold = size > 40000 ? longRangeTolerance : shortRangeTolerance;
     double delta = threshold * size / 100;
+    double delta4 = threshold * (4*size) / 100;
     assertEquals((double) size, (double) hll.count(), delta);
     assertEquals((double) size, (double) hll2.count(), delta);
 
@@ -100,8 +113,13 @@ public class TestHyperLogLog {
     assertEquals((double) 3 * size, (double) hll.count(), delta);
     assertEquals(EncodingType.SPARSE, hll.getEncoding());
 
-    // invalid merge -- register set size doesn't match
+    // valid merge -- register set size gets bigger & dense automatically
     hll.merge(hll4);
+    assertEquals((double) 4 * size, (double) hll.count(), delta4);
+    assertEquals(EncodingType.DENSE, hll.getEncoding());
+
+    // invalid merge -- smaller register merge to bigger
+    hll.merge(hll5);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -111,11 +129,14 @@ public class TestHyperLogLog {
     HyperLogLog hll3 = HyperLogLog.builder().setEncoding(EncodingType.DENSE).build();
     HyperLogLog hll4 = HyperLogLog.builder().setNumRegisterIndexBits(16)
         .setEncoding(EncodingType.DENSE).build();
+    HyperLogLog hll5 = HyperLogLog.builder().setNumRegisterIndexBits(12)
+        .setEncoding(EncodingType.DENSE).build();
     int size = 1000;
     for (int i = 0; i < size; i++) {
       hll.addLong(i);
       hll2.addLong(size + i);
       hll3.addLong(2 * size + i);
+      hll4.addLong(3 * size + i);
     }
     double threshold = size > 40000 ? longRangeTolerance : shortRangeTolerance;
     double delta = threshold * size / 100;
@@ -137,8 +158,13 @@ public class TestHyperLogLog {
     assertEquals((double) 3 * size, (double) hll.count(), delta);
     assertEquals(EncodingType.DENSE, hll.getEncoding());
 
-    // invalid merge -- register set size doesn't match
-    hll.merge(hll4);
+    // merge should convert hll2 to DENSE
+    hll2.merge(hll4);
+    assertEquals((double) 2 * size, (double) hll2.count(), delta);
+    assertEquals(EncodingType.DENSE, hll2.getEncoding());
+
+    // invalid merge -- smaller register merge to bigger
+    hll.merge(hll5);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -148,11 +174,14 @@ public class TestHyperLogLog {
     HyperLogLog hll3 = HyperLogLog.builder().setEncoding(EncodingType.SPARSE).build();
     HyperLogLog hll4 = HyperLogLog.builder().setNumRegisterIndexBits(16)
         .setEncoding(EncodingType.SPARSE).build();
+    HyperLogLog hll5 = HyperLogLog.builder().setNumRegisterIndexBits(12)
+        .setEncoding(EncodingType.SPARSE).build();
     int size = 1000;
     for (int i = 0; i < size; i++) {
       hll.addLong(i);
       hll2.addLong(size + i);
       hll3.addLong(2 * size + i);
+      hll4.addLong(3 * size + i);
     }
     double threshold = size > 40000 ? longRangeTolerance : shortRangeTolerance;
     double delta = threshold * size / 100;
@@ -174,8 +203,14 @@ public class TestHyperLogLog {
     assertEquals((double) 3 * size, (double) hll.count(), delta);
     assertEquals(EncodingType.DENSE, hll.getEncoding());
 
-    // invalid merge -- register set size doesn't match
-    hll.merge(hll4);
+    // merge should convert hll3 to DENSE
+    hll3.merge(hll4);
+    assertEquals((double) 2 * size, (double) hll3.count(), delta);
+    assertEquals(EncodingType.DENSE, hll3.getEncoding());
+
+    // invalid merge -- smaller register merge to bigger
+    hll.merge(hll5);
+
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -185,11 +220,14 @@ public class TestHyperLogLog {
     HyperLogLog hll3 = HyperLogLog.builder().setEncoding(EncodingType.SPARSE).build();
     HyperLogLog hll4 = HyperLogLog.builder().setNumRegisterIndexBits(16)
         .setEncoding(EncodingType.SPARSE).build();
+    HyperLogLog hll5 = HyperLogLog.builder().setNumRegisterIndexBits(12)
+        .setEncoding(EncodingType.SPARSE).build();
     int size = 1000;
     for (int i = 0; i < size; i++) {
       hll.addLong(i);
       hll2.addLong(size + i);
       hll3.addLong(2 * size + i);
+      hll4.addLong(3 * size + i);
     }
     double threshold = size > 40000 ? longRangeTolerance : shortRangeTolerance;
     double delta = threshold * size / 100;
@@ -211,8 +249,13 @@ public class TestHyperLogLog {
     assertEquals((double) 3 * size, (double) hll.count(), delta);
     assertEquals(EncodingType.DENSE, hll.getEncoding());
 
-    // invalid merge -- register set size doesn't match
-    hll.merge(hll4);
+    // merge should convert hll2 to DENSE
+    hll2.merge(hll4);
+    assertEquals((double) 2 * size, (double) hll2.count(), delta);
+    assertEquals(EncodingType.DENSE, hll2.getEncoding());
+
+    // invalid merge -- smaller register merge to bigger
+    hll.merge(hll5);
   }
 
   @Test
@@ -226,5 +269,70 @@ public class TestHyperLogLog {
     double threshold = size > 40000 ? longRangeTolerance : shortRangeTolerance;
     double delta = threshold * size / 100;
     assertEquals((double) size, (double) hll.count(), delta);
+  }
+
+  @Test
+  public void testHLLSquash() {
+
+    int[] sizes = new int[] { 500, 1000, 2300, 4096};
+    int minBits = 9;
+    for (final int size : sizes) {
+
+      HyperLogLog hlls[] = new HyperLogLog[16];
+      for (int k = minBits; k < hlls.length; k++) {
+        final HyperLogLog hll = HyperLogLog.builder()
+            .setEncoding(EncodingType.DENSE).setNumRegisterIndexBits(k).build();
+        for (int i = 0; i < size; i++) {
+          hll.addLong(i);
+        }
+        hlls[k] = hll;
+      }
+
+      for (int k = minBits; k < hlls.length; k++) {
+        for (int j = k + 1; j < hlls.length; j++) {
+          final HyperLogLog large = hlls[j];
+          final HyperLogLog small = hlls[k];
+          final HyperLogLog mush = large
+              .squash(small.getNumRegisterIndexBits());
+          assertEquals(small.count(), mush.count(), 0);
+          double delta = Math.ceil(small.getStandardError()*size);
+          assertEquals((double) size, (double) mush.count(), delta);
+        }
+      }
+    }
+  }
+
+  @Test
+  public void testHLLDenseDenseSquash() {
+    HyperLogLog p14HLL = HyperLogLog.builder().setEncoding(EncodingType.DENSE).setNumRegisterIndexBits(14).build();
+    HyperLogLog p10HLL = HyperLogLog.builder().setEncoding(EncodingType.DENSE).setNumRegisterIndexBits(10).build();
+    int size = 1_000_000;
+    for (int i = 0; i < size; i++) {
+      p14HLL.addLong(i);
+    }
+
+    for (int i = 0; i < 10_000; i++) {
+      p10HLL.addLong(i);
+    }
+
+    p14HLL.squash(p10HLL.getNumRegisterIndexBits());
+    assertEquals((double) size, p14HLL.count(), longRangeTolerance * size / 100.0);
+  }
+
+  @Test
+  public void testHLLSparseDenseSquash() {
+    HyperLogLog p14HLL = HyperLogLog.builder().setEncoding(EncodingType.SPARSE).setNumRegisterIndexBits(14).build();
+    HyperLogLog p10HLL = HyperLogLog.builder().setEncoding(EncodingType.DENSE).setNumRegisterIndexBits(10).build();
+    int size = 2000;
+    for (int i = 0; i < size; i++) {
+      p14HLL.addLong(i);
+    }
+
+    for (int i = 0; i < 10_000; i++) {
+      p10HLL.addLong(i);
+    }
+
+    p14HLL.squash(p10HLL.getNumRegisterIndexBits());
+    assertEquals((double) size, p14HLL.count(), longRangeTolerance * size / 100.0);
   }
 }
