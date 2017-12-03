@@ -452,12 +452,12 @@ STAGE PLANS:
                           keys: _col0 (type: string)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 316 Data size: 27492 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: ds (string)
                             Target Input: srcpart_small_n3
                             Partition key expr: ds
-                            Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 316 Data size: 27492 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 4
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -723,7 +723,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
-                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=309)
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=316)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
                           Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
@@ -826,7 +826,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=309)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=316)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE

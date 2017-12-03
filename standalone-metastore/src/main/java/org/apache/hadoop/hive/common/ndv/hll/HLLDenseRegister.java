@@ -62,6 +62,31 @@ public class HLLDenseRegister implements HLLRegister {
     return set(registerIdx, (byte) lr);
   }
 
+  // this is a lossy invert of the function above, which produces a hashcode
+  // which collides with the current winner of the register (we lose all higher 
+  // bits, but we get all bits useful for lesser p-bit options)
+
+  // +-------------|-------------+
+  // |xxxx100000000|1000000000000|  (lr=9 + idx=1024)
+  // +-------------|-------------+
+  //                \
+  // +---------------|-----------+
+  // |xxxx10000000010|00000000000|  (lr=2 + idx=0)
+  // +---------------|-----------+
+
+  // This shows the relevant bits of the original hash value
+  // and how the conversion is moving bits from the index value
+  // over to the leading zero computation
+
+  public void extractLowBitsTo(HLLRegister dest) {
+    for (int idx = 0; idx < register.length; idx++) {
+      byte lr = register[idx]; // this can be a max of 65, never > 127
+      if (lr != 0) {
+        dest.add((long) ((1 << (p + lr - 1)) | idx));
+      }
+    }
+  }
+
   public boolean set(int idx, byte value) {
     boolean updated = false;
     if (idx < register.length && value > register[idx]) {

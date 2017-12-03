@@ -182,7 +182,7 @@ data_type           	int
 min                 	0                   	 	 	 	 	 	 	 	 	 	 
 max                 	498                 	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	303                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -236,7 +236,7 @@ data_type           	double
 min                 	0.0                 	 	 	 	 	 	 	 	 	 	 
 max                 	498.0               	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -290,7 +290,7 @@ data_type           	decimal(10,0)
 min                 	0                   	 	 	 	 	 	 	 	 	 	 
 max                 	498                 	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 

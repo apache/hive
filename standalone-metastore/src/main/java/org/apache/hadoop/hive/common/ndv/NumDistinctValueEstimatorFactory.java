@@ -25,6 +25,7 @@ import java.util.Arrays;
 import org.apache.hadoop.hive.common.ndv.fm.FMSketch;
 import org.apache.hadoop.hive.common.ndv.fm.FMSketchUtils;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
+import org.apache.hadoop.hive.common.ndv.hll.HyperLogLogUtils;
 
 public class NumDistinctValueEstimatorFactory {
 
@@ -44,7 +45,7 @@ public class NumDistinctValueEstimatorFactory {
       if (isFMSketch(buf)) {
         return FMSketchUtils.deserializeFM(buf);
       } else {
-        return HyperLogLog.builder().build().deserialize(buf);
+        return HyperLogLogUtils.deserializeHLL(buf);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -56,7 +57,7 @@ public class NumDistinctValueEstimatorFactory {
     if (n instanceof FMSketch) {
       return new FMSketch(((FMSketch) n).getNumBitVectors());
     } else {
-      return HyperLogLog.builder().build();
+      return HyperLogLog.builder().setSizeOptimized().build();
     }
   }
 
@@ -65,7 +66,7 @@ public class NumDistinctValueEstimatorFactory {
     if ("fm".equals(func.toLowerCase())) {
       return new FMSketch(numBitVectors);
     } else if ("hll".equals(func.toLowerCase())) {
-      return HyperLogLog.builder().build();
+      return HyperLogLog.builder().setSizeOptimized().build();
     } else {
       throw new RuntimeException("Can not recognize " + func);
     }
