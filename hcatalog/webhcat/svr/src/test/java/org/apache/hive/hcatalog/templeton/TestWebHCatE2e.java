@@ -70,21 +70,36 @@ public class TestWebHCatE2e {
   private static final String charSet = "UTF-8";
 
   @BeforeClass
-  public static void startHebHcatInMem() {
-    int webhcatPort = 50111;
-    try {
-      //in case concurrent tests are running on the same machine
-      webhcatPort = MetaStoreUtils.findFreePort();
+  public static void startHebHcatInMem() throws Exception {
+    Exception webhcatException = null;
+    int webhcatPort = 0;
+    boolean webhcatStarted = false;
+
+    for (int tryCount = 0; tryCount < MetaStoreUtils.RETRY_COUNT; tryCount++) {
+      try {
+        if (tryCount == MetaStoreUtils.RETRY_COUNT - 1) {
+          // down to the last try.  try default port 50111
+          webhcatPort = 50111;
+        } else {
+          webhcatPort = MetaStoreUtils.findFreePort();
+        }
+        templetonBaseUrl = templetonBaseUrl.replace("50111", Integer.toString(webhcatPort));
+        templetonServer = new Main(new String[] { "-D" + AppConfig.UNIT_TEST_MODE + "=true",
+            "-D" + AppConfig.PORT + "=" + webhcatPort });
+        LOG.info("Starting Main; WebHCat using port: " + webhcatPort);
+        templetonServer.run();
+        LOG.info("Main started");
+        webhcatStarted = true;
+        break;
+      } catch (Exception ce) {
+        LOG.info("Attempt to Start WebHCat using port: " + webhcatPort + " failed");
+        webhcatException = ce;
+      }
     }
-    catch (IOException ex) {
-      LOG.warn("Unable to find free port; using default: " + webhcatPort);
+
+    if (!webhcatStarted) {
+      throw webhcatException;
     }
-    templetonBaseUrl = templetonBaseUrl.replace("50111", Integer.toString(webhcatPort));
-    templetonServer = new Main(new String[] {"-D" +
-            AppConfig.UNIT_TEST_MODE + "=true", "-D" + AppConfig.PORT + "=" + webhcatPort});
-    LOG.info("Starting Main; WebHCat using port: " + webhcatPort);
-    templetonServer.run();
-    LOG.info("Main started");
   }
 
   @AfterClass
