@@ -1,176 +1,176 @@
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n14(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n14
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n14(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@srcbucket_mapjoin_n14
+PREHOOK: query: CREATE TABLE tab_part_n9 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab_part
-POSTHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_part_n9
+POSTHOOK: query: CREATE TABLE tab_part_n9 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab_part
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@tab_part_n9
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n15 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_part_n15
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n15 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n15
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n14 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n14
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n14 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n14
+POSTHOOK: Output: default@srcbucket_mapjoin_n14@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n14 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n14@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n14 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n14@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n15 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n15
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n15 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n15
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n15@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n15 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n15@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n15 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n15@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n15 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n15@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n15 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n15@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n15 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n15@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n15 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n15@ds=2008-04-08
+PREHOOK: query: insert overwrite table tab_part_n9 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n15
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_part
-PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+PREHOOK: Input: default@srcbucket_mapjoin_part_n15
+PREHOOK: Input: default@srcbucket_mapjoin_part_n15@ds=2008-04-08
+PREHOOK: Output: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_part_n9 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n15
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_part
-POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n15
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n15@ds=2008-04-08
+POSTHOOK: Output: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Lineage: tab_part_n9 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part_n15)srcbucket_mapjoin_part_n15.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part_n9 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part_n15)srcbucket_mapjoin_part_n15.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE tab_n8(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab
-POSTHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_n8
+POSTHOOK: query: CREATE TABLE tab_n8(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab
-PREHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab_n8
+PREHOOK: query: insert overwrite table tab_n8 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n14
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n14
+PREHOOK: Input: default@srcbucket_mapjoin_n14@ds=2008-04-08
+PREHOOK: Output: default@tab_n8@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_n8 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n14
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: analyze table srcbucket_mapjoin compute statistics for columns
+POSTHOOK: Input: default@srcbucket_mapjoin_n14
+POSTHOOK: Input: default@srcbucket_mapjoin_n14@ds=2008-04-08
+POSTHOOK: Output: default@tab_n8@ds=2008-04-08
+POSTHOOK: Lineage: tab_n8 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n14)srcbucket_mapjoin_n14.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_n8 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n14)srcbucket_mapjoin_n14.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: analyze table srcbucket_mapjoin_n14 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table srcbucket_mapjoin compute statistics for columns
+PREHOOK: Input: default@srcbucket_mapjoin_n14
+PREHOOK: Input: default@srcbucket_mapjoin_n14@ds=2008-04-08
+PREHOOK: Output: default@srcbucket_mapjoin_n14
+PREHOOK: Output: default@srcbucket_mapjoin_n14@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table srcbucket_mapjoin_n14 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-#### A masked pattern was here ####
-PREHOOK: query: analyze table srcbucket_mapjoin_part compute statistics for columns
+POSTHOOK: Input: default@srcbucket_mapjoin_n14
+POSTHOOK: Input: default@srcbucket_mapjoin_n14@ds=2008-04-08
+POSTHOOK: Output: default@srcbucket_mapjoin_n14
+POSTHOOK: Output: default@srcbucket_mapjoin_n14@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: analyze table srcbucket_mapjoin_part_n15 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@srcbucket_mapjoin_part
-PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: Output: default@srcbucket_mapjoin_part
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table srcbucket_mapjoin_part compute statistics for columns
+PREHOOK: Input: default@srcbucket_mapjoin_part_n15
+PREHOOK: Input: default@srcbucket_mapjoin_part_n15@ds=2008-04-08
+PREHOOK: Output: default@srcbucket_mapjoin_part_n15
+PREHOOK: Output: default@srcbucket_mapjoin_part_n15@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table srcbucket_mapjoin_part_n15 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@srcbucket_mapjoin_part
-POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-#### A masked pattern was here ####
-PREHOOK: query: analyze table tab compute statistics for columns
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n15
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n15@ds=2008-04-08
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n15
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n15@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: analyze table tab_n8 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Output: default@tab
-PREHOOK: Output: default@tab@ds=2008-04-08
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table tab compute statistics for columns
+PREHOOK: Input: default@tab_n8
+PREHOOK: Input: default@tab_n8@ds=2008-04-08
+PREHOOK: Output: default@tab_n8
+PREHOOK: Output: default@tab_n8@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table tab_n8 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Output: default@tab
-POSTHOOK: Output: default@tab@ds=2008-04-08
-#### A masked pattern was here ####
-PREHOOK: query: analyze table tab_part compute statistics for columns
+POSTHOOK: Input: default@tab_n8
+POSTHOOK: Input: default@tab_n8@ds=2008-04-08
+POSTHOOK: Output: default@tab_n8
+POSTHOOK: Output: default@tab_n8@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: analyze table tab_part_n9 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-PREHOOK: Output: default@tab_part
-PREHOOK: Output: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table tab_part compute statistics for columns
+PREHOOK: Input: default@tab_part_n9
+PREHOOK: Input: default@tab_part_n9@ds=2008-04-08
+PREHOOK: Output: default@tab_part_n9
+PREHOOK: Output: default@tab_part_n9@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table tab_part_n9 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-POSTHOOK: Output: default@tab_part
-POSTHOOK: Output: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Input: default@tab_part_n9
+POSTHOOK: Input: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Output: default@tab_part_n9
+POSTHOOK: Output: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key order by a.key, a.value, b.value
+from tab_n8 a join tab_part_n9 b on a.key = b.key order by a.key, a.value, b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key order by a.key, a.value, b.value
+from tab_n8 a join tab_part_n9 b on a.key = b.key order by a.key, a.value, b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -235,25 +235,25 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col3
-                Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                     sort order: +++
-                    Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -266,21 +266,21 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key order by a.key, a.value, b.value
+from tab_n8 a join tab_part_n9 b on a.key = b.key order by a.key, a.value, b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+PREHOOK: Input: default@tab_n8
+PREHOOK: Input: default@tab_n8@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n9
+PREHOOK: Input: default@tab_part_n9@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key order by a.key, a.value, b.value
+from tab_n8 a join tab_part_n9 b on a.key = b.key order by a.key, a.value, b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Input: default@tab_n8
+POSTHOOK: Input: default@tab_n8@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n9
+POSTHOOK: Input: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	val_0
 0	val_0	val_0
 0	val_0	val_0
@@ -763,11 +763,11 @@ POSTHOOK: Input: default@tab_part@ds=2008-04-08
 497	val_497	val_497
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key order by a.key, a.value, b.value
+from tab_n8 a join tab_part_n9 b on a.key = b.key order by a.key, a.value, b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key order by a.key, a.value, b.value
+from tab_n8 a join tab_part_n9 b on a.key = b.key order by a.key, a.value, b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -823,15 +823,15 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col3
                         input vertices:
                           0 Map 1
-                        Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                             sort order: +++
-                            Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 3 
@@ -840,10 +840,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -856,21 +856,21 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key order by a.key, a.value, b.value
+from tab_n8 a join tab_part_n9 b on a.key = b.key order by a.key, a.value, b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+PREHOOK: Input: default@tab_n8
+PREHOOK: Input: default@tab_n8@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n9
+PREHOOK: Input: default@tab_part_n9@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key order by a.key, a.value, b.value
+from tab_n8 a join tab_part_n9 b on a.key = b.key order by a.key, a.value, b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Input: default@tab_n8
+POSTHOOK: Input: default@tab_n8@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n9
+POSTHOOK: Input: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	val_0
 0	val_0	val_0
 0	val_0	val_0
@@ -1354,12 +1354,12 @@ POSTHOOK: Input: default@tab_part@ds=2008-04-08
 PREHOOK: query: explain
 select count(*)
 from 
-(select distinct key from tab_part) a join tab b on a.key = b.key
+(select distinct key from tab_part_n9) a join tab_n8 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select count(*)
 from 
-(select distinct key from tab_part) a join tab b on a.key = b.key
+(select distinct key from tab_part_n9) a join tab_n8 b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1378,7 +1378,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n9
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1436,7 +1436,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                Statistics: Num rows: 195 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 199 Data size: 1592 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1470,32 +1470,32 @@ STAGE PLANS:
 
 PREHOOK: query: select count(*)
 from 
-(select distinct key from tab_part) a join tab b on a.key = b.key
+(select distinct key from tab_part_n9) a join tab_n8 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+PREHOOK: Input: default@tab_n8
+PREHOOK: Input: default@tab_n8@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n9
+PREHOOK: Input: default@tab_part_n9@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*)
 from 
-(select distinct key from tab_part) a join tab b on a.key = b.key
+(select distinct key from tab_part_n9) a join tab_n8 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Input: default@tab_n8
+POSTHOOK: Input: default@tab_n8@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n9
+POSTHOOK: Input: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 242
 PREHOOK: query: explain
 select count(*)
 from
-(select distinct key from tab_part) a join tab b on a.key = b.key
+(select distinct key from tab_part_n9) a join tab_n8 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select count(*)
 from
-(select distinct key from tab_part) a join tab b on a.key = b.key
+(select distinct key from tab_part_n9) a join tab_n8 b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1513,7 +1513,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n9
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1565,7 +1565,7 @@ STAGE PLANS:
                     1 _col0 (type: int)
                   input vertices:
                     1 Map 4
-                  Statistics: Num rows: 195 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 199 Data size: 1592 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -1599,36 +1599,36 @@ STAGE PLANS:
 
 PREHOOK: query: select count(*)
 from
-(select distinct key from tab_part) a join tab b on a.key = b.key
+(select distinct key from tab_part_n9) a join tab_n8 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+PREHOOK: Input: default@tab_n8
+PREHOOK: Input: default@tab_n8@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n9
+PREHOOK: Input: default@tab_part_n9@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*)
 from
-(select distinct key from tab_part) a join tab b on a.key = b.key
+(select distinct key from tab_part_n9) a join tab_n8 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Input: default@tab_n8
+POSTHOOK: Input: default@tab_n8@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n9
+POSTHOOK: Input: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 242
 PREHOOK: query: explain
 select count(*)
 from
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c
 join
-tab_part d on c.key = d.key
+tab_part_n9 d on c.key = d.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select count(*)
 from
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c
 join
-tab_part d on c.key = d.key
+tab_part_n9 d on c.key = d.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1696,7 +1696,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                Statistics: Num rows: 632 Data size: 5056 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 658 Data size: 5264 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1731,16 +1731,16 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col1
-                Statistics: Num rows: 391 Data size: 1564 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 399 Data size: 1596 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: int)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 391 Data size: 1564 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 399 Data size: 1596 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 391 Data size: 1564 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 399 Data size: 1596 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator
@@ -1750,40 +1750,40 @@ STAGE PLANS:
 
 PREHOOK: query: select count(*)
 from
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c
 join
-tab_part d on c.key = d.key
+tab_part_n9 d on c.key = d.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+PREHOOK: Input: default@tab_n8
+PREHOOK: Input: default@tab_n8@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n9
+PREHOOK: Input: default@tab_part_n9@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*)
 from
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c
 join
-tab_part d on c.key = d.key
+tab_part_n9 d on c.key = d.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Input: default@tab_n8
+POSTHOOK: Input: default@tab_n8@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n9
+POSTHOOK: Input: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1166
 PREHOOK: query: explain
 select count(*)
 from
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c
 join
-tab_part d on c.key = d.key
+tab_part_n9 d on c.key = d.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select count(*)
 from
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c
 join
-tab_part d on c.key = d.key
+tab_part_n9 d on c.key = d.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1838,11 +1838,11 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 391 Data size: 1564 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 399 Data size: 1596 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col1 (type: int)
                           outputColumnNames: _col0
-                          Statistics: Num rows: 391 Data size: 1564 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 399 Data size: 1596 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
@@ -1851,7 +1851,7 @@ STAGE PLANS:
                               1 _col0 (type: int)
                             input vertices:
                               0 Map 1
-                            Statistics: Num rows: 632 Data size: 5056 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 658 Data size: 5264 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               mode: hash
@@ -1906,40 +1906,40 @@ STAGE PLANS:
 
 PREHOOK: query: select count(*)
 from
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c
 join
-tab_part d on c.key = d.key
+tab_part_n9 d on c.key = d.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+PREHOOK: Input: default@tab_n8
+PREHOOK: Input: default@tab_n8@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n9
+PREHOOK: Input: default@tab_part_n9@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*)
 from
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c
 join
-tab_part d on c.key = d.key
+tab_part_n9 d on c.key = d.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Input: default@tab_n8
+POSTHOOK: Input: default@tab_n8@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n9
+POSTHOOK: Input: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1166
 PREHOOK: query: explain
 select count(*)
 from
-tab_part d
+tab_part_n9 d
 join
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c on c.key = d.key
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c on c.key = d.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select count(*)
 from
-tab_part d
+tab_part_n9 d
 join
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c on c.key = d.key
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c on c.key = d.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2007,7 +2007,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                Statistics: Num rows: 632 Data size: 5056 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 658 Data size: 5264 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -2042,16 +2042,16 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col1
-                Statistics: Num rows: 391 Data size: 1564 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 399 Data size: 1596 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: int)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 391 Data size: 1564 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 399 Data size: 1596 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 391 Data size: 1564 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 399 Data size: 1596 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator
@@ -2061,40 +2061,40 @@ STAGE PLANS:
 
 PREHOOK: query: select count(*)
 from
-tab_part d
+tab_part_n9 d
 join
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c on c.key = d.key
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c on c.key = d.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+PREHOOK: Input: default@tab_n8
+PREHOOK: Input: default@tab_n8@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n9
+PREHOOK: Input: default@tab_part_n9@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*)
 from
-tab_part d
+tab_part_n9 d
 join
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c on c.key = d.key
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c on c.key = d.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Input: default@tab_n8
+POSTHOOK: Input: default@tab_n8@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n9
+POSTHOOK: Input: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1166
 PREHOOK: query: explain
 select count(*)
 from
-tab_part d
+tab_part_n9 d
 join
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c on c.key = d.key
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c on c.key = d.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select count(*)
 from
-tab_part d
+tab_part_n9 d
 join
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c on c.key = d.key
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c on c.key = d.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2149,11 +2149,11 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 391 Data size: 1564 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 399 Data size: 1596 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col1 (type: int)
                           outputColumnNames: _col0
-                          Statistics: Num rows: 391 Data size: 1564 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 399 Data size: 1596 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
@@ -2162,7 +2162,7 @@ STAGE PLANS:
                               1 _col0 (type: int)
                             input vertices:
                               0 Map 1
-                            Statistics: Num rows: 632 Data size: 5056 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 658 Data size: 5264 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               mode: hash
@@ -2217,36 +2217,36 @@ STAGE PLANS:
 
 PREHOOK: query: select count(*)
 from
-tab_part d
+tab_part_n9 d
 join
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c on c.key = d.key
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c on c.key = d.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+PREHOOK: Input: default@tab_n8
+PREHOOK: Input: default@tab_n8@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n9
+PREHOOK: Input: default@tab_part_n9@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*)
 from
-tab_part d
+tab_part_n9 d
 join
-(select a.key as key, a.value as value from tab a join tab_part b on a.key = b.key) c on c.key = d.key
+(select a.key as key, a.value as value from tab_n8 a join tab_part_n9 b on a.key = b.key) c on c.key = d.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Input: default@tab_n8
+POSTHOOK: Input: default@tab_n8@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n9
+POSTHOOK: Input: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1166
 PREHOOK: query: explain
 select a.k1, a.v1, b.value
-from (select sum(substr(srcbucket_mapjoin.value,5)) as v1, key as k1 from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
-join tab b on a.k1 = b.key
+from (select sum(substr(srcbucket_mapjoin_n14.value,5)) as v1, key as k1 from srcbucket_mapjoin_n14 GROUP BY srcbucket_mapjoin_n14.key) a
+join tab_n8 b on a.k1 = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.k1, a.v1, b.value
-from (select sum(substr(srcbucket_mapjoin.value,5)) as v1, key as k1 from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
-join tab b on a.k1 = b.key
+from (select sum(substr(srcbucket_mapjoin_n14.value,5)) as v1, key as k1 from srcbucket_mapjoin_n14 GROUP BY srcbucket_mapjoin_n14.key) a
+join tab_n8 b on a.k1 = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2264,7 +2264,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin
+                  alias: srcbucket_mapjoin_n14
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2357,13 +2357,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.k1, a.v1, b.value
-from (select sum(substr(srcbucket_mapjoin.value,5)) as v1, key as k1 from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
-     join tab b on a.k1 = b.key
+from (select sum(substr(srcbucket_mapjoin_n14.value,5)) as v1, key as k1 from srcbucket_mapjoin_n14 GROUP BY srcbucket_mapjoin_n14.key) a
+     join tab_n8 b on a.k1 = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.k1, a.v1, b.value
-from (select sum(substr(srcbucket_mapjoin.value,5)) as v1, key as k1 from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
-     join tab b on a.k1 = b.key
+from (select sum(substr(srcbucket_mapjoin_n14.value,5)) as v1, key as k1 from srcbucket_mapjoin_n14 GROUP BY srcbucket_mapjoin_n14.key) a
+     join tab_n8 b on a.k1 = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2381,7 +2381,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin
+                  alias: srcbucket_mapjoin_n14
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2467,13 +2467,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.k1, a.v1, b.value
-from (select sum(substr(tab.value,5)) as v1, key as k1 from tab_part join tab on tab_part.key = tab.key GROUP BY tab.key) a
-join tab b on a.k1 = b.key
+from (select sum(substr(tab_n8.value,5)) as v1, key as k1 from tab_part_n9 join tab_n8 on tab_part_n9.key = tab_n8.key GROUP BY tab_n8.key) a
+join tab_n8 b on a.k1 = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.k1, a.v1, b.value
-from (select sum(substr(tab.value,5)) as v1, key as k1 from tab_part join tab on tab_part.key = tab.key GROUP BY tab.key) a
-join tab b on a.k1 = b.key
+from (select sum(substr(tab_n8.value,5)) as v1, key as k1 from tab_part_n9 join tab_n8 on tab_part_n9.key = tab_n8.key GROUP BY tab_n8.key) a
+join tab_n8 b on a.k1 = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2518,7 +2518,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n9
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2566,11 +2566,11 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col1, _col2
-                Statistics: Num rows: 391 Data size: 37145 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 399 Data size: 37905 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: int), substr(_col2, 5) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 391 Data size: 37145 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 399 Data size: 37905 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: sum(_col1)
                     keys: _col0 (type: int)
@@ -2611,13 +2611,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.k1, a.v1, b.value
-from (select sum(substr(tab.value,5)) as v1, key as k1 from tab_part join tab on tab_part.key = tab.key GROUP BY tab.key) a
-     join tab b on a.k1 = b.key
+from (select sum(substr(tab_n8.value,5)) as v1, key as k1 from tab_part_n9 join tab_n8 on tab_part_n9.key = tab_n8.key GROUP BY tab_n8.key) a
+     join tab_n8 b on a.k1 = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.k1, a.v1, b.value
-from (select sum(substr(tab.value,5)) as v1, key as k1 from tab_part join tab on tab_part.key = tab.key GROUP BY tab.key) a
-     join tab b on a.k1 = b.key
+from (select sum(substr(tab_n8.value,5)) as v1, key as k1 from tab_part_n9 join tab_n8 on tab_part_n9.key = tab_n8.key GROUP BY tab_n8.key) a
+     join tab_n8 b on a.k1 = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2671,7 +2671,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n9
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2690,7 +2690,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tab
+                  alias: tab_n8
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2708,11 +2708,11 @@ STAGE PLANS:
                         outputColumnNames: _col1, _col2
                         input vertices:
                           0 Map 2
-                        Statistics: Num rows: 391 Data size: 37145 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 399 Data size: 37905 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col1 (type: int), substr(_col2, 5) (type: string)
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 391 Data size: 37145 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 399 Data size: 37905 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(_col1)
                             keys: _col0 (type: int)
@@ -2755,13 +2755,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.k1, a.v1, b.value
-from (select sum(substr(x.value,5)) as v1, x.key as k1 from tab x join tab y on x.key = y.key GROUP BY x.key) a
-join tab_part b on a.k1 = b.key
+from (select sum(substr(x.value,5)) as v1, x.key as k1 from tab_n8 x join tab_n8 y on x.key = y.key GROUP BY x.key) a
+join tab_part_n9 b on a.k1 = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.k1, a.v1, b.value
-from (select sum(substr(x.value,5)) as v1, x.key as k1 from tab x join tab y on x.key = y.key GROUP BY x.key) a
-join tab_part b on a.k1 = b.key
+from (select sum(substr(x.value,5)) as v1, x.key as k1 from tab_n8 x join tab_n8 y on x.key = y.key GROUP BY x.key) a
+join tab_part_n9 b on a.k1 = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2866,14 +2866,14 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col1 (type: int)
                 outputColumnNames: _col1, _col2, _col3
-                Statistics: Num rows: 247 Data size: 25441 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 252 Data size: 25956 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col3 (type: int), _col2 (type: double), _col1 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 247 Data size: 25441 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 252 Data size: 25956 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 247 Data size: 25441 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 252 Data size: 25956 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2906,13 +2906,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.k1, a.v1, b.value
-from (select sum(substr(x.value,5)) as v1, x.key as k1 from tab x join tab y on x.key = y.key GROUP BY x.key) a
-     join tab_part b on a.k1 = b.key
+from (select sum(substr(x.value,5)) as v1, x.key as k1 from tab_n8 x join tab_n8 y on x.key = y.key GROUP BY x.key) a
+     join tab_part_n9 b on a.k1 = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.k1, a.v1, b.value
-from (select sum(substr(x.value,5)) as v1, x.key as k1 from tab x join tab y on x.key = y.key GROUP BY x.key) a
-     join tab_part b on a.k1 = b.key
+from (select sum(substr(x.value,5)) as v1, x.key as k1 from tab_n8 x join tab_n8 y on x.key = y.key GROUP BY x.key) a
+     join tab_part_n9 b on a.k1 = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2949,14 +2949,14 @@ STAGE PLANS:
                         outputColumnNames: _col1, _col2, _col3
                         input vertices:
                           1 Reducer 3
-                        Statistics: Num rows: 247 Data size: 25441 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 252 Data size: 25956 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col3 (type: int), _col2 (type: double), _col1 (type: string)
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 247 Data size: 25441 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 252 Data size: 25956 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 247 Data size: 25441 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 252 Data size: 25956 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3050,11 +3050,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from tab_part a join tab b on a.key = b.key join tab c on a.key = c.key
+from tab_part_n9 a join tab_n8 b on a.key = b.key join tab_n8 c on a.key = c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from tab_part a join tab b on a.key = b.key join tab c on a.key = c.key
+from tab_part_n9 a join tab_n8 b on a.key = b.key join tab_n8 c on a.key = c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3139,14 +3139,14 @@ STAGE PLANS:
                   1 _col0 (type: int)
                   2 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col4
-                Statistics: Num rows: 619 Data size: 115134 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 631 Data size: 117366 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col4 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 619 Data size: 115134 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 631 Data size: 117366 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 619 Data size: 115134 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 631 Data size: 117366 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3160,11 +3160,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from tab_part a join tab b on a.key = b.key join tab c on a.key = c.key
+from tab_part_n9 a join tab_n8 b on a.key = b.key join tab_n8 c on a.key = c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from tab_part a join tab b on a.key = b.key join tab c on a.key = c.key
+from tab_part_n9 a join tab_n8 b on a.key = b.key join tab_n8 c on a.key = c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3202,14 +3202,14 @@ STAGE PLANS:
                         input vertices:
                           1 Map 2
                           2 Map 3
-                        Statistics: Num rows: 619 Data size: 115134 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 631 Data size: 117366 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: string), _col4 (type: string)
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 619 Data size: 115134 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 631 Data size: 117366 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 619 Data size: 115134 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 631 Data size: 117366 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3264,11 +3264,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.key, a.value, c.value
-from (select x.key, x.value from tab_part x join tab y on x.key = y.key) a join tab c on a.key = c.key
+from (select x.key, x.value from tab_part_n9 x join tab_n8 y on x.key = y.key) a join tab_n8 c on a.key = c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, c.value
-from (select x.key, x.value from tab_part x join tab y on x.key = y.key) a join tab c on a.key = c.key
+from (select x.key, x.value from tab_part_n9 x join tab_n8 y on x.key = y.key) a join tab_n8 c on a.key = c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3304,12 +3304,12 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 391 Data size: 37145 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 399 Data size: 37905 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 391 Data size: 37145 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 399 Data size: 37905 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -3362,14 +3362,14 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col3
-                Statistics: Num rows: 618 Data size: 114948 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 631 Data size: 117366 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 618 Data size: 114948 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 631 Data size: 117366 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 618 Data size: 114948 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 631 Data size: 117366 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3383,11 +3383,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.key, a.value, c.value
-from (select x.key, x.value from tab_part x join tab y on x.key = y.key) a join tab c on a.key = c.key
+from (select x.key, x.value from tab_part_n9 x join tab_n8 y on x.key = y.key) a join tab_n8 c on a.key = c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, c.value
-from (select x.key, x.value from tab_part x join tab y on x.key = y.key) a join tab c on a.key = c.key
+from (select x.key, x.value from tab_part_n9 x join tab_n8 y on x.key = y.key) a join tab_n8 c on a.key = c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3422,7 +3422,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 391 Data size: 37145 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 399 Data size: 37905 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
@@ -3432,14 +3432,14 @@ STAGE PLANS:
                           outputColumnNames: _col0, _col1, _col3
                           input vertices:
                             1 Map 3
-                          Statistics: Num rows: 618 Data size: 114948 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 631 Data size: 117366 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
                             expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                             outputColumnNames: _col0, _col1, _col2
-                            Statistics: Num rows: 618 Data size: 114948 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 631 Data size: 117366 Basic stats: COMPLETE Column stats: COMPLETE
                             File Output Operator
                               compressed: false
-                              Statistics: Num rows: 618 Data size: 114948 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 631 Data size: 117366 Basic stats: COMPLETE Column stats: COMPLETE
                               table:
                                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3494,13 +3494,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from (select key, sum(substr(srcbucket_mapjoin.value,5)) as value from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
-join tab_part b on a.key = b.key
+from (select key, sum(substr(srcbucket_mapjoin_n14.value,5)) as value from srcbucket_mapjoin_n14 GROUP BY srcbucket_mapjoin_n14.key) a
+join tab_part_n9 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from (select key, sum(substr(srcbucket_mapjoin.value,5)) as value from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
-join tab_part b on a.key = b.key
+from (select key, sum(substr(srcbucket_mapjoin_n14.value,5)) as value from srcbucket_mapjoin_n14 GROUP BY srcbucket_mapjoin_n14.key) a
+join tab_part_n9 b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3518,7 +3518,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin
+                  alias: srcbucket_mapjoin_n14
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -3586,14 +3586,14 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col3
-                Statistics: Num rows: 195 Data size: 20085 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 199 Data size: 20497 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: double), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 195 Data size: 20085 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 199 Data size: 20497 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 195 Data size: 20085 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 199 Data size: 20497 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3607,13 +3607,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from (select key, sum(substr(srcbucket_mapjoin.value,5)) as value from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
-     join tab_part b on a.key = b.key
+from (select key, sum(substr(srcbucket_mapjoin_n14.value,5)) as value from srcbucket_mapjoin_n14 GROUP BY srcbucket_mapjoin_n14.key) a
+     join tab_part_n9 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from (select key, sum(substr(srcbucket_mapjoin.value,5)) as value from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
-     join tab_part b on a.key = b.key
+from (select key, sum(substr(srcbucket_mapjoin_n14.value,5)) as value from srcbucket_mapjoin_n14 GROUP BY srcbucket_mapjoin_n14.key) a
+     join tab_part_n9 b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3631,7 +3631,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin
+                  alias: srcbucket_mapjoin_n14
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -3675,14 +3675,14 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col3
                         input vertices:
                           0 Reducer 2
-                        Statistics: Num rows: 195 Data size: 20085 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 199 Data size: 20497 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: double), _col3 (type: string)
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 195 Data size: 20085 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 199 Data size: 20497 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 195 Data size: 20085 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 199 Data size: 20497 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3713,13 +3713,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from (select key, sum(substr(srcbucket_mapjoin.value,5)) as value from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
-join tab_part b on a.key = b.key
+from (select key, sum(substr(srcbucket_mapjoin_n14.value,5)) as value from srcbucket_mapjoin_n14 GROUP BY srcbucket_mapjoin_n14.key) a
+join tab_part_n9 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from (select key, sum(substr(srcbucket_mapjoin.value,5)) as value from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
-join tab_part b on a.key = b.key
+from (select key, sum(substr(srcbucket_mapjoin_n14.value,5)) as value from srcbucket_mapjoin_n14 GROUP BY srcbucket_mapjoin_n14.key) a
+join tab_part_n9 b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3737,7 +3737,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin
+                  alias: srcbucket_mapjoin_n14
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -3782,12 +3782,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: complete
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 153 Data size: 1836 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 146 Data size: 1752 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 153 Data size: 1836 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 146 Data size: 1752 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -3799,14 +3799,14 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col3
-                Statistics: Num rows: 247 Data size: 25441 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 240 Data size: 24720 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: double), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 247 Data size: 25441 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 240 Data size: 24720 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 247 Data size: 25441 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 240 Data size: 24720 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3820,13 +3820,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from (select key, sum(substr(srcbucket_mapjoin.value,5)) as value from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
-     join tab_part b on a.key = b.key
+from (select key, sum(substr(srcbucket_mapjoin_n14.value,5)) as value from srcbucket_mapjoin_n14 GROUP BY srcbucket_mapjoin_n14.key) a
+     join tab_part_n9 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from (select key, sum(substr(srcbucket_mapjoin.value,5)) as value from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
-     join tab_part b on a.key = b.key
+from (select key, sum(substr(srcbucket_mapjoin_n14.value,5)) as value from srcbucket_mapjoin_n14 GROUP BY srcbucket_mapjoin_n14.key) a
+     join tab_part_n9 b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3844,7 +3844,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin
+                  alias: srcbucket_mapjoin_n14
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -3882,14 +3882,14 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col3
                         input vertices:
                           0 Reducer 2
-                        Statistics: Num rows: 247 Data size: 25441 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 240 Data size: 24720 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: double), _col3 (type: string)
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 247 Data size: 25441 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 240 Data size: 24720 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 247 Data size: 25441 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 240 Data size: 24720 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3904,12 +3904,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: complete
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 153 Data size: 1836 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 146 Data size: 1752 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 153 Data size: 1836 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 146 Data size: 1752 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: double)
 
   Stage: Stage-0
@@ -3920,11 +3920,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from tab a join tab_part b on a.value = b.value
+from tab_n8 a join tab_part_n9 b on a.value = b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from tab a join tab_part b on a.value = b.value
+from tab_n8 a join tab_part_n9 b on a.value = b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3987,10 +3987,10 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4004,11 +4004,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from tab a join tab_part b on a.value = b.value
+from tab_n8 a join tab_part_n9 b on a.value = b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from tab a join tab_part b on a.value = b.value
+from tab_n8 a join tab_part_n9 b on a.value = b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4071,10 +4071,10 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4086,35 +4086,35 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: CREATE TABLE tab1(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE tab1_n4(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab1
-POSTHOOK: query: CREATE TABLE tab1(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab1_n4
+POSTHOOK: query: CREATE TABLE tab1_n4(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab1
-PREHOOK: query: insert overwrite table tab1
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab1_n4
+PREHOOK: query: insert overwrite table tab1_n4
+select key,value from srcbucket_mapjoin_n14
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab1
-POSTHOOK: query: insert overwrite table tab1
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n14
+PREHOOK: Input: default@srcbucket_mapjoin_n14@ds=2008-04-08
+PREHOOK: Output: default@tab1_n4
+POSTHOOK: query: insert overwrite table tab1_n4
+select key,value from srcbucket_mapjoin_n14
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab1
-POSTHOOK: Lineage: tab1.key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab1.value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Input: default@srcbucket_mapjoin_n14
+POSTHOOK: Input: default@srcbucket_mapjoin_n14@ds=2008-04-08
+POSTHOOK: Output: default@tab1_n4
+POSTHOOK: Lineage: tab1_n4.key SIMPLE [(srcbucket_mapjoin_n14)srcbucket_mapjoin_n14.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab1_n4.value SIMPLE [(srcbucket_mapjoin_n14)srcbucket_mapjoin_n14.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from tab1 a join tab_part b on a.key = b.key
+from tab1_n4 a join tab_part_n9 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from tab1 a join tab_part b on a.key = b.key
+from tab1_n4 a join tab_part_n9 b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4178,14 +4178,14 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col3
-                Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4199,11 +4199,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from tab1 a join tab_part b on a.key = b.key
+from tab1_n4 a join tab_part_n9 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from tab1 a join tab_part b on a.key = b.key
+from tab1_n4 a join tab_part_n9 b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4258,14 +4258,14 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col3
                         input vertices:
                           0 Map 1
-                        Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4279,9 +4279,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value
+PREHOOK: query: explain select a.key, b.key from tab_part_n9 a join tab_part_n9 c on a.key = c.key join tab_part_n9 b on a.value = b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value
+POSTHOOK: query: explain select a.key, b.key from tab_part_n9 a join tab_part_n9 c on a.key = c.key join tab_part_n9 b on a.value = b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4292,8 +4292,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE), Map 4 (BROADCAST_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -4308,44 +4307,15 @@ STAGE PLANS:
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: int)
-                          1 _col0 (type: int)
-                        outputColumnNames: _col0, _col1
-                        input vertices:
-                          1 Map 3
-                        Statistics: Num rows: 809 Data size: 76855 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          key expressions: _col1 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col1 (type: string)
-                          Statistics: Num rows: 809 Data size: 76855 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col0 (type: int)
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+                        Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: c
-                  Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -4363,6 +4333,25 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -4374,19 +4363,29 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: string)
                   1 _col1 (type: string)
-                outputColumnNames: _col0, _col3
-                Statistics: Num rows: 1309 Data size: 10472 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col0 (type: int), _col3 (type: int)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1309 Data size: 10472 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 1309 Data size: 10472 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                outputColumnNames: _col0, _col2
+                Statistics: Num rows: 814 Data size: 6512 Basic stats: COMPLETE Column stats: COMPLETE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  outputColumnNames: _col0, _col2
+                  input vertices:
+                    1 Map 4
+                  Statistics: Num rows: 1343 Data size: 10744 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: int), _col2 (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1343 Data size: 10744 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1343 Data size: 10744 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -4394,9 +4393,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value
+PREHOOK: query: explain select a.key, b.key from tab_part_n9 a join tab_part_n9 c on a.key = c.key join tab_part_n9 b on a.value = b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value
+POSTHOOK: query: explain select a.key, b.key from tab_part_n9 a join tab_part_n9 c on a.key = c.key join tab_part_n9 b on a.value = b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4407,7 +4406,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 2 (CUSTOM_EDGE), Map 3 (CUSTOM_EDGE)
+        Map 1 <- Map 2 (CUSTOM_EDGE), Map 3 (BROADCAST_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -4426,29 +4425,29 @@ STAGE PLANS:
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 _col0 (type: int)
-                          1 _col0 (type: int)
-                        outputColumnNames: _col0, _col1
+                          0 _col1 (type: string)
+                          1 _col1 (type: string)
+                        outputColumnNames: _col0, _col2
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 809 Data size: 76855 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 814 Data size: 6512 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
                           keys:
-                            0 _col1 (type: string)
-                            1 _col1 (type: string)
-                          outputColumnNames: _col0, _col3
+                            0 _col0 (type: int)
+                            1 _col0 (type: int)
+                          outputColumnNames: _col0, _col2
                           input vertices:
                             1 Map 3
-                          Statistics: Num rows: 1309 Data size: 10472 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1343 Data size: 10744 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
-                            expressions: _col0 (type: int), _col3 (type: int)
+                            expressions: _col0 (type: int), _col2 (type: int)
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 1309 Data size: 10472 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1343 Data size: 10744 Basic stats: COMPLETE Column stats: COMPLETE
                             File Output Operator
                               compressed: false
-                              Statistics: Num rows: 1309 Data size: 10472 Basic stats: COMPLETE Column stats: COMPLETE
+                              Statistics: Num rows: 1343 Data size: 10744 Basic stats: COMPLETE Column stats: COMPLETE
                               table:
                                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4456,25 +4455,6 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: c
-                  Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -4494,6 +4474,25 @@ STAGE PLANS:
                         value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -4503,11 +4502,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key and a.ds = b.ds
+from tab_n8 a join tab_part_n9 b on a.key = b.key and a.ds = b.ds
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key and a.ds = b.ds
+from tab_n8 a join tab_part_n9 b on a.key = b.key and a.ds = b.ds
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4586,14 +4585,14 @@ STAGE PLANS:
                   0 _col0 (type: int), _col2 (type: string)
                   1 _col0 (type: int), _col2 (type: string)
                 outputColumnNames: _col0, _col1, _col4
-                Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col4 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4607,11 +4606,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key and a.ds = b.ds
+from tab_n8 a join tab_part_n9 b on a.key = b.key and a.ds = b.ds
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key and a.ds = b.ds
+from tab_n8 a join tab_part_n9 b on a.key = b.key and a.ds = b.ds
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4690,14 +4689,14 @@ STAGE PLANS:
                   0 _col0 (type: int), _col2 (type: string)
                   1 _col0 (type: int), _col2 (type: string)
                 outputColumnNames: _col0, _col1, _col4
-                Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col4 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 399 Data size: 74214 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4710,10 +4709,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select a.key, a.value, b.value
-        from tab a join tab_part b on a.key = b.key and a.value = b.value
+        from tab_n8 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key, a.value, b.value
-        from tab a join tab_part b on a.key = b.key and a.value = b.value
+        from tab_n8 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4775,14 +4774,14 @@ STAGE PLANS:
                   0 _col0 (type: int), _col1 (type: string)
                   1 _col0 (type: int), _col1 (type: string)
                 outputColumnNames: _col0, _col1, _col3
-                Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4795,23 +4794,23 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key and a.value = b.value
+from tab_n8 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 order by a.key, a.value, b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+PREHOOK: Input: default@tab_n8
+PREHOOK: Input: default@tab_n8@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n9
+PREHOOK: Input: default@tab_part_n9@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key and a.value = b.value
+from tab_n8 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 order by a.key, a.value, b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Input: default@tab_n8
+POSTHOOK: Input: default@tab_n8@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n9
+POSTHOOK: Input: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	val_0
 0	val_0	val_0
 0	val_0	val_0
@@ -5293,10 +5292,10 @@ POSTHOOK: Input: default@tab_part@ds=2008-04-08
 495	val_495	val_495
 497	val_497	val_497
 PREHOOK: query: explain select a.key, a.value, b.value
-        from tab a join tab_part b on a.key = b.key and a.value = b.value
+        from tab_n8 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key, a.value, b.value
-        from tab a join tab_part b on a.key = b.key and a.value = b.value
+        from tab_n8 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5350,14 +5349,14 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col3
                         input vertices:
                           0 Map 1
-                        Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5372,23 +5371,23 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key and a.value = b.value
+from tab_n8 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 order by a.key, a.value, b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+PREHOOK: Input: default@tab_n8
+PREHOOK: Input: default@tab_n8@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n9
+PREHOOK: Input: default@tab_part_n9@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key and a.value = b.value
+from tab_n8 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 order by a.key, a.value, b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Input: default@tab_n8
+POSTHOOK: Input: default@tab_n8@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n9
+POSTHOOK: Input: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	val_0
 0	val_0	val_0
 0	val_0	val_0
@@ -5869,47 +5868,47 @@ POSTHOOK: Input: default@tab_part@ds=2008-04-08
 493	val_493	val_493
 495	val_495	val_495
 497	val_497	val_497
-PREHOOK: query: CREATE TABLE tab2(key int, value string) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE tab2_n4(key int, value string) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab2
-POSTHOOK: query: CREATE TABLE tab2(key int, value string) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@tab2_n4
+POSTHOOK: query: CREATE TABLE tab2_n4(key int, value string) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab2
-PREHOOK: query: insert overwrite table tab2 partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab2_n4
+PREHOOK: query: insert overwrite table tab2_n4 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n14
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab2@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab2 partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n14
+PREHOOK: Input: default@srcbucket_mapjoin_n14@ds=2008-04-08
+PREHOOK: Output: default@tab2_n4@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab2_n4 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n14
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab2@ds=2008-04-08
-POSTHOOK: Lineage: tab2 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab2 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: analyze table tab2 compute statistics for columns
+POSTHOOK: Input: default@srcbucket_mapjoin_n14
+POSTHOOK: Input: default@srcbucket_mapjoin_n14@ds=2008-04-08
+POSTHOOK: Output: default@tab2_n4@ds=2008-04-08
+POSTHOOK: Lineage: tab2_n4 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n14)srcbucket_mapjoin_n14.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab2_n4 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n14)srcbucket_mapjoin_n14.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: analyze table tab2_n4 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@tab2
-PREHOOK: Input: default@tab2@ds=2008-04-08
-PREHOOK: Output: default@tab2
-PREHOOK: Output: default@tab2@ds=2008-04-08
-#### A masked pattern was here ####
-POSTHOOK: query: analyze table tab2 compute statistics for columns
+PREHOOK: Input: default@tab2_n4
+PREHOOK: Input: default@tab2_n4@ds=2008-04-08
+PREHOOK: Output: default@tab2_n4
+PREHOOK: Output: default@tab2_n4@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table tab2_n4 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@tab2
-POSTHOOK: Input: default@tab2@ds=2008-04-08
-POSTHOOK: Output: default@tab2
-POSTHOOK: Output: default@tab2@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Input: default@tab2_n4
+POSTHOOK: Input: default@tab2_n4@ds=2008-04-08
+POSTHOOK: Output: default@tab2_n4
+POSTHOOK: Output: default@tab2_n4@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select a.key, a.value, b.value
-        from tab2 a join tab_part b on a.key = b.key and a.value = b.value
+        from tab2_n4 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key, a.value, b.value
-        from tab2 a join tab_part b on a.key = b.key and a.value = b.value
+        from tab2_n4 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5971,14 +5970,14 @@ STAGE PLANS:
                   0 _col0 (type: int), _col1 (type: string)
                   1 _col0 (type: int), _col1 (type: string)
                 outputColumnNames: _col0, _col1, _col3
-                Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5991,23 +5990,23 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select a.key, a.value, b.value
-from tab2 a join tab_part b on a.key = b.key and a.value = b.value
+from tab2_n4 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 order by a.key, a.value, b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab2
-PREHOOK: Input: default@tab2@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+PREHOOK: Input: default@tab2_n4
+PREHOOK: Input: default@tab2_n4@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n9
+PREHOOK: Input: default@tab_part_n9@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select a.key, a.value, b.value
-from tab2 a join tab_part b on a.key = b.key and a.value = b.value
+from tab2_n4 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 order by a.key, a.value, b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab2
-POSTHOOK: Input: default@tab2@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Input: default@tab2_n4
+POSTHOOK: Input: default@tab2_n4@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n9
+POSTHOOK: Input: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	val_0
 0	val_0	val_0
 0	val_0	val_0
@@ -6489,10 +6488,10 @@ POSTHOOK: Input: default@tab_part@ds=2008-04-08
 495	val_495	val_495
 497	val_497	val_497
 PREHOOK: query: explain select a.key, a.value, b.value
-        from tab2 a join tab_part b on a.key = b.key and a.value = b.value
+        from tab2_n4 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key, a.value, b.value
-        from tab2 a join tab_part b on a.key = b.key and a.value = b.value
+        from tab2_n4 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6546,14 +6545,14 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col3
                         input vertices:
                           0 Map 1
-                        Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false
-                            Statistics: Num rows: 391 Data size: 72726 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 394 Data size: 73284 Basic stats: COMPLETE Column stats: COMPLETE
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -6568,23 +6567,23 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select a.key, a.value, b.value
-from tab2 a join tab_part b on a.key = b.key and a.value = b.value
+from tab2_n4 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 order by a.key, a.value, b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab2
-PREHOOK: Input: default@tab2@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+PREHOOK: Input: default@tab2_n4
+PREHOOK: Input: default@tab2_n4@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n9
+PREHOOK: Input: default@tab_part_n9@ds=2008-04-08
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select a.key, a.value, b.value
-from tab2 a join tab_part b on a.key = b.key and a.value = b.value
+from tab2_n4 a join tab_part_n9 b on a.key = b.key and a.value = b.value
 order by a.key, a.value, b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab2
-POSTHOOK: Input: default@tab2@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Input: default@tab2_n4
+POSTHOOK: Input: default@tab2_n4@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n9
+POSTHOOK: Input: default@tab_part_n9@ds=2008-04-08
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	val_0
 0	val_0	val_0
 0	val_0	val_0

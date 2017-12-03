@@ -129,7 +129,7 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
 max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -148,7 +148,7 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
 max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -253,7 +253,7 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
 max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -272,7 +272,7 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	307                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	6.812               	 	 	 	 	 	 	 	 	 	 
 max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -301,7 +301,7 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	10                  	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
 max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -320,7 +320,7 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	10                  	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	307                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	6.812               	 	 	 	 	 	 	 	 	 	 
 max_col_len         	7                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -349,7 +349,7 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	20                  	 	 	 	 	 	 	 	 	 	 
-distinct_count      	309                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	2.812               	 	 	 	 	 	 	 	 	 	 
 max_col_len         	3                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
@@ -368,7 +368,7 @@ data_type           	string
 min                 	                    	 	 	 	 	 	 	 	 	 	 
 max                 	                    	 	 	 	 	 	 	 	 	 	 
 num_nulls           	10                  	 	 	 	 	 	 	 	 	 	 
-distinct_count      	319                 	 	 	 	 	 	 	 	 	 	 
+distinct_count      	316                 	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	8.0                 	 	 	 	 	 	 	 	 	 	 
 max_col_len         	8                   	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 
