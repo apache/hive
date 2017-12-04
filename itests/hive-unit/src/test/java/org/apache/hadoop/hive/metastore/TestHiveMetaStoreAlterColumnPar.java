@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -100,7 +100,7 @@ public class TestHiveMetaStoreAlterColumnPar {
       // parameter value not changed to false in connection 2.  int to smallint throws exception
       try {
         stmt2.execute("alter table t1 change column c1 c1 smallint");
-        assertTrue("Exception not thrown", true);
+        fail("Exception not thrown");
       } catch (Exception e1) {
         assertTrue("Unexpected exception: " + e1.getMessage(), e1.getMessage().contains(
             "Unable to alter table. The following columns have types incompatible with the existing columns in their respective positions"));
@@ -109,7 +109,7 @@ public class TestHiveMetaStoreAlterColumnPar {
       // parameter value is still false in 1st connection.  The alter still goes through.
       stmt1.execute("alter table t1 change column c1 c1 smallint");
     } catch (Exception e2) {
-      assertTrue("Unexpected Exception: " + e2.getMessage(), true);
+      fail("Unexpected Exception: " + e2.getMessage());
     }
   }
 }
