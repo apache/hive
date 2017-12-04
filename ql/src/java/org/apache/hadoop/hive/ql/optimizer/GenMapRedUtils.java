@@ -1993,7 +1993,7 @@ public final class GenMapRedUtils {
 
         // Create the required temporary file in the HDFS location if the destination
         // path of the FileSinkOperator table is a blobstore path.
-        Path tmpDir = baseCtx.getTempDirForPath(fileSinkDesc.getDestPath(), true);
+        Path tmpDir = baseCtx.getTempDirForFinalJobPath(fileSinkDesc.getDestPath());
 
         // Change all the linked file sink descriptors
         if (fileSinkDesc.isLinkedFileSink()) {

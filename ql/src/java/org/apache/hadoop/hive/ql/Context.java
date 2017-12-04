@@ -509,19 +509,18 @@ public class Context {
    *
    * @return A path to the new temporary directory
    */
-  public Path getTempDirForPath(Path path, boolean isFinalJob) {
-    if (((BlobStorageUtils.isBlobStoragePath(conf, path) && !BlobStorageUtils.isBlobStorageAsScratchDir(
-            conf)) || isPathLocal(path))) {
-      if (!(isFinalJob && BlobStorageUtils.areOptimizationsEnabled(conf))) {
-        // For better write performance, we use HDFS for temporary data when object store is used.
-        // Note that the scratch directory configuration variable must use HDFS or any other non-blobstorage system
-        // to take advantage of this performance.
-        return getMRTmpPath();
-      }
+  public Path getTempDirForInterimJobPath(Path path) {
+    // For better write performance, we use HDFS for temporary data when object store is used.
+    // Note that the scratch directory configuration variable must use HDFS or any other
+    // non-blobstorage system to take advantage of this performance.
+    boolean isBlobstorageOptimized = BlobStorageUtils.isBlobStoragePath(conf, path)
+        && !BlobStorageUtils.isBlobStorageAsScratchDir(conf) && BlobStorageUtils.areOptimizationsEnabled(conf);
+
+    if (isPathLocal(path) || isBlobstorageOptimized) {
+      return getMRTmpPath();
     }
     return getExtTmpPathRelTo(path);
   }
-
 
   /**
    * Create a temporary directory depending of the path specified.
@@ -531,8 +530,8 @@ public class Context {
    * @param path Path used to verify the Filesystem to use for temporary directory
    * @return A path to the new temporary directory
    */
-  public Path getTempDirForPath(Path path) {
-    return getTempDirForPath(path, false);
+  public Path getTempDirForFinalJobPath(Path path) {
+    return getExtTmpPathRelTo(path);
   }
 
   /*
