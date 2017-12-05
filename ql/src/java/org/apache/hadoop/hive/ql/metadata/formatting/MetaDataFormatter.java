@@ -123,5 +123,8 @@ public interface MetaDataFormatter {
 
   public void showResourcePlans(DataOutputStream out, List<WMResourcePlan> resourcePlans)
       throws HiveException;
+
+  public void showErrors(DataOutputStream out, List<String> errors)
+      throws HiveException;
 }
 

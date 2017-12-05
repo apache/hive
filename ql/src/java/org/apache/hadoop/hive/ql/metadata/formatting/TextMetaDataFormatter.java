@@ -570,4 +570,14 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     }
   }
 
+  public void showErrors(DataOutputStream out, List<String> errors) throws HiveException {
+    try {
+      for (String error : errors) {
+        out.write(error.getBytes("UTF-8"));
+        out.write(terminator);
+      }
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
+  }
 }

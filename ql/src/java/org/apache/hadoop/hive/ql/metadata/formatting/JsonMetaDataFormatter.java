@@ -447,4 +447,23 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       }
     }
   }
+
+  @Override
+  public void showErrors(DataOutputStream out, List<String> errors) throws HiveException {
+    JsonGenerator generator = null;
+    try {
+      generator = new ObjectMapper().getJsonFactory().createJsonGenerator(out);
+      generator.writeStartArray();
+      for (String error : errors) {
+        generator.writeString(error);
+      }
+      generator.writeEndArray();
+    } catch (IOException e) {
+      throw new HiveException(e);
+    } finally {
+      if (generator != null) {
+        IOUtils.closeQuietly(generator);
+      }
+    }
+  }
 }

@@ -2412,7 +2412,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean validateResourcePlan(String name)
+  public List<String> validateResourcePlan(String name)
       throws NoSuchObjectException, InvalidObjectException, MetaException {
     return rawStore.validateResourcePlan(name);
   }

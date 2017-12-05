@@ -1790,7 +1790,7 @@ public interface IMetaStoreClient {
 
   WMFullResourcePlan getActiveResourcePlan() throws MetaException, TException;
 
-  boolean validateResourcePlan(String resourcePlanName)
+  List<String> validateResourcePlan(String resourcePlanName)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
   void createWMTrigger(WMTrigger trigger)

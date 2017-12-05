@@ -2685,11 +2685,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public boolean validateResourcePlan(String resourcePlanName)
+  public List<String> validateResourcePlan(String resourcePlanName)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMValidateResourcePlanRequest request = new WMValidateResourcePlanRequest();
     request.setResourcePlanName(resourcePlanName);
-    return client.validate_resource_plan(request).isIsValid();
+    return client.validate_resource_plan(request).getErrors();
   }
 
   @Override

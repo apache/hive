@@ -32,6 +32,7 @@ public class AlterResourcePlanDesc extends DDLDesc implements Serializable {
   private String rpName;
   private boolean validate;
   private boolean isEnableActivate;
+  private String resFile;
 
   public AlterResourcePlanDesc() {}
 
@@ -79,5 +80,18 @@ public class AlterResourcePlanDesc extends DDLDesc implements Serializable {
 
   public void setIsEnableActivate(boolean b) {
     this.isEnableActivate = b;
+  }
+
+  @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
+  public String getResFile() {
+    return resFile;
+  }
+
+  public void setResFile(String resFile) {
+    this.resFile = resFile;
+  }
+
+  public static String getSchema() {
+    return "error#string";
   }
 }

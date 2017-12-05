@@ -3581,10 +3581,10 @@ end
 
 class WMValidateResourcePlanResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  ISVALID = 1
+  ERRORS = 1
 
   FIELDS = {
-    ISVALID => {:type => ::Thrift::Types::BOOL, :name => 'isValid', :optional => true}
+    ERRORS => {:type => ::Thrift::Types::LIST, :name => 'errors', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

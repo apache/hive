@@ -982,8 +982,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           "Unexpected token in alter resource plan statement: " + child.getType());
       }
     }
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-        new AlterResourcePlanDesc(resourcePlan, rpName, validate, isEnableActive)), conf));
+    AlterResourcePlanDesc desc =
+        new AlterResourcePlanDesc(resourcePlan, rpName, validate, isEnableActive);
+    if (validate) {
+      ctx.setResFile(ctx.getLocalTmpPath());
+      desc.setResFile(ctx.getResFile().toString());
+    }
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
+    if (validate) {
+      setFetchTask(createFetchTask(AlterResourcePlanDesc.getSchema()));
+    }
   }
 
   private void analyzeDropResourcePlan(ASTNode ast) throws SemanticException {
