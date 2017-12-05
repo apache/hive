@@ -713,7 +713,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int alterResourcePlan(Hive db, AlterResourcePlanDesc desc) throws HiveException {
     if (desc.shouldValidate()) {
-      return db.validateResourcePlan(desc.getResourcePlanName()) ? 0 : 1;
+      List<String> errors = db.validateResourcePlan(desc.getResourcePlanName());
+      try (DataOutputStream out = getOutputStream(desc.getResFile())) {
+        formatter.showErrors(out, errors);
+      } catch (IOException e) {
+        throw new HiveException(e);
+      };
+      return 0;
     }
 
     WMResourcePlan resourcePlan = desc.getResourcePlan();

@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class WMValidateResourcePlanResponse implements org.apache.thrift.TBase<WMValidateResourcePlanResponse, WMValidateResourcePlanResponse._Fields>, java.io.Serializable, Cloneable, Comparable<WMValidateResourcePlanResponse> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("WMValidateResourcePlanResponse");
 
-  private static final org.apache.thrift.protocol.TField IS_VALID_FIELD_DESC = new org.apache.thrift.protocol.TField("isValid", org.apache.thrift.protocol.TType.BOOL, (short)1);
+  private static final org.apache.thrift.protocol.TField ERRORS_FIELD_DESC = new org.apache.thrift.protocol.TField("errors", org.apache.thrift.protocol.TType.LIST, (short)1);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -46,11 +46,11 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new WMValidateResourcePlanResponseTupleSchemeFactory());
   }
 
-  private boolean isValid; // optional
+  private List<String> errors; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    IS_VALID((short)1, "isValid");
+    ERRORS((short)1, "errors");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -65,8 +65,8 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // IS_VALID
-          return IS_VALID;
+        case 1: // ERRORS
+          return ERRORS;
         default:
           return null;
       }
@@ -107,14 +107,13 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final int __ISVALID_ISSET_ID = 0;
-  private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.IS_VALID};
+  private static final _Fields optionals[] = {_Fields.ERRORS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.IS_VALID, new org.apache.thrift.meta_data.FieldMetaData("isValid", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.ERRORS, new org.apache.thrift.meta_data.FieldMetaData("errors", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(WMValidateResourcePlanResponse.class, metaDataMap);
   }
@@ -126,8 +125,10 @@ import org.slf4j.LoggerFactory;
    * Performs a deep copy on <i>other</i>.
    */
   public WMValidateResourcePlanResponse(WMValidateResourcePlanResponse other) {
-    __isset_bitfield = other.__isset_bitfield;
-    this.isValid = other.isValid;
+    if (other.isSetErrors()) {
+      List<String> __this__errors = new ArrayList<String>(other.errors);
+      this.errors = __this__errors;
+    }
   }
 
   public WMValidateResourcePlanResponse deepCopy() {
@@ -136,39 +137,54 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
-    setIsValidIsSet(false);
-    this.isValid = false;
+    this.errors = null;
   }
 
-  public boolean isIsValid() {
-    return this.isValid;
+  public int getErrorsSize() {
+    return (this.errors == null) ? 0 : this.errors.size();
   }
 
-  public void setIsValid(boolean isValid) {
-    this.isValid = isValid;
-    setIsValidIsSet(true);
+  public java.util.Iterator<String> getErrorsIterator() {
+    return (this.errors == null) ? null : this.errors.iterator();
   }
 
-  public void unsetIsValid() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ISVALID_ISSET_ID);
+  public void addToErrors(String elem) {
+    if (this.errors == null) {
+      this.errors = new ArrayList<String>();
+    }
+    this.errors.add(elem);
   }
 
-  /** Returns true if field isValid is set (has been assigned a value) and false otherwise */
-  public boolean isSetIsValid() {
-    return EncodingUtils.testBit(__isset_bitfield, __ISVALID_ISSET_ID);
+  public List<String> getErrors() {
+    return this.errors;
   }
 
-  public void setIsValidIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISVALID_ISSET_ID, value);
+  public void setErrors(List<String> errors) {
+    this.errors = errors;
+  }
+
+  public void unsetErrors() {
+    this.errors = null;
+  }
+
+  /** Returns true if field errors is set (has been assigned a value) and false otherwise */
+  public boolean isSetErrors() {
+    return this.errors != null;
+  }
+
+  public void setErrorsIsSet(boolean value) {
+    if (!value) {
+      this.errors = null;
+    }
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case IS_VALID:
+    case ERRORS:
       if (value == null) {
-        unsetIsValid();
+        unsetErrors();
       } else {
-        setIsValid((Boolean)value);
+        setErrors((List<String>)value);
       }
       break;
 
@@ -177,8 +193,8 @@ import org.slf4j.LoggerFactory;
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case IS_VALID:
-      return isIsValid();
+    case ERRORS:
+      return getErrors();
 
     }
     throw new IllegalStateException();
@@ -191,8 +207,8 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
-    case IS_VALID:
-      return isSetIsValid();
+    case ERRORS:
+      return isSetErrors();
     }
     throw new IllegalStateException();
   }
@@ -210,12 +226,12 @@ import org.slf4j.LoggerFactory;
     if (that == null)
       return false;
 
-    boolean this_present_isValid = true && this.isSetIsValid();
-    boolean that_present_isValid = true && that.isSetIsValid();
-    if (this_present_isValid || that_present_isValid) {
-      if (!(this_present_isValid && that_present_isValid))
+    boolean this_present_errors = true && this.isSetErrors();
+    boolean that_present_errors = true && that.isSetErrors();
+    if (this_present_errors || that_present_errors) {
+      if (!(this_present_errors && that_present_errors))
         return false;
-      if (this.isValid != that.isValid)
+      if (!this.errors.equals(that.errors))
         return false;
     }
 
@@ -226,10 +242,10 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
-    boolean present_isValid = true && (isSetIsValid());
-    list.add(present_isValid);
-    if (present_isValid)
-      list.add(isValid);
+    boolean present_errors = true && (isSetErrors());
+    list.add(present_errors);
+    if (present_errors)
+      list.add(errors);
 
     return list.hashCode();
   }
@@ -242,12 +258,12 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
-    lastComparison = Boolean.valueOf(isSetIsValid()).compareTo(other.isSetIsValid());
+    lastComparison = Boolean.valueOf(isSetErrors()).compareTo(other.isSetErrors());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetIsValid()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isValid, other.isValid);
+    if (isSetErrors()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.errors, other.errors);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -272,9 +288,13 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("WMValidateResourcePlanResponse(");
     boolean first = true;
 
-    if (isSetIsValid()) {
-      sb.append("isValid:");
-      sb.append(this.isValid);
+    if (isSetErrors()) {
+      sb.append("errors:");
+      if (this.errors == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.errors);
+      }
       first = false;
     }
     sb.append(")");
@@ -296,8 +316,6 @@ import org.slf4j.LoggerFactory;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
-      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -322,10 +340,20 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // IS_VALID
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.isValid = iprot.readBool();
-              struct.setIsValidIsSet(true);
+          case 1: // ERRORS
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list778 = iprot.readListBegin();
+                struct.errors = new ArrayList<String>(_list778.size);
+                String _elem779;
+                for (int _i780 = 0; _i780 < _list778.size; ++_i780)
+                {
+                  _elem779 = iprot.readString();
+                  struct.errors.add(_elem779);
+                }
+                iprot.readListEnd();
+              }
+              struct.setErrorsIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -343,10 +371,19 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.isSetIsValid()) {
-        oprot.writeFieldBegin(IS_VALID_FIELD_DESC);
-        oprot.writeBool(struct.isValid);
-        oprot.writeFieldEnd();
+      if (struct.errors != null) {
+        if (struct.isSetErrors()) {
+          oprot.writeFieldBegin(ERRORS_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.errors.size()));
+            for (String _iter781 : struct.errors)
+            {
+              oprot.writeString(_iter781);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -366,12 +403,18 @@ import org.slf4j.LoggerFactory;
     public void write(org.apache.thrift.protocol.TProtocol prot, WMValidateResourcePlanResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
-      if (struct.isSetIsValid()) {
+      if (struct.isSetErrors()) {
         optionals.set(0);
       }
       oprot.writeBitSet(optionals, 1);
-      if (struct.isSetIsValid()) {
-        oprot.writeBool(struct.isValid);
+      if (struct.isSetErrors()) {
+        {
+          oprot.writeI32(struct.errors.size());
+          for (String _iter782 : struct.errors)
+          {
+            oprot.writeString(_iter782);
+          }
+        }
       }
     }
 
@@ -380,8 +423,17 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
-        struct.isValid = iprot.readBool();
-        struct.setIsValidIsSet(true);
+        {
+          org.apache.thrift.protocol.TList _list783 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.errors = new ArrayList<String>(_list783.size);
+          String _elem784;
+          for (int _i785 = 0; _i785 < _list783.size; ++_i785)
+          {
+            _elem784 = iprot.readString();
+            struct.errors.add(_elem784);
+          }
+        }
+        struct.setErrorsIsSet(true);
       }
     }
   }

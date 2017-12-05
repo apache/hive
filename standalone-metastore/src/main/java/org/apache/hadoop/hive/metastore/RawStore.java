@@ -767,7 +767,7 @@ public interface RawStore extends Configurable {
 
   WMFullResourcePlan getActiveResourcePlan() throws MetaException;
 
-  boolean validateResourcePlan(String name)
+  List<String> validateResourcePlan(String name)
       throws NoSuchObjectException, InvalidObjectException, MetaException;
 
   void dropResourcePlan(String name) throws NoSuchObjectException, MetaException;

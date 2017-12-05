@@ -1008,10 +1008,10 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public WMFullResourcePlan getActiveResourcePlan() throws MetaException {
     return objectStore.getActiveResourcePlan();
-  } 
+  }
 
   @Override
-  public boolean validateResourcePlan(String name)
+  public List<String> validateResourcePlan(String name)
       throws NoSuchObjectException, InvalidObjectException, MetaException {
     return objectStore.validateResourcePlan(name);
   }

@@ -9799,8 +9799,8 @@ public class ObjectStore implements RawStore, Configurable {
     if (doValidate) {
       // Note: this may use additional inputs from the caller, e.g. maximum query
       // parallelism in the cluster based on physical constraints.
-      String planErrors = getResourcePlanErrors(mResourcePlan);
-      if (planErrors != null) {
+      List<String> planErrors = getResourcePlanErrors(mResourcePlan);
+      if (!planErrors.isEmpty()) {
         throw new InvalidOperationException(
             "ResourcePlan: " + name + " is invalid: " + planErrors);
       }
@@ -9834,12 +9834,74 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private String getResourcePlanErrors(MWMResourcePlan mResourcePlan) {
-    return null;
+  private static class PoolData {
+    int queryParallelism = 0;
+    int totalChildrenQueryParallelism = 0;
+    double totalChildrenAllocFraction = 0;
+    boolean found = false;
+    boolean hasChildren = false;
+  }
+
+  private PoolData getPoolData(Map<String, PoolData> poolInfo, String poolPath) {
+    PoolData poolData = poolInfo.get(poolPath);
+    if (poolData == null) {
+      poolData = new PoolData();
+      poolInfo.put(poolPath, poolData);
+    }
+    return poolData;
+  }
+
+  private List<String> getResourcePlanErrors(MWMResourcePlan mResourcePlan) {
+    List<String> errors = new ArrayList<>();
+    if (mResourcePlan.getQueryParallelism() != null && mResourcePlan.getQueryParallelism() < 1) {
+      errors.add("Query parallelism should for resource plan be positive. Got: " +
+        mResourcePlan.getQueryParallelism());
+    }
+    Map<String, PoolData> poolInfo = new HashMap<>();
+    for (MWMPool pool : mResourcePlan.getPools()) {
+      PoolData currentPoolData = getPoolData(poolInfo, pool.getPath());
+      currentPoolData.found = true;
+      String parent = getParentPath(pool.getPath(), "");
+      PoolData parentPoolData = getPoolData(poolInfo, parent);
+      parentPoolData.hasChildren = true;
+      parentPoolData.totalChildrenAllocFraction += pool.getAllocFraction();
+      if (pool.getQueryParallelism() != null && pool.getQueryParallelism() < 1) {
+        errors.add("Invalid query parallelism for pool: " + pool.getPath());
+      } else {
+        currentPoolData.queryParallelism = pool.getQueryParallelism();
+        parentPoolData.totalChildrenQueryParallelism += pool.getQueryParallelism();
+      }
+      // Check for valid pool.getSchedulingPolicy();
+    }
+    for (Entry<String, PoolData> entry : poolInfo.entrySet()) {
+      PoolData poolData = entry.getValue();
+      // Special case for root parent
+      if (entry.getKey().equals("")) {
+        poolData.found = true;
+        poolData.queryParallelism = mResourcePlan.getQueryParallelism() == null ?
+            poolData.totalChildrenQueryParallelism : mResourcePlan.getQueryParallelism();
+      }
+      if (!poolData.found) {
+        errors.add("Pool does not exists but has children: " + entry.getKey());
+      }
+      if (poolData.hasChildren) {
+        if (Math.abs(1.0 - poolData.totalChildrenAllocFraction) > 0.001) {
+          errors.add("Sum of children pools' alloc fraction should be equal 1.0 got: " +
+              poolData.totalChildrenAllocFraction + " for pool: " + entry.getKey());
+        }
+        if (poolData.queryParallelism != poolData.totalChildrenQueryParallelism) {
+          errors.add("Sum of children pools' query parallelism: " +
+              poolData.totalChildrenQueryParallelism + " is not equal to pool parallelism: " +
+              poolData.queryParallelism + " for pool: " + entry.getKey());
+        }
+      }
+    }
+    // TODO: validate trigger and action expressions. mResourcePlan.getTriggers()
+    return errors;
   }
 
   @Override
-  public boolean validateResourcePlan(String name)
+  public List<String> validateResourcePlan(String name)
       throws NoSuchObjectException, InvalidObjectException, MetaException {
     name = normalizeIdentifier(name);
     Query query = null;
@@ -9852,7 +9914,7 @@ public class ObjectStore implements RawStore, Configurable {
         throw new NoSuchObjectException("Cannot find resourcePlan: " + name);
       }
       // Validate resource plan.
-      return getResourcePlanErrors(mResourcePlan) == null; // TODO: propagate errors?
+      return getResourcePlanErrors(mResourcePlan);
     } finally {
       rollbackAndCleanup(true, query);
     }
@@ -10107,12 +10169,19 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private boolean poolParentExists(MWMResourcePlan resourcePlan, String poolPath) {
+  private String getParentPath(String poolPath, String defValue) {
     int idx = poolPath.lastIndexOf('.');
     if (idx == -1) {
+      return defValue;
+    }
+    return poolPath.substring(0, idx);
+  }
+
+  private boolean poolParentExists(MWMResourcePlan resourcePlan, String poolPath) {
+    String parent = getParentPath(poolPath, null);
+    if (parent == null) {
       return true;
     }
-    String parent = poolPath.substring(0, idx);
     try {
       getPool(resourcePlan, parent);
       return true;

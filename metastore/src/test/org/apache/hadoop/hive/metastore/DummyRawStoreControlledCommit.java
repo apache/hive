@@ -972,7 +972,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public boolean validateResourcePlan(String name)
+  public List<String> validateResourcePlan(String name)
       throws NoSuchObjectException, InvalidObjectException, MetaException {
     return objectStore.validateResourcePlan(name);
   }
