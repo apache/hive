@@ -167,7 +167,7 @@ public class Statistics implements Serializable {
   }
 
   @Override
-  public Statistics clone() throws CloneNotSupportedException {
+  public Statistics clone() {
     Statistics clone = new Statistics(numRows, dataSize);
     clone.setRunTimeNumRows(runTimeNumRows);
     clone.setBasicStatsState(basicStatsState);
@@ -302,12 +302,7 @@ public class Statistics implements Serializable {
 
   public Statistics scaleToRowCount(long newRowCount) {
     Statistics ret;
-    try {
-      ret = clone();
-    } catch (CloneNotSupportedException e) {
-      // FIXME: remove the Colneable usage 
-      return new Statistics(0,0);
-    }
+    ret = clone();
     if(numRows == 0 || newRowCount >= numRows) {
       return ret;
     }

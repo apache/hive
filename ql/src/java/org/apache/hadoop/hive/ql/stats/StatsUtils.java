@@ -1556,11 +1556,7 @@ public class StatsUtils {
 
     for (ColStatistics parentColStat : parentStats.getColumnStats()) {
       ColStatistics colStat;
-      try {
-        colStat = parentColStat.clone();
-      } catch (CloneNotSupportedException e) {
-        colStat = null;
-      }
+      colStat = parentColStat.clone();
       if (colStat != null) {
         cs.add(colStat);
       }
@@ -1604,11 +1600,7 @@ public class StatsUtils {
         ColStatistics colStats = parentStats.getColumnStatisticsFromColName(colName);
         if (colStats != null) {
           /* If statistics for the column already exist use it. */
-          try {
             return colStats.clone();
-          } catch (CloneNotSupportedException e) {
-            return null;
-          }
         }
 
         // virtual columns
@@ -1619,11 +1611,7 @@ public class StatsUtils {
         // clone the column stats and return
         ColStatistics result = parentStats.getColumnStatisticsFromColName(colName);
         if (result != null) {
-          try {
             return result.clone();
-          } catch (CloneNotSupportedException e) {
-            return null;
-          }
         }
         return null;
       }
@@ -1651,12 +1639,7 @@ public class StatsUtils {
         ColStatistics stats = parentStats.getColumnStatisticsFromColName(engfd.getCols().get(0));
         if (stats != null) {
           ColStatistics newStats;
-          try {
-            newStats = stats.clone();
-          } catch (CloneNotSupportedException e) {
-            LOG.warn("error cloning stats, this should not happen");
-            return null;
-          }
+          newStats = stats.clone();
           newStats.setColumnName(colName);
           colType = colType.toLowerCase();
           newStats.setColumnType(colType);

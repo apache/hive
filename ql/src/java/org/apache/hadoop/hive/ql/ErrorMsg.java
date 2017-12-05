@@ -527,8 +527,6 @@ public enum ErrorMsg {
   COLUMNSTATSCOLLECTOR_INVALID_COLUMN(30012, "Column statistics are not supported "
       + "for partition columns"),
 
-  STATISTICS_CLONING_FAILED(30013, "Cloning of statistics failed"),
-
   STATSAGGREGATOR_SOURCETASK_NULL(30014, "SourceTask of StatsTask should not be null"),
   STATSAGGREGATOR_CONNECTION_ERROR(30015,
       "Stats aggregator of type {0} cannot be connected to", true),
