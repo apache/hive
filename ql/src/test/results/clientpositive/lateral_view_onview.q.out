@@ -231,17 +231,17 @@ STAGE PLANS:
                         Statistics: Num rows: 1000 Data size: 56000 Basic stats: COMPLETE Column stats: COMPLETE
                         Lateral View Join Operator
                           outputColumnNames: _col4, _col5
-                          Statistics: Num rows: 2000 Data size: 56000 Basic stats: PARTIAL Column stats: COMPLETE
+                          Statistics: Num rows: 2000 Data size: 648000 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
                             expressions: _col4 (type: int), _col5 (type: string)
                             outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 2000 Data size: 56000 Basic stats: PARTIAL Column stats: COMPLETE
+                            Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
                             Limit
                               Number of rows: 9
-                              Statistics: Num rows: 9 Data size: 252 Basic stats: PARTIAL Column stats: COMPLETE
+                              Statistics: Num rows: 9 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                               File Output Operator
                                 compressed: false
-                                Statistics: Num rows: 9 Data size: 252 Basic stats: PARTIAL Column stats: COMPLETE
+                                Statistics: Num rows: 9 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                                 table:
                                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -249,23 +249,23 @@ STAGE PLANS:
                       Select Operator
                         expressions: array('a','b','c') (type: array<string>)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1000 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        Statistics: Num rows: 1000 Data size: 592000 Basic stats: COMPLETE Column stats: COMPLETE
                         UDTF Operator
-                          Statistics: Num rows: 1000 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                          Statistics: Num rows: 1000 Data size: 592000 Basic stats: COMPLETE Column stats: COMPLETE
                           function name: explode
                           Lateral View Join Operator
                             outputColumnNames: _col4, _col5
-                            Statistics: Num rows: 2000 Data size: 56000 Basic stats: PARTIAL Column stats: COMPLETE
+                            Statistics: Num rows: 2000 Data size: 648000 Basic stats: COMPLETE Column stats: COMPLETE
                             Select Operator
                               expressions: _col4 (type: int), _col5 (type: string)
                               outputColumnNames: _col0, _col1
-                              Statistics: Num rows: 2000 Data size: 56000 Basic stats: PARTIAL Column stats: COMPLETE
+                              Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
                               Limit
                                 Number of rows: 9
-                                Statistics: Num rows: 9 Data size: 252 Basic stats: PARTIAL Column stats: COMPLETE
+                                Statistics: Num rows: 9 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                                 File Output Operator
                                   compressed: false
-                                  Statistics: Num rows: 9 Data size: 252 Basic stats: PARTIAL Column stats: COMPLETE
+                                  Statistics: Num rows: 9 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                                   table:
                                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -288,17 +288,17 @@ STAGE PLANS:
                           Statistics: Num rows: 1000 Data size: 56000 Basic stats: COMPLETE Column stats: COMPLETE
                           Lateral View Join Operator
                             outputColumnNames: _col4, _col5
-                            Statistics: Num rows: 2000 Data size: 56000 Basic stats: PARTIAL Column stats: COMPLETE
+                            Statistics: Num rows: 2000 Data size: 648000 Basic stats: COMPLETE Column stats: COMPLETE
                             Select Operator
                               expressions: _col4 (type: int), _col5 (type: string)
                               outputColumnNames: _col0, _col1
-                              Statistics: Num rows: 2000 Data size: 56000 Basic stats: PARTIAL Column stats: COMPLETE
+                              Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
                               Limit
                                 Number of rows: 9
-                                Statistics: Num rows: 9 Data size: 252 Basic stats: PARTIAL Column stats: COMPLETE
+                                Statistics: Num rows: 9 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                                 File Output Operator
                                   compressed: false
-                                  Statistics: Num rows: 9 Data size: 252 Basic stats: PARTIAL Column stats: COMPLETE
+                                  Statistics: Num rows: 9 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                                   table:
                                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -306,23 +306,23 @@ STAGE PLANS:
                         Select Operator
                           expressions: array('a','b','c') (type: array<string>)
                           outputColumnNames: _col0
-                          Statistics: Num rows: 1000 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                          Statistics: Num rows: 1000 Data size: 592000 Basic stats: COMPLETE Column stats: COMPLETE
                           UDTF Operator
-                            Statistics: Num rows: 1000 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                            Statistics: Num rows: 1000 Data size: 592000 Basic stats: COMPLETE Column stats: COMPLETE
                             function name: explode
                             Lateral View Join Operator
                               outputColumnNames: _col4, _col5
-                              Statistics: Num rows: 2000 Data size: 56000 Basic stats: PARTIAL Column stats: COMPLETE
+                              Statistics: Num rows: 2000 Data size: 648000 Basic stats: COMPLETE Column stats: COMPLETE
                               Select Operator
                                 expressions: _col4 (type: int), _col5 (type: string)
                                 outputColumnNames: _col0, _col1
-                                Statistics: Num rows: 2000 Data size: 56000 Basic stats: PARTIAL Column stats: COMPLETE
+                                Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
                                 Limit
                                   Number of rows: 9
-                                  Statistics: Num rows: 9 Data size: 252 Basic stats: PARTIAL Column stats: COMPLETE
+                                  Statistics: Num rows: 9 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                                   File Output Operator
                                     compressed: false
-                                    Statistics: Num rows: 9 Data size: 252 Basic stats: PARTIAL Column stats: COMPLETE
+                                    Statistics: Num rows: 9 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
                                     table:
                                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
