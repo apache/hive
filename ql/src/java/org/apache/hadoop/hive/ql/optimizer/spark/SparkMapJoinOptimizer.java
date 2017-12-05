@@ -242,11 +242,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
         // Not adding other stats (e.g., # of rows, col stats) since only data size is used here
         for (TableScanOperator root : OperatorUtils.findOperatorsUpstream(parentOp, TableScanOperator.class)) {
           if (currInputStat == null) {
-            try {
               currInputStat = root.getStatistics().clone();
-            } catch (CloneNotSupportedException e) {
-              throw new RuntimeException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
-            }
           } else {
             currInputStat.addBasicStats(root.getStatistics());
           }

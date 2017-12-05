@@ -140,7 +140,7 @@ public class ColStatistics {
   }
 
   @Override
-  public ColStatistics clone() throws CloneNotSupportedException {
+  public ColStatistics clone() {
     ColStatistics clone = new ColStatistics(colName, colType);
     clone.setAvgColLen(avgColLen);
     clone.setCountDistint(countDistint);
