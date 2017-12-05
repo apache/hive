@@ -229,6 +229,8 @@ STAGE PLANS:
                   0 a (type: int)
                   1 a[1] (type: int)
                 Map Join Vectorization:
+                    bigTableKeyExpressions: ListIndexColScalar(col 0:array<int>, col 1:int) -> 3:int
+                    bigTableValueExpressions: col 0:array<int>, col 1:int
                     className: VectorMapJoinOperator
                     native: false
                     nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
@@ -342,6 +344,8 @@ STAGE PLANS:
                   0 a (type: int)
                   1 a[index] (type: int)
                 Map Join Vectorization:
+                    bigTableKeyExpressions: ListIndexColColumn(col 0:array<int>, col 1:int) -> 3:int
+                    bigTableValueExpressions: col 0:array<int>, col 1:int
                     className: VectorMapJoinOperator
                     native: false
                     nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
