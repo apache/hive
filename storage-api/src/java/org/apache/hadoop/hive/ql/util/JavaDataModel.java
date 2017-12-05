@@ -282,7 +282,7 @@ public enum JavaDataModel {
     return ((size + 8) >> 3) << 3;
   }
 
-  private long lengthForPrimitiveArrayOfSize(int primitiveSize, long length) {
+  public long lengthForPrimitiveArrayOfSize(int primitiveSize, long length) {
     return alignUp(array() + primitiveSize*length, memoryAlign());
   }
 

@@ -40,7 +40,7 @@ STAGE PLANS:
           Select Operator
             expressions: sort_array(array('b','d','c','a')) (type: array<string>)
             outputColumnNames: _col0
-            Statistics: Num rows: 500 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 388000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: SELECT sort_array(array("f", "a", "g", "c", "b", "d", "e")) FROM src tablesample (1 rows)
