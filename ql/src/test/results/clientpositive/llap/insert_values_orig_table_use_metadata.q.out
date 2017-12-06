@@ -107,6 +107,7 @@ Table Parameters:
 	rawDataSize         	0                   
 	totalSize           	0                   
 	transactional       	true                
+	transactional_properties	default             
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -172,6 +173,7 @@ Table Parameters:
 	rawDataSize         	0                   
 	totalSize           	295399              
 	transactional       	true                
+	transactional_properties	default             
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -373,8 +375,9 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	1555                
+	totalSize           	1554                
 	transactional       	true                
+	transactional_properties	default             
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -407,9 +410,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 1 Data size: 1555 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 1554 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 1555 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 1554 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -507,6 +510,7 @@ Table Parameters:
 	rawDataSize         	0                   
 	totalSize           	3109                
 	transactional       	true                
+	transactional_properties	default             
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -637,6 +641,7 @@ Table Parameters:
 	rawDataSize         	0                   
 	totalSize           	298508              
 	transactional       	true                
+	transactional_properties	default             
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -902,17 +907,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sp
-                  Statistics: Num rows: 1 Data size: 5820 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 5820 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 5820 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 5820 Basic stats: PARTIAL Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -923,10 +928,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
