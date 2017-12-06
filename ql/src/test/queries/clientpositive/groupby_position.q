@@ -71,3 +71,14 @@ FROM (
  SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3, b.c4 AS c4
 ) c
 ORDER BY 1 DESC, 2 DESC, 3 ASC, 4 ASC;
+
+set hive.cbo.enable=false;
+EXPLAIN
+SELECT key FROM src ORDER BY 1;
+
+SELECT key FROM src ORDER BY 1;
+
+EXPLAIN
+SELECT distinct key FROM src ORDER BY 1;
+
+SELECT distinct key FROM src ORDER BY 1;
