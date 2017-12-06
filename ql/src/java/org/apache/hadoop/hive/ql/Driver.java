@@ -113,7 +113,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.ql.wm.TriggerContext;
+import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
@@ -732,8 +732,8 @@ public class Driver implements CommandProcessor {
     } else {
       queryStartTime = queryDisplay.getQueryStartTime();
     }
-    TriggerContext triggerContext = new TriggerContext(queryStartTime, queryId);
-    ctx.setTriggerContext(triggerContext);
+    WmContext wmContext = new WmContext(queryStartTime, queryId);
+    ctx.setWmContext(wmContext);
   }
 
   private boolean startImplicitTxn(HiveTxnManager txnManager) throws LockException {

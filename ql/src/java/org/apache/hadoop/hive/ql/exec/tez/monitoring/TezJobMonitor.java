@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.wm.TimeCounterLimit;
-import org.apache.hadoop.hive.ql.wm.TriggerContext;
+import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.ql.wm.VertexCounterLimit;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.tez.common.counters.CounterGroup;
@@ -156,7 +156,7 @@ public class TezJobMonitor {
     boolean running = false;
 
     long checkInterval = MIN_CHECK_INTERVAL;
-    TriggerContext triggerContext = null;
+    WmContext wmContext = null;
     while (true) {
 
       try {
@@ -167,12 +167,12 @@ public class TezJobMonitor {
         status = dagClient.getDAGStatus(EnumSet.of(StatusGetOpts.GET_COUNTERS), checkInterval);
         TezCounters dagCounters = status.getDAGCounters();
         vertexProgressMap = status.getVertexProgress();
-        triggerContext = context.getTriggerContext();
-        if (dagCounters != null && triggerContext != null) {
-          Set<String> desiredCounters = triggerContext.getDesiredCounters();
+        wmContext = context.getWmContext();
+        if (dagCounters != null && wmContext != null) {
+          Set<String> desiredCounters = wmContext.getSubscribedCounters();
           if (desiredCounters != null && !desiredCounters.isEmpty()) {
             Map<String, Long> currentCounters = getCounterValues(dagCounters, vertexProgressMap, desiredCounters, done);
-            triggerContext.setCurrentCounters(currentCounters);
+            wmContext.setCurrentCounters(currentCounters);
           }
         }
         DAGStatus.State state = status.getState();
@@ -234,8 +234,8 @@ public class TezJobMonitor {
               break;
           }
         }
-        if (triggerContext != null && done) {
-          triggerContext.setQueryCompleted(true);
+        if (wmContext != null && done) {
+          wmContext.setQueryCompleted(true);
         }
       } catch (Exception e) {
         console.printInfo("Exception: " + e.getMessage());
@@ -263,13 +263,13 @@ public class TezJobMonitor {
         } else {
           console.printInfo("Retrying...");
         }
-        if (triggerContext != null && done) {
-          triggerContext.setQueryCompleted(true);
+        if (wmContext != null && done) {
+          wmContext.setQueryCompleted(true);
         }
       } finally {
         if (done) {
-          if (triggerContext != null && done) {
-            triggerContext.setQueryCompleted(true);
+          if (wmContext != null && done) {
+            wmContext.setQueryCompleted(true);
           }
           if (rc != 0 && status != null) {
             for (String diag : status.getDiagnostics()) {
@@ -324,7 +324,7 @@ public class TezJobMonitor {
     if (!done) {
       counterName = TimeCounterLimit.TimeCounter.ELAPSED_TIME.name();
       if (desiredCounters.contains(counterName)) {
-        updatedCounters.put(counterName, context.getTriggerContext().getElapsedTime());
+        updatedCounters.put(counterName, context.getWmContext().getElapsedTime());
       }
 
       counterName = TimeCounterLimit.TimeCounter.EXECUTION_TIME.name();
@@ -351,6 +351,7 @@ public class TezJobMonitor {
         new LLAPioSummary(progressMap, dagClient).print(console);
         new FSCountersSummary(progressMap, dagClient).print(console);
       }
+
       console.printInfo("");
     }
   }

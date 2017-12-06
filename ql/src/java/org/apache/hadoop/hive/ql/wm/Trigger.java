@@ -15,11 +15,14 @@
  */
 package org.apache.hadoop.hive.ql.wm;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+
 /**
  * Trigger interface which gets mapped to CREATE TRIGGER .. queries. A trigger can have a name, expression and action.
  * Trigger is a simple expression which gets evaluated during the lifecycle of query and executes an action
  * if the expression defined in trigger evaluates to true.
  */
+@JsonSerialize
 public interface Trigger {
 
   /**

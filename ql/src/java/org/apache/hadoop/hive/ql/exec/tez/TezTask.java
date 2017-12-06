@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,7 +43,6 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -63,7 +61,7 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.wm.TriggerContext;
+import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -146,8 +144,8 @@ public class TezTask extends Task<TezWork> {
         // some DDL task that directly executes a TezTask does not setup Context and hence TriggerContext.
         // Setting queryId is messed up. Some DDL tasks have executionId instead of proper queryId.
         String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
-        TriggerContext triggerContext = new TriggerContext(System.currentTimeMillis(), queryId);
-        ctx.setTriggerContext(triggerContext);
+        WmContext wmContext = new WmContext(System.currentTimeMillis(), queryId);
+        ctx.setWmContext(wmContext);
       }
 
       // Need to remove this static hack. But this is the way currently to get a session.
@@ -158,7 +156,6 @@ public class TezTask extends Task<TezWork> {
       if (session != null && !session.isOpen()) {
         LOG.warn("The session: " + session + " has not been opened");
       }
-      Set<String> desiredCounters = new HashSet<>();
       // We only need a username for UGI to use for groups; getGroups will fetch the groups
       // based on Hadoop configuration, as documented at
       // https://hadoop.apache.org/docs/r2.8.0/hadoop-project-dist/hadoop-common/GroupsMapping.html
@@ -166,15 +163,11 @@ public class TezTask extends Task<TezWork> {
       MappingInput mi = (userName == null) ? new MappingInput("anonymous", null)
         : new MappingInput(ss.getUserName(),
             UserGroupInformation.createRemoteUser(ss.getUserName()).getGroups());
-      session = WorkloadManagerFederation.getSession(
-          session, conf, mi, getWork().getLlapMode(), desiredCounters);
+      WmContext wmContext = ctx.getWmContext();
+      session = WorkloadManagerFederation.getSession(session, conf, mi, getWork().getLlapMode(), wmContext);
 
-      TriggerContext triggerContext = ctx.getTriggerContext();
-      triggerContext.setDesiredCounters(desiredCounters);
-      LOG.info("Subscribed to counters: {} for queryId: {}",
-          desiredCounters, triggerContext.getQueryId());
+      LOG.info("Subscribed to counters: {} for queryId: {}", wmContext.getSubscribedCounters(), wmContext.getQueryId());
       ss.setTezSession(session);
-      session.setTriggerContext(triggerContext);
       try {
         // jobConf will hold all the configuration for hadoop, tez, and hive
         JobConf jobConf = utils.createConfiguration(conf);
@@ -256,11 +249,21 @@ public class TezTask extends Task<TezWork> {
         //       Currently, reopen on an attempted reuse will take care of that; we cannot tell
         //       if the session is usable until we try.
         // We return this to the pool even if it's unusable; reopen is supposed to handle this.
+        wmContext = ctx.getWmContext();
         try {
           session.returnToSessionManager();
         } catch (Exception e) {
           LOG.error("Failed to return session: {} to pool", session, e);
           throw e;
+        }
+
+        if (!conf.getVar(HiveConf.ConfVars.TEZ_SESSION_EVENTS_SUMMARY).equalsIgnoreCase("none") &&
+          wmContext != null) {
+          if (conf.getVar(HiveConf.ConfVars.TEZ_SESSION_EVENTS_SUMMARY).equalsIgnoreCase("json")) {
+            wmContext.printJson(console);
+          } else if (conf.getVar(HiveConf.ConfVars.TEZ_SESSION_EVENTS_SUMMARY).equalsIgnoreCase("text")) {
+            wmContext.print(console);
+          }
         }
       }
 
@@ -585,9 +588,9 @@ public class TezTask extends Task<TezWork> {
         console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
             + Arrays.toString(e.getStackTrace()) + " retrying...");
         // TODO: this is temporary, need to refactor how reopen is invoked.
-        TriggerContext oldCtx = sessionState.getTriggerContext();
+        WmContext oldCtx = sessionState.getWmContext();
         sessionState = sessionState.reopen(conf, inputOutputJars);
-        sessionState.setTriggerContext(oldCtx);
+        sessionState.setWmContext(oldCtx);
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (Exception retryException) {
         // we failed to submit after retrying. Destroy session and bail.

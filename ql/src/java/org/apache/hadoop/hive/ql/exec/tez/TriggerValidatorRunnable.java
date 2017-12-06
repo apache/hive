@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.wm.Action;
 import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
-import org.apache.hadoop.hive.ql.wm.TriggerContext;
+import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,17 +46,17 @@ public class TriggerValidatorRunnable implements Runnable {
       final List<TezSessionState> sessions = sessionTriggerProvider.getSessions();
       final List<Trigger> triggers = sessionTriggerProvider.getTriggers();
       for (TezSessionState sessionState : sessions) {
-        TriggerContext triggerContext = sessionState.getTriggerContext();
-        if (triggerContext != null && !triggerContext.isQueryCompleted()
-          && !triggerContext.getCurrentCounters().isEmpty()) {
-          Map<String, Long> currentCounters = triggerContext.getCurrentCounters();
+        WmContext wmContext = sessionState.getWmContext();
+        if (wmContext != null && !wmContext.isQueryCompleted()
+          && !wmContext.getCurrentCounters().isEmpty()) {
+          Map<String, Long> currentCounters = wmContext.getCurrentCounters();
           for (Trigger currentTrigger : triggers) {
             String desiredCounter = currentTrigger.getExpression().getCounterLimit().getName();
             // there could be interval where desired counter value is not populated by the time we make this check
             if (currentCounters.containsKey(desiredCounter)) {
               long currentCounterValue = currentCounters.get(desiredCounter);
               if (currentTrigger.apply(currentCounterValue)) {
-                String queryId = sessionState.getTriggerContext().getQueryId();
+                String queryId = sessionState.getWmContext().getQueryId();
                 if (violatedSessions.containsKey(sessionState)) {
                   // session already has a violation
                   Trigger existingTrigger = violatedSessions.get(sessionState);
@@ -84,7 +84,7 @@ public class TriggerValidatorRunnable implements Runnable {
 
           Trigger chosenTrigger = violatedSessions.get(sessionState);
           if (chosenTrigger != null) {
-            LOG.info("Query: {}. {}. Applying action.", sessionState.getTriggerContext().getQueryId(),
+            LOG.info("Query: {}. {}. Applying action.", sessionState.getWmContext().getQueryId(),
               chosenTrigger.getViolationMsg());
           }
         }

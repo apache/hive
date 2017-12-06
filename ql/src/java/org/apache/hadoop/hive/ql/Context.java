@@ -59,7 +59,7 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.wm.TriggerContext;
+import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
@@ -150,18 +150,18 @@ public class Context {
    */
   private Map<Integer, DestClausePrefix> insertBranchToNamePrefix = new HashMap<>();
   private Operation operation = Operation.OTHER;
-  private TriggerContext triggerContext;
+  private WmContext wmContext;
 
   public void setOperation(Operation operation) {
     this.operation = operation;
   }
 
-  public TriggerContext getTriggerContext() {
-    return triggerContext;
+  public WmContext getWmContext() {
+    return wmContext;
   }
 
-  public void setTriggerContext(final TriggerContext triggerContext) {
-    this.triggerContext = triggerContext;
+  public void setWmContext(final WmContext wmContext) {
+    this.wmContext = wmContext;
   }
 
   /**

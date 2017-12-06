@@ -21,7 +21,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -103,7 +105,7 @@ public abstract class AbstractJdbcTriggersTest {
     }
   }
 
-  void createSleepUDF() throws SQLException {
+  private void createSleepUDF() throws SQLException {
     String udfName = TestJdbcWithMiniHS2.SleepMsUDF.class.getName();
     Connection con = hs2Conn;
     Statement stmt = con.createStatement();
@@ -112,40 +114,65 @@ public abstract class AbstractJdbcTriggersTest {
   }
 
   void runQueryWithTrigger(final String query, final List<String> setCmds,
-    final String expect)
+    final String expect) throws Exception {
+    runQueryWithTrigger(query, setCmds, expect, null);
+  }
+
+  void runQueryWithTrigger(final String query, final List<String> setCmds,
+    final String expect, final List<String> errCaptureExpect)
     throws Exception {
 
     Connection con = hs2Conn;
     TestJdbcWithMiniLlap.createTestTable(con, null, tableName, kvDataFilePath.toString());
     createSleepUDF();
 
+    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    System.setErr(new PrintStream(baos)); // capture stderr
     final Statement selStmt = con.createStatement();
     final Throwable[] throwable = new Throwable[1];
-    Thread queryThread = new Thread(() -> {
-      try {
-        if (setCmds != null) {
-          for (String setCmd : setCmds) {
-            selStmt.execute(setCmd);
+    try {
+      Thread queryThread = new Thread(() -> {
+        try {
+          if (setCmds != null) {
+            for (String setCmd : setCmds) {
+              selStmt.execute(setCmd);
+            }
           }
+          selStmt.execute(query);
+        } catch (SQLException e) {
+          throwable[0] = e;
         }
-        selStmt.execute(query);
-      } catch (SQLException e) {
-        throwable[0] = e;
+      });
+      queryThread.start();
+
+      queryThread.join();
+      selStmt.close();
+
+      if (expect == null) {
+        assertNull("Expected query to succeed", throwable[0]);
+      } else {
+        assertNotNull("Expected non-null throwable", throwable[0]);
+        assertEquals(SQLException.class, throwable[0].getClass());
+        assertTrue(expect + " is not contained in " + throwable[0].getMessage(),
+          throwable[0].getMessage().contains(expect));
       }
-    });
-    queryThread.start();
 
-    queryThread.join();
-    selStmt.close();
-
-    if (expect == null) {
-      assertNull("Expected query to succeed", throwable[0]);
-    } else {
-      assertNotNull("Expected non-null throwable", throwable[0]);
-      assertEquals(SQLException.class, throwable[0].getClass());
-      assertTrue(expect + " is not contained in " + throwable[0].getMessage(),
-        throwable[0].getMessage().contains(expect));
+      if (errCaptureExpect != null && !errCaptureExpect.isEmpty()) {
+        // failure hooks are run after HiveStatement is closed. wait sometime for failure hook to execute
+        String stdErrStr = "";
+        while (!stdErrStr.contains(errCaptureExpect.get(0))) {
+          baos.flush();
+          stdErrStr = baos.toString();
+          Thread.sleep(500);
+        }
+        for (String errExpect : errCaptureExpect) {
+          assertTrue("'" + errExpect + "' expected in STDERR capture, but not found.", stdErrStr.contains(errExpect));
+        }
+      }
+    } finally {
+      baos.close();
     }
+
   }
 
   abstract void setupTriggers(final List<Trigger> triggers) throws Exception;

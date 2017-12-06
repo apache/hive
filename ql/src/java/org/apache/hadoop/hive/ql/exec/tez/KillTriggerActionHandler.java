@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Handles only Kill Action.
  */
-public class KillTriggerActionHandler implements TriggerActionHandler {
+public class KillTriggerActionHandler implements TriggerActionHandler<TezSessionState> {
   private static final Logger LOG = LoggerFactory.getLogger(KillTriggerActionHandler.class);
 
   @Override
@@ -37,7 +37,7 @@ public class KillTriggerActionHandler implements TriggerActionHandler {
       switch (entry.getValue().getAction().getType()) {
         case KILL_QUERY:
           TezSessionState sessionState = entry.getKey();
-          String queryId = sessionState.getTriggerContext().getQueryId();
+          String queryId = sessionState.getWmContext().getQueryId();
           try {
             KillQuery killQuery = sessionState.getKillQuery();
             // if kill query is null then session might have been released to pool or closed already

@@ -18,18 +18,21 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hive.common.util.Ref;
-
-import java.util.concurrent.TimeoutException;
-
 import org.apache.hadoop.security.token.Token;
+import org.apache.hive.common.util.Ref;
 import org.apache.tez.common.security.JobTokenIdentifier;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
+@JsonSerialize
 public interface AmPluginNode {
-  public static class AmPluginInfo {
+  class AmPluginInfo {
+    @JsonProperty("amPluginPort")
     public final int amPluginPort;
     public final Token<JobTokenIdentifier> amPluginToken;
     public final String amPluginTokenJobId;
+    @JsonProperty("amHost")
     public final String amHost;
 
     AmPluginInfo(String amHost, int amPluginPort,
