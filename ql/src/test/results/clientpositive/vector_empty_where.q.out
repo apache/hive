@@ -26,7 +26,7 @@ STAGE PLANS:
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsTrue(col 14:boolean)(children: CastLongToBooleanViaLongToLong(col 13:bigint)(children: StringLength(col 6:string) -> 13:bigint) -> 14:boolean)
+                  predicateExpression: SelectColumnIsTrue(col 13:boolean)(children: CastStringToBoolean(col 6) -> 13:boolean)
               predicate: cstring1 (type: string)
               Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
               Select Operator

@@ -128,6 +128,23 @@ public class TestVectorTypeCasts {
   }
 
   @Test
+  public void testCastStringToBoolean() {
+    VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchStringInLongOut();
+    LongColumnVector resultV = (LongColumnVector) b.cols[1];
+    b.cols[0].noNulls = true;
+    VectorExpression expr = new CastStringToBoolean(0, 1);
+    expr.evaluate(b);
+    Assert.assertEquals(1, resultV.vector[0]); // true
+    Assert.assertEquals(1, resultV.vector[1]); // true
+    Assert.assertEquals(1, resultV.vector[2]); // true
+    Assert.assertEquals(0, resultV.vector[3]); // false
+    Assert.assertEquals(0, resultV.vector[4]); // false
+    Assert.assertEquals(0, resultV.vector[5]); // false
+    Assert.assertEquals(0, resultV.vector[6]); // false
+    Assert.assertEquals(1, resultV.vector[7]); // true
+  }
+
+  @Test
   public void testCastLongToTimestamp() {
     long[] longValues = new long[500];
     VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchLongInTimestampOut(longValues);

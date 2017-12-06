@@ -22,6 +22,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.DateTimeException;
@@ -555,19 +556,69 @@ public final class PrimitiveObjectInspectorUtils {
   }
 
 
-  private static final String falseBooleans[] = { "false", "no", "off", "0", "" };
+  enum FalseValues {
+    FALSE("false"), OFF("off"), NO("no"), ZERO("0"), EMPTY("");
+
+    private final byte[] bytes;
+    private String str;
+
+    FalseValues(String s) {
+      str = s;
+      bytes = s.getBytes(StandardCharsets.UTF_8);
+    }
+
+    public boolean accept(byte[] arr, int st) {
+      for (int i = 0; i < bytes.length; i++) {
+        byte b = arr[i + st];
+        if (!(b == bytes[i] || b + 'a' - 'A' == bytes[i])) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    public boolean accept(String s) {
+      return str.equalsIgnoreCase(s);
+    }
+  }
+  /**
+   * Parses a boolean from string
+   *
+   * Accepts "false","off","no","0" and "" as FALSE
+   * All other values are interpreted as true.
+   */
+  public static boolean parseBoolean(byte[] arr, int st, int len) {
+    switch (len) {
+    case 5:
+      return !FalseValues.FALSE.accept(arr, st);
+    case 3:
+      return !FalseValues.OFF.accept(arr, st);
+    case 2:
+      return !FalseValues.NO.accept(arr, st);
+    case 1:
+      return !FalseValues.ZERO.accept(arr, st);
+    case 0:
+      return false;
+    default:
+      return true;
+    }
+  }
+
+  private static final FalseValues[] FALSE_BOOLEANS = FalseValues.values();
 
   private static boolean parseBoolean(String s) {
-    for(int i=0;i<falseBooleans.length;i++){
-      if(falseBooleans[i].equalsIgnoreCase(s))
+    for (int i = 0; i < FALSE_BOOLEANS.length; i++) {
+      if (FALSE_BOOLEANS[i].accept(s)) {
         return false;
+      }
     }
     return true;
   }
 
   private static boolean parseBoolean(Text t) {
-    if(t.getLength()>5)
+    if(t.getLength()>5) {
       return true;
+    }
     String strVal=t.toString();
     return parseBoolean(strVal);
   }

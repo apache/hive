@@ -231,10 +231,16 @@ public class TestPrimitiveObjectInspectorUtils extends TestCase {
     for (String falseStr : mustEvaluateToFalse) {
       assertFalse(falseStr, PrimitiveObjectInspectorUtils.getBoolean(falseStr,
           PrimitiveObjectInspectorFactory.javaStringObjectInspector));
+
+      byte[] b1 = ("asd"+falseStr).getBytes();
+      assertFalse(falseStr, PrimitiveObjectInspectorUtils.parseBoolean(b1, 3, falseStr.length()));
+
     }
     for (String trueStr : mustEvaluateToTrue) {
       assertTrue(trueStr, PrimitiveObjectInspectorUtils.getBoolean(trueStr,
           PrimitiveObjectInspectorFactory.javaStringObjectInspector));
+      byte[] b1 = ("asd"+trueStr).getBytes();
+      assertTrue(trueStr, PrimitiveObjectInspectorUtils.parseBoolean(b1, 3, trueStr.length()));
     }
   }
 }
