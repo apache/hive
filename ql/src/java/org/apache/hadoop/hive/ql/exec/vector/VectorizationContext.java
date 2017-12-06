@@ -52,47 +52,11 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.ArgumentType;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.InputExpressionType;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFBloomFilter;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFBloomFilterMerge;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCount;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountMerge;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountStar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFSumDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFSumDecimal64ToDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFSumTimestamp;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDecimalComplete;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDecimalFinal;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDecimalPartial2;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDouble;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDoubleComplete;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgFinal;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgLong;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgLongComplete;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgPartial2;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgTimestamp;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgTimestampComplete;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxDouble;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxLong;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxString;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxTimestamp;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinDouble;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinLong;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinString;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinTimestamp;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFSumDouble;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFSumLong;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPartial2;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -100,7 +64,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.*;
 import org.apache.hadoop.hive.ql.udf.generic.*;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -2734,24 +2697,11 @@ public class VectorizationContext {
     }
     // Long and double are handled using descriptors, string needs to be specially handled.
     if (isStringFamily(inputType)) {
-      // string casts to false if it is 0 characters long, otherwise true
-      VectorExpression lenExpr = createVectorExpression(StringLength.class, childExpr,
-          VectorExpressionDescriptor.Mode.PROJECTION, TypeInfoFactory.longTypeInfo);
 
-      int outputColumnNum = ocm.allocateOutputColumn(TypeInfoFactory.booleanTypeInfo);
-      VectorExpression lenToBoolExpr =
-          new CastLongToBooleanViaLongToLong(lenExpr.getOutputColumnNum(), outputColumnNum);
+      VectorExpression lenExpr = createVectorExpression(CastStringToBoolean.class, childExpr,
+          VectorExpressionDescriptor.Mode.PROJECTION, TypeInfoFactory.booleanTypeInfo);
 
-      lenToBoolExpr.setChildExpressions(new VectorExpression[] {lenExpr});
-
-      lenToBoolExpr.setInputTypeInfos(lenExpr.getOutputTypeInfo());
-      lenToBoolExpr.setInputDataTypePhysicalVariations(lenExpr.getOutputDataTypePhysicalVariation());
-
-      lenToBoolExpr.setOutputTypeInfo(TypeInfoFactory.booleanTypeInfo);
-      lenToBoolExpr.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
-
-      ocm.freeOutputColumn(lenExpr.getOutputColumnNum());
-      return lenToBoolExpr;
+      return lenExpr;
     }
     return null;
   }

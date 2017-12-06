@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Random;
@@ -250,6 +251,29 @@ public class TestVectorMathFunctions {
     batch.cols[1] = outV;
 
     batch.size = 2;
+    return batch;
+  }
+
+  public static VectorizedRowBatch getVectorizedRowBatchStringInLongOut() {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    BytesColumnVector inV;
+    LongColumnVector outV;
+    inV = new BytesColumnVector();
+    outV = new LongColumnVector();
+    inV.initBuffer();
+    inV.setVal(0, StandardCharsets.UTF_8.encode("true").array());
+    inV.setVal(1, StandardCharsets.UTF_8.encode("TRUE").array());
+    inV.setVal(2, StandardCharsets.UTF_8.encode("TrUe").array());
+    inV.setVal(3, StandardCharsets.UTF_8.encode("false").array());
+    inV.setVal(4, StandardCharsets.UTF_8.encode("FALSE").array());
+    inV.setVal(5, StandardCharsets.UTF_8.encode("FaLsE").array());
+    inV.setVal(6, StandardCharsets.UTF_8.encode("").array());
+    inV.setVal(7, StandardCharsets.UTF_8.encode("Other").array());
+
+    batch.cols[0] = inV;
+    batch.cols[1] = outV;
+
+    batch.size = 8;
     return batch;
   }
 

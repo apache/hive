@@ -12,6 +12,9 @@ SELECT CAST(CAST(-8.0 AS DOUBLE) AS BOOLEAN) FROM src tablesample (1 rows);
 SELECT CAST(CAST(-99.0 AS DECIMAL) AS BOOLEAN) FROM src tablesample (1 rows);
 
 SELECT CAST(CAST('Foo' AS STRING) AS BOOLEAN) FROM src tablesample (1 rows);
+SELECT CAST(CAST('TRUE' AS STRING) AS BOOLEAN) FROM src tablesample (1 rows);
+SELECT CAST(CAST('true' AS STRING) AS BOOLEAN) FROM src tablesample (1 rows);
+SELECT CAST(CAST('TrUe' AS STRING) AS BOOLEAN) FROM src tablesample (1 rows);
 
 SELECT CAST(CAST('2011-05-06 07:08:09' as timestamp) AS BOOLEAN) FROM src tablesample (1 rows);
 
@@ -27,6 +30,9 @@ SELECT CAST(CAST(0.0 AS DOUBLE) AS BOOLEAN) FROM src tablesample (1 rows);
 SELECT CAST(CAST(0.0 AS DECIMAL) AS BOOLEAN) FROM src tablesample (1 rows);
 
 SELECT CAST(CAST('' AS STRING) AS BOOLEAN) FROM src tablesample (1 rows);
+SELECT CAST(CAST('FALSE' AS STRING) AS BOOLEAN) FROM src tablesample (1 rows);
+SELECT CAST(CAST('false' AS STRING) AS BOOLEAN) FROM src tablesample (1 rows);
+SELECT CAST(CAST('FaLsE' AS STRING) AS BOOLEAN) FROM src tablesample (1 rows);
 
 SELECT CAST(CAST(0 as timestamp) AS BOOLEAN) FROM src tablesample (1 rows);
 
