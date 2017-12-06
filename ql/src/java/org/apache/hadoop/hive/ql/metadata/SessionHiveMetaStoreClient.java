@@ -30,17 +30,16 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -61,6 +60,8 @@ import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -69,12 +70,12 @@ import org.apache.thrift.TException;
 
 public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements IMetaStoreClient {
 
-  SessionHiveMetaStoreClient(HiveConf conf, Boolean allowEmbedded) throws MetaException {
+  SessionHiveMetaStoreClient(Configuration conf, Boolean allowEmbedded) throws MetaException {
     super(conf, null, allowEmbedded);
   }
 
   SessionHiveMetaStoreClient(
-      HiveConf conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded) throws MetaException {
+      Configuration conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded) throws MetaException {
     super(conf, hookLoader, allowEmbedded);
   }
 
@@ -618,7 +619,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
         tablePath = new Path(table.getSd().getLocation());
         if (!getWh().isWritable(tablePath.getParent())) {
           throw new MetaException("Table metadata not deleted since " + tablePath.getParent() +
-              " is not writable by " + conf.getUser());
+              " is not writable by " + SecurityUtils.getUser());
         }
       } catch (IOException err) {
         MetaException metaException =

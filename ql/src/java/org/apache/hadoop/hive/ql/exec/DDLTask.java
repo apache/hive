@@ -72,7 +72,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -111,6 +111,7 @@ import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -4219,7 +4220,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           // the fields so that new SerDe could operate. Note that this may fail if some fields
           // from old SerDe are too long to be stored in metastore, but there's nothing we can do.
           try {
-            Deserializer oldSerde = MetaStoreUtils.getDeserializer(
+            Deserializer oldSerde = HiveMetaStoreUtils.getDeserializer(
                 conf, tbl.getTTable(), false, oldSerdeName);
             tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), oldSerde));
           } catch (MetaException ex) {

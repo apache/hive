@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -52,7 +53,6 @@ import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFa
 import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMerger;
 import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMergerFactory;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.security.SaslRpcServer;
@@ -64,9 +64,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
@@ -81,6 +85,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -298,8 +303,8 @@ public class MetaStoreUtils {
     }
   }
 
-  public static String getPartitionValWithInvalidCharacter(List<String> partVals,
-                                                           Pattern partitionValidationPattern) {
+  private static String getPartitionValWithInvalidCharacter(List<String> partVals,
+                                                            Pattern partitionValidationPattern) {
     if (partitionValidationPattern == null) {
       return null;
     }
@@ -499,8 +504,9 @@ public class MetaStoreUtils {
   }
 
   // check if stats need to be (re)calculated
-  public static boolean requireCalStats(Configuration hiveConf, Partition oldPart,
-    Partition newPart, Table tbl, EnvironmentContext environmentContext) {
+  public static boolean requireCalStats(Partition oldPart,
+                                        Partition newPart, Table tbl,
+                                        EnvironmentContext environmentContext) {
 
     if (environmentContext != null
         && environmentContext.isSetProperties()
@@ -792,9 +798,11 @@ public class MetaStoreUtils {
                 Configuration.class).newInstance(conf);
         listeners.add(listener);
       } catch (InvocationTargetException ie) {
+        LOG.error("Got InvocationTargetException", ie);
         throw new MetaException("Failed to instantiate listener named: "+
             listenerImpl + ", reason: " + ie.getCause());
       } catch (Exception e) {
+        LOG.error("Got Exception", e);
         throw new MetaException("Failed to instantiate listener named: "+
             listenerImpl + ", reason: " + e);
       }
@@ -961,13 +969,20 @@ public class MetaStoreUtils {
       ColumnStatisticsObj statsObjNew = csNew.getStatsObj().get(index);
       ColumnStatisticsObj statsObjOld = map.get(statsObjNew.getColName());
       if (statsObjOld != null) {
+        // because we already confirm that the stats is accurate
+        // it is impossible that the column types have been changed while the
+        // column stats is still accurate.
+        assert (statsObjNew.getStatsData().getSetField() == statsObjOld.getStatsData()
+            .getSetField());
         // If statsObjOld is found, we can merge.
         ColumnStatsMerger merger = ColumnStatsMergerFactory.getColumnStatsMerger(statsObjNew,
             statsObjOld);
         merger.merge(statsObjNew, statsObjOld);
       }
+      // If statsObjOld is not found, we just use statsObjNew as it is accurate.
       list.add(statsObjNew);
     }
+    // in all the other cases, we can not merge
     csNew.setStatsObj(list);
   }
 
@@ -1064,15 +1079,485 @@ public class MetaStoreUtils {
     return machineList.includes(ipAddress);
   }
 
-  // TODO This should be moved to MetaStoreTestUtils once it is moved into standalone-metastore.
   /**
-   * Setup a configuration file for standalone mode.  There are a few config variables that have
-   * defaults that require parts of Hive that aren't present in standalone mode.  This method
-   * sets them to something that will work without the rest of Hive.
-   * @param conf Configuration object
+   * Convert FieldSchemas to Thrift DDL.
    */
-  public static void setConfForStandloneMode(Configuration conf) {
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TASK_THREADS_ALWAYS,
-        EventCleanerTask.class.getName());
+  public static String getDDLFromFieldSchema(String structName,
+                                             List<FieldSchema> fieldSchemas) {
+    StringBuilder ddl = new StringBuilder();
+    ddl.append("struct ");
+    ddl.append(structName);
+    ddl.append(" { ");
+    boolean first = true;
+    for (FieldSchema col : fieldSchemas) {
+      if (first) {
+        first = false;
+      } else {
+        ddl.append(", ");
+      }
+      ddl.append(ColumnType.typeToThriftType(col.getType()));
+      ddl.append(' ');
+      ddl.append(col.getName());
+    }
+    ddl.append("}");
+
+    LOG.trace("DDL: {}", ddl);
+    return ddl.toString();
+  }
+
+  public static Properties getTableMetadata(
+      org.apache.hadoop.hive.metastore.api.Table table) {
+    return MetaStoreUtils.getSchema(table.getSd(), table.getSd(), table
+        .getParameters(), table.getDbName(), table.getTableName(), table.getPartitionKeys());
+  }
+
+  public static Properties getPartitionMetadata(
+      org.apache.hadoop.hive.metastore.api.Partition partition,
+      org.apache.hadoop.hive.metastore.api.Table table) {
+    return MetaStoreUtils
+        .getSchema(partition.getSd(), partition.getSd(), partition
+                .getParameters(), table.getDbName(), table.getTableName(),
+            table.getPartitionKeys());
+  }
+
+  public static Properties getSchema(
+      org.apache.hadoop.hive.metastore.api.Partition part,
+      org.apache.hadoop.hive.metastore.api.Table table) {
+    return MetaStoreUtils.getSchema(part.getSd(), table.getSd(), table
+        .getParameters(), table.getDbName(), table.getTableName(), table.getPartitionKeys());
+  }
+
+  /**
+   * Get partition level schema from table level schema.
+   * This function will use the same column names, column types and partition keys for
+   * each partition Properties. Their values are copied from the table Properties. This
+   * is mainly to save CPU and memory. CPU is saved because the first time the
+   * StorageDescriptor column names are accessed, JDO needs to execute a SQL query to
+   * retrieve the data. If we know the data will be the same as the table level schema
+   * and they are immutable, we should just reuse the table level schema objects.
+   *
+   * @param sd The Partition level Storage Descriptor.
+   * @param parameters partition level parameters
+   * @param tblSchema The table level schema from which this partition should be copied.
+   * @return the properties
+   */
+  public static Properties getPartSchemaFromTableSchema(
+      StorageDescriptor sd,
+      Map<String, String> parameters,
+      Properties tblSchema) {
+
+    // Inherent most properties from table level schema and overwrite some properties
+    // in the following code.
+    // This is mainly for saving CPU and memory to reuse the column names, types and
+    // partition columns in the table level schema.
+    Properties schema = (Properties) tblSchema.clone();
+
+    // InputFormat
+    String inputFormat = sd.getInputFormat();
+    if (inputFormat == null || inputFormat.length() == 0) {
+      String tblInput =
+          schema.getProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.FILE_INPUT_FORMAT);
+      if (tblInput == null) {
+        inputFormat = org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName();
+      } else {
+        inputFormat = tblInput;
+      }
+    }
+    schema.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.FILE_INPUT_FORMAT,
+        inputFormat);
+
+    // OutputFormat
+    String outputFormat = sd.getOutputFormat();
+    if (outputFormat == null || outputFormat.length() == 0) {
+      String tblOutput =
+          schema.getProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.FILE_OUTPUT_FORMAT);
+      if (tblOutput == null) {
+        outputFormat = org.apache.hadoop.mapred.SequenceFileOutputFormat.class.getName();
+      } else {
+        outputFormat = tblOutput;
+      }
+    }
+    schema.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.FILE_OUTPUT_FORMAT,
+        outputFormat);
+
+    // Location
+    if (sd.getLocation() != null) {
+      schema.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION,
+          sd.getLocation());
+    }
+
+    // Bucket count
+    schema.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_COUNT,
+        Integer.toString(sd.getNumBuckets()));
+
+    if (sd.getBucketCols() != null && sd.getBucketCols().size() > 0) {
+      schema.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_FIELD_NAME,
+          sd.getBucketCols().get(0));
+    }
+
+    // SerdeInfo
+    if (sd.getSerdeInfo() != null) {
+
+      // We should not update the following 3 values if SerDeInfo contains these.
+      // This is to keep backward compatible with getSchema(), where these 3 keys
+      // are updated after SerDeInfo properties got copied.
+      String cols = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMNS;
+      String colTypes = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMN_TYPES;
+      String parts = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS;
+
+      for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {
+        String key = param.getKey();
+        if (schema.get(key) != null &&
+            (key.equals(cols) || key.equals(colTypes) || key.equals(parts))) {
+          continue;
+        }
+        schema.put(key, (param.getValue() != null) ? param.getValue() : StringUtils.EMPTY);
+      }
+
+      if (sd.getSerdeInfo().getSerializationLib() != null) {
+        schema.setProperty(ColumnType.SERIALIZATION_LIB, sd.getSerdeInfo().getSerializationLib());
+      }
+    }
+
+    // skipping columns since partition level field schemas are the same as table level's
+    // skipping partition keys since it is the same as table level partition keys
+
+    if (parameters != null) {
+      for (Map.Entry<String, String> e : parameters.entrySet()) {
+        schema.setProperty(e.getKey(), e.getValue());
+      }
+    }
+
+    return schema;
+  }
+
+  private static Properties addCols(Properties schema, List<FieldSchema> cols) {
+
+    StringBuilder colNameBuf = new StringBuilder();
+    StringBuilder colTypeBuf = new StringBuilder();
+    StringBuilder colComment = new StringBuilder();
+
+    boolean first = true;
+    String columnNameDelimiter = getColumnNameDelimiter(cols);
+    for (FieldSchema col : cols) {
+      if (!first) {
+        colNameBuf.append(columnNameDelimiter);
+        colTypeBuf.append(":");
+        colComment.append('\0');
+      }
+      colNameBuf.append(col.getName());
+      colTypeBuf.append(col.getType());
+      colComment.append((null != col.getComment()) ? col.getComment() : StringUtils.EMPTY);
+      first = false;
+    }
+    schema.setProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMNS,
+        colNameBuf.toString());
+    schema.setProperty(ColumnType.COLUMN_NAME_DELIMITER, columnNameDelimiter);
+    String colTypes = colTypeBuf.toString();
+    schema.setProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMN_TYPES,
+        colTypes);
+    schema.setProperty("columns.comments", colComment.toString());
+
+    return schema;
+
+  }
+
+  public static Properties getSchemaWithoutCols(StorageDescriptor sd,
+                                                Map<String, String> parameters, String databaseName, String tableName,
+                                                List<FieldSchema> partitionKeys) {
+    Properties schema = new Properties();
+    String inputFormat = sd.getInputFormat();
+    if (inputFormat == null || inputFormat.length() == 0) {
+      inputFormat = org.apache.hadoop.mapred.SequenceFileInputFormat.class
+          .getName();
+    }
+    schema.setProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.FILE_INPUT_FORMAT,
+        inputFormat);
+    String outputFormat = sd.getOutputFormat();
+    if (outputFormat == null || outputFormat.length() == 0) {
+      outputFormat = org.apache.hadoop.mapred.SequenceFileOutputFormat.class
+          .getName();
+    }
+    schema.setProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.FILE_OUTPUT_FORMAT,
+        outputFormat);
+
+    schema.setProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_NAME,
+        databaseName + "." + tableName);
+
+    if (sd.getLocation() != null) {
+      schema.setProperty(
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION,
+          sd.getLocation());
+    }
+    schema.setProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_COUNT, Integer
+            .toString(sd.getNumBuckets()));
+    if (sd.getBucketCols() != null && sd.getBucketCols().size() > 0) {
+      schema.setProperty(
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_FIELD_NAME, sd
+              .getBucketCols().get(0));
+    }
+    if (sd.getSerdeInfo() != null) {
+      for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {
+        schema.put(param.getKey(), (param.getValue() != null) ? param.getValue() : StringUtils.EMPTY);
+      }
+
+      if (sd.getSerdeInfo().getSerializationLib() != null) {
+        schema.setProperty(ColumnType.SERIALIZATION_LIB, sd .getSerdeInfo().getSerializationLib());
+      }
+    }
+
+    if (sd.getCols() != null) {
+      schema.setProperty(ColumnType.SERIALIZATION_DDL, getDDLFromFieldSchema(tableName, sd.getCols()));
+    }
+
+    String partString = StringUtils.EMPTY;
+    String partStringSep = StringUtils.EMPTY;
+    String partTypesString = StringUtils.EMPTY;
+    String partTypesStringSep = StringUtils.EMPTY;
+    for (FieldSchema partKey : partitionKeys) {
+      partString = partString.concat(partStringSep);
+      partString = partString.concat(partKey.getName());
+      partTypesString = partTypesString.concat(partTypesStringSep);
+      partTypesString = partTypesString.concat(partKey.getType());
+      if (partStringSep.length() == 0) {
+        partStringSep = "/";
+        partTypesStringSep = ":";
+      }
+    }
+    if (partString.length() > 0) {
+      schema
+          .setProperty(
+              org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS,
+              partString);
+      schema
+          .setProperty(
+              org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES,
+              partTypesString);
+    }
+
+    if (parameters != null) {
+      for (Map.Entry<String, String> e : parameters.entrySet()) {
+        // add non-null parameters to the schema
+        if ( e.getValue() != null) {
+          schema.setProperty(e.getKey(), e.getValue());
+        }
+      }
+    }
+
+    return schema;
+  }
+
+  public static Properties getSchema(
+      org.apache.hadoop.hive.metastore.api.StorageDescriptor sd,
+      org.apache.hadoop.hive.metastore.api.StorageDescriptor tblsd,
+      Map<String, String> parameters, String databaseName, String tableName,
+      List<FieldSchema> partitionKeys) {
+
+    return addCols(getSchemaWithoutCols(sd, parameters, databaseName, tableName, partitionKeys), tblsd.getCols());
+  }
+
+  public static String getColumnNameDelimiter(List<FieldSchema> fieldSchemas) {
+    // we first take a look if any fieldSchemas contain COMMA
+    for (int i = 0; i < fieldSchemas.size(); i++) {
+      if (fieldSchemas.get(i).getName().contains(",")) {
+        return String.valueOf(ColumnType.COLUMN_COMMENTS_DELIMITER);
+      }
+    }
+    return String.valueOf(',');
+  }
+
+  /**
+   * Convert FieldSchemas to columnNames.
+   */
+  public static String getColumnNamesFromFieldSchema(List<FieldSchema> fieldSchemas) {
+    String delimiter = getColumnNameDelimiter(fieldSchemas);
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < fieldSchemas.size(); i++) {
+      if (i > 0) {
+        sb.append(delimiter);
+      }
+      sb.append(fieldSchemas.get(i).getName());
+    }
+    return sb.toString();
+  }
+
+  /**
+   * Convert FieldSchemas to columnTypes.
+   */
+  public static String getColumnTypesFromFieldSchema(
+      List<FieldSchema> fieldSchemas) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < fieldSchemas.size(); i++) {
+      if (i > 0) {
+        sb.append(",");
+      }
+      sb.append(fieldSchemas.get(i).getType());
+    }
+    return sb.toString();
+  }
+
+  public static String getColumnCommentsFromFieldSchema(List<FieldSchema> fieldSchemas) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < fieldSchemas.size(); i++) {
+      if (i > 0) {
+        sb.append(ColumnType.COLUMN_COMMENTS_DELIMITER);
+      }
+      sb.append(fieldSchemas.get(i).getComment());
+    }
+    return sb.toString();
+  }
+
+  public static int startMetaStore() throws Exception {
+    return startMetaStore(HadoopThriftAuthBridge.getBridge(), null);
+  }
+
+  public static int startMetaStore(final HadoopThriftAuthBridge bridge, Configuration conf) throws
+      Exception {
+    int port = findFreePort();
+    startMetaStore(port, bridge, conf);
+    return port;
+  }
+
+  public static int startMetaStore(Configuration conf) throws Exception {
+    return startMetaStore(HadoopThriftAuthBridge.getBridge(), conf);
+  }
+
+  public static void startMetaStore(final int port, final HadoopThriftAuthBridge bridge) throws Exception {
+    startMetaStore(port, bridge, null);
+  }
+
+  public static void startMetaStore(final int port,
+                                    final HadoopThriftAuthBridge bridge, Configuration hiveConf)
+      throws Exception{
+    if (hiveConf == null) {
+      hiveConf = MetastoreConf.newMetastoreConf();
+    }
+    final Configuration finalHiveConf = hiveConf;
+    Thread thread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          HiveMetaStore.startMetaStore(port, bridge, finalHiveConf);
+        } catch (Throwable e) {
+          LOG.error("Metastore Thrift Server threw an exception...",e);
+        }
+      }
+    });
+    thread.setDaemon(true);
+    thread.start();
+    loopUntilHMSReady(port);
+  }
+
+  /**
+   * A simple connect test to make sure that the metastore is up
+   * @throws Exception
+   */
+  private static void loopUntilHMSReady(int port) throws Exception {
+    int retries = 0;
+    Exception exc;
+    while (true) {
+      try {
+        Socket socket = new Socket();
+        socket.connect(new InetSocketAddress(port), 5000);
+        socket.close();
+        return;
+      } catch (Exception e) {
+        if (retries++ > 60) { //give up
+          exc = e;
+          break;
+        }
+        Thread.sleep(1000);
+      }
+    }
+    // something is preventing metastore from starting
+    // print the stack from all threads for debugging purposes
+    LOG.error("Unable to connect to metastore server: " + exc.getMessage());
+    LOG.info("Printing all thread stack traces for debugging before throwing exception.");
+    LOG.info(getAllThreadStacksAsString());
+    throw exc;
+  }
+
+  private static String getAllThreadStacksAsString() {
+    Map<Thread, StackTraceElement[]> threadStacks = Thread.getAllStackTraces();
+    StringBuilder sb = new StringBuilder();
+    for (Map.Entry<Thread, StackTraceElement[]> entry : threadStacks.entrySet()) {
+      Thread t = entry.getKey();
+      sb.append(System.lineSeparator());
+      sb.append("Name: ").append(t.getName()).append(" State: ").append(t.getState());
+      addStackString(entry.getValue(), sb);
+    }
+    return sb.toString();
+  }
+
+  private static void addStackString(StackTraceElement[] stackElems, StringBuilder sb) {
+    sb.append(System.lineSeparator());
+    for (StackTraceElement stackElem : stackElems) {
+      sb.append(stackElem).append(System.lineSeparator());
+    }
+  }
+
+  /**
+   * Finds a free port on the machine.
+   *
+   * @return
+   * @throws IOException
+   */
+  public static int findFreePort() throws IOException {
+    ServerSocket socket= new ServerSocket(0);
+    int port = socket.getLocalPort();
+    socket.close();
+    return port;
+  }
+
+  /**
+   * Finds a free port on the machine, but allow the
+   * ability to specify a port number to not use, no matter what.
+   */
+  public static int findFreePortExcepting(int portToExclude) throws IOException {
+    ServerSocket socket1 = null;
+    ServerSocket socket2 = null;
+    try {
+      socket1 = new ServerSocket(0);
+      socket2 = new ServerSocket(0);
+      if (socket1.getLocalPort() != portToExclude) {
+        return socket1.getLocalPort();
+      }
+      // If we're here, then socket1.getLocalPort was the port to exclude
+      // Since both sockets were open together at a point in time, we're
+      // guaranteed that socket2.getLocalPort() is not the same.
+      return socket2.getLocalPort();
+    } finally {
+      if (socket1 != null){
+        socket1.close();
+      }
+      if (socket2 != null){
+        socket2.close();
+      }
+    }
+  }
+
+  public static String getIndexTableName(String dbName, String baseTblName, String indexName) {
+    return dbName + "__" + baseTblName + "_" + indexName + "__";
+  }
+
+  public static boolean isMaterializedViewTable(Table table) {
+    if (table == null) {
+      return false;
+    }
+    return TableType.MATERIALIZED_VIEW.toString().equals(table.getTableType());
+  }
+
+  public static List<String> getColumnNames(List<FieldSchema> schema) {
+    List<String> cols = new ArrayList<>(schema.size());
+    for (FieldSchema fs : schema) {
+      cols.add(fs.getName());
+    }
+    return cols;
   }
 }

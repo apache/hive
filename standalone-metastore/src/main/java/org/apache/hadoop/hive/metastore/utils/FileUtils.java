@@ -53,6 +53,16 @@ public class FileUtils {
       return !name.startsWith("_") && !name.startsWith(".");
     }
   };
+  /**
+   * Filter that filters out hidden files
+   */
+  private static final PathFilter hiddenFileFilter = new PathFilter() {
+    @Override
+    public boolean accept(Path p) {
+      String name = p.getName();
+      return !name.startsWith("_") && !name.startsWith(".");
+    }
+  };
 
   /**
    * Move a particular file or directory to the trash.
@@ -423,5 +433,24 @@ public class FileUtils {
     } catch (IOException e) {
       throw new MetaException("Unable to : " + path);
     }
+  }
+
+  /**
+   * Utility method that determines if a specified directory already has
+   * contents (non-hidden files) or not - useful to determine if an
+   * immutable table already has contents, for example.
+   *
+   * @param path
+   * @throws IOException
+   */
+  public static boolean isDirEmpty(FileSystem fs, Path path) throws IOException {
+
+    if (fs.exists(path)) {
+      FileStatus[] status = fs.globStatus(new Path(path, "*"), hiddenFileFilter);
+      if (status.length > 0) {
+        return false;
+      }
+    }
+    return true;
   }
 }
