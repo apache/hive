@@ -310,8 +310,8 @@ public class ManyMiniCluster {
     System.setProperty("derby.stream.error.file", derbyLogFile.getPath());
 
 
-//    Driver driver = new Driver(hiveConf);
-//    SessionState.start(new CliSessionState(hiveConf));
+//    Driver driver = new Driver(conf);
+//    SessionState.start(new CliSessionState(conf));
 
     hiveMetaStoreClient = new HiveMetaStoreClient(hiveConf);
   }

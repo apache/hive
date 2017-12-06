@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -610,7 +609,8 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
           }
 
         } else {
-          if(immutable && fs.exists(finalOutputPath) && !MetaStoreUtils.isDirEmpty(fs, finalOutputPath)) {
+          if(immutable && fs.exists(finalOutputPath) &&
+              !org.apache.hadoop.hive.metastore.utils.FileUtils.isDirEmpty(fs, finalOutputPath)) {
 
             throw new HCatException(ErrorType.ERROR_DUPLICATE_PARTITION, "Data already exists in " + finalOutputPath
                 + ", duplicate publish not possible.");

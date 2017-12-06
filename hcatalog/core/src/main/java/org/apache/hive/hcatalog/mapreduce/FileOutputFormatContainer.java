@@ -23,7 +23,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -202,7 +202,7 @@ class FileOutputFormatContainer extends OutputFormatContainer {
       Path tablePath = new Path(table.getTTable().getSd().getLocation());
       FileSystem fs = tablePath.getFileSystem(context.getConfiguration());
 
-      if (!MetaStoreUtils.isDirEmpty(fs,tablePath)){
+      if (!FileUtils.isDirEmpty(fs,tablePath)){
         throw new HCatException(ErrorType.ERROR_NON_EMPTY_TABLE,
             table.getDbName() + "." + table.getTableName());
       }

@@ -81,8 +81,8 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
@@ -137,6 +137,7 @@ import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -876,7 +877,7 @@ public class Hive {
         tbl.setDbName(SessionState.get().getCurrentDatabase());
       }
       if (tbl.getCols().size() == 0 || tbl.getSd().getColsSize() == 0) {
-        tbl.setFields(MetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(),
+        tbl.setFields(HiveMetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(),
             tbl.getDeserializer()));
       }
       tbl.checkValidity(conf);
@@ -918,7 +919,7 @@ public class Hive {
 
   public static List<FieldSchema> getFieldsFromDeserializerForMsStorage(
       Table tbl, Deserializer deserializer) throws SerDeException, MetaException {
-    List<FieldSchema> schema = MetaStoreUtils.getFieldsFromDeserializer(
+    List<FieldSchema> schema = HiveMetaStoreUtils.getFieldsFromDeserializer(
         tbl.getTableName(), deserializer);
     for (FieldSchema field : schema) {
       field.setType(MetaStoreUtils.TYPE_FROM_DESERIALIZER);
@@ -2762,10 +2763,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       List<DropTableDesc.PartSpec> partSpecs, PartitionDropOptions dropOptions) throws HiveException {
     try {
       Table tbl = getTable(dbName, tblName);
-      List<ObjectPair<Integer, byte[]>> partExprs =
-          new ArrayList<ObjectPair<Integer,byte[]>>(partSpecs.size());
+      List<org.apache.hadoop.hive.metastore.utils.ObjectPair<Integer, byte[]>> partExprs =
+          new ArrayList<>(partSpecs.size());
       for (DropTableDesc.PartSpec partSpec : partSpecs) {
-        partExprs.add(new ObjectPair<Integer, byte[]>(partSpec.getPrefixLength(),
+        partExprs.add(new org.apache.hadoop.hive.metastore.utils.ObjectPair<>(partSpec.getPrefixLength(),
             SerializationUtilities.serializeExpressionToKryo(partSpec.getPartSpec())));
       }
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getMSC().dropPartitions(
@@ -4189,7 +4190,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public static List<FieldSchema> getFieldsFromDeserializer(String name,
       Deserializer serde) throws HiveException {
     try {
-      return MetaStoreUtils.getFieldsFromDeserializer(name, serde);
+      return HiveMetaStoreUtils.getFieldsFromDeserializer(name, serde);
     } catch (SerDeException e) {
       throw new HiveException("Error in getting fields from serde. "
           + e.getMessage(), e);

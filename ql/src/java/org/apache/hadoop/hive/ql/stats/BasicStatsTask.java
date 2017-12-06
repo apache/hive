@@ -34,10 +34,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -201,7 +201,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     private String getAggregationPrefix0(Table table, Partition partition) throws MetaException {
 
       // prefix is of the form dbName.tblName
-      String prefix = table.getDbName() + "." + org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(table.getTableName());
+      String prefix = table.getDbName() + "." + MetaStoreUtils.encodeTableName(table.getTableName());
       // FIXME: this is a secret contract; reusein getAggrKey() creates a more closer relation to the StatsGatherer
       // prefix = work.getAggKey();
       prefix = prefix.toLowerCase();

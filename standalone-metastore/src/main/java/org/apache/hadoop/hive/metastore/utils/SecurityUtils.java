@@ -36,11 +36,15 @@ import org.apache.zookeeper.client.ZooKeeperSaslClient;
 import javax.security.auth.login.AppConfigurationEntry;
 import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLSocket;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
@@ -283,5 +287,27 @@ public class SecurityUtils {
           + Arrays.toString(sslServerSocket.getEnabledProtocols()));
     }
     return thriftServerSocket;
+  }
+
+  public static TTransport getSSLSocket(String host, int port, int loginTimeout,
+                                        String trustStorePath, String trustStorePassWord) throws TTransportException {
+    TSSLTransportFactory.TSSLTransportParameters params =
+        new TSSLTransportFactory.TSSLTransportParameters();
+    params.setTrustStore(trustStorePath, trustStorePassWord);
+    params.requireClientAuth(true);
+    // The underlying SSLSocket object is bound to host:port with the given SO_TIMEOUT and
+    // SSLContext created with the given params
+    TSocket tSSLSocket = TSSLTransportFactory.getClientSocket(host, port, loginTimeout, params);
+    return getSSLSocketWithHttps(tSSLSocket);
+  }
+
+  // Using endpoint identification algorithm as HTTPS enables us to do
+  // CNAMEs/subjectAltName verification
+  private static TSocket getSSLSocketWithHttps(TSocket tSSLSocket) throws TTransportException {
+    SSLSocket sslSocket = (SSLSocket) tSSLSocket.getSocket();
+    SSLParameters sslParams = sslSocket.getSSLParameters();
+    sslParams.setEndpointIdentificationAlgorithm("HTTPS");
+    sslSocket.setSSLParameters(sslParams);
+    return new TSocket(sslSocket);
   }
 }

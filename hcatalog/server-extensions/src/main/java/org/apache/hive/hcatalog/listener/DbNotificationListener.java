@@ -27,7 +27,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants;
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -46,6 +45,8 @@ import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
@@ -92,27 +93,22 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   private static final Logger LOG = LoggerFactory.getLogger(DbNotificationListener.class.getName());
   private static CleanerThread cleaner = null;
 
-  // This is the same object as super.conf, but it's convenient to keep a copy of it as a
-  // HiveConf rather than a Configuration.
-  private HiveConf hiveConf;
+  private Configuration conf;
   private MessageFactory msgFactory;
 
-  private synchronized void init(HiveConf conf) throws MetaException {
+  private synchronized void init(Configuration conf) throws MetaException {
     if (cleaner == null) {
       cleaner =
           new CleanerThread(conf, RawStoreProxy.getProxy(conf, conf,
-              conf.getVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL), 999999));
+              MetastoreConf.getVar(conf, ConfVars.RAW_STORE_IMPL), 999999));
       cleaner.start();
     }
   }
 
   public DbNotificationListener(Configuration config) throws MetaException {
     super(config);
-    // The code in MetastoreUtils.getMetaStoreListeners() that calls this looks for a constructor
-    // with a Configuration parameter, so we have to declare config as Configuration.  But it
-    // actually passes a HiveConf, which we need.  So we'll do this ugly down cast.
-    hiveConf = (HiveConf)config;
-    init(hiveConf);
+    conf = config;
+    init(conf);
     msgFactory = MessageFactory.getInstance();
   }
 
@@ -123,14 +119,17 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onConfigChange(ConfigChangeEvent tableEvent) throws MetaException {
     String key = tableEvent.getKey();
-    if (key.equals(HiveConf.ConfVars.METASTORE_EVENT_DB_LISTENER_TTL.toString())) {
-      // This weirdness of setting it in our hiveConf and then reading back does two things.
+    if (key.equals(ConfVars.EVENT_DB_LISTENER_TTL.toString()) ||
+        key.equals(ConfVars.EVENT_DB_LISTENER_TTL.getHiveName())) {
+      // This weirdness of setting it in our conf and then reading back does two things.
       // One, it handles the conversion of the TimeUnit.  Two, it keeps the value around for
       // later in case we need it again.
-      hiveConf.set(HiveConf.ConfVars.METASTORE_EVENT_DB_LISTENER_TTL.name(),
-          tableEvent.getNewValue());
-      cleaner.setTimeToLive(hiveConf.getTimeVar(HiveConf.ConfVars.METASTORE_EVENT_DB_LISTENER_TTL,
-          TimeUnit.SECONDS));
+      long time = MetastoreConf.convertTimeStr(tableEvent.getNewValue(), TimeUnit.SECONDS,
+          TimeUnit.SECONDS);
+      MetastoreConf.setTimeVar(getConf(), MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, time,
+          TimeUnit.SECONDS);
+      cleaner.setTimeToLive(MetastoreConf.getTimeVar(getConf(),
+          MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, TimeUnit.SECONDS));
     }
   }
 
@@ -205,7 +204,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       try {
         if (locString != null) {
           Path loc = new Path(locString);
-          fs = loc.getFileSystem(hiveConf);
+          fs = loc.getFileSystem(conf);
           files = fs.listStatus(loc, VALID_FILES_FILTER);
         }
       } catch (IOException e) {
@@ -573,7 +572,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     event.setMessageFormat(msgFactory.getMessageFormat());
     LOG.debug("DbNotificationListener: Processing : {}:{}", event.getEventId(),
         event.getMessage());
-    HMSHandler.getMSForConf(hiveConf).addNotificationEvent(event);
+    HMSHandler.getMSForConf(conf).addNotificationEvent(event);
 
       // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
       if (event.isSetEventId()) {
@@ -588,10 +587,10 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     private int ttl;
     static private long sleepTime = 60000;
 
-    CleanerThread(HiveConf conf, RawStore rs) {
+    CleanerThread(Configuration conf, RawStore rs) {
       super("CleanerThread");
       this.rs = rs;
-      setTimeToLive(conf.getTimeVar(HiveConf.ConfVars.METASTORE_EVENT_DB_LISTENER_TTL,
+      setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_TTL,
           TimeUnit.SECONDS));
       setDaemon(true);
     }

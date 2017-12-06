@@ -48,6 +48,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TestHiveMetastoreAuthorizationProvider. Test case for
@@ -65,6 +67,8 @@ import org.apache.hadoop.security.UserGroupInformation;
  * authorization providers like StorageBasedAuthorizationProvider
  */
 public class TestMetastoreAuthorizationProvider extends TestCase {
+  private static final Logger LOG = LoggerFactory.getLogger(TestMetastoreAuthorizationProvider.class);
+
   protected HiveConf clientHiveConf;
   protected HiveMetaStoreClient msc;
   protected Driver driver;

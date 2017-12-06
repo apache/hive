@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.junit.Test;
 
 /**
@@ -37,7 +36,7 @@ public class TestMetaStoreConnectionUrlHook {
     MetastoreConf.setVar(conf, ConfVars.CONNECTURLHOOK, DummyJdoConnectionUrlHook.class.getName());
     MetastoreConf.setVar(conf, ConfVars.CONNECTURLKEY, DummyJdoConnectionUrlHook.initialUrl);
     MetastoreConf.setVar(conf, ConfVars.RAW_STORE_IMPL, DummyRawStoreForJdoConnection.class.getName());
-    MetaStoreUtils.setConfForStandloneMode(conf);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     // Instantiating the HMSHandler with hive.metastore.checkForDefaultDb will cause it to
     // initialize an instance of the DummyRawStoreForJdoConnection

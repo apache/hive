@@ -44,8 +44,8 @@ public class SerDeStorageSchemaReader implements StorageSchemaReader {
         }
       }
 
-      Deserializer s = MetaStoreUtils.getDeserializer(conf, tbl, false);
-      return MetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(), s);
+      Deserializer s = HiveMetaStoreUtils.getDeserializer(conf, tbl, false);
+      return HiveMetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(), s);
     } catch (Exception e) {
       StringUtils.stringifyException(e);
       throw new MetaException(e.getMessage());

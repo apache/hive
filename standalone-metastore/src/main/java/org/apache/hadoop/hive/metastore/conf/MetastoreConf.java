@@ -463,6 +463,9 @@ public class MetastoreConf {
         "hive.metastore.event.message.factory",
         "org.apache.hadoop.hive.metastore.messaging.json.JSONMessageFactory",
         "Factory class for making encoding and decoding messages in the events generated."),
+    EVENT_DB_LISTENER_TTL("metastore.event.db.listener.timetolive",
+        "hive.metastore.event.db.listener.timetolive", 86400, TimeUnit.SECONDS,
+        "time after which events will be removed from the database listener queue"),
     EVENT_DB_NOTIFICATION_API_AUTH("metastore.metastore.event.db.notification.api.auth",
         "hive.metastore.event.db.notification.api.auth", true,
         "Should metastore do authorization against database notification related APIs such as get_next_notification.\n" +
@@ -799,6 +802,19 @@ public class MetastoreConf {
         "internal use only, true when in testing tez"),
     // We need to track this as some listeners pass it through our config and we need to honor
     // the system properties.
+    HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",
+        "hive.security.authorization.manager",
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory",
+        "The Hive client authorization manager class name. The user defined authorization class should implement \n" +
+            "interface org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider."),
+    HIVE_METASTORE_AUTHENTICATOR_MANAGER("hive.security.metastore.authenticator.manager",
+        "hive.security.metastore.authenticator.manager",
+        "org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator",
+        "authenticator manager class name to be used in the metastore for authentication. \n" +
+            "The user defined authenticator should implement interface org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider."),
+    HIVE_METASTORE_AUTHORIZATION_AUTH_READS("hive.security.metastore.authorization.auth.reads",
+        "hive.security.metastore.authorization.auth.reads", true,
+        "If this is true, metastore authorizer authorizes read actions on database, table"),
     HIVE_METASTORE_AUTHORIZATION_MANAGER(NO_SUCH_KEY,
         "hive.security.metastore.authorization.manager",
         "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveMetastoreAuthorizationProvider",
