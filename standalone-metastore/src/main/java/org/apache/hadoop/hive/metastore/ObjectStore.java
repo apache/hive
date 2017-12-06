@@ -3500,7 +3500,7 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("filter specified is {}, JDOQL filter is {}", filter, queryFilterString);
       if (LOG.isDebugEnabled()) {
         for (Entry<String, Object> entry : params.entrySet()) {
-          LOG.debug("key: {} value: {} class: {}", entry.getKey(), entry.getValue(), 
+          LOG.debug("key: {} value: {} class: {}", entry.getKey(), entry.getValue(),
              entry.getValue().getClass().getName());
         }
       }
@@ -7665,7 +7665,7 @@ public class ObjectStore implements RawStore, Configurable {
   private List<MTableColumnStatistics> getMTableColumnStatistics(Table table, List<String> colNames, QueryWrapper queryWrapper)
       throws MetaException {
     if (colNames == null || colNames.isEmpty()) {
-      return null;
+      return Collections.emptyList();
     }
 
     boolean committed = false;
@@ -7750,7 +7750,9 @@ public class ObjectStore implements RawStore, Configurable {
 
         try {
         List<MTableColumnStatistics> mStats = getMTableColumnStatistics(getTable(), colNames, queryWrapper);
-        if (mStats.isEmpty()) return null;
+        if (mStats.isEmpty()) {
+          return null;
+        }
         // LastAnalyzed is stored per column, but thrift object has it per multiple columns.
         // Luckily, nobody actually uses it, so we will set to lowest value of all columns for now.
         ColumnStatisticsDesc desc = StatObjectConverter.getTableColumnStatisticsDesc(mStats.get(0));
