@@ -22,11 +22,11 @@ import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 /**
  * Interface for handling rule violations by queries and for performing actions defined in the rules.
  */
-public interface TriggerActionHandler {
+public interface TriggerActionHandler<SessionType> {
   /**
    * Applies the action defined in the rule for the specified queries
    *
    * @param queriesViolated - violated queries and the rule it violated
    */
-  void applyAction(Map<TezSessionState, Trigger> queriesViolated);
+  void applyAction(Map<SessionType, Trigger> queriesViolated);
 }

@@ -18,16 +18,9 @@ package org.apache.hive.jdbc;
 
 import static org.apache.hadoop.hive.ql.exec.tez.TestWorkloadManager.plan;
 import static org.apache.hadoop.hive.ql.exec.tez.TestWorkloadManager.pool;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -94,10 +87,30 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
       new Action(Action.Type.MOVE_TO_POOL, "ETL"));
     Trigger killTrigger = new ExecutionTrigger("slow_query_kill", killExpression,
       new Action(Action.Type.KILL_QUERY));
-    setupTriggers(Lists.newArrayList(moveTrigger, killTrigger), Lists.newArrayList(killTrigger));
+    setupTriggers(Lists.newArrayList(moveTrigger), Lists.newArrayList(killTrigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, killTrigger + " violated");
+    List<String> setCmds = new ArrayList<>();
+    setCmds.add("set hive.tez.session.events.print.summary=json");
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    List<String> errCaptureExpect = new ArrayList<>();
+    errCaptureExpect.add("Workload Manager Events Summary");
+    errCaptureExpect.add("Event: GET Pool: BI Cluster %: 80.00");
+    errCaptureExpect.add("Event: MOVE Pool: ETL Cluster %: 20.00");
+    errCaptureExpect.add("Event: KILL Pool: null Cluster %: 0.00");
+    errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
+    errCaptureExpect.add("\"eventType\" : \"GET\"");
+    errCaptureExpect.add("\"eventType\" : \"MOVE\"");
+    errCaptureExpect.add("\"eventType\" : \"KILL\"");
+    errCaptureExpect.add("\"eventType\" : \"RETURN\"");
+    errCaptureExpect.add("\"name\" : \"slow_query_move\"");
+    errCaptureExpect.add("\"name\" : \"slow_query_kill\"");
+    // violation in BI queue
+    errCaptureExpect.add("\"violationMsg\" : \"Trigger " + moveTrigger + " violated");
+    // violation in ETL queue
+    errCaptureExpect.add("\"violationMsg\" : \"Trigger " + killTrigger + " violated");
+    runQueryWithTrigger(query, setCmds, killTrigger + " violated", errCaptureExpect);
   }
 
   @Test(timeout = 60000)
@@ -111,7 +124,65 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     setupTriggers(Lists.newArrayList(moveTrigger, killTrigger), Lists.newArrayList());
     String query = "select sleep(t1.under_col, 1), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col==t2.under_col";
-    runQueryWithTrigger(query, null, null);
+    List<String> setCmds = new ArrayList<>();
+    setCmds.add("set hive.tez.session.events.print.summary=json");
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    List<String> errCaptureExpect = new ArrayList<>();
+    errCaptureExpect.add("Workload Manager Events Summary");
+    errCaptureExpect.add("Event: GET Pool: BI Cluster %: 80.00");
+    errCaptureExpect.add("Event: MOVE Pool: ETL Cluster %: 20.00");
+    errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
+    errCaptureExpect.add("\"eventType\" : \"GET\"");
+    errCaptureExpect.add("\"eventType\" : \"MOVE\"");
+    errCaptureExpect.add("\"eventType\" : \"RETURN\"");
+    errCaptureExpect.add("\"name\" : \"move_big_read\"");
+    errCaptureExpect.add("\"name\" : \"slow_query_kill\"");
+    // violation in BI queue
+    errCaptureExpect.add("\"violationMsg\" : \"Trigger " + moveTrigger + " violated");
+    runQueryWithTrigger(query, setCmds, null, errCaptureExpect);
+  }
+
+  @Test(timeout = 60000)
+  public void testTriggerMoveBackKill() throws Exception {
+    Expression moveExpression1 = ExpressionFactory.fromString("HDFS_BYTES_READ > 100");
+    Expression moveExpression2 = ExpressionFactory.fromString("SHUFFLE_BYTES > 200");
+    Expression killExpression = ExpressionFactory.fromString("EXECUTION_TIME > 2000");
+    Trigger moveTrigger1 = new ExecutionTrigger("move_big_read", moveExpression1,
+      new Action(Action.Type.MOVE_TO_POOL, "ETL"));
+    Trigger moveTrigger2 = new ExecutionTrigger("move_high", moveExpression2,
+      new Action(Action.Type.MOVE_TO_POOL, "BI"));
+    Trigger killTrigger = new ExecutionTrigger("slow_query_kill", killExpression,
+      new Action(Action.Type.KILL_QUERY));
+    setupTriggers(Lists.newArrayList(moveTrigger1, killTrigger), Lists.newArrayList(moveTrigger2));
+    String query = "select sleep(t1.under_col, 1), t1.value from " + tableName + " t1 join " + tableName +
+      " t2 on t1.under_col>=t2.under_col";
+    List<String> setCmds = new ArrayList<>();
+    setCmds.add("set hive.tez.session.events.print.summary=json");
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    List<String> errCaptureExpect = new ArrayList<>();
+    errCaptureExpect.add("Workload Manager Events Summary");
+    errCaptureExpect.add("Event: GET Pool: BI Cluster %: 80.00");
+    errCaptureExpect.add("Event: MOVE Pool: ETL Cluster %: 20.00");
+    errCaptureExpect.add("Event: MOVE Pool: BI Cluster %: 80.00");
+    errCaptureExpect.add("Event: KILL Pool: null Cluster %: 0.00");
+    errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
+    errCaptureExpect.add("\"eventType\" : \"GET\"");
+    errCaptureExpect.add("\"eventType\" : \"MOVE\"");
+    errCaptureExpect.add("\"eventType\" : \"MOVE\"");
+    errCaptureExpect.add("\"eventType\" : \"KILL\"");
+    errCaptureExpect.add("\"eventType\" : \"RETURN\"");
+    errCaptureExpect.add("\"name\" : \"move_big_read\"");
+    errCaptureExpect.add("\"name\" : \"slow_query_kill\"");
+    errCaptureExpect.add("\"name\" : \"move_high\"");
+    // violation in BI queue
+    errCaptureExpect.add("\"violationMsg\" : \"Trigger " + moveTrigger1 + " violated");
+    // violation in ETL queue
+    errCaptureExpect.add("\"violationMsg\" : \"Trigger " + moveTrigger2 + " violated");
+    // violation in BI queue
+    errCaptureExpect.add("\"violationMsg\" : \"Trigger " + killTrigger + " violated");
+    runQueryWithTrigger(query, setCmds, killTrigger + " violated", errCaptureExpect);
   }
 
   @Test(timeout = 60000)
@@ -125,7 +196,23 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     setupTriggers(Lists.newArrayList(moveTrigger, killTrigger), Lists.newArrayList());
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, killTrigger + " violated");
+    List<String> setCmds = new ArrayList<>();
+    setCmds.add("set hive.tez.session.events.print.summary=json");
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    List<String> errCaptureExpect = new ArrayList<>();
+    errCaptureExpect.add("Workload Manager Events Summary");
+    errCaptureExpect.add("Event: GET Pool: BI Cluster %: 80.00");
+    errCaptureExpect.add("Event: KILL Pool: null Cluster %: 0.00");
+    errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
+    errCaptureExpect.add("\"eventType\" : \"GET\"");
+    errCaptureExpect.add("\"eventType\" : \"KILL\"");
+    errCaptureExpect.add("\"eventType\" : \"RETURN\"");
+    errCaptureExpect.add("\"name\" : \"move_big_read\"");
+    errCaptureExpect.add("\"name\" : \"kill_big_read\"");
+    // violation in BI queue
+    errCaptureExpect.add("\"violationMsg\" : \"Trigger " + killTrigger + " violated");
+    runQueryWithTrigger(query, setCmds, killTrigger + " violated", errCaptureExpect);
   }
 
   @Override

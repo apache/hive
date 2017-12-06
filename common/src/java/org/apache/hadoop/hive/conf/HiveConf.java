@@ -3052,6 +3052,10 @@ public class HiveConf extends Configuration {
         "hive.tez.exec.print.summary",
         false,
         "Display breakdown of execution steps, for every query executed by the shell."),
+    TEZ_SESSION_EVENTS_SUMMARY(
+      "hive.tez.session.events.print.summary",
+      "none", new StringSet("none", "text", "json"),
+      "Display summary of all tez sessions related events in text or json format"),
     TEZ_EXEC_INPLACE_PROGRESS(
         "hive.tez.exec.inplace.progress",
         true,

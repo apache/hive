@@ -21,13 +21,12 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class KillMoveTriggerActionHandler implements TriggerActionHandler {
+public class KillMoveTriggerActionHandler implements TriggerActionHandler<WmTezSession> {
   private static final Logger LOG = LoggerFactory.getLogger(KillMoveTriggerActionHandler.class);
   private final WorkloadManager wm;
 
@@ -36,31 +35,20 @@ public class KillMoveTriggerActionHandler implements TriggerActionHandler {
   }
 
   @Override
-  public void applyAction(final Map<TezSessionState, Trigger> queriesViolated) {
-    TezSessionState sessionState;
-    Map<WmTezSession, Future<Boolean>> moveFutures = new HashMap<>(queriesViolated.size());
-    for (Map.Entry<TezSessionState, Trigger> entry : queriesViolated.entrySet()) {
+  public void applyAction(final Map<WmTezSession, Trigger> queriesViolated) {
+    Map<WmTezSession, Future<Boolean>> moveFutures = new HashMap<>();
+    Map<WmTezSession, Future<Boolean>> killFutures = new HashMap<>();
+    for (Map.Entry<WmTezSession, Trigger> entry : queriesViolated.entrySet()) {
+      WmTezSession wmTezSession = entry.getKey();
       switch (entry.getValue().getAction().getType()) {
         case KILL_QUERY:
-          sessionState = entry.getKey();
-          String queryId = sessionState.getTriggerContext().getQueryId();
-          try {
-            sessionState.getKillQuery().killQuery(queryId, entry.getValue().getViolationMsg());
-          } catch (HiveException e) {
-            LOG.warn("Unable to kill query {} for trigger violation");
-          }
+          Future<Boolean> killFuture = wm.applyKillSessionAsync(wmTezSession, entry.getValue().getViolationMsg());
+          killFutures.put(wmTezSession, killFuture);
           break;
         case MOVE_TO_POOL:
-          sessionState = entry.getKey();
-          if (sessionState instanceof WmTezSession) {
-            WmTezSession wmTezSession = (WmTezSession) sessionState;
-            String destPoolName = entry.getValue().getAction().getPoolName();
-            Future<Boolean> moveFuture = wm.applyMoveSessionAsync(wmTezSession, destPoolName);
-            moveFutures.put(wmTezSession, moveFuture);
-          } else {
-            throw new RuntimeException("WmTezSession is expected. Got: " + sessionState.getClass().getSimpleName() +
-              ". SessionId: " + sessionState.getSessionId());
-          }
+          String destPoolName = entry.getValue().getAction().getPoolName();
+          Future<Boolean> moveFuture = wm.applyMoveSessionAsync(wmTezSession, destPoolName);
+          moveFutures.put(wmTezSession, moveFuture);
           break;
         default:
           throw new RuntimeException("Unsupported action: " + entry.getValue());
@@ -69,14 +57,27 @@ public class KillMoveTriggerActionHandler implements TriggerActionHandler {
 
     for (Map.Entry<WmTezSession, Future<Boolean>> entry : moveFutures.entrySet()) {
       WmTezSession wmTezSession = entry.getKey();
-      Future<Boolean> moveFuture = entry.getValue();
+      Future<Boolean> future = entry.getValue();
       try {
         // block to make sure move happened successfully
-        if (moveFuture.get()) {
+        if (future.get()) {
           LOG.info("Moved session {} to pool {}", wmTezSession.getSessionId(), wmTezSession.getPoolName());
         }
       } catch (InterruptedException | ExecutionException e) {
         LOG.error("Exception while moving session {}", wmTezSession.getSessionId(), e);
+      }
+    }
+
+    for (Map.Entry<WmTezSession, Future<Boolean>> entry : killFutures.entrySet()) {
+      WmTezSession wmTezSession = entry.getKey();
+      Future<Boolean> future = entry.getValue();
+      try {
+        // block to make sure kill happened successfully
+        if (future.get()) {
+          LOG.info("Killed session {}", wmTezSession.getSessionId());
+        }
+      } catch (InterruptedException | ExecutionException e) {
+        LOG.error("Exception while killing session {}", wmTezSession.getSessionId(), e);
       }
     }
   }
