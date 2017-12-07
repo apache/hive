@@ -329,6 +329,13 @@ public class HiveConf extends Configuration {
   };
 
   /**
+   * encoded parameter values are ;-) encoded.  Use decoder to get ;-) decoded string
+   */
+  public static final HiveConf.ConfVars[] ENCODED_CONF = {
+      ConfVars.HIVEQUERYSTRING
+  };
+
+  /**
    * Variables used by LLAP daemons.
    * TODO: Eventually auto-populate this based on prefixes. The conf variables
    * will need to be renamed for this.
@@ -3931,6 +3938,16 @@ public class HiveConf extends Configuration {
 
   public boolean isHiddenConfig(String name) {
     return Iterables.any(hiddenSet, hiddenVar -> name.startsWith(hiddenVar));
+  }
+
+  public static boolean isEncodedPar(String name) {
+    for (ConfVars confVar : HiveConf.ENCODED_CONF) {
+      ConfVars confVar1 = confVar;
+      if (confVar1.varname.equals(name)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

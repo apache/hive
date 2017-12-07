@@ -143,7 +143,12 @@ public class SetProcessor implements CommandProcessor {
     if (ss.getConf().isHiddenConfig(s)) {
       ss.out.println(s + " is a hidden config");
     } else if (ss.getConf().get(s) != null) {
-      ss.out.println(s + "=" + ss.getConf().get(s));
+      if (ss.getConf().isEncodedPar(s)) {
+        ss.out.println(s + "=" + HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER
+            .decode(ss.getConf().get(s)));
+      } else {
+        ss.out.println(s + "=" + ss.getConf().get(s));
+      }
     } else if (ss.getHiveVariables().containsKey(s)) {
       ss.out.println(s + "=" + ss.getHiveVariables().get(s));
     } else {
