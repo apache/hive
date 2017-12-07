@@ -1623,7 +1623,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3
                       input vertices:
                         1 Reducer 11
-                      residual filter predicates: {(_col1 <> _col2)}
+                      residual filter predicates: {(_col2 <> _col1)}
                       Statistics: Num rows: 1 Data size: 553 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: _col3 is null (type: boolean)
@@ -1668,7 +1668,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3
                       input vertices:
                         1 Reducer 12
-                      residual filter predicates: {(_col1 <> _col2)}
+                      residual filter predicates: {(_col2 <> _col1)}
                       Statistics: Num rows: 1 Data size: 553 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: _col3 is null (type: boolean)
@@ -1711,7 +1711,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2, _col3
                       input vertices:
                         1 Reducer 13
-                      residual filter predicates: {(_col1 <> _col2)}
+                      residual filter predicates: {(_col2 <> _col1)}
                       Statistics: Num rows: 1 Data size: 553 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: _col3 is null (type: boolean)

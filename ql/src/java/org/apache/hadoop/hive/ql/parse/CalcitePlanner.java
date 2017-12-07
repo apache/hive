@@ -1355,7 +1355,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelNode calciteGenPlan = null;
       RelNode calcitePreCboPlan = null;
       RelNode calciteOptimizedPlan = null;
-      subqueryId = 0;
+      subqueryId = -1;
 
       /*
        * recreate cluster, so that it picks up the additional traitDef
@@ -2582,104 +2582,106 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private void subqueryRestrictionCheck(QB qb, ASTNode searchCond, RelNode srcRel,
                                          boolean forHavingClause, Set<ASTNode> corrScalarQueries,
                         Set<ASTNode> scalarQueriesWithAggNoWinNoGby) throws SemanticException {
-        List<ASTNode> subQueriesInOriginalTree = SubQueryUtils.findSubQueries(searchCond);
+      List<ASTNode> subQueriesInOriginalTree = SubQueryUtils.findSubQueries(searchCond);
 
-        ASTNode clonedSearchCond = (ASTNode) SubQueryUtils.adaptor.dupTree(searchCond);
-        List<ASTNode> subQueries = SubQueryUtils.findSubQueries(clonedSearchCond);
-        for(int i=0; i<subQueriesInOriginalTree.size(); i++){
-          //we do not care about the transformation or rewriting of AST
-          // which following statement does
-          // we only care about the restriction checks they perform.
-          // We plan to get rid of these restrictions later
-          int sqIdx = qb.incrNumSubQueryPredicates();
-          ASTNode originalSubQueryAST = subQueriesInOriginalTree.get(i);
+      ASTNode clonedSearchCond = (ASTNode) SubQueryUtils.adaptor.dupTree(searchCond);
+      List<ASTNode> subQueries = SubQueryUtils.findSubQueries(clonedSearchCond);
+      for(int i=0; i<subQueriesInOriginalTree.size(); i++){
+        //we do not care about the transformation or rewriting of AST
+        // which following statement does
+        // we only care about the restriction checks they perform.
+        // We plan to get rid of these restrictions later
+        int sqIdx = qb.incrNumSubQueryPredicates();
+        ASTNode originalSubQueryAST = subQueriesInOriginalTree.get(i);
 
-          ASTNode subQueryAST = subQueries.get(i);
-          //SubQueryUtils.rewriteParentQueryWhere(clonedSearchCond, subQueryAST);
-          Boolean orInSubquery = new Boolean(false);
-          Integer subqueryCount = new Integer(0);
-          ObjectPair<Boolean, Integer> subqInfo = new ObjectPair<Boolean, Integer>(false, 0);
+        ASTNode subQueryAST = subQueries.get(i);
+        //SubQueryUtils.rewriteParentQueryWhere(clonedSearchCond, subQueryAST);
+        Boolean orInSubquery = new Boolean(false);
+        Integer subqueryCount = new Integer(0);
+        ObjectPair<Boolean, Integer> subqInfo = new ObjectPair<Boolean, Integer>(false, 0);
 
-          ASTNode outerQueryExpr = (ASTNode) subQueryAST.getChild(2);
+        ASTNode outerQueryExpr = (ASTNode) subQueryAST.getChild(2);
 
-          if (outerQueryExpr != null && outerQueryExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR ) {
+        if (outerQueryExpr != null && outerQueryExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
 
-            throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-                    outerQueryExpr, "IN/NOT IN subqueries are not allowed in LHS"));
-          }
+          throw new CalciteSubquerySemanticException(
+              ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+              outerQueryExpr, "IN/NOT IN subqueries are not allowed in LHS"));
+        }
 
 
-          QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(), sqIdx, subQueryAST,
-                  originalSubQueryAST, ctx);
+        QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(), sqIdx, subQueryAST,
+            originalSubQueryAST, ctx);
 
-          RowResolver inputRR = relToHiveRR.get(srcRel);
+        RowResolver inputRR = relToHiveRR.get(srcRel);
 
-          String havingInputAlias = null;
+        String havingInputAlias = null;
 
-          boolean [] subqueryConfig = {false, false};
-          subQuery.subqueryRestrictionsCheck(inputRR, forHavingClause,
-              havingInputAlias, subqueryConfig);
-          if(subqueryConfig[0]) {
-            corrScalarQueries.add(originalSubQueryAST);
-          }
-          if(subqueryConfig[1]) {
-            scalarQueriesWithAggNoWinNoGby.add(originalSubQueryAST);
-          }
+        boolean [] subqueryConfig = {false, false};
+        subQuery.subqueryRestrictionsCheck(inputRR, forHavingClause,
+            havingInputAlias, subqueryConfig);
+        if(subqueryConfig[0]) {
+          corrScalarQueries.add(originalSubQueryAST);
+        }
+        if(subqueryConfig[1]) {
+          scalarQueriesWithAggNoWinNoGby.add(originalSubQueryAST);
+        }
       }
     }
     private boolean genSubQueryRelNode(QB qb, ASTNode node, RelNode srcRel, boolean forHavingClause,
                                        Map<ASTNode, RelNode> subQueryToRelNode) throws SemanticException {
 
-        Set<ASTNode> corrScalarQueriesWithAgg = new HashSet<ASTNode>();
-        Set<ASTNode> scalarQueriesWithAggNoWinNoGby= new HashSet<ASTNode>();
-        //disallow subqueries which HIVE doesn't currently support
-        subqueryRestrictionCheck(qb, node, srcRel, forHavingClause, corrScalarQueriesWithAgg,
-            scalarQueriesWithAggNoWinNoGby);
-        Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
-        stack.push(node);
+      Set<ASTNode> corrScalarQueriesWithAgg = new HashSet<ASTNode>();
+      Set<ASTNode> scalarQueriesWithAggNoWinNoGby= new HashSet<ASTNode>();
+      //disallow subqueries which HIVE doesn't currently support
+      subqueryRestrictionCheck(qb, node, srcRel, forHavingClause, corrScalarQueriesWithAgg,
+          scalarQueriesWithAggNoWinNoGby);
+      Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
+      stack.push(node);
 
-        boolean isSubQuery = false;
+      boolean isSubQuery = false;
 
-        while (!stack.isEmpty()) {
-          ASTNode next = stack.pop();
+      while (!stack.isEmpty()) {
+        ASTNode next = stack.pop();
 
-          switch(next.getType()) {
-            case HiveParser.TOK_SUBQUERY_EXPR:
+        switch(next.getType()) {
+        case HiveParser.TOK_SUBQUERY_EXPR:
               /*
                * Restriction 2.h Subquery isnot allowed in LHS
                */
-              if(next.getChildren().size() == 3
-                      && next.getChild(2).getType() == HiveParser.TOK_SUBQUERY_EXPR){
-                throw new CalciteSemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-                         next.getChild(2),
-                        "SubQuery in LHS expressions are not supported."));
-              }
-              String sbQueryAlias = "sq_" + qb.incrNumSubQueryPredicates();
-              QB qbSQ = new QB(qb.getId(), sbQueryAlias, true);
-              Phase1Ctx ctx1 = initPhase1Ctx();
-              doPhase1((ASTNode)next.getChild(1), qbSQ, ctx1, null);
-              getMetaData(qbSQ);
-              RelNode subQueryRelNode = genLogicalPlan(qbSQ, false,  relToHiveColNameCalcitePosMap.get(srcRel),
-                      relToHiveRR.get(srcRel));
-              subQueryToRelNode.put(next, subQueryRelNode);
-              //keep track of subqueries which are scalar, correlated and contains aggregate
-              // subquery expression. This will later be special cased in Subquery remove rule
-              // for correlated scalar queries with aggregate we have take care of the case where
-              // inner aggregate happens on empty result
-              if(corrScalarQueriesWithAgg.contains(next)) {
-                  corrScalarRexSQWithAgg.add(subQueryRelNode);
-              }
-              if(scalarQueriesWithAggNoWinNoGby.contains(next)) {
-                scalarAggNoGbyNoWin.add(subQueryRelNode);
-              }
-              isSubQuery = true;
-              break;
-            default:
-              int childCount = next.getChildCount();
-              for(int i = childCount - 1; i >= 0; i--) {
-                stack.push((ASTNode) next.getChild(i));
-              }
+          if(next.getChildren().size() == 3
+              && next.getChild(2).getType() == HiveParser.TOK_SUBQUERY_EXPR){
+            throw new CalciteSemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+                next.getChild(2),
+                "SubQuery in LHS expressions are not supported."));
           }
+          String sbQueryAlias = "sq_" + qb.incrNumSubQueryPredicates();
+          QB qbSQ = new QB(qb.getId(), sbQueryAlias, true);
+          Phase1Ctx ctx1 = initPhase1Ctx();
+          doPhase1((ASTNode)next.getChild(1), qbSQ, ctx1, null);
+          getMetaData(qbSQ);
+          this.subqueryId++;
+          RelNode subQueryRelNode = genLogicalPlan(qbSQ, false,
+              relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));
+          subQueryToRelNode.put(next, subQueryRelNode);
+          //keep track of subqueries which are scalar, correlated and contains aggregate
+          // subquery expression. This will later be special cased in Subquery remove rule
+          // for correlated scalar queries with aggregate we have take care of the case where
+          // inner aggregate happens on empty result
+          if(corrScalarQueriesWithAgg.contains(next)) {
+            corrScalarRexSQWithAgg.add(subQueryRelNode);
+          }
+          if(scalarQueriesWithAggNoWinNoGby.contains(next)) {
+            scalarAggNoGbyNoWin.add(subQueryRelNode);
+          }
+          isSubQuery = true;
+          break;
+        default:
+          int childCount = next.getChildCount();
+          for(int i = childCount - 1; i >= 0; i--) {
+            stack.push((ASTNode) next.getChild(i));
+          }
+        }
       }
       return isSubQuery;
     }
@@ -2706,7 +2708,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         this.relToHiveColNameCalcitePosMap.put(filterRel, this.relToHiveColNameCalcitePosMap
                 .get(srcRel));
         relToHiveRR.put(filterRel, relToHiveRR.get(srcRel));
-        this.subqueryId++;
         return filterRel;
       } else {
         return genFilterRelNode(searchCond, srcRel, outerNameToPosMap, outerRR, forHavingClause);
