@@ -83,7 +83,6 @@ import org.skife.jdbi.v2.PreparedBatch;
 import org.skife.jdbi.v2.Query;
 import org.skife.jdbi.v2.ResultIterator;
 import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.TransactionCallback;
 import org.skife.jdbi.v2.exceptions.CallbackFailedException;
 import org.skife.jdbi.v2.tweak.HandleCallback;
 import org.skife.jdbi.v2.util.ByteArrayMapper;
@@ -101,7 +100,9 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -246,7 +247,7 @@ public final class DruidStorageHandlerUtils {
    *
    * @throws IOException can be for the case we did not produce data.
    */
-  public static List<DataSegment> getPublishedSegments(Path taskDir, Configuration conf)
+  public static List<DataSegment> getCreatedSegments(Path taskDir, Configuration conf)
           throws IOException {
     ImmutableList.Builder<DataSegment> publishedSegmentsBuilder = ImmutableList.builder();
     FileSystem fs = taskDir.getFileSystem(conf);
@@ -373,17 +374,34 @@ public final class DruidStorageHandlerUtils {
     return true;
   }
 
-  public static void publishSegments(final SQLMetadataConnector connector,
+  /**
+   * First computes the segments timeline to accommodate new segments for insert into case
+   * Then moves segments to druid deep storage with updated metadata/version
+   * ALL IS DONE IN ONE TRANSACTION
+   *
+   * @param connector DBI connector to commit
+   * @param metadataStorageTablesConfig Druid metadata tables definitions
+   * @param dataSource Druid datasource name
+   * @param segments List of segments to move and commit to metadata
+   * @param overwrite if it is an insert overwrite
+   * @param conf Configuration
+   * @param dataSegmentPusher segment pusher
+   *
+   * @return List of successfully published Druid segments.
+   * This list has the updated versions and metadata about segments after move and timeline sorting
+   *
+   * @throws CallbackFailedException
+   */
+  public static List<DataSegment> publishSegmentsAndCommit(final SQLMetadataConnector connector,
           final MetadataStorageTablesConfig metadataStorageTablesConfig,
           final String dataSource,
           final List<DataSegment> segments,
           boolean overwrite,
-          String segmentDirectory,
           Configuration conf,
           DataSegmentPusher dataSegmentPusher
   ) throws CallbackFailedException {
-    connector.getDBI().inTransaction(
-            (TransactionCallback<Void>) (handle, transactionStatus) -> {
+    return connector.getDBI().inTransaction(
+            (handle, transactionStatus) -> {
               // We create the timeline for the existing and new segments
               VersionedIntervalTimeline<String, DataSegment> timeline;
               if (overwrite) {
@@ -397,7 +415,7 @@ public final class DruidStorageHandlerUtils {
                 // Append Mode
                 if (segments.isEmpty()) {
                   // If there are no new segments, we can just bail out
-                  return null;
+                  return Collections.EMPTY_LIST;
                 }
                 // Otherwise, build a timeline of existing segments in metadata storage
                 Interval indexedInterval = JodaUtils
@@ -504,7 +522,7 @@ public final class DruidStorageHandlerUtils {
               }
               batch.execute();
 
-              return null;
+              return finalSegmentsToPublish;
             }
     );
   }

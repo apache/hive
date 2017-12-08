@@ -187,7 +187,7 @@ public class TestDruidRecordWriter {
     }
     druidRecordWriter.close(false);
     List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
-            .getPublishedSegments(segmentDescriptroPath, config);
+            .getCreatedSegments(segmentDescriptroPath, config);
     Assert.assertEquals(1, dataSegmentList.size());
     File tmpUnzippedSegmentDir = temporaryFolder.newFolder();
     new LocalDataSegmentPuller().getSegmentFiles(dataSegmentList.get(0), tmpUnzippedSegmentDir);
