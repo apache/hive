@@ -55,6 +55,7 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "miniSparkOnYarn.only.query.files");
         excludesFrom(testConfigProps, "disabled.query.files");
         excludesFrom(testConfigProps, "localSpark.only.query.files");
+        excludesFrom(testConfigProps, "druid.query.files");
 
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -157,6 +158,29 @@ public class CliConfigs {
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.llap);
         setMetastoreType(MetastoreType.sql);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class MiniDruidCliConfig extends AbstractCliConfig {
+    public MiniDruidCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+
+        includesFrom(testConfigProps, "druid.query.files");
+
+        setResultsDir("ql/src/test/results/clientpositive/druid");
+        setLogDir("itests/qtest/target/tmp/log");
+
+        setInitScript("q_test_druid_init.sql");
+        setCleanupScript("q_test_cleanup_druid.sql");
+        setHiveConfDir("");
+        setClusterType(MiniClusterType.druid);
+        setMetastoreType(MetastoreType.sql);
+        setFsType(QTestUtil.FsType.hdfs);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }

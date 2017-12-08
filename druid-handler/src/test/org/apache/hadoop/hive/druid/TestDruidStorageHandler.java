@@ -323,10 +323,9 @@ public class TestDruidStorageHandler {
             .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
                     new Interval(100, 150), "v0", new LinearShardSpec(0)));
     DruidStorageHandlerUtils
-            .publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
+            .publishSegmentsAndCommit(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
                     true,
-                    taskDirPath.toString(),
                     config,
                     dataSegmentPusher
             );
@@ -377,10 +376,9 @@ public class TestDruidStorageHandler {
             .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
                     new Interval(100, 150), "v0", new LinearShardSpec(0)));
     DruidStorageHandlerUtils
-            .publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
+            .publishSegmentsAndCommit(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
                     true,
-                    taskDirPath.toString(),
                     config,
                     dataSegmentPusher
             );
@@ -522,10 +520,9 @@ public class TestDruidStorageHandler {
     DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
 
     DruidStorageHandlerUtils
-            .publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
+            .publishSegmentsAndCommit(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
                     true,
-                    taskDirPath.toString(),
                     config,
                     dataSegmentPusher
             );
@@ -576,10 +573,9 @@ public class TestDruidStorageHandler {
             .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
                     new Interval(100, 150), "v0", new LinearShardSpec(0)));
     DruidStorageHandlerUtils
-            .publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
+            .publishSegmentsAndCommit(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
                     true,
-                    taskDirPath.toString(),
                     config,
                     dataSegmentPusher
             );
@@ -630,10 +626,9 @@ public class TestDruidStorageHandler {
     pusherConfig.setStorageDirectory(config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)));
     DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
     DruidStorageHandlerUtils
-            .publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
+            .publishSegmentsAndCommit(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
                     true,
-                    taskDirPath.toString(),
                     config,
                     dataSegmentPusher
             );
@@ -699,10 +694,9 @@ public class TestDruidStorageHandler {
     pusherConfig.setStorageDirectory(taskDirPath.toString());
     DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
     DruidStorageHandlerUtils
-            .publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
+            .publishSegmentsAndCommit(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
                     true,
-                    taskDirPath.toString(),
                     config,
                     dataSegmentPusher
             );
@@ -738,10 +732,9 @@ public class TestDruidStorageHandler {
     pusherConfig.setStorageDirectory(taskDirPath.toString());
     DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
     DruidStorageHandlerUtils
-            .publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
+            .publishSegmentsAndCommit(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
                     true,
-                    taskDirPath.toString(),
                     config,
                     dataSegmentPusher
             );

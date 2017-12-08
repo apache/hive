@@ -17,10 +17,25 @@
  */
 package org.apache.hadoop.hive.druid;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.metamx.common.RetryUtils;
+import com.metamx.common.lifecycle.Lifecycle;
+import com.metamx.http.client.HttpClient;
+import com.metamx.http.client.HttpClientConfig;
+import com.metamx.http.client.HttpClientInit;
 import io.druid.metadata.MetadataStorageConnectorConfig;
 import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.SQLMetadataConnector;
+import io.druid.metadata.storage.derby.DerbyConnector;
+import io.druid.metadata.storage.derby.DerbyMetadataStorage;
 import io.druid.metadata.storage.mysql.MySQLConnector;
 import io.druid.metadata.storage.postgresql.PostgreSQLConnector;
 import io.druid.segment.loading.DataSegmentPusher;
@@ -28,7 +43,6 @@ import io.druid.segment.loading.SegmentLoadingException;
 import io.druid.storage.hdfs.HdfsDataSegmentPusher;
 import io.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
 import io.druid.timeline.DataSegment;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -58,25 +72,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.base.Throwables;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import com.metamx.common.RetryUtils;
-import com.metamx.common.lifecycle.Lifecycle;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.HttpClientConfig;
-import com.metamx.http.client.HttpClientInit;
-
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.skife.jdbi.v2.exceptions.CallbackFailedException;
 import org.slf4j.Logger;
@@ -88,6 +84,8 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * DruidStorageHandler provides a HiveStorageHandler implementation for Druid.
@@ -116,9 +114,9 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     ShutdownHookManager.addShutdownHook(() -> lifecycle.stop());
   }
 
-  private final SQLMetadataConnector connector;
+  private SQLMetadataConnector connector;
 
-  private final MetadataStorageTablesConfig druidMetadataStorageTablesConfig;
+  private MetadataStorageTablesConfig druidMetadataStorageTablesConfig = null;
 
   private String uniqueId = null;
 
@@ -127,48 +125,6 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   private Configuration conf;
 
   public DruidStorageHandler() {
-    //this is the default value in druid
-    final String base = HiveConf
-            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_BASE);
-    final String dbType = HiveConf
-            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_DB_TYPE);
-    final String username = HiveConf
-            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_DB_USERNAME);
-    final String password = HiveConf
-            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_DB_PASSWORD);
-    final String uri = HiveConf
-            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_DB_URI);
-    druidMetadataStorageTablesConfig = MetadataStorageTablesConfig.fromBase(base);
-
-    final Supplier<MetadataStorageConnectorConfig> storageConnectorConfigSupplier = Suppliers.<MetadataStorageConnectorConfig>ofInstance(
-            new MetadataStorageConnectorConfig() {
-              @Override
-              public String getConnectURI() {
-                return uri;
-              }
-
-              @Override
-              public String getUser() {
-                return username;
-              }
-
-              @Override
-              public String getPassword() {
-                return password;
-              }
-            });
-
-    if (dbType.equals("mysql")) {
-      connector = new MySQLConnector(storageConnectorConfigSupplier,
-              Suppliers.ofInstance(druidMetadataStorageTablesConfig)
-      );
-    } else if (dbType.equals("postgresql")) {
-      connector = new PostgreSQLConnector(storageConnectorConfigSupplier,
-              Suppliers.ofInstance(druidMetadataStorageTablesConfig)
-      );
-    } else {
-      throw new IllegalStateException(String.format("Unknown metadata storage type [%s]", dbType));
-    }
   }
 
   @VisibleForTesting
@@ -250,13 +206,13 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     // We need to check the Druid metadata
     dataSourceName = Warehouse.getQualifiedName(table);
     try {
-      connector.createSegmentTable();
+      getConnector().createSegmentTable();
     } catch (Exception e) {
       LOG.error("Exception while trying to create druid segments table", e);
       throw new MetaException(e.getMessage());
     }
     Collection<String> existingDataSources = DruidStorageHandlerUtils
-            .getAllDataSourceNames(connector, druidMetadataStorageTablesConfig);
+            .getAllDataSourceNames(getConnector(), getDruidMetadataStorageTablesConfig());
     LOG.debug("pre-create data source with name {}", dataSourceName);
     if (existingDataSources.contains(dataSourceName)) {
       throw new MetaException(String.format("Data source [%s] already existing", dataSourceName));
@@ -272,7 +228,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     final Path segmentDescriptorDir = getSegmentDescriptorDir();
     try {
       List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
-              .getPublishedSegments(segmentDescriptorDir, getConf());
+              .getCreatedSegments(segmentDescriptorDir, getConf());
       for (DataSegment dataSegment : dataSegmentList) {
         try {
           deleteSegment(dataSegment);
@@ -290,144 +246,146 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   @Override
   public void commitCreateTable(Table table) throws MetaException {
-    LOG.debug("commit create table {}", table.getTableName());
     if (MetaStoreUtils.isExternalTable(table)) {
       // For external tables, we do not need to do anything else
       return;
     }
-    publishSegments(table, true);
+    loadDruidSegments(table, true);
   }
 
-  public void publishSegments(Table table, boolean overwrite) throws MetaException {
+
+  protected void loadDruidSegments(Table table, boolean overwrite) throws MetaException {
+    // at this point we have Druid segments from reducers but we need to atomically
+    // rename and commit to metadata
     final String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
     final List<DataSegment> segmentList = Lists.newArrayList();
     final Path tableDir = getSegmentDescriptorDir();
-    console.logInfo(String.format("Committing hive table {} druid data source {} to the druid metadata store",
-            table.getTableName(), dataSourceName
-    ));
+    // Read the created segments metadata from the table staging directory
     try {
-      segmentList.addAll(DruidStorageHandlerUtils.getPublishedSegments(tableDir, getConf()));
+      segmentList.addAll(DruidStorageHandlerUtils.getCreatedSegments(tableDir, getConf()));
     } catch (IOException e) {
       LOG.error("Failed to load segments descriptor from directory {}", tableDir.toString());
       Throwables.propagate(e);
       cleanWorkingDir();
     }
-    try {
-      final String segmentDirectory =
-              table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY) != null
-                      ? table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY)
-                      : HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY);
-      LOG.info(
-              String.format("Will move [%s] druid segments from [%s] to [%s]",
-                      segmentList.size(),
-                      getStagingWorkingDir(),
-                      segmentDirectory
+    // Moving Druid segments and committing to druid metadata as one transaction.
+    final HdfsDataSegmentPusherConfig hdfsSegmentPusherConfig = new HdfsDataSegmentPusherConfig();
+    List<DataSegment> publishedDataSegmentList = Lists.newArrayList();
+    final String segmentDirectory =
+            table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY) != null
+                    ? table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY)
+                    : HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY);
+    LOG.info(String.format(
+            "Moving [%s] Druid segments from staging directory [%s] to Deep storage [%s]",
+            segmentList.size(),
+            getStagingWorkingDir(),
+            segmentDirectory
 
-              ));
-      HdfsDataSegmentPusherConfig pusherConfig = new HdfsDataSegmentPusherConfig();
-      pusherConfig.setStorageDirectory(segmentDirectory);
-      DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, getConf(), DruidStorageHandlerUtils.JSON_MAPPER);
-      DruidStorageHandlerUtils.publishSegments(
-              connector,
-              druidMetadataStorageTablesConfig,
+            ));
+    hdfsSegmentPusherConfig.setStorageDirectory(segmentDirectory);
+    try {
+      DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(hdfsSegmentPusherConfig,
+              getConf(),
+              DruidStorageHandlerUtils.JSON_MAPPER
+      );
+      publishedDataSegmentList = DruidStorageHandlerUtils.publishSegmentsAndCommit(
+              getConnector(),
+              getDruidMetadataStorageTablesConfig(),
               dataSourceName,
               segmentList,
               overwrite,
-              segmentDirectory,
               getConf(),
               dataSegmentPusher
-
       );
-    } catch (CallbackFailedException | IOException e ) {
-      LOG.error("Failed to publish segments");
-      if (e instanceof CallbackFailedException)  {
+
+    } catch (CallbackFailedException | IOException e) {
+      LOG.error("Failed to move segments from staging directory");
+      if (e instanceof CallbackFailedException) {
         Throwables.propagate(e.getCause());
       }
       Throwables.propagate(e);
     } finally {
       cleanWorkingDir();
     }
-      final String coordinatorAddress = HiveConf
-              .getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_COORDINATOR_DEFAULT_ADDRESS);
-      int maxTries = HiveConf.getIntVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_MAX_TRIES);
-      if (maxTries == 0) {
-        return;
-      }
-      LOG.debug("checking load status from coordinator {}", coordinatorAddress);
+      checkLoadStatus(publishedDataSegmentList);
+  }
 
-      String coordinatorResponse = null;
-      try {
-        coordinatorResponse = RetryUtils.retry(() -> DruidStorageHandlerUtils.getURL(getHttpClient(),
-                new URL(String.format("http://%s/status", coordinatorAddress))
-        ), input -> input instanceof IOException, maxTries);
-      } catch (Exception e) {
-        console.printInfo(
-                "Will skip waiting for data loading, coordinator unavailable");
-        return;
-      }
-      if (Strings.isNullOrEmpty(coordinatorResponse)) {
-        console.printInfo(
-                "Will skip waiting for data loading empty response from coordinator");
-        return;
-      }
+  /**
+   * This function checks the load status of Druid segments by polling druid coordinator.
+   * @param segments List of druid segments to check for
+   *
+   * @return count of yet to load segments.
+   */
+  private int checkLoadStatus(List<DataSegment> segments){
+    final String coordinatorAddress = HiveConf
+            .getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_COORDINATOR_DEFAULT_ADDRESS);
+    int maxTries = HiveConf.getIntVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_MAX_TRIES);
+    if (maxTries == 0) {
+      return segments.size();
+    }
+    LOG.debug("checking load status from coordinator {}", coordinatorAddress);
+
+    String coordinatorResponse;
+    try {
+      coordinatorResponse = RetryUtils.retry(() -> DruidStorageHandlerUtils.getURL(getHttpClient(),
+              new URL(String.format("http://%s/status", coordinatorAddress))
+      ), input -> input instanceof IOException, maxTries);
+    } catch (Exception e) {
       console.printInfo(
-              String.format("Waiting for the loading of [%s] segments", segmentList.size()));
-      long passiveWaitTimeMs = HiveConf
-              .getLongVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_PASSIVE_WAIT_TIME);
-      ImmutableSet<URL> setOfUrls = FluentIterable.from(segmentList)
-              .transform(dataSegment -> {
-                try {
-                  //Need to make sure that we are using UTC since most of the druid cluster use UTC by default
-                  return new URL(String
-                          .format("http://%s/druid/coordinator/v1/datasources/%s/segments/%s",
-                                  coordinatorAddress, dataSourceName, DataSegment
-                                          .makeDataSegmentIdentifier(dataSegment.getDataSource(),
-                                                  new DateTime(dataSegment.getInterval()
-                                                          .getStartMillis(), DateTimeZone.UTC),
-                                                  new DateTime(dataSegment.getInterval()
-                                                          .getEndMillis(), DateTimeZone.UTC),
-                                                  dataSegment.getVersion(),
-                                                  dataSegment.getShardSpec()
-                                          )
-                          ));
-                } catch (MalformedURLException e) {
-                  Throwables.propagate(e);
-                }
-                return null;
-              }).toSet();
-
-      int numRetries = 0;
-      while (numRetries++ < maxTries && !setOfUrls.isEmpty()) {
-        setOfUrls = ImmutableSet.copyOf(Sets.filter(setOfUrls, new Predicate<URL>() {
-          @Override
-          public boolean apply(URL input) {
-            try {
-              String result = DruidStorageHandlerUtils.getURL(getHttpClient(), input);
-              LOG.debug("Checking segment {} response is {}", input, result);
-              return Strings.isNullOrEmpty(result);
-            } catch (IOException e) {
-              LOG.error(String.format("Error while checking URL [%s]", input), e);
-              return true;
-            }
-          }
-        }));
-
-        try {
-          if (!setOfUrls.isEmpty()) {
-            Thread.sleep(passiveWaitTimeMs);
-          }
-        } catch (InterruptedException e) {
-          Thread.interrupted();
-          Throwables.propagate(e);
-        }
-      }
-      if (!setOfUrls.isEmpty()) {
-        // We are not Throwing an exception since it might be a transient issue that is blocking loading
-        console.printError(String.format(
-                "Wait time exhausted and we have [%s] out of [%s] segments not loaded yet",
-                setOfUrls.size(), segmentList.size()
+              "Will skip waiting for data loading, coordinator unavailable");
+      return segments.size();
+    }
+    if (Strings.isNullOrEmpty(coordinatorResponse)) {
+      console.printInfo(
+              "Will skip waiting for data loading empty response from coordinator");
+      return segments.size();
+    }
+    console.printInfo(
+            String.format("Waiting for the loading of [%s] segments", segments.size()));
+    long passiveWaitTimeMs = HiveConf
+            .getLongVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_PASSIVE_WAIT_TIME);
+    Set<URL> UrlsOfUnloadedSegments = segments.stream().map(dataSegment -> {
+      try {
+        //Need to make sure that we are using segment identifier
+        return new URL(String.format("http://%s/druid/coordinator/v1/datasources/%s/segments/%s",
+                coordinatorAddress, dataSegment.getDataSource(), dataSegment.getIdentifier()
         ));
+      } catch (MalformedURLException e) {
+        Throwables.propagate(e);
       }
+      return null;
+    }).collect(Collectors.toSet());
+
+    int numRetries = 0;
+    while (numRetries++ < maxTries && !UrlsOfUnloadedSegments.isEmpty()) {
+      UrlsOfUnloadedSegments = ImmutableSet.copyOf(Sets.filter(UrlsOfUnloadedSegments, input -> {
+        try {
+          String result = DruidStorageHandlerUtils.getURL(getHttpClient(), input);
+          LOG.debug("Checking segment [{}] response is [{}]", input, result);
+          return Strings.isNullOrEmpty(result);
+        } catch (IOException e) {
+          LOG.error(String.format("Error while checking URL [%s]", input), e);
+          return true;
+        }
+      }));
+
+      try {
+        if (!UrlsOfUnloadedSegments.isEmpty()) {
+          Thread.sleep(passiveWaitTimeMs);
+        }
+      } catch (InterruptedException e) {
+        Thread.interrupted();
+        Throwables.propagate(e);
+      }
+    }
+    if (!UrlsOfUnloadedSegments.isEmpty()) {
+      // We are not Throwing an exception since it might be a transient issue that is blocking loading
+      console.printError(String.format(
+              "Wait time exhausted and we have [%s] out of [%s] segments not loaded yet",
+              UrlsOfUnloadedSegments.size(), segments.size()
+      ));
+    }
+    return UrlsOfUnloadedSegments.size();
   }
 
   @VisibleForTesting
@@ -503,7 +461,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     if (deleteData == true) {
       LOG.info("Dropping with purge all the data for data source {}", dataSourceName);
       List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
-              .getDataSegmentList(connector, druidMetadataStorageTablesConfig, dataSourceName);
+              .getDataSegmentList(getConnector(), getDruidMetadataStorageTablesConfig(), dataSourceName);
       if (dataSegmentList.isEmpty()) {
         LOG.info("Nothing to delete for data source {}", dataSourceName);
         return;
@@ -517,7 +475,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
       }
     }
     if (DruidStorageHandlerUtils
-            .disableDataSource(connector, druidMetadataStorageTablesConfig, dataSourceName)) {
+            .disableDataSource(getConnector(), getDruidMetadataStorageTablesConfig(), dataSourceName)) {
       LOG.info("Successfully dropped druid data source {}", dataSourceName);
     }
   }
@@ -529,7 +487,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     if (MetaStoreUtils.isExternalTable(table)) {
       throw new MetaException("Cannot insert data into external table backed by Druid");
     }
-    this.publishSegments(table, overwrite);
+    this.loadDruidSegments(table, overwrite);
   }
 
   @Override
@@ -600,6 +558,69 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   private Path getStagingWorkingDir() {
     return new Path(getRootWorkingDir(), makeStagingName());
+  }
+
+  private MetadataStorageTablesConfig getDruidMetadataStorageTablesConfig() {
+    if (druidMetadataStorageTablesConfig != null) {
+      return druidMetadataStorageTablesConfig;
+    }
+    final String base = HiveConf
+            .getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_BASE);
+    druidMetadataStorageTablesConfig = MetadataStorageTablesConfig.fromBase(base);
+    return druidMetadataStorageTablesConfig;
+  }
+
+  private SQLMetadataConnector getConnector() {
+    if (connector != null) {
+      return connector;
+    }
+
+    final String dbType = HiveConf
+            .getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_TYPE);
+    final String username = HiveConf
+            .getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_USERNAME);
+    final String password = HiveConf
+            .getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_PASSWORD);
+    final String uri = HiveConf
+            .getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_URI);
+
+
+    final Supplier<MetadataStorageConnectorConfig> storageConnectorConfigSupplier = Suppliers.<MetadataStorageConnectorConfig>ofInstance(
+            new MetadataStorageConnectorConfig() {
+              @Override
+              public String getConnectURI() {
+                return uri;
+              }
+
+              @Override
+              public String getUser() {
+                return Strings.emptyToNull(username);
+              }
+
+              @Override
+              public String getPassword() {
+                return Strings.emptyToNull(password);
+              }
+            });
+    if (dbType.equals("mysql")) {
+      connector = new MySQLConnector(storageConnectorConfigSupplier,
+              Suppliers.ofInstance(getDruidMetadataStorageTablesConfig())
+      );
+    } else if (dbType.equals("postgresql")) {
+      connector = new PostgreSQLConnector(storageConnectorConfigSupplier,
+              Suppliers.ofInstance(getDruidMetadataStorageTablesConfig())
+      );
+
+    } else if (dbType.equals("derby")) {
+      connector = new DerbyConnector(new DerbyMetadataStorage(storageConnectorConfigSupplier.get()),
+              storageConnectorConfigSupplier, Suppliers.ofInstance(getDruidMetadataStorageTablesConfig())
+      );
+    }
+    else {
+      throw new IllegalStateException(String.format("Unknown metadata storage type [%s]", dbType));
+    }
+
+    return connector;
   }
 
   @VisibleForTesting

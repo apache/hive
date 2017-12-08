@@ -1,0 +1,150 @@
+PREHOOK: query: CREATE TABLE druid_alltypesorc
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
+AS
+SELECT cast (`ctimestamp2` as timestamp with local time zone) as `__time`,
+  cstring1,
+  cstring2,
+  cdouble,
+  cfloat,
+  ctinyint,
+  csmallint,
+  cint,
+  cbigint,
+  cboolean1,
+  cboolean2
+  FROM alltypesorc where ctimestamp2 IS NOT NULL
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@druid_alltypesorc
+POSTHOOK: query: CREATE TABLE druid_alltypesorc
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
+AS
+SELECT cast (`ctimestamp2` as timestamp with local time zone) as `__time`,
+  cstring1,
+  cstring2,
+  cdouble,
+  cfloat,
+  ctinyint,
+  csmallint,
+  cint,
+  cbigint,
+  cboolean1,
+  cboolean2
+  FROM alltypesorc where ctimestamp2 IS NOT NULL
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@druid_alltypesorc
+POSTHOOK: Lineage: druid_alltypesorc.__time EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_alltypesorc
+#### A masked pattern was here ####
+6057
+PREHOOK: query: INSERT INTO TABLE druid_alltypesorc
+SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
+  cstring1,
+  cstring2,
+  cdouble,
+  cfloat,
+  ctinyint,
+  csmallint,
+  cint,
+  cbigint,
+  cboolean1,
+  cboolean2
+  FROM alltypesorc where ctimestamp1 IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@druid_alltypesorc
+POSTHOOK: query: INSERT INTO TABLE druid_alltypesorc
+SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
+  cstring1,
+  cstring2,
+  cdouble,
+  cfloat,
+  ctinyint,
+  csmallint,
+  cint,
+  cbigint,
+  cboolean1,
+  cboolean2
+  FROM alltypesorc where ctimestamp1 IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@druid_alltypesorc
+PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_alltypesorc
+#### A masked pattern was here ####
+12162
+PREHOOK: query: INSERT OVERWRITE TABLE druid_alltypesorc
+SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
+  cstring1,
+  cstring2,
+  cdouble,
+  cfloat,
+  ctinyint,
+  csmallint,
+  cint,
+  cbigint,
+  cboolean1,
+  cboolean2
+  FROM alltypesorc where ctimestamp1 IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@druid_alltypesorc
+POSTHOOK: query: INSERT OVERWRITE TABLE druid_alltypesorc
+SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
+  cstring1,
+  cstring2,
+  cdouble,
+  cfloat,
+  ctinyint,
+  csmallint,
+  cint,
+  cbigint,
+  cboolean1,
+  cboolean2
+  FROM alltypesorc where ctimestamp1 IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@druid_alltypesorc
+PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_alltypesorc
+#### A masked pattern was here ####
+6105
+PREHOOK: query: DROP TABLE druid_alltypesorc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@druid_alltypesorc
+PREHOOK: Output: default@druid_alltypesorc
+POSTHOOK: query: DROP TABLE druid_alltypesorc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@druid_alltypesorc
+POSTHOOK: Output: default@druid_alltypesorc
