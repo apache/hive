@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -840,6 +841,21 @@ public class Table implements Serializable {
    */
   public void setRewriteEnabled(boolean rewriteEnabled) {
     tTable.setRewriteEnabled(rewriteEnabled);
+  }
+
+  /**
+   * @return the creation metadata (only for materialized views)
+   */
+  public Map<String, BasicTxnInfo> getCreationMetadata() {
+    return tTable.getCreationMetadata();
+  }
+
+  /**
+   * @param creationMetadata
+   *          the creation metadata (only for materialized views)
+   */
+  public void setCreationMetadata(Map<String, BasicTxnInfo> creationMetadata) {
+    tTable.setCreationMetadata(creationMetadata);
   }
 
   public void clearSerDeInfo() {

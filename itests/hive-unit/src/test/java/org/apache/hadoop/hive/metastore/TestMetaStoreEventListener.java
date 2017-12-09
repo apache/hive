@@ -105,6 +105,8 @@ public class TestMetaStoreEventListener extends TestCase {
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
+    hiveConf.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
+        "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
     SessionState.start(new CliSessionState(hiveConf));
     msc = new HiveMetaStoreClient(hiveConf);
     driver = DriverFactory.newDriver(hiveConf);

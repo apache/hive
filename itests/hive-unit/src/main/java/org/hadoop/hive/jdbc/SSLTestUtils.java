@@ -86,6 +86,7 @@ public class SSLTestUtils {
       Connection hs2Conn) throws Exception {
     Statement stmt = hs2Conn.createStatement();
     stmt.execute("set hive.support.concurrency = false");
+    stmt.execute("set hive.txn.manager = org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
 
     stmt.execute("drop table if exists " + tableName);
     stmt.execute("create table " + tableName

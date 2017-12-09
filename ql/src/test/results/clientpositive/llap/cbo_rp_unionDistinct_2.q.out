@@ -363,7 +363,7 @@ union
 select `u2`.`key`, `u2`.`value` from `default`.`u2`	 	 
 union all	 	 
 select `u3`.`key` as `key`, `u3`.`value` from `default`.`u3`	 	 
-) `tab`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
+) `tab`, tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: select * from v
 PREHOOK: type: QUERY
 PREHOOK: Input: default@u1
@@ -435,7 +435,7 @@ select distinct * from u2
 select distinct `u1`.`key`, `u1`.`value` from `default`.`u1`	 	 
 union  	 	 
 select distinct `u2`.`key`, `u2`.`value` from `default`.`u2`	 	 
-) `tab`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
+) `tab`, tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: select * from v
 PREHOOK: type: QUERY
 PREHOOK: Input: default@u1
@@ -502,7 +502,7 @@ select distinct * from u2
 select distinct `u1`.`key`, `u1`.`value` from `default`.`u1`	 	 
 union all 	 	 
 select distinct `u2`.`key`, `u2`.`value` from `default`.`u2`	 	 
-) `tab`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
+) `tab`, tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: select * from v
 PREHOOK: type: QUERY
 PREHOOK: Input: default@u1

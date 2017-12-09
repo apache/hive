@@ -185,6 +185,18 @@
       <field name="tableType">
         <column name="TBL_TYPE" length="128" jdbc-type="VARCHAR"/>
       </field>
+      <field name="creationMetadata" table="MV_CREATION_METADATA">
+        <map key-type="java.lang.String" value-type="java.lang.String"/>
+        <join>
+          <column name="TBL_ID"/>
+        </join>
+        <key>
+           <column name="TBL_NAME" length="180" jdbc-type="VARCHAR"/>
+        </key>
+        <value>
+           <column name="LAST_TRANSACTION_INFO" jdbc-type="LONGVARCHAR"/>
+        </value>
+      </field>
     </class>
 
     <class name="MConstraint" identity-type="application" table="KEY_CONSTRAINTS" detachable="true" objectid-class="MConstraint$PK">

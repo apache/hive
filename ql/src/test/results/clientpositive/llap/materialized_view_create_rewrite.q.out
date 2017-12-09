@@ -1,8 +1,8 @@
-PREHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int)
+PREHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_basetable
-POSTHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int)
+POSTHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_basetable
@@ -26,6 +26,16 @@ POSTHOOK: Lineage: cmv_basetable.a EXPRESSION [(values__tmp__table__1)values__tm
 POSTHOOK: Lineage: cmv_basetable.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: cmv_basetable.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 POSTHOOK: Lineage: cmv_basetable.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+PREHOOK: query: analyze table cmv_basetable compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable
+PREHOOK: Output: default@cmv_basetable
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table cmv_basetable compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Output: default@cmv_basetable
+#### A masked pattern was here ####
 PREHOOK: query: create materialized view cmv_mat_view enable rewrite
 as select a, b, c from cmv_basetable where a = 2
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -175,7 +185,7 @@ STAGE PLANS:
                         Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -193,7 +203,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -325,7 +335,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -428,7 +438,7 @@ STAGE PLANS:
                         Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -446,7 +456,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(10,2))
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

@@ -91,7 +91,9 @@ public final class TxnDbUtil {
           "  CTC_TXNID bigint," +
           "  CTC_DATABASE varchar(128) NOT NULL," +
           "  CTC_TABLE varchar(128)," +
-          "  CTC_PARTITION varchar(767))");
+          "  CTC_PARTITION varchar(767)," +
+          "  CTC_ID bigint GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) NOT NULL," +
+          "  CTC_TIMESTAMP timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL)");
       stmt.execute("CREATE TABLE NEXT_TXN_ID (" + "  NTXN_NEXT bigint NOT NULL)");
       stmt.execute("INSERT INTO NEXT_TXN_ID VALUES(1)");
       stmt.execute("CREATE TABLE HIVE_LOCKS (" +

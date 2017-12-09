@@ -42,8 +42,8 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.AggregateStatsCache.AggrColStats;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -402,6 +402,36 @@ class MetaStoreDirectSql {
     if (tableType != null) {
       pms.add(tableType.toString());
     }
+
+    Query<?> queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
+    List<Object[]> sqlResult = ensureList(executeWithArray(
+        queryParams, pms.toArray(), queryText));
+
+    if (!sqlResult.isEmpty()) {
+      for (Object[] line : sqlResult) {
+        ret.add(extractSqlString(line[0]));
+      }
+    }
+    return ret;
+  }
+
+  /**
+   * Get table names by using direct SQL queries.
+   *
+   * @param dbName Metastore database namme
+   * @param tableType Table type, or null if we want to get all tables
+   * @return list of table names
+   */
+  public List<String> getMaterializedViewsForRewriting(String db_name) throws MetaException {
+    List<String> ret = new ArrayList<String>();
+    String queryText = "SELECT " + TBLS + ".\"TBL_NAME\""
+      + " FROM " + TBLS + " "
+      + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
+      + " WHERE " + DBS + ".\"NAME\" = ? AND " + TBLS + ".\"TBL_TYPE\" = ? " ;
+
+    List<String> pms = new ArrayList<String>();
+    pms.add(db_name);
+    pms.add(TableType.MATERIALIZED_VIEW.toString());
 
     Query<?> queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
     List<Object[]> sqlResult = ensureList(executeWithArray(

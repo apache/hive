@@ -272,12 +272,13 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
         BasicStatsProcessor basicStatsProcessor = new BasicStatsProcessor(p, work, conf, followedColStats);
         basicStatsProcessor.collectFileStatus(wh);
-        Object res = basicStatsProcessor.process(statsAggregator);
-
+        Table res = (Table) basicStatsProcessor.process(statsAggregator);
         if (res == null) {
           return 0;
         }
-        db.alterTable(tableFullName, (Table) res, environmentContext);
+        // Stats task should not set creation signature
+        res.getTTable().unsetCreationMetadata();
+        db.alterTable(tableFullName, res, environmentContext);
 
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
           console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');

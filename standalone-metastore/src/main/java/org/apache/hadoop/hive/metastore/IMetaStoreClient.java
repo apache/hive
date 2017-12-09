@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -35,6 +33,7 @@ import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
 import org.apache.hadoop.hive.metastore.api.CmRecycleResponse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -67,6 +66,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
@@ -75,8 +75,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
@@ -86,8 +86,6 @@ import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -105,8 +103,11 @@ import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.thrift.TException;
@@ -200,6 +201,17 @@ public interface IMetaStoreClient {
    * @throws UnknownDBException
    */
   List<String> getTables(String dbName, String tablePattern, TableType tableType)
+      throws MetaException, TException, UnknownDBException;
+
+  /**
+   * Get materialized views that have rewriting enabled.
+   * @param dbName Name of the database to fetch materialized views from.
+   * @return List of materialized view names.
+   * @throws MetaException
+   * @throws TException
+   * @throws UnknownDBException
+   */
+  List<String> getMaterializedViewsForRewriting(String dbName)
       throws MetaException, TException, UnknownDBException;
 
   /**
@@ -426,6 +438,12 @@ public interface IMetaStoreClient {
    *          Any other errors
    */
   List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException;
+
+  /**
+   * Returns the invalidation information for the materialized views given as input.
+   */
+  Map<String, Materialization> getMaterializationsInvalidationInfo(String dbName, List<String> viewNames)
       throws MetaException, InvalidOperationException, UnknownDBException, TException;
 
   /**
@@ -1315,6 +1333,24 @@ public interface IMetaStoreClient {
 
   GetAllFunctionsResponse getAllFunctions()
           throws MetaException, TException;
+
+  /**
+   * Get the last completed transaction for the given tables. Although transactions in Hive
+   * might happen concurrently, the order is based on the actual commit to the metastore
+   * table holding the completed transactions.
+   */
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
+  List<BasicTxnInfo> getLastCompletedTransactionForTables(List<String> dbNames, List<String> tableNames, ValidTxnList txnList)
+      throws TException;
+
+  /**
+   * Get the last completed transaction for the given table. Although transactions in Hive
+   * might happen concurrently, the order is based on the actual commit to the metastore
+   * table holding the completed transactions.
+   */
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
+  BasicTxnInfo getLastCompletedTransactionForTable(String dbName, String tableName, ValidTxnList txnList)
+      throws TException;
 
   /**
    * Get a structure that details valid transactions.

@@ -1,8 +1,8 @@
-PREHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int)
+PREHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_basetable
-POSTHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int)
+POSTHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_basetable
@@ -26,6 +26,16 @@ POSTHOOK: Lineage: cmv_basetable.a EXPRESSION [(values__tmp__table__1)values__tm
 POSTHOOK: Lineage: cmv_basetable.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: cmv_basetable.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 POSTHOOK: Lineage: cmv_basetable.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+PREHOOK: query: analyze table cmv_basetable compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable
+PREHOOK: Output: default@cmv_basetable
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table cmv_basetable compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Output: default@cmv_basetable
+#### A masked pattern was here ####
 PREHOOK: query: create materialized view cmv_mat_view enable rewrite
 as select b from cmv_basetable where c > 10.0 group by a, b, c
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -79,7 +89,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: varchar(256))
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -169,7 +179,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: varchar(256))
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -386,11 +396,11 @@ alfred
 bonnie
 charlie
 calvin
-PREHOOK: query: create table cmv_basetable_2 (a int, b varchar(256), c decimal(10,2), d int)
+PREHOOK: query: create table cmv_basetable_2 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_basetable_2
-POSTHOOK: query: create table cmv_basetable_2 (a int, b varchar(256), c decimal(10,2), d int)
+POSTHOOK: query: create table cmv_basetable_2 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_basetable_2
@@ -408,6 +418,16 @@ POSTHOOK: Lineage: cmv_basetable_2.a EXPRESSION [(values__tmp__table__2)values__
 POSTHOOK: Lineage: cmv_basetable_2.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: cmv_basetable_2.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 POSTHOOK: Lineage: cmv_basetable_2.d EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+PREHOOK: query: analyze table cmv_basetable_2 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable_2
+PREHOOK: Output: default@cmv_basetable_2
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table cmv_basetable_2 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable_2
+POSTHOOK: Output: default@cmv_basetable_2
+#### A masked pattern was here ####
 PREHOOK: query: create materialized view cmv_mat_view_5 enable rewrite
 as select cmv_basetable.a, cmv_basetable_2.c
    from cmv_basetable join cmv_basetable_2 on (cmv_basetable.a = cmv_basetable_2.a)
