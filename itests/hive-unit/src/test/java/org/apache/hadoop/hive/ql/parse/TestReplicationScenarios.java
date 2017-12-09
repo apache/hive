@@ -150,6 +150,8 @@ public class TestReplicationScenarios {
     hconf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hconf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hconf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
+    hconf.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
+        "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
     hconf.set(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL.varname,
               "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
     hconf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, true);

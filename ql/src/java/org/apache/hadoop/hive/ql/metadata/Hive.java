@@ -27,14 +27,11 @@ import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -111,6 +108,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -120,8 +118,6 @@ import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -134,8 +130,11 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -149,6 +148,7 @@ import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
@@ -612,7 +612,7 @@ public class Hive {
   }
 
   public void alterTable(Table newTbl, EnvironmentContext environmentContext)
-      throws InvalidOperationException, HiveException {
+      throws HiveException {
     alterTable(newTbl.getDbName(), newTbl.getTableName(), newTbl, false, environmentContext);
   }
 
@@ -628,19 +628,19 @@ public class Hive {
    * @throws TException
    */
   public void alterTable(String fullyQlfdTblName, Table newTbl, EnvironmentContext environmentContext)
-      throws InvalidOperationException, HiveException {
+      throws HiveException {
     alterTable(fullyQlfdTblName, newTbl, false, environmentContext);
   }
 
   public void alterTable(String fullyQlfdTblName, Table newTbl, boolean cascade, EnvironmentContext environmentContext)
-      throws InvalidOperationException, HiveException {
+      throws HiveException {
     String[] names = Utilities.getDbTableName(fullyQlfdTblName);
     alterTable(names[0], names[1], newTbl, cascade, environmentContext);
   }
 
   public void alterTable(String dbName, String tblName, Table newTbl, boolean cascade,
       EnvironmentContext environmentContext)
-      throws InvalidOperationException, HiveException {
+      throws HiveException {
 
     try {
       // Remove the DDL_TIME so it gets refreshed
@@ -1448,6 +1448,21 @@ public class Hive {
     }
   }
 
+  private List<Table> getTableObjects(String dbName, List<String> tableNames) throws HiveException {
+    try {
+      return Lists.transform(getMSC().getTableObjectsByName(dbName, tableNames),
+        new com.google.common.base.Function<org.apache.hadoop.hive.metastore.api.Table, Table>() {
+          @Override
+          public Table apply(org.apache.hadoop.hive.metastore.api.Table table) {
+            return new Table(table);
+          }
+        }
+      );
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
   /**
    * Returns all existing tables from default database which match the given
    * pattern. The matching occurs as per Java regular expressions
@@ -1527,46 +1542,106 @@ public class Hive {
    * Get the materialized views that have been enabled for rewriting from the
    * metastore. If the materialized view is in the cache, we do not need to
    * parse it to generate a logical plan for the rewriting. Instead, we
-   * return the version present in the cache.
+   * return the version present in the cache. Further, information provided
+   * by the invalidation cache is useful to know whether a materialized view
+   * can be used for rewriting or not.
    *
    * @return the list of materialized views available for rewriting
    * @throws HiveException
    */
-  public List<RelOptMaterialization> getRewritingMaterializedViews() throws HiveException {
+  public List<RelOptMaterialization> getValidMaterializedViews() throws HiveException {
+    final long diff = conf.getIntVar(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW) * 1000;
+    final long minTime = System.currentTimeMillis() - diff;
     try {
       // Final result
       List<RelOptMaterialization> result = new ArrayList<>();
       for (String dbName : getMSC().getAllDatabases()) {
         // From metastore (for security)
-        List<String> tables = getAllMaterializedViews(dbName);
-        // Cached views (includes all)
-        Collection<RelOptMaterialization> cachedViews =
-            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(dbName);
-        if (cachedViews.isEmpty()) {
+        List<String> materializedViewNames = getMaterializedViewsForRewriting(dbName);
+        if (materializedViewNames.isEmpty()) {
           // Bail out: empty list
           continue;
         }
-        Map<String, RelOptMaterialization> qualifiedNameToView =
-            new HashMap<String, RelOptMaterialization>();
-        for (RelOptMaterialization materialization : cachedViews) {
-          qualifiedNameToView.put(materialization.qualifiedTableName.get(0), materialization);
-        }
-        for (String table : tables) {
-          // Compose qualified name
-          String fullyQualifiedName = dbName;
-          if (fullyQualifiedName != null && !fullyQualifiedName.isEmpty()) {
-            fullyQualifiedName = fullyQualifiedName + "." + table;
-          } else {
-            fullyQualifiedName = table;
+        List<Table> materializedViewTables = getTableObjects(dbName, materializedViewNames);
+        Map<String, Materialization> databaseInvalidationInfo =
+            getMSC().getMaterializationsInvalidationInfo(dbName, materializedViewNames);
+        for (Table materializedViewTable : materializedViewTables) {
+          // Check whether the materialized view is invalidated
+          Materialization materializationInvalidationInfo =
+              databaseInvalidationInfo.get(materializedViewTable.getTableName());
+          if (materializationInvalidationInfo == null) {
+            LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                " ignored for rewriting as there was no information loaded in the invalidation cache");
+            continue;
           }
-          RelOptMaterialization materialization = qualifiedNameToView.get(fullyQualifiedName);
+          long invalidationTime = materializationInvalidationInfo.getInvalidationTime();
+          // If the limit is not met, we do not add the materialized view
+          if (diff == 0L) {
+            if (invalidationTime != 0L) {
+              // If parameter is zero, materialized view cannot be outdated at all
+              LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                  " ignored for rewriting as its contents are outdated");
+              continue;
+            }
+          } else {
+            if (invalidationTime != 0 && minTime > invalidationTime) {
+              LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                  " ignored for rewriting as its contents are outdated");
+              continue;
+            }
+          }
+
+          // It passed the test, load
+          RelOptMaterialization materialization =
+              HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(
+                  dbName, materializedViewTable.getTableName());
           if (materialization != null) {
-            // Add to final result set
-            result.add(materialization);
+            RelOptHiveTable cachedMaterializedViewTable =
+                (RelOptHiveTable) materialization.tableRel.getTable();
+            if (cachedMaterializedViewTable.getHiveTableMD().getCreateTime() ==
+                materializedViewTable.getCreateTime()) {
+              // It is in the cache and up to date
+              result.add(materialization);
+              continue;
+            }
+          }
+
+          // It was not present in the cache (maybe because it was added by another HS2)
+          // or it is not up to date.
+          if (HiveMaterializedViewsRegistry.get().isInitialized()) {
+            // But the registry was fully initialized, thus we need to add it
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                  " was not in the cache");
+            }
+            materialization = HiveMaterializedViewsRegistry.get().createMaterializedView(materializedViewTable);
+            if (materialization != null) {
+              result.add(materialization);
+            }
+          } else {
+            // Otherwise the registry has not been initialized, skip for the time being
+            if (LOG.isWarnEnabled()) {
+              LOG.info("Materialized view " + materializedViewTable.getFullyQualifiedName() + " was skipped "
+                  + "because cache has not been loaded yet");
+            }
           }
         }
       }
       return result;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Get materialized views for the specified database that have enabled rewriting.
+   * @param dbName
+   * @return List of materialized view table objects
+   * @throws HiveException
+   */
+  private List<String> getMaterializedViewsForRewriting(String dbName) throws HiveException {
+    try {
+      return getMSC().getMaterializedViewsForRewriting(dbName);
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -2386,14 +2461,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
       environmentContext = new EnvironmentContext();
       environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
     }
-    try {
-      alterTable(tbl, environmentContext);
-    } catch (InvalidOperationException e) {
-      throw new HiveException(e);
-    }
+
+    alterTable(tbl, environmentContext);
 
     fireInsertEvent(tbl, null, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
   }
+
   /**
    * Creates a partition.
    *

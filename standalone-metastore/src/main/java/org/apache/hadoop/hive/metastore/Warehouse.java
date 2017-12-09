@@ -181,7 +181,11 @@ public class Warehouse {
   }
 
   public static String getQualifiedName(Table table) {
-    return table.getDbName() + "." + table.getTableName();
+    return getQualifiedName(table.getDbName(), table.getTableName());
+  }
+
+  public static String getQualifiedName(String dbName, String tableName) {
+    return dbName + "." + tableName;
   }
 
   public static String getQualifiedName(Partition partition) {

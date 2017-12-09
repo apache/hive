@@ -175,6 +175,9 @@ public interface RawStore extends Configurable {
   List<String> getTables(String dbName, String pattern, TableType tableType)
       throws MetaException;
 
+  List<String> getMaterializedViewsForRewriting(String dbName)
+      throws MetaException, NoSuchObjectException;
+
   List<TableMeta> getTableMeta(
       String dbNames, String tableNames, List<String> tableTypes) throws MetaException;
 

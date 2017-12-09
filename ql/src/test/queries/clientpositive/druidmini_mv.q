@@ -1,8 +1,11 @@
+-- SORT_QUERY_RESULTS
+
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
 set hive.materializedview.rewriting=true;
-set hive.stats.column.autogather=true;
 
-create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int);
+create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true');
 
 insert into cmv_basetable values
  (1, 'alfred', 10.30, 2),

@@ -42,6 +42,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
@@ -71,6 +72,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -11649,7 +11651,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // all the information for semanticcheck
       validateCreateView();
 
-      if (!createVwDesc.isMaterialized()) {
+      if (createVwDesc.isMaterialized()) {
+        createVwDesc.setTablesUsed(getTablesUsed(pCtx));
+      } else {
         // Since we're only creating a view (not executing it), we don't need to
         // optimize or translate the plan (and in fact, those procedures can
         // interfere with the view creation). So skip the rest of this method.
@@ -11769,7 +11773,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   protected void saveViewDefinition() throws SemanticException {
     if (createVwDesc.isMaterialized() && createVwDesc.isReplace()) {
-      // This is a rebuild, there's nothing to do here.
+      // This is a rebuild, there's nothing to do here
       return;
     }
 
@@ -11886,6 +11890,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     createVwDesc.setSchema(derivedSchema);
     createVwDesc.setViewExpandedText(expandedText);
+  }
+
+  private List<String> getTablesUsed(ParseContext parseCtx) throws SemanticException {
+    List<String> tablesUsed = new ArrayList<>();
+    for (TableScanOperator topOp : parseCtx.getTopOps().values()) {
+      Table table = topOp.getConf().getTableMetadata();
+      if (!table.isMaterializedTable() && !table.isView()) {
+        // Add to signature
+        tablesUsed.add(table.getFullyQualifiedName());
+      }
+    }
+    return tablesUsed;
   }
 
   static List<FieldSchema> convertRowSchemaToViewSchema(RowResolver rr) throws SemanticException {
@@ -12784,13 +12800,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     try {
       Table oldView = getTable(createVwDesc.getViewName(), false);
 
-      // Do not allow view to be defined on temp table
+      // Do not allow view to be defined on temp table or other materialized view
       Set<String> tableAliases = qb.getTabAliases();
       for (String alias : tableAliases) {
         try {
           Table table = this.getTableObjectByName(qb.getTabNameForAlias(alias));
           if (table.isTemporary()) {
             throw new SemanticException("View definition references temporary table " + alias);
+          }
+          if (table.isMaterializedView()) {
+            throw new SemanticException("View definition references materialized view " + alias);
+          }
+          if (createVwDesc.isMaterialized() && createVwDesc.isRewriteEnabled() &&
+              !AcidUtils.isAcidTable(table)) {
+            throw new SemanticException("Automatic rewriting for materialized view cannot "
+                + "be enabled if the materialized view uses non-transactional tables");
           }
         } catch (HiveException ex) {
           throw new SemanticException(ex);

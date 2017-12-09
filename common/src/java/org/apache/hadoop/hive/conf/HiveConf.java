@@ -1137,6 +1137,12 @@ public class HiveConf extends Configuration {
     // materialized views
     HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING("hive.materializedview.rewriting", false,
         "Whether to try to rewrite queries using the materialized views enabled for rewriting"),
+    HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW("hive.materializedview.rewriting.time.window", 0,
+        "Time window, specified in seconds, after which outdated materialized views become invalid for automatic query rewriting.\n" +
+        "For instance, if a materialized view is created and afterwards one of its source tables is changed at " +
+        "moment in time t0, the materialized view will not be considered for rewriting anymore after t0 plus " +
+        "the value assigned to this property. Default value 0 means that the materialized view cannot be " +
+        "outdated to be used automatically in query rewriting."),
     HIVE_MATERIALIZED_VIEW_FILE_FORMAT("hive.materializedview.fileformat", "ORC",
         new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
         "Default file format for CREATE MATERIALIZED VIEW statement"),

@@ -1082,6 +1082,12 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public List<String> getMaterializedViewsForRewriting(String dbName)
+      throws MetaException, NoSuchObjectException {
+    return rawStore.getMaterializedViewsForRewriting(dbName);
+  }
+
+  @Override
   public List<TableMeta> getTableMeta(String dbNames, String tableNames, List<String> tableTypes)
       throws MetaException {
     // TODO Check if all required tables are allowed, if so, get it from cache

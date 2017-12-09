@@ -17,48 +17,109 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.hadoop.classification.InterfaceAudience;
-import org.apache.hadoop.classification.InterfaceStability;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.classification.RetrySemantics;
-import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.datasource.BoneCPDataSourceProvider;
-import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
-import org.apache.hadoop.hive.metastore.datasource.HikariCPDataSourceProvider;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.metrics.Metrics;
-import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
-import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
-import org.apache.hadoop.hive.metastore.utils.StringableMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
-
-import org.apache.commons.pool.impl.GenericObjectPool;
-import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.util.StringUtils;
-
-import javax.sql.DataSource;
-
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Savepoint;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TimeZone;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
+
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp.PoolableConnectionFactory;
+import org.apache.commons.dbcp.PoolingDataSource;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.RetrySemantics;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.MaterializationsInvalidationCache;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
+import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
+import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
+import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
+import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.LockComponent;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnInfo;
+import org.apache.hadoop.hive.metastore.api.TxnOpenException;
+import org.apache.hadoop.hive.metastore.api.TxnState;
+import org.apache.hadoop.hive.metastore.api.TxnsSnapshot;
+import org.apache.hadoop.hive.metastore.api.UnlockRequest;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.datasource.BoneCPDataSourceProvider;
+import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
+import org.apache.hadoop.hive.metastore.datasource.HikariCPDataSourceProvider;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.StringableMap;
+import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * A handler to answer transaction related calls that come into the metastore
@@ -755,7 +816,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         // Move the record from txn_components into completed_txn_components so that the compactor
         // knows where to look to compact.
-        String s = "insert into COMPLETED_TXN_COMPONENTS select tc_txnid, tc_database, tc_table, " +
+        String s = "insert into COMPLETED_TXN_COMPONENTS (ctc_txnid, ctc_database, " +
+          "ctc_table, ctc_partition) select tc_txnid, tc_database, tc_table, " +
           "tc_partition from TXN_COMPONENTS where tc_txnid = " + txnid;
         LOG.debug("Going to execute insert <" + s + ">");
         int modCount = 0;
@@ -776,6 +838,18 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         modCount = stmt.executeUpdate(s);
         LOG.debug("Going to commit");
         dbConn.commit();
+
+        // Update registry with modifications
+        s = "select ctc_database, ctc_table, ctc_id, ctc_timestamp from COMPLETED_TXN_COMPONENTS where ctc_txnid = " + txnid;
+        rs = stmt.executeQuery(s);
+        if (rs.next()) {
+          LOG.debug("Going to register table modification in invalidation cache <" + s + ">");
+          MaterializationsInvalidationCache.get().notifyTableModification(
+              rs.getString(1), rs.getString(2), rs.getLong(3),
+              rs.getTimestamp(4, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime());
+        }
+        close(rs);
+        dbConn.commit();
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -791,6 +865,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       commitTxn(rqst);
     }
   }
+
   @Override
   @RetrySemantics.SafeToRetry
   public void performWriteSetGC() {
@@ -836,6 +911,105 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       close(rs, stmt, dbConn);
     }
   }
+
+  /**
+   * Gets the information of the last transaction committed for the input table
+   * given the transaction snapshot provided.
+   */
+  @Override
+  public List<BasicTxnInfo> getLastCompletedTransactionForTables(
+      List<String> dbNames, List<String> tableNames, TxnsSnapshot txnsSnapshot) throws MetaException {
+    List<BasicTxnInfo> r = new ArrayList<>();
+    for (int i = 0; i < dbNames.size(); i++) {
+      r.add(getLastCompletedTransactionForTable(dbNames.get(i), tableNames.get(i), txnsSnapshot));
+    }
+    return r;
+  }
+
+  /**
+   * Gets the information of the last transaction committed for the input table
+   * given the transaction snapshot provided.
+   */
+  @Override
+  public BasicTxnInfo getLastCompletedTransactionForTable(
+      String inputDbName, String inputTableName, TxnsSnapshot txnsSnapshot) throws MetaException {
+    Connection dbConn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    try {
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+      stmt = dbConn.createStatement();
+      stmt.setMaxRows(1);
+      String s = "select ctc_id, ctc_timestamp, ctc_txnid, ctc_database, ctc_table "
+          + "from COMPLETED_TXN_COMPONENTS "
+          + "where ctc_database=" + quoteString(inputDbName) + " and ctc_table=" + quoteString(inputTableName)
+          + " and ctc_txnid <= " + txnsSnapshot.getTxn_high_water_mark()
+          + (txnsSnapshot.getOpen_txns().isEmpty() ?
+              " " : " and ctc_txnid NOT IN(" + StringUtils.join(",", txnsSnapshot.getOpen_txns()) + ") ")
+          + "order by ctc_id desc";
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Going to execute query <" + s + ">");
+      }
+      rs = stmt.executeQuery(s);
+      if(!rs.next()) {
+        return new BasicTxnInfo(true);
+      }
+      final BasicTxnInfo txnInfo = new BasicTxnInfo(false);
+      txnInfo.setId(rs.getLong(1));
+      txnInfo.setTime(rs.getTimestamp(2, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime());
+      txnInfo.setTxnid(rs.getLong(3));
+      txnInfo.setDbname(rs.getString(4));
+      txnInfo.setTablename(rs.getString(5));
+      return txnInfo;
+    } catch (SQLException ex) {
+      LOG.warn("getLastCompletedTransactionForTable failed due to " + getMessage(ex), ex);
+      throw new MetaException("Unable to retrieve commits information due to " + StringUtils.stringifyException(ex));
+    } finally {
+      close(rs, stmt, dbConn);
+    }
+  }
+
+  /**
+   * Gets the information of the first transaction for the given table
+   * after the transaction with the input id was committed (if any). 
+   */
+  @Override
+  public BasicTxnInfo getFirstCompletedTransactionForTableAfterCommit(
+      String inputDbName, String inputTableName, long incrementalIdentifier)
+          throws MetaException {
+    Connection dbConn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    try {
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+      stmt = dbConn.createStatement();
+      stmt.setMaxRows(1);
+      String s = "select ctc_id, ctc_timestamp, ctc_txnid, ctc_database, ctc_table "
+          + "from COMPLETED_TXN_COMPONENTS "
+          + "where ctc_database=" + quoteString(inputDbName) + " and ctc_table=" + quoteString(inputTableName)
+          + " and ctc_id > " + incrementalIdentifier + " order by ctc_id asc";
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Going to execute query <" + s + ">");
+      }
+      rs = stmt.executeQuery(s);
+      if(!rs.next()) {
+        return new BasicTxnInfo(true);
+      }
+      final BasicTxnInfo txnInfo = new BasicTxnInfo(false);
+      txnInfo.setId(rs.getLong(1));
+      txnInfo.setTime(rs.getTimestamp(2, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime());
+      txnInfo.setTxnid(rs.getLong(3));
+      txnInfo.setDbname(rs.getString(4));
+      txnInfo.setTablename(rs.getString(5));
+      return txnInfo;
+    } catch (SQLException ex) {
+      LOG.warn("getLastCompletedTransactionForTable failed due to " + getMessage(ex), ex);
+      throw new MetaException("Unable to retrieve commits information due to " + StringUtils.stringifyException(ex));
+    } finally {
+      close(rs, stmt, dbConn);
+    }
+  }
+
   /**
    * As much as possible (i.e. in absence of retries) we want both operations to be done on the same
    * connection (but separate transactions).  This avoid some flakiness in BONECP where if you

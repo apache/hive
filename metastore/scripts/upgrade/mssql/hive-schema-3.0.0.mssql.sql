@@ -652,6 +652,15 @@ CREATE TABLE WM_MAPPING
 
 ALTER TABLE WM_MAPPING ADD CONSTRAINT WM_MAPPING_PK PRIMARY KEY (MAPPING_ID);
 
+CREATE TABLE MV_CREATION_METADATA
+(
+    TBL_ID bigint NOT NULL,
+    TBL_NAME nvarchar(256) NOT NULL,
+    LAST_TRANSACTION_INFO text NOT NULL
+);
+
+ALTER TABLE MV_CREATION_METADATA ADD CONSTRAINT MV_CREATION_METADATA_FK FOREIGN KEY (TBL_ID) REFERENCES TBLS (TBL_ID) ;
+
 -- Constraints for table MASTER_KEYS for class(es) [org.apache.hadoop.hive.metastore.model.MMasterKey]
 
 -- Constraints for table IDXS for class(es) [org.apache.hadoop.hive.metastore.model.MIndex]

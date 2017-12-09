@@ -327,6 +327,7 @@ struct Table {
   13: optional PrincipalPrivilegeSet privileges,
   14: optional bool temporary=false,
   15: optional bool rewriteEnabled,     // rewrite enabled or not
+  16: optional map<string, BasicTxnInfo> creationMetadata   // only for MVs, it stores table name used -> last modification before MV creation
 }
 
 struct Partition {
@@ -855,6 +856,21 @@ struct AddDynamicPartitions {
     5: optional DataOperationType operationType = DataOperationType.UNSET
 }
 
+struct BasicTxnInfo {
+    1: required bool isnull,
+    2: optional i64 id,
+    3: optional i64 time,
+    4: optional i64 txnid,
+    5: optional string dbname,
+    6: optional string tablename,
+    7: optional string partitionname
+}
+
+struct TxnsSnapshot {
+    1: required i64 txn_high_water_mark,
+    2: required list<i64> open_txns
+}
+
 struct NotificationEventRequest {
     1: required i64 lastEvent,
     2: optional i32 maxEvents,
@@ -1029,6 +1045,12 @@ struct TableMeta {
   2: required string tableName;
   3: required string tableType;
   4: optional string comments;
+}
+
+struct Materialization {
+  1: required Table materializationTable;
+  2: required set<string> tablesUsed;
+  3: required i64 invalidationTime;
 }
 
 // Data types for workload management.
@@ -1364,6 +1386,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
                           throws(1:MetaException o1)
   list<string> get_tables(1: string db_name, 2: string pattern) throws (1: MetaException o1)
   list<string> get_tables_by_type(1: string db_name, 2: string pattern, 3: string tableType) throws (1: MetaException o1)
+  list<string> get_materialized_views_for_rewriting(1: string db_name) throws (1: MetaException o1)
   list<TableMeta> get_table_meta(1: string db_patterns, 2: string tbl_patterns, 3: list<string> tbl_types)
                        throws (1: MetaException o1)
   list<string> get_all_tables(1: string db_name) throws (1: MetaException o1)
@@ -1373,6 +1396,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<Table> get_table_objects_by_name(1:string dbname, 2:list<string> tbl_names)
   GetTableResult get_table_req(1:GetTableRequest req) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   GetTablesResult get_table_objects_by_name_req(1:GetTablesRequest req)
+				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
+  map<string, Materialization> get_materialization_invalidation_info(1:string dbname, 2:list<string> tbl_names)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
 
   // Get a list of table names that match a filter.
@@ -1770,11 +1795,13 @@ service ThriftHiveMetastore extends fb303.FacebookService
   CompactionResponse compact2(1:CompactionRequest rqst) 
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
   void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
+  list<BasicTxnInfo> get_last_completed_transaction_for_tables(1:list<string> db_names, 2:list<string> table_names, 3:TxnsSnapshot txns_snapshot)
+  BasicTxnInfo get_last_completed_transaction_for_table(1:string db_name, 2:string table_name, 3:TxnsSnapshot txns_snapshot)
 
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
   CurrentNotificationEventId get_current_notificationEventId()
-  NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
+  NotificationEventsCountResponse get_notification_events_count(1:NotificationEventsCountRequest rqst)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
 

@@ -20,14 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
-import com.google.common.collect.Sets;
-import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.model.MWMMapping;
-import org.apache.hadoop.hive.metastore.model.MWMMapping.EntityType;
-import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.model.MWMPool;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
@@ -58,6 +51,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
+
 import javax.jdo.JDOCanRetryException;
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
@@ -71,7 +65,9 @@ import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 import javax.sql.DataSource;
+
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -83,6 +79,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -133,6 +130,10 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
@@ -173,6 +174,9 @@ import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.model.MType;
 import org.apache.hadoop.hive.metastore.model.MVersionTable;
+import org.apache.hadoop.hive.metastore.model.MWMMapping;
+import org.apache.hadoop.hive.metastore.model.MWMMapping.EntityType;
+import org.apache.hadoop.hive.metastore.model.MWMPool;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
 import org.apache.hadoop.hive.metastore.model.MWMTrigger;
@@ -184,7 +188,10 @@ import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
+import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
+import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TJSONProtocol;
 import org.datanucleus.AbstractNucleusContext;
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ClassLoaderResolverImpl;
@@ -196,11 +203,13 @@ import org.datanucleus.store.scostore.Store;
 import org.datanucleus.util.WeakValueMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 
 /**
@@ -1109,6 +1118,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean commited = false;
     try {
       openTransaction();
+
       MTable mtbl = convertToMTable(tbl);
       pm.makePersistent(mtbl);
 
@@ -1131,6 +1141,12 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!commited) {
         rollbackTransaction();
+      } else {
+        if (MetaStoreUtils.isMaterializedViewTable(tbl)) {
+          // Add to the invalidation cache
+          MaterializationsInvalidationCache.get().createMaterializedView(
+              tbl, tbl.getCreationMetadata().keySet());
+        }
       }
     }
   }
@@ -1171,12 +1187,14 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public boolean dropTable(String dbName, String tableName) throws MetaException,
     NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    boolean materializedView = false;
     boolean success = false;
     try {
       openTransaction();
       MTable tbl = getMTable(dbName, tableName);
       pm.retrieve(tbl);
       if (tbl != null) {
+        materializedView = TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType());
         // first remove all the grants
         List<MTablePrivilege> tabGrants = listAllTableGrants(dbName, tableName);
         if (CollectionUtils.isNotEmpty(tabGrants)) {
@@ -1220,6 +1238,10 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!success) {
         rollbackTransaction();
+      } else {
+        if (materializedView) {
+          MaterializationsInvalidationCache.get().dropMaterializedView(dbName, tableName);
+        }
       }
     }
     return success;
@@ -1344,6 +1366,30 @@ public class ObjectStore implements RawStore, Configurable {
       query.setResult("tableName");
       query.setOrdering("tableName ascending");
       Collection<String> names = (Collection<String>) query.executeWithArray(parameterVals.toArray(new String[0]));
+      tbls = new ArrayList<>(names);
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return tbls;
+  }
+
+  @Override
+  public List<String> getMaterializedViewsForRewriting(String dbName)
+      throws MetaException, NoSuchObjectException {
+    final String db_name = normalizeIdentifier(dbName);
+    boolean commited = false;
+    Query<?> query = null;
+    List<String> tbls = null;
+    try {
+      openTransaction();
+      dbName = normalizeIdentifier(dbName);
+      query = pm.newQuery(MTable.class, "database.name == db && tableType == tt"
+          + " && rewriteEnabled == re");
+      query.declareParameters("java.lang.String db, java.lang.String tt, boolean re");
+      query.setResult("tableName");
+      Collection<String> names = (Collection<String>) query.execute(
+          db_name, TableType.MATERIALIZED_VIEW.toString(), true);
       tbls = new ArrayList<>(names);
       commited = commitTransaction();
     } finally {
@@ -1585,6 +1631,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
         convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
         mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
+    t.setCreationMetadata(convertToCreationMetadata(mtbl.getCreationMetadata()));
     t.setRewriteEnabled(mtbl.isRewriteEnabled());
     return t;
   }
@@ -1624,7 +1671,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
-        tableType);
+        convertToMCreationMetadata(tbl.getCreationMetadata()), tableType);
   }
 
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
@@ -1831,6 +1878,58 @@ public class ObjectStore implements RawStore, Configurable {
             .getSkewedColValues()),
         covertToMapMStringList((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
             .getSkewedColValueLocationMaps()), sd.isStoredAsSubDirectories());
+  }
+
+  private Map<String, String> convertToMCreationMetadata(
+      Map<String, BasicTxnInfo> m) throws MetaException {
+    if (m == null) {
+      return null;
+    }
+    Map<String, String> r = new HashMap<>();
+    for (Entry<String, BasicTxnInfo> e : m.entrySet()) {
+      r.put(e.getKey(), serializeBasicTransactionInfo(e.getValue()));
+    }
+    return r;
+  }
+
+  private Map<String, BasicTxnInfo> convertToCreationMetadata(
+      Map<String, String> m) throws MetaException {
+    if (m == null) {
+      return null;
+    }
+    Map<String, BasicTxnInfo> r = new HashMap<>();
+    for (Entry<String, String> e : m.entrySet()) {
+      r.put(e.getKey(), deserializeBasicTransactionInfo(e.getValue()));
+    }
+    return r;
+  }
+
+  private String serializeBasicTransactionInfo(BasicTxnInfo entry)
+      throws MetaException {
+    if (entry.isIsnull()) {
+      return "";
+    }
+    try {
+      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+      return serializer.toString(entry, "UTF-8");
+    } catch (TException e) {
+      throw new MetaException("Error serializing object " + entry + ": " + e.toString());
+    }
+  }
+
+  private BasicTxnInfo deserializeBasicTransactionInfo(String s)
+      throws MetaException {
+    if (s.equals("")) {
+      return new BasicTxnInfo(true);
+    }
+    try {
+      TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
+      BasicTxnInfo r = new BasicTxnInfo();
+      deserializer.deserialize(r, s, "UTF-8");
+      return r;
+    } catch (TException e) {
+      throw new MetaException("Error deserializing object " + s + ": " + e.toString());
+    }
   }
 
   @Override
@@ -3563,6 +3662,7 @@ public class ObjectStore implements RawStore, Configurable {
   public void alterTable(String dbname, String name, Table newTable)
       throws InvalidObjectException, MetaException {
     boolean success = false;
+    boolean registerCreationSignature = false;
     try {
       openTransaction();
       name = normalizeIdentifier(name);
@@ -3598,12 +3698,23 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setViewOriginalText(newt.getViewOriginalText());
       oldt.setViewExpandedText(newt.getViewExpandedText());
       oldt.setRewriteEnabled(newt.isRewriteEnabled());
+      registerCreationSignature = !MapUtils.isEmpty(newt.getCreationMetadata());
+      if (registerCreationSignature) {
+        oldt.setCreationMetadata(newt.getCreationMetadata());
+      }
 
       // commit the changes
       success = commitTransaction();
     } finally {
       if (!success) {
         rollbackTransaction();
+      } else {
+        if (MetaStoreUtils.isMaterializedViewTable(newTable) &&
+            registerCreationSignature) {
+          // Add to the invalidation cache if the creation signature has changed
+          MaterializationsInvalidationCache.get().alterMaterializedView(
+              newTable, newTable.getCreationMetadata().keySet());
+        }
       }
     }
   }
