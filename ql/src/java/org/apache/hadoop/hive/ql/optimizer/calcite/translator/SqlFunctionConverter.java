@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.CanAggregateDistinct;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlAverageAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
@@ -548,6 +549,12 @@ public class SqlFunctionConverter {
               udfInfo.operandTypeInference,
               udfInfo.operandTypeChecker, false);
           break;
+        case "avg":
+          calciteAggFn = new HiveSqlAverageAggFunction(
+              udfInfo.returnTypeInference,
+              udfInfo.operandTypeInference,
+              udfInfo.operandTypeChecker);
+        break;
         default:
           calciteAggFn = new CalciteUDAF(
               isDistinct,
