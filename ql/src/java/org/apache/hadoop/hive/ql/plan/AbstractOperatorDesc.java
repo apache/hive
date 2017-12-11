@@ -146,7 +146,7 @@ public class AbstractOperatorDesc implements OperatorDesc {
   public Map<String, String> getColumnExprMapForExplain() {
     Map<String, String> colExprMapForExplain = new HashMap<>();
     for(String col:this.colExprMap.keySet()) {
-      colExprMapForExplain.put(col, this.colExprMap.get(col).toString());
+      colExprMapForExplain.put(col, this.colExprMap.get(col).getExprString());
     }
     return colExprMapForExplain;
   }
