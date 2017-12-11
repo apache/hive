@@ -1,3 +1,5 @@
+set hive.stats.column.autogather=false;
+-- Currently, a query with multiple FileSinkOperators are not supported.
 set hive.mapred.mode=nonstrict;
 CREATE TABLE T1(key INT, val STRING);
 LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T1;

@@ -10,16 +10,4 @@ POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
-PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 10
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 10
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-FAILED: SemanticException 3:20 Input format must implement InputFormat. Error encountered near token 'dest1'
+FAILED: SemanticException 1:72 Input format must implement InputFormat. Error encountered near token 'dest1'

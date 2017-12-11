@@ -1,3 +1,4 @@
+set hive.stats.column.autogather=false;
 --SORT_QUERY_RESULTS
 
 -- Java JCE must be installed in order to hava a key length of 256 bits

@@ -1,3 +1,12 @@
+set hive.stats.column.autogather=false;
+-- sounds weird:
+-- on master, when auto=true, hive.mapjoin.localtask.max.memory.usage will be 0.55 as there is a gby
+-- L132 of LocalMapJoinProcFactory
+-- when execute in CLI, hive.exec.submit.local.task.via.child is true and we can see the error
+-- if set hive.exec.submit.local.task.via.child=false, we can see it.
+-- with patch, we just merge the tasks. hive.exec.submit.local.task.via.child=false due to pom.xml setting
+-- however, even after change it to true, it still fails.
+
 set hive.mapred.mode=nonstrict;
 set hive.exec.infer.bucket.sort=true;
 set hive.exec.infer.bucket.sort.num.buckets.power.two=true;

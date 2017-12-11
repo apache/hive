@@ -211,26 +211,26 @@ Stage-0
     Stage-1
       Reducer 2 llap
       File Output Operator [FS_10]
-        Merge Join Operator [MERGEJOIN_15] (rows=551 width=3)
+        Merge Join Operator [MERGEJOIN_15] (rows=130 width=8)
           Conds:RS_6._col0=RS_7._col0(Inner),Output:["_col0","_col1"]
         <-Map 1 [SIMPLE_EDGE] llap
           SHUFFLE [RS_6]
             PartitionCols:_col0
-            Select Operator [SEL_2] (rows=124 width=3)
+            Select Operator [SEL_2] (rows=130 width=4)
               Output:["_col0"]
-              Filter Operator [FIL_13] (rows=124 width=3)
+              Filter Operator [FIL_13] (rows=130 width=4)
                 predicate:userid is not null
-                TableScan [TS_0] (rows=130 width=3)
-                  default@bug_201_input_b,t1,Tbl:COMPLETE,Col:NONE,Output:["userid"]
+                TableScan [TS_0] (rows=130 width=4)
+                  default@bug_201_input_b,t1,Tbl:COMPLETE,Col:COMPLETE,Output:["userid"]
         <-Map 3 [SIMPLE_EDGE] llap
           SHUFFLE [RS_7]
             PartitionCols:_col0
-            Select Operator [SEL_5] (rows=501 width=3)
+            Select Operator [SEL_5] (rows=527 width=4)
               Output:["_col0"]
-              Filter Operator [FIL_14] (rows=501 width=3)
+              Filter Operator [FIL_14] (rows=527 width=4)
                 predicate:userid is not null
-                TableScan [TS_3] (rows=527 width=3)
-                  default@bug_201_input_a,fa,Tbl:COMPLETE,Col:NONE,Output:["userid"]
+                TableScan [TS_3] (rows=527 width=4)
+                  default@bug_201_input_a,fa,Tbl:COMPLETE,Col:COMPLETE,Output:["userid"]
 
 PREHOOK: query: select
 t1.userid,
@@ -291,26 +291,26 @@ Stage-0
     Stage-1
       Reducer 2 llap
       File Output Operator [FS_10]
-        Merge Join Operator [MERGEJOIN_15] (rows=551 width=3)
+        Merge Join Operator [MERGEJOIN_15] (rows=130 width=8)
           Conds:RS_6._col0=RS_7._col0(Inner),Output:["_col0","_col1"]
         <-Map 1 [SIMPLE_EDGE] llap
           SHUFFLE [RS_6]
             PartitionCols:_col0
-            Select Operator [SEL_2] (rows=124 width=3)
+            Select Operator [SEL_2] (rows=130 width=4)
               Output:["_col0"]
-              Filter Operator [FIL_13] (rows=124 width=3)
+              Filter Operator [FIL_13] (rows=130 width=4)
                 predicate:userid is not null
-                TableScan [TS_0] (rows=130 width=3)
-                  default@bug_201_input_b,t1,Tbl:COMPLETE,Col:NONE,Output:["userid"]
+                TableScan [TS_0] (rows=130 width=4)
+                  default@bug_201_input_b,t1,Tbl:COMPLETE,Col:COMPLETE,Output:["userid"]
         <-Map 3 [SIMPLE_EDGE] llap
           SHUFFLE [RS_7]
             PartitionCols:_col0
-            Select Operator [SEL_5] (rows=501 width=3)
+            Select Operator [SEL_5] (rows=527 width=4)
               Output:["_col0"]
-              Filter Operator [FIL_14] (rows=501 width=3)
+              Filter Operator [FIL_14] (rows=527 width=4)
                 predicate:userid is not null
-                TableScan [TS_3] (rows=527 width=3)
-                  default@bug_201_input_a,fa,Tbl:COMPLETE,Col:NONE,Output:["userid"]
+                TableScan [TS_3] (rows=527 width=4)
+                  default@bug_201_input_a,fa,Tbl:COMPLETE,Col:COMPLETE,Output:["userid"]
 
 PREHOOK: query: select
 t1.userid,

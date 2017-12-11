@@ -1,4 +1,4 @@
-;
+set hive.stats.column.autogather=false;
 set hive.exec.mode.local.auto=false;
 set mapred.reduce.tasks = 10;
 

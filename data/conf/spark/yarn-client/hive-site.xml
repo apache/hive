@@ -300,4 +300,10 @@
   <value>99</value>
 </property>
 
+<!-- remove this after HIVE-18139 -->
+<property>
+  <name>hive.stats.column.autogather</name>
+  <value>false</value>
+</property>
+
 </configuration>

@@ -70,6 +70,26 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.e1
+              Select Operator
+                expressions: _col0 (type: int)
+                outputColumnNames: count
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: compute_stats(count, 'hll')
+                  mode: complete
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           Group By Operator
             aggregations: percentile_approx(VALUE._col0, 0.5)
             mode: complete
@@ -83,6 +103,26 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.e2
+            Select Operator
+              expressions: _col0 (type: double)
+              outputColumnNames: percentile
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: compute_stats(percentile, 'hll')
+                mode: complete
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Move Operator
@@ -97,6 +137,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: count
+          Column Types: int
+          Table: default.e1
 
   Stage: Stage-1
     Move Operator
@@ -111,6 +155,10 @@ STAGE PLANS:
   Stage: Stage-4
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: percentile
+          Column Types: double
+          Table: default.e2
 
 PREHOOK: query: FROM (select key, cast(key as double) as value from src order by key) a
 INSERT OVERWRITE TABLE e1

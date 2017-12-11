@@ -7,6 +7,8 @@ set mapred.max.split.size=256;
 
 set mapred.output.compression.codec=org.apache.hadoop.io.compress.GzipCodec;
 
+set hive.stats.column.autogather=false;
+
 -- SORT_QUERY_RESULTS
 
 create table combine1_1(key string, value string) stored as textfile;

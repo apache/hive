@@ -91,7 +91,7 @@ STAGE PLANS:
               ds1 2000-04-08
               ds2 2001-04-08
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns key,value
@@ -139,7 +139,7 @@ STAGE PLANS:
               ds1 2000-04-09
               ds2 2001-04-09
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns key,value
@@ -267,7 +267,7 @@ STAGE PLANS:
               ds1 2000-04-08
               ds2 2001-04-08
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns key,value
@@ -418,7 +418,7 @@ STAGE PLANS:
               ds1 2000-04-08
               ds2 2001-04-08
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns key,value
@@ -642,7 +642,7 @@ STAGE PLANS:
               ds1 2000-04-08
               ds2 2001-04-08
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns key,value
@@ -690,7 +690,7 @@ STAGE PLANS:
               ds1 2000-04-09
               ds2 2001-04-09
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns key,value
@@ -908,7 +908,7 @@ STAGE PLANS:
               ds1 2000-04-08
               ds2 2001-04-08
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns key,value
@@ -956,7 +956,7 @@ STAGE PLANS:
               ds1 2000-04-09
               ds2 2001-04-09
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns key,value
@@ -1004,7 +1004,7 @@ STAGE PLANS:
               ds1 2000-04-10
               ds2 2001-04-10
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns key,value

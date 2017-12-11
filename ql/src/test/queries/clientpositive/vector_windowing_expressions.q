@@ -1,3 +1,4 @@
+set hive.stats.column.autogather=false;
 set hive.cli.print.header=true;
 SET hive.vectorized.execution.enabled=true;
 SET hive.vectorized.execution.reduce.enabled=true;

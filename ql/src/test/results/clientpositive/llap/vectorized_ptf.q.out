@@ -145,7 +145,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -160,7 +160,7 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [2]
                         valueColumnNums: [5, 7]
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -190,7 +190,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -204,12 +204,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -222,7 +222,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -256,14 +256,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -359,7 +359,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
-                  Statistics: Num rows: 26 Data size: 9776 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 5902 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -369,7 +369,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:int)
                     predicate: p_partkey is not null (type: boolean)
-                    Statistics: Num rows: 25 Data size: 9400 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5902 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
                       sort order: +
@@ -380,7 +380,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: [1, 2, 5]
-                      Statistics: Num rows: 25 Data size: 9400 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 5902 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -403,7 +403,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
-                  Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -413,7 +413,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:int)
                     predicate: p_partkey is not null (type: boolean)
-                    Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
                       sort order: +
@@ -424,7 +424,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -452,12 +452,12 @@ STAGE PLANS:
                   0 p_partkey (type: int)
                   1 p_partkey (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 27 Data size: 10340 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 6021 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col2 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col2 (type: string)
-                  Statistics: Num rows: 27 Data size: 10340 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 27 Data size: 6021 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -470,7 +470,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 27 Data size: 10340 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 6021 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -484,12 +484,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 27 Data size: 10340 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 27 Data size: 6021 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 27 Data size: 10340 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 27 Data size: 6021 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 4 
             Execution mode: llap
@@ -502,7 +502,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 27 Data size: 10340 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 6021 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -523,14 +523,14 @@ STAGE PLANS:
                               window function: GenericUDAFLagEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 27 Data size: 10340 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 27 Data size: 6021 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), (_col5 - lag_window_0) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 27 Data size: 10340 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 27 Data size: 6129 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 27 Data size: 10340 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 27 Data size: 6129 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -618,7 +618,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -633,7 +633,7 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [2]
                         valueColumnNums: [5]
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_size (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -663,7 +663,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -677,14 +677,14 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int)
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -777,7 +777,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -792,7 +792,7 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [2]
                         valueColumnNums: [5, 7]
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -822,7 +822,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -836,12 +836,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -854,7 +854,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -888,14 +888,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -996,7 +996,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1011,7 +1011,7 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [2]
                         valueColumnNums: [5]
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_size (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1041,7 +1041,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1055,12 +1055,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -1073,7 +1073,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1108,14 +1108,14 @@ STAGE PLANS:
                               window function: GenericUDAFLagEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), (_col5 - lag_window_2) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1218,7 +1218,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1233,7 +1233,7 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [2]
                         valueColumnNums: [5]
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_size (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1263,7 +1263,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1277,21 +1277,21 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: _col1, _col2, _col5
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col2 (type: string), _col1 (type: string), _col5 (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 2899 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 13 Data size: 2899 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: llap
             Reduce Vectorization:
@@ -1304,7 +1304,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 13 Data size: 4836 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 13 Data size: 2899 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1339,14 +1339,14 @@ STAGE PLANS:
                               window function: GenericUDAFLagEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 13 Data size: 4836 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 13 Data size: 2899 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col2 (type: int), (_col2 - lag_window_2) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                    Statistics: Num rows: 13 Data size: 4836 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 13 Data size: 3107 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 13 Data size: 4836 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 3107 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1442,7 +1442,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 29120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1457,7 +1457,7 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [2]
                         valueColumnNums: [0, 3, 4, 5, 6, 7, 8]
-                    Statistics: Num rows: 26 Data size: 29120 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1480,7 +1480,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
-                  Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1490,7 +1490,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:int)
                     predicate: p_partkey is not null (type: boolean)
-                    Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
                       sort order: +
@@ -1501,7 +1501,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1530,7 +1530,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: int), VALUE._col4 (type: string), VALUE._col5 (type: double), VALUE._col6 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 26 Data size: 29120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1544,15 +1544,15 @@ STAGE PLANS:
                         output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 29120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: _col0 is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 29120 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 26 Data size: 29120 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
         Reducer 3 
             Execution mode: llap
@@ -1564,10 +1564,10 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 p_partkey (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 28 Data size: 32032 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 16713 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 28 Data size: 32032 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 27 Data size: 16713 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1658,7 +1658,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
-                  Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1668,7 +1668,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:int)
                     predicate: p_partkey is not null (type: boolean)
-                    Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
                       sort order: +
@@ -1679,7 +1679,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1701,7 +1701,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 29120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1716,7 +1716,7 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [2]
                         valueColumnNums: [0, 3, 4, 5, 6, 7, 8]
-                    Statistics: Num rows: 26 Data size: 29120 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1745,14 +1745,14 @@ STAGE PLANS:
                   0 p_partkey (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
-                Statistics: Num rows: 28 Data size: 32032 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 16713 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col12 (type: int), _col13 (type: string), _col14 (type: string), _col15 (type: string), _col16 (type: string), _col17 (type: int), _col18 (type: string), _col19 (type: double), _col20 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                  Statistics: Num rows: 28 Data size: 32032 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 27 Data size: 16713 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 28 Data size: 32032 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 27 Data size: 16713 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1768,7 +1768,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: int), VALUE._col4 (type: string), VALUE._col5 (type: double), VALUE._col6 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 26 Data size: 29120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1782,15 +1782,15 @@ STAGE PLANS:
                         output shape: _col0: int, _col1: string, _col2: string, _col3: string, _col4: string, _col5: int, _col6: string, _col7: double, _col8: string
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 29120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: _col0 is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 29120 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 26 Data size: 29120 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 23062 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
 
   Stage: Stage-0
@@ -1878,7 +1878,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator
                     Function definitions:
                         Input definition
@@ -1893,13 +1893,13 @@ STAGE PLANS:
                           partition by: p_mfgr
                           raw input shape:
                           transforms raw input: true
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: p_mfgr (type: string), p_name (type: string), p_size (type: int)
                       sort order: ++-
                       Map-reduce partition columns: p_mfgr (type: string)
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1919,7 +1919,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey2 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1934,12 +1934,12 @@ STAGE PLANS:
                         partition by: _col2
                         raw input shape:
                         transforms raw input: true
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int)
                     sort order: ++-
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: llap
             Reduce Vectorization:
@@ -1951,7 +1951,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey2 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -1972,14 +1972,14 @@ STAGE PLANS:
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5902 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 5902 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2072,7 +2072,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator
                     Function definitions:
                         Input definition
@@ -2087,13 +2087,13 @@ STAGE PLANS:
                           partition by: p_mfgr
                           raw input shape:
                           transforms raw input: true
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: p_mfgr (type: string), p_name (type: string)
                       sort order: ++
                       Map-reduce partition columns: p_mfgr (type: string)
-                      Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: llap
             LLAP IO: all inputs
@@ -2114,7 +2114,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2129,12 +2129,12 @@ STAGE PLANS:
                         partition by: _col2
                         raw input shape:
                         transforms raw input: true
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -2147,7 +2147,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2181,14 +2181,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2285,7 +2285,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2300,7 +2300,7 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [2]
                         valueColumnNums: [5, 7]
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2330,7 +2330,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2344,12 +2344,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -2362,7 +2362,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2396,14 +2396,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2503,7 +2503,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2518,7 +2518,7 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [2]
                         valueColumnNums: [5, 7]
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2548,7 +2548,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2562,7 +2562,7 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator
                     Function definitions:
                         Input definition
@@ -2584,13 +2584,13 @@ STAGE PLANS:
                           output shape: _col1: string, _col2: string, _col5: int, _col7: double
                           partition by: _col2
                           raw input shape:
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -2603,7 +2603,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2625,12 +2625,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 4 
             Execution mode: llap
@@ -2643,7 +2643,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2677,14 +2677,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2791,7 +2791,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2806,7 +2806,7 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [2]
                         valueColumnNums: [5, 7]
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2836,7 +2836,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2850,12 +2850,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -2868,7 +2868,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -2894,14 +2894,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), count_window_0 (type: bigint), round(sum_window_1, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6110 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6110 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3013,7 +3013,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9984 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 6110 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3028,7 +3028,7 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [2]
                         valueColumnNums: [0, 5, 7]
-                    Statistics: Num rows: 26 Data size: 9984 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6110 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_partkey (type: int), p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3051,7 +3051,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
-                  Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3061,7 +3061,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 0:int)
                     predicate: p_partkey is not null (type: boolean)
-                    Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: p_partkey (type: int)
                       sort order: +
@@ -3072,7 +3072,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 25 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -3101,7 +3101,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9984 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3115,15 +3115,15 @@ STAGE PLANS:
                         output shape: _col0: int, _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9984 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: _col0 is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 9984 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 26 Data size: 9984 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int), _col7 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -3135,12 +3135,12 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 p_partkey (type: int)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 28 Data size: 10982 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 6237 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col2 (type: string), _col1 (type: string)
                   sort order: ++
                   Map-reduce partition columns: _col2 (type: string)
-                  Statistics: Num rows: 28 Data size: 10982 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 27 Data size: 6237 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col5 (type: int), _col7 (type: double)
         Reducer 4 
             Execution mode: llap
@@ -3153,7 +3153,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 28 Data size: 10982 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 27 Data size: 20709 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3200,14 +3200,14 @@ STAGE PLANS:
                               window function: GenericUDAFLagEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
-                  Statistics: Num rows: 28 Data size: 10982 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 27 Data size: 20709 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), count_window_2 (type: bigint), _col7 (type: double), round(sum_window_3, 2) (type: double), _col5 (type: int), (_col5 - lag_window_4) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 28 Data size: 10982 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 27 Data size: 6993 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 28 Data size: 10982 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 27 Data size: 6993 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3306,7 +3306,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3321,7 +3321,7 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [2]
                         valueColumnNums: [5]
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_size (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3351,7 +3351,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3365,21 +3365,21 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: _col1, _col2, _col5
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col2 (type: string), _col1 (type: string), _col5 (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 2899 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
-                        Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 13 Data size: 2899 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -3407,13 +3407,13 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 13 Data size: 4836 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 13 Data size: 2899 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 13 Data size: 4836 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 13 Data size: 2899 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3522,7 +3522,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9776 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 5148 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3533,7 +3533,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 3, 7]
-                    Statistics: Num rows: 26 Data size: 9776 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5148 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(p_retailprice)
                       Group By Vectorization:
@@ -3547,7 +3547,7 @@ STAGE PLANS:
                       keys: p_mfgr (type: string), p_brand (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 26 Data size: 9776 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 2574 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
@@ -3559,7 +3559,7 @@ STAGE PLANS:
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             partitionColumnNums: [0]
                             valueColumnNums: [2]
-                        Statistics: Num rows: 26 Data size: 9776 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 13 Data size: 2574 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3591,11 +3591,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 13 Data size: 4888 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 13 Data size: 2574 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string), round(_col2, 2) (type: double)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 13 Data size: 4888 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 13 Data size: 2574 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator
                     Function definitions:
                         Input definition
@@ -3609,12 +3609,12 @@ STAGE PLANS:
                           output shape: _col0: string, _col1: string, _col2: double
                           partition by: _col0
                           raw input shape:
-                    Statistics: Num rows: 13 Data size: 4888 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 13 Data size: 2574 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 13 Data size: 4888 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 2574 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col2 (type: double)
         Reducer 3 
             Execution mode: llap
@@ -3627,7 +3627,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: double)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 13 Data size: 4888 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 13 Data size: 2574 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3647,14 +3647,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(2)~CURRENT
-                  Statistics: Num rows: 13 Data size: 4888 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 13 Data size: 2574 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), round(sum_window_0, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 13 Data size: 4888 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 13 Data size: 2678 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 13 Data size: 4888 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 13 Data size: 2678 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3797,15 +3797,17 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3820,7 +3822,7 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [2]
                         valueColumnNums: [5, 7]
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6006 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_size (type: int), p_retailprice (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3850,7 +3852,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3864,18 +3866,18 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int), _col7 (type: double)
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col5 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string)
         Reducer 3 
             Execution mode: llap
@@ -3888,7 +3890,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3922,20 +3924,53 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.part_4
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: double)
+                      outputColumnNames: p_mfgr, p_name, p_size, r, dr, s
+                      Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: compute_stats(p_mfgr, 'hll'), compute_stats(p_name, 'hll'), compute_stats(p_size, 'hll'), compute_stats(r, 'hll'), compute_stats(dr, 'hll'), compute_stats(s, 'hll')
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                        Statistics: Num rows: 1 Data size: 2576 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 2576 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col5 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
         Reducer 4 
+            Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
+                vectorized: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3), compute_stats(VALUE._col4), compute_stats(VALUE._col5)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 1 Data size: 2640 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 2640 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
@@ -3946,7 +3981,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -3966,18 +4001,18 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: RANGE PRECEDING(5)~CURRENT
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: bigint), _col1 (type: string), _col2 (type: string), _col5 (type: int)
                     outputColumnNames: sum_window_0, _col1, _col2, _col5
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: sum_window_0 (type: bigint), _col5 (type: int)
-        Reducer 5 
+        Reducer 6 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
@@ -3988,7 +4023,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col0, _col2, _col3, _col6
-                Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4029,19 +4064,52 @@ STAGE PLANS:
                               name: first_value
                               window function: GenericUDAFFirstValueEvaluator
                               window frame: ROWS PRECEDING(2)~FOLLOWING(2)
-                  Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12974 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col3 (type: string), _col2 (type: string), _col6 (type: int), UDFToInteger(round(_col0, 1)) (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), cume_dist_window_3 (type: double), first_value_window_4 (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                    Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9880 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.part_5
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: double), _col7 (type: int)
+                      outputColumnNames: p_mfgr, p_name, p_size, s2, r, dr, cud, fv1
+                      Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: compute_stats(p_mfgr, 'hll'), compute_stats(p_name, 'hll'), compute_stats(p_size, 'hll'), compute_stats(s2, 'hll'), compute_stats(r, 'hll'), compute_stats(dr, 'hll'), compute_stats(cud, 'hll'), compute_stats(fv1, 'hll')
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                        Statistics: Num rows: 1 Data size: 3424 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 3424 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col5 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col6 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col7 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+        Reducer 7 
+            Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_stats not supported
+                vectorized: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3), compute_stats(VALUE._col4), compute_stats(VALUE._col5), compute_stats(VALUE._col6), compute_stats(VALUE._col7)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                Statistics: Num rows: 1 Data size: 3520 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 3520 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-3
     Dependency Collection
@@ -4059,6 +4127,10 @@ STAGE PLANS:
   Stage: Stage-4
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: p_mfgr, p_name, p_size, r, dr, s
+          Column Types: string, string, int, int, int, double
+          Table: default.part_4
 
   Stage: Stage-1
     Move Operator
@@ -4073,6 +4145,10 @@ STAGE PLANS:
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: p_mfgr, p_name, p_size, s2, r, dr, cud, fv1
+          Column Types: string, string, int, int, int, int, double, int
+          Table: default.part_5
 
 PREHOOK: query: from noop(on part_orc 
 partition by p_mfgr 
@@ -4248,7 +4324,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -4262,7 +4338,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumnNums: [1, 5]
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_size (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -4292,7 +4368,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4313,7 +4389,7 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator
                     Function definitions:
                         Input definition
@@ -4335,13 +4411,13 @@ STAGE PLANS:
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2, _col1
                           raw input shape:
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -4354,7 +4430,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4376,12 +4452,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 4 
             Execution mode: llap
@@ -4394,7 +4470,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4428,14 +4504,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4566,7 +4642,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -4580,7 +4656,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumnNums: [1, 5]
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_size (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -4610,7 +4686,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4631,12 +4707,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -4649,7 +4725,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4663,12 +4739,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string), _col5 (type: int)
         Reducer 4 
             Execution mode: llap
@@ -4681,7 +4757,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4695,12 +4771,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 5 
             Execution mode: llap
@@ -4713,7 +4789,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4747,14 +4823,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4880,7 +4956,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -4894,7 +4970,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumnNums: [5]
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_size (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -4924,7 +5000,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4945,12 +5021,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string), _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -4963,7 +5039,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -4984,12 +5060,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 4 
             Execution mode: vectorized, llap
@@ -5014,7 +5090,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5061,7 +5137,7 @@ STAGE PLANS:
                       outputTypes: [int, int, bigint, string, string, int]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3, 4]
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -5069,13 +5145,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 3, 4, 2, 5]
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5202,7 +5278,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -5216,7 +5292,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumnNums: [5]
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_size (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -5246,7 +5322,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5267,12 +5343,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string), _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -5285,7 +5361,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5299,7 +5375,7 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator
                     Function definitions:
                         Input definition
@@ -5314,13 +5390,13 @@ STAGE PLANS:
                           partition by: _col2, _col1
                           raw input shape:
                           transforms raw input: true
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col5 (type: int)
         Reducer 4 
             Execution mode: llap
@@ -5333,7 +5409,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5348,12 +5424,12 @@ STAGE PLANS:
                         partition by: _col2, _col1
                         raw input shape:
                         transforms raw input: true
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 5 
             Execution mode: llap
@@ -5366,7 +5442,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5400,14 +5476,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5535,7 +5611,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -5549,7 +5625,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumnNums: [5]
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_size (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -5579,7 +5655,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5593,7 +5669,7 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator
                     Function definitions:
                         Input definition
@@ -5615,13 +5691,13 @@ STAGE PLANS:
                           output shape: _col1: string, _col2: string, _col5: int
                           partition by: _col2
                           raw input shape:
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col2 (type: string)
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string), _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -5634,7 +5710,7 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5656,12 +5732,12 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 4 
             Execution mode: llap
@@ -5674,7 +5750,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5708,14 +5784,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5837,7 +5913,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_orc
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_partkey:int, 1:p_name:string, 2:p_mfgr:string, 3:p_brand:string, 4:p_type:string, 5:p_size:int, 6:p_container:string, 7:p_retailprice:double, 8:p_comment:string, 9:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -5851,7 +5927,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumnNums: [5]
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_size (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -5881,7 +5957,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5902,7 +5978,7 @@ STAGE PLANS:
                         output shape: _col1: string, _col2: string, _col5: int
                         partition by: _col2, _col1
                         raw input shape:
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator
                     Function definitions:
                         Input definition
@@ -5917,13 +5993,13 @@ STAGE PLANS:
                           partition by: _col2, _col1
                           raw input shape:
                           transforms raw input: true
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     Map-side function: true
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col1 (type: string)
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col1 (type: string)
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col5 (type: int)
         Reducer 3 
             Execution mode: llap
@@ -5936,7 +6012,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
                 outputColumnNames: _col1, _col2, _col5
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -5951,12 +6027,12 @@ STAGE PLANS:
                         partition by: _col2, _col1
                         raw input shape:
                         transforms raw input: true
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: string)
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col5 (type: int)
         Reducer 4 
             Execution mode: vectorized, llap
@@ -5981,7 +6057,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 0, 2]
-                Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -6028,7 +6104,7 @@ STAGE PLANS:
                       outputTypes: [int, int, bigint, string, string, int]
                       partitionExpressions: [col 0:string]
                       streamingColumns: [3, 4]
-                  Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint), sum_window_2 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -6036,13 +6112,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 3, 4, 2, 5, 5]
-                    Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 26 Data size: 9672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

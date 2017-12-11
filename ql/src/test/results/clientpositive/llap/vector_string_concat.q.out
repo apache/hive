@@ -122,7 +122,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1korc
-                  Statistics: Num rows: 1049 Data size: 183632 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1049 Data size: 101753 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -133,19 +133,19 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [7, 13, 12]
                         selectExpressions: StringGroupColConcatStringScalar(col 12:string, val       )(children: StringScalarConcatStringGroupCol(val       , col 7:string) -> 12:string) -> 13:string, StringGroupColConcatStringScalar(col 14:string, val |)(children: StringScalarConcatStringGroupCol(val |, col 12:string)(children: StringRTrim(col 14:string)(children: StringGroupColConcatStringScalar(col 12:string, val       )(children: StringScalarConcatStringGroupCol(val       , col 7:string) -> 12:string) -> 14:string) -> 12:string) -> 14:string) -> 12:string
-                    Statistics: Num rows: 1049 Data size: 183632 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1049 Data size: 487785 Basic stats: COMPLETE Column stats: COMPLETE
                     Limit
                       Number of rows: 20
                       Limit Vectorization:
                           className: VectorLimitOperator
                           native: true
-                      Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 20 Data size: 9300 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 20 Data size: 9300 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

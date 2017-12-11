@@ -1,3 +1,6 @@
+set hive.stats.column.autogather=false;
+-- due to L137 in LimitPushDownOptimization Not safe to continue for RS-GBY-GBY-LIM kind of pipelines. See HIVE-10607 for more.
+
 set hive.multigroupby.singlereducer=true;
 
 -- SORT_QUERY_RESULTS

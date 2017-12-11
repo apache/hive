@@ -189,7 +189,7 @@ Database:           	default
 Table:              	mp                  	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	1                   

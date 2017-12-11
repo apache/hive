@@ -71,4 +71,8 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: string, string
+          Table: default.non_acid
 

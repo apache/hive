@@ -1,3 +1,4 @@
+set hive.stats.column.autogather=false;
 set hive.stats.autogather=true;
 
 -- This is to test the union remove optimization with stats optimization
