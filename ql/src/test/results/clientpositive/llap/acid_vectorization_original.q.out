@@ -348,11 +348,11 @@ NULL	NULL
 509	1
 510	2
 511	3
-PREHOOK: query: insert into over10k_orc_bucketed select * from over10k cluster by si
+PREHOOK: query: insert into over10k_orc_bucketed select * from over10k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 PREHOOK: Output: default@over10k_orc_bucketed
-POSTHOOK: query: insert into over10k_orc_bucketed select * from over10k cluster by si
+POSTHOOK: query: insert into over10k_orc_bucketed select * from over10k
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 POSTHOOK: Output: default@over10k_orc_bucketed
@@ -369,11 +369,11 @@ POSTHOOK: Lineage: over10k_orc_bucketed.t SIMPLE [(over10k)over10k.FieldSchema(n
 POSTHOOK: Lineage: over10k_orc_bucketed.ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 4 items
 #### A masked pattern was here ####
-PREHOOK: query: insert into over10k_orc_bucketed select * from over10k cluster by si
+PREHOOK: query: insert into over10k_orc_bucketed select * from over10k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 PREHOOK: Output: default@over10k_orc_bucketed
-POSTHOOK: query: insert into over10k_orc_bucketed select * from over10k cluster by si
+POSTHOOK: query: insert into over10k_orc_bucketed select * from over10k
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 POSTHOOK: Output: default@over10k_orc_bucketed
@@ -541,12 +541,12 @@ POSTHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed where b = 42
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_orc_bucketed
 #### A masked pattern was here ####
-{"transactionid":0,"bucketid":536870912,"rowid":104}	-3	344	65733
-{"transactionid":0,"bucketid":536870912,"rowid":368}	-3	344	65733
-{"transactionid":0,"bucketid":536936448,"rowid":250}	5	501	65585
-{"transactionid":0,"bucketid":536936448,"rowid":512}	5	501	65585
-{"transactionid":0,"bucketid":537067520,"rowid":224}	35	463	65646
-{"transactionid":0,"bucketid":537067520,"rowid":501}	35	463	65646
+{"transactionid":0,"bucketid":536870912,"rowid":36}	-3	344	65733
+{"transactionid":0,"bucketid":536870912,"rowid":300}	-3	344	65733
+{"transactionid":0,"bucketid":536936448,"rowid":82}	5	501	65585
+{"transactionid":0,"bucketid":536936448,"rowid":344}	5	501	65585
+{"transactionid":0,"bucketid":537067520,"rowid":211}	35	463	65646
+{"transactionid":0,"bucketid":537067520,"rowid":488}	35	463	65646
 PREHOOK: query: explain update over10k_orc_bucketed set i = 0 where b = 4294967363 and t < 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain update over10k_orc_bucketed set i = 0 where b = 4294967363 and t < 100
