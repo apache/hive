@@ -4,8 +4,6 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.vectorized.execution.enabled=true;
--- enables vectorizaiton of VirtualColumn.ROWID
-set hive.vectorized.row.identifier.enabled=true;
 -- enable ppd
 set hive.optimize.index.filter=true;
 
@@ -60,13 +58,12 @@ CREATE TABLE over10k_orc_bucketed(t tinyint,
 -- this produces about 250 distinct values across all 4 equivalence classes
 select distinct si, si%4 from over10k order by si;
 
--- explain insert into over10k_orc_bucketed select * from over10k cluster by si;
--- w/o "cluster by" all data is written to 000000_0
-insert into over10k_orc_bucketed select * from over10k cluster by si;
+-- explain insert into over10k_orc_bucketed select * from over10k;
+insert into over10k_orc_bucketed select * from over10k;
 
 dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/over10k_orc_bucketed;
 -- create copy_N files
-insert into over10k_orc_bucketed select * from over10k cluster by si;
+insert into over10k_orc_bucketed select * from over10k;
 
 -- this output of this is masked in .out - it is visible in .orig
 dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/over10k_orc_bucketed;
@@ -109,7 +106,7 @@ explain select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID havi
 select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1;
 
 -- schedule compactor
-alter table over10k_orc_bucketed compact 'major' WITH OVERWRITE TBLPROPERTIES ("compactor.mapreduce.map.memory.mb"="500","compactor.hive.tez.container.size"="500");;
+alter table over10k_orc_bucketed compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500');
 
 
 --  run compactor - this currently fails with
