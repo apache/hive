@@ -196,7 +196,7 @@
     <storage-api.version>3.0.0-SNAPSHOT</storage-api.version>
     <tez.version>0.9.1-SNAPSHOT</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
-    <spark.version>2.0.0</spark.version>
+    <spark.version>2.2.0</spark.version>
     <scala.binary.version>2.11</scala.binary.version>
     <scala.version>2.11.8</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
