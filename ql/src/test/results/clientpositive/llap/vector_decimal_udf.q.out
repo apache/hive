@@ -71,7 +71,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -83,13 +83,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: DecimalColAddDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 3:decimal(21,10)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -187,7 +187,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -199,13 +199,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DecimalColAddDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(21,10)
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -303,7 +303,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -315,13 +315,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DoubleColAddDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 4:double
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -419,7 +419,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -431,13 +431,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DoubleColAddDoubleScalar(col 3:double, val 1.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double) -> 4:double
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -535,7 +535,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -547,13 +547,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: DecimalColSubtractDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 3:decimal(21,10)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -651,7 +651,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -663,13 +663,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DecimalColSubtractDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(21,10)
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -767,7 +767,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -779,13 +779,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DoubleColSubtractDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 4:double
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -883,7 +883,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -895,13 +895,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DoubleColSubtractDoubleScalar(col 3:double, val 1.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double) -> 4:double
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -999,7 +999,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1011,13 +1011,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: DecimalColMultiplyDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 3:decimal(38,17)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1115,7 +1115,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1125,7 +1125,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterDecimalColGreaterDecimalScalar(col 4:decimal(31,10), val 0)(children: DecimalColMultiplyDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(31,10))
                     predicate: ((key * CAST( value AS decimal(10,0))) > 0) (type: boolean)
-                    Statistics: Num rows: 12 Data size: 1392 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12 Data size: 1392 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: decimal(20,10)), value (type: int)
                       outputColumnNames: _col0, _col1
@@ -1133,13 +1133,13 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 12 Data size: 1392 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12 Data size: 1392 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 12 Data size: 1392 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 12 Data size: 1392 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1222,7 +1222,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1234,13 +1234,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DecimalColMultiplyDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(31,10)
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1338,7 +1338,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1350,13 +1350,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DoubleColMultiplyDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 4:double
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1454,7 +1454,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1466,13 +1466,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DoubleColMultiplyDoubleScalar(col 3:double, val 2.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double) -> 4:double
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1570,7 +1570,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1582,19 +1582,19 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: DecimalColDivideDecimalScalar(col 0:decimal(20,10), val 0) -> 3:decimal(22,12)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     Limit
                       Number of rows: 1
                       Limit Vectorization:
                           className: VectorLimitOperator
                           native: true
-                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1655,7 +1655,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1665,7 +1665,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterDecimalColNotEqualDecimalScalar(col 0:decimal(20,10), val 0)
                     predicate: (key <> 0) (type: boolean)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: (key / key) (type: decimal(38,18))
                       outputColumnNames: _col0
@@ -1674,13 +1674,13 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [3]
                           selectExpressions: DecimalColDivideDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 3:decimal(38,18)
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1774,7 +1774,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1784,7 +1784,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColNotEqualLongScalar(col 1:int, val 0)
                     predicate: (value <> 0) (type: boolean)
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: (key / CAST( value AS decimal(10,0))) (type: decimal(31,21))
                       outputColumnNames: _col0
@@ -1793,13 +1793,13 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [4]
                           selectExpressions: DecimalColDivideDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(31,21)
-                      Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1883,7 +1883,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1893,7 +1893,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColNotEqualLongScalar(col 1:int, val 0)
                     predicate: (value <> 0) (type: boolean)
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0)) (type: double)
                       outputColumnNames: _col0
@@ -1902,13 +1902,13 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [4]
                           selectExpressions: DoubleColDivideDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 4:double
-                      Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1992,7 +1992,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2004,13 +2004,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: DoubleScalarAddDoubleColumn(val 1.0, col 4:double)(children: DoubleColDivideDoubleScalar(col 3:double, val 2.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double) -> 4:double) -> 3:double
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2108,7 +2108,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2120,13 +2120,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: FuncAbsDecimalToDecimal(col 0:decimal(20,10)) -> 3:decimal(20,10)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2228,7 +2228,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2239,7 +2239,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1]
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(key), count(key), avg(key)
                       Group By Vectorization:
@@ -2253,7 +2253,7 @@ STAGE PLANS:
                       keys: value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 17 Data size: 7004 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
@@ -2264,7 +2264,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: [1, 2, 3]
-                        Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 17 Data size: 7004 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(30,10)), _col2 (type: bigint), _col3 (type: struct<count:bigint,sum:decimal(30,10),input:decimal(20,10)>)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2312,7 +2312,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 17 Data size: 4012 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), (_col1 / CAST( _col2 AS decimal(19,0))) (type: decimal(38,18)), _col3 (type: decimal(24,14)), _col1 (type: decimal(30,10))
                   outputColumnNames: _col0, _col1, _col2, _col3
@@ -2321,7 +2321,7 @@ STAGE PLANS:
                       native: true
                       projectedOutputColumnNums: [0, 5, 3, 1]
                       selectExpressions: DecimalColDivideDecimalColumn(col 1:decimal(30,10), col 4:decimal(19,0))(children: CastLongToDecimal(col 2:bigint) -> 4:decimal(19,0)) -> 5:decimal(38,18)
-                  Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 17 Data size: 5780 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: int)
                     sort order: +
@@ -2331,7 +2331,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumnNums: [5, 3, 1]
-                    Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 17 Data size: 5780 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: decimal(38,18)), _col2 (type: decimal(24,14)), _col3 (type: decimal(30,10))
         Reducer 3 
             Execution mode: vectorized, llap
@@ -2356,13 +2356,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2, 3]
-                Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 17 Data size: 5780 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 17 Data size: 5780 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2422,7 +2422,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2434,13 +2434,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: FuncNegateDecimalToDecimal(col 0:decimal(20,10)) -> 3:decimal(20,10)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2603,14 +2603,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ceil(key) (type: decimal(11,0))
                     outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2693,7 +2693,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2705,13 +2705,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: FuncFloorDecimalToDecimal(col 0:decimal(20,10)) -> 3:decimal(11,0)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2809,7 +2809,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2821,13 +2821,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: FuncRoundWithNumDigitsDecimalToDecimal(col 0:decimal(20,10), decimalPlaces 2) -> 3:decimal(13,2)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2925,7 +2925,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2937,13 +2937,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: VectorUDFAdaptor(power(key, 2)) -> 3:double
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3041,7 +3041,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3053,13 +3053,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [5]
                         selectExpressions: DecimalColModuloDecimalColumn(col 3:decimal(21,10), col 4:decimal(22,12))(children: DecimalColAddDecimalScalar(col 0:decimal(20,10), val 1) -> 3:decimal(21,10), DecimalColDivideDecimalScalar(col 0:decimal(20,10), val 2) -> 4:decimal(22,12)) -> 5:decimal(22,12)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3160,7 +3160,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3171,7 +3171,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1]
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: stddev(key), variance(key)
                       Group By Vectorization:
@@ -3185,7 +3185,7 @@ STAGE PLANS:
                       keys: value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 17 Data size: 2788 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
@@ -3196,7 +3196,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: [1, 2]
-                        Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 17 Data size: 2788 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3244,13 +3244,13 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 17 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 17 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3313,7 +3313,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3324,7 +3324,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1]
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: stddev_samp(key), var_samp(key)
                       Group By Vectorization:
@@ -3338,7 +3338,7 @@ STAGE PLANS:
                       keys: value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 17 Data size: 2788 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
@@ -3349,7 +3349,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: [1, 2]
-                        Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 17 Data size: 2788 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3397,13 +3397,13 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 17 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 19 Data size: 2204 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 17 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3466,19 +3466,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: decimal(20,10))
                     outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: histogram_numeric(_col0, 3)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 272 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: array<double>)
             Execution mode: llap
             LLAP IO: all inputs
@@ -3500,10 +3500,10 @@ STAGE PLANS:
                 aggregations: histogram_numeric(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 832 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 832 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3550,7 +3550,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3561,7 +3561,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0]
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: min(key)
                       Group By Vectorization:
@@ -3573,7 +3573,7 @@ STAGE PLANS:
                           projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
                         Reduce Sink Vectorization:
@@ -3582,7 +3582,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: [0]
-                        Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(20,10))
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3628,13 +3628,13 @@ STAGE PLANS:
                     projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3681,7 +3681,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3692,7 +3692,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0]
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(key)
                       Group By Vectorization:
@@ -3704,7 +3704,7 @@ STAGE PLANS:
                           projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
                         Reduce Sink Vectorization:
@@ -3713,7 +3713,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: [0]
-                        Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: decimal(20,10))
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3759,13 +3759,13 @@ STAGE PLANS:
                     projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3812,7 +3812,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3823,7 +3823,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0]
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(key)
                       Group By Vectorization:
@@ -3835,7 +3835,7 @@ STAGE PLANS:
                           projectedOutputColumnNums: [0]
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
                         Reduce Sink Vectorization:
@@ -3844,7 +3844,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: [0]
-                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3890,13 +3890,13 @@ STAGE PLANS:
                     projectedOutputColumnNums: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

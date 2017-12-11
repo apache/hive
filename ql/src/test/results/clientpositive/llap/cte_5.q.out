@@ -86,9 +86,9 @@ Stage-0
     Stage-1
       Reducer 2 llap
       File Output Operator [FS_10]
-        Select Operator [SEL_9] (rows=2 width=90)
+        Select Operator [SEL_9] (rows=2 width=4)
           Output:["_col0"]
-          Merge Join Operator [MERGEJOIN_13] (rows=2 width=90)
+          Merge Join Operator [MERGEJOIN_13] (rows=2 width=8)
             Conds:(Inner)
           <-Map 1 [XPROD_EDGE] llap
             XPROD_EDGE [RS_6]
@@ -96,7 +96,7 @@ Stage-0
                 Filter Operator [FIL_11] (rows=1 width=4)
                   predicate:(UDFToDouble(colnum) = 5.0)
                   TableScan [TS_0] (rows=1 width=4)
-                    mydb@q1,a,Tbl:COMPLETE,Col:NONE,Output:["colnum"]
+                    mydb@q1,a,Tbl:COMPLETE,Col:COMPLETE,Output:["colnum"]
           <-Map 3 [XPROD_EDGE] llap
             XPROD_EDGE [RS_7]
               Select Operator [SEL_5] (rows=2 width=85)

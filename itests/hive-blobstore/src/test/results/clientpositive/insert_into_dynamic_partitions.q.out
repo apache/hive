@@ -211,6 +211,11 @@ STAGE PLANS:
     Stats Work
       Basic Stats Work:
           Stats Aggregation Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+      Column Stats Desc:
+          Columns: id
+          Column Types: int
+          Table: default.table1
+          Is Table Level Stats: false
 
 PREHOOK: query: DROP TABLE table1
 PREHOOK: type: DROPTABLE

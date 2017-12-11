@@ -92,7 +92,6 @@ Database:           	default
 Table:              	acid                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -384,7 +383,6 @@ Database:           	default
 Table:              	acid                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	4                   
 	numRows             	1000                
 	rawDataSize         	208000              
@@ -663,7 +661,7 @@ Database:           	default
 Table:              	acid                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	176000              

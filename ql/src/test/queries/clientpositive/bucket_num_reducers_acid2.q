@@ -1,3 +1,4 @@
+set hive.stats.column.autogather=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.exec.mode.local.auto=false;

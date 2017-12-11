@@ -1,3 +1,5 @@
+-- until HIVE-18225 is fixed
+set hive.stats.column.autogather=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.auto.convert.join=true;

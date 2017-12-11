@@ -531,14 +531,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_1
-                  Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE ((attr + 2)) END (type: decimal(11,0))
                     outputColumnNames: _col0
-                    Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -582,14 +582,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_1
-                  Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: CASE WHEN ((member = 1)) THEN (1) ELSE ((attr + 2)) END (type: decimal(11,0))
                     outputColumnNames: _col0
-                    Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -633,14 +633,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_1
-                  Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE (2) END (type: decimal(11,0))
                     outputColumnNames: _col0
-                    Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -700,14 +700,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_2
-                  Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE ((attr + 2)) END (type: bigint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -751,14 +751,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_2
-                  Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: CASE WHEN ((member = 1)) THEN (null) ELSE ((attr + 2)) END (type: bigint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -802,14 +802,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_2
-                  Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE (null) END (type: bigint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

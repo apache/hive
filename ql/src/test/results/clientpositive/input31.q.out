@@ -66,6 +66,26 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.tst_dest31
+            Select Operator
+              expressions: _col0 (type: int)
+              outputColumnNames: a
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: compute_stats(a, 'hll')
+                mode: complete
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Move Operator
@@ -80,6 +100,10 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: a
+          Column Types: int
+          Table: default.tst_dest31
 
 PREHOOK: query: insert overwrite table dest31
 select count(1) from srcbucket

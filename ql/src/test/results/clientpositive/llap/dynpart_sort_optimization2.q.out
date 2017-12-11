@@ -146,6 +146,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: ss_net_paid_inc_tax, ss_net_profit
+          Column Types: float, float
+          Table: default.ss_part
 
 PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
@@ -198,7 +202,7 @@ Database:           	default
 Table:              	ss_part             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ss_net_paid_inc_tax\":\"true\",\"ss_net_profit\":\"true\"}}
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	151                 
@@ -256,7 +260,7 @@ Database:           	default
 Table:              	ss_part             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ss_net_paid_inc_tax\":\"true\",\"ss_net_profit\":\"true\"}}
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	186                 
@@ -381,6 +385,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: ss_net_paid_inc_tax, ss_net_profit
+          Column Types: float, float
+          Table: default.ss_part
 
 PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
@@ -427,7 +435,7 @@ Database:           	default
 Table:              	ss_part             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ss_net_paid_inc_tax\":\"true\",\"ss_net_profit\":\"true\"}}
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	151                 
@@ -485,7 +493,7 @@ Database:           	default
 Table:              	ss_part             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ss_net_paid_inc_tax\":\"true\",\"ss_net_profit\":\"true\"}}
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	186                 
@@ -601,6 +609,27 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.ss_part
+                  Select Operator
+                    expressions: _col0 (type: float), _col1 (type: float), _col2 (type: int)
+                    outputColumnNames: ss_net_paid_inc_tax, ss_net_profit, ss_sold_date_sk
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: compute_stats(ss_net_paid_inc_tax, 'hll'), compute_stats(ss_net_profit, 'hll')
+                      keys: ss_sold_date_sk (type: int)
+                      mode: complete
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -620,6 +649,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: ss_net_paid_inc_tax, ss_net_profit
+          Column Types: float, float
+          Table: default.ss_part
 
 PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
@@ -672,7 +705,7 @@ Database:           	default
 Table:              	ss_part             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ss_net_paid_inc_tax\":\"true\",\"ss_net_profit\":\"true\"}}
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	151                 
@@ -730,7 +763,7 @@ Database:           	default
 Table:              	ss_part             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ss_net_paid_inc_tax\":\"true\",\"ss_net_profit\":\"true\"}}
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	186                 
@@ -797,7 +830,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -813,7 +846,8 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        sort order: 
+                        key expressions: _col2 (type: int)
+                        sort order: +
                         Map-reduce partition columns: _col2 (type: int)
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: float), _col1 (type: float), _col2 (type: int)
@@ -834,6 +868,27 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.ss_part
+                Select Operator
+                  expressions: _col0 (type: float), _col1 (type: float), _col2 (type: int)
+                  outputColumnNames: ss_net_paid_inc_tax, ss_net_profit, ss_sold_date_sk
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: compute_stats(ss_net_paid_inc_tax, 'hll'), compute_stats(ss_net_profit, 'hll')
+                    keys: ss_sold_date_sk (type: int)
+                    mode: complete
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -853,6 +908,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: ss_net_paid_inc_tax, ss_net_profit
+          Column Types: float, float
+          Table: default.ss_part
 
 PREHOOK: query: insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
@@ -899,7 +958,7 @@ Database:           	default
 Table:              	ss_part             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ss_net_paid_inc_tax\":\"true\",\"ss_net_profit\":\"true\"}}
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	151                 
@@ -957,7 +1016,7 @@ Database:           	default
 Table:              	ss_part             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ss_net_paid_inc_tax\":\"true\",\"ss_net_profit\":\"true\"}}
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	186                 
@@ -1092,42 +1151,63 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_orc
-                  Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: ss_sold_date_sk (type: int), ss_net_paid_inc_tax (type: float), ss_net_profit (type: float)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: float), _col2 (type: float)
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: float), KEY._col2 (type: float)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: float), _col2 (type: float), _col0 (type: int)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                         output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                         serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                         name: default.ss_part_orc
+                  Select Operator
+                    expressions: _col0 (type: float), _col1 (type: float), _col2 (type: int)
+                    outputColumnNames: ss_net_paid_inc_tax, ss_net_profit, ss_sold_date_sk
+                    Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: compute_stats(ss_net_paid_inc_tax, 'hll'), compute_stats(ss_net_profit, 'hll')
+                      keys: ss_sold_date_sk (type: int)
+                      mode: complete
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 852 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 852 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 852 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -1147,6 +1227,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: ss_net_paid_inc_tax, ss_net_profit
+          Column Types: float, float
+          Table: default.ss_part_orc
 
 PREHOOK: query: insert overwrite table ss_part_orc partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
@@ -1199,7 +1283,7 @@ Database:           	default
 Table:              	ss_part_orc         	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ss_net_paid_inc_tax\":\"true\",\"ss_net_profit\":\"true\"}}
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	88                  
@@ -1257,7 +1341,7 @@ Database:           	default
 Table:              	ss_part_orc         	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ss_net_paid_inc_tax\":\"true\",\"ss_net_profit\":\"true\"}}
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	104                 
@@ -1324,43 +1408,65 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: ss_orc
-                  Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_net_paid_inc_tax (type: float), ss_net_profit (type: float), ss_sold_date_sk (type: int)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 8 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        sort order: 
+                        key expressions: _col2 (type: int)
+                        sort order: +
                         Map-reduce partition columns: _col2 (type: int)
-                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 8 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: float), _col1 (type: float), _col2 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: float), VALUE._col1 (type: float), VALUE._col2 (type: int)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 8 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.ss_part_orc
+                Select Operator
+                  expressions: _col0 (type: float), _col1 (type: float), _col2 (type: int)
+                  outputColumnNames: ss_net_paid_inc_tax, ss_net_profit, ss_sold_date_sk
+                  Statistics: Num rows: 8 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: compute_stats(ss_net_paid_inc_tax, 'hll'), compute_stats(ss_net_profit, 'hll')
+                    keys: ss_sold_date_sk (type: int)
+                    mode: complete
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 852 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 852 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 852 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -1380,6 +1486,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: ss_net_paid_inc_tax, ss_net_profit
+          Column Types: float, float
+          Table: default.ss_part_orc
 
 PREHOOK: query: insert overwrite table ss_part_orc partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
@@ -1426,7 +1536,7 @@ Database:           	default
 Table:              	ss_part_orc         	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ss_net_paid_inc_tax\":\"true\",\"ss_net_profit\":\"true\"}}
 	numFiles            	1                   
 	numRows             	11                  
 	rawDataSize         	88                  
@@ -1484,7 +1594,7 @@ Database:           	default
 Table:              	ss_part_orc         	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ss_net_paid_inc_tax\":\"true\",\"ss_net_profit\":\"true\"}}
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	104                 
@@ -1590,6 +1700,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1616,7 +1727,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1636,6 +1747,42 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                         serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                         name: default.hive13_dp1
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                    outputColumnNames: k1, k2, day
+                    Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: compute_stats(k1, 'hll'), compute_stats(k2, 'hll')
+                      keys: day (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 935 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 935 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 967 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 967 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 967 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -1655,6 +1802,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: k1, k2
+          Column Types: int, int
+          Table: default.hive13_dp1
 
 PREHOOK: query: insert overwrite table `hive13_dp1` partition(`day`)
 select
@@ -1721,6 +1872,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1747,7 +1899,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1767,6 +1919,42 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                         serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                         name: default.hive13_dp1
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                    outputColumnNames: k1, k2, day
+                    Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: compute_stats(k1, 'hll'), compute_stats(k2, 'hll')
+                      keys: day (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 935 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 935 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 967 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 967 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 967 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
     Dependency Collection
@@ -1786,6 +1974,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: k1, k2
+          Column Types: int, int
+          Table: default.hive13_dp1
 
 PREHOOK: query: insert overwrite table `hive13_dp1` partition(`day`)
 select 

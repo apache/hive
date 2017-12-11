@@ -95,7 +95,7 @@ Stage-3
               Filter Operator [FIL_18] (rows=1 width=4)
                 predicate:colnum is not null
                 TableScan [TS_5] (rows=1 width=4)
-                  mydb@q1,a,Tbl:COMPLETE,Col:NONE,Output:["colnum"]
+                  mydb@q1,a,Tbl:COMPLETE,Col:COMPLETE,Output:["colnum"]
         <-Map 4 [SIMPLE_EDGE] llap
           SHUFFLE [RS_12]
             PartitionCols:UDFToDouble(_col0)

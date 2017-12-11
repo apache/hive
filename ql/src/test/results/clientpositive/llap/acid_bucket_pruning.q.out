@@ -86,7 +86,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {}
                     bucket_count 16
                     bucket_field_name a
                     column.name.delimiter ,
@@ -110,7 +109,6 @@ STAGE PLANS:
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
-                      COLUMN_STATS_ACCURATE {}
                       bucket_count 16
                       bucket_field_name a
                       column.name.delimiter ,

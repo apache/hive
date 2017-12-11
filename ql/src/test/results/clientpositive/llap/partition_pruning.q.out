@@ -106,7 +106,7 @@ STAGE PLANS:
             partition values:
               dt 2001-01-01
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns customer
@@ -175,7 +175,7 @@ STAGE PLANS:
             partition values:
               dt 2001-01-01
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns customer
@@ -220,7 +220,7 @@ STAGE PLANS:
             partition values:
               dt 2001-01-03
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns customer
@@ -289,7 +289,7 @@ STAGE PLANS:
             partition values:
               dt 2001-01-01
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns customer
@@ -334,7 +334,7 @@ STAGE PLANS:
             partition values:
               dt 2001-01-03
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"customer":"true"}}
               bucket_count -1
               column.name.delimiter ,
               columns customer

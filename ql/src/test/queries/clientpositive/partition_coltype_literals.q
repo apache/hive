@@ -1,3 +1,4 @@
+set hive.stats.column.autogather=false;
 set hive.compute.query.using.stats=false;
 drop table if exists partcoltypenum;
 create table partcoltypenum (key int, value string) partitioned by (tint tinyint, sint smallint, bint bigint);

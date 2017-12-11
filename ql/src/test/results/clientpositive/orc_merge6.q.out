@@ -54,6 +54,40 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.orc_merge5a
+                Select Operator
+                  expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: double), _col3 (type: decimal(10,0)), _col4 (type: timestamp), '2000' (type: string), UDFToInteger('24') (type: int)
+                  outputColumnNames: userid, string1, subtype, decimal1, ts, year, hour
+                  Statistics: Num rows: 1 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: compute_stats(userid, 'hll'), compute_stats(string1, 'hll'), compute_stats(subtype, 'hll'), compute_stats(decimal1, 'hll'), compute_stats(ts, 'hll')
+                    keys: year (type: string), hour (type: int)
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Statistics: Num rows: 1 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: int)
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                      Statistics: Num rows: 1 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col5 (type: struct<columntype:string,min:decimal(10,0),max:decimal(10,0),countnulls:bigint,bitvector:binary>), _col6 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3), compute_stats(VALUE._col4)
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+          Statistics: Num rows: 1 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col4 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col5 (type: struct<columntype:string,min:decimal(10,0),max:decimal(10,0),countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col6 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), _col1 (type: int)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+            Statistics: Num rows: 1 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Move Operator
@@ -71,6 +105,10 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: userid, string1, subtype, decimal1, ts
+          Column Types: bigint, string, double, decimal(10,0), timestamp
+          Table: default.orc_merge5a
 
 PREHOOK: query: insert overwrite table orc_merge5a partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
 PREHOOK: type: QUERY
@@ -185,6 +223,40 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.orc_merge5a
+                Select Operator
+                  expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: double), _col3 (type: decimal(10,0)), _col4 (type: timestamp), '2000' (type: string), UDFToInteger('24') (type: int)
+                  outputColumnNames: userid, string1, subtype, decimal1, ts, year, hour
+                  Statistics: Num rows: 1 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: compute_stats(userid, 'hll'), compute_stats(string1, 'hll'), compute_stats(subtype, 'hll'), compute_stats(decimal1, 'hll'), compute_stats(ts, 'hll')
+                    keys: year (type: string), hour (type: int)
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Statistics: Num rows: 1 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: int)
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                      Statistics: Num rows: 1 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col5 (type: struct<columntype:string,min:decimal(10,0),max:decimal(10,0),countnulls:bigint,bitvector:binary>), _col6 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3), compute_stats(VALUE._col4)
+          keys: KEY._col0 (type: string), KEY._col1 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+          Statistics: Num rows: 1 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col4 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col5 (type: struct<columntype:string,min:decimal(10,0),max:decimal(10,0),countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col6 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: string), _col1 (type: int)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+            Statistics: Num rows: 1 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 246402 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-7
     Conditional Operator
@@ -211,6 +283,10 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: userid, string1, subtype, decimal1, ts
+          Column Types: bigint, string, double, decimal(10,0), timestamp
+          Table: default.orc_merge5a
 
   Stage: Stage-3
     Merge File Operator

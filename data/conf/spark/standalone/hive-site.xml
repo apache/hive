@@ -255,4 +255,10 @@
   <description>Internal marker for test. Used for masking env-dependent values</description>
 </property>
 
+<!-- remove this after HIVE-18139 -->
+<property>
+  <name>hive.stats.column.autogather</name>
+  <value>false</value>
+</property>
+
 </configuration>

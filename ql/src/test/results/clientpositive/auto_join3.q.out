@@ -15,13 +15,14 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key 
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-6 is a root stage
-  Stage-5 depends on stages: Stage-6
-  Stage-0 depends on stages: Stage-5
-  Stage-2 depends on stages: Stage-0
+  Stage-7 is a root stage
+  Stage-6 depends on stages: Stage-7
+  Stage-0 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-0, Stage-3
+  Stage-3 depends on stages: Stage-6
 
 STAGE PLANS:
-  Stage: Stage-6
+  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
         $hdt$_0:src1 
@@ -64,7 +65,7 @@ STAGE PLANS:
                     1 _col0 (type: string)
                     2 _col0 (type: string)
 
-  Stage: Stage-5
+  Stage: Stage-6
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -99,6 +100,21 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.dest1
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: string)
+                      outputColumnNames: key, value
+                      Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
+                        File Output Operator
+                          compressed: false
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
 
@@ -115,6 +131,32 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.dest1
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key = src3.key)
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value

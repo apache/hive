@@ -55,7 +55,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_vector_bround
-                  Statistics: Num rows: 8 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:v0:double, 1:v1:double, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -67,13 +67,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3, 4]
                         selectExpressions: FuncBRoundDoubleToDouble(col 0:double) -> 3:double, BRoundWithNumDigitsDoubleToDouble(col 1, decimalPlaces 1) -> 4:double
-                    Statistics: Num rows: 8 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 8 Data size: 128 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 8 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
