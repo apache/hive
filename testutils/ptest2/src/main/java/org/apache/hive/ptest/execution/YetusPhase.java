@@ -46,6 +46,7 @@ public class YetusPhase extends Phase {
   private final File mLogFile;
   private final File mOutputDir;
   private final File mScratchDir;
+  private final String buildTag;
   private final String buildUrl;
   private final TestConfiguration conf;
 
@@ -61,9 +62,17 @@ public class YetusPhase extends Phase {
     this.mOutputDir = new File(logDir, YETUS_OUTPUT_FOLDER);
     this.mScratchDir = scratchDir;
     this.conf = configuration;
-    this.buildUrl = conf.getLogsURL() + "/" + templateDefaults.get("buildTag") + "/";
+    this.buildTag = templateDefaults.get("buildTag");
+    this.buildUrl = conf.getLogsURL() + "/" + this.buildTag + "/";
+
   }
 
+  /**
+   * This method will start a new thread to handle the Yetus test patch script execution.
+   * It creates a separate directory, instantiates the Yetus velocity template, runs it, and
+   * cleans it up after.
+   * @throws Exception
+   */
   @Override
   public void execute() throws Exception {
 
@@ -74,8 +83,9 @@ public class YetusPhase extends Phase {
         if (!checkDependencies()) {
           return;
         }
-
-        File yetusExecScript = new File(mScratchDir, YETUS_EXEC_SCRIPT);
+        File yetusScriptDir = new File(mScratchDir, buildTag);
+        yetusScriptDir.mkdir();
+        File yetusExecScript = new File(yetusScriptDir, YETUS_EXEC_SCRIPT);
         Map<String, String> templateVars = new HashMap<>();
         templateVars.putAll(getTemplateDefaults());
         templateVars.put("workingDir", mWorkingDir.getAbsolutePath());
@@ -104,6 +114,7 @@ public class YetusPhase extends Phase {
           logger.error("Error processing Yetus check", e);
         } finally {
           logger.debug("Deleting " + yetusExecScript + ": " + yetusExecScript.delete());
+          logger.debug("Deleting " + yetusScriptDir + ": " + yetusScriptDir.delete());
         }
       }
     });
