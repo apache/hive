@@ -52,7 +52,6 @@ import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.adapter.druid.DruidRules;
 import org.apache.calcite.adapter.druid.DruidSchema;
 import org.apache.calcite.adapter.druid.DruidTable;
-import org.apache.calcite.adapter.druid.LocalInterval;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.config.CalciteConnectionProperty;
@@ -259,6 +258,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.joda.time.Interval;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
@@ -2425,9 +2425,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
             }
             metrics.add(field.getName());
           }
-          // TODO: Default interval will be an Interval once Calcite 1.15.0 is released.
-          // We will need to update the type of this list.
-          List<LocalInterval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
+
+          List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
 
           DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
                   dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,

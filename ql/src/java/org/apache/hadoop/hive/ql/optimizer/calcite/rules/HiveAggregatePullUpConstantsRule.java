@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.core.Aggregate.Group;
 import org.apache.calcite.rel.rules.AggregateProjectPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -38,7 +39,7 @@ public class HiveAggregatePullUpConstantsRule extends AggregateProjectPullUpCons
   public boolean matches(RelOptRuleCall call) {
     final Aggregate aggregate = call.rel(0);
     // Rule cannot be applied if there are GroupingSets
-    if (aggregate.indicator) {
+    if (aggregate.getGroupType() != Group.SIMPLE) {
       return false;
     }
     return super.matches(call);
