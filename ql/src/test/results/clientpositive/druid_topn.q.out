@@ -84,7 +84,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"}],"limitSpec":{"type":"default","limit":100,"columns":[{"dimension":"$f1","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"}],"limitSpec":{"type":"default","limit":100,"columns":[{"dimension":"$f1","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -118,7 +118,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"US/Pacific"}},{"type":"default","dimension":"robot"}],"limitSpec":{"type":"default","limit":100,"columns":[{"dimension":"$f3","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleMax","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"US/Pacific"}},{"type":"default","dimension":"robot"}],"limitSpec":{"type":"default","limit":100,"columns":[{"dimension":"$f3","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleMax","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -152,7 +152,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"extraction","dimension":"__time","outputName":"floor_year","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":"year","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f3","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleMax","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"extraction","dimension":"__time","outputName":"floor_year","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":"year","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f3","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleMax","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -186,7 +186,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"extraction","dimension":"__time","outputName":"floor_month","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":"month","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f3","direction":"ascending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleMax","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"extraction","dimension":"__time","outputName":"floor_month","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":"month","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f3","direction":"ascending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleMax","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -220,7 +220,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"default","dimension":"namespace"},{"type":"extraction","dimension":"__time","outputName":"floor_month","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":"month","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f4","direction":"descending","dimensionOrder":"numeric"},{"dimension":"$f3","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"default","dimension":"namespace"},{"type":"extraction","dimension":"__time","outputName":"floor_month","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":"month","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f4","direction":"descending","dimensionOrder":"numeric"},{"dimension":"$f3","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -254,7 +254,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"default","dimension":"namespace"},{"type":"extraction","dimension":"__time","outputName":"floor_month","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":"month","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"robot","direction":"ascending","dimensionOrder":"alphanumeric"},{"dimension":"$f3","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"default","dimension":"namespace"},{"type":"extraction","dimension":"__time","outputName":"floor_month","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","granularity":"month","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"robot","direction":"ascending","dimensionOrder":"alphanumeric"},{"dimension":"$f3","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -290,7 +290,7 @@ STAGE PLANS:
           TableScan
             alias: druid_table_1
             properties:
-              druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"year","filter":{"type":"selector","dimension":"robot","value":"1"},"aggregations":[{"type":"doubleMax","name":"$f1_0","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"],"context":{"skipEmptyBuckets":true}}
+              druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"year","filter":{"type":"selector","dimension":"robot","value":"1"},"aggregations":[{"type":"doubleMax","name":"$f1_0","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
               druid.query.type timeseries
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
@@ -362,7 +362,7 @@ STAGE PLANS:
             alias: druid_table_1
             filterExpr: floor_hour(__time) BETWEEN 2010-01-01 00:00:00.0 US/Pacific AND 2014-01-01 00:00:00.0 US/Pacific (type: boolean)
             properties:
-              druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"],"dimensions":["robot"],"metrics":["added","variation"],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+              druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot"],"metrics":["added","variation"],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
               druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator

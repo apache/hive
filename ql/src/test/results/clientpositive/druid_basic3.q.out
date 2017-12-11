@@ -33,7 +33,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default","columns":[{"dimension":"postagg#0","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"arithmetic","name":"postagg#0","fn":"+","fields":[{"type":"fieldAccess","name":"","fieldName":"$f1"},{"type":"fieldAccess","name":"","fieldName":"$f2"}]}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default","columns":[{"dimension":"postagg#0","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"arithmetic","name":"postagg#0","fn":"+","fields":[{"type":"fieldAccess","name":"","fieldName":"$f1"},{"type":"fieldAccess","name":"","fieldName":"$f2"}]}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -65,7 +65,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default","columns":[{"dimension":"postagg#0","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"delta"},{"type":"doubleSum","name":"$f2","fieldName":"added"}],"postAggregations":[{"type":"arithmetic","name":"postagg#0","fn":"+","fields":[{"type":"fieldAccess","name":"","fieldName":"$f2"},{"type":"fieldAccess","name":"","fieldName":"$f1"}]}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default","columns":[{"dimension":"postagg#0","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"delta"},{"type":"doubleSum","name":"$f2","fieldName":"added"}],"postAggregations":[{"type":"arithmetic","name":"postagg#0","fn":"+","fields":[{"type":"fieldAccess","name":"","fieldName":"$f2"},{"type":"fieldAccess","name":"","fieldName":"$f1"}]}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -97,7 +97,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default","columns":[{"dimension":"postagg#0","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"arithmetic","name":"postagg#0","fn":"quotient","fields":[{"type":"fieldAccess","name":"","fieldName":"$f1"},{"type":"fieldAccess","name":"","fieldName":"$f2"}]}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default","columns":[{"dimension":"postagg#0","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"arithmetic","name":"postagg#0","fn":"quotient","fields":[{"type":"fieldAccess","name":"","fieldName":"$f1"},{"type":"fieldAccess","name":"","fieldName":"$f2"}]}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -129,7 +129,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default","columns":[{"dimension":"postagg#0","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"arithmetic","name":"postagg#0","fn":"*","fields":[{"type":"fieldAccess","name":"","fieldName":"$f1"},{"type":"fieldAccess","name":"","fieldName":"$f2"}]}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default","columns":[{"dimension":"postagg#0","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"arithmetic","name":"postagg#0","fn":"*","fields":[{"type":"fieldAccess","name":"","fieldName":"$f1"},{"type":"fieldAccess","name":"","fieldName":"$f2"}]}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -161,7 +161,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default","columns":[{"dimension":"postagg#0","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"arithmetic","name":"postagg#0","fn":"-","fields":[{"type":"fieldAccess","name":"","fieldName":"$f1"},{"type":"fieldAccess","name":"","fieldName":"$f2"}]}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default","columns":[{"dimension":"postagg#0","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"postAggregations":[{"type":"arithmetic","name":"postagg#0","fn":"-","fields":[{"type":"fieldAccess","name":"","fieldName":"$f1"},{"type":"fieldAccess","name":"","fieldName":"$f2"}]}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -193,7 +193,7 @@ STAGE PLANS:
           TableScan
             alias: druid_table_1
             properties:
-              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
               druid.query.type groupBy
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
@@ -251,7 +251,7 @@ STAGE PLANS:
           TableScan
             alias: druid_table_1
             properties:
-              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"},{"type":"count","name":"$f3"},{"type":"doubleSum","name":"$f4","fieldName":"deleted"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"},{"type":"count","name":"$f3"},{"type":"doubleSum","name":"$f4","fieldName":"deleted"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
               druid.query.type groupBy
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
@@ -305,7 +305,7 @@ STAGE PLANS:
           TableScan
             alias: druid_table_1
             properties:
-              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"default","dimension":"language"}],"limitSpec":{"type":"default"},"filter":{"type":"in","dimension":"__time","values":["10","11"],"extractionFn":{"type":"timeFormat","format":"w","timeZone":"US/Pacific","locale":"en-US"}},"aggregations":[{"type":"doubleSum","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"delta"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"default","dimension":"language"}],"limitSpec":{"type":"default"},"filter":{"type":"in","dimension":"__time","values":["10","11"],"extractionFn":{"type":"timeFormat","format":"w","timeZone":"US/Pacific","locale":"en-US"}},"aggregations":[{"type":"doubleSum","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"delta"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
               druid.query.type groupBy
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
@@ -349,7 +349,7 @@ STAGE PLANS:
           TableScan
             alias: druid_table_1
             properties:
-              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"delta"},{"type":"count","name":"$f2"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"delta"},{"type":"count","name":"$f2"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
               druid.query.type groupBy
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
@@ -405,7 +405,7 @@ STAGE PLANS:
           TableScan
             alias: druid_table_1
             properties:
-              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default","columns":[{"dimension":"postagg#0","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"},{"type":"doubleSum","name":"$f3","fieldName":"deleted"}],"postAggregations":[{"type":"arithmetic","name":"postagg#0","fn":"quotient","fields":[{"type":"fieldAccess","name":"","fieldName":"$f1"},{"type":"fieldAccess","name":"","fieldName":"$f2"}]}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default","columns":[{"dimension":"postagg#0","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"},{"type":"doubleSum","name":"$f3","fieldName":"deleted"}],"postAggregations":[{"type":"arithmetic","name":"postagg#0","fn":"quotient","fields":[{"type":"fieldAccess","name":"","fieldName":"$f1"},{"type":"fieldAccess","name":"","fieldName":"$f2"}]}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
               druid.query.type groupBy
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
@@ -453,7 +453,7 @@ STAGE PLANS:
           TableScan
             alias: druid_table_1
             properties:
-              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"language"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"delta"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
               druid.query.type groupBy
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
@@ -513,7 +513,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"default","dimension":"language"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"longSum","name":"dummy_agg","fieldName":"dummy_agg"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"default","dimension":"language"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"longSum","name":"dummy_agg","fieldName":"dummy_agg"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -554,7 +554,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"default","dimension":"language"}],"limitSpec":{"type":"default","limit":5,"columns":[{"dimension":"robot","direction":"ascending","dimensionOrder":"alphanumeric"},{"dimension":"language","direction":"ascending","dimensionOrder":"alphanumeric"}]},"aggregations":[{"type":"longSum","name":"dummy_agg","fieldName":"dummy_agg"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"default","dimension":"robot"},{"type":"default","dimension":"language"}],"limitSpec":{"type":"default","limit":5,"columns":[{"dimension":"robot","direction":"ascending","dimensionOrder":"alphanumeric"},{"dimension":"language","direction":"ascending","dimensionOrder":"alphanumeric"}]},"aggregations":[{"type":"longSum","name":"dummy_agg","fieldName":"dummy_agg"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator

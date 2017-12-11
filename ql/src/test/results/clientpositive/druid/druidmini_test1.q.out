@@ -64,7 +64,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table
           properties:
-            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"all","aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"],"context":{"skipEmptyBuckets":true}}
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"all","aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
             druid.query.type timeseries
           Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -99,7 +99,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table
           properties:
-            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"year","aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"cfloat"},{"type":"doubleSum","name":"$f2","fieldName":"cdouble"},{"type":"longSum","name":"$f3","fieldName":"ctinyint"},{"type":"longSum","name":"$f4","fieldName":"csmallint"},{"type":"longSum","name":"$f5","fieldName":"cint"},{"type":"longSum","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"],"context":{"skipEmptyBuckets":true}}
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"year","aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"cfloat"},{"type":"doubleSum","name":"$f2","fieldName":"cdouble"},{"type":"longSum","name":"$f3","fieldName":"ctinyint"},{"type":"longSum","name":"$f4","fieldName":"csmallint"},{"type":"longSum","name":"$f5","fieldName":"cint"},{"type":"longSum","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
             druid.query.type timeseries
           Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -137,7 +137,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table
           properties:
-            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"year","aggregations":[{"type":"doubleMin","name":"$f1","fieldName":"cfloat"},{"type":"doubleMin","name":"$f2","fieldName":"cdouble"},{"type":"longMin","name":"$f3","fieldName":"ctinyint"},{"type":"longMin","name":"$f4","fieldName":"csmallint"},{"type":"longMin","name":"$f5","fieldName":"cint"},{"type":"longMin","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"],"context":{"skipEmptyBuckets":true}}
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"year","aggregations":[{"type":"doubleMin","name":"$f1","fieldName":"cfloat"},{"type":"doubleMin","name":"$f2","fieldName":"cdouble"},{"type":"longMin","name":"$f3","fieldName":"ctinyint"},{"type":"longMin","name":"$f4","fieldName":"csmallint"},{"type":"longMin","name":"$f5","fieldName":"cint"},{"type":"longMin","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
             druid.query.type timeseries
           Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -175,7 +175,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table
           properties:
-            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"year","aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"cfloat"},{"type":"doubleMax","name":"$f2","fieldName":"cdouble"},{"type":"longMax","name":"$f3","fieldName":"ctinyint"},{"type":"longMax","name":"$f4","fieldName":"csmallint"},{"type":"longMax","name":"$f5","fieldName":"cint"},{"type":"longMax","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"],"context":{"skipEmptyBuckets":true}}
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"year","aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"cfloat"},{"type":"doubleMax","name":"$f2","fieldName":"cdouble"},{"type":"longMax","name":"$f3","fieldName":"ctinyint"},{"type":"longMax","name":"$f4","fieldName":"csmallint"},{"type":"longMax","name":"$f5","fieldName":"cint"},{"type":"longMax","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
             druid.query.type timeseries
           Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -211,7 +211,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table","granularity":"all","dimensions":[{"type":"default","dimension":"cstring1"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f1","direction":"ascending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"cdouble"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table","granularity":"all","dimensions":[{"type":"default","dimension":"cstring1"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f1","direction":"ascending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"cdouble"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -253,7 +253,7 @@ STAGE PLANS:
         TableScan
           alias: druid_table
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table","granularity":"all","dimensions":[{"type":"default","dimension":"cstring2"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"cstring2","direction":"ascending","dimensionOrder":"alphanumeric"}]},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"cdouble"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table","granularity":"all","dimensions":[{"type":"default","dimension":"cstring2"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"cstring2","direction":"ascending","dimensionOrder":"alphanumeric"}]},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"cdouble"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
@@ -299,7 +299,7 @@ STAGE PLANS:
           TableScan
             alias: druid_table
             properties:
-              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
               druid.query.type select
             Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
@@ -374,7 +374,7 @@ STAGE PLANS:
           TableScan
             alias: druid_table
             properties:
-              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1900-01-01T00:00:00.000/1970-03-01T08:00:00.000"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1900-01-01T00:00:00.000Z/1970-03-01T08:00:00.000Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
               druid.query.type select
             Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
@@ -451,7 +451,7 @@ STAGE PLANS:
           TableScan
             alias: druid_table
             properties:
-              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000/1970-03-01T08:00:00.001"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-03-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
               druid.query.type select
             Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
@@ -530,7 +530,7 @@ STAGE PLANS:
           TableScan
             alias: druid_table
             properties:
-              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000/1970-03-01T08:00:00.001"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-03-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
               druid.query.type select
             Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
@@ -609,7 +609,7 @@ STAGE PLANS:
           TableScan
             alias: druid_table
             properties:
-              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000/1970-01-01T08:00:00.001"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-01-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
               druid.query.type select
             Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
@@ -688,7 +688,7 @@ STAGE PLANS:
           TableScan
             alias: druid_table
             properties:
-              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000/1970-04-01T08:00:00.001"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-04-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
               druid.query.type select
             Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator

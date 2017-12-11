@@ -428,24 +428,24 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 4
-      File Output Operator [FS_35]
-        Select Operator [SEL_33] (rows=1 width=20)
+      File Output Operator [FS_34]
+        Select Operator [SEL_32] (rows=1 width=20)
           Output:["_col0","_col1","_col2"]
         <-Reducer 3 [SORT]
-          SORT [RS_32]
-            Select Operator [SEL_31] (rows=1 width=28)
+          SORT [RS_31]
+            Select Operator [SEL_30] (rows=1 width=28)
               Output:["_col0","_col1","_col2","_col3"]
-              Group By Operator [GBY_30] (rows=1 width=20)
+              Group By Operator [GBY_29] (rows=1 width=20)
                 Output:["_col0","_col1","_col2"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1
               <-Reducer 2 [GROUP]
-                GROUP [RS_29]
+                GROUP [RS_28]
                   PartitionCols:_col0, _col1
-                  Group By Operator [GBY_28] (rows=1 width=20)
+                  Group By Operator [GBY_27] (rows=1 width=20)
                     Output:["_col0","_col1","_col2"],aggregations:["count()"],keys:_col1, _col4
-                    Select Operator [SEL_27] (rows=1 width=20)
+                    Select Operator [SEL_26] (rows=1 width=20)
                       Output:["_col1","_col4"]
                       Filter Operator [FIL_23] (rows=1 width=20)
-                        predicate:(((UDFToLong(_col1) + _col4) >= 0) and ((_col1 >= 1) or (_col4 >= 1)) and ((_col3 + _col6) >= 0) and ((_col3 > 0) or (_col1 >= 0)))
+                        predicate:(((UDFToLong(_col1) + _col4) >= 0) and ((_col1 >= 1) or (_col4 >= 1)) and ((_col3 + _col6) >= 0))
                         Join Operator [JOIN_22] (rows=3 width=18)
                           Output:["_col1","_col3","_col4","_col6"],condition map:[{"":"{\"type\":\"Inner\",\"left\":0,\"right\":1}"},{"":"{\"type\":\"Inner\",\"left\":1,\"right\":2}"}],keys:{"0":"_col0","1":"_col0","2":"_col0"}
                         <-Map 1 [PARTITION-LEVEL SORT]
@@ -453,7 +453,7 @@ Stage-0
                             PartitionCols:_col0
                             Select Operator [SEL_2] (rows=18 width=84)
                               Output:["_col0","_col1"]
-                              Filter Operator [FIL_36] (rows=18 width=84)
+                              Filter Operator [FIL_35] (rows=18 width=84)
                                 predicate:((c_int > 0) and key is not null)
                                 TableScan [TS_0] (rows=20 width=84)
                                   default@cbo_t3,cbo_t3,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int"]
@@ -469,7 +469,7 @@ Stage-0
                                   PartitionCols:_col0, _col1, _col2
                                   Group By Operator [GBY_6] (rows=1 width=101)
                                     Output:["_col0","_col1","_col2","_col3"],aggregations:["sum(c_int)"],keys:key, c_int, c_float
-                                    Filter Operator [FIL_37] (rows=2 width=93)
+                                    Filter Operator [FIL_36] (rows=2 width=93)
                                       predicate:(((UDFToFloat(c_int) + c_float) >= 0) and ((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0)) and ((c_int >= 1) or (c_float >= 1)) and (c_float > 0) and key is not null)
                                       TableScan [TS_3] (rows=20 width=88)
                                         default@cbo_t1,cbo_t1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
@@ -485,7 +485,7 @@ Stage-0
                                   PartitionCols:_col0, _col1, _col2
                                   Group By Operator [GBY_14] (rows=1 width=93)
                                     Output:["_col0","_col1","_col2"],keys:key, c_int, c_float
-                                    Filter Operator [FIL_38] (rows=2 width=93)
+                                    Filter Operator [FIL_37] (rows=2 width=93)
                                       predicate:(((UDFToFloat(c_int) + c_float) >= 0) and ((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0)) and ((c_int >= 1) or (c_float >= 1)) and (c_float > 0) and key is not null)
                                       TableScan [TS_11] (rows=20 width=88)
                                         default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
@@ -581,22 +581,22 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 4
-      File Output Operator [FS_34]
-        Select Operator [SEL_33] (rows=1 width=20)
+      File Output Operator [FS_33]
+        Select Operator [SEL_32] (rows=1 width=20)
           Output:["_col0","_col1","_col2"]
         <-Reducer 3 [SORT]
-          SORT [RS_32]
-            Group By Operator [GBY_30] (rows=1 width=20)
+          SORT [RS_31]
+            Group By Operator [GBY_29] (rows=1 width=20)
               Output:["_col0","_col1","_col2"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1
             <-Reducer 2 [GROUP]
-              GROUP [RS_29]
+              GROUP [RS_28]
                 PartitionCols:_col0, _col1
-                Group By Operator [GBY_28] (rows=1 width=20)
+                Group By Operator [GBY_27] (rows=1 width=20)
                   Output:["_col0","_col1","_col2"],aggregations:["count()"],keys:_col1, _col4
-                  Select Operator [SEL_27] (rows=1 width=20)
+                  Select Operator [SEL_26] (rows=1 width=20)
                     Output:["_col1","_col4"]
                     Filter Operator [FIL_23] (rows=1 width=20)
-                      predicate:(((UDFToLong(_col1) + _col4) >= 0) and ((_col1 >= 1) or (_col4 >= 1)) and ((_col3 + _col6) >= 0) and ((_col3 > 0) or (_col1 >= 0)))
+                      predicate:(((UDFToLong(_col1) + _col4) >= 0) and ((_col1 >= 1) or (_col4 >= 1)) and ((_col3 + _col6) >= 0))
                       Join Operator [JOIN_22] (rows=3 width=18)
                         Output:["_col1","_col3","_col4","_col6"],condition map:[{"":"{\"type\":\"Inner\",\"left\":0,\"right\":1}"},{"":"{\"type\":\"Inner\",\"left\":1,\"right\":2}"}],keys:{"0":"_col0","1":"_col0","2":"_col0"}
                       <-Map 1 [PARTITION-LEVEL SORT]
@@ -604,7 +604,7 @@ Stage-0
                           PartitionCols:_col0
                           Select Operator [SEL_2] (rows=18 width=84)
                             Output:["_col0","_col1"]
-                            Filter Operator [FIL_35] (rows=18 width=84)
+                            Filter Operator [FIL_34] (rows=18 width=84)
                               predicate:((c_int > 0) and key is not null)
                               TableScan [TS_0] (rows=20 width=84)
                                 default@cbo_t3,cbo_t3,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int"]
@@ -620,7 +620,7 @@ Stage-0
                                 PartitionCols:_col0, _col1, _col2
                                 Group By Operator [GBY_6] (rows=1 width=101)
                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["sum(c_int)"],keys:key, c_int, c_float
-                                  Filter Operator [FIL_36] (rows=2 width=93)
+                                  Filter Operator [FIL_35] (rows=2 width=93)
                                     predicate:(((UDFToFloat(c_int) + c_float) >= 0) and ((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0)) and ((c_int >= 1) or (c_float >= 1)) and (c_float > 0) and key is not null)
                                     TableScan [TS_3] (rows=20 width=88)
                                       default@cbo_t1,cbo_t1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
@@ -636,7 +636,7 @@ Stage-0
                                 PartitionCols:_col0, _col1, _col2
                                 Group By Operator [GBY_14] (rows=1 width=93)
                                   Output:["_col0","_col1","_col2"],keys:key, c_int, c_float
-                                  Filter Operator [FIL_37] (rows=2 width=93)
+                                  Filter Operator [FIL_36] (rows=2 width=93)
                                     predicate:(((UDFToFloat(c_int) + c_float) >= 0) and ((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0)) and ((c_int >= 1) or (c_float >= 1)) and (c_float > 0) and key is not null)
                                     TableScan [TS_11] (rows=20 width=88)
                                       default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
