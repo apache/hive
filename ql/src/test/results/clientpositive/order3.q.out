@@ -58,19 +58,23 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          Select Operator
+            expressions: _col0 (type: int)
+            outputColumnNames: _col1
+            Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: int)
+              key expressions: _col1 (type: int)
               sort order: +
               Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
@@ -92,7 +96,7 @@ STAGE PLANS:
 
   Stage: Stage-0
     Fetch Operator
-      limit: 3
+      limit: -1
       Processor Tree:
         ListSink
 
@@ -147,19 +151,23 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          Select Operator
+            expressions: _col1 (type: int), _col0 (type: int)
+            outputColumnNames: _col1, _col2
+            Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: int)
+              key expressions: _col2 (type: int)
               sort order: +
               Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
@@ -182,7 +190,7 @@ STAGE PLANS:
 
   Stage: Stage-0
     Fetch Operator
-      limit: 3
+      limit: -1
       Processor Tree:
         ListSink
 
@@ -237,19 +245,23 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          Select Operator
+            expressions: _col1 (type: bigint), _col0 (type: int)
+            outputColumnNames: _col1, _col2
+            Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: int)
+              key expressions: _col2 (type: int)
               sort order: +
               Statistics: Num rows: 7 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
