@@ -18,6 +18,9 @@
 
 package org.apache.hive.jdbc;
 
+import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
+
+import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -64,13 +67,11 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -137,6 +138,7 @@ public class HiveConnection implements java.sql.Connection {
   private TProtocolVersion protocol;
   private int fetchSize = HiveStatement.DEFAULT_FETCH_SIZE;
   private String initFile = null;
+  private Properties clientInfo;
 
   /**
    * Get all direct HiveServer2 URLs from a ZooKeeper based HiveServer2 URL
@@ -1029,8 +1031,7 @@ public class HiveConnection implements java.sql.Connection {
 
   @Override
   public Properties getClientInfo() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    return clientInfo == null ? new Properties() : clientInfo;
   }
 
   /*
@@ -1041,8 +1042,8 @@ public class HiveConnection implements java.sql.Connection {
 
   @Override
   public String getClientInfo(String name) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    if (clientInfo == null) return null;
+    return clientInfo.getProperty(name);
   }
 
   /*
@@ -1373,10 +1374,9 @@ public class HiveConnection implements java.sql.Connection {
    */
 
   @Override
-  public void setClientInfo(Properties properties)
-      throws SQLClientInfoException {
-    // TODO Auto-generated method stub
-    throw new SQLClientInfoException("Method not supported", null);
+  public void setClientInfo(Properties properties) throws SQLClientInfoException {
+    clientInfo = properties;
+    sendClientInfo();
   }
 
   /*
@@ -1386,10 +1386,32 @@ public class HiveConnection implements java.sql.Connection {
    */
 
   @Override
-  public void setClientInfo(String name, String value)
-      throws SQLClientInfoException {
-    // TODO Auto-generated method stub
-    throw new SQLClientInfoException("Method not supported", null);
+  public void setClientInfo(String name, String value) throws SQLClientInfoException {
+    if (clientInfo == null) {
+      clientInfo = new Properties();
+    }
+    clientInfo.put(name, value);
+    sendClientInfo();
+  }
+
+
+  private void sendClientInfo() throws SQLClientInfoException {
+    TSetClientInfoReq req = new TSetClientInfoReq(sessHandle);
+    Map<String, String> map = new HashMap<>();
+    if (clientInfo != null) {
+      for (Entry<Object, Object> e : clientInfo.entrySet()) {
+        if (e.getKey() == null || e.getValue() == null) continue;
+        map.put(e.getKey().toString(), e.getValue().toString());
+      }
+    }
+    req.setConfiguration(map);
+    try {
+      TSetClientInfoResp openResp = client.SetClientInfo(req);
+      Utils.verifySuccess(openResp.getStatus());
+    } catch (TException | SQLException e) {
+      LOG.error("Error sending client info", e);
+      throw new SQLClientInfoException("Error sending client info", null, e);
+    }
   }
 
   /*
@@ -1397,7 +1419,6 @@ public class HiveConnection implements java.sql.Connection {
    *
    * @see java.sql.Connection#setHoldability(int)
    */
-
   @Override
   public void setHoldability(int holdability) throws SQLException {
     // TODO Auto-generated method stub

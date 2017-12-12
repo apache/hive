@@ -46,6 +46,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  TCancelDelegationTokenResp CancelDelegationToken(TCancelDelegationTokenReq req)')
   print('  TRenewDelegationTokenResp RenewDelegationToken(TRenewDelegationTokenReq req)')
   print('  TGetQueryIdResp GetQueryId(TGetQueryIdReq req)')
+  print('  TSetClientInfoResp SetClientInfo(TSetClientInfoReq req)')
   print('')
   sys.exit(0)
 
@@ -233,6 +234,12 @@ elif cmd == 'GetQueryId':
     print('GetQueryId requires 1 args')
     sys.exit(1)
   pp.pprint(client.GetQueryId(eval(args[0]),))
+
+elif cmd == 'SetClientInfo':
+  if len(args) != 1:
+    print('SetClientInfo requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.SetClientInfo(eval(args[0]),))
 
 else:
   print('Unrecognized method %s' % cmd)

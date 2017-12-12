@@ -695,15 +695,15 @@ import org.slf4j.LoggerFactory;
           case 3: // CONF_OVERLAY
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map162 = iprot.readMapBegin();
-                struct.confOverlay = new HashMap<String,String>(2*_map162.size);
-                String _key163;
-                String _val164;
-                for (int _i165 = 0; _i165 < _map162.size; ++_i165)
+                org.apache.thrift.protocol.TMap _map172 = iprot.readMapBegin();
+                struct.confOverlay = new HashMap<String,String>(2*_map172.size);
+                String _key173;
+                String _val174;
+                for (int _i175 = 0; _i175 < _map172.size; ++_i175)
                 {
-                  _key163 = iprot.readString();
-                  _val164 = iprot.readString();
-                  struct.confOverlay.put(_key163, _val164);
+                  _key173 = iprot.readString();
+                  _val174 = iprot.readString();
+                  struct.confOverlay.put(_key173, _val174);
                 }
                 iprot.readMapEnd();
               }
@@ -756,10 +756,10 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(CONF_OVERLAY_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.confOverlay.size()));
-            for (Map.Entry<String, String> _iter166 : struct.confOverlay.entrySet())
+            for (Map.Entry<String, String> _iter176 : struct.confOverlay.entrySet())
             {
-              oprot.writeString(_iter166.getKey());
-              oprot.writeString(_iter166.getValue());
+              oprot.writeString(_iter176.getKey());
+              oprot.writeString(_iter176.getValue());
             }
             oprot.writeMapEnd();
           }
@@ -809,10 +809,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetConfOverlay()) {
         {
           oprot.writeI32(struct.confOverlay.size());
-          for (Map.Entry<String, String> _iter167 : struct.confOverlay.entrySet())
+          for (Map.Entry<String, String> _iter177 : struct.confOverlay.entrySet())
           {
-            oprot.writeString(_iter167.getKey());
-            oprot.writeString(_iter167.getValue());
+            oprot.writeString(_iter177.getKey());
+            oprot.writeString(_iter177.getValue());
           }
         }
       }
@@ -835,15 +835,15 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TMap _map168 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.confOverlay = new HashMap<String,String>(2*_map168.size);
-          String _key169;
-          String _val170;
-          for (int _i171 = 0; _i171 < _map168.size; ++_i171)
+          org.apache.thrift.protocol.TMap _map178 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.confOverlay = new HashMap<String,String>(2*_map178.size);
+          String _key179;
+          String _val180;
+          for (int _i181 = 0; _i181 < _map178.size; ++_i181)
           {
-            _key169 = iprot.readString();
-            _val170 = iprot.readString();
-            struct.confOverlay.put(_key169, _val170);
+            _key179 = iprot.readString();
+            _val180 = iprot.readString();
+            struct.confOverlay.put(_key179, _val180);
           }
         }
         struct.setConfOverlayIsSet(true);

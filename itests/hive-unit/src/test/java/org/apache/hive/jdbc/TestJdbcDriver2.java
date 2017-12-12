@@ -1496,6 +1496,30 @@ public class TestJdbcDriver2 {
   }
 
   @Test
+  public void testClientInfo() throws SQLException {
+    DatabaseMetaData meta = con.getMetaData();
+    ResultSet res = meta.getClientInfoProperties();
+    try {
+      assertTrue(res.next());
+      assertEquals("ApplicationName", res.getString(1));
+      assertEquals(1000, res.getInt("MAX_LEN"));
+      assertFalse(res.next());
+    } catch (Exception e) {
+      String msg = "Unexpected exception: " + e;
+      LOG.info(msg, e);
+      fail(msg);
+    }
+
+    Connection conn = getConnection("");
+    try {
+      conn.setClientInfo("ApplicationName", "test");
+      assertEquals("test", conn.getClientInfo("ApplicationName"));
+    } finally {
+      conn.close();
+    }
+  }
+
+  @Test
   public void testResultSetColumnNameCaseInsensitive() throws SQLException {
     Statement stmt = con.createStatement();
     ResultSet res;

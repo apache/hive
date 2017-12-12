@@ -271,6 +271,10 @@ class TOpenSessionReq;
 
 class TOpenSessionResp;
 
+class TSetClientInfoReq;
+
+class TSetClientInfoResp;
+
 class TCloseSessionReq;
 
 class TCloseSessionResp;
@@ -2271,6 +2275,99 @@ class TOpenSessionResp {
 void swap(TOpenSessionResp &a, TOpenSessionResp &b);
 
 inline std::ostream& operator<<(std::ostream& out, const TOpenSessionResp& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _TSetClientInfoReq__isset {
+  _TSetClientInfoReq__isset() : configuration(false) {}
+  bool configuration :1;
+} _TSetClientInfoReq__isset;
+
+class TSetClientInfoReq {
+ public:
+
+  TSetClientInfoReq(const TSetClientInfoReq&);
+  TSetClientInfoReq& operator=(const TSetClientInfoReq&);
+  TSetClientInfoReq() {
+  }
+
+  virtual ~TSetClientInfoReq() throw();
+  TSessionHandle sessionHandle;
+  std::map<std::string, std::string>  configuration;
+
+  _TSetClientInfoReq__isset __isset;
+
+  void __set_sessionHandle(const TSessionHandle& val);
+
+  void __set_configuration(const std::map<std::string, std::string> & val);
+
+  bool operator == (const TSetClientInfoReq & rhs) const
+  {
+    if (!(sessionHandle == rhs.sessionHandle))
+      return false;
+    if (__isset.configuration != rhs.__isset.configuration)
+      return false;
+    else if (__isset.configuration && !(configuration == rhs.configuration))
+      return false;
+    return true;
+  }
+  bool operator != (const TSetClientInfoReq &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TSetClientInfoReq & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TSetClientInfoReq &a, TSetClientInfoReq &b);
+
+inline std::ostream& operator<<(std::ostream& out, const TSetClientInfoReq& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class TSetClientInfoResp {
+ public:
+
+  TSetClientInfoResp(const TSetClientInfoResp&);
+  TSetClientInfoResp& operator=(const TSetClientInfoResp&);
+  TSetClientInfoResp() {
+  }
+
+  virtual ~TSetClientInfoResp() throw();
+  TStatus status;
+
+  void __set_status(const TStatus& val);
+
+  bool operator == (const TSetClientInfoResp & rhs) const
+  {
+    if (!(status == rhs.status))
+      return false;
+    return true;
+  }
+  bool operator != (const TSetClientInfoResp &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TSetClientInfoResp & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TSetClientInfoResp &a, TSetClientInfoResp &b);
+
+inline std::ostream& operator<<(std::ostream& out, const TSetClientInfoResp& obj)
 {
   obj.printTo(out);
   return out;
