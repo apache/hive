@@ -312,7 +312,11 @@ CREATE RESOURCE PLAN plan_4;
 
 ALTER RESOURCE PLAN plan_4 ENABLE ACTIVATE;
 
+-- This should remove all pools, triggers & mappings. 
 DROP RESOURCE PLAN plan_2;
+
+-- This should create plan_2 with default pool and null query parallelism.
+CREATE RESOURCE PLAN plan_2;
 
 SELECT * FROM SYS.WM_RESOURCEPLANS;
 SELECT * FROM SYS.WM_POOLS;

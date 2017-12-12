@@ -3977,7 +3977,7 @@ plan_2	USER	user1	def	0
 plan_2	USER	user2	def	1
 PREHOOK: query: DROP POOL plan_2.def.c1
 PREHOOK: type: DROP POOL
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Exception thrown flushing changes to datastore)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Please remove all mappings for this pool.)
 PREHOOK: query: DROP USER MAPPING "user2" in plan_2
 PREHOOK: type: DROP MAPPING
 POSTHOOK: query: DROP USER MAPPING "user2" in plan_2
@@ -4008,6 +4008,10 @@ PREHOOK: query: DROP RESOURCE PLAN plan_2
 PREHOOK: type: DROP RESOURCEPLAN
 POSTHOOK: query: DROP RESOURCE PLAN plan_2
 POSTHOOK: type: DROP RESOURCEPLAN
+PREHOOK: query: CREATE RESOURCE PLAN plan_2
+PREHOOK: type: CREATE RESOURCEPLAN
+POSTHOOK: query: CREATE RESOURCE PLAN plan_2
+POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -4017,6 +4021,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	ENABLED	NULL	default
+plan_2	DISABLED	NULL	default
 plan_4	ACTIVE	NULL	default
 table	DISABLED	1	table.pool
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
@@ -4028,6 +4033,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
 plan_1	default	1.0	4	NULL
+plan_2	default	1.0	4	NULL
 plan_4	default	1.0	4	NULL
 table	table	0.0	1	random
 table	table.pool	0.9	3	priority
