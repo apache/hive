@@ -3902,102 +3902,92 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
 
-          Map<ASTNode, RelNode> subQueryToRelNode = new HashMap<>();
-          boolean isSubQuery = genSubQueryRelNode(qb, expr, srcRel, false,
-                  subQueryToRelNode);
-          if(isSubQuery) {
-            ExprNodeDesc subQueryExpr = genExprNodeDesc(expr, relToHiveRR.get(srcRel),
-                    outerRR, subQueryToRelNode, true);
-            col_list.add(subQueryExpr);
+        Map<ASTNode, RelNode> subQueryToRelNode = new HashMap<>();
+        boolean isSubQuery = genSubQueryRelNode(qb, expr, srcRel, false,
+                subQueryToRelNode);
+        if(isSubQuery) {
+          ExprNodeDesc subQueryExpr = genExprNodeDesc(expr, relToHiveRR.get(srcRel),
+                  outerRR, subQueryToRelNode, true);
+          col_list.add(subQueryExpr);
+
+          ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
+                  subQueryExpr.getWritableObjectInspector(), tabAlias, false);
+          if (!out_rwsch.putWithCheck(tabAlias, colAlias, null, colInfo)) {
+            throw new CalciteSemanticException("Cannot add column to RR: " + tabAlias + "."
+                    + colAlias + " => " + colInfo + " due to duplication, see previous warnings",
+                    UnsupportedFeature.Duplicates_in_RR);
+          }
+          pos = Integer.valueOf(pos.intValue() + 1);
+        } else {
+
+          // 6.4 Build ExprNode corresponding to colums
+          if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
+            pos = genColListRegex(".*", expr.getChildCount() == 0 ? null : SemanticAnalyzer
+                            .getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(), expr, col_list,
+                    excludedColumns, inputRR, starRR, pos, out_rwsch, qb.getAliases(), true);
+            selectStar = true;
+          } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL
+                  && !hasAsClause
+                  && !inputRR.getIsExprResolver()
+                  && SemanticAnalyzer.isRegex(
+                  SemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText()), conf)) {
+            // In case the expression is a regex COL.
+            // This can only happen without AS clause
+            // We don't allow this for ExprResolver - the Group By case
+            pos = genColListRegex(SemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText()),
+                    null, expr, col_list, excludedColumns, inputRR, starRR, pos, out_rwsch,
+                    qb.getAliases(), true);
+          } else if (expr.getType() == HiveParser.DOT
+                  && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
+                  && inputRR.hasTableAlias(SemanticAnalyzer.unescapeIdentifier(expr.getChild(0)
+                  .getChild(0).getText().toLowerCase()))
+                  && !hasAsClause
+                  && !inputRR.getIsExprResolver()
+                  && SemanticAnalyzer.isRegex(
+                  SemanticAnalyzer.unescapeIdentifier(expr.getChild(1).getText()), conf)) {
+            // In case the expression is TABLE.COL (col can be regex).
+            // This can only happen without AS clause
+            // We don't allow this for ExprResolver - the Group By case
+            pos = genColListRegex(
+                    SemanticAnalyzer.unescapeIdentifier(expr.getChild(1).getText()),
+                    SemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getChild(0).getText()
+                            .toLowerCase()), expr, col_list, excludedColumns, inputRR, starRR, pos,
+                    out_rwsch, qb.getAliases(), true);
+          } else if (ParseUtils.containsTokenOfType(expr, HiveParser.TOK_FUNCTIONDI)
+                  && !(srcRel instanceof HiveAggregate)) {
+            // Likely a malformed query eg, select hash(distinct c1) from t1;
+            throw new CalciteSemanticException("Distinct without an aggregation.",
+                    UnsupportedFeature.Distinct_without_an_aggreggation);
+          } else {
+            // Case when this is an expression
+            TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
+            // We allow stateful functions in the SELECT list (but nowhere else)
+            tcCtx.setAllowStatefulFunctions(true);
+            if (!qbp.getDestToGroupBy().isEmpty()) {
+              // Special handling of grouping function
+              expr = rewriteGroupingFunctionAST(getGroupByForClause(qbp, selClauseName), expr,
+                      !cubeRollupGrpSetPresent);
+            }
+            ExprNodeDesc exp = genExprNodeDesc(expr, inputRR, tcCtx);
+            String recommended = recommendName(exp, colAlias);
+            if (recommended != null && out_rwsch.get(null, recommended) == null) {
+              colAlias = recommended;
+            }
+            col_list.add(exp);
 
             ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
-                    subQueryExpr.getWritableObjectInspector(), tabAlias, false);
+                    exp.getWritableObjectInspector(), tabAlias, false);
+            colInfo.setSkewedCol((exp instanceof ExprNodeColumnDesc) ? ((ExprNodeColumnDesc) exp)
+                    .isSkewedCol() : false);
             if (!out_rwsch.putWithCheck(tabAlias, colAlias, null, colInfo)) {
               throw new CalciteSemanticException("Cannot add column to RR: " + tabAlias + "."
                       + colAlias + " => " + colInfo + " due to duplication, see previous warnings",
                       UnsupportedFeature.Duplicates_in_RR);
             }
+
             pos = Integer.valueOf(pos.intValue() + 1);
-          } else {
-
-            // 6.4 Build ExprNode corresponding to colums
-            if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
-              pos = genColListRegex(".*", expr.getChildCount() == 0 ? null : SemanticAnalyzer
-                              .getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(), expr, col_list,
-                      excludedColumns, inputRR, starRR, pos, out_rwsch, qb.getAliases(), true);
-              selectStar = true;
-            } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL
-                    && !hasAsClause
-                    && !inputRR.getIsExprResolver()
-                    && SemanticAnalyzer.isRegex(
-                    SemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText()), conf)) {
-              // In case the expression is a regex COL.
-              // This can only happen without AS clause
-              // We don't allow this for ExprResolver - the Group By case
-              pos = genColListRegex(SemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText()),
-                      null, expr, col_list, excludedColumns, inputRR, starRR, pos, out_rwsch,
-                      qb.getAliases(), true);
-            } else if (expr.getType() == HiveParser.DOT
-                    && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
-                    && inputRR.hasTableAlias(SemanticAnalyzer.unescapeIdentifier(expr.getChild(0)
-                    .getChild(0).getText().toLowerCase()))
-                    && !hasAsClause
-                    && !inputRR.getIsExprResolver()
-                    && SemanticAnalyzer.isRegex(
-                    SemanticAnalyzer.unescapeIdentifier(expr.getChild(1).getText()), conf)) {
-              // In case the expression is TABLE.COL (col can be regex).
-              // This can only happen without AS clause
-              // We don't allow this for ExprResolver - the Group By case
-              pos = genColListRegex(
-                      SemanticAnalyzer.unescapeIdentifier(expr.getChild(1).getText()),
-                      SemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getChild(0).getText()
-                              .toLowerCase()), expr, col_list, excludedColumns, inputRR, starRR, pos,
-                      out_rwsch, qb.getAliases(), true);
-            } else if (ParseUtils.containsTokenOfType(expr, HiveParser.TOK_FUNCTIONDI)
-                    && !(srcRel instanceof HiveAggregate)) {
-              // Likely a malformed query eg, select hash(distinct c1) from t1;
-              throw new CalciteSemanticException("Distinct without an aggregation.",
-                      UnsupportedFeature.Distinct_without_an_aggreggation);
-            }
-              else {
-              // Case when this is an expression
-              TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
-              // We allow stateful functions in the SELECT list (but nowhere else)
-              tcCtx.setAllowStatefulFunctions(true);
-              if (!qbp.getDestToGroupBy().isEmpty()) {
-                // Special handling of grouping function
-                expr = rewriteGroupingFunctionAST(getGroupByForClause(qbp, selClauseName), expr,
-                        !cubeRollupGrpSetPresent);
-              }
-              ExprNodeDesc exp = genExprNodeDesc(expr, inputRR, tcCtx);
-              String recommended = recommendName(exp, colAlias);
-              if (recommended != null && out_rwsch.get(null, recommended) == null) {
-                colAlias = recommended;
-              }
-              col_list.add(exp);
-
-              ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
-                      exp.getWritableObjectInspector(), tabAlias, false);
-              colInfo.setSkewedCol((exp instanceof ExprNodeColumnDesc) ? ((ExprNodeColumnDesc) exp)
-                      .isSkewedCol() : false);
-              if (!out_rwsch.putWithCheck(tabAlias, colAlias, null, colInfo)) {
-                throw new CalciteSemanticException("Cannot add column to RR: " + tabAlias + "."
-                        + colAlias + " => " + colInfo + " due to duplication, see previous warnings",
-                        UnsupportedFeature.Duplicates_in_RR);
-              }
-
-              if (exp instanceof ExprNodeColumnDesc) {
-                ExprNodeColumnDesc colExp = (ExprNodeColumnDesc) exp;
-                String[] altMapping = inputRR.getAlternateMappings(colExp.getColumn());
-                if (altMapping != null) {
-                  // TODO: this can overwrite the mapping. Should this be allowed?
-                  out_rwsch.put(altMapping[0], altMapping[1], colInfo);
-                }
-              }
-
-              pos = Integer.valueOf(pos.intValue() + 1);
-            }
           }
+        }
       }
       selectStar = selectStar && exprList.getChildCount() == posn + 1;
 
