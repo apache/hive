@@ -1,4 +1,4 @@
-set hive.explain.user=true;
+set hive.explain.user=false;
 create table bug_201_input_a (
        userid                                       int
 ) clustered by (userid) sorted by (userid) into 64 BUCKETS ;
@@ -86,6 +86,7 @@ select distinct(userid) as userid from (
             162031843       ,141532840       ,154222699       ,109320121       ,155198842       
         )) as arr )a ) b;
 
+
 explain
 select
 t1.userid,
@@ -97,12 +98,12 @@ select
 t1.userid,
   fa.userid   as  fa_userid 
   from bug_201_input_b as t1
-  join bug_201_input_a as fa on (t1.userid = fa.userid) ;
+  join bug_201_input_a as fa on (t1.userid = fa.userid) order by t1.userid, fa.userid;
 
 
 set hive.auto.convert.join=true;
-set hive.auto.convert.join.noconditionaltask.size=100 ;
-set hive.auto.convert.sortmerge.join=true
+set hive.auto.convert.join.noconditionaltask.size=5;
+set hive.auto.convert.sortmerge.join=true;
 set hive.convert.join.bucket.mapjoin.tez = true;
 set hive.auto.convert.sortmerge.join.bigtable.selection.policy = org.apache.hadoop.hive.ql.optimizer.TableSizeBasedBigTableSelectorForAutoSMJ;
 
@@ -117,5 +118,5 @@ select
 t1.userid,
   fa.userid   as  fa_userid 
   from bug_201_input_b as t1
-  join bug_201_input_a as fa on (t1.userid = fa.userid) ;
+  join bug_201_input_a as fa on (t1.userid = fa.userid) order by t1.userid, fa.userid;
 

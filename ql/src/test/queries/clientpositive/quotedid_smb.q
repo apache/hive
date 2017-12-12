@@ -27,7 +27,13 @@ set hive.optimize.bucketmapjoin.sortedmerge = true;
 
 set hive.auto.convert.sortmerge.join.to.mapjoin=false;
 set hive.auto.convert.sortmerge.join.bigtable.selection.policy = org.apache.hadoop.hive.ql.optimizer.TableSizeBasedBigTableSelectorForAutoSMJ;
+-- disable hash joins
+set hive.auto.convert.join.noconditionaltask.size=1000;
 
+explain select a.`x+1`, a.`!@#$%^&*()_q`, b.`x+1`, b.`!@#$%^&*()_q`
+from src_b a join src_b2 b on a.`!@#$%^&*()_q` = b.`!@#$%^&*()_q`
+where a.`x+1` < '11'
+;
 select a.`x+1`, a.`!@#$%^&*()_q`, b.`x+1`, b.`!@#$%^&*()_q`
 from src_b a join src_b2 b on a.`!@#$%^&*()_q` = b.`!@#$%^&*()_q`
 where a.`x+1` < '11'
