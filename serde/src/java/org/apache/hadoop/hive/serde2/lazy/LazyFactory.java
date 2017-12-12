@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.serde2.lazydio.LazyDioBoolean;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioByte;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioDouble;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioFloat;
+import org.apache.hadoop.hive.serde2.lazydio.LazyDioHiveDecimal;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioInteger;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioLong;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioShort;
@@ -168,6 +169,8 @@ public final class LazyFactory {
       return new LazyDioDouble((LazyDoubleObjectInspector) poi);
     case BINARY:
       return new LazyDioBinary((LazyBinaryObjectInspector) poi);
+    case DECIMAL:
+      return new LazyDioHiveDecimal((LazyHiveDecimalObjectInspector) poi);
     default:
       throw new RuntimeException("Hive Internal Error: no LazyObject for " + poi);
     }
