@@ -9519,14 +9519,20 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void checkForConstraintException(Exception e, String msg) throws AlreadyExistsException {
-    Throwable ex = e;
-    while (ex != null) {
-      if (ex instanceof SQLIntegrityConstraintViolationException) {
-        LOG.error(msg, e);
-        throw new AlreadyExistsException(msg);
-      }
-      ex = ex.getCause();
+    if (getConstraintException(e) != null) {
+      LOG.error(msg, e);
+      throw new AlreadyExistsException(msg);
     }
+  }
+
+  private Throwable getConstraintException(Throwable t) {
+    while (t != null) {
+      if (t instanceof SQLIntegrityConstraintViolationException) {
+        return t;
+      }
+      t = t.getCause();
+    }
+    return null;
   }
 
   @Override
@@ -10214,6 +10220,11 @@ public class ObjectStore implements RawStore, Configurable {
         throw new NoSuchObjectException("Cannot delete pool: " + poolPath);
       }
       commited = commitTransaction();
+    } catch(Exception e) {
+      if (getConstraintException(e) != null) {
+        throw new InvalidOperationException("Please remove all mappings for this pool.");
+      }
+      throw e;
     } finally {
       rollbackAndCleanup(commited, query);
     }
