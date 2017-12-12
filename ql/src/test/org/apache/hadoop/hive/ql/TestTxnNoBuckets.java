@@ -55,13 +55,10 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
   String getTestDataDir() {
     return TEST_DATA_DIR;
   }
-  @Override
-  @Before
-  public void setUp() throws Exception {
-    setUpInternal();
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
-  }
 
+  private boolean shouldVectorize() {
+    return hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
+  }
   /**
    * Tests that Acid can work with un-bucketed tables.
    */
@@ -351,9 +348,9 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     Assert.assertEquals(2, BucketCodec.determineVersion(537001984).decodeWriterId(537001984));
     Assert.assertEquals(1, BucketCodec.determineVersion(536936448).decodeWriterId(536936448));
 
-    assertVectorized(true, "update T set b = 88 where b = 80");
+    assertVectorized(shouldVectorize(), "update T set b = 88 where b = 80");
     runStatementOnDriver("update T set b = 88 where b = 80");
-    assertVectorized(true, "delete from T where b = 8");
+    assertVectorized(shouldVectorize(), "delete from T where b = 8");
     runStatementOnDriver("delete from T where b = 8");
     String expected3[][] = {
       {"{\"transactionid\":0,\"bucketid\":537001984,\"rowid\":0}\t1\t2",  "warehouse/t/000002_0"},
@@ -550,7 +547,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     checkExpected(rs, expected, "After conversion");
     Assert.assertEquals(Integer.toString(6), rs.get(0));
     Assert.assertEquals(Integer.toString(9), rs.get(1));
-    assertVectorized(true, query);
+    assertVectorized(shouldVectorize(), query);
 
     //why isn't PPD working.... - it is working but storage layer doesn't do row level filtering; only row group level
     //this uses VectorizedOrcAcidRowBatchReader
@@ -561,7 +558,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
       {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}", "9"}
     };
     checkExpected(rs, expected1, "After conversion with VC1");
-    assertVectorized(true, query);
+    assertVectorized(shouldVectorize(), query);
 
     //this uses VectorizedOrcAcidRowBatchReader
     query = "select ROW__ID, a from T where b > 0 order by a";
@@ -574,7 +571,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
       {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}", "9"}
     };
     checkExpected(rs, expected2, "After conversion with VC2");
-    assertVectorized(true, query);
+    assertVectorized(shouldVectorize(), query);
 
     //doesn't vectorize (uses neither of the Vectorzied Acid readers)
     query = "select ROW__ID, a, INPUT__FILE__NAME from T where b > 6 order by a";
@@ -601,7 +598,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
       {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}","10"}
     };
     checkExpected(rs, expected4, "After conversion with VC4");
-    assertVectorized(true, query);
+    assertVectorized(shouldVectorize(), query);
 
     runStatementOnDriver("alter table T compact 'major'");
     TestTxnCommands2.runWorker(hiveConf);
