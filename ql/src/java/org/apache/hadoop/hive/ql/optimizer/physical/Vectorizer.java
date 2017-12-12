@@ -1513,7 +1513,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Examining input format to see if vectorization is enabled.");
 
       ImmutablePair<String,TableScanOperator> onlyOneTableScanPair = verifyOnlyOneTableScanOperator(mapWork);
-      if (onlyOneTableScanPair ==  null) {
+      if (onlyOneTableScanPair == null) {
         VectorizerReason notVectorizedReason = currentBaseWork.getNotVectorizedReason();
         Preconditions.checkState(notVectorizedReason != null);
         mapWork.setVectorizationEnabledConditionsNotMet(Arrays.asList(new String[] {notVectorizedReason.toString()}));
@@ -1638,6 +1638,11 @@ public class Vectorizer implements PhysicalPlanResolver {
       // Set "global" member indicating where to store "not vectorized" information if necessary.
       currentBaseWork = mapWork;
 
+      if (!validateTableScanOperator(tableScanOperator, mapWork)) {
+
+        // The "not vectorized" information has been stored in the MapWork vertex.
+        return false;
+      }
       try {
         validateAndVectorizeMapOperators(tableScanOperator, isTezOrSpark, vectorTaskColumnInfo);
       } catch (VectorizerCannotVectorizeException e) {

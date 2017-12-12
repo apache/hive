@@ -115,11 +115,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   @Override
   public void process(Object row, int tag) throws HiveException {
     if (rowLimit >= 0) {
-      if (row instanceof VectorizedRowBatch) {
-        // We need to check with 'instanceof' instead of just checking
-        // vectorized because the row can be a VectorizedRowBatch when
-        // FetchOptimizer kicks in even if the operator pipeline is not
-        // vectorized
+      if (vectorized) {
         VectorizedRowBatch batch = (VectorizedRowBatch) row;
         if (currCount >= rowLimit) {
           setDone(true);
@@ -266,6 +262,10 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     currentStat = null;
     stats = new HashMap<String, Stat>();
 
+    /*
+     * This TableScanDesc flag is strictly set by the Vectorizer class for vectorized MapWork
+     * vertices.
+     */
     vectorized = conf.isVectorized();
   }
 

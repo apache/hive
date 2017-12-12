@@ -495,6 +495,10 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return new TableScanOperatorExplainVectorization(this, vectorTableScanDesc);
   }
 
+  /*
+   * This TableScanDesc flag is strictly set by the Vectorizer class for vectorized MapWork
+   * vertices.
+   */
   public void setVectorized(boolean vectorized) {
     this.vectorized = vectorized;
   }
