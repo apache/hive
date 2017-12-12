@@ -113,14 +113,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     MemoryMonitorInfo memoryMonitorInfo = getMemoryMonitorInfo(maxSize, context.conf, llapInfo);
     joinOp.getConf().setMemoryMonitorInfo(memoryMonitorInfo);
 
-    // not use map join in case of cross product
-    boolean cartesianProductEdgeEnabled =
-      HiveConf.getBoolVar(context.conf, HiveConf.ConfVars.TEZ_CARTESIAN_PRODUCT_EDGE_ENABLED);
-    if (cartesianProductEdgeEnabled && !hasOuterJoin(joinOp) && isCrossProduct(joinOp)) {
-      fallbackToMergeJoin(joinOp, context);
-      return null;
-    }
-
     TezBucketJoinProcCtx tezBucketJoinProcCtx = new TezBucketJoinProcCtx(context.conf);
     boolean hiveConvertJoin = context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &
             !context.parseContext.getDisableMapJoin();
@@ -986,6 +978,23 @@ public class ConvertJoinMapJoin implements NodeProcessor {
             && checkShuffleSizeForLargeTable(joinOp, bigTablePosition, context)) {
       LOG.debug("Conditions to convert to MapJoin are not met");
       return -1;
+    }
+
+    // only allow cross product in map joins if build side is 'small'
+    boolean cartesianProductEdgeEnabled =
+      HiveConf.getBoolVar(context.conf, HiveConf.ConfVars.TEZ_CARTESIAN_PRODUCT_EDGE_ENABLED);
+    if (cartesianProductEdgeEnabled && !hasOuterJoin(joinOp) && isCrossProduct(joinOp)) {
+      for (int i = 0 ; i < joinOp.getParentOperators().size(); i ++) {
+        if (i != bigTablePosition) {
+          Statistics parentStats = joinOp.getParentOperators().get(i).getStatistics();
+          if (parentStats.getNumRows() >
+            HiveConf.getIntVar(context.conf, HiveConf.ConfVars.XPRODSMALLTABLEROWSTHRESHOLD)) {
+            // if any of smaller side is estimated to generate more than
+            // threshold rows we would disable mapjoin
+            return -1;
+          }
+        }
+      }
     }
 
     // We store the total memory that this MapJoin is going to use,
