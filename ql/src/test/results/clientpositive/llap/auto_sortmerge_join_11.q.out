@@ -1,8 +1,8 @@
-PREHOOK: query: CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (KEY) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (KEY) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_small
@@ -23,11 +23,11 @@ POSTHOOK: query: load data local inpath '../../data/files/smallsrcsortbucket2out
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_small@ds=2008-04-08
-PREHOOK: query: CREATE TABLE bucket_big (key string, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE bucket_big (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY(KEY) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_big
-POSTHOOK: query: CREATE TABLE bucket_big (key string, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE bucket_big (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY(KEY) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_big
@@ -110,8 +110,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE)
-        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -172,6 +172,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
                       column.name.delimiter ,
@@ -191,7 +192,7 @@ STAGE PLANS:
                   name: default.bucket_small
             Truncated Path -> Alias:
               /bucket_small/ds=2008-04-08 [a]
-        Map 2 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -205,29 +206,14 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        Estimated key counts: Map 1 => 1
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col0 (type: string)
-                        input vertices:
-                          0 Map 1
-                        Position of Big Table: 1
-                        Statistics: Num rows: 122 Data size: 33926 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            null sort order: 
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            tag: -1
-                            value expressions: _col0 (type: bigint)
-                            auto parallelism: false
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
+                        tag: 1
+                        auto parallelism: true
             Execution mode: llap
             LLAP IO: no inputs
             Path -> Alias:
@@ -264,6 +250,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
                       column.name.delimiter ,
@@ -312,6 +299,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
                       column.name.delimiter ,
@@ -332,6 +320,30 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /bucket_big/ds=2008-04-08 [b]
               /bucket_big/ds=2008-04-09 [b]
+        Reducer 2 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                Position of Big Table: 1
+                Statistics: Num rows: 122 Data size: 33926 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    tag: -1
+                    value expressions: _col0 (type: bigint)
+                    auto parallelism: false
         Reducer 3 
             Execution mode: llap
             Needs Tagging: false
@@ -400,11 +412,10 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE)
         Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -418,22 +429,11 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
-                        tag: 0
-                        auto parallelism: true
-            Execution mode: llap
-            LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: ds=2008-04-08
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -462,6 +462,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
                       column.name.delimiter ,
@@ -481,7 +482,6 @@ STAGE PLANS:
                   name: default.bucket_small
             Truncated Path -> Alias:
               /bucket_small/ds=2008-04-08 [a]
-        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -495,15 +495,12 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
+                      Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        Estimated key counts: Map 1 => 1
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
-                        input vertices:
-                          0 Map 1
                         Position of Big Table: 1
                         Statistics: Num rows: 122 Data size: 33926 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
@@ -519,13 +516,11 @@ STAGE PLANS:
                             value expressions: _col0 (type: bigint)
                             auto parallelism: false
             Execution mode: llap
-            LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: ds=2008-04-08
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -554,6 +549,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
                       column.name.delimiter ,
@@ -573,7 +569,6 @@ STAGE PLANS:
                   name: default.bucket_big
 #### A masked pattern was here ####
                 Partition
-                  base file name: ds=2008-04-09
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -602,6 +597,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
                       column.name.delimiter ,
@@ -690,11 +686,10 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE)
         Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -704,22 +699,11 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
-                      tag: 0
-                      auto parallelism: true
-            Execution mode: llap
-            LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: ds=2008-04-08
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -748,6 +732,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
                       column.name.delimiter ,
@@ -767,7 +752,6 @@ STAGE PLANS:
                   name: default.bucket_small
             Truncated Path -> Alias:
               /bucket_small/ds=2008-04-08 [a]
-        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -777,15 +761,12 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
+                    Merge Join Operator
                       condition map:
                            Inner Join 0 to 1
-                      Estimated key counts: Map 1 => 1
                       keys:
                         0 key (type: string)
                         1 key (type: string)
-                      input vertices:
-                        0 Map 1
                       Position of Big Table: 1
                       Statistics: Num rows: 122 Data size: 33926 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
@@ -801,13 +782,11 @@ STAGE PLANS:
                           value expressions: _col0 (type: bigint)
                           auto parallelism: false
             Execution mode: llap
-            LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: ds=2008-04-08
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -836,6 +815,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
                       column.name.delimiter ,
@@ -855,7 +835,6 @@ STAGE PLANS:
                   name: default.bucket_big
 #### A masked pattern was here ####
                 Partition
-                  base file name: ds=2008-04-09
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -884,6 +863,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
                       column.name.delimiter ,
@@ -972,11 +952,10 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE)
         Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -986,22 +965,11 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 1 Data size: 298 Basic stats: COMPLETE Column stats: NONE
-                      tag: 0
-                      auto parallelism: true
-            Execution mode: llap
-            LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: ds=2008-04-08
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -1030,6 +998,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
                       column.name.delimiter ,
@@ -1049,147 +1018,6 @@ STAGE PLANS:
                   name: default.bucket_small
             Truncated Path -> Alias:
               /bucket_small/ds=2008-04-08 [a]
-        Map 2 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 116 Data size: 32232 Basic stats: COMPLETE Column stats: NONE
-                  GatherStats: false
-                  Filter Operator
-                    isSamplingPred: false
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                           Inner Join 0 to 2
-                      Estimated key counts: Map 1 => 1, Map 4 => 23
-                      keys:
-                        0 key (type: string)
-                        1 key (type: string)
-                        2 key (type: string)
-                      input vertices:
-                        0 Map 1
-                        2 Map 4
-                      Position of Big Table: 1
-                      Statistics: Num rows: 244 Data size: 67852 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          null sort order: 
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          tag: -1
-                          value expressions: _col0 (type: bigint)
-                          auto parallelism: false
-            Execution mode: llap
-            LLAP IO: no inputs
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: ds=2008-04-08
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  partition values:
-                    ds 2008-04-08
-                  properties:
-                    bucket_count 4
-                    bucket_field_name key
-                    column.name.delimiter ,
-                    columns key,value
-                    columns.comments 
-                    columns.types string:string
-#### A masked pattern was here ####
-                    name default.bucket_big
-                    numFiles 4
-                    numRows 0
-                    partition_columns ds
-                    partition_columns.types string
-                    rawDataSize 0
-                    serialization.ddl struct bucket_big { string key, string value}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 5812
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucket_count 4
-                      bucket_field_name key
-                      column.name.delimiter ,
-                      columns key,value
-                      columns.comments 
-                      columns.types string:string
-#### A masked pattern was here ####
-                      name default.bucket_big
-                      partition_columns ds
-                      partition_columns.types string
-                      serialization.ddl struct bucket_big { string key, string value}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.bucket_big
-                  name: default.bucket_big
-#### A masked pattern was here ####
-                Partition
-                  base file name: ds=2008-04-09
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  partition values:
-                    ds 2008-04-09
-                  properties:
-                    bucket_count 4
-                    bucket_field_name key
-                    column.name.delimiter ,
-                    columns key,value
-                    columns.comments 
-                    columns.types string:string
-#### A masked pattern was here ####
-                    name default.bucket_big
-                    numFiles 4
-                    numRows 0
-                    partition_columns ds
-                    partition_columns.types string
-                    rawDataSize 0
-                    serialization.ddl struct bucket_big { string key, string value}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 5812
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucket_count 4
-                      bucket_field_name key
-                      column.name.delimiter ,
-                      columns key,value
-                      columns.comments 
-                      columns.types string:string
-#### A masked pattern was here ####
-                      name default.bucket_big
-                      partition_columns ds
-                      partition_columns.types string
-                      serialization.ddl struct bucket_big { string key, string value}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.bucket_big
-                  name: default.bucket_big
-            Truncated Path -> Alias:
-              /bucket_big/ds=2008-04-08 [b]
-              /bucket_big/ds=2008-04-09 [b]
-        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: c
@@ -1199,22 +1027,11 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
-                      tag: 2
-                      auto parallelism: true
-            Execution mode: llap
-            LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: ds=2008-04-08
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -1243,6 +1060,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
                       column.name.delimiter ,
@@ -1262,7 +1080,6 @@ STAGE PLANS:
                   name: default.bucket_big
 #### A masked pattern was here ####
                 Partition
-                  base file name: ds=2008-04-09
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -1291,6 +1108,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 4
                       bucket_field_name key
                       column.name.delimiter ,
@@ -1311,6 +1129,140 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /bucket_big/ds=2008-04-08 [c]
               /bucket_big/ds=2008-04-09 [c]
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 116 Data size: 32232 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 111 Data size: 30842 Basic stats: COMPLETE Column stats: NONE
+                    Merge Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                           Inner Join 0 to 2
+                      keys:
+                        0 key (type: string)
+                        1 key (type: string)
+                        2 key (type: string)
+                      Position of Big Table: 1
+                      Statistics: Num rows: 244 Data size: 67852 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: llap
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                  properties:
+                    bucket_count 4
+                    bucket_field_name key
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.comments 
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.bucket_big
+                    numFiles 4
+                    numRows 0
+                    partition_columns ds
+                    partition_columns.types string
+                    rawDataSize 0
+                    serialization.ddl struct bucket_big { string key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 5812
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      SORTBUCKETCOLSPREFIX TRUE
+                      bucket_count 4
+                      bucket_field_name key
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.bucket_big
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.ddl struct bucket_big { string key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.bucket_big
+                  name: default.bucket_big
+#### A masked pattern was here ####
+                Partition
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-09
+                  properties:
+                    bucket_count 4
+                    bucket_field_name key
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.comments 
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.bucket_big
+                    numFiles 4
+                    numRows 0
+                    partition_columns ds
+                    partition_columns.types string
+                    rawDataSize 0
+                    serialization.ddl struct bucket_big { string key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 5812
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      SORTBUCKETCOLSPREFIX TRUE
+                      bucket_count 4
+                      bucket_field_name key
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.bucket_big
+                      partition_columns ds
+                      partition_columns.types string
+                      serialization.ddl struct bucket_big { string key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.bucket_big
+                  name: default.bucket_big
+            Truncated Path -> Alias:
+              /bucket_big/ds=2008-04-08 [b]
+              /bucket_big/ds=2008-04-09 [b]
         Reducer 3 
             Execution mode: llap
             Needs Tagging: false

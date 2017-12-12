@@ -134,7 +134,7 @@ POSTHOOK: query: load data local inpath '../../data/files/smallsrcsortbucket3out
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_medium@ds=2008-04-08
-Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_1, $hdt$_2, $hdt$_0, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_1, $hdt$_2, $hdt$_0, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
@@ -148,12 +148,11 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 3 <- Map 1 (BROADCAST_EDGE), Map 2 (BROADCAST_EDGE)
         Reducer 4 <- Map 3 (XPROD_EDGE), Map 6 (XPROD_EDGE)
         Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -167,22 +166,11 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                        tag: 0
-                        auto parallelism: true
-            Execution mode: llap
-            LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: ds=2008-04-08
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -231,7 +219,6 @@ STAGE PLANS:
                   name: default.bucket_small
             Truncated Path -> Alias:
               /bucket_small/ds=2008-04-08 [a]
-        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -245,22 +232,11 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                        tag: 1
-                        auto parallelism: true
-            Execution mode: llap
-            LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: ds=2008-04-08
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -309,7 +285,6 @@ STAGE PLANS:
                   name: default.bucket_medium
             Truncated Path -> Alias:
               /bucket_medium/ds=2008-04-08 [b]
-        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: c
@@ -323,18 +298,14 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 111 Data size: 19719 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
+                      Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
                              Inner Join 1 to 2
-                        Estimated key counts: Map 1 => 1, Map 2 => 1
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                           2 _col0 (type: string)
-                        input vertices:
-                          0 Map 1
-                          1 Map 2
                         Position of Big Table: 2
                         Statistics: Num rows: 244 Data size: 43381 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
@@ -344,13 +315,11 @@ STAGE PLANS:
                           tag: 0
                           auto parallelism: false
             Execution mode: llap
-            LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: ds=2008-04-08
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -399,7 +368,6 @@ STAGE PLANS:
                   name: default.bucket_big
 #### A masked pattern was here ####
                 Partition
-                  base file name: ds=2008-04-09
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
@@ -581,7 +549,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_1, $hdt$_2, $hdt$_0, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_1, $hdt$_2, $hdt$_0, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket_big

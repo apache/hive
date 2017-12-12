@@ -17,6 +17,8 @@ set hive.auto.convert.sortmerge.join=true;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 set hive.auto.convert.join=true;
+-- disable hash joins
+set hive.auto.convert.join.noconditionaltask.size=10;
 
 explain
 select count(*) FROM tbl1 a LEFT OUTER JOIN tbl2 b ON a.key = b.key;

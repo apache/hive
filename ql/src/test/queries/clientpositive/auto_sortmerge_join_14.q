@@ -17,6 +17,8 @@ set hive.auto.convert.sortmerge.join=true;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 set hive.auto.convert.join=true;
+-- disable hash joins
+set hive.auto.convert.join.noconditionaltask.size=10;
 
 -- Since tbl1 is the bigger table, tbl1 Left Outer Join tbl2 can be performed
 explain

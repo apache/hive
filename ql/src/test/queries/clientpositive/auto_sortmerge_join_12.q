@@ -23,6 +23,8 @@ set hive.auto.convert.join=true;
 set hive.auto.convert.sortmerge.join=true;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
+-- disable hash joins
+set hive.auto.convert.join.noconditionaltask.size=10;
 
 CREATE TABLE bucket_medium (key string, value string) partitioned by (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 3 BUCKETS STORED AS TEXTFILE;
