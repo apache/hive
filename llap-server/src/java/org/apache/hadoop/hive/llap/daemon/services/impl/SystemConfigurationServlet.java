@@ -117,8 +117,10 @@ public class SystemConfigurationServlet extends HttpServlet {
         }
 
         if (!Shell.MAC) {
-          // Red Hat/CentOS: /sys/kernel/mm/redhat_transparent_hugepage/defrag
-          // Ubuntu/Debian, OEL, SLES: /sys/kernel/mm/transparent_hugepage/defrag
+          // Red Hat: /sys/kernel/mm/redhat_transparent_hugepage/enabled
+          //          /sys/kernel/mm/redhat_transparent_hugepage/defrag
+          // CentOS/Ubuntu/Debian, OEL, SLES: /sys/kernel/mm/transparent_hugepage/enabled
+          //                                  /sys/kernel/mm/transparent_hugepage/defrag
           String thpFileName = "/sys/kernel/mm/transparent_hugepage/enabled";
           String thpFileStr = PrivilegedFileReader.read(thpFileName);
           if (thpFileStr == null) {
@@ -136,11 +138,11 @@ public class SystemConfigurationServlet extends HttpServlet {
             LOG.warn("Unable to read contents of {}", thpFileName);
           }
 
-          String thpDefragFileName = "/sys/kernel/mm/transparent_hugepage/enabled";
+          String thpDefragFileName = "/sys/kernel/mm/transparent_hugepage/defrag";
           String thpDefragFileStr = PrivilegedFileReader.read(thpDefragFileName);
           if (thpDefragFileStr == null) {
             LOG.warn("Unable to read contents of {}", thpDefragFileName);
-            thpDefragFileName = "/sys/kernel/mm/redhat_transparent_hugepage/enabled";
+            thpDefragFileName = "/sys/kernel/mm/redhat_transparent_hugepage/defrag";
             thpDefragFileStr = PrivilegedFileReader.read(thpDefragFileName);
           }
 
