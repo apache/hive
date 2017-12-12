@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
@@ -390,6 +391,12 @@ public final class LazyUtils {
       case BINARY: {
         BytesWritable bw = ((BinaryObjectInspector) oi).getPrimitiveWritableObject(o);
         out.write(bw.getBytes(), 0, bw.getLength());
+        break;
+      }
+
+      case DECIMAL: {
+        HiveDecimalWritable hdw = ((HiveDecimalObjectInspector) oi).getPrimitiveWritableObject(o);
+        hdw.write(dos);
         break;
       }
 
