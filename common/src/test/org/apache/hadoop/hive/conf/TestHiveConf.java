@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.conf;
 
+import com.google.common.collect.Lists;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -27,6 +28,7 @@ import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 
@@ -130,11 +132,8 @@ public class TestHiveConf {
   @Test
   public void testHiddenConfig() throws Exception {
     HiveConf conf = new HiveConf();
-    // check password configs are hidden
-    Assert.assertTrue(conf.isHiddenConfig(HiveConf.ConfVars.METASTOREPWD.varname));
-    Assert.assertTrue(conf.isHiddenConfig(
-        HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname));
-    // check change hidden list should fail
+
+    // check that a change to the hidden list should fail
     try {
       final String name = HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname;
       conf.verifyAndSet(name, "");
@@ -143,16 +142,30 @@ public class TestHiveConf {
     } catch (IllegalArgumentException e) {
       // the verifyAndSet in this case is expected to fail with the IllegalArgumentException
     }
-    // check stripHiddenConfigurations
-    Configuration conf2 = new Configuration(conf);
-    conf2.set(HiveConf.ConfVars.METASTOREPWD.varname, "password");
-    conf2.set(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname, "password");
-    conf.stripHiddenConfigurations(conf2);
-    Assert.assertTrue(conf.isHiddenConfig(HiveConf.ConfVars.METASTOREPWD.varname + "postfix"));
-    Assert.assertTrue(
-        conf.isHiddenConfig(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname + "postfix"));
-    Assert.assertEquals("", conf2.get(HiveConf.ConfVars.METASTOREPWD.varname));
-    Assert.assertEquals("", conf2.get(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname));
+
+    ArrayList<String> hiddenList = Lists.newArrayList(
+        HiveConf.ConfVars.METASTOREPWD.varname,
+        HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
+        "fs.s3.awsSecretAccessKey",
+        "fs.s3n.awsSecretAccessKey",
+        "dfs.adls.oauth2.credential",
+        "fs.adl.oauth2.credential"
+    );
+
+    for (String hiddenConfig : hiddenList) {
+      // check configs are hidden
+      Assert.assertTrue("config " + hiddenConfig + " should be hidden",
+          conf.isHiddenConfig(hiddenConfig));
+      // check stripHiddenConfigurations removes the property
+      Configuration conf2 = new Configuration(conf);
+      conf2.set(hiddenConfig, "password");
+      conf.stripHiddenConfigurations(conf2);
+      // check that a property that begins the same is also hidden
+      Assert.assertTrue(conf.isHiddenConfig(
+          hiddenConfig + "postfix"));
+      // Check the stripped property is the empty string
+      Assert.assertEquals("", conf2.get(hiddenConfig));
+    }
   }
 
   @Test
