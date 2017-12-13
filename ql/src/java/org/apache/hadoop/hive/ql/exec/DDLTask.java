@@ -31,6 +31,7 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -2136,7 +2137,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       createDb_str.append(propertiesToString).append(")\n");
     }
 
-    outStream.write(createDb_str.toString().getBytes("UTF-8"));
+    outStream.write(createDb_str.toString().getBytes(StandardCharsets.UTF_8));
     return 0;
   }
 
@@ -2186,7 +2187,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       if (tbl.isView()) {
         String createTab_stmt = "CREATE VIEW `" + tableName + "` AS " + tbl.getViewExpandedText();
-        outStream.writeBytes(createTab_stmt.toString());
+        outStream.write(createTab_stmt.getBytes(StandardCharsets.UTF_8));
         return 0;
       }
 
@@ -2352,7 +2353,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       createTab_stmt.add(TBL_PROPERTIES, tbl_properties);
 
-      outStream.writeBytes(createTab_stmt.render());
+      outStream.write(createTab_stmt.render().getBytes(StandardCharsets.UTF_8));
     } catch (IOException e) {
       LOG.info("show create table: " + stringifyException(e));
       return 1;
@@ -3189,7 +3190,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     FSDataOutputStream out = fs.create(resFile);
     try {
       if (data != null && !data.isEmpty()) {
-        OutputStreamWriter writer = new OutputStreamWriter(out, "UTF-8");
+        OutputStreamWriter writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
         writer.write(data);
         writer.write((char) terminator);
         writer.flush();

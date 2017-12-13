@@ -1,0 +1,18 @@
+PREHOOK: query: CREATE VIEW ViewWithSpecialChars AS SELECT key FROM src where key = 'abcÖdefÖgh'
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ViewWithSpecialChars
+POSTHOOK: query: CREATE VIEW ViewWithSpecialChars AS SELECT key FROM src where key = 'abcÖdefÖgh'
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ViewWithSpecialChars
+POSTHOOK: Lineage: ViewWithSpecialChars.key SIMPLE []
+PREHOOK: query: SHOW CREATE TABLE ViewWithSpecialChars
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@viewwithspecialchars
+POSTHOOK: query: SHOW CREATE TABLE ViewWithSpecialChars
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@viewwithspecialchars
+CREATE VIEW `ViewWithSpecialChars` AS SELECT `src`.`key` FROM `default`.`src` where `src`.`key` = 'abcÖdefÖgh'
