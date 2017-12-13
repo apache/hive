@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
-import org.apache.hadoop.hive.ql.plan.api.Query;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
@@ -343,6 +342,28 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     //todo: handle Insert Overwrite as well: HIVE-18154
     return false;
   }
+  private boolean needsLock(Entity entity) {
+    switch (entity.getType()) {
+    case TABLE:
+      return isLockableTable(entity.getTable());
+    case PARTITION:
+      return isLockableTable(entity.getPartition().getTable());
+    default:
+      return true;
+    }
+  }
+  private boolean isLockableTable(Table t) {
+    if(t.isTemporary()) {
+      return false;
+    }
+    switch (t.getTableType()) {
+    case MANAGED_TABLE:
+    case MATERIALIZED_VIEW:
+      return true;
+    default:
+      return false;
+    }
+  }
   /**
    * Normally client should call {@link #acquireLocks(org.apache.hadoop.hive.ql.QueryPlan, org.apache.hadoop.hive.ql.Context, String)}
    * @param isBlocking if false, the method will return immediately; thus the locks may be in LockState.WAITING
@@ -371,8 +392,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
     // For each source to read, get a shared lock
     for (ReadEntity input : plan.getInputs()) {
-      if (!input.needsLock() || input.isUpdateOrDelete() ||
-          (input.getType() == Entity.Type.TABLE && input.getTable().isTemporary())) {
+      if (!input.needsLock() || input.isUpdateOrDelete() || !needsLock(input)) {
         // We don't want to acquire read locks during update or delete as we'll be acquiring write
         // locks instead. Also, there's no need to lock temp tables since they're session wide
         continue;
@@ -421,7 +441,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     for (WriteEntity output : plan.getOutputs()) {
       LOG.debug("output is null " + (output == null));
       if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR ||
-          (output.getType() == Entity.Type.TABLE && output.getTable().isTemporary())) {
+          !needsLock(output)) {
         // We don't lock files or directories. We also skip locking temp tables.
         continue;
       }
