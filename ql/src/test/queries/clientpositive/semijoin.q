@@ -77,3 +77,10 @@ select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c
 
 explain select a.key from t3 a left semi join t2 b on a.value = b.value where a.key > 100;
 select a.key from t3 a left semi join t2 b on a.value = b.value where a.key > 100;
+
+explain select key, value from src outr left semi join
+    (select a.key, b.value from src a join (select distinct value from src) b on a.value > b.value group by a.key, b.value) inr
+    on outr.key=inr.key and outr.value=inr.value;
+select key, value from src outr left semi join
+    (select a.key, b.value from src a join (select distinct value from src) b on a.value > b.value group by a.key, b.value) inr
+    on outr.key=inr.key and outr.value=inr.value;
