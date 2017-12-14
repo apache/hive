@@ -217,7 +217,10 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
         }
       }
       // If there are async requests, satisfy them first.
-      if (!asyncRequests.isEmpty() && session.tryUse(false)) {
+      if (!asyncRequests.isEmpty()) {
+        if (!session.tryUse(false)) {
+          return true; // Session has expired and will be returned to us later.
+        }
         future = asyncRequests.poll();
       }
       if (future == null) {
@@ -238,24 +241,12 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     return true;
   }
 
-  void replaceSession(SessionType oldSession, boolean keepTmpDir,
-      String[] additionalFilesArray) throws Exception {
-    // Retain the stuff from the old session.
+  void replaceSession(SessionType oldSession) throws Exception {
     // Re-setting the queue config is an old hack that we may remove in future.
     SessionType newSession = sessionObjFactory.create(oldSession);
-    Path scratchDir = oldSession.getTezScratchDir();
     String queueName = oldSession.getQueueName();
-    Set<String> additionalFiles = null;
-    if (additionalFilesArray != null) {
-      additionalFiles = new HashSet<>();
-      for (String file : additionalFilesArray) {
-        additionalFiles.add(file);
-      }
-    } else {
-      additionalFiles = oldSession.getAdditionalFilesNotFromConf();
-    }
     try {
-      oldSession.close(keepTmpDir);
+      oldSession.close(false);
     } finally {
       poolLock.lock();
       try {
@@ -280,7 +271,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
         // probably just get rid of the thread local usage in TezSessionState.
         SessionState.setCurrentSessionState(parentSessionState);
       }
-      newSession.open(additionalFiles, scratchDir);
+      newSession.open();
       if (!putSessionBack(newSession, false)) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Closing an unneeded session " + newSession
