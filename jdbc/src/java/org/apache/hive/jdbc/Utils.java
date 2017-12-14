@@ -123,6 +123,7 @@ public class Utils {
     // Set the fetchSize
     static final String FETCH_SIZE = "fetchSize";
     static final String INIT_FILE = "initFile";
+    static final String WM_POOL = "wmPool";
 
     // --------------- Begin 2 way ssl options -------------------------
     // Use two way ssl. This param will take effect only when ssl=true

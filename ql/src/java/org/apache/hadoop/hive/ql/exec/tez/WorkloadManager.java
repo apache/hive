@@ -103,6 +103,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   private final QueryAllocationManager allocationManager;
   private final String yarnQueue;
   private final int amRegistryTimeoutMs;
+  private final boolean allowAnyPool;
   // Note: it's not clear that we need to track this - unlike PoolManager we don't have non-pool
   //       sessions, so the pool itself could internally track the sessions it gave out, since
   //       calling close on an unopened session is probably harmless.
@@ -204,11 +205,14 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // Only creates the expiration tracker if expiration is configured.
     expirationTracker = SessionExpirationTracker.create(conf, this);
 
-    workPool = Executors.newFixedThreadPool(HiveConf.getIntVar(conf, ConfVars.HIVE_SERVER2_TEZ_WM_WORKER_THREADS),
-      new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Workload management worker %d").build());
+    workPool = Executors.newFixedThreadPool(HiveConf.getIntVar(
+        conf, ConfVars.HIVE_SERVER2_WM_WORKER_THREADS), new ThreadFactoryBuilder().setDaemon(true)
+        .setNameFormat("Workload management worker %d").build());
 
-    timeoutPool = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setDaemon(true)
-      .setNameFormat("Workload management timeout thread").build());
+    timeoutPool = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+      .setDaemon(true).setNameFormat("Workload management timeout thread").build());
+
+    allowAnyPool = HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_WM_ALLOW_ANY_POOL_VIA_JDBC);
 
     wmThread = new Thread(() -> runWmThread(), "Workload management master");
     wmThread.setDaemon(true);
@@ -1047,7 +1051,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
   private void queueGetRequestOnMasterThread(
       GetRequest req, HashSet<String> poolsToRedistribute, WmThreadSyncWork syncWork) {
-    String poolName = userPoolMapping.mapSessionToPoolName(req.mappingInput);
+    String poolName = userPoolMapping.mapSessionToPoolName(
+        req.mappingInput, allowAnyPool, allowAnyPool ? pools.keySet() : null);
     if (poolName == null) {
       req.future.setException(new NoPoolMappingException(
           "Cannot find any pool mapping for " + req.mappingInput));
@@ -1319,8 +1324,14 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     }
   }
 
+  @VisibleForTesting
   public WmTezSession getSession(
-    TezSessionState session, MappingInput input, HiveConf conf, final WmContext wmContext) throws Exception {
+      TezSessionState session, MappingInput input, HiveConf conf) throws Exception {
+    return getSession(session, input, conf, null);
+  }
+
+  public WmTezSession getSession(TezSessionState session, MappingInput input, HiveConf conf,
+      final WmContext wmContext) throws Exception {
     WmEvent wmEvent = new WmEvent(WmEvent.EventType.GET);
     // Note: not actually used for pool sessions; verify some things like doAs are not set.
     validateConfig(conf);
@@ -1936,8 +1947,11 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
   boolean isManaged(MappingInput input) {
     // This is always replaced atomically, so we don't care about concurrency here.
-    if (userPoolMapping != null) {
-      String mappedPool = userPoolMapping.mapSessionToPoolName(input);
+    UserPoolMapping mapping = userPoolMapping;
+    if (mapping != null) {
+      // Don't pass in the pool set - not thread safe; if the user is trying to force us to
+      // use a non-existent pool, we want to fail anyway. We will fail later during get.
+      String mappedPool = mapping.mapSessionToPoolName(input, allowAnyPool, null);
       LOG.info("Mapping input: {} mapped to pool: {}", input, mappedPool);
       return true;
     }
