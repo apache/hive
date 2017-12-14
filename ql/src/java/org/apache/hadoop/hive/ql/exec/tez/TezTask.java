@@ -156,9 +156,13 @@ public class TezTask extends Task<TezWork> {
       // based on Hadoop configuration, as documented at
       // https://hadoop.apache.org/docs/r2.8.0/hadoop-project-dist/hadoop-common/GroupsMapping.html
       String userName = ss.getUserName();
-      MappingInput mi = (userName == null) ? new MappingInput("anonymous", null)
-        : new MappingInput(ss.getUserName(),
-            UserGroupInformation.createRemoteUser(ss.getUserName()).getGroups());
+      List<String> groups = null;
+      if (userName == null) {
+        userName = "anonymous";
+      } else {
+        groups = UserGroupInformation.createRemoteUser(ss.getUserName()).getGroups();
+      }
+      MappingInput mi = new MappingInput(userName, groups, ss.getHiveVariables().get("wmpool"));
 
       WmContext wmContext = ctx.getWmContext();
       // jobConf will hold all the configuration for hadoop, tez, and hive
