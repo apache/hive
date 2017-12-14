@@ -20,16 +20,12 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 
 import com.google.common.util.concurrent.Futures;
-
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.security.auth.login.LoginException;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -83,8 +79,7 @@ public class SampleTezSessionState extends WmTezSession {
   }
 
   @Override
-  public void open(Collection<String> additionalFiles, Path scratchDir)
-      throws LoginException, IOException {
+  public void open(HiveResources resources) throws LoginException, IOException {
     open();
   }
 

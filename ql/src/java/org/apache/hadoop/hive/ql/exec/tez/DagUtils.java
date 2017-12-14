@@ -17,14 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collection;
 
+import java.util.concurrent.ConcurrentHashMap;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-
 import javax.security.auth.login.LoginException;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -40,7 +39,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
@@ -541,16 +539,15 @@ public class DagUtils {
     }
   }
 
-  private Vertex createVertex(JobConf conf, MergeJoinWork mergeJoinWork, LocalResource appJarLr,
-      List<LocalResource> additionalLr, FileSystem fs, Path mrScratchDir, Context ctx,
-      VertexType vertexType)
-      throws Exception {
+  private Vertex createVertex(JobConf conf, MergeJoinWork mergeJoinWork, FileSystem fs,
+      Path mrScratchDir, Context ctx, VertexType vertexType,
+      Map<String, LocalResource> localResources) throws Exception {
     Utilities.setMergeWork(conf, mergeJoinWork, mrScratchDir, false);
     if (mergeJoinWork.getMainWork() instanceof MapWork) {
       List<BaseWork> mapWorkList = mergeJoinWork.getBaseWorkList();
       MapWork mapWork = (MapWork) (mergeJoinWork.getMainWork());
-      Vertex mergeVx =
-          createVertex(conf, mapWork, appJarLr, additionalLr, fs, mrScratchDir, ctx, vertexType);
+      Vertex mergeVx = createVertex(
+          conf, mapWork, fs, mrScratchDir, ctx, vertexType, localResources);
 
       conf.setClass("mapred.input.format.class", HiveInputFormat.class, InputFormat.class);
       // mapreduce.tez.input.initializer.serialize.event.payload should be set
@@ -580,10 +577,8 @@ public class DagUtils {
       mergeVx.setVertexManagerPlugin(desc);
       return mergeVx;
     } else {
-      Vertex mergeVx =
-          createVertex(conf, (ReduceWork) mergeJoinWork.getMainWork(), appJarLr, additionalLr, fs,
-              mrScratchDir, ctx);
-      return mergeVx;
+      return createVertex(conf,
+          (ReduceWork) mergeJoinWork.getMainWork(), fs, mrScratchDir, ctx, localResources);
     }
   }
 
@@ -591,11 +586,8 @@ public class DagUtils {
    * Helper function to create Vertex from MapWork.
    */
   private Vertex createVertex(JobConf conf, MapWork mapWork,
-      LocalResource appJarLr, List<LocalResource> additionalLr, FileSystem fs,
-      Path mrScratchDir, Context ctx, VertexType vertexType)
-      throws Exception {
-
-    Path tezDir = getTezDir(mrScratchDir);
+      FileSystem fs, Path mrScratchDir, Context ctx, VertexType vertexType,
+      Map<String, LocalResource> localResources) throws Exception {
 
     // set up the operator plan
     Utilities.cacheMapWork(conf, mapWork, mrScratchDir);
@@ -726,13 +718,6 @@ public class DagUtils {
     // Add the actual source input
     String alias = mapWork.getAliasToWork().keySet().iterator().next();
     map.addDataSource(alias, dataSource);
-
-    Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
-    localResources.put(getBaseName(appJarLr), appJarLr);
-    for (LocalResource lr: additionalLr) {
-      localResources.put(getBaseName(lr), lr);
-    }
-
     map.addTaskLocalFiles(localResources);
     return map;
   }
@@ -772,9 +757,9 @@ public class DagUtils {
   /*
    * Helper function to create Vertex for given ReduceWork.
    */
-  private Vertex createVertex(JobConf conf, ReduceWork reduceWork,
-      LocalResource appJarLr, List<LocalResource> additionalLr, FileSystem fs,
-      Path mrScratchDir, Context ctx) throws Exception {
+  private Vertex createVertex(JobConf conf, ReduceWork reduceWork, FileSystem fs,
+      Path mrScratchDir, Context ctx, Map<String, LocalResource> localResources)
+          throws Exception {
 
     // set up operator plan
     conf.set(Utilities.INPUT_NAME, reduceWork.getName());
@@ -796,15 +781,26 @@ public class DagUtils {
     reducer.setTaskEnvironment(getContainerEnvironment(conf, false));
     reducer.setExecutionContext(vertexExecutionContext);
     reducer.setTaskLaunchCmdOpts(getContainerJavaOpts(conf));
-
-    Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
-    localResources.put(getBaseName(appJarLr), appJarLr);
-    for (LocalResource lr: additionalLr) {
-      localResources.put(getBaseName(lr), lr);
-    }
     reducer.addTaskLocalFiles(localResources);
-
     return reducer;
+  }
+
+  public static Map<String, LocalResource> createTezLrMap(
+      LocalResource appJarLr, Collection<LocalResource> additionalLr) {
+    // Note: interestingly this would exclude LLAP app jars that the session adds for LLAP case.
+    //       Of course it doesn't matter because vertices run ON LLAP and have those jars, and
+    //       moreover we anyway don't localize jars for the vertices on LLAP; but in theory
+    //       this is still crappy code that assumes there's one and only app jar.
+    Map<String, LocalResource> localResources = new HashMap<>();
+    if (appJarLr != null) {
+      localResources.put(getBaseName(appJarLr), appJarLr);
+    }
+    if (additionalLr != null) {
+      for (LocalResource lr: additionalLr) {
+        localResources.put(getBaseName(lr), lr);
+      }
+    }
+    return localResources;
   }
 
   /*
@@ -1064,7 +1060,7 @@ public class DagUtils {
   /*
    * Helper function to retrieve the basename of a local resource
    */
-  public String getBaseName(LocalResource lr) {
+  public static String getBaseName(LocalResource lr) {
     return FilenameUtils.getName(lr.getResource().getFile());
   }
 
@@ -1254,30 +1250,26 @@ public class DagUtils {
    * @param work The instance of BaseWork representing the actual work to be performed
    * by this vertex.
    * @param scratchDir HDFS scratch dir for this execution unit.
-   * @param appJarLr Local resource for hive-exec.
-   * @param additionalLr
    * @param fileSystem FS corresponding to scratchDir and LocalResources
    * @param ctx This query's context
    * @return Vertex
    */
   @SuppressWarnings("deprecation")
   public Vertex createVertex(JobConf conf, BaseWork work,
-      Path scratchDir, LocalResource appJarLr,
-      List<LocalResource> additionalLr, FileSystem fileSystem, Context ctx, boolean hasChildren,
-      TezWork tezWork, VertexType vertexType) throws Exception {
+      Path scratchDir, FileSystem fileSystem, Context ctx, boolean hasChildren,
+      TezWork tezWork, VertexType vertexType, Map<String, LocalResource> localResources) throws Exception {
 
     Vertex v = null;
     // simply dispatch the call to the right method for the actual (sub-) type of
     // BaseWork.
     if (work instanceof MapWork) {
-      v = createVertex(conf, (MapWork) work, appJarLr, additionalLr, fileSystem, scratchDir, ctx,
-              vertexType);
+      v = createVertex(
+          conf, (MapWork) work, fileSystem, scratchDir, ctx, vertexType, localResources);
     } else if (work instanceof ReduceWork) {
-      v = createVertex(conf, (ReduceWork) work, appJarLr,
-          additionalLr, fileSystem, scratchDir, ctx);
+      v = createVertex(conf, (ReduceWork) work, fileSystem, scratchDir, ctx, localResources);
     } else if (work instanceof MergeJoinWork) {
-      v = createVertex(conf, (MergeJoinWork) work, appJarLr, additionalLr, fileSystem, scratchDir,
-              ctx, vertexType);
+      v = createVertex(
+          conf, (MergeJoinWork) work, fileSystem, scratchDir, ctx, vertexType, localResources);
       // set VertexManagerPlugin if whether it's a cross product destination vertex
       List<String> crossProductSources = new ArrayList<>();
       for (BaseWork parentWork : tezWork.getParents(work)) {
@@ -1521,5 +1513,19 @@ public class DagUtils {
 
     // -Xmx not specified
     return -1;
+  }
+
+  // The utility of this method is not certain.
+  public static Map<String, LocalResource> getResourcesUpdatableForAm(
+      Collection<LocalResource> allNonAppResources) {
+    HashMap<String, LocalResource> allNonAppFileResources = new HashMap<>();
+    if (allNonAppResources == null) return allNonAppFileResources;
+    for (LocalResource lr : allNonAppResources) {
+      if (lr.getType() == LocalResourceType.FILE) {
+        // TEZ AM will only localize FILE (no script operators in the AM)
+        allNonAppFileResources.put(DagUtils.getBaseName(lr), lr);
+      }
+    }
+    return allNonAppFileResources;
   }
 }

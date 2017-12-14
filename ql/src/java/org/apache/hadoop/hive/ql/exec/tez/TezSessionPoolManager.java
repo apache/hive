@@ -18,16 +18,14 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionState.HiveResources;
+
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
@@ -43,7 +41,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.google.common.annotations.VisibleForTesting;
 
 /**
@@ -444,44 +441,35 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
 
   /** Reopens the session that was found to not be running. */
   @Override
-  public TezSessionState reopen(TezSessionState sessionState,
-      Configuration conf, String[] additionalFiles) throws Exception {
+  public TezSessionState reopen(TezSessionState sessionState) throws Exception {
     HiveConf sessionConf = sessionState.getConf();
     if (sessionState.getQueueName() != null
         && sessionConf.get(TezConfiguration.TEZ_QUEUE_NAME) == null) {
       sessionConf.set(TezConfiguration.TEZ_QUEUE_NAME, sessionState.getQueueName());
     }
-    reopenInternal(sessionState, additionalFiles);
+    reopenInternal(sessionState);
     return sessionState;
   }
 
   static void reopenInternal(
-      TezSessionState sessionState, String[] additionalFiles) throws Exception {
-    Set<String> oldAdditionalFiles = sessionState.getAdditionalFilesNotFromConf();
-    // TODO: implies the session files and the array are the same if not null; why? very brittle
-    if ((oldAdditionalFiles == null || oldAdditionalFiles.isEmpty())
-        && (additionalFiles != null)) {
-      oldAdditionalFiles = new HashSet<>();
-      for (String file : additionalFiles) {
-        oldAdditionalFiles.add(file);
-      }
-    }
+      TezSessionState sessionState) throws Exception {
+    HiveResources resources = sessionState.extractHiveResources();
     // TODO: close basically resets the object to a bunch of nulls.
     //       We should ideally not reuse the object because it's pointless and error-prone.
-    sessionState.close(true);
+    sessionState.close(false);
     // Note: scratchdir is reused implicitly because the sessionId is the same.
-    sessionState.open(oldAdditionalFiles, null);
+    sessionState.open(resources);
   }
 
 
-  public void closeNonDefaultSessions(boolean keepTmpDir) throws Exception {
+  public void closeNonDefaultSessions() throws Exception {
     List<TezSessionState> sessionsToClose = null;
     synchronized (openSessions) {
       sessionsToClose = new ArrayList<TezSessionState>(openSessions);
     }
     for (TezSessionState sessionState : sessionsToClose) {
       System.err.println("Shutting down tez session.");
-      closeIfNotDefault(sessionState, keepTmpDir);
+      closeIfNotDefault(sessionState, false);
     }
   }
 
@@ -492,9 +480,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     if (queueName == null) {
       LOG.warn("Pool session has a null queue: " + oldSession);
     }
-    TezSessionPoolSession newSession = createAndInitSession(
-      queueName, oldSession.isDefault(), oldSession.getConf());
-    defaultSessionPool.replaceSession(oldSession, false, null);
+    defaultSessionPool.replaceSession(oldSession);
   }
 
   /** Called by TezSessionPoolSession when opened. */

@@ -92,7 +92,7 @@ public class TezJobMonitor {
         try {
           // TODO: why does this only kill non-default sessions?
           // Nothing for workload management since that only deals with default ones.
-          TezSessionPoolManager.getInstance().closeNonDefaultSessions(false);
+          TezSessionPoolManager.getInstance().closeNonDefaultSessions();
         } catch (Exception e) {
           // ignore
         }

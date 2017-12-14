@@ -42,7 +42,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
@@ -212,9 +211,8 @@ public class TestWorkloadManager {
     }
 
     @Override
-    public TezSessionState reopen(
-        TezSessionState session, Configuration conf, String[] additionalFiles) throws Exception {
-      session = super.reopen(session, conf, additionalFiles);
+    public TezSessionState reopen(TezSessionState session) throws Exception {
+      session = super.reopen(session);
       ensureWm();
       return session;
     }
@@ -274,7 +272,7 @@ public class TestWorkloadManager {
         null, new MappingInput("user", null), conf, null);
     assertEquals(1.0, session.getClusterFraction(), EPSILON);
     qam.assertWasCalledAndReset();
-    WmTezSession session2 = (WmTezSession) session.reopen(conf, null);
+    WmTezSession session2 = (WmTezSession) session.reopen();
     assertNotSame(session, session2);
     wm.addTestEvent().get();
     assertEquals(session2.toString(), 1.0, session2.getClusterFraction(), EPSILON);
@@ -682,7 +680,7 @@ public class TestWorkloadManager {
     waitForThreadToBlock(cdl1, t1);
     checkError(error);
     // Replacing it directly in the pool should unblock get.
-    pool.replaceSession(oob, false, null);
+    pool.replaceSession(oob);
     t1.join();
     assertNotNull(sessionA1.get());
     assertEquals("A", sessionA1.get().getPoolName());
