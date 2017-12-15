@@ -87,7 +87,8 @@ import org.slf4j.LoggerFactory;
 
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS,
                           serdeConstants.LIST_COLUMN_TYPES,
-                          serdeConstants.TIMESTAMP_FORMATS})
+                          serdeConstants.TIMESTAMP_FORMATS,
+                          serdeConstants.IGNORE_INVALID_VALUES})
 
 public class JsonSerDe extends AbstractSerDe {
 
@@ -99,6 +100,8 @@ public class JsonSerDe extends AbstractSerDe {
 
   private HCatRecordObjectInspector cachedObjectInspector;
   private TimestampParser tsParser;
+  
+  private boolean ignoreInvalidValues;
 
   @Override
   public void initialize(Configuration conf, Properties tbl)
@@ -146,6 +149,8 @@ public class JsonSerDe extends AbstractSerDe {
     jsonFactory = new JsonFactory();
     tsParser = new TimestampParser(
         HiveStringUtils.splitAndUnEscape(tbl.getProperty(serdeConstants.TIMESTAMP_FORMATS)));
+    
+    ignoreInvalidValues = Boolean.parseBoolean(tbl.getProperty(serdeConstants.IGNORE_INVALID_VALUES,"false"));
   }
 
   /**
@@ -270,6 +275,8 @@ public class JsonSerDe extends AbstractSerDe {
     } else {
       valueToken = p.nextToken();
     }
+
+    try{
     switch (hcatFieldSchema.getType()) {
     case INT:
       val = (valueToken == JsonToken.VALUE_NULL) ? null : p.getIntValue();
@@ -370,6 +377,15 @@ public class JsonSerDe extends AbstractSerDe {
     default:
       LOG.error("Unknown type found: " + hcatFieldSchema.getType());
       return null;
+    }
+    } catch (JsonParseException e) {
+      if (ignoreInvalidValues) {
+    	LOG.warn("Could not parse value '{}' ({}) into type {}. Replacing with NULL. ({}).",
+    			 p.getText(), valueToken, hcatFieldSchema.getType(), e.getMessage());
+        return null;
+      } else {
+    	  throw e;
+      }
     }
     return val;
   }

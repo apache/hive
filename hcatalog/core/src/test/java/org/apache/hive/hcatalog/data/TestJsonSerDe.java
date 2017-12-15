@@ -307,6 +307,29 @@ public class TestJsonSerDe extends TestCase {
     assertTrue(HCatDataCheckUtil.recordsEqual((HCatRecord)rjsd.deserialize(text2), expected2));
 
   }
+  
+  public void testInvalidValues() throws Exception {
+    Configuration conf = new Configuration();
+    Properties props = new Properties();
+
+    props.put(serdeConstants.LIST_COLUMNS, "ii,vi,si");
+    props.put(serdeConstants.LIST_COLUMN_TYPES, "int,int,int");
+    props.put(serdeConstants.IGNORE_INVALID_VALUES, "true");
+    JsonSerDe rjsd = new JsonSerDe();
+    SerDeUtils.initializeSerDe(rjsd, conf, props, null);
+
+    Text jsonText = new Text("{\"ii\" : 9999999999999, \"vi\": 100, \"si\": \"10000\"}");
+    List<Object> expected = new ArrayList<Object>();
+    expected.add(null);
+    expected.add(100);
+    expected.add(null);
+    HCatRecord expectedRecord = new DefaultHCatRecord(expected);
+
+    HCatRecord r = (HCatRecord) rjsd.deserialize(jsonText);
+    System.err.println("record : " + r.toString());
+
+    assertTrue(HCatDataCheckUtil.recordsEqual(r, expectedRecord));
+  }
 
   private static HashMap<String, Integer> createHashMapStringInteger(Object...vals) {
     assertTrue(vals.length % 2 == 0);
