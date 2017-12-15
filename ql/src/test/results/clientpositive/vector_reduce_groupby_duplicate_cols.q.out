@@ -1,0 +1,180 @@
+PREHOOK: query: create table demo (one int, two int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@demo
+POSTHOOK: query: create table demo (one int, two int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@demo
+PREHOOK: query: insert into table demo values (1, 2)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@demo
+POSTHOOK: query: insert into table demo values (1, 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@demo
+POSTHOOK: Lineage: demo.one EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: demo.two EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+_col0	_col1
+PREHOOK: query: explain vectorization detail
+select one as one_0, two, one as one_1
+from demo a
+join (select 1 as one, 2 as two) b
+on a.one = b.one and a.two = b.two
+group by a.one, a.two, a.one
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select one as one_0, two, one as one_1
+from demo a
+join (select 1 as one, 2 as two) b
+on a.one = b.one and a.two = b.two
+group by a.one, a.two, a.one
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        b:_dummy_table 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        b:_dummy_table 
+          TableScan
+            alias: _dummy_table
+            Row Limit Per Split: 1
+            Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              HashTable Sink Operator
+                keys:
+                  0 one (type: int), two (type: int)
+                  1 1 (type: int), 2 (type: int)
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:one:int, 1:two:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+            Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:int))
+              predicate: (one is not null and two is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 one (type: int), two (type: int)
+                  1 1 (type: int), 2 (type: int)
+                Map Join Vectorization:
+                    bigTableKeyExpressions: col 0:int, col 1:int
+                    bigTableValueExpressions: col 0:int, col 1:int
+                    className: VectorMapJoinOperator
+                    native: false
+                    nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                    nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  Group By Vectorization:
+                      className: VectorGroupByOperator
+                      groupByMode: HASH
+                      keyExpressions: col 0:int, col 1:int
+                      native: false
+                      vectorProcessingMode: HASH
+                      projectedOutputColumnNums: []
+                  keys: _col0 (type: int), _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int), _col1 (type: int)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkOperator
+                        native: false
+                        nativeConditionsMet: No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsNotMet: hive.vectorized.execution.reducesink.new.enabled IS false, hive.execution.engine mr IN [tez, spark] IS false
+                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 2
+              includeColumns: [0, 1]
+              dataColumns: one:int, two:int
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Local Work:
+        Map Reduce Local Work
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col2 (type: int), _col1 (type: int), _col2 (type: int)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select one as one_0, two, one as one_1
+from demo a
+join (select 1 as one, 2 as two) b
+on a.one = b.one and a.two = b.two
+group by a.one, a.two, a.one
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@demo
+#### A masked pattern was here ####
+POSTHOOK: query: select one as one_0, two, one as one_1
+from demo a
+join (select 1 as one, 2 as two) b
+on a.one = b.one and a.two = b.two
+group by a.one, a.two, a.one
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@demo
+#### A masked pattern was here ####
+one_0	two	one_1
+1	2	1
