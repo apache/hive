@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import java.util.Set;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,13 +57,25 @@ class UserPoolMapping {
 
   /** Contains all the information necessary to map a query to a pool. */
   public static final class MappingInput {
-    private final String userName;
+    private final String userName, wmPool;
     private final List<String> groups;
     // TODO: we may add app name, etc. later
 
-    public MappingInput(String userName, List<String> groups) {
+    public MappingInput(String userName, List<String> groups, String wmPool) {
       this.userName = userName;
       this.groups = groups;
+      this.wmPool = wmPool;
+    }
+
+    // TODO: move these into tests when there are fewer conflicting patches pending.
+    @VisibleForTesting
+    public MappingInput(String userName) {
+      this(userName, null);
+    }
+
+    @VisibleForTesting
+    public MappingInput(String userName, List<String> groups) {
+      this(userName, groups, null);
     }
 
     public List<String> getGroups() {
@@ -73,7 +88,7 @@ class UserPoolMapping {
 
     @Override
     public String toString() {
-      return getUserName() + "; groups " + groups;
+      return "{" + getUserName() + "; pool " + wmPool + "; groups " + groups + "}";
     }
   }
 
@@ -107,17 +122,32 @@ class UserPoolMapping {
     }
   }
 
-  public String mapSessionToPoolName(MappingInput input) {
+  public String mapSessionToPoolName(MappingInput input, boolean allowAnyPool, Set<String> pools) {
+    if (allowAnyPool && input.wmPool != null) {
+      return (pools == null || pools.contains(input.wmPool)) ? input.wmPool : null;
+    }
     // For equal-priority rules, user rules come first because they are more specific (arbitrary).
     Mapping mapping = userMappings.get(input.getUserName());
+    boolean isExplicitMatch = false;
+    if (mapping != null) {
+      isExplicitMatch = isExplicitPoolMatch(input, mapping);
+      if (isExplicitMatch) return mapping.fullPoolName;
+    }
     for (String group : input.getGroups()) {
       Mapping candidate = groupMappings.get(group);
       if (candidate == null) continue;
+      isExplicitMatch = isExplicitPoolMatch(input, candidate);
+      if (isExplicitMatch) return candidate.fullPoolName;
       if (mapping == null || candidate.priority < mapping.priority) {
         mapping = candidate;
       }
     }
+    if (input.wmPool != null && !isExplicitMatch) return null;
     if (mapping != null) return mapping.fullPoolName;
     return defaultPoolPath;
+  }
+
+  private static boolean isExplicitPoolMatch(MappingInput input, Mapping mapping) {
+    return input.wmPool != null && input.wmPool.equals(mapping.fullPoolName);
   }
 }

@@ -100,6 +100,9 @@ import java.util.TreeSet;
  *  because CALCITE-1493 hasn't been fixed yet
  *  This should be deleted and replaced with RelBuilder in SubqueryRemoveRule
  *  once CALCITE-1493 is fixed.
+ *  EDIT: Although CALCITE-1493 has been fixed and released but HIVE now has special handling
+ *    in join (it gets a flag to see if semi join is to be created or not). So we still can not
+ *    replace this with Calcite's RelBuilder
  *
  * <p>{@code RelBuilder} does not make possible anything that you could not
  * also accomplish by calling the factory methods of the particular relational
@@ -116,14 +119,14 @@ import java.util.TreeSet;
  */
 public class HiveSubQRemoveRelBuilder {
   private static final Function<RexNode, String> FN_TYPE =
-          new Function<RexNode, String>() {
-            public String apply(RexNode input) {
-              return input + ": " + input.getType();
-            }
-          };
+      new Function<RexNode, String>() {
+        public String apply(RexNode input) {
+          return input + ": " + input.getType();
+        }
+      };
 
-  protected final RelOptCluster cluster;
-  protected final RelOptSchema relOptSchema;
+  private final RelOptCluster cluster;
+  private final RelOptSchema relOptSchema;
   private final RelFactories.FilterFactory filterFactory;
   private final RelFactories.ProjectFactory projectFactory;
   private final RelFactories.AggregateFactory aggregateFactory;
@@ -137,57 +140,57 @@ public class HiveSubQRemoveRelBuilder {
   private final Deque<Frame> stack = new ArrayDeque<>();
 
   public HiveSubQRemoveRelBuilder(Context context, RelOptCluster cluster,
-                       RelOptSchema relOptSchema) {
+                                  RelOptSchema relOptSchema) {
     this.cluster = cluster;
     this.relOptSchema = relOptSchema;
     if (context == null) {
       context = Contexts.EMPTY_CONTEXT;
     }
     this.aggregateFactory =
-            Util.first(context.unwrap(RelFactories.AggregateFactory.class),
-                    HiveRelFactories.HIVE_AGGREGATE_FACTORY);
+        Util.first(context.unwrap(RelFactories.AggregateFactory.class),
+            HiveRelFactories.HIVE_AGGREGATE_FACTORY);
     this.filterFactory =
-            Util.first(context.unwrap(RelFactories.FilterFactory.class),
-                    HiveRelFactories.HIVE_FILTER_FACTORY);
+        Util.first(context.unwrap(RelFactories.FilterFactory.class),
+            HiveRelFactories.HIVE_FILTER_FACTORY);
     this.projectFactory =
-            Util.first(context.unwrap(RelFactories.ProjectFactory.class),
-                    HiveRelFactories.HIVE_PROJECT_FACTORY);
+        Util.first(context.unwrap(RelFactories.ProjectFactory.class),
+            HiveRelFactories.HIVE_PROJECT_FACTORY);
     this.sortFactory =
-            Util.first(context.unwrap(RelFactories.SortFactory.class),
-                    HiveRelFactories.HIVE_SORT_FACTORY);
+        Util.first(context.unwrap(RelFactories.SortFactory.class),
+            HiveRelFactories.HIVE_SORT_FACTORY);
     this.setOpFactory =
-            Util.first(context.unwrap(RelFactories.SetOpFactory.class),
-                    HiveRelFactories.HIVE_SET_OP_FACTORY);
+        Util.first(context.unwrap(RelFactories.SetOpFactory.class),
+            HiveRelFactories.HIVE_SET_OP_FACTORY);
     this.joinFactory =
-            Util.first(context.unwrap(RelFactories.JoinFactory.class),
-                    HiveRelFactories.HIVE_JOIN_FACTORY);
+        Util.first(context.unwrap(RelFactories.JoinFactory.class),
+            HiveRelFactories.HIVE_JOIN_FACTORY);
     this.semiJoinFactory =
-            Util.first(context.unwrap(RelFactories.SemiJoinFactory.class),
-                    HiveRelFactories.HIVE_SEMI_JOIN_FACTORY);
+        Util.first(context.unwrap(RelFactories.SemiJoinFactory.class),
+            HiveRelFactories.HIVE_SEMI_JOIN_FACTORY);
     this.correlateFactory =
-            Util.first(context.unwrap(RelFactories.CorrelateFactory.class),
-                    RelFactories.DEFAULT_CORRELATE_FACTORY);
+        Util.first(context.unwrap(RelFactories.CorrelateFactory.class),
+            RelFactories.DEFAULT_CORRELATE_FACTORY);
     this.valuesFactory =
-            Util.first(context.unwrap(RelFactories.ValuesFactory.class),
-                    RelFactories.DEFAULT_VALUES_FACTORY);
+        Util.first(context.unwrap(RelFactories.ValuesFactory.class),
+            RelFactories.DEFAULT_VALUES_FACTORY);
     this.scanFactory =
-            Util.first(context.unwrap(RelFactories.TableScanFactory.class),
-                    RelFactories.DEFAULT_TABLE_SCAN_FACTORY);
+        Util.first(context.unwrap(RelFactories.TableScanFactory.class),
+            RelFactories.DEFAULT_TABLE_SCAN_FACTORY);
   }
 
-    /** Creates a RelBuilder. */
+  /** Creates a RelBuilder. */
   public static HiveSubQRemoveRelBuilder create(FrameworkConfig config) {
     final RelOptCluster[] clusters = {null};
     final RelOptSchema[] relOptSchemas = {null};
     Frameworks.withPrepare(
-            new Frameworks.PrepareAction<Void>(config) {
-              public Void apply(RelOptCluster cluster, RelOptSchema relOptSchema,
-                                SchemaPlus rootSchema, CalciteServerStatement statement) {
-                clusters[0] = cluster;
-                relOptSchemas[0] = relOptSchema;
-                return null;
-              }
-            });
+        new Frameworks.PrepareAction<Void>(config) {
+          public Void apply(RelOptCluster cluster, RelOptSchema relOptSchema,
+                            SchemaPlus rootSchema, CalciteServerStatement statement) {
+            clusters[0] = cluster;
+            relOptSchemas[0] = relOptSchema;
+            return null;
+          }
+        });
     return new HiveSubQRemoveRelBuilder(config.getContext(), clusters[0], relOptSchemas[0]);
   }
 
@@ -286,15 +289,15 @@ public class HiveSubQRemoveRelBuilder {
       return rexBuilder.makeExactLiteral((BigDecimal) value);
     } else if (value instanceof Float || value instanceof Double) {
       return rexBuilder.makeApproxLiteral(
-              BigDecimal.valueOf(((Number) value).doubleValue()));
+          BigDecimal.valueOf(((Number) value).doubleValue()));
     } else if (value instanceof Number) {
       return rexBuilder.makeExactLiteral(
-              BigDecimal.valueOf(((Number) value).longValue()));
+          BigDecimal.valueOf(((Number) value).longValue()));
     } else if (value instanceof String) {
       return rexBuilder.makeLiteral((String) value);
     } else {
       throw new IllegalArgumentException("cannot convert " + value
-              + " (" + value.getClass() + ") to a constant");
+          + " (" + value.getClass() + ") to a constant");
     }
   }
 
@@ -323,7 +326,7 @@ public class HiveSubQRemoveRelBuilder {
       return field(inputCount, inputOrdinal, i);
     } else {
       throw new IllegalArgumentException("field [" + fieldName
-              + "] not found; input fields are: " + fieldNames);
+          + "] not found; input fields are: " + fieldNames);
     }
   }
 
@@ -359,12 +362,12 @@ public class HiveSubQRemoveRelBuilder {
     final RelDataType rowType = input.getRowType();
     if (fieldOrdinal < 0 || fieldOrdinal > rowType.getFieldCount()) {
       throw new IllegalArgumentException("field ordinal [" + fieldOrdinal
-              + "] out of range; input fields are: " + rowType.getFieldNames());
+          + "] out of range; input fields are: " + rowType.getFieldNames());
     }
     final RelDataTypeField field = rowType.getFieldList().get(fieldOrdinal);
     final int offset = inputOffset(inputCount, inputOrdinal);
     final RexInputRef ref = cluster.getRexBuilder()
-            .makeInputRef(field.getType(), offset + fieldOrdinal);
+        .makeInputRef(field.getType(), offset + fieldOrdinal);
     final RelDataTypeField aliasField = frame.fields().get(fieldOrdinal);
     if (!alias || field.getName().equals(aliasField.getName())) {
       return ref;
@@ -388,15 +391,15 @@ public class HiveSubQRemoveRelBuilder {
           return field(offset + i);
         } else {
           throw new IllegalArgumentException("no field '" + fieldName
-                  + "' in relation '" + alias
-                  + "'; fields are: " + pair.right.getFieldNames());
+              + "' in relation '" + alias
+              + "'; fields are: " + pair.right.getFieldNames());
         }
       }
       aliases.add(pair.left);
       offset += pair.right.getFieldCount();
     }
     throw new IllegalArgumentException("no relation wtih alias '" + alias
-            + "'; aliases are: " + aliases);
+        + "'; aliases are: " + aliases);
   }
 
   /** Returns references to the fields of the top input. */
@@ -421,16 +424,16 @@ public class HiveSubQRemoveRelBuilder {
     for (RelFieldCollation fieldCollation : collation.getFieldCollations()) {
       RexNode node = field(fieldCollation.getFieldIndex());
       switch (fieldCollation.direction) {
-        case DESCENDING:
-          node = desc(node);
+      case DESCENDING:
+        node = desc(node);
       }
       switch (fieldCollation.nullDirection) {
-        case FIRST:
-          node = nullsFirst(node);
-          break;
-        case LAST:
-          node = nullsLast(node);
-          break;
+      case FIRST:
+        node = nullsFirst(node);
+        break;
+      case LAST:
+        node = nullsLast(node);
+        break;
       }
       nodes.add(node);
     }
@@ -480,7 +483,7 @@ public class HiveSubQRemoveRelBuilder {
     final RelDataType type = builder.deriveReturnType(operator, operandList);
     if (type == null) {
       throw new IllegalArgumentException("cannot derive type: " + operator
-              + "; operands: " + Lists.transform(operandList, FN_TYPE));
+          + "; operands: " + Lists.transform(operandList, FN_TYPE));
     }
     return builder.makeCall(type, operator, operandList);
   }
@@ -489,7 +492,7 @@ public class HiveSubQRemoveRelBuilder {
   public RexNode call(SqlOperator operator,
                       Iterable<? extends RexNode> operands) {
     return cluster.getRexBuilder().makeCall(operator,
-            ImmutableList.copyOf(operands));
+        ImmutableList.copyOf(operands));
   }
 
   /** Creates an AND. */
@@ -546,7 +549,7 @@ public class HiveSubQRemoveRelBuilder {
    * and precision or length. */
   public RexNode cast(RexNode expr, SqlTypeName typeName, int precision) {
     final RelDataType type =
-            cluster.getTypeFactory().createSqlType(typeName, precision);
+        cluster.getTypeFactory().createSqlType(typeName, precision);
     return cluster.getRexBuilder().makeCast(type, expr);
   }
 
@@ -555,7 +558,7 @@ public class HiveSubQRemoveRelBuilder {
   public RexNode cast(RexNode expr, SqlTypeName typeName, int precision,
                       int scale) {
     final RelDataType type =
-            cluster.getTypeFactory().createSqlType(typeName, precision, scale);
+        cluster.getTypeFactory().createSqlType(typeName, precision, scale);
     return cluster.getRexBuilder().makeCast(type, expr);
   }
 
@@ -604,7 +607,7 @@ public class HiveSubQRemoveRelBuilder {
   public GroupKey groupKey(Iterable<? extends RexNode> nodes, boolean indicator,
                            Iterable<? extends Iterable<? extends RexNode>> nodeLists) {
     final ImmutableList.Builder<ImmutableList<RexNode>> builder =
-            ImmutableList.builder();
+        ImmutableList.builder();
     for (Iterable<? extends RexNode> nodeList : nodeLists) {
       builder.add(ImmutableList.copyOf(nodeList));
     }
@@ -636,14 +639,14 @@ public class HiveSubQRemoveRelBuilder {
       groupSets = ImmutableList.of(groupSet);
     }
     final ImmutableList<RexNode> nodes =
-            fields(ImmutableIntList.of(groupSet.toArray()));
+        fields(ImmutableIntList.of(groupSet.toArray()));
     final List<ImmutableList<RexNode>> nodeLists =
-            Lists.transform(groupSets,
-                    new Function<ImmutableBitSet, ImmutableList<RexNode>>() {
-                      public ImmutableList<RexNode> apply(ImmutableBitSet input) {
-                        return fields(ImmutableIntList.of(input.toArray()));
-                      }
-                    });
+        Lists.transform(groupSets,
+            new Function<ImmutableBitSet, ImmutableList<RexNode>>() {
+              public ImmutableList<RexNode> apply(ImmutableBitSet input) {
+                return fields(ImmutableIntList.of(input.toArray()));
+              }
+            });
     return groupKey(nodes, indicator, nodeLists);
   }
 
@@ -651,7 +654,7 @@ public class HiveSubQRemoveRelBuilder {
   public AggCall aggregateCall(SqlAggFunction aggFunction, boolean distinct,
                                RexNode filter, String alias, RexNode... operands) {
     return aggregateCall(aggFunction, distinct, filter, alias,
-            ImmutableList.copyOf(operands));
+        ImmutableList.copyOf(operands));
   }
 
   /** Creates a call to an aggregate function. */
@@ -666,13 +669,13 @@ public class HiveSubQRemoveRelBuilder {
       }
     }
     return new AggCallImpl(aggFunction, distinct, filter, alias,
-            ImmutableList.copyOf(operands));
+        ImmutableList.copyOf(operands));
   }
 
   /** Creates a call to the COUNT aggregate function. */
   public AggCall count(boolean distinct, String alias, RexNode... operands) {
     return aggregateCall(SqlStdOperatorTable.COUNT, distinct, null, alias,
-            operands);
+        operands);
   }
 
   /** Creates a call to the COUNT(*) aggregate function. */
@@ -683,13 +686,13 @@ public class HiveSubQRemoveRelBuilder {
   /** Creates a call to the SUM aggregate function. */
   public AggCall sum(boolean distinct, String alias, RexNode operand) {
     return aggregateCall(SqlStdOperatorTable.SUM, distinct, null, alias,
-            operand);
+        operand);
   }
 
   /** Creates a call to the AVG aggregate function. */
   public AggCall avg(boolean distinct, String alias, RexNode operand) {
     return aggregateCall(
-            SqlStdOperatorTable.AVG, distinct, null, alias, operand);
+        SqlStdOperatorTable.AVG, distinct, null, alias, operand);
   }
 
   /** Creates a call to the MIN aggregate function. */
@@ -789,7 +792,7 @@ public class HiveSubQRemoveRelBuilder {
    * @param fieldNames field names for expressions
    */
   public HiveSubQRemoveRelBuilder project(Iterable<? extends RexNode> nodes,
-                            Iterable<String> fieldNames) {
+                                          Iterable<String> fieldNames) {
     return project(nodes, fieldNames, false);
   }
 
@@ -817,9 +820,9 @@ public class HiveSubQRemoveRelBuilder {
    * @param force create project even if it is identity
    */
   public HiveSubQRemoveRelBuilder project(
-          Iterable<? extends RexNode> nodes,
-          Iterable<String> fieldNames,
-          boolean force) {
+      Iterable<? extends RexNode> nodes,
+      Iterable<String> fieldNames,
+      boolean force) {
     final List<String> names = new ArrayList<>();
     final List<RexNode> exprList = Lists.newArrayList(nodes);
     final Iterator<String> nameIterator = fieldNames.iterator();
@@ -837,17 +840,17 @@ public class HiveSubQRemoveRelBuilder {
         // create "virtual" row type for project only rename fields
         final Frame frame = stack.pop();
         final RelDataType rowType =
-                RexUtil.createStructType(cluster.getTypeFactory(), exprList,
-                        names, SqlValidatorUtil.F_SUGGESTER);
+            RexUtil.createStructType(cluster.getTypeFactory(), exprList,
+                names, SqlValidatorUtil.F_SUGGESTER);
         stack.push(
-                new Frame(frame.rel,
-                        ImmutableList.of(Pair.of(frame.right.get(0).left, rowType))));
+            new Frame(frame.rel,
+                ImmutableList.of(Pair.of(frame.right.get(0).left, rowType))));
         return this;
       }
     }
     final RelNode project =
-            projectFactory.createProject(build(), ImmutableList.copyOf(exprList),
-                    names);
+        projectFactory.createProject(build(), ImmutableList.copyOf(exprList),
+            names);
     push(project);
     return this;
   }
@@ -865,24 +868,24 @@ public class HiveSubQRemoveRelBuilder {
    */
   private String inferAlias(List<RexNode> exprList, RexNode expr) {
     switch (expr.getKind()) {
-      case INPUT_REF:
-        final RexInputRef ref = (RexInputRef) expr;
-        return peek(0).getRowType().getFieldNames().get(ref.getIndex());
-      case CAST:
-        return inferAlias(exprList, ((RexCall) expr).getOperands().get(0));
-      case AS:
-        final RexCall call = (RexCall) expr;
-        for (;;) {
-          final int i = exprList.indexOf(expr);
-          if (i < 0) {
-            break;
-          }
-          exprList.set(i, call.getOperands().get(0));
+    case INPUT_REF:
+      final RexInputRef ref = (RexInputRef) expr;
+      return peek(0).getRowType().getFieldNames().get(ref.getIndex());
+    case CAST:
+      return inferAlias(exprList, ((RexCall) expr).getOperands().get(0));
+    case AS:
+      final RexCall call = (RexCall) expr;
+      for (;;) {
+        final int i = exprList.indexOf(expr);
+        if (i < 0) {
+          break;
         }
-        return ((NlsString) ((RexLiteral) call.getOperands().get(1)).getValue())
-                .getValue();
-      default:
-        return null;
+        exprList.set(i, call.getOperands().get(0));
+      }
+      return ((NlsString) ((RexLiteral) call.getOperands().get(1)).getValue())
+          .getValue();
+    default:
+      return null;
     }
   }
 
@@ -905,26 +908,26 @@ public class HiveSubQRemoveRelBuilder {
     final List<RexNode> extraNodes = projects(inputRowType);
     final GroupKeyImpl groupKey_ = (GroupKeyImpl) groupKey;
     final ImmutableBitSet groupSet =
-            ImmutableBitSet.of(registerExpressions(extraNodes, groupKey_.nodes));
+        ImmutableBitSet.of(registerExpressions(extraNodes, groupKey_.nodes));
     final ImmutableList<ImmutableBitSet> groupSets;
     if (groupKey_.nodeLists != null) {
       final int sizeBefore = extraNodes.size();
       final SortedSet<ImmutableBitSet> groupSetSet =
-              new TreeSet<>(ImmutableBitSet.ORDERING);
+          new TreeSet<>(ImmutableBitSet.ORDERING);
       for (ImmutableList<RexNode> nodeList : groupKey_.nodeLists) {
         final ImmutableBitSet groupSet2 =
-                ImmutableBitSet.of(registerExpressions(extraNodes, nodeList));
+            ImmutableBitSet.of(registerExpressions(extraNodes, nodeList));
         if (!groupSet.contains(groupSet2)) {
           throw new IllegalArgumentException("group set element " + nodeList
-                  + " must be a subset of group key");
+              + " must be a subset of group key");
         }
         groupSetSet.add(groupSet2);
       }
       groupSets = ImmutableList.copyOf(groupSetSet);
       if (extraNodes.size() > sizeBefore) {
         throw new IllegalArgumentException(
-                "group sets contained expressions not in group key: "
-                        + extraNodes.subList(sizeBefore, extraNodes.size()));
+            "group sets contained expressions not in group key: "
+                + extraNodes.subList(sizeBefore, extraNodes.size()));
       }
     } else {
       groupSets = ImmutableList.of(groupSet);
@@ -949,10 +952,10 @@ public class HiveSubQRemoveRelBuilder {
         final AggCallImpl aggCall1 = (AggCallImpl) aggCall;
         final List<Integer> args = registerExpressions(extraNodes, aggCall1.operands);
         final int filterArg = aggCall1.filter == null ? -1
-                : registerExpression(extraNodes, aggCall1.filter);
+            : registerExpression(extraNodes, aggCall1.filter);
         aggregateCall =
-                AggregateCall.create(aggCall1.aggFunction, aggCall1.distinct, args,
-                        filterArg, groupSet.cardinality(), r, null, aggCall1.alias);
+            AggregateCall.create(aggCall1.aggFunction, aggCall1.distinct, args,
+                filterArg, groupSet.cardinality(), r, null, aggCall1.alias);
       } else {
         aggregateCall = ((AggCallImpl2) aggCall).aggregateCall;
       }
@@ -964,7 +967,7 @@ public class HiveSubQRemoveRelBuilder {
       assert groupSet.contains(set);
     }
     RelNode aggregate = aggregateFactory.createAggregate(r,
-            groupKey_.indicator, groupSet, groupSets, aggregateCalls);
+        groupKey_.indicator, groupSet, groupSets, aggregateCalls);
     push(aggregate);
     return this;
   }
@@ -1002,22 +1005,22 @@ public class HiveSubQRemoveRelBuilder {
       inputs.add(0, build());
     }
     switch (kind) {
-      case UNION:
-      case INTERSECT:
-      case EXCEPT:
+    case UNION:
+    case INTERSECT:
+    case EXCEPT:
       if (n < 1) {
         throw new IllegalArgumentException(
             "bad INTERSECT/UNION/EXCEPT input count");
-        }
-        break;
-      default:
-        throw new AssertionError("bad setOp " + kind);
+      }
+      break;
+    default:
+      throw new AssertionError("bad setOp " + kind);
     }
     switch (n) {
-      case 1:
-        return push(inputs.get(0));
-      default:
-        return push(setOpFactory.createSetOp(kind, inputs, all));
+    case 1:
+      return push(inputs.get(0));
+    default:
+      return push(setOpFactory.createSetOp(kind, inputs, all));
     }
   }
 
@@ -1079,16 +1082,16 @@ public class HiveSubQRemoveRelBuilder {
 
   /** Creates a {@link org.apache.calcite.rel.core.Join}. */
   public HiveSubQRemoveRelBuilder join(JoinRelType joinType, RexNode condition0,
-                         RexNode... conditions) {
+                                       RexNode... conditions) {
     return join(joinType, Lists.asList(condition0, conditions));
   }
 
   /** Creates a {@link org.apache.calcite.rel.core.Join} with multiple
    * conditions. */
   public HiveSubQRemoveRelBuilder join(JoinRelType joinType,
-                         Iterable<? extends RexNode> conditions) {
+                                       Iterable<? extends RexNode> conditions) {
     return join(joinType, and(conditions),
-            ImmutableSet.<CorrelationId>of());
+        ImmutableSet.<CorrelationId>of());
   }
 
   public HiveSubQRemoveRelBuilder join(JoinRelType joinType, RexNode condition) {
@@ -1099,8 +1102,8 @@ public class HiveSubQRemoveRelBuilder {
    * a Holder. */
   public HiveSubQRemoveRelBuilder variable(Holder<RexCorrelVariable> v) {
     v.set((RexCorrelVariable)
-            getRexBuilder().makeCorrel(peek().getRowType(),
-                    cluster.createCorrel()));
+        getRexBuilder().makeCorrel(peek().getRowType(),
+            cluster.createCorrel()));
     return this;
   }
 
@@ -1125,22 +1128,21 @@ public class HiveSubQRemoveRelBuilder {
             + " must not be used by left input to correlation");
       }
       switch (joinType) {
-        case LEFT:
-          // Correlate does not have an ON clause.
-          // For a LEFT correlate, predicate must be evaluated first.
-          // For INNER, we can defer.
-          stack.push(right);
-          filter(condition.accept(new Shifter(left.rel, id, right.rel)));
-          right = stack.pop();
-          break;
-        default:
-          postCondition = condition;
+      case LEFT:
+        // Correlate does not have an ON clause.
+        // For a LEFT correlate, predicate must be evaluated first.
+        // For INNER, we can defer.
+        stack.push(right);
+        filter(condition.accept(new Shifter(left.rel, id, right.rel)));
+        right = stack.pop();
+        break;
+      default:
+        postCondition = condition;
       }
       if(createSemiJoin) {
         join = correlateFactory.createCorrelate(left.rel, right.rel, id,
             requiredColumns, SemiJoinType.SEMI);
-      }
-      else {
+      } else {
         join = correlateFactory.createCorrelate(left.rel, right.rel, id,
             requiredColumns, SemiJoinType.of(joinType));
 
@@ -1160,8 +1162,8 @@ public class HiveSubQRemoveRelBuilder {
   /** Creates a {@link org.apache.calcite.rel.core.Join} with correlating
    * variables. */
   public HiveSubQRemoveRelBuilder join(JoinRelType joinType, RexNode condition,
-                         Set<CorrelationId> variablesSet) {
-    return join(joinType, condition, variablesSet, false) ;
+                                       Set<CorrelationId> variablesSet) {
+    return join(joinType, condition, variablesSet, false);
   }
 
   /** Creates a {@link org.apache.calcite.rel.core.Join} using USING syntax.
@@ -1177,9 +1179,9 @@ public class HiveSubQRemoveRelBuilder {
     final List<RexNode> conditions = new ArrayList<>();
     for (String fieldName : fieldNames) {
       conditions.add(
-              call(SqlStdOperatorTable.EQUALS,
-                      field(2, 0, fieldName),
-                      field(2, 1, fieldName)));
+          call(SqlStdOperatorTable.EQUALS,
+              field(2, 0, fieldName),
+              field(2, 1, fieldName)));
     }
     return join(joinType, conditions);
   }
@@ -1189,7 +1191,7 @@ public class HiveSubQRemoveRelBuilder {
     final Frame right = stack.pop();
     final Frame left = stack.pop();
     final RelNode semiJoin =
-            semiJoinFactory.createSemiJoin(left.rel, right.rel, and(conditions));
+        semiJoinFactory.createSemiJoin(left.rel, right.rel, and(conditions));
     stack.push(new Frame(semiJoin, left.right));
     return this;
   }
@@ -1203,8 +1205,8 @@ public class HiveSubQRemoveRelBuilder {
   public HiveSubQRemoveRelBuilder as(String alias) {
     final Frame pair = stack.pop();
     stack.push(
-            new Frame(pair.rel,
-                    ImmutableList.of(Pair.of(alias, pair.right.get(0).right))));
+        new Frame(pair.rel,
+            ImmutableList.of(Pair.of(alias, pair.right.get(0).right))));
     return this;
   }
 
@@ -1223,36 +1225,36 @@ public class HiveSubQRemoveRelBuilder {
    */
   public HiveSubQRemoveRelBuilder values(String[] fieldNames, Object... values) {
     if (fieldNames == null
-            || fieldNames.length == 0
-            || values.length % fieldNames.length != 0
-            || values.length < fieldNames.length) {
+        || fieldNames.length == 0
+        || values.length % fieldNames.length != 0
+        || values.length < fieldNames.length) {
       throw new IllegalArgumentException(
-              "Value count must be a positive multiple of field count");
+          "Value count must be a positive multiple of field count");
     }
     final int rowCount = values.length / fieldNames.length;
     for (Ord<String> fieldName : Ord.zip(fieldNames)) {
       if (allNull(values, fieldName.i, fieldNames.length)) {
         throw new IllegalArgumentException("All values of field '" + fieldName.e
-                + "' are null; cannot deduce type");
+            + "' are null; cannot deduce type");
       }
     }
     final ImmutableList<ImmutableList<RexLiteral>> tupleList =
-            tupleList(fieldNames.length, values);
+        tupleList(fieldNames.length, values);
     final RelDataTypeFactory.FieldInfoBuilder rowTypeBuilder =
-            cluster.getTypeFactory().builder();
+        cluster.getTypeFactory().builder();
     for (final Ord<String> fieldName : Ord.zip(fieldNames)) {
       final String name =
-              fieldName.e != null ? fieldName.e : "expr$" + fieldName.i;
+          fieldName.e != null ? fieldName.e : "expr$" + fieldName.i;
       final RelDataType type = cluster.getTypeFactory().leastRestrictive(
-              new AbstractList<RelDataType>() {
-                public RelDataType get(int index) {
-                  return tupleList.get(index).get(fieldName.i).getType();
-                }
+          new AbstractList<RelDataType>() {
+            public RelDataType get(int index) {
+              return tupleList.get(index).get(fieldName.i).getType();
+            }
 
-                public int size() {
-                  return rowCount;
-                }
-              });
+            public int size() {
+              return rowCount;
+            }
+          });
       rowTypeBuilder.add(name, type);
     }
     final RelDataType rowType = rowTypeBuilder.build();
@@ -1262,7 +1264,7 @@ public class HiveSubQRemoveRelBuilder {
   private ImmutableList<ImmutableList<RexLiteral>> tupleList(int columnCount,
                                                              Object[] values) {
     final ImmutableList.Builder<ImmutableList<RexLiteral>> listBuilder =
-            ImmutableList.builder();
+        ImmutableList.builder();
     final List<RexLiteral> valueList = new ArrayList<>();
     for (int i = 0; i < values.length; i++) {
       Object value = values[i];
@@ -1296,7 +1298,7 @@ public class HiveSubQRemoveRelBuilder {
   public HiveSubQRemoveRelBuilder empty() {
     final RelNode input = build();
     final RelNode sort = HiveRelFactories.HIVE_SORT_FACTORY.createSort(
-            input, RelCollations.of(), null, literal(0));
+        input, RelCollations.of(), null, literal(0));
     return this.push(sort);
   }
 
@@ -1312,9 +1314,9 @@ public class HiveSubQRemoveRelBuilder {
    */
   public HiveSubQRemoveRelBuilder values(RelDataType rowType, Object... columnValues) {
     final ImmutableList<ImmutableList<RexLiteral>> tupleList =
-            tupleList(rowType.getFieldCount(), columnValues);
+        tupleList(rowType.getFieldCount(), columnValues);
     RelNode values = valuesFactory.createValues(cluster, rowType,
-            ImmutableList.copyOf(tupleList));
+        ImmutableList.copyOf(tupleList));
     push(values);
     return this;
   }
@@ -1329,9 +1331,9 @@ public class HiveSubQRemoveRelBuilder {
    * @param rowType Row type
    */
   public HiveSubQRemoveRelBuilder values(Iterable<? extends List<RexLiteral>> tupleList,
-                           RelDataType rowType) {
+                                         RelDataType rowType) {
     RelNode values =
-            valuesFactory.createValues(cluster, rowType, copy(tupleList));
+        valuesFactory.createValues(cluster, rowType, copy(tupleList));
     push(values);
     return this;
   }
@@ -1347,14 +1349,13 @@ public class HiveSubQRemoveRelBuilder {
 
   /** Converts an iterable of lists into an immutable list of immutable lists
    * with the same contents. Returns the same object if possible. */
-  private static <E> ImmutableList<ImmutableList<E>>
-  copy(Iterable<? extends List<E>> tupleList) {
+  private static <E> ImmutableList<ImmutableList<E>> copy(Iterable<? extends List<E>> tupleList) {
     final ImmutableList.Builder<ImmutableList<E>> builder =
-            ImmutableList.builder();
+        ImmutableList.builder();
     int changeCount = 0;
     for (List<E> literals : tupleList) {
       final ImmutableList<E> literals2 =
-              ImmutableList.copyOf(literals);
+          ImmutableList.copyOf(literals);
       builder.add(literals2);
       if (literals != literals2) {
         ++changeCount;
@@ -1408,15 +1409,15 @@ public class HiveSubQRemoveRelBuilder {
    * @param nodes Sort expressions
    */
   public HiveSubQRemoveRelBuilder sortLimit(int offset, int fetch,
-                              Iterable<? extends RexNode> nodes) {
+                                            Iterable<? extends RexNode> nodes) {
     final List<RelFieldCollation> fieldCollations = new ArrayList<>();
     final RelDataType inputRowType = peek().getRowType();
     final List<RexNode> extraNodes = projects(inputRowType);
     final List<RexNode> originalExtraNodes = ImmutableList.copyOf(extraNodes);
     for (RexNode node : nodes) {
       fieldCollations.add(
-              collation(node, RelFieldCollation.Direction.ASCENDING, null,
-                      extraNodes));
+          collation(node, RelFieldCollation.Direction.ASCENDING, null,
+              extraNodes));
     }
     final RexNode offsetNode = offset <= 0 ? null : literal(offset);
     final RexNode fetchNode = fetch < 0 ? null : literal(fetch);
@@ -1437,8 +1438,8 @@ public class HiveSubQRemoveRelBuilder {
           stack.pop();
           push(sort2.getInput());
           final RelNode sort =
-                  sortFactory.createSort(build(), sort2.collation,
-                          offsetNode, fetchNode);
+              sortFactory.createSort(build(), sort2.collation,
+                  offsetNode, fetchNode);
           push(sort);
           return this;
         }
@@ -1451,8 +1452,8 @@ public class HiveSubQRemoveRelBuilder {
             stack.pop();
             push(sort2.getInput());
             final RelNode sort =
-                    sortFactory.createSort(build(), sort2.collation,
-                            offsetNode, fetchNode);
+                sortFactory.createSort(build(), sort2.collation,
+                    offsetNode, fetchNode);
             push(sort);
             project(project.getProjects());
             return this;
@@ -1464,8 +1465,8 @@ public class HiveSubQRemoveRelBuilder {
       project(extraNodes);
     }
     final RelNode sort =
-            sortFactory.createSort(build(), RelCollations.of(fieldCollations),
-                    offsetNode, fetchNode);
+        sortFactory.createSort(build(), RelCollations.of(fieldCollations),
+            offsetNode, fetchNode);
     push(sort);
     if (addedFields) {
       project(originalExtraNodes);
@@ -1475,26 +1476,27 @@ public class HiveSubQRemoveRelBuilder {
 
   private static RelFieldCollation collation(RexNode node,
                                              RelFieldCollation.Direction direction,
-                                             RelFieldCollation.NullDirection nullDirection, List<RexNode> extraNodes) {
+                                             RelFieldCollation.NullDirection nullDirection,
+                                             List<RexNode> extraNodes) {
     switch (node.getKind()) {
-      case INPUT_REF:
-        return new RelFieldCollation(((RexInputRef) node).getIndex(), direction,
-                Util.first(nullDirection, direction.defaultNullDirection()));
-      case DESCENDING:
-        return collation(((RexCall) node).getOperands().get(0),
-                RelFieldCollation.Direction.DESCENDING,
-                nullDirection, extraNodes);
-      case NULLS_FIRST:
-        return collation(((RexCall) node).getOperands().get(0), direction,
-                RelFieldCollation.NullDirection.FIRST, extraNodes);
-      case NULLS_LAST:
-        return collation(((RexCall) node).getOperands().get(0), direction,
-                RelFieldCollation.NullDirection.LAST, extraNodes);
-      default:
-        final int fieldIndex = extraNodes.size();
-        extraNodes.add(node);
-        return new RelFieldCollation(fieldIndex, direction,
-                Util.first(nullDirection, direction.defaultNullDirection()));
+    case INPUT_REF:
+      return new RelFieldCollation(((RexInputRef) node).getIndex(), direction,
+          Util.first(nullDirection, direction.defaultNullDirection()));
+    case DESCENDING:
+      return collation(((RexCall) node).getOperands().get(0),
+          RelFieldCollation.Direction.DESCENDING,
+          nullDirection, extraNodes);
+    case NULLS_FIRST:
+      return collation(((RexCall) node).getOperands().get(0), direction,
+          RelFieldCollation.NullDirection.FIRST, extraNodes);
+    case NULLS_LAST:
+      return collation(((RexCall) node).getOperands().get(0), direction,
+          RelFieldCollation.NullDirection.LAST, extraNodes);
+    default:
+      final int fieldIndex = extraNodes.size();
+      extraNodes.add(node);
+      return new RelFieldCollation(fieldIndex, direction,
+          Util.first(nullDirection, direction.defaultNullDirection()));
     }
   }
 
@@ -1509,7 +1511,7 @@ public class HiveSubQRemoveRelBuilder {
   public HiveSubQRemoveRelBuilder convert(RelDataType castRowType, boolean rename) {
     final RelNode r = build();
     final RelNode r2 =
-            RelOptUtil.createCastRel(r, castRowType, rename, projectFactory);
+        RelOptUtil.createCastRel(r, castRowType, rename, projectFactory);
     push(r2);
     return this;
   }
@@ -1528,14 +1530,14 @@ public class HiveSubQRemoveRelBuilder {
   }
 
   public HiveSubQRemoveRelBuilder aggregate(GroupKey groupKey,
-                              List<AggregateCall> aggregateCalls) {
+                                            List<AggregateCall> aggregateCalls) {
     return aggregate(groupKey,
-            Lists.transform(
-                    aggregateCalls, new Function<AggregateCall, AggCall>() {
-                      public AggCall apply(AggregateCall input) {
-                        return new AggCallImpl2(input);
-                      }
-                    }));
+        Lists.transform(
+            aggregateCalls, new Function<AggregateCall, AggCall>() {
+              public AggCall apply(AggregateCall input) {
+                return new AggCallImpl2(input);
+              }
+            }));
   }
 
   /** Clears the stack.
@@ -1548,8 +1550,8 @@ public class HiveSubQRemoveRelBuilder {
   protected String getAlias() {
     final Frame frame = stack.peek();
     return frame.right.size() == 1
-            ? frame.right.get(0).left
-            : null;
+        ? frame.right.get(0).left
+        : null;
   }
 
   /** Information necessary to create a call to an aggregate function.
@@ -1570,10 +1572,10 @@ public class HiveSubQRemoveRelBuilder {
 
   /** Implementation of {@link RelBuilder.GroupKey}. */
   protected static class GroupKeyImpl implements GroupKey {
-    final ImmutableList<RexNode> nodes;
-    final boolean indicator;
-    final ImmutableList<ImmutableList<RexNode>> nodeLists;
-    final String alias;
+    private final ImmutableList<RexNode> nodes;
+    private final boolean indicator;
+    private final ImmutableList<ImmutableList<RexNode>> nodeLists;
+    private final String alias;
 
     GroupKeyImpl(ImmutableList<RexNode> nodes, boolean indicator,
                  ImmutableList<ImmutableList<RexNode>> nodeLists, String alias) {
@@ -1589,8 +1591,8 @@ public class HiveSubQRemoveRelBuilder {
 
     public GroupKey alias(String alias) {
       return Objects.equals(this.alias, alias)
-              ? this
-              : new GroupKeyImpl(nodes, indicator, nodeLists, alias);
+          ? this
+          : new GroupKeyImpl(nodes, indicator, nodeLists, alias);
     }
   }
 
@@ -1626,16 +1628,16 @@ public class HiveSubQRemoveRelBuilder {
    *
    * <p>Describes a previously created relational expression and
    * information about how table aliases map into its row type. */
-  private static class Frame {
+  private static final class Frame {
     static final Function<Pair<String, RelDataType>, List<RelDataTypeField>> FN =
-            new Function<Pair<String, RelDataType>, List<RelDataTypeField>>() {
-              public List<RelDataTypeField> apply(Pair<String, RelDataType> input) {
-                return input.right.getFieldList();
-              }
-            };
+        new Function<Pair<String, RelDataType>, List<RelDataTypeField>>() {
+          public List<RelDataTypeField> apply(Pair<String, RelDataType> input) {
+            return input.right.getFieldList();
+          }
+        };
 
-    final RelNode rel;
-    final ImmutableList<Pair<String, RelDataType>> right;
+    private final RelNode rel;
+    private final ImmutableList<Pair<String, RelDataType>> right;
 
     private Frame(RelNode rel, ImmutableList<Pair<String, RelDataType>> pairs) {
       this.rel = rel;

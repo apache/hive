@@ -20,20 +20,16 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import static org.junit.Assert.*;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 public class TestTezSessionPool {
 
@@ -190,22 +186,22 @@ public class TestTezSessionPool {
       Mockito.when(session.isDefault()).thenReturn(false);
       Mockito.when(session.getConf()).thenReturn(conf);
 
-      poolManager.reopen(session, conf, null);
+      poolManager.reopen(session);
 
-      Mockito.verify(session).close(true);
-      Mockito.verify(session).open(new HashSet<String>(), null);
+      Mockito.verify(session).close(false);
+      Mockito.verify(session).open(Mockito.<TezSessionState.HiveResources>any());
 
       // mocked session starts with default queue
       assertEquals("default", session.getQueueName());
 
       // user explicitly specified queue name
       conf.set("tez.queue.name", "tezq1");
-      poolManager.reopen(session, conf, null);
+      poolManager.reopen(session);
       assertEquals("tezq1", poolManager.getSession(null, conf, false, false).getQueueName());
 
       // user unsets queue name, will fallback to default session queue
       conf.unset("tez.queue.name");
-      poolManager.reopen(session, conf, null);
+      poolManager.reopen(session);
       assertEquals("default", poolManager.getSession(null, conf, false, false).getQueueName());
 
       // session.open will unset the queue name from conf but Mockito intercepts the open call
@@ -213,17 +209,17 @@ public class TestTezSessionPool {
       conf.unset("tez.queue.name");
       // change session's default queue to tezq1 and rerun test sequence
       Mockito.when(session.getQueueName()).thenReturn("tezq1");
-      poolManager.reopen(session, conf, null);
+      poolManager.reopen(session);
       assertEquals("tezq1", poolManager.getSession(null, conf, false, false).getQueueName());
 
       // user sets default queue now
       conf.set("tez.queue.name", "default");
-      poolManager.reopen(session, conf, null);
+      poolManager.reopen(session);
       assertEquals("default", poolManager.getSession(null, conf, false, false).getQueueName());
 
       // user does not specify queue so use session default
       conf.unset("tez.queue.name");
-      poolManager.reopen(session, conf, null);
+      poolManager.reopen(session);
       assertEquals("tezq1", poolManager.getSession(null, conf, false, false).getQueueName());
     } catch (Exception e) {
       e.printStackTrace();
@@ -328,10 +324,10 @@ public class TestTezSessionPool {
     Mockito.when(session.isDefault()).thenReturn(false);
     Mockito.when(session.getConf()).thenReturn(conf);
 
-    poolManager.reopen(session, conf, null);
+    poolManager.reopen(session);
 
-    Mockito.verify(session).close(true);
-    Mockito.verify(session).open(new HashSet<String>(), null);
+    Mockito.verify(session).close(false);
+    Mockito.verify(session).open(Mockito.<TezSessionState.HiveResources>any());
   }
 
   @Test

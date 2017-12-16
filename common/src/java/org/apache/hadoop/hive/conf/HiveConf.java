@@ -2435,9 +2435,13 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE("hive.server2.tez.interactive.queue", "",
         "A single YARN queues to use for Hive Interactive sessions. When this is specified,\n" +
         "workload management is enabled and used for these sessions."),
-    HIVE_SERVER2_TEZ_WM_WORKER_THREADS("hive.server2.tez.wm.worker.threads", 4,
+    HIVE_SERVER2_WM_WORKER_THREADS("hive.server2.wm.worker.threads", 4,
         "Number of worker threads to use to perform the synchronous operations with Tez\n" +
         "sessions for workload management (e.g. opening, closing, etc.)"),
+    HIVE_SERVER2_WM_ALLOW_ANY_POOL_VIA_JDBC("hive.server2.wm.allow.any.pool.via.jdbc", false,
+        "Applies when a user specifies a target WM pool in the JDBC connection string. If\n" +
+        "false, the user can only specify a pool he is mapped to (e.g. make a choice among\n" +
+        "multiple group mappings); if true, the user can specify any existing pool."),
     HIVE_SERVER2_TEZ_WM_AM_REGISTRY_TIMEOUT("hive.server2.tez.wm.am.registry.timeout", "30s",
         new TimeValidator(TimeUnit.SECONDS),
         "The timeout for AM registry registration, after which (on attempting to use the\n" +

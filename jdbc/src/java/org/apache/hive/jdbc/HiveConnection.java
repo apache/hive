@@ -138,6 +138,7 @@ public class HiveConnection implements java.sql.Connection {
   private TProtocolVersion protocol;
   private int fetchSize = HiveStatement.DEFAULT_FETCH_SIZE;
   private String initFile = null;
+  private String wmPool = null;
   private Properties clientInfo;
 
   /**
@@ -178,6 +179,7 @@ public class HiveConnection implements java.sql.Connection {
     if (sessConfMap.containsKey(JdbcConnectionParams.INIT_FILE)) {
       initFile = sessConfMap.get(JdbcConnectionParams.INIT_FILE);
     }
+    wmPool = sessConfMap.get(JdbcConnectionParams.WM_POOL);
 
     // add supported protocols
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V1);
@@ -680,6 +682,9 @@ public class HiveConnection implements java.sql.Connection {
     // set the fetchSize
     openConf.put("set:hiveconf:hive.server2.thrift.resultset.default.fetch.size",
       Integer.toString(fetchSize));
+    if (wmPool != null) {
+      openConf.put("set:hivevar:wmpool", wmPool);
+    }
 
     // set the session configuration
     Map<String, String> sessVars = connParams.getSessionVars();

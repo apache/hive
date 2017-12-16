@@ -17,7 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.util.Collection;
+import org.apache.hadoop.registry.client.api.RegistryOperations;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -37,7 +38,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.security.auth.login.LoginException;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -90,7 +90,6 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
@@ -126,8 +125,18 @@ public class TezSessionState {
 
   private AtomicReference<String> ownerThread = new AtomicReference<>(null);
 
-  private final Set<String> additionalFilesNotFromConf = new HashSet<String>();
-  private final Set<LocalResource> localizedResources = new HashSet<LocalResource>();
+  public static final class HiveResources {
+    public HiveResources(Path dagResourcesDir) {
+      this.dagResourcesDir = dagResourcesDir;
+    }
+    /** A directory that will contain resources related to DAGs and specified in configs. */
+    public final Path dagResourcesDir;
+    public final Set<String> additionalFilesNotFromConf = new HashSet<>();
+    /** Localized resources of this session; both from conf and not from conf (above). */
+    public final Set<LocalResource> localizedResources = new HashSet<>();
+  }
+
+  private HiveResources resources;
   @JsonProperty("doAsEnabled")
   private boolean doAsEnabled;
   private boolean isLegacyLlapMode;
@@ -201,45 +210,32 @@ public class TezSessionState {
   }
 
   public void open() throws IOException, LoginException, URISyntaxException, TezException {
-    Set<String> noFiles = null;
-    open(noFiles, null);
+    String[] noFiles = null;
+    open(noFiles);
   }
 
   /**
    * Creates a tez session. A session is tied to either a cli/hs2 session. You can
    * submit multiple DAGs against a session (as long as they are executed serially).
-   * @throws IOException
-   * @throws URISyntaxException
-   * @throws LoginException
-   * @throws TezException
-   * @throws InterruptedException
    */
-  public void open(String[] additionalFiles)
+  public void open(String[] additionalFilesNotFromConf)
       throws IOException, LoginException, URISyntaxException, TezException {
-    openInternal(setFromArray(additionalFiles), false, null, null);
+    openInternal(additionalFilesNotFromConf, false, null, null);
   }
 
-  private static Set<String> setFromArray(String[] additionalFiles) {
-    if (additionalFiles == null) return null;
-    Set<String> files = new HashSet<>();
-    for (String originalFile : additionalFiles) {
-      files.add(originalFile);
-    }
-    return files;
+
+  public void open(HiveResources resources)
+      throws LoginException, IOException, URISyntaxException, TezException {
+    openInternal(null, false, null, resources);
   }
 
   public void beginOpen(String[] additionalFiles, LogHelper console)
       throws IOException, LoginException, URISyntaxException, TezException {
-    openInternal(setFromArray(additionalFiles), true, console, null);
+    openInternal(additionalFiles, true, console, null);
   }
 
-  public void open(Collection<String> additionalFiles, Path scratchDir)
-      throws LoginException, IOException, URISyntaxException, TezException {
-    openInternal(additionalFiles, false, null, scratchDir);
-  }
-
-  protected void openInternal(Collection<String> additionalFiles,
-      boolean isAsync, LogHelper console, Path scratchDir)
+  protected void openInternal(String[] additionalFilesNotFromConf,
+      boolean isAsync, LogHelper console, HiveResources resources)
           throws IOException, LoginException, URISyntaxException, TezException {
     // TODO Why is the queue name set again. It has already been setup via setQueueName. Do only one of the two.
     String confQueueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
@@ -258,15 +254,15 @@ public class TezSessionState {
     user = ugi.getShortUserName();
     LOG.info("User of session id " + sessionId + " is " + user);
 
-    // create the tez tmp dir
-    tezScratchDir = scratchDir == null ? createTezDir(sessionId) : scratchDir;
-
-    additionalFilesNotFromConf.clear();
-    if (additionalFiles != null) {
-      additionalFilesNotFromConf.addAll(additionalFiles);
+    // Create the tez tmp dir and a directory for Hive resources.
+    tezScratchDir = createTezDir(sessionId, null);
+    if (resources != null) {
+      // If we are getting the resources externally, don't relocalize anything.
+      this.resources = resources;
+    } else {
+      this.resources = new HiveResources(createTezDir(sessionId, "resources"));
+      ensureLocalResources(conf, additionalFilesNotFromConf);
     }
-
-    refreshLocalResourcesFromConf(conf);
 
     // unless already installed on all the cluster nodes, we'll have to
     // localize hive-exec.jar as well.
@@ -274,9 +270,9 @@ public class TezSessionState {
 
     // configuration for the application master
     final Map<String, LocalResource> commonLocalResources = new HashMap<String, LocalResource>();
-    commonLocalResources.put(utils.getBaseName(appJarLr), appJarLr);
-    for (LocalResource lr : localizedResources) {
-      commonLocalResources.put(utils.getBaseName(lr), lr);
+    commonLocalResources.put(DagUtils.getBaseName(appJarLr), appJarLr);
+    for (LocalResource lr : this.resources.localizedResources) {
+      commonLocalResources.put(DagUtils.getBaseName(lr), lr);
     }
 
     if (llapMode) {
@@ -284,7 +280,7 @@ public class TezSessionState {
       addJarLRByClass(LlapTaskSchedulerService.class, commonLocalResources);
       addJarLRByClass(LlapProtocolClientImpl.class, commonLocalResources);
       addJarLRByClass(LlapProtocolClientProxy.class, commonLocalResources);
-      addJarLRByClassName("org.apache.hadoop.registry.client.api.RegistryOperations", commonLocalResources);
+      addJarLRByClass(RegistryOperations.class, commonLocalResources);
     }
 
     // Create environment for AM.
@@ -556,36 +552,54 @@ public class TezSessionState {
     tezConf.set(TezConfiguration.TEZ_AM_MODIFY_ACLS, modifyStr);
   }
 
-  public void refreshLocalResourcesFromConf(HiveConf conf)
-      throws IOException, LoginException, URISyntaxException, TezException {
+  /** This is called in openInternal and in TezTask.updateSession to localize conf resources. */
+  public void ensureLocalResources(Configuration conf, String[] newFilesNotFromConf)
+          throws IOException, LoginException, URISyntaxException, TezException {
+    String dir = resources.dagResourcesDir.toString();
+    resources.localizedResources.clear();
 
-    String dir = tezScratchDir.toString();
-
-    localizedResources.clear();
-
-    // these are local resources set through add file, jar, etc
+    // Always localize files from conf; duplicates are handled on FS level.
+    // TODO: we could do the same thing as below and only localize if missing.
+    //       That could be especially valuable given that this almost always the same set.
     List<LocalResource> lrs = utils.localizeTempFilesFromConf(dir, conf);
     if (lrs != null) {
-      localizedResources.addAll(lrs);
+      resources.localizedResources.addAll(lrs);
     }
 
-    // these are local resources that are set through the mr "tmpjars" property; skip session files.
-    List<LocalResource> handlerLr = utils.localizeTempFiles(dir, conf,
-      additionalFilesNotFromConf.toArray(new String[additionalFilesNotFromConf.size()]),
-      DagUtils.getTempFilesFromConf(conf));
-
-    if (handlerLr != null) {
-      localizedResources.addAll(handlerLr);
+    // Localize the non-conf resources that are missing from the current list.
+    List<LocalResource> newResources = null;
+    if (newFilesNotFromConf != null && newFilesNotFromConf.length > 0) {
+      boolean hasResources = !resources.additionalFilesNotFromConf.isEmpty();
+      if (hasResources) {
+        for (String s : newFilesNotFromConf) {
+          hasResources = resources.additionalFilesNotFromConf.contains(s);
+          if (!hasResources) break;
+        }
+      }
+      if (!hasResources) {
+        String[] skipFilesFromConf = DagUtils.getTempFilesFromConf(conf);
+        newResources = utils.localizeTempFiles(dir, conf, newFilesNotFromConf, skipFilesFromConf);
+        if (newResources != null) {
+          resources.localizedResources.addAll(newResources);
+        }
+        for (String fullName : newFilesNotFromConf) {
+          resources.additionalFilesNotFromConf.add(fullName);
+        }
+      }
     }
-  }
 
-  public boolean hasResources(String[] localAmResources) {
-    if (localAmResources == null || localAmResources.length == 0) return true;
-    if (additionalFilesNotFromConf.isEmpty()) return false;
-    for (String s : localAmResources) {
-      if (!additionalFilesNotFromConf.contains(s)) return false;
+    // Finally add the files to AM. The old code seems to do this twice, first for all the new
+    // resources regardless of type; and then for all the session resources that are not of type
+    // file (see branch-1 calls to addAppMasterLocalFiles: from updateSession and with resourceMap
+    // from submit).
+    // TODO: Do we really need all this nonsense?
+    if (newResources != null && !newResources.isEmpty()) {
+      session.addAppMasterLocalFiles(DagUtils.createTezLrMap(null, newResources));
     }
-    return true;
+    if (!resources.localizedResources.isEmpty()) {
+      session.addAppMasterLocalFiles(
+          DagUtils.getResourcesUpdatableForAm(resources.localizedResources));
+    }
   }
 
   /**
@@ -593,11 +607,11 @@ public class TezSessionState {
    * further DAGs can be executed against it. Only called by session management classes; some
    * sessions should not simply be closed by users - e.g. pool sessions need to be restarted.
    *
-   * @param keepTmpDir
+   * @param keepDagFilesDir
    *          whether or not to remove the scratch dir at the same time.
    * @throws Exception
    */
-  void close(boolean keepTmpDir) throws Exception {
+  void close(boolean keepDagFilesDir) throws Exception {
     if (session != null) {
       LOG.info("Closing Tez Session");
       closeClient(session);
@@ -618,20 +632,16 @@ public class TezSessionState {
       }
     }
 
-    if (!keepTmpDir) {
-      cleanupScratchDir();
+    cleanupScratchDir();
+    if (!keepDagFilesDir) {
+      cleanupDagResources();
     }
     session = null;
     sessionFuture = null;
     console = null;
     tezScratchDir = null;
+    // Do not reset dag resources; if it wasn't cleaned it's still needed.
     appJarLr = null;
-    additionalFilesNotFromConf.clear();
-    localizedResources.clear();
-  }
-
-  public Set<String> getAdditionalFilesNotFromConf() {
-    return additionalFilesNotFromConf;
   }
 
   private void closeClient(TezClient client) throws TezException,
@@ -643,10 +653,16 @@ public class TezSessionState {
     }
   }
 
-  protected final void cleanupScratchDir () throws IOException {
+  protected final void cleanupScratchDir() throws IOException {
     FileSystem fs = tezScratchDir.getFileSystem(conf);
     fs.delete(tezScratchDir, true);
     tezScratchDir = null;
+  }
+
+  protected final void cleanupDagResources() throws IOException {
+    FileSystem fs = resources.dagResourcesDir.getFileSystem(conf);
+    fs.delete(resources.dagResourcesDir, true);
+    resources = null;
   }
 
   public String getSessionId() {
@@ -675,10 +691,6 @@ public class TezSessionState {
     return session;
   }
 
-  public Path getTezScratchDir() {
-    return tezScratchDir;
-  }
-
   public LocalResource getAppJarLr() {
     return appJarLr;
   }
@@ -687,11 +699,11 @@ public class TezSessionState {
    * createTezDir creates a temporary directory in the scratchDir folder to
    * be used with Tez. Assumes scratchDir exists.
    */
-  private Path createTezDir(String sessionId) throws IOException {
+  private Path createTezDir(String sessionId, String suffix) throws IOException {
     // tez needs its own scratch dir (per session)
     // TODO: De-link from SessionState. A TezSession can be linked to different Hive Sessions via the pool.
     Path tezDir = new Path(SessionState.get().getHdfsScratchDirURIString(), TEZ_DIR);
-    tezDir = new Path(tezDir, sessionId);
+    tezDir = new Path(tezDir, sessionId + ((suffix == null) ? "" : ("-" + suffix)));
     FileSystem fs = tezDir.getFileSystem(conf);
     FsPermission fsPermission = new FsPermission(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION));
     fs.mkdirs(tezDir, fsPermission);
@@ -759,9 +771,8 @@ public class TezSessionState {
     final File jar =
         new File(Utilities.jarFinderGetJar(clazz));
     final String localJarPath = jar.toURI().toURL().toExternalForm();
-    final LocalResource jarLr =
-      createJarLocalResource(localJarPath);
-    lrMap.put(utils.getBaseName(jarLr), jarLr);
+    final LocalResource jarLr = createJarLocalResource(localJarPath);
+    lrMap.put(DagUtils.getBaseName(jarLr), jarLr);
   }
 
   private String getSha(final Path localFile) throws IOException, IllegalArgumentException {
@@ -808,7 +819,7 @@ public class TezSessionState {
   }
 
   public List<LocalResource> getLocalizedResources() {
-    return new ArrayList<>(localizedResources);
+    return new ArrayList<>(resources.localizedResources);
   }
 
   public String getUser() {
@@ -849,10 +860,9 @@ public class TezSessionState {
     TezSessionPoolManager.getInstance().returnSession(this);
   }
 
-  public TezSessionState reopen(
-      Configuration conf, String[] inputOutputJars) throws Exception {
+  public TezSessionState reopen() throws Exception {
     // By default, TezSessionPoolManager handles this for both pool and non-pool session.
-    return TezSessionPoolManager.getInstance().reopen(this, conf, inputOutputJars);
+    return TezSessionPoolManager.getInstance().reopen(this);
   }
 
   public void destroy() throws Exception {
@@ -874,5 +884,29 @@ public class TezSessionState {
 
   public KillQuery getKillQuery() {
     return killQuery;
+  }
+
+  public HiveResources extractHiveResources() {
+    HiveResources result = resources;
+    resources = null;
+    return result;
+  }
+
+  public Path replaceHiveResources(HiveResources resources, boolean isAsync) {
+    Path dir = null;
+    if (this.resources != null) {
+      dir = this.resources.dagResourcesDir;
+      if (!isAsync) {
+        try {
+          dir.getFileSystem(conf).delete(dir, true);
+        } catch (Exception ex) {
+          LOG.error("Failed to delete the old resources directory "
+              + dir + "; ignoring " + ex.getLocalizedMessage());
+        }
+        dir = null;
+      }
+    }
+    this.resources = resources;
+    return dir;
   }
 }
