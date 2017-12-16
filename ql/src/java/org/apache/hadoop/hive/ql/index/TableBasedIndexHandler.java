@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.session.LineageState;
 
 /**
  * Index handler for indexes that use tables to store indexes.
@@ -51,7 +52,8 @@ public abstract class TableBasedIndexHandler extends AbstractIndexHandler {
       org.apache.hadoop.hive.metastore.api.Index index,
       List<Partition> indexTblPartitions, List<Partition> baseTblPartitions,
       org.apache.hadoop.hive.ql.metadata.Table indexTbl,
-      Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws HiveException {
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs,
+      LineageState lineageState) throws HiveException {
     try {
 
       TableDesc desc = Utilities.getTableDesc(indexTbl);
@@ -66,7 +68,7 @@ public abstract class TableBasedIndexHandler extends AbstractIndexHandler {
         Task<?> indexBuilder = getIndexBuilderMapRedTask(inputs, outputs, index, false,
             new PartitionDesc(desc, null), indexTbl.getTableName(),
             new PartitionDesc(Utilities.getTableDesc(baseTbl), null),
-            baseTbl.getTableName(), indexTbl.getDbName());
+            baseTbl.getTableName(), indexTbl.getDbName(), lineageState);
         indexBuilderTasks.add(indexBuilder);
       } else {
 
@@ -89,7 +91,8 @@ public abstract class TableBasedIndexHandler extends AbstractIndexHandler {
           // for each partition, spawn a map reduce task.
           Task<?> indexBuilder = getIndexBuilderMapRedTask(inputs, outputs, index, true,
               new PartitionDesc(indexPart), indexTbl.getTableName(),
-              new PartitionDesc(basePart), baseTbl.getTableName(), indexTbl.getDbName());
+              new PartitionDesc(basePart), baseTbl.getTableName(), indexTbl.getDbName(),
+              lineageState);
           indexBuilderTasks.add(indexBuilder);
         }
       }
@@ -102,15 +105,18 @@ public abstract class TableBasedIndexHandler extends AbstractIndexHandler {
   protected Task<?> getIndexBuilderMapRedTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       Index index, boolean partitioned,
       PartitionDesc indexTblPartDesc, String indexTableName,
-      PartitionDesc baseTablePartDesc, String baseTableName, String dbName) throws HiveException {
+      PartitionDesc baseTablePartDesc, String baseTableName, String dbName,
+      LineageState lineageState) throws HiveException {
     return getIndexBuilderMapRedTask(inputs, outputs, index.getSd().getCols(),
-        partitioned, indexTblPartDesc, indexTableName, baseTablePartDesc, baseTableName, dbName);
+        partitioned, indexTblPartDesc, indexTableName, baseTablePartDesc, baseTableName, dbName,
+        lineageState);
   }
 
   protected Task<?> getIndexBuilderMapRedTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       List<FieldSchema> indexField, boolean partitioned,
       PartitionDesc indexTblPartDesc, String indexTableName,
-      PartitionDesc baseTablePartDesc, String baseTableName, String dbName) throws HiveException {
+      PartitionDesc baseTablePartDesc, String baseTableName, String dbName,
+      LineageState lineageState) throws HiveException {
     return null;
   }
 

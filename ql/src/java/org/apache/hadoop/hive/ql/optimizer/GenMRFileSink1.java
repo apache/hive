@@ -112,7 +112,7 @@ public class GenMRFileSink1 implements NodeProcessor {
       LOG.info("using CombineHiveInputformat for the merge job");
       GenMapRedUtils.createMRWorkForMergingFiles(fsOp, finalName,
           ctx.getDependencyTaskForMultiInsert(), ctx.getMvTask(),
-          hconf, currTask);
+          hconf, currTask, parseCtx.getQueryState().getLineageState());
     }
 
     FileSinkDesc fileSinkDesc = fsOp.getConf();

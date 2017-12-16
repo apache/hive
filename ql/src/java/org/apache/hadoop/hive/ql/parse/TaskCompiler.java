@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -105,7 +106,8 @@ public abstract class TaskCompiler {
   }
 
   @SuppressWarnings({"nls", "unchecked"})
-  public void compile(final ParseContext pCtx, final List<Task<? extends Serializable>> rootTasks,
+  public void compile(final ParseContext pCtx,
+      final List<Task<? extends Serializable>> rootTasks,
       final HashSet<ReadEntity> inputs, final HashSet<WriteEntity> outputs) throws SemanticException {
 
     Context ctx = pCtx.getContext();
@@ -218,12 +220,13 @@ public abstract class TaskCompiler {
     } else if (!isCStats) {
       for (LoadTableDesc ltd : loadTableWork) {
         Task<MoveWork> tsk = TaskFactory
-            .get(new MoveWork(null, null, ltd, null, false, SessionState.get().getLineageState()),
+            .get(new MoveWork(null, null, ltd, null, false),
                 conf);
         mvTask.add(tsk);
         // Check to see if we are stale'ing any indexes and auto-update them if we want
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEINDEXAUTOUPDATE)) {
-          IndexUpdater indexUpdater = new IndexUpdater(loadTableWork, inputs, conf);
+          IndexUpdater indexUpdater = new IndexUpdater(loadTableWork, inputs, conf,
+              queryState.getLineageState());
           try {
             List<Task<? extends Serializable>> indexUpdateTasks = indexUpdater
                 .generateUpdateTasks();
@@ -248,7 +251,7 @@ public abstract class TaskCompiler {
           oneLoadFileForCtas = false;
         }
         mvTask.add(TaskFactory
-            .get(new MoveWork(null, null, null, lfd, false, SessionState.get().getLineageState()),
+            .get(new MoveWork(null, null, null, lfd, false),
                 conf));
       }
     }

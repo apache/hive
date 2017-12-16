@@ -60,7 +60,7 @@ public class LineageState implements Serializable {
   /**
    * Constructor.
    */
-  LineageState() {
+  public LineageState() {
     dirToFop = new HashMap<>();
     linfo = new LineageInfo();
     index = new Index();

@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -135,9 +136,10 @@ public class TestGenMapRedUtilsCreateConditionalTask {
   public void testMergePathWithInvalidMoveWorkThrowsException() {
     final Path condInputPath = new Path("s3a://bucket/scratch/-ext-10000");
     final MoveWork mockWork = mock(MoveWork.class);
+    final LineageState lineageState = new LineageState();
 
     when(mockWork.getLoadMultiFilesWork()).thenReturn(new LoadMultiFilesDesc());
-    GenMapRedUtils.mergeMovePaths(condInputPath, mockWork);
+    GenMapRedUtils.mergeMovePaths(condInputPath, mockWork, lineageState);
   }
 
   @Test
@@ -146,12 +148,13 @@ public class TestGenMapRedUtilsCreateConditionalTask {
     final Path condOutputPath = new Path("s3a://bucket/scratch/-ext-10002");
     final Path targetMoveWorkPath = new Path("s3a://bucket/scratch/-ext-10003");
     final MoveWork mockWork = mock(MoveWork.class);
+    final LineageState lineageState = new LineageState();
     MoveWork newWork;
 
     // test using loadFileWork
     when(mockWork.getLoadFileWork()).thenReturn(new LoadFileDesc(
         condOutputPath, targetMoveWorkPath, false, "", "", false));
-    newWork = GenMapRedUtils.mergeMovePaths(condInputPath, mockWork);
+    newWork = GenMapRedUtils.mergeMovePaths(condInputPath, mockWork, lineageState);
     assertNotNull(newWork);
     assertNotEquals(newWork, mockWork);
     assertEquals(condInputPath, newWork.getLoadFileWork().getSourcePath());
@@ -162,7 +165,7 @@ public class TestGenMapRedUtilsCreateConditionalTask {
     reset(mockWork);
     when(mockWork.getLoadTableWork()).thenReturn(new LoadTableDesc(
         condOutputPath, tableDesc, null, null));
-    newWork = GenMapRedUtils.mergeMovePaths(condInputPath, mockWork);
+    newWork = GenMapRedUtils.mergeMovePaths(condInputPath, mockWork, lineageState);
     assertNotNull(newWork);
     assertNotEquals(newWork, mockWork);
     assertEquals(condInputPath, newWork.getLoadTableWork().getSourcePath());
@@ -181,7 +184,8 @@ public class TestGenMapRedUtilsCreateConditionalTask {
     Task<MoveWork> moveTask = createMoveTask(finalDirName, tableLocation);
     List<Task<MoveWork>> moveTaskList = Collections.singletonList(moveTask);
 
-    GenMapRedUtils.createMRWorkForMergingFiles(fileSinkOperator, finalDirName, null, moveTaskList, hiveConf, dummyMRTask);
+    GenMapRedUtils.createMRWorkForMergingFiles(fileSinkOperator, finalDirName, null,
+        moveTaskList, hiveConf, dummyMRTask, new LineageState());
     ConditionalTask conditionalTask = (ConditionalTask)dummyMRTask.getChildTasks().get(0);
     Task<? extends Serializable> moveOnlyTask = conditionalTask.getListTasks().get(0);
     Task<? extends Serializable> mergeOnlyTask = conditionalTask.getListTasks().get(1);
@@ -221,7 +225,8 @@ public class TestGenMapRedUtilsCreateConditionalTask {
     Task<MoveWork> moveTask = createMoveTask(finalDirName, tableLocation);
     List<Task<MoveWork>> moveTaskList = Collections.singletonList(moveTask);
 
-    GenMapRedUtils.createMRWorkForMergingFiles(fileSinkOperator, finalDirName, null, moveTaskList, hiveConf, dummyMRTask);
+    GenMapRedUtils.createMRWorkForMergingFiles(fileSinkOperator, finalDirName, null,
+        moveTaskList, hiveConf, dummyMRTask, new LineageState());
     ConditionalTask conditionalTask = (ConditionalTask)dummyMRTask.getChildTasks().get(0);
     Task<? extends Serializable> moveOnlyTask = conditionalTask.getListTasks().get(0);
     Task<? extends Serializable> mergeOnlyTask = conditionalTask.getListTasks().get(1);
@@ -255,7 +260,8 @@ public class TestGenMapRedUtilsCreateConditionalTask {
     Task<MoveWork> moveTask = createMoveTask(finalDirName, tableLocation);
     List<Task<MoveWork>> moveTaskList = Collections.singletonList(moveTask);
 
-    GenMapRedUtils.createMRWorkForMergingFiles(fileSinkOperator, finalDirName, null, moveTaskList, hiveConf, dummyMRTask);
+    GenMapRedUtils.createMRWorkForMergingFiles(fileSinkOperator, finalDirName, null,
+        moveTaskList, hiveConf, dummyMRTask, new LineageState());
     ConditionalTask conditionalTask = (ConditionalTask)dummyMRTask.getChildTasks().get(0);
     Task<? extends Serializable> moveOnlyTask = conditionalTask.getListTasks().get(0);
     Task<? extends Serializable> mergeOnlyTask = conditionalTask.getListTasks().get(1);

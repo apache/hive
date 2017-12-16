@@ -23,6 +23,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.session.LineageState;
 
 /**
  * The class to store query level info such as queryId. Multiple queries can run
@@ -40,12 +41,17 @@ public class QueryState {
   private HiveOperation commandType;
 
   /**
+   * Per-query Lineage state to track what happens in the query
+   */
+  private LineageState lineageState = new LineageState();
+
+  /**
    * transaction manager used in the query.
    */
   private HiveTxnManager txnManager;
 
   /**
-   * Private constructor, use QueryState.Builder instead
+   * Private constructor, use QueryState.Builder instead.
    * @param conf The query specific configuration object
    */
   private QueryState(HiveConf conf) {
@@ -79,6 +85,14 @@ public class QueryState {
     return queryConf;
   }
 
+  public LineageState getLineageState() {
+    return lineageState;
+  }
+
+  public void setLineageState(LineageState lineageState) {
+    this.lineageState = lineageState;
+  }
+
   public HiveTxnManager getTxnManager() {
     return txnManager;
   }
@@ -95,9 +109,10 @@ public class QueryState {
     private boolean runAsync = false;
     private boolean generateNewQueryId = false;
     private HiveConf hiveConf = null;
+    private LineageState lineageState = null;
 
     /**
-     * Default constructor - use this builder to create a QueryState object
+     * Default constructor - use this builder to create a QueryState object.
      */
     public Builder() {
     }
@@ -149,6 +164,16 @@ public class QueryState {
     }
 
     /**
+     * add a LineageState that will be set in the built QueryState
+     * @param lineageState the source lineageState
+     * @return the builder
+     */
+    public Builder withLineageState(LineageState lineageState) {
+      this.lineageState = lineageState;
+      return this;
+    }
+
+    /**
      * Creates the QueryState object. The default values are:
      * - runAsync false
      * - confOverlay null
@@ -184,7 +209,11 @@ public class QueryState {
         queryConf.setVar(HiveConf.ConfVars.HIVEQUERYID, QueryPlan.makeQueryId());
       }
 
-      return new QueryState(queryConf);
+      QueryState queryState = new QueryState(queryConf);
+      if (lineageState != null) {
+        queryState.setLineageState(lineageState);
+      }
+      return queryState;
     }
   }
 }

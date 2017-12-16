@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.session.LineageState;
 
 /**
  * HiveIndexHandler defines a pluggable interface for adding new index handlers
@@ -99,6 +100,9 @@ public interface HiveIndexHandler extends Configurable {
    *          outputs for hooks, supplemental outputs going
    *          along with the return value
    *
+   * @param lineageState
+   *          tracks Lineage for the query
+   *
    * @return list of tasks to be executed in parallel for building the index
    *
    * @throws HiveException if plan generation fails
@@ -108,7 +112,7 @@ public interface HiveIndexHandler extends Configurable {
       org.apache.hadoop.hive.metastore.api.Index index,
       List<Partition> indexTblPartitions, List<Partition> baseTblPartitions,
       org.apache.hadoop.hive.ql.metadata.Table indexTbl,
-      Set<ReadEntity> inputs, Set<WriteEntity> outputs)
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs,  LineageState lineageState)
       throws HiveException;
 
   /**

@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-
+import org.apache.hadoop.hive.ql.session.LineageState;
 
 /**
  * Index handler for indexes that have aggregate functions on indexed columns.
@@ -90,7 +90,8 @@ public class AggregateIndexHandler extends CompactIndexHandler {
         Set<WriteEntity> outputs,
         Index index, boolean partitioned,
         PartitionDesc indexTblPartDesc, String indexTableName,
-        PartitionDesc baseTablePartDesc, String baseTableName, String dbName) {
+        PartitionDesc baseTablePartDesc, String baseTableName, String dbName,
+        LineageState lineageState) {
 
       List<FieldSchema> indexField = index.getSd().getCols();
       String indexCols = HiveUtils.getUnparsedColumnNamesFromFieldSchema(indexField);
@@ -152,7 +153,7 @@ public class AggregateIndexHandler extends CompactIndexHandler {
       builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES, false);
       builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGETEZFILES, false);
       Task<?> rootTask = IndexUtils.createRootTask(builderConf, inputs, outputs,
-          command, (LinkedHashMap<String, String>) partSpec, indexTableName, dbName);
+          command, (LinkedHashMap<String, String>) partSpec, indexTableName, dbName, lineageState);
       return rootTask;
     }
   }

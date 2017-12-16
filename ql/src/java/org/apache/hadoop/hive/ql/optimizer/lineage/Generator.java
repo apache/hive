@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,9 +84,10 @@ public class Generator extends Transform {
         return pctx;
       }
     }
-
-    Index index = SessionState.get() != null ?
-      SessionState.get().getLineageState().getIndex() : new Index();
+    Index index = pctx.getQueryState().getLineageState().getIndex();
+    if (index == null) {
+      index = new Index();
+    }
 
     long sTime = System.currentTimeMillis();
     // Create the lineage context
