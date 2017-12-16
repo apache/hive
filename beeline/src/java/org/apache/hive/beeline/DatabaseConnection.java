@@ -118,10 +118,6 @@ class DatabaseConnection {
     try {
       isDriverRegistered = DriverManager.getDriver(getUrl()) != null;
     } catch (Exception e) {
-        /**
-         * missing the exception
-         */
-        return beeLine.error(e);
     }
 
     try {
