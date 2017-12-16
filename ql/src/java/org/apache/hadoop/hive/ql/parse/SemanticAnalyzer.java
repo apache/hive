@@ -7336,8 +7336,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void handleLineage(LoadTableDesc ltd, Operator output)
       throws SemanticException {
-    if (ltd != null && SessionState.get() != null) {
-      SessionState.get().getLineageState()
+    if (ltd != null) {
+      queryState.getLineageState()
           .mapDirToOp(ltd.getSourcePath(), output);
     } else if ( queryState.getCommandType().equals(HiveOperation.CREATETABLE_AS_SELECT.getOperationName())) {
 
@@ -7350,7 +7350,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(e);
       }
 
-      SessionState.get().getLineageState()
+      queryState.getLineageState()
               .mapDirToOp(tlocation, output);
     }
   }
@@ -11685,7 +11685,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             pCtx = t.transform(pCtx);
           }
           // we just use view name as location.
-          SessionState.get().getLineageState()
+          queryState.getLineageState()
               .mapDirToOp(new Path(createVwDesc.getViewName()), sinkOp);
         }
         return;

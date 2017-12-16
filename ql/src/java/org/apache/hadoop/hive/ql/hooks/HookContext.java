@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -88,12 +87,8 @@ public class HookContext {
     inputs = queryPlan.getInputs();
     outputs = queryPlan.getOutputs();
     ugi = Utils.getUGI();
-    linfo= null;
-    depMap = null;
-    if(SessionState.get() != null){
-      linfo = SessionState.get().getLineageState().getLineageInfo();
-      depMap = SessionState.get().getLineageState().getIndex();
-    }
+    linfo = queryState.getLineageState().getLineageInfo();
+    depMap = queryState.getLineageState().getIndex();
     this.userName = userName;
     this.ipAddress = ipAddress;
     this.hiveInstanceAddress = hiveInstanceAddress;

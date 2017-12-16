@@ -40,6 +40,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +48,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.SynchronousQueue;
@@ -64,8 +66,12 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.hooks.HookContext;
+import org.apache.hadoop.hive.ql.hooks.LineageLogger;
+import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -205,6 +211,9 @@ public class TestJdbcWithMiniHS2 {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
     conf.setBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    // store post-exec hooks calls so we can look at them later
+    conf.setVar(ConfVars.POSTEXECHOOKS, ReadableHook.class.getName() + "," +
+        LineageLogger.class.getName());
     MiniHS2.Builder builder = new MiniHS2.Builder().withConf(conf).cleanupLocalDirOnStartup(false);
     if (httpMode) {
       builder = builder.withHTTPTransport();
@@ -1502,5 +1511,110 @@ public class TestJdbcWithMiniHS2 {
       fetchSize);
     stmt.close();
     fsConn.close();
+  }
+
+  /**
+   * A test that checks that Lineage is correct when a multiple concurrent
+   * requests are make on a connection
+   */
+  @Test
+  public void testConcurrentLineage() throws Exception {
+    // setup to run concurrent operations
+    Statement stmt = conTestDb.createStatement();
+    setSerializeInTasksInConf(stmt);
+    stmt.execute("drop table if exists testConcurrentLineage1");
+    stmt.execute("drop table if exists testConcurrentLineage2");
+    stmt.execute("create table testConcurrentLineage1 (col1 int)");
+    stmt.execute("create table testConcurrentLineage2 (col2 int)");
+
+    // clear vertices list
+    ReadableHook.clear();
+
+    // run 5 sql inserts concurrently
+    int numThreads = 5;        // set to 1 for single threading
+    int concurrentCalls = 5;
+    ExecutorService pool = Executors.newFixedThreadPool(numThreads);
+    try {
+      List<InsertCallable> tasks = new ArrayList<>();
+      for (int i = 0; i < concurrentCalls; i++) {
+        InsertCallable runner = new InsertCallable(conTestDb);
+        tasks.add(runner);
+      }
+      List<Future<Void>> futures = pool.invokeAll(tasks);
+      for (Future<Void> future : futures) {
+        future.get(20, TimeUnit.SECONDS);
+      }
+      // check to see that the vertices are correct
+      checkVertices();
+    } finally {
+      // clean up
+      stmt.execute("drop table testConcurrentLineage1");
+      stmt.execute("drop table testConcurrentLineage2");
+      stmt.close();
+      pool.shutdownNow();
+    }
+  }
+
+  /**
+   * A Callable that does 2 inserts
+   */
+  private class InsertCallable implements Callable<Void> {
+    private Connection connection;
+
+    InsertCallable(Connection conn) {
+      this.connection = conn;
+    }
+
+    @Override public Void call() throws Exception {
+      doLineageInserts(connection);
+      return null;
+    }
+
+    private void doLineageInserts(Connection connection) throws SQLException {
+      Statement stmt = connection.createStatement();
+      stmt.execute("insert into testConcurrentLineage1 values (1)");
+      stmt.execute("insert into testConcurrentLineage2 values (2)");
+    }
+  }
+  /**
+   * check to see that the vertices derived from the HookContexts are correct
+   */
+  private void checkVertices() {
+    List<Set<LineageLogger.Vertex>> verticesLists = getVerticesFromHooks();
+
+    assertEquals("5 runs of 2 inserts makes 10", 10, verticesLists.size());
+    for (Set<LineageLogger.Vertex> vertices : verticesLists) {
+      assertFalse("Each insert affects a column so should be some vertices",
+          vertices.isEmpty());
+      assertEquals("Each insert affects one column so should be one vertex",
+          1, vertices.size());
+      Iterator<LineageLogger.Vertex> iterator = vertices.iterator();
+      assertTrue(iterator.hasNext());
+      LineageLogger.Vertex vertex = iterator.next();
+      assertEquals(0, vertex.getId());
+      assertEquals(LineageLogger.Vertex.Type.COLUMN, vertex.getType());
+      String label = vertex.getLabel();
+      System.out.println("vertex.getLabel() = " + label);
+      assertTrue("did not see one of the 2 expected column names",
+          label.equals("testjdbcminihs2.testconcurrentlineage1.col1") ||
+              label.equals("testjdbcminihs2.testconcurrentlineage2.col2"));
+    }
+  }
+
+  /**
+   * Use the logic in LineageLogger to get vertices from Hook Contexts
+   */
+  private List<Set<LineageLogger.Vertex>>  getVerticesFromHooks() {
+    List<Set<LineageLogger.Vertex>> verticesLists = new ArrayList<>();
+    List<HookContext> hookList = ReadableHook.getHookList();
+    for (HookContext hookContext : hookList) {
+      QueryPlan plan = hookContext.getQueryPlan();
+      LineageCtx.Index index = hookContext.getIndex();
+      assertNotNull(index);
+      List<LineageLogger.Edge> edges = LineageLogger.getEdges(plan, index);
+      Set<LineageLogger.Vertex> vertices = LineageLogger.getVertices(edges);
+      verticesLists.add(vertices);
+    }
+    return verticesLists;
   }
 }

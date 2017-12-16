@@ -398,7 +398,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             dc = handleStaticParts(db, table, tbd, ti);
           }
         }
-        if (work.getLineagState() != null && dc != null) {
+        if (dc != null) {
           // If we are doing an update or a delete the number of columns in the table will not
           // match the number of columns in the file sink.  For update there will be one too many
           // (because of the ROW__ID), and in the case of the delete there will be just the
@@ -416,7 +416,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               tableCols = table.getCols();
               break;
           }
-          work.getLineagState().setLineage(tbd.getSourcePath(), dc, tableCols);
+          queryState.getLineageState().setLineage(tbd.getSourcePath(), dc, tableCols);
         }
         releaseLocks(tbd);
       }
@@ -552,10 +552,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       dc = new DataContainer(table.getTTable(), partn.getTPartition());
 
       // Don't set lineage on delete as we don't have all the columns
-      if (work.getLineagState() != null &&
-          work.getLoadTableWork().getWriteType() != AcidUtils.Operation.DELETE &&
+      if (work.getLoadTableWork().getWriteType() != AcidUtils.Operation.DELETE &&
           work.getLoadTableWork().getWriteType() != AcidUtils.Operation.UPDATE) {
-        work.getLineagState().setLineage(tbd.getSourcePath(), dc,
+        queryState.getLineageState().setLineage(tbd.getSourcePath(), dc,
             table.getCols());
       }
       LOG.info("Loading partition " + entry.getKey());

@@ -134,7 +134,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         runCtx = new Context(conf);
         // runCtx and ctx share the configuration, but not isExplainPlan()
         runCtx.setExplainConfig(config);
-        Driver driver = new Driver(conf, runCtx);
+        Driver driver = new Driver(conf, runCtx, queryState.getLineageState());
         CommandProcessorResponse ret = driver.run(query);
         if(ret.getResponseCode() == 0) {
           // Note that we need to call getResults for simple fetch optimization.

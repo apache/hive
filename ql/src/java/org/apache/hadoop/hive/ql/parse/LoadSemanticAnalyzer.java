@@ -302,7 +302,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Task<? extends Serializable> childTask = TaskFactory.get(
         new MoveWork(getInputs(), getOutputs(), loadTableWork, null, true,
-            isLocal, SessionState.get().getLineageState()), conf
+            isLocal), conf
     );
     if (rTask != null) {
       rTask.addDependentTask(childTask);

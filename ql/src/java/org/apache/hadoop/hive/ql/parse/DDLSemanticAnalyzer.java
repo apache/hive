@@ -158,6 +158,7 @@ import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMPoolDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrDropTriggerToPoolMappingDesc;
+import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -1485,8 +1486,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             partSpec == null ? new HashMap<>() : partSpec, null);
         ltd.setLbCtx(lbCtx);
         @SuppressWarnings("unchecked")
-        Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(
-          null, null, ltd, null, false, SessionState.get().getLineageState()), conf);
+        Task<MoveWork> moveTsk =
+            TaskFactory.get(new MoveWork(null, null, ltd, null, false), conf);
         truncateTask.addDependentTask(moveTsk);
 
         // Recalculate the HDFS stats if auto gather stats is set
@@ -1703,8 +1704,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             indexTbl, db, indexTblPartitions);
       }
 
+      LineageState lineageState = queryState.getLineageState();
       List<Task<?>> ret = handler.generateIndexBuildTaskList(baseTbl,
-          index, indexTblPartitions, baseTblPartitions, indexTbl, getInputs(), getOutputs());
+          index, indexTblPartitions, baseTblPartitions, indexTbl, getInputs(), getOutputs(),
+          lineageState);
       return ret;
     } catch (Exception e) {
       throw new SemanticException(e);
@@ -2146,8 +2149,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, tblDesc,
           partSpec == null ? new HashMap<>() : partSpec, null);
       ltd.setLbCtx(lbCtx);
-      Task<MoveWork> moveTsk = TaskFactory.get(
-        new MoveWork(null, null, ltd, null, false, SessionState.get().getLineageState()), conf);
+      Task<MoveWork> moveTsk =
+          TaskFactory.get(new MoveWork(null, null, ltd, null, false), conf);
       mergeTask.addDependentTask(moveTsk);
 
       if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
@@ -3539,7 +3542,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       SessionState ss = SessionState.get();
       String uName = (ss == null? null: ss.getUserName());
-      Driver driver = new Driver(conf, uName);
+      Driver driver = new Driver(conf, uName, queryState.getLineageState());
       int rc = driver.compile(cmd.toString(), false);
       if (rc != 0) {
         throw new SemanticException(ErrorMsg.NO_VALID_PARTN.getMsg());

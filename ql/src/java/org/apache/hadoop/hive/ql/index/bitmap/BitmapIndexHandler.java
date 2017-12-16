@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
@@ -115,7 +116,7 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
     LOG.info("Generating tasks for re-entrant QL query: " + qlCommand.toString());
     HiveConf queryConf = new HiveConf(pctx.getConf(), BitmapIndexHandler.class);
     HiveConf.setBoolVar(queryConf, HiveConf.ConfVars.COMPRESSRESULT, false);
-    Driver driver = new Driver(queryConf);
+    Driver driver = new Driver(queryConf, pctx.getQueryState().getLineageState());
     driver.compile(qlCommand.toString(), false);
 
     queryContext.setIndexIntermediateFile(tmpFile);
@@ -222,7 +223,8 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
   protected Task<?> getIndexBuilderMapRedTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       List<FieldSchema> indexField, boolean partitioned,
       PartitionDesc indexTblPartDesc, String indexTableName,
-      PartitionDesc baseTablePartDesc, String baseTableName, String dbName) throws HiveException {
+      PartitionDesc baseTablePartDesc, String baseTableName, String dbName,
+      LineageState lineageState) throws HiveException {
 
     HiveConf builderConf = new HiveConf(getConf(), BitmapIndexHandler.class);
     HiveConf.setBoolVar(builderConf, HiveConf.ConfVars.HIVEROWOFFSET, true);
@@ -290,7 +292,7 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
     }
 
     Task<?> rootTask = IndexUtils.createRootTask(builderConf, inputs, outputs,
-        command, partSpec, indexTableName, dbName);
+        command, partSpec, indexTableName, dbName, lineageState);
     return rootTask;
   }
 

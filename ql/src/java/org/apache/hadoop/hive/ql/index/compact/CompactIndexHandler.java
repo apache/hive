@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
@@ -94,7 +95,8 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
   protected Task<?> getIndexBuilderMapRedTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       List<FieldSchema> indexField, boolean partitioned,
       PartitionDesc indexTblPartDesc, String indexTableName,
-      PartitionDesc baseTablePartDesc, String baseTableName, String dbName) throws HiveException {
+      PartitionDesc baseTablePartDesc, String baseTableName, String dbName,
+      LineageState lineageState) throws HiveException {
 
     String indexCols = HiveUtils.getUnparsedColumnNamesFromFieldSchema(indexField);
 
@@ -150,7 +152,7 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES, false);
     builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGETEZFILES, false);
     Task<?> rootTask = IndexUtils.createRootTask(builderConf, inputs, outputs,
-        command, partSpec, indexTableName, dbName);
+        command, partSpec, indexTableName, dbName, lineageState);
     return rootTask;
   }
 
@@ -189,7 +191,7 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     LOG.info("Generating tasks for re-entrant QL query: " + qlCommand.toString());
     HiveConf queryConf = new HiveConf(pctx.getConf(), CompactIndexHandler.class);
     HiveConf.setBoolVar(queryConf, HiveConf.ConfVars.COMPRESSRESULT, false);
-    Driver driver = new Driver(queryConf);
+    Driver driver = new Driver(queryConf, pctx.getQueryState().getLineageState());
     driver.compile(qlCommand.toString(), false);
 
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_INDEX_COMPACT_BINARY_SEARCH) && useSorted) {

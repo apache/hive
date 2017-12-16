@@ -4478,7 +4478,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
     // Don't set inputs and outputs - the locks have already been taken so it's pointless.
-    MoveWork mw = new MoveWork(null, null, null, null, false, SessionState.get().getLineageState());
+    MoveWork mw = new MoveWork(null, null, null, null, false);
     mw.setMultiFilesDesc(new LoadMultiFilesDesc(srcs, tgts, true, null, null));
     ImportCommitWork icw = new ImportCommitWork(tbl.getDbName(), tbl.getTableName(), mmWriteId, stmtId);
     Task<?> mv = TaskFactory.get(mw, conf), ic = TaskFactory.get(icw, conf);
@@ -4909,7 +4909,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         Table createdTable = db.getTable(tbl.getDbName(), tbl.getTableName());
         if (crtTbl.isCTAS()) {
           DataContainer dc = new DataContainer(createdTable.getTTable());
-          SessionState.get().getLineageState().setLineage(
+          queryState.getLineageState().setLineage(
                   createdTable.getPath(), dc, createdTable.getCols()
           );
         }
@@ -5137,7 +5137,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       //set lineage info
       DataContainer dc = new DataContainer(tbl.getTTable());
-      SessionState.get().getLineageState().setLineage(new Path(crtView.getViewName()), dc, tbl.getCols());
+      queryState.getLineageState().setLineage(new Path(crtView.getViewName()), dc, tbl.getCols());
     }
     return 0;
   }

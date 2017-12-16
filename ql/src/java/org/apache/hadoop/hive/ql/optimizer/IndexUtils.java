@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.LineageState;
 
 /**
  * Utility class for index support.
@@ -221,10 +222,11 @@ public final class IndexUtils {
       StringBuilder command,
       LinkedHashMap<String, String> partSpec,
       String indexTableName,
-      String dbName){
+      String dbName,
+      LineageState lineageState){
     // Don't try to index optimize the query to build the index
     HiveConf.setBoolVar(builderConf, HiveConf.ConfVars.HIVEOPTINDEXFILTER, false);
-    Driver driver = new Driver(builderConf, SessionState.get().getUserName());
+    Driver driver = new Driver(builderConf, SessionState.get().getUserName(), lineageState);
     driver.compile(command.toString(), false);
 
     Task<?> rootTask = driver.getPlan().getRootTasks().get(0);

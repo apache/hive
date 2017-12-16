@@ -385,7 +385,8 @@ public class GenTezUtils {
           + fileSink.getConf().getDirName() + " to " + finalName);
       GenMapRedUtils.createMRWorkForMergingFiles(fileSink, finalName,
           context.dependencyTask, context.moveTask,
-          hconf, context.currentTask);
+          hconf, context.currentTask,
+          parseContext.getQueryState().getLineageState());
     }
 
     FetchTask fetchTask = parseContext.getFetchTask();
