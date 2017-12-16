@@ -72,9 +72,7 @@ class BeeLineOpts implements Completer {
   private boolean showHeader = true;
   private boolean showDbInPrompt = false;
   //private int headerInterval = 100;
-  /**
-   * use the DEFAULT_HEADER_INTERVAL not the pure number to assign the variable
-   */
+  //use the DEFAULT_HEADER_INTERVAL not the pure number to assign the variable
   private int headerInterval = DEFAULT_HEADER_INTERVAL;
   private boolean fastConnect = true;
   private boolean autoCommit = true;
