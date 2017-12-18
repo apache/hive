@@ -158,7 +158,7 @@ public class VectorizedOrcAcidRowBatchReader
   private VectorizedOrcAcidRowBatchReader(JobConf conf, OrcSplit orcSplit, Reporter reporter,
       VectorizedRowBatchCtx rowBatchCtx) throws IOException {
     this.rbCtx = rowBatchCtx;
-    final boolean isAcidRead = HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+    final boolean isAcidRead = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN);
     final AcidUtils.AcidOperationalProperties acidOperationalProperties
             = AcidUtils.getAcidOperationalProperties(conf);
 

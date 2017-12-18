@@ -21,6 +21,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidCompactorTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -129,19 +130,30 @@ public class TxnUtils {
     }
   }
 
-  /** Checks if a table is a valid ACID table.
+  /**
    * Note, users are responsible for using the correct TxnManager. We do not look at
    * SessionState.get().getTxnMgr().supportsAcid() here
-   * @param table table
-   * @return true if table is a legit ACID table, false otherwise
+   * Should produce the same result as
+   * {@link org.apache.hadoop.hive.ql.io.AcidUtils#isTransactionalTable(org.apache.hadoop.hive.ql.metadata.Table)}
+   * @return true if table is a transactional table, false otherwise
    */
-  public static boolean isAcidTable(Table table) {
+  public static boolean isTransactionalTable(Table table) {
     if (table == null) {
       return false;
     }
     Map<String, String> parameters = table.getParameters();
     String tableIsTransactional = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
+  }
+
+  /**
+   * Should produce the same result as
+   * {@link org.apache.hadoop.hive.ql.io.AcidUtils#isAcidTable(org.apache.hadoop.hive.ql.metadata.Table)}
+   */
+  public static boolean isAcidTable(Table table) {
+    return TxnUtils.isTransactionalTable(table) &&
+      TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY.equals(table.getParameters()
+      .get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
   }
 
   /**

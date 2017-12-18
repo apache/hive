@@ -19,13 +19,10 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -277,7 +274,8 @@ public class StatsOptimizer extends Transform {
           Logger.info("Table " + tbl.getTableName() + " is external. Skip StatsOptimizer.");
           return null;
         }
-        if (AcidUtils.isAcidTable(tbl)) {
+        if (AcidUtils.isTransactionalTable(tbl)) {
+          //todo: should this be OK for MM table?
           Logger.info("Table " + tbl.getTableName() + " is ACID table. Skip StatsOptimizer.");
           return null;
         }

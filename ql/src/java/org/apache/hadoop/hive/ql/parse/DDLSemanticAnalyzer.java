@@ -1906,9 +1906,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if(desc != null && desc.getProps() != null && Boolean.parseBoolean(desc.getProps().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL))) {
       convertingToAcid = true;
     }
-    if(!AcidUtils.isAcidTable(tab) && convertingToAcid) {
-      //non to acid conversion (property itself) must be mutexed to prevent concurrent writes.
-      // See HIVE-16688 for use case.
+    if(!AcidUtils.isTransactionalTable(tab) && convertingToAcid) {
+      //non-acid to transactional conversion (property itself) must be mutexed to prevent concurrent writes.
+      // See HIVE-16688 for use cases.
       return WriteType.DDL_EXCLUSIVE;
     }
     return WriteEntity.determineAlterTableWriteType(op);
@@ -2128,7 +2128,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       // transactional tables are compacted and no longer needs to be bucketed, so not safe for merge/concatenation
-      boolean isAcid = AcidUtils.isAcidTable(tblObj);
+      boolean isAcid = AcidUtils.isTransactionalTable(tblObj);
       if (isAcid) {
         throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_TRANSACTIONAL.getMsg());
       }

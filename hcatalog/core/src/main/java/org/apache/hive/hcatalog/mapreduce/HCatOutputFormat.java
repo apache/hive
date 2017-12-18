@@ -113,9 +113,9 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
       if (sd.getSortCols() != null && !sd.getSortCols().isEmpty()) {
         throw new HCatException(ErrorType.ERROR_NOT_SUPPORTED, "Store into a partition with sorted column definition from Pig/Mapreduce is not supported");
       }
-
-      if (AcidUtils.isAcidTable(table)) {
-        throw new HCatException(ErrorType.ERROR_NOT_SUPPORTED, "Store into an insert-only ACID table from Pig/Mapreduce is not supported");
+      if (AcidUtils.isTransactionalTable(table)) {
+        throw new HCatException(ErrorType.ERROR_NOT_SUPPORTED, "Store into a transactional table "
+          + table.getFullyQualifiedName() + " from Pig/Mapreduce is not supported");
       }
 
       // Set up a common id hash for this job, so that when we create any temporary directory

@@ -139,7 +139,7 @@ class LlapRecordReader
     this.counters = new QueryFragmentCounters(job, taskCounters);
     this.counters.setDesc(QueryFragmentCounters.Desc.MACHINE, hostName);
 
-    isAcidScan = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+    isAcidScan = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_ACID_TABLE_SCAN);
     TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(
         job, isAcidScan, Integer.MAX_VALUE);
     if (isAcidScan) {

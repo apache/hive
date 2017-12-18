@@ -353,7 +353,7 @@ public class AcidUtils {
     }
     return result;
   }
-
+  //This is used for (full) Acid tables.  InsertOnly use NOT_ACID
   public enum Operation implements Serializable {
     NOT_ACID, INSERT, UPDATE, DELETE;
   }
@@ -419,6 +419,22 @@ public class AcidUtils {
     }
   }
 
+  /**
+   * Current syntax for creating full acid transactional tables is any one of following 3 ways:
+   * create table T (a int, b int) stored as orc tblproperties('transactional'='true').
+   * create table T (a int, b int) stored as orc tblproperties('transactional'='true',
+   * 'transactional_properties'='default').
+   * create table T (a int, b int) stored as orc tblproperties('transactional'='true',
+   * 'transactional_properties'='split_update').
+   * These are all identical and create a table capable of insert/update/delete/merge operations
+   * with full ACID semantics at Snapshot Isolation.  These tables require ORC input/output format.
+   *
+   * To create a 1/4 acid, aka Micro Managed table:
+   * create table T (a int, b int) stored as orc tblproperties('transactional'='true',
+   * 'transactional_properties'='insert_only').
+   * These tables only support insert operation (also with full ACID semantics at SI).
+   *
+   */
   public static class AcidOperationalProperties {
     private int description = 0x00;
     public static final int SPLIT_UPDATE_BIT = 0x01;
@@ -1204,16 +1220,18 @@ public class AcidUtils {
     }
     return resultStr != null && resultStr.equalsIgnoreCase("true");
   }
-
-  public static void setTransactionalTableScan(Map<String, String> parameters, boolean isAcidTable) {
-    parameters.put(ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname, Boolean.toString(isAcidTable));
+  /**
+   * Means it's a full acid table
+   */
+  public static void setAcidTableScan(Map<String, String> parameters, boolean isAcidTable) {
+    parameters.put(ConfVars.HIVE_ACID_TABLE_SCAN.varname, Boolean.toString(isAcidTable));
   }
 
   /**
    * Means it's a full acid table
    */
-  public static void setTransactionalTableScan(Configuration conf, boolean isFullAcidTable) {
-    HiveConf.setBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, isFullAcidTable);
+  public static void setAcidTableScan(Configuration conf, boolean isFullAcidTable) {
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, isFullAcidTable);
   }
   /**
    * @param p - not null
@@ -1221,15 +1239,12 @@ public class AcidUtils {
   public static boolean isDeleteDelta(Path p) {
     return p.getName().startsWith(DELETE_DELTA_PREFIX);
   }
-  /** Checks if a table is a valid ACID table.
-   * Note, users are responsible for using the correct TxnManager. We do not look at
-   * SessionState.get().getTxnMgr().supportsAcid() here
-   * @param table table
-   * @return true if table is a legit ACID table, false otherwise
-   * ToDo: this shoudl be renamed isTransactionalTable() since that is what it's checking and covers
-   * both Acid and MM tables. HIVE-18124
+
+  /**
+   * Should produce the same result as
+   * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#isTransactionalTable(org.apache.hadoop.hive.metastore.api.Table)}
    */
-  public static boolean isAcidTable(Table table) {
+  public static boolean isTransactionalTable(Table table) {
     if (table == null) {
       return false;
     }
@@ -1240,11 +1255,7 @@ public class AcidUtils {
 
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
   }
-  /**
-   * ToDo: this shoudl be renamed isTransactionalTable() since that is what it's checking and convers
-   * both Acid and MM tables. HIVE-18124
-   */
-  public static boolean isAcidTable(CreateTableDesc table) {
+  public static boolean isTransactionalTable(CreateTableDesc table) {
     if (table == null || table.getTblProps() == null) {
       return false;
     }
@@ -1256,13 +1267,14 @@ public class AcidUtils {
   }
 
   /**
-   * after isTransactionalTable() then make this isAcid() HIVE-18124
+   * Should produce the same result as
+   * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#isAcidTable(org.apache.hadoop.hive.metastore.api.Table)}
    */
-  public static boolean isFullAcidTable(Table table) {
-    return isAcidTable(table) && !AcidUtils.isInsertOnlyTable(table);
+  public static boolean isAcidTable(Table table) {
+    return isTransactionalTable(table) && !AcidUtils.isInsertOnlyTable(table);
   }
   
-  public static boolean isFullAcidTable(CreateTableDesc td) {
+  public static boolean isAcidTable(CreateTableDesc td) {
     if (td == null || td.getTblProps() == null) {
       return false;
     }
@@ -1392,7 +1404,7 @@ public class AcidUtils {
 
 
   /**
-   * Checks if a table is an ACID table that only supports INSERT, but not UPDATE/DELETE
+   * Checks if a table is a transactional table that only supports INSERT, but not UPDATE/DELETE
    * @param params table properties
    * @return true if table is an INSERT_ONLY table, false otherwise
    */
@@ -1400,7 +1412,7 @@ public class AcidUtils {
     return isInsertOnlyTable(params, false);
   }
   public static boolean isInsertOnlyTable(Table table) {
-    return isAcidTable(table) && getAcidOperationalProperties(table).isInsertOnly();
+    return isTransactionalTable(table) && getAcidOperationalProperties(table).isInsertOnly();
   }
 
   // TODO [MM gap]: CTAS may currently be broken. It used to work. See the old code, and why isCtas isn't used?

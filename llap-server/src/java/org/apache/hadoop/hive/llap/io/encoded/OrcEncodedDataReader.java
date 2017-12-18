@@ -228,7 +228,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       readerSchema = fileMetadata.getSchema();
     }
     readerIncludes = OrcInputFormat.genIncludedColumns(readerSchema, includedColumnIds);
-    if (HiveConf.getBoolVar(jobConf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN)) {
+    if (HiveConf.getBoolVar(jobConf, ConfVars.HIVE_ACID_TABLE_SCAN)) {
       fileIncludes = OrcInputFormat.shiftReaderIncludedForAcid(readerIncludes);
     } else {
       fileIncludes = OrcInputFormat.genIncludedColumns(fileSchema, includedColumnIds);

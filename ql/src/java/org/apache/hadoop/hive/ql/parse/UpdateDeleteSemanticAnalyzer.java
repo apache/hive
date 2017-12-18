@@ -175,7 +175,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
     if(!foundColumnInTargetTable) {
       throw new SemanticException(ErrorMsg.INVALID_TARGET_COLUMN_IN_SET_CLAUSE, colName.getText(),
-        getDotName(new String[] {targetTable.getDbName(), targetTable.getTableName()}));
+        targetTable.getFullyQualifiedName());
     }
   }
   private ASTNode findLHSofAssignment(ASTNode assignment) {
@@ -318,7 +318,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
   private void validateTargetTable(Table mTable) throws SemanticException {
     if (mTable.getTableType() == TableType.VIRTUAL_VIEW ||
       mTable.getTableType() == TableType.MATERIALIZED_VIEW) {
-        LOG.error("Table " + getDotName(new String[] {mTable.getDbName(), mTable.getTableName()}) + " is a view or materialized view");
+        LOG.error("Table " + mTable.getFullyQualifiedName() + " is a view or materialized view");
         throw new SemanticException(ErrorMsg.UPDATE_DELETE_VIEW.getMsg());
     }
   }
