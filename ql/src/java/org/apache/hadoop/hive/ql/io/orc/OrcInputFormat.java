@@ -214,7 +214,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     /*
      * Fallback for the case when OrcSplit flags do not contain hasBase and deltas
      */
-    return HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+    return HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN);
   }
 
   private static class OrcRecordReader
@@ -309,7 +309,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                                                   long offset, long length
                                                   ) throws IOException {
 
-    boolean isTransactionalTableScan = HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+    boolean isTransactionalTableScan = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN);
     if (isTransactionalTableScan) {
       raiseAcidTablesMustBeReadWithAcidReaderException(conf);
     }
@@ -1692,7 +1692,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     boolean isTransactionalTableScan =
-        HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+        HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN);
     boolean isSchemaEvolution = HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION);
     TypeDescription readerSchema =
         OrcInputFormat.getDesiredRowTypeDescr(conf, isTransactionalTableScan, Integer.MAX_VALUE);

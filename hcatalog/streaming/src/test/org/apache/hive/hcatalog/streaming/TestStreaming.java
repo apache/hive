@@ -564,7 +564,7 @@ public class TestStreaming {
     job.set(BUCKET_COUNT, Integer.toString(buckets));
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, "id,msg");
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, "bigint:string");
-    AcidUtils.setTransactionalTableScan(job,true);
+    AcidUtils.setAcidTableScan(job,true);
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     job.set(ValidTxnList.VALID_TXNS_KEY, txns.toString());
     InputSplit[] splits = inf.getSplits(job, buckets);

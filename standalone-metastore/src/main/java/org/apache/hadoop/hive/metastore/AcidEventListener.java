@@ -54,7 +54,7 @@ public class AcidEventListener extends MetaStoreEventListener {
 
   @Override
   public void onDropTable(DropTableEvent tableEvent)  throws MetaException {
-    if (TxnUtils.isAcidTable(tableEvent.getTable())) {
+    if (TxnUtils.isTransactionalTable(tableEvent.getTable())) {
       txnHandler = getTxnHandler();
       txnHandler.cleanupRecords(HiveObjectType.TABLE, null, tableEvent.getTable(), null);
     }
@@ -62,7 +62,7 @@ public class AcidEventListener extends MetaStoreEventListener {
 
   @Override
   public void onDropPartition(DropPartitionEvent partitionEvent)  throws MetaException {
-    if (TxnUtils.isAcidTable(partitionEvent.getTable())) {
+    if (TxnUtils.isTransactionalTable(partitionEvent.getTable())) {
       txnHandler = getTxnHandler();
       txnHandler.cleanupRecords(HiveObjectType.PARTITION, null, partitionEvent.getTable(),
           partitionEvent.getPartitionIterator());
@@ -76,7 +76,7 @@ public class AcidEventListener extends MetaStoreEventListener {
     boolean origConcurrency = false;
 
     // Since TxnUtils.getTxnStore calls TxnHandler.setConf -> checkQFileTestHack -> TxnDbUtil.setConfValues,
-    // which may change the values of below two entries, we need to avoid pulluting the original values
+    // which may change the values of below two entries, we need to avoid polluting the original values
     if (hackOn) {
       origTxnMgr = MetastoreConf.getVar(conf, ConfVars.HIVE_TXN_MANAGER);
       origConcurrency = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY);

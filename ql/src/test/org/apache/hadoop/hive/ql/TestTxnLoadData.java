@@ -18,25 +18,16 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.io.NullWritable;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -260,7 +251,12 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
 
     String testQuery = isVectorized ? "select ROW__ID, a, b from T order by ROW__ID" :
       "select ROW__ID, a, b, INPUT__FILE__NAME from T order by ROW__ID";
-
+/*
+{"transactionid":0,"bucketid":536870912,"rowid":0}     0       2/000000_0
+{"transactionid":0,"bucketid":536870912,"rowid":1}     0       4/000000_0
+{"transactionid":24,"bucketid":536870912,"rowid":0}    4       4/delta_0000024_0000024_0000/000000_0
+{"transactionid":24,"bucketid":536870912,"rowid":1}    5       5/delta_0000024_0000024_0000/000000_0
+*/
     String[][] expected = new String[][] {
       //from pre-acid insert
       {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}\t0\t2", "t/000000_0"},

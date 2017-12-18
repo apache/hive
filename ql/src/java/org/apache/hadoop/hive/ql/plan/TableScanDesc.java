@@ -135,7 +135,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     this.alias = alias;
     this.virtualCols = vcs;
     this.tableMetadata = tblMetadata;
-    isAcidTable = AcidUtils.isFullAcidTable(this.tableMetadata);
+    isAcidTable = AcidUtils.isAcidTable(this.tableMetadata);
     if (isAcidTable) {
       acidOperationalProperties = AcidUtils.getAcidOperationalProperties(this.tableMetadata);
     }

@@ -410,7 +410,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
       if (stack.get(0) instanceof TableScanOperator) {
         TableScanOperator tso = ((TableScanOperator)stack.get(0));
         Table tab = tso.getConf().getTableMetadata();
-        if (AcidUtils.isFullAcidTable(tab)) {
+        if (AcidUtils.isAcidTable(tab)) {
           /*ACID tables have complex directory layout and require merging of delta files
           * on read thus we should not try to read bucket files directly*/
           return null;

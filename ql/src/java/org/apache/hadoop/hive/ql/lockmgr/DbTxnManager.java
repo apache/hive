@@ -313,7 +313,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     issue ROLLBACK but these tables won't rollback.
     Can do this by checking ReadEntity/WriteEntity to determine whether it's reading/writing
     any non acid and raise an appropriate error
-    * Driver.acidSinks and Driver.acidInQuery can be used if any acid is in the query*/
+    * Driver.acidSinks and Driver.transactionalInQuery can be used if any acid is in the query*/
   }
 
   /**
@@ -325,7 +325,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     //in a txn assuming we can determine the target is a suitable table type.
     if(queryPlan.getOperation() == HiveOperation.LOAD && queryPlan.getOutputs() != null && queryPlan.getOutputs().size() == 1) {
       WriteEntity writeEntity = queryPlan.getOutputs().iterator().next();
-      if(AcidUtils.isFullAcidTable(writeEntity.getTable()) || AcidUtils.isInsertOnlyTable(writeEntity.getTable())) {
+      if(AcidUtils.isAcidTable(writeEntity.getTable()) || AcidUtils.isInsertOnlyTable(writeEntity.getTable())) {
         switch (writeEntity.getWriteType()) {
           case INSERT:
             //allow operation in a txn
@@ -426,7 +426,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           continue;
       }
       if(t != null) {
-        compBuilder.setIsAcid(AcidUtils.isFullAcidTable(t));
+        compBuilder.setIsAcid(AcidUtils.isAcidTable(t));
       }
       LockComponent comp = compBuilder.build();
       LOG.debug("Adding lock component to lock request " + comp.toString());
@@ -480,7 +480,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           break;
         case INSERT_OVERWRITE:
           t = getTable(output);
-          if (AcidUtils.isAcidTable(t)) {
+          if (AcidUtils.isTransactionalTable(t)) {
             compBuilder.setSemiShared();
             compBuilder.setOperationType(DataOperationType.UPDATE);
           } else {
@@ -490,7 +490,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           break;
         case INSERT:
           assert t != null;
-          if(AcidUtils.isFullAcidTable(t)) {
+          if(AcidUtils.isAcidTable(t)) {
             compBuilder.setShared();
           }
           else {
@@ -524,7 +524,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
               output.getWriteType().toString());
       }
       if(t != null) {
-        compBuilder.setIsAcid(AcidUtils.isFullAcidTable(t));
+        compBuilder.setIsAcid(AcidUtils.isAcidTable(t));
       }
 
       compBuilder.setIsDynamicPartitionWrite(output.isDynamicPartitionWrite());

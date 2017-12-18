@@ -125,7 +125,7 @@ public abstract class BaseSemanticAnalyzer {
 
   // whether any ACID table or Insert-only (mm) table is involved in a query
   // They both require DbTxnManager and both need to recordValidTxns when acquiring locks in Driver
-  protected boolean acidInQuery;
+  protected boolean transactionalInQuery;
 
   protected HiveTxnManager txnManager;
 
@@ -1487,8 +1487,8 @@ public abstract class BaseSemanticAnalyzer {
     return acidFileSinks;
   }
 
-  public boolean hasAcidInQuery() {
-    return acidInQuery;
+  public boolean hasTransactionalInQuery() {
+    return transactionalInQuery;
   }
 
   /**

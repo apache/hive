@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -42,7 +41,6 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.util.StringUtils;
 
 /**
  * FetchTask implementation.
@@ -81,7 +79,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
         // push down filters
         HiveInputFormat.pushFilters(job, ts);
 
-        AcidUtils.setTransactionalTableScan(job, ts.getConf().isAcidTable());
+        AcidUtils.setAcidTableScan(job, ts.getConf().isAcidTable());
         AcidUtils.setAcidOperationalProperties(job, ts.getConf().getAcidOperationalProperties());
       }
       sink = work.getSink();

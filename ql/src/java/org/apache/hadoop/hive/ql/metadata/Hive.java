@@ -1720,7 +1720,7 @@ public class Hive {
     Path tblDataLocationPath =  tbl.getDataLocation();
     boolean isMmTableWrite = AcidUtils.isInsertOnlyTable(tbl.getParameters());
     assert tbl.getPath() != null : "null==getPath() for " + tbl.getTableName();
-    boolean isFullAcidTable = AcidUtils.isFullAcidTable(tbl);
+    boolean isFullAcidTable = AcidUtils.isAcidTable(tbl);
     try {
       // Get the partition object if it already exists
       Partition oldPart = getPartition(tbl, partSpec, false);
@@ -2317,7 +2317,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     Table tbl = getTable(tableName);
     assert tbl.getPath() != null : "null==getPath() for " + tbl.getTableName();
     boolean isMmTable = AcidUtils.isInsertOnlyTable(tbl);
-    boolean isFullAcidTable = AcidUtils.isFullAcidTable(tbl);
+    boolean isFullAcidTable = AcidUtils.isAcidTable(tbl);
     HiveConf sessionConf = SessionState.getSessionConf();
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
       newFiles = Collections.synchronizedList(new ArrayList<Path>());

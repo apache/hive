@@ -146,7 +146,7 @@ public class QueryPlan implements Serializable {
     this.operation = operation;
     this.autoCommitValue = sem.getAutoCommitValue();
     this.resultSchema = resultSchema;
-    this.acidResourcesInQuery = sem.hasAcidInQuery();
+    this.acidResourcesInQuery = sem.hasTransactionalInQuery();
     this.acidSinks = sem.getAcidFileSinks();
   }
 
