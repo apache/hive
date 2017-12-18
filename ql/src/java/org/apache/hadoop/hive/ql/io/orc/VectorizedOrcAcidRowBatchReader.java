@@ -415,7 +415,9 @@ public class VectorizedOrcAcidRowBatchReader
        * If there are deletes and reading original file, we must produce synthetic ROW_IDs in order
        * to see if any deletes apply
        */
-      if(needSyntheticRowIds(true, !deleteEventRegistry.isEmpty(), rowIdProjected)) {
+      boolean needSyntheticRowId =
+          needSyntheticRowIds(true, !deleteEventRegistry.isEmpty(), rowIdProjected);
+      if(needSyntheticRowId) {
         assert syntheticProps != null && syntheticProps.rowIdOffset >= 0 : "" + syntheticProps;
         assert syntheticProps != null && syntheticProps.bucketProperty >= 0 : "" + syntheticProps;
         if(innerReader == null) {
@@ -459,8 +461,19 @@ public class VectorizedOrcAcidRowBatchReader
         // txnid:0 which is always committed so there is no need to check wrt invalid transactions
         //But originals written by Load Data for example can be in base_x or delta_x_x so we must
         //check if 'x' is committed or not evn if ROW_ID is not needed in the Operator pipeline.
-        findRecordsWithInvalidTransactionIds(innerRecordIdColumnVector,
-          vectorizedRowBatchBase.size, selectedBitSet);
+        if (needSyntheticRowId) {
+          findRecordsWithInvalidTransactionIds(innerRecordIdColumnVector,
+              vectorizedRowBatchBase.size, selectedBitSet);
+        } else {
+          /*since ROW_IDs are not needed we didn't create the ColumnVectors to hold them but we
+          * still have to check if the data being read is committed as far as current
+          * reader (transactions) is concerned.  Since here we are reading 'original' schema file,
+          * all rows in it have been created by the same txn, namely 'syntheticProps.syntheticTxnId'
+          */
+          if (!validTxnList.isTxnValid(syntheticProps.syntheticTxnId)) {
+            selectedBitSet.clear(0, vectorizedRowBatchBase.size);
+          }
+        }
       }
     }
     else {
