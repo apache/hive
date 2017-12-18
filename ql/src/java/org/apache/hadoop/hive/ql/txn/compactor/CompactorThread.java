@@ -180,7 +180,9 @@ abstract class CompactorThread extends Thread implements MetaStoreThread {
       ugi.doAs(new PrivilegedExceptionAction<Object>() {
         @Override
         public Object run() throws Exception {
-          FileStatus stat = fs.getFileStatus(p);
+          // need to use a new filesystem object here to have the correct ugi
+          FileSystem proxyFs = p.getFileSystem(conf);
+          FileStatus stat = proxyFs.getFileStatus(p);
           wrapper.add(stat.getOwner());
           return null;
         }
