@@ -129,8 +129,7 @@ public class TestObjectStore {
   @Before
   public void setUp() throws Exception {
     Configuration conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS,
-        MockPartitionExpressionProxy.class.getName());
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     objectStore = new ObjectStore();
     objectStore.setConf(conf);
@@ -462,8 +461,7 @@ public class TestObjectStore {
     String value1 = "another_value";
     Assume.assumeTrue(System.getProperty(key) == null);
     Configuration localConf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setVar(localConf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS,
-        MockPartitionExpressionProxy.class.getName());
+    MetaStoreTestUtils.setConfForStandloneMode(localConf);
     localConf.set(key, value);
     localConf.set(key1, value1);
     objectStore = new ObjectStore();
@@ -537,8 +535,7 @@ public class TestObjectStore {
             .debug(NUM_THREADS + " threads going to add notification"));
 
     Configuration conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS,
-        MockPartitionExpressionProxy.class.getName());
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
     /*
        Below are the properties that need to be set based on what database this test is going to be run
      */

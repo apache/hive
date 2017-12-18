@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,14 +18,31 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.util.StringUtils;
+import org.junit.After;
+import org.junit.Before;
 
-public class TestSetUGIOnOnlyClient extends TestRemoteHiveMetaStore{
+public class TestEmbeddedHiveMetaStore extends TestHiveMetaStore {
+
+  @Before
+  public void openWarehouse() throws Exception {
+    warehouse = new Warehouse(conf);
+    client = createClient();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    client.close();
+  }
 
   @Override
   protected HiveMetaStoreClient createClient() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
-    hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_EXECUTE_SET_UGI, true);
-    return new HiveMetaStoreClient(hiveConf);
+    try {
+      return new HiveMetaStoreClient(conf);
+    } catch (Throwable e) {
+      System.err.println("Unable to open the metastore");
+      System.err.println(StringUtils.stringifyException(e));
+      throw new Exception(e);
+    }
   }
 }

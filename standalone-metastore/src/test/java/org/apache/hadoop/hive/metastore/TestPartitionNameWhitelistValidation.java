@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,9 +23,9 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.hive.cli.CliSessionState;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -35,16 +35,15 @@ import org.junit.Test;
 public class TestPartitionNameWhitelistValidation {
 
   private static final String partitionValidationPattern = "[\\x20-\\x7E&&[^,]]*";
-  private static HiveConf hiveConf;
+  private static Configuration conf;
   private static HiveMetaStoreClient msc;
 
   @BeforeClass
   public static void setupBeforeClass() throws Exception {
-    System.setProperty(HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.varname,
-        partitionValidationPattern);
-    hiveConf = new HiveConf();
-    SessionState.start(new CliSessionState(hiveConf));
-    msc = new HiveMetaStoreClient(hiveConf);
+    System.setProperty(ConfVars.PARTITION_NAME_WHITELIST_PATTERN.toString(), partitionValidationPattern);
+    conf = MetastoreConf.newMetastoreConf();
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    msc = new HiveMetaStoreClient(conf);
   }
 
   // Runs an instance of DisallowUnicodePreEventListener
@@ -61,7 +60,7 @@ public class TestPartitionNameWhitelistValidation {
 
   // Sample data
   private List<String> getPartValsWithUnicode() {
-    List<String> partVals = new ArrayList<String>();
+    List<String> partVals = new ArrayList<>();
     partVals.add("klâwen");
     partVals.add("tägelîch");
 
@@ -69,7 +68,7 @@ public class TestPartitionNameWhitelistValidation {
   }
 
   private List<String> getPartValsWithCommas() {
-    List<String> partVals = new ArrayList<String>();
+    List<String> partVals = new ArrayList<>();
     partVals.add("a,b");
     partVals.add("c,d,e,f");
 
@@ -77,7 +76,7 @@ public class TestPartitionNameWhitelistValidation {
   }
 
   private List<String> getPartValsWithValidCharacters() {
-    List<String> partVals = new ArrayList<String>();
+    List<String> partVals = new ArrayList<>();
     partVals.add("part1");
     partVals.add("part2");
 

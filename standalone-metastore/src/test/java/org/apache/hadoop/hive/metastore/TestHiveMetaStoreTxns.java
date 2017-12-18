@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,19 +17,17 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import junit.framework.Assert;
-
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,14 +47,8 @@ import java.util.List;
  */
 public class TestHiveMetaStoreTxns {
 
-  private final HiveConf conf = new HiveConf();
+  private final Configuration conf = MetastoreConf.newMetastoreConf();
   private IMetaStoreClient client;
-
-  public TestHiveMetaStoreTxns() throws Exception {
-    TxnDbUtil.setConfValues(conf);
-    LogManager.getRootLogger().setLevel(Level.DEBUG);
-    tearDown();
-  }
 
   @Test
   public void testTxns() throws Exception {
@@ -259,6 +251,8 @@ public class TestHiveMetaStoreTxns {
 
   @Before
   public void setUp() throws Exception {
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    TxnDbUtil.setConfValues(conf);
     TxnDbUtil.prepDb(conf);
     client = new HiveMetaStoreClient(conf);
   }
