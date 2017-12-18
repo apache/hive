@@ -153,5 +153,24 @@ select * from
 union all
   (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.value);
 
+-- The following test case makes sure target map works can read from multiple DPP sinks,
+-- when the DPP sinks have different target lists
+-- see HIVE-18111
+
+create table foo(key string);
+insert into table foo values ('1'),('2');
+
+set hive.cbo.enable = false;
+
+explain
+select p from part2 where p in (select max(key) from foo)
+union all
+select p from part1 where p in (select max(key) from foo union all select min(key) from foo);
+
+select p from part2 where p in (select max(key) from foo)
+union all
+select p from part1 where p in (select max(key) from foo union all select min(key) from foo);
+
+drop table foo;
 drop table part1;
 drop table part2;

@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
-import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
@@ -117,7 +116,7 @@ public class SparkDynamicPartitionPruningResolver implements PhysicalPlanResolve
     OperatorUtils.removeBranch(pruningSinkOp);
 
     // Remove all event source info from the target MapWork
-    String sourceWorkId = SparkUtilities.getWorkId(sourceWork);
+    String sourceWorkId = pruningSinkOp.getUniqueId();
     SparkPartitionPruningSinkDesc pruningSinkDesc = pruningSinkOp.getConf();
     targetMapWork.getEventSourceTableDescMap().get(sourceWorkId).remove(pruningSinkDesc.getTable());
     targetMapWork.getEventSourceColumnNameMap().get(sourceWorkId).remove(pruningSinkDesc.getTargetColumnName());

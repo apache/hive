@@ -85,7 +85,7 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
     };
 
     // maps from a work to the DPPs it contains
-    private Map<BaseWork, List<SparkPartitionPruningSinkDesc>> workToDpps = new HashMap<>();
+    private Map<BaseWork, List<SparkPartitionPruningSinkOperator>> workToDpps = new HashMap<>();
 
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs) throws SemanticException {
@@ -215,16 +215,15 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
         if (workSet.size() > 1) {
           Iterator<BaseWork> iterator = workSet.iterator();
           BaseWork first = iterator.next();
-          List<SparkPartitionPruningSinkDesc> dppList1 = workToDpps.get(first);
-          String firstId = SparkUtilities.getWorkId(first);
+          List<SparkPartitionPruningSinkOperator> dppList1 = workToDpps.get(first);
           while (iterator.hasNext()) {
             BaseWork next = iterator.next();
             if (dppList1 != null) {
-              List<SparkPartitionPruningSinkDesc> dppList2 = workToDpps.get(next);
+              List<SparkPartitionPruningSinkOperator> dppList2 = workToDpps.get(next);
               // equivalent works must have dpp lists of same size
               for (int i = 0; i < dppList1.size(); i++) {
-                combineEquivalentDPPSinks(dppList1.get(i), dppList2.get(i),
-                    firstId, SparkUtilities.getWorkId(next));
+                combineEquivalentDPPSinks(dppList1.get(i).getConf(), dppList2.get(i).getConf(),
+                    dppList1.get(i).getUniqueId(), dppList2.get(i).getUniqueId());
               }
             }
             replaceWork(next, first, sparkWork);
@@ -391,10 +390,11 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
       }
 
       if (firstOperator instanceof SparkPartitionPruningSinkOperator) {
-        List<SparkPartitionPruningSinkDesc> dpps = workToDpps.computeIfAbsent(first, k -> new ArrayList<>());
-        dpps.add(((SparkPartitionPruningSinkOperator) firstOperator).getConf());
+        List<SparkPartitionPruningSinkOperator> dpps = workToDpps.computeIfAbsent(
+            first, k -> new ArrayList<>());
+        dpps.add(((SparkPartitionPruningSinkOperator) firstOperator));
         dpps = workToDpps.computeIfAbsent(second, k -> new ArrayList<>());
-        dpps.add(((SparkPartitionPruningSinkOperator) secondOperator).getConf());
+        dpps.add(((SparkPartitionPruningSinkOperator) secondOperator));
       }
       return true;
     }

@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
-import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkSortMergeJoinFactory;
@@ -464,16 +463,12 @@ public class GenSparkUtils {
         targetWork != null,
         "No targetWork found for tablescan " + ts);
 
-    String targetId = SparkUtilities.getWorkId(targetWork);
-
-    BaseWork sourceWork = getEnclosingWork(pruningSink, context);
-    String sourceId = SparkUtilities.getWorkId(sourceWork);
+    String sourceId = pruningSink.getUniqueId();
 
     // set up temporary path to communicate between the small/big table
     Path tmpPath = targetWork.getTmpPathForPartitionPruning();
     if (tmpPath == null) {
-      Path baseTmpPath = context.parseContext.getContext().getMRTmpPath();
-      tmpPath = SparkUtilities.generateTmpPathForPartitionPruning(baseTmpPath, targetId);
+      tmpPath = getDPPOutputPath(context.parseContext.getContext());
       targetWork.setTmpPathForPartitionPruning(tmpPath);
       LOG.info("Setting tmp path between source work and target work:\n" + tmpPath);
     }
@@ -507,6 +502,10 @@ public class GenSparkUtils {
     }
     List<ExprNodeDesc> keys = targetWork.getEventSourcePartKeyExprMap().get(sourceId);
     keys.add(desc.getTargetPartKey());
+  }
+
+  private Path getDPPOutputPath(Context context) {
+    return new Path(context.getMRScratchDir(), "_dpp_output_");
   }
 
   public static SparkEdgeProperty getEdgeProperty(HiveConf conf, ReduceSinkOperator reduceSink,
@@ -681,20 +680,5 @@ public class GenSparkUtils {
       }
     }
     return false;
-  }
-
-  /**
-   * getEncosingWork finds the BaseWork any given operator belongs to.
-   */
-  public BaseWork getEnclosingWork(Operator<?> op, GenSparkProcContext procCtx) {
-    List<Operator<?>> ops = new ArrayList<Operator<?>>();
-    OperatorUtils.findRoots(op, ops);
-    for (Operator<?> r : ops) {
-      BaseWork work = procCtx.rootToWorkMap.get(r);
-      if (work != null) {
-        return work;
-      }
-    }
-    return null;
   }
 }
