@@ -124,6 +124,7 @@ public class VectorizedColumnReaderTestBase {
       + "repeated fixed_len_byte_array(3) list_byte_array_field;"
       + "repeated binary list_binary_field;"
       + "repeated binary list_decimal_field (DECIMAL(5,2));"
+      + "repeated binary list_binary_field_for_repeat_test;"
       + "repeated int32 list_int32_field_for_repeat_test;"
       + "repeated group map_int32 (MAP_KEY_VALUE) {\n"
       + "  required int32 key;\n"
