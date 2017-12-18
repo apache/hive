@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -4640,6 +4641,10 @@ public class Vectorizer implements PhysicalPlanResolver {
             vectorOp = OperatorFactory.getVectorOperator(
                 op.getCompilationOpContext(), sparkPartitionPruningSinkDesc,
                 vContext, vectorSparkPartitionPruningSinkDesc);
+            // need to maintain the unique ID so that target map works can
+            // read the output
+            ((SparkPartitionPruningSinkOperator) vectorOp).setUniqueId(
+                ((SparkPartitionPruningSinkOperator) op).getUniqueId());
             isNative = true;
           }
           break;

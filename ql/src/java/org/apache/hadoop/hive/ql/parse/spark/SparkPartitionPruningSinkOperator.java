@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse.spark;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -55,6 +56,9 @@ public class SparkPartitionPruningSinkOperator extends Operator<SparkPartitionPr
   protected transient Serializer serializer;
   protected transient DataOutputBuffer buffer;
   protected static final Logger LOG = LoggerFactory.getLogger(SparkPartitionPruningSinkOperator.class);
+  private static final AtomicLong SEQUENCE_NUM = new AtomicLong(0);
+
+  private transient String uniqueId = null;
 
   /** Kryo ctor. */
   @VisibleForTesting
@@ -202,4 +206,14 @@ public class SparkPartitionPruningSinkOperator extends Operator<SparkPartitionPr
     return "SPARKPRUNINGSINK";
   }
 
+  public synchronized String getUniqueId() {
+    if (uniqueId == null) {
+      uniqueId = getOperatorId() + "_" + SEQUENCE_NUM.getAndIncrement();
+    }
+    return uniqueId;
+  }
+
+  public synchronized void setUniqueId(String uniqueId) {
+    this.uniqueId = uniqueId;
+  }
 }
