@@ -56,6 +56,8 @@ public class TestVectorizedMapColumnReader extends VectorizedColumnReaderTestBas
 
       int mapSize = i % mapMaxSize + 1;
       if (!isNull) {
+        // the map_field is to test multiple level map definition
+        Group multipleLevelGroup = group.addGroup("map_field");
         for (int j = 0; j < mapSize; j++) {
           int intValForMap = getIntValue(isDictionaryEncoding, mapElementIndex);
           long longValForMap = getLongValue(isDictionaryEncoding, mapElementIndex);
@@ -74,6 +76,8 @@ public class TestVectorizedMapColumnReader extends VectorizedColumnReaderTestBas
               .append("value", binaryValForMap);
           group.addGroup("map_decimal").append("key", decimalValForMap)
               .append("value", decimalValForMap);
+          multipleLevelGroup.addGroup("map").append("key", binaryValForMap)
+              .append("value", binaryValForMap);
           mapElementIndex++;
         }
       }
@@ -157,6 +161,14 @@ public class TestVectorizedMapColumnReader extends VectorizedColumnReaderTestBas
     removeFile();
     writeRepeateMapData(initWriterFromFile(), 1025, true);
     testRepeateMapRead(1025, true);
+    removeFile();
+  }
+
+  @Test
+  public void testMultipleDefinitionMapRead() throws Exception {
+    removeFile();
+    writeMapData(initWriterFromFile(), false, 1023);
+    testMapRead(false, "multipleLevel", 1023);
     removeFile();
   }
 
@@ -267,6 +279,9 @@ public class TestVectorizedMapColumnReader extends VectorizedColumnReaderTestBas
     } else if ("decimal".equals(type)) {
       conf.set(IOConstants.COLUMNS, "map_decimal");
       conf.set(IOConstants.COLUMNS_TYPES, "map<decimal(5,2),decimal(5,2)>");
+    } else if ("multipleLevel".equals(type)) {
+      conf.set(IOConstants.COLUMNS, "map_field");
+      conf.set(IOConstants.COLUMNS_TYPES, "map<string,string>");
     }
   }
 
@@ -291,6 +306,15 @@ public class TestVectorizedMapColumnReader extends VectorizedColumnReaderTestBas
       case "decimal":
         return String.format(schemaFormat, "decimal", "binary", "(DECIMAL(5,2))",
             "binary", "(DECIMAL(5,2))");
+      case "multipleLevel":
+        return "message hive_schema {\n"
+            + "optional group map_field (MAP) {\n"
+            + "  repeated group map (MAP_KEY_VALUE) {\n"
+            + "    required binary key;\n"
+            + "    optional binary value;\n"
+            + "  }\n"
+            + "}\n"
+            + "}\n";
       default:
         throw new RuntimeException("Unsupported type for TestVectorizedMapColumnReader!");
     }
@@ -310,7 +334,7 @@ public class TestVectorizedMapColumnReader extends VectorizedColumnReaderTestBas
     } else if ("float".equals(type)) {
       assertEquals(getFloatValue(isDictionaryEncoding, valueIndex),
           ((DoubleColumnVector)childVector).vector[position], 0);
-    } else if ("binary".equals(type)) {
+    } else if ("binary".equals(type) || "multipleLevel".equals(type)) {
       String actual = new String(ArrayUtils
           .subarray(((BytesColumnVector)childVector).vector[position],
               ((BytesColumnVector)childVector).start[position],
