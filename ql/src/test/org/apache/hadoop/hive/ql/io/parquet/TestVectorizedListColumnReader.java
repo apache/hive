@@ -72,8 +72,9 @@ public class TestVectorizedListColumnReader extends VectorizedColumnReaderTestBa
         }
       }
       for (int j = 0; j < listMaxSize; j++) {
-        group.append("list_int32_field_for_repeat_test", getIntValue(isDictionaryEncoding, j));
+        group.append("list_binary_field_for_repeat_test", getBinaryValue(isDictionaryEncoding, i));
       }
+
       writer.write(group);
     }
     writer.close();
@@ -154,6 +155,14 @@ public class TestVectorizedListColumnReader extends VectorizedColumnReaderTestBa
     removeFile();
     writeRepeateListData(initWriterFromFile(), 1025, true);
     testRepeateListRead(1025, true);
+    removeFile();
+  }
+
+  @Test
+  public void testUnrepeatedStringWithoutNullListRead() throws Exception {
+    removeFile();
+    writeListData(initWriterFromFile(), false, 1025);
+    testUnRepeateStringWithoutNullListRead();
     removeFile();
   }
 
@@ -250,6 +259,10 @@ public class TestVectorizedListColumnReader extends VectorizedColumnReaderTestBa
     try {
       while (reader.next(NullWritable.get(), previous)) {
         ListColumnVector vector = (ListColumnVector) previous.cols[0];
+
+        //since Repeating only happens when offset length is 1.
+        assertEquals((vector.offsets.length == 1),vector.isRepeating);
+
         for (int i = 0; i < vector.offsets.length; i++) {
           if (row == elementNum) {
             assertEquals(i, vector.offsets.length - 1);
@@ -301,6 +314,25 @@ public class TestVectorizedListColumnReader extends VectorizedColumnReaderTestBa
         }
       }
       assertEquals("It doesn't exit at expected position", elementNum, row);
+    } finally {
+      reader.close();
+    }
+  }
+
+  private void testUnRepeateStringWithoutNullListRead() throws Exception {
+    Configuration conf = new Configuration();
+    conf.set(IOConstants.COLUMNS, "list_binary_field_for_repeat_test");
+    conf.set(IOConstants.COLUMNS_TYPES, "array<string>");
+    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    VectorizedParquetRecordReader reader = createTestParquetReader(
+        "message hive_schema {repeated binary list_binary_field_for_repeat_test;}", conf);
+    VectorizedRowBatch previous = reader.createValue();
+    try {
+      while (reader.next(NullWritable.get(), previous)) {
+        ListColumnVector vector = (ListColumnVector) previous.cols[0];
+        assertEquals((vector.offsets.length == 1),vector.isRepeating);
+      }
     } finally {
       reader.close();
     }

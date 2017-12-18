@@ -258,7 +258,8 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
         lcv.child = new BytesColumnVector(total);
         lcv.child.init();
         for (int i = 0; i < valueList.size(); i++) {
-          ((BytesColumnVector)lcv.child).setVal(i, ((List<byte[]>)valueList).get(i));
+          byte[] src = ((List<byte[]>)valueList).get(i);
+          ((BytesColumnVector)lcv.child).setRef(i, src, 0, src.length);
         }
         break;
       case FLOAT:
