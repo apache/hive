@@ -20,9 +20,17 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.math.BigDecimal;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
+import org.apache.calcite.adapter.java.JavaTypeFactory;
+import org.apache.calcite.adapter.jdbc.JdbcImplementor;
+import org.apache.calcite.adapter.jdbc.JdbcTableScan;
+import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rex.RexLiteral;
+import org.apache.calcite.sql.SqlDialect;
+import org.apache.calcite.sql.dialect.JethrodataSqlDialect;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.TimeString;
@@ -32,13 +40,20 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.JdbcHiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class ASTBuilder {
+  
+  public static final Logger logger  = LoggerFactory.getLogger(ASTBuilder.class);
 
   public static ASTBuilder construct(int tokenType, String text) {
     ASTBuilder b = new ASTBuilder();
@@ -58,14 +73,24 @@ public class ASTBuilder {
                 "TOK_TMP_FILE")).node();
   }
 
-  public static ASTNode table(RelNode scan) {
-    HiveTableScan hts;
-    if (scan instanceof DruidQuery) {
-      hts = (HiveTableScan) ((DruidQuery)scan).getTableScan();
+  public static ASTNode table(final RelNode scan) {
+    JdbcHiveTableScan jdbcHiveTableScan = null;
+    
+    HiveTableScan hts = null;
+    if (scan instanceof HiveJdbcConverter) {
+      HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
+      //TODOY find the first jdbc using RelVisitor an extract the HiveTableScan out of it and assign hts
+      jdbcHiveTableScan = jdbcConverter.getTableScan();
+      
+      hts = jdbcHiveTableScan.getHiveTableScan();
+    } else if (scan instanceof DruidQuery) {
+      hts = (HiveTableScan) ((DruidQuery) scan).getTableScan();
     } else {
       hts = (HiveTableScan) scan;
     }
 
+    
+    assert hts != null;
     RelOptHiveTable hTbl = (RelOptHiveTable) hts.getTable();
     ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(
         ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
@@ -73,7 +98,7 @@ public class ASTBuilder {
             .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName()));
 
     ASTBuilder propList = ASTBuilder.construct(HiveParser.TOK_TABLEPROPLIST, "TOK_TABLEPROPLIST");
-    if (scan instanceof DruidQuery) {
+    if (scan instanceof DruidQuery) {// TODOY 34:00
       // Pass possible query to Druid
       DruidQuery dq = (DruidQuery) scan;
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
@@ -83,13 +108,27 @@ public class ASTBuilder {
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
               .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_TYPE + "\"")
               .add(HiveParser.StringLiteral, "\"" + dq.getQueryType().getQueryName() + "\""));
+    } else if (scan instanceof HiveJdbcConverter) {// TODOY 35:30
+            HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
+            final String query = jdbcConverter.generateSql (JethrodataSqlDialect.DEFAULT);
+            final String query2 = jdbcConverter.generateSql (JethrodataSqlDialect.DEFAULT);
+            logger.info("JETHRO: The HiveJdbcConverter generated sql message is: " + System.lineSeparator() + query);
+            propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+                .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_QUERY + "\"")
+                .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(query) + "\""));
+            
+            propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+                .add(HiveParser.StringLiteral, "\"" + "YONI_ATTR" + "\"")
+                .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(query) + "\""));
     }
+
     if (hts.isInsideView()) {
       // We need to carry the insideView information from calcite into the ast.
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
               .add(HiveParser.StringLiteral, "\"insideView\"")
               .add(HiveParser.StringLiteral, "\"TRUE\""));
     }
+    
     b.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTIES, "TOK_TABLEPROPERTIES").add(propList));
 
     // NOTE: Calcite considers tbls to be equal if their names are the same. Hence
@@ -98,7 +137,8 @@ public class ASTBuilder {
     // However in HIVE DB name can not appear in select list; in case of join
     // where table names differ only in DB name, Hive would require user
     // introducing explicit aliases for tbl.
-    b.add(HiveParser.Identifier, hts.getTableAlias());
+    String tableName = hts.getTableAlias();
+    b.add(HiveParser.Identifier, tableName);
     return b.node();
   }
 

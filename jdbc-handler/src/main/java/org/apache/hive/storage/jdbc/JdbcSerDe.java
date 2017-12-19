@@ -66,22 +66,38 @@ public class JdbcSerDe extends AbstractSerDe {
       LOGGER.debug("Initializing the SerDe");
 
       if (tbl.containsKey(JdbcStorageConfig.DATABASE_TYPE.getPropertyName())) {
+        final boolean hive_query_execution = tbl.containsKey("YONI_ATTR");
+        
         Configuration tableConfig = JdbcStorageConfigManager.convertPropertiesToConfiguration(tbl);
 
         DatabaseAccessor dbAccessor = DatabaseAccessorFactory.getAccessor(tableConfig);
         columnNames = dbAccessor.getColumnNames(tableConfig);
         numColumns = columnNames.size();
+        List<String> hiveColumnNames;
+        if (hive_query_execution) {
+          hiveColumnNames = columnNames;
+          final List<String> columnTypes = dbAccessor.getColumnTypes(tableConfig);
+          hiveColumnTypeArray = new String [columnTypes.size()];
+          hiveColumnTypeArray = columnTypes.toArray (hiveColumnTypeArray);
+          for (int i = 0; i < hiveColumnTypeArray.length; i++) {
+            if (hiveColumnTypeArray [i].equalsIgnoreCase("integer")) {
+              hiveColumnTypeArray [i] = "int";
+            }
+            hiveColumnTypeArray [i] = hiveColumnTypeArray [i].toLowerCase();
+          }
+        } else {
 
-        String[] hiveColumnNameArray = parseProperty(tbl.getProperty(serdeConstants.LIST_COLUMNS), ",");
-        if (numColumns != hiveColumnNameArray.length) {
-          throw new SerDeException("Expected " + numColumns + " columns. Table definition has "
-              + hiveColumnNameArray.length + " columns");
-        }
-        List<String> hiveColumnNames = Arrays.asList(hiveColumnNameArray);
-
-        hiveColumnTypeArray = parseProperty(tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES), ":");
-        if (hiveColumnTypeArray.length == 0) {
-          throw new SerDeException("Received an empty Hive column type definition");
+          String[] hiveColumnNameArray = parseProperty(tbl.getProperty(serdeConstants.LIST_COLUMNS), ",");
+          if (numColumns != hiveColumnNameArray.length) {
+            throw new SerDeException("Expected " + numColumns + " columns. Table definition has "
+                + hiveColumnNameArray.length + " columns");
+          }
+          hiveColumnNames = Arrays.asList(hiveColumnNameArray);
+          
+          hiveColumnTypeArray = parseProperty(tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES), ":");
+          if (hiveColumnTypeArray.length == 0) {
+            throw new SerDeException("Received an empty Hive column type definition");
+          }
         }
 
         List<ObjectInspector> fieldInspectors = new ArrayList<ObjectInspector>(numColumns);

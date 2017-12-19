@@ -27,6 +27,8 @@ import java.util.TreeMap;
 
 
 import org.apache.calcite.adapter.druid.DruidQuery;
+import org.apache.calcite.adapter.jdbc.JdbcTable;
+import org.apache.calcite.adapter.jdbc.JdbcTableScan;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
@@ -64,9 +66,11 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.JdbcHiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -340,7 +344,15 @@ public class ASTConverter {
     Schema s = null;
     ASTNode ast = null;
 
-    if (r instanceof TableScan) {
+    if (r instanceof HiveJdbcConverter) {
+      HiveJdbcConverter f = (HiveJdbcConverter) r;
+      s = new Schema(f);
+      ast = ASTBuilder.table(f);
+    } /*else if (r instanceof JdbcHiveTableScan) {
+      JdbcHiveTableScan f = (JdbcHiveTableScan) r;
+      s = new Schema(f);
+      ast = ASTBuilder.table(f);
+    } */else if (r instanceof TableScan) {
       TableScan f = (TableScan) r;
       s = new Schema(f);
       ast = ASTBuilder.table(f);
@@ -425,7 +437,8 @@ public class ASTConverter {
     public void visit(RelNode node, int ordinal, RelNode parent) {
 
       if (node instanceof TableScan ||
-          node instanceof DruidQuery) {
+          node instanceof DruidQuery ||
+          node instanceof HiveJdbcConverter) {
         ASTConverter.this.from = node;
       } else if (node instanceof Filter) {
         handle((Filter) node);
@@ -740,6 +753,22 @@ public class ASTConverter {
         add(new ColumnInfo(tabName, field.getName()));
       }
     }
+
+    Schema(HiveJdbcConverter scan) {
+      HiveJdbcConverter jdbcHiveCoverter = (HiveJdbcConverter) (scan);
+      final JdbcHiveTableScan jdbcTableScan = jdbcHiveCoverter.getTableScan();
+      String tabName = jdbcTableScan.getHiveTableScan().getTableAlias();//TODOY ask Jesus
+      for (RelDataTypeField field : jdbcHiveCoverter.getRowType().getFieldList()) {
+        add(new ColumnInfo(tabName, field.getName()));
+      }
+    }
+    
+    /*Schema(JdbcHiveTableScan hts) {
+      String tabName = hts.jdbcTable.jdbcTableName;
+      for (RelDataTypeField field : hts.getHiveTableScan().getRowType().getFieldList()) {
+        add(new ColumnInfo(tabName, field.getName()));
+      }
+    }*/
 
     Schema(Project select, String alias) {
       for (RelDataTypeField field : select.getRowType().getFieldList()) {

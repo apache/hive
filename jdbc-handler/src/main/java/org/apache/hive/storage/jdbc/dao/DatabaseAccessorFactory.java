@@ -35,6 +35,9 @@ public class DatabaseAccessorFactory {
     case MYSQL:
       accessor = new MySqlDatabaseAccessor();
       break;
+    case JETHRO:
+      accessor = new JethroDatabaseAccessor();
+      break;
 
     default:
       accessor = new GenericJdbcDatabaseAccessor();
