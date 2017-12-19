@@ -210,33 +210,33 @@ POSTHOOK: query: select * from part_null where p_size IN (select p_size from par
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
-49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
-33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
-17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
-42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
-155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
-15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
-86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
-65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
-85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
-110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
-191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
-146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
-132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
-195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
-90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
+110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
 112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
+144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
+146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
+15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
+155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
 17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
+17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
+191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
+192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
+195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
+33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
+40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
+42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
 45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
 48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
-78487	NULL	Manufacturer#6	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
-192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
+78487	NULL	Manufacturer#6	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
+86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 Warning: Shuffle Join JOIN[27][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_name from part_null)
 PREHOOK: type: QUERY
@@ -637,17 +637,29 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join JOIN[27][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
-PREHOOK: query: select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null) order by part_null.p_partkey
+PREHOOK: query: select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null) order by part_null.p_partkey
+POSTHOOK: query: select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
+105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
+110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
+112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
+144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
+146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
+155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
 17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
 17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
+191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
+192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
+195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
 33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
 40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
 42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
@@ -659,18 +671,6 @@ POSTHOOK: Input: default@part_null
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
-110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
-112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
-144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
-146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
-155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
-191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
-192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
-195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
 Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part_null where p_brand IN (select p_brand from part_null) AND p_brand NOT IN (select p_name from part_null)
 PREHOOK: type: QUERY
@@ -1071,33 +1071,33 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_null
 POSTHOOK: Input: default@tempty
 #### A masked pattern was here ####
+105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
+110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
+112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
 121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
 121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
 144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
-17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
-33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
-49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
-42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
+146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
 155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
-85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
-86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
-65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
-110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
-105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
-191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
-146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
-132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
-195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
-90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
-40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
 17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
-48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
-45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
+17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
+191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
+195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
+33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
+40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
+42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
+45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
+48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
+49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
 78487	NULL	Manufacturer#6	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
+86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 Warning: Shuffle Join JOIN[22][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull)
 PREHOOK: type: QUERY
@@ -1233,19 +1233,31 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join JOIN[22][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
-PREHOOK: query: select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull) order by part_null.p_partkey
+PREHOOK: query: select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
 PREHOOK: Input: default@tnull
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull) order by part_null.p_partkey
+POSTHOOK: query: select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_null
 POSTHOOK: Input: default@tnull
 #### A masked pattern was here ####
+105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
+110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
+112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
+144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
+146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
+155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
 17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
 17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
+191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
+192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
+195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
 33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
 40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
 42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
@@ -1257,18 +1269,6 @@ POSTHOOK: Input: default@tnull
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
-110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
-112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
-144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
-146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
-155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
-191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
-192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
-195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
 Warning: Shuffle Join JOIN[22][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part_null where p_size IN (select p_size from part_null) AND EXISTS (select c from tempty)
 PREHOOK: type: QUERY
@@ -1565,32 +1565,32 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_null
 POSTHOOK: Input: default@tempty
 #### A masked pattern was here ####
-192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
-90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
-42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
-48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
-86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
-15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
-45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
-65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
-132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
-195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
-17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
-33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
-78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
-49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
-112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
-40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
-144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
-155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
-191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
+112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
+144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
 146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
+15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
+155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
+17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
+17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
+191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
+192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
+195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
+33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
+40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
+42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
+45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
+48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
+49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
+78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
+86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type)
         AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
                                 AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
@@ -1889,32 +1889,32 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
-86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
-191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
+112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
 132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
-90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
+144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
+146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
+15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
+155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
 17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
 17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
-33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
-48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
-45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
-78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
-15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
-85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
-65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
-146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
 195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
-112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
-144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
-49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
+40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
 42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
-155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
+45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
+48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
+49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
+78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
+86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: explain select * from part_null where p_name IN ( select p_name from part) AND p_brand IN (select p_brand from part where part.p_type = part_null.p_type)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part_null where p_name IN ( select p_name from part) AND p_brand IN (select p_brand from part where part.p_type = part_null.p_type)
@@ -2052,32 +2052,32 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
-86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
-191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
+112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
 132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
-90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
+144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
+146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
+15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
+155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
 17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
 17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
-33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
-48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
-45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
-78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
-15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
-85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
-65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
-146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
 195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
-112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
-144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
-49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
+40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
 42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
-155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
+45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
+48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
+49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
+78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
+86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type AND part.p_container=part_null.p_container) AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type AND part.p_container=part_null.p_container) AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
@@ -2368,32 +2368,32 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
-86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
-191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
+112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
 132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
-90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
+144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
+146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
+15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
+155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
 17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
 17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
-33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
-48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
-45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
-78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
-15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
-85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
-65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
-146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
 195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
-112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
-144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
-49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
+40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
 42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
-155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
+45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
+48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
+49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
+78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
+86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type) AND p_brand NOT IN (select p_type from part where part.p_size = part_null.p_size)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type) AND p_brand NOT IN (select p_type from part where part.p_size = part_null.p_size)
@@ -2598,32 +2598,32 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
-65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
-191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
-132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
-195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
+110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
 112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
 144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
+146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
+15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
+155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
 17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
 17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
+191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
+192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
+195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
 33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
+40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
+42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
 45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
 48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
-42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
-155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
-15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
-86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
-85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
-110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
-146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
-90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
 49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
-192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
+85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
+86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
@@ -2756,32 +2756,32 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
-42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
-112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
-144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
-110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
-191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
-86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
-15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
-45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
-146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
-195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
-17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
-33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
-192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
-17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
-49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
-40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
-155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
-48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
-65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
+110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
+112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
 132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
+144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
+146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
+15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
+155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
+17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
+17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
+191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
+192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
+195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
+33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
+40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
+42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
+45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
+48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
+49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
+86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 Warning: Shuffle Join JOIN[32][tables = [$hdt$_2, $hdt$_3]] in Work 'Reducer 7' is a cross product
 PREHOOK: query: explain select p.p_partkey, li.l_suppkey
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey
@@ -3267,305 +3267,305 @@ having count(*) in (select count(*) from src s1 where s1.key > '9' and exists (s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-183	val_183	1
-266	val_266	1
-66	val_66	1
-472	val_472	1
-345	val_345	1
-452	val_452	1
-360	val_360	1
-136	val_136	1
-263	val_263	1
-85	val_85	1
-332	val_332	1
-375	val_375	1
-378	val_378	1
-339	val_339	1
-65	val_65	1
-17	val_17	1
-145	val_145	1
-189	val_189	1
-228	val_228	1
-449	val_449	1
-308	val_308	1
-158	val_158	1
-8	val_8	1
-467	val_467	1
-274	val_274	1
-402	val_402	1
-116	val_116	1
-286	val_286	1
-485	val_485	1
-28	val_28	1
-394	val_394	1
-291	val_291	1
-495	val_495	1
-235	val_235	1
-484	val_484	1
-258	val_258	1
-77	val_77	1
-150	val_150	1
-157	val_157	1
-87	val_87	1
-482	val_482	1
-493	val_493	1
-446	val_446	1
-302	val_302	1
-377	val_377	1
-9	val_9	1
-69	val_69	1
-180	val_180	1
-44	val_44	1
-78	val_78	1
-305	val_305	1
-80	val_80	1
-41	val_41	1
-163	val_163	1
-20	val_20	1
-296	val_296	1
-247	val_247	1
-448	val_448	1
-386	val_386	1
-196	val_196	1
-160	val_160	1
-436	val_436	1
-92	val_92	1
-400	val_400	1
-260	val_260	1
-379	val_379	1
-496	val_496	1
-487	val_487	1
-306	val_306	1
-19	val_19	1
-368	val_368	1
-74	val_74	1
-33	val_33	1
-57	val_57	1
-490	val_490	1
-389	val_389	1
-373	val_373	1
-497	val_497	1
-47	val_47	1
-170	val_170	1
-241	val_241	1
-356	val_356	1
-10	val_10	1
-190	val_190	1
-315	val_315	1
-30	val_30	1
-407	val_407	1
-54	val_54	1
-155	val_155	1
-248	val_248	1
-335	val_335	1
-131	val_131	1
-244	val_244	1
-105	val_105	1
-143	val_143	1
-494	val_494	1
-166	val_166	1
-366	val_366	1
-96	val_96	1
-292	val_292	1
-477	val_477	1
-43	val_43	1
-418	val_418	1
-202	val_202	1
-114	val_114	1
-178	val_178	1
-214	val_214	1
-252	val_252	1
-177	val_177	1
-435	val_435	1
-111	val_111	1
-257	val_257	1
-323	val_323	1
-392	val_392	1
-287	val_287	1
-341	val_341	1
-443	val_443	1
-53	val_53	1
-133	val_133	1
-457	val_457	1
-226	val_226	1
-364	val_364	1
-285	val_285	1
-481	val_481	1
-475	val_475	1
-421	val_421	1
-162	val_162	1
-310	val_310	1
-336	val_336	1
-393	val_393	1
-192	val_192	1
-126	val_126	1
-11	val_11	1
-455	val_455	1
-427	val_427	1
-4	val_4	1
-479	val_479	1
-289	val_289	1
-186	val_186	1
-249	val_249	1
-2	val_2	1
-181	val_181	1
-64	val_64	1
-437	val_437	1
-275	val_275	1
-362	val_362	1
-338	val_338	1
-419	val_419	1
-284	val_284	1
-460	val_460	1
-444	val_444	1
-156	val_156	1
-168	val_168	1
-365	val_365	1
-82	val_82	1
-374	val_374	1
-453	val_453	1
-153	val_153	1
-86	val_86	1
-34	val_34	1
-262	val_262	1
-470	val_470	1
-351	val_351	1
-201	val_201	1
-218	val_218	1
-483	val_483	1
-411	val_411	1
-27	val_27	1
-491	val_491	1
-222	val_222	1
-194	val_194	1
-283	val_283	1
-432	val_432	1
-382	val_382	2
-37	val_37	2
-95	val_95	2
-134	val_134	2
-172	val_172	2
-125	val_125	2
-58	val_58	2
-272	val_272	2
-103	val_103	2
-42	val_42	2
-353	val_353	2
-342	val_342	2
-120	val_120	2
-321	val_321	2
-209	val_209	2
-205	val_205	2
-84	val_84	2
-213	val_213	2
-331	val_331	2
-265	val_265	2
-317	val_317	2
-395	val_395	2
-195	val_195	2
-309	val_309	2
-462	val_462	2
-216	val_216	2
-224	val_224	2
-164	val_164	2
-149	val_149	2
-233	val_233	2
-367	val_367	2
-414	val_414	2
-239	val_239	2
-26	val_26	2
-307	val_307	2
-217	val_217	2
-191	val_191	2
-129	val_129	2
-223	val_223	2
-238	val_238	2
-24	val_24	2
-399	val_399	2
-459	val_459	2
-325	val_325	2
-255	val_255	2
-413	val_413	2
-51	val_51	2
-207	val_207	2
-281	val_281	2
-229	val_229	2
-221	val_221	2
-256	val_256	2
-219	val_219	2
-137	val_137	2
-282	val_282	2
-429	val_429	2
-104	val_104	2
-322	val_322	2
-12	val_12	2
-344	val_344	2
-404	val_404	2
-18	val_18	2
-83	val_83	2
-72	val_72	2
-200	val_200	2
-278	val_278	2
-15	val_15	2
-458	val_458	2
-152	val_152	2
-203	val_203	2
-237	val_237	2
-146	val_146	2
-165	val_165	2
-397	val_397	2
-280	val_280	2
-100	val_100	2
-118	val_118	2
-175	val_175	2
-113	val_113	2
-424	val_424	2
-197	val_197	2
-492	val_492	2
-333	val_333	2
-97	val_97	2
-76	val_76	2
-288	val_288	2
-179	val_179	2
-174	val_174	2
-67	val_67	2
-176	val_176	2
-478	val_478	2
-98	val_98	2
-242	val_242	2
-439	val_439	2
-463	val_463	2
-298	val_298	3
-193	val_193	3
-273	val_273	3
-316	val_316	3
-5	val_5	3
-369	val_369	3
-430	val_430	3
-70	val_70	3
-384	val_384	3
-431	val_431	3
-396	val_396	3
-480	val_480	3
-466	val_466	3
-498	val_498	3
 0	val_0	3
-318	val_318	3
-311	val_311	3
-327	val_327	3
-417	val_417	3
-454	val_454	3
-35	val_35	3
-90	val_90	3
-187	val_187	3
-208	val_208	3
-438	val_438	3
-403	val_403	3
-199	val_199	3
-128	val_128	3
-409	val_409	3
-167	val_167	3
+10	val_10	1
+100	val_100	2
+103	val_103	2
+104	val_104	2
+105	val_105	1
+11	val_11	1
+111	val_111	1
+113	val_113	2
+114	val_114	1
+116	val_116	1
+118	val_118	2
 119	val_119	3
+12	val_12	2
+120	val_120	2
+125	val_125	2
+126	val_126	1
+128	val_128	3
+129	val_129	2
+131	val_131	1
+133	val_133	1
+134	val_134	2
+136	val_136	1
+137	val_137	2
+143	val_143	1
+145	val_145	1
+146	val_146	2
+149	val_149	2
+15	val_15	2
+150	val_150	1
+152	val_152	2
+153	val_153	1
+155	val_155	1
+156	val_156	1
+157	val_157	1
+158	val_158	1
+160	val_160	1
+162	val_162	1
+163	val_163	1
+164	val_164	2
+165	val_165	2
+166	val_166	1
+167	val_167	3
+168	val_168	1
+17	val_17	1
+170	val_170	1
+172	val_172	2
+174	val_174	2
+175	val_175	2
+176	val_176	2
+177	val_177	1
+178	val_178	1
+179	val_179	2
+18	val_18	2
+180	val_180	1
+181	val_181	1
+183	val_183	1
+186	val_186	1
+187	val_187	3
+189	val_189	1
+19	val_19	1
+190	val_190	1
+191	val_191	2
+192	val_192	1
+193	val_193	3
+194	val_194	1
+195	val_195	2
+196	val_196	1
+197	val_197	2
+199	val_199	3
+2	val_2	1
+20	val_20	1
+200	val_200	2
+201	val_201	1
+202	val_202	1
+203	val_203	2
+205	val_205	2
+207	val_207	2
+208	val_208	3
+209	val_209	2
+213	val_213	2
+214	val_214	1
+216	val_216	2
+217	val_217	2
+218	val_218	1
+219	val_219	2
+221	val_221	2
+222	val_222	1
+223	val_223	2
+224	val_224	2
+226	val_226	1
+228	val_228	1
+229	val_229	2
+233	val_233	2
+235	val_235	1
+237	val_237	2
+238	val_238	2
+239	val_239	2
+24	val_24	2
+241	val_241	1
+242	val_242	2
+244	val_244	1
+247	val_247	1
+248	val_248	1
+249	val_249	1
+252	val_252	1
+255	val_255	2
+256	val_256	2
+257	val_257	1
+258	val_258	1
+26	val_26	2
+260	val_260	1
+262	val_262	1
+263	val_263	1
+265	val_265	2
+266	val_266	1
+27	val_27	1
+272	val_272	2
+273	val_273	3
+274	val_274	1
+275	val_275	1
+278	val_278	2
+28	val_28	1
+280	val_280	2
+281	val_281	2
+282	val_282	2
+283	val_283	1
+284	val_284	1
+285	val_285	1
+286	val_286	1
+287	val_287	1
+288	val_288	2
+289	val_289	1
+291	val_291	1
+292	val_292	1
+296	val_296	1
+298	val_298	3
+30	val_30	1
+302	val_302	1
+305	val_305	1
+306	val_306	1
+307	val_307	2
+308	val_308	1
+309	val_309	2
+310	val_310	1
+311	val_311	3
+315	val_315	1
+316	val_316	3
+317	val_317	2
+318	val_318	3
+321	val_321	2
+322	val_322	2
+323	val_323	1
+325	val_325	2
+327	val_327	3
+33	val_33	1
+331	val_331	2
+332	val_332	1
+333	val_333	2
+335	val_335	1
+336	val_336	1
+338	val_338	1
+339	val_339	1
+34	val_34	1
+341	val_341	1
+342	val_342	2
+344	val_344	2
+345	val_345	1
+35	val_35	3
+351	val_351	1
+353	val_353	2
+356	val_356	1
+360	val_360	1
+362	val_362	1
+364	val_364	1
+365	val_365	1
+366	val_366	1
+367	val_367	2
+368	val_368	1
+369	val_369	3
+37	val_37	2
+373	val_373	1
+374	val_374	1
+375	val_375	1
+377	val_377	1
+378	val_378	1
+379	val_379	1
+382	val_382	2
+384	val_384	3
+386	val_386	1
+389	val_389	1
+392	val_392	1
+393	val_393	1
+394	val_394	1
+395	val_395	2
+396	val_396	3
+397	val_397	2
+399	val_399	2
+4	val_4	1
+400	val_400	1
+402	val_402	1
+403	val_403	3
+404	val_404	2
+407	val_407	1
+409	val_409	3
+41	val_41	1
+411	val_411	1
+413	val_413	2
+414	val_414	2
+417	val_417	3
+418	val_418	1
+419	val_419	1
+42	val_42	2
+421	val_421	1
+424	val_424	2
+427	val_427	1
+429	val_429	2
+43	val_43	1
+430	val_430	3
+431	val_431	3
+432	val_432	1
+435	val_435	1
+436	val_436	1
+437	val_437	1
+438	val_438	3
+439	val_439	2
+44	val_44	1
+443	val_443	1
+444	val_444	1
+446	val_446	1
+448	val_448	1
+449	val_449	1
+452	val_452	1
+453	val_453	1
+454	val_454	3
+455	val_455	1
+457	val_457	1
+458	val_458	2
+459	val_459	2
+460	val_460	1
+462	val_462	2
+463	val_463	2
+466	val_466	3
+467	val_467	1
+47	val_47	1
+470	val_470	1
+472	val_472	1
+475	val_475	1
+477	val_477	1
+478	val_478	2
+479	val_479	1
+480	val_480	3
+481	val_481	1
+482	val_482	1
+483	val_483	1
+484	val_484	1
+485	val_485	1
+487	val_487	1
+490	val_490	1
+491	val_491	1
+492	val_492	2
+493	val_493	1
+494	val_494	1
+495	val_495	1
+496	val_496	1
+497	val_497	1
+498	val_498	3
+5	val_5	3
+51	val_51	2
+53	val_53	1
+54	val_54	1
+57	val_57	1
+58	val_58	2
+64	val_64	1
+65	val_65	1
+66	val_66	1
+67	val_67	2
+69	val_69	1
+70	val_70	3
+72	val_72	2
+74	val_74	1
+76	val_76	2
+77	val_77	1
+78	val_78	1
+8	val_8	1
+80	val_80	1
+82	val_82	1
+83	val_83	2
+84	val_84	2
+85	val_85	1
+86	val_86	1
+87	val_87	1
+9	val_9	1
+90	val_90	3
+92	val_92	1
+95	val_95	2
+96	val_96	1
+97	val_97	2
+98	val_98	2
 Warning: Shuffle Join JOIN[15][tables = [$hdt$_1, $hdt$_2]] in Work 'Reducer 4' is a cross product
 PREHOOK: query: explain select * from part where p_name IN (select p_name from part p where part.p_type <> '1')
 PREHOOK: type: QUERY
@@ -3700,32 +3700,32 @@ POSTHOOK: query: select * from part where p_name IN (select p_name from part p w
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
-90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
-42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
-112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
-144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
-110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
-191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
-86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
-15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
-45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
-146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
-195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
-17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
-33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
-192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
-17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
-49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
-40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
-155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
-48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
-65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
+110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
+112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
 132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
+144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
+146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
+15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
+155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
+17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
+17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
+191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
+192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
+195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
+33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
+40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
+42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
+45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
+48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
+49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
+86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: insert into tnull values(1, 'c')
 PREHOOK: type: QUERY
 PREHOOK: Output: default@tnull
