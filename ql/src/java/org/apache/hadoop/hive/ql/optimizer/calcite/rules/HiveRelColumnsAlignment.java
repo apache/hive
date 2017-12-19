@@ -119,9 +119,11 @@ public class HiveRelColumnsAlignment implements ReflectiveVisitor {
     final RelNode child = dispatchAlign(rel.getInput(), propagateCollations.build());
 
     // 3) We annotate the Aggregate operator with this info
-    final HiveAggregate newAggregate = (HiveAggregate) rel.copy(rel.getTraitSet(),
+    final Aggregate newAggregate = (Aggregate) rel.copy(rel.getTraitSet(),
             ImmutableList.of(child));
-    newAggregate.setAggregateColumnsOrder(aggregateColumnsOrder);
+    if (newAggregate instanceof HiveAggregate) {
+      ((HiveAggregate) newAggregate).setAggregateColumnsOrder(aggregateColumnsOrder);
+    }
     return newAggregate;
   }
 
