@@ -29,19 +29,13 @@ public class MyAggregationPushDownRule extends RelOptRule {
   @Override
   public boolean matches(RelOptRuleCall call) {
     final HiveAggregate agg = call.rel(0);
+    final HiveJdbcConverter converter = call.rel(1);
+    
     for (AggregateCall relOptRuleOperand : agg.getAggCallList()) {
+      
       SqlAggFunction f = relOptRuleOperand.getAggregation();
-      SqlKind identifier = f.getKind();
-      switch (identifier) {
-      case SUM:
-      case AVG:
-      case COUNT:
-      case MIN:
-      case MAX:
-        
-        break;
-
-      default:
+      SqlKind kind = f.getKind();
+      if (converter.getJdbcConvention().dialect.supportsAggregateFunction(kind) == false) {
         return false;
       }
       
@@ -58,7 +52,7 @@ public class MyAggregationPushDownRule extends RelOptRule {
     //TODOY this is very naive imp, consult others!!!!!!
     
     Aggregate newHiveAggregate = agg.copy(agg.getTraitSet(), converter.getInput(),agg.getIndicatorCount() !=0,agg.getGroupSet(),agg.getGroupSets(),agg.getAggCallList());
-    JdbcAggregate newJdbcAggregate = (JdbcAggregate) new JdbcAggregateRule(JdbcConvention.JETHRO_DEFAULT_CONVENTION).convert(newHiveAggregate);
+    JdbcAggregate newJdbcAggregate = (JdbcAggregate) new JdbcAggregateRule(converter.getJdbcConvention()).convert(newHiveAggregate);
     if (newJdbcAggregate != null) {
       RelNode ConverterRes = converter.copy(converter.getTraitSet(), Arrays.asList(newJdbcAggregate));
       

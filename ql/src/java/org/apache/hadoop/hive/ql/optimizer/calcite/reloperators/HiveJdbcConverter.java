@@ -16,14 +16,22 @@ import org.apache.calcite.sql.SqlDialect;
 
 public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
 
+  final private JdbcConvention _convention;
+  
+  public JdbcConvention getJdbcConvention () {
+    return _convention;
+  }
+
   public HiveJdbcConverter(RelOptCluster cluster,  RelTraitSet traits,
-      JdbcRel input) {
+      JdbcRel input, JdbcConvention jc) {
     super(cluster, ConventionTraitDef.INSTANCE, traits, input);
+    _convention = jc;
   }
   
   private HiveJdbcConverter(RelOptCluster cluster,  RelTraitSet traits,
-      RelNode input) {
+      RelNode input, JdbcConvention jc) {
     super(cluster, ConventionTraitDef.INSTANCE, traits, input);
+    _convention = jc;
   }
 
   @Override
@@ -37,7 +45,7 @@ public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
       List<RelNode> inputs) {
     //TODOY 1st: try use this(causes cast exception)return new HiveJdbcConverter(getCluster(), traitSet, (JdbcRel) sole(inputs));
     //TODOY 2st: return new HiveJdbcConverter(getCluster(), getTraitSet(), (JdbcRel) getInput());
-    return new HiveJdbcConverter(getCluster(), traitSet, sole(inputs));
+    return new HiveJdbcConverter(getCluster(), traitSet, sole(inputs), _convention);
   }
   
   public String generateSql(SqlDialect dialect) {

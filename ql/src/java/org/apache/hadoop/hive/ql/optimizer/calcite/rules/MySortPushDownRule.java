@@ -60,7 +60,7 @@ public class MySortPushDownRule extends RelOptRule {
     //FIXME TODOY not working!!!!!!
     
     Sort newHiveSort = sort.copy(sort.getTraitSet(), input, sort.getCollation() ,sort.getOffsetExpr (),sort.getFetchExpr());
-    JdbcSort newJdbcSort = convert (newHiveSort, JdbcConvention.JETHRO_DEFAULT_CONVENTION);
+    JdbcSort newJdbcSort = convert (newHiveSort, converter.getJdbcConvention());
     if (newJdbcSort != null) {
       RelNode ConverterRes = converter.copy(converter.getTraitSet(), Arrays.asList(newJdbcSort));
       

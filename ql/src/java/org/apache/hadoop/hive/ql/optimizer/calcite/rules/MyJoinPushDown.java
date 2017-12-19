@@ -81,7 +81,7 @@ public class MyJoinPushDown extends RelOptRule {
     RelNode input2 = converter2.getInput();
     
     HiveJoin newHiveJoin = join.copy(join.getTraitSet(), join.getCondition(), input1, input2, join.getJoinType(),join.isSemiJoinDone());
-    JdbcJoin newJdbcJoin = convert(newHiveJoin, JdbcConvention.JETHRO_DEFAULT_CONVENTION);
+    JdbcJoin newJdbcJoin = convert(newHiveJoin, converter1.getJdbcConvention());
     if (newJdbcJoin != null) {
       RelNode ConverterRes = converter1.copy(converter1.getTraitSet(), Arrays.asList(newJdbcJoin));
       if (ConverterRes != null) {

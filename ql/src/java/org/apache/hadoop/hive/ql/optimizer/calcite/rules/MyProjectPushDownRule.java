@@ -40,13 +40,12 @@ public class MyProjectPushDownRule extends RelOptRule {
     LOG.debug("MyProjectPushDownRule has been called");
     
     final HiveProject project = call.rel(0);
-    project.getProjects();
     final HiveJdbcConverter converter = call.rel(1);
     //List<RexNode> projects = project.getProjects();
     //TODOY this is very naive imp, consult others!!!!!!
     
     Project newHiveProject = project.copy(project.getTraitSet(), converter.getInput(),project.getProjects(), project.getRowType());
-    JdbcProject newJdbcProject = (JdbcProject) new JdbcProjectRule(JdbcConvention.JETHRO_DEFAULT_CONVENTION).convert(newHiveProject);
+    JdbcProject newJdbcProject = (JdbcProject) new JdbcProjectRule(converter.getJdbcConvention()).convert(newHiveProject);
     if (newJdbcProject != null) {
       RelNode ConverterRes = converter.copy(converter.getTraitSet(), Arrays.asList(newJdbcProject));
       call.transformTo(ConverterRes);

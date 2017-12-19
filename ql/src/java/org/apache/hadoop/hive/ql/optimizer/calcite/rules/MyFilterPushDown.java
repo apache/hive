@@ -41,7 +41,7 @@ public class MyFilterPushDown extends RelOptRule {
     //TODOY this is very naive imp, consult others!!!!!!
     
     Filter newHiveFilter = filter.copy(filter.getTraitSet(), converter.getInput(),filter.getCondition());
-    JdbcFilter newJdbcFilter = (JdbcFilter) new JdbcFilterRule(JdbcConvention.JETHRO_DEFAULT_CONVENTION).convert(newHiveFilter);
+    JdbcFilter newJdbcFilter = (JdbcFilter) new JdbcFilterRule(converter.getJdbcConvention()).convert(newHiveFilter);
     if (newJdbcFilter != null) {
       RelNode ConverterRes = converter.copy(converter.getTraitSet(), Arrays.asList(newJdbcFilter));
       

@@ -45,7 +45,7 @@ public class MyUnionPushDown extends RelOptRule {
     
     final List<RelNode> unionInput = Arrays.asList(converter1.getInput(), converter2.getInput());
     Union newHiveUnion = (Union) union.copy(union.getTraitSet(), unionInput, union.all);
-    JdbcUnion newJdbcUnion = (JdbcUnion) new JdbcUnionRule(JdbcConvention.JETHRO_DEFAULT_CONVENTION).convert(newHiveUnion);
+    JdbcUnion newJdbcUnion = (JdbcUnion) new JdbcUnionRule(converter1.getJdbcConvention()).convert(newHiveUnion);
     if (newJdbcUnion != null) {
       RelNode ConverterRes = converter1.copy(converter1.getTraitSet(), Arrays.asList(newJdbcUnion));
       

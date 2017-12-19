@@ -2526,7 +2526,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
             //(JdbcTableScan) jt.toRel(RelOptUtil.getContext(cluster), optTable);
             JdbcHiveTableScan jdbcTableRel = new JdbcHiveTableScan (cluster, optTable, jt, jc, hts);
-            tableRel = new HiveJdbcConverter(cluster, jdbcTableRel.getTraitSet().replace (HiveRelNode.CONVENTION), jdbcTableRel);
+            tableRel = new HiveJdbcConverter(cluster, jdbcTableRel.getTraitSet().replace (HiveRelNode.CONVENTION), jdbcTableRel, jc);
           }
         } else {
           // Build row type from field <type, name>
