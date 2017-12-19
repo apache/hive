@@ -1,6 +1,8 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 
+-- SORT_QUERY_RESULTS
+
 create table tnull(i int, c char(2));
 insert into tnull values(NULL, NULL), (NULL, NULL);
 
@@ -36,7 +38,7 @@ select * from part_null where p_name IN (select p_name from part_null) AND p_bra
 
 -- NOT IN is always true and IN is false for where p_name is NULL, hence should return all but one row
 explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null);
-select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null) order by part_null.p_partkey;
+select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null);
 
 -- NOT IN has one NULL value so this whole query should not return any row
 explain select * from part_null where p_brand IN (select p_brand from part_null) AND p_brand NOT IN (select p_name from part_null);
@@ -49,7 +51,7 @@ select * from part_null where p_name NOT IN (select c from tempty) AND p_brand I
 
 -- IN, EXISTS
 explain select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull);
-select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull) order by part_null.p_partkey;
+select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull);
 
 explain select * from part_null where p_size IN (select p_size from part_null) AND EXISTS (select c from tempty);
 select * from part_null where p_size IN (select p_size from part_null) AND EXISTS (select c from tempty);
