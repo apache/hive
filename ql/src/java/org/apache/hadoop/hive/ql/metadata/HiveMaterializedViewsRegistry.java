@@ -35,16 +35,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.adapter.druid.DruidSchema;
 import org.apache.calcite.adapter.druid.DruidTable;
+import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
+import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rel.type.RelDataTypeImpl;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -53,9 +58,10 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
@@ -174,8 +180,8 @@ public final class HiveMaterializedViewsRegistry {
     }
     // Add to cache
     final String viewQuery = materializedViewTable.getViewExpandedText();
-    final RelNode tableRel = createTableScan(materializedViewTable);
-    if (tableRel == null) {
+    final RelNode viewScan = createMaterializedViewScan(materializedViewTable);
+    if (viewScan == null) {
       LOG.warn("Materialized view " + materializedViewTable.getCompleteName() +
               " ignored; error creating view replacement");
       return;
@@ -186,11 +192,11 @@ public final class HiveMaterializedViewsRegistry {
               " ignored; error parsing original query");
       return;
     }
-    RelOptMaterialization materialization = new RelOptMaterialization(tableRel, queryRel,
-        null, tableRel.getTable().getQualifiedName());
+    RelOptMaterialization materialization = new RelOptMaterialization(viewScan, queryRel,
+        null, viewScan.getTable().getQualifiedName());
     cq.put(vk, materialization);
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Cached materialized view for rewriting: " + tableRel.getTable().getQualifiedName());
+      LOG.debug("Cached materialized view for rewriting: " + viewScan.getTable().getQualifiedName());
     }
     return;
   }
@@ -221,9 +227,10 @@ public final class HiveMaterializedViewsRegistry {
     return ImmutableList.of();
   }
 
-  private static RelNode createTableScan(Table viewTable) {
+  private static RelNode createMaterializedViewScan(Table viewTable) {
     // 0. Recreate cluster
-    final RelOptPlanner planner = HiveVolcanoPlanner.createPlanner(null);
+    final HiveConf conf = SessionState.get().getConf();
+    final RelOptPlanner planner = CalcitePlanner.createPlanner(conf);
     final RexBuilder rexBuilder = new RexBuilder(
             new JavaTypeFactoryImpl(
                     new HiveTypeSystemImpl()));
@@ -287,7 +294,7 @@ public final class HiveMaterializedViewsRegistry {
         rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<VirtualColumn>(),
         SessionState.get().getConf(), new HashMap<String, PrunedPartitionList>(),
         new HashMap<String, ColumnStatsList>(), new AtomicInteger());
-    RelNode tableRel;
+    RelNode rel;
 
     // 3. Build operator
     if (obtainTableType(viewTable) == TableType.DRUID) {
@@ -314,19 +321,20 @@ public final class HiveMaterializedViewsRegistry {
 
       List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
 
-      DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
+      final DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
           dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
           intervals, null, null);
       final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
           optTable, viewTable.getTableName(), null, false, false);
-      tableRel = DruidQuery.create(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
+      rel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
           optTable, druidTable, ImmutableList.<RelNode>of(scan));
     } else {
       // Build Hive Table Scan Rel
-      tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
+      rel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
           viewTable.getTableName(), null, false, false);
     }
-    return tableRel;
+
+    return rel;
   }
 
   private static RelNode parseQuery(String viewQuery) {
