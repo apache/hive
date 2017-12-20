@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,6 +23,10 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.Database;
 
+/**
+ * AlterDatabaseEvent.
+ * Event which is captured during database alters for owner info or properties or location
+ */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class AlterDatabaseEvent extends ListenerEvent {
@@ -31,7 +35,7 @@ public class AlterDatabaseEvent extends ListenerEvent {
   private final Database newDb;
 
   public AlterDatabaseEvent(Database oldDb, Database newDb, boolean status, IHMSHandler handler) {
-    super (status, handler);
+    super(status, handler);
     this.oldDb = oldDb;
     this.newDb = newDb;
   }
@@ -39,14 +43,14 @@ public class AlterDatabaseEvent extends ListenerEvent {
   /**
    * @return the old db
    */
-  public Database getOldDatabase () {
+  public Database getOldDatabase() {
     return oldDb;
   }
 
   /**
    * @return the new db
    */
-  public Database getNewDatabase () {
+  public Database getNewDatabase() {
     return newDb;
   }
 }

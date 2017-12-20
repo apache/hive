@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -65,7 +65,8 @@ public class MetaStoreListenerNotifier {
       ImmutableMap.<EventType, EventNotifier>builder()
           .put(EventType.CREATE_DATABASE, new EventNotifier() {
             @Override
-            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+            public void notify(MetaStoreEventListener listener,
+                               ListenerEvent event) throws MetaException {
               listener.onCreateDatabase((CreateDatabaseEvent)event);
             }
           })
@@ -101,7 +102,8 @@ public class MetaStoreListenerNotifier {
           })
           .put(EventType.ALTER_DATABASE, new EventNotifier() {
             @Override
-            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+            public void notify(MetaStoreEventListener listener,
+                               ListenerEvent event) throws MetaException {
               listener.onAlterDatabase((AlterDatabaseEvent)event);
             }
           })

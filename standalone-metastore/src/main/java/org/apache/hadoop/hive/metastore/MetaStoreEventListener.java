@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -129,7 +129,7 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @param dbEvent alter database event
    * @throws MetaException
    */
-  public void onAlterDatabase (AlterDatabaseEvent dbEvent) throws MetaException {
+  public void onAlterDatabase(AlterDatabaseEvent dbEvent) throws MetaException {
   }
 
   /**

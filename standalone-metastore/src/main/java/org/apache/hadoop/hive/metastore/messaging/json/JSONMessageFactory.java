@@ -104,7 +104,8 @@ public class JSONMessageFactory extends MessageFactory {
 
   @Override
   public AlterDatabaseMessage buildAlterDatabaseMessage(Database beforeDb, Database afterDb) {
-    return new JSONAlterDatabaseMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, beforeDb, afterDb, now());
+    return new JSONAlterDatabaseMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
+                                        beforeDb, afterDb, now());
   }
 
   @Override
@@ -119,7 +120,8 @@ public class JSONMessageFactory extends MessageFactory {
 
   @Override
   public AlterTableMessage buildAlterTableMessage(Table before, Table after, boolean isTruncateOp) {
-    return new JSONAlterTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, before, after, isTruncateOp, now());
+    return new JSONAlterTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
+                                    before, after, isTruncateOp, now());
   }
 
   @Override
@@ -137,8 +139,8 @@ public class JSONMessageFactory extends MessageFactory {
   @Override
   public AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before,
       Partition after, boolean isTruncateOp) {
-    return new JSONAlterPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table, before, after, isTruncateOp,
-        now());
+    return new JSONAlterPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
+                                        table, before, after, isTruncateOp, now());
   }
 
   @Override
@@ -176,7 +178,8 @@ public class JSONMessageFactory extends MessageFactory {
   @Override
   public InsertMessage buildInsertMessage(Table tableObj, Partition partObj,
                                           boolean replace, Iterator<String> fileIter) {
-    return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, tableObj, partObj, replace, fileIter, now());
+    return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
+                                tableObj, partObj, replace, fileIter, now());
   }
 
   @Override

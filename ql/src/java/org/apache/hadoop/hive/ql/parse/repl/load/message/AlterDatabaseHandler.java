@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -34,6 +34,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * AlterDatabaseHandler.
+ * Handler at target warehouse for the EVENT_ALTER_DATABASE type of messages
+ */
 public class AlterDatabaseHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
@@ -53,7 +57,7 @@ public class AlterDatabaseHandler extends AbstractMessageHandler {
       AlterDatabaseDesc alterDbDesc;
 
       if ((oldDb.getOwnerType() == newDb.getOwnerType())
-        && oldDb.getOwnerName().equalsIgnoreCase(newDb.getOwnerName())) {
+            && oldDb.getOwnerName().equalsIgnoreCase(newDb.getOwnerName())) {
         // If owner information is unchanged, then DB properties would've changed
         Map<String, String> newDbProps = new HashMap<>();
         Map<String, String> dbProps = newDb.getParameters();

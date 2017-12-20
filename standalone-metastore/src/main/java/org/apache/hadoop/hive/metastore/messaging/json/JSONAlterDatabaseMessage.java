@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,7 +24,7 @@ import org.apache.thrift.TException;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * JSON alter database message
+ * JSON alter database message.
  */
 public class JSONAlterDatabaseMessage extends AlterDatabaseMessage {
 
@@ -77,20 +77,12 @@ public class JSONAlterDatabaseMessage extends AlterDatabaseMessage {
 
   @Override
   public Database getDbObjBefore() throws Exception {
-    return (Database) JSONMessageFactory.getTObj(dbObjBeforeJson,Database.class);
+    return (Database) JSONMessageFactory.getTObj(dbObjBeforeJson, Database.class);
   }
 
   @Override
   public Database getDbObjAfter() throws Exception {
-    return (Database) JSONMessageFactory.getTObj(dbObjAfterJson,Database.class);
-  }
-
-  public String getDbObjBeforeJson() {
-    return dbObjBeforeJson;
-  }
-
-  public String getDbObjAfterJson() {
-    return dbObjAfterJson ;
+    return (Database) JSONMessageFactory.getTObj(dbObjAfterJson, Database.class);
   }
 
   @Override

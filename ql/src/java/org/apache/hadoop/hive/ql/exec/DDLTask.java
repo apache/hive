@@ -1185,7 +1185,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     Map<String, String> params = database.getParameters();
     if ((null != alterDbDesc.getReplicationSpec())
-    && !alterDbDesc.getReplicationSpec().allowEventReplacementInto(params)) {
+        && !alterDbDesc.getReplicationSpec().allowEventReplacementInto(params)) {
       LOG.debug("DDLTask: Alter Database {} is skipped as database is newer than update", dbName);
       return 0; // no replacement, the existing database state is newer than our update.
     }

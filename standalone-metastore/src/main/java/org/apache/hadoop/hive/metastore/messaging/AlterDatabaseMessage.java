@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,10 @@ package org.apache.hadoop.hive.metastore.messaging;
 
 import org.apache.hadoop.hive.metastore.api.Database;
 
+/**
+ * AlterDatabaseMessage.
+ * Abstract class to store the Alter database message
+ */
 public abstract class AlterDatabaseMessage extends EventMessage {
 
   protected AlterDatabaseMessage() {

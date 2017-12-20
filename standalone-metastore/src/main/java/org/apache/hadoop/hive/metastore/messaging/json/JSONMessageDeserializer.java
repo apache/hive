@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -64,7 +64,8 @@ public class JSONMessageDeserializer extends MessageDeserializer {
       return mapper.readValue(messageBody, JSONCreateDatabaseMessage.class);
     }
     catch (Exception exception) {
-      throw new IllegalArgumentException("Could not construct JSONCreateDatabaseMessage.", exception);
+      throw new IllegalArgumentException("Could not construct JSONCreateDatabaseMessage.",
+                                        exception);
     }
   }
 
@@ -72,9 +73,9 @@ public class JSONMessageDeserializer extends MessageDeserializer {
   public AlterDatabaseMessage getAlterDatabaseMessage(String messageBody) {
     try {
       return mapper.readValue(messageBody, JSONAlterDatabaseMessage.class);
-    }
-    catch (Exception exception) {
-      throw new IllegalArgumentException("Could not construct JSONAlterDatabaseMessage.", exception);
+    } catch (Exception exception) {
+      throw new IllegalArgumentException("Could not construct JSONAlterDatabaseMessage.",
+                                        exception);
     }
   }
 
@@ -154,7 +155,8 @@ public class JSONMessageDeserializer extends MessageDeserializer {
       return mapper.readValue(messageBody, JSONCreateFunctionMessage.class);
     }
     catch (Exception exception) {
-      throw new IllegalArgumentException("Could not construct JSONCreateFunctionMessage.", exception);
+      throw new IllegalArgumentException("Could not construct JSONCreateFunctionMessage.",
+                                        exception);
     }
   }
 

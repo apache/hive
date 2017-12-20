@@ -51,7 +51,8 @@ public class AlterDatabaseDesc extends DDLDesc implements Serializable {
   public AlterDatabaseDesc() {
   }
 
-  public AlterDatabaseDesc(String databaseName, Map<String, String> dbProps, ReplicationSpec replicationSpec) {
+  public AlterDatabaseDesc(String databaseName, Map<String, String> dbProps,
+                           ReplicationSpec replicationSpec) {
     super();
     this.databaseName = databaseName;
     this.replicationSpec = replicationSpec;
@@ -59,7 +60,8 @@ public class AlterDatabaseDesc extends DDLDesc implements Serializable {
     this.setAlterType(ALTER_DB_TYPES.ALTER_PROPERTY);
   }
 
-  public AlterDatabaseDesc(String databaseName, PrincipalDesc ownerPrincipal, ReplicationSpec replicationSpec) {
+  public AlterDatabaseDesc(String databaseName, PrincipalDesc ownerPrincipal,
+                           ReplicationSpec replicationSpec) {
     this.databaseName = databaseName;
     this.replicationSpec = replicationSpec;
     this.setOwnerPrincipal(ownerPrincipal);
