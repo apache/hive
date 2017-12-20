@@ -12720,7 +12720,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // We need to go lookup the table and get the select statement and then parse it.
       try {
         Table tab = getTableObjectByName(dbDotTable, true);
-        String viewText = tab.getViewOriginalText();
+        // We need to use the expanded text for the materialized view, as it will contain
+        // the qualified table aliases, etc.
+        String viewText = tab.getViewExpandedText();
         if (viewText.trim().isEmpty()) {
           throw new SemanticException(ErrorMsg.MATERIALIZED_VIEW_DEF_EMPTY);
         }
