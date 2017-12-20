@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -174,7 +175,8 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
       return getJobInfo.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
     } catch (Exception e) {
       LOG.warn("Failed to get job info.", e);
-      throw new HiveException(e);
+      throw new HiveException(e, ErrorMsg.SPARK_GET_JOB_INFO_TIMEOUT,
+          Long.toString(sparkClientTimeoutInSeconds));
     }
   }
 
