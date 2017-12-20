@@ -413,7 +413,7 @@ Stage-3
                       Output:["_col0"]
                       Filter Operator [FIL_8] (rows=1/8 width=3)
                         predicate:(cint < -1070551679)
-                        TableScan [TS_0] (rows=94309/12288 width=3)
+                        TableScan [TS_0] (rows=943092/12288 width=3)
                           default@acid_dot,acid_dot, ACID table,Tbl:COMPLETE,Col:NONE,Output:["cint"]
 
 PREHOOK: query: select count(*) from acid_dot

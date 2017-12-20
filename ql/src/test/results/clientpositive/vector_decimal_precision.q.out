@@ -1148,7 +1148,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_precision_txt_small
-            Statistics: Num rows: 1 Data size: 2661 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 26610 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:dec:decimal(20,10), 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1159,7 +1159,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [0]
-              Statistics: Num rows: 1 Data size: 2661 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 26610 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: avg(dec), sum(dec)
                 Group By Vectorization:

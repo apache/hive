@@ -466,16 +466,16 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_small
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                    Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                      Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -2821,30 +2821,30 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_small
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                    Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                      Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                      Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                        Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
                         Dynamic Partitioning Event Operator
                           Target column: ds (string)
                           Target Input: srcpart_date
                           Partition key expr: ds
-                          Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                          Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
                           Target Vertex: Map 1
             Execution mode: llap
             LLAP IO: all inputs
@@ -2976,30 +2976,30 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_small
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                    Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                      Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                      Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                        Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
                         Dynamic Partitioning Event Operator
                           Target column: ds (string)
                           Target Input: srcpart_date
                           Partition key expr: ds
-                          Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
+                          Statistics: Num rows: 20 Data size: 38880 Basic stats: PARTIAL Column stats: COMPLETE
                           Target Vertex: Map 1
             Execution mode: llap
             LLAP IO: all inputs
@@ -3161,7 +3161,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_date
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 720000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2000 Data size: 3888000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
                     outputColumnNames: _col0
@@ -3331,7 +3331,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_date
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 720000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2000 Data size: 3888000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
                     outputColumnNames: _col0
@@ -3513,7 +3513,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_date
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 720000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2000 Data size: 3888000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
                     outputColumnNames: _col0
@@ -3660,7 +3660,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart_date
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 720000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2000 Data size: 3888000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
                     outputColumnNames: _col0

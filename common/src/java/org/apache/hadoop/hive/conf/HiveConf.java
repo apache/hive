@@ -1832,7 +1832,7 @@ public class HiveConf extends Configuration {
     // annotation. But the file may be compressed, encoded and serialized which may be lesser in size
     // than the actual uncompressed/raw data size. This factor will be multiplied to file size to estimate
     // the raw data size.
-    HIVE_STATS_DESERIALIZATION_FACTOR("hive.stats.deserialization.factor", (float) 1.0,
+    HIVE_STATS_DESERIALIZATION_FACTOR("hive.stats.deserialization.factor", (float) 10.0,
         "Hive/Tez optimizer estimates the data size flowing through each of the operators. In the absence\n" +
         "of basic statistics like number of rows and data size, file size is used to estimate the number\n" +
         "of rows and data size. Since files in tables/partitions are serialized (and optionally\n" +

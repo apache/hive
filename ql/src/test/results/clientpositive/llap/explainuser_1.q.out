@@ -200,8 +200,8 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_4]
             Group By Operator [GBY_3] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Select Operator [SEL_2] (rows=500 width=102)
-                TableScan [TS_0] (rows=500 width=102)
+              Select Operator [SEL_2] (rows=500 width=948)
+                TableScan [TS_0] (rows=500 width=948)
                   default@src_orc_merge_test_part,src_orc_merge_test_part,Tbl:COMPLETE,Col:COMPLETE
 
 PREHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
@@ -1677,12 +1677,12 @@ Stage-0
               <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
                 PARTITION_ONLY_SHUFFLE [RS_6]
                   Select Operator [SEL_2] (rows=20 width=88)
-                    TableScan [TS_0] (rows=20 width=21)
+                    TableScan [TS_0] (rows=20 width=139)
                       default@cbo_t1,cbo_t1,Tbl:COMPLETE,Col:COMPLETE
               <-Map 4 [CUSTOM_SIMPLE_EDGE] llap
                 PARTITION_ONLY_SHUFFLE [RS_7]
                   Select Operator [SEL_5] (rows=20 width=88)
-                    TableScan [TS_3] (rows=20 width=21)
+                    TableScan [TS_3] (rows=20 width=139)
                       default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE
 
 PREHOOK: query: explain select * 

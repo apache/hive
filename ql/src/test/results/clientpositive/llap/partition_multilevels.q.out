@@ -982,11 +982,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: partition_test_multilevel
-                  Statistics: Num rows: 108 Data size: 40890 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 108 Data size: 51204 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: level2 (type: string), level3 (type: string)
                     outputColumnNames: level2, level3
-                    Statistics: Num rows: 108 Data size: 40890 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 108 Data size: 51204 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       keys: level2 (type: string), level3 (type: string)
@@ -1572,11 +1572,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: partition_test_multilevel
-                  Statistics: Num rows: 108 Data size: 40890 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 108 Data size: 51204 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: level2 (type: string), level3 (type: string)
                     outputColumnNames: level2, level3
-                    Statistics: Num rows: 108 Data size: 40890 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 108 Data size: 51204 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       keys: level2 (type: string), level3 (type: string)

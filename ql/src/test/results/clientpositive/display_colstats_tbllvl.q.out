@@ -79,11 +79,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: uservisits_web_text_none
-            Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 70600 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
-              Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 70600 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
@@ -131,13 +131,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: uservisits_web_text_none
-            Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 70600 Basic stats: COMPLETE Column stats: NONE
             Statistics Aggregation Key Prefix: default.uservisits_web_text_none/
             GatherStats: true
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
-              Statistics: Num rows: 1 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 70600 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash

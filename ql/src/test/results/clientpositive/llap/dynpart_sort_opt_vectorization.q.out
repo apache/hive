@@ -2497,9 +2497,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_part_buck_sort2_orc
-                  Statistics: Num rows: 19 Data size: 645 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 19 Data size: 5082 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 19 Data size: 645 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 19 Data size: 5082 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -2709,9 +2709,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_part_buck_sort2_orc
-                  Statistics: Num rows: 18 Data size: 611 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 18 Data size: 4814 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 18 Data size: 611 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 18 Data size: 4814 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash

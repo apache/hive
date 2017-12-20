@@ -492,11 +492,11 @@ STAGE PLANS:
 86	val_86	2
 86	val_86	3
 86	val_86	3
+86	val_86	3
+86	val_86	3
 86	val_86	1
 86	val_86	2
 86	val_86	2
-86	val_86	3
-86	val_86	3
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -513,11 +513,11 @@ STAGE PLANS:
                 TableScan
                   alias: src_union_1
                   filterExpr: (ds = '1') (type: boolean)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 53120 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 53120 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 502 Data size: 53120 Basic stats: PARTIAL Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -539,7 +539,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 502 Data size: 53120 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -561,7 +561,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 502 Data size: 53120 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -615,7 +615,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1002 Data size: 106240 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -630,11 +630,11 @@ STAGE PLANS:
                 TableScan
                   alias: src_union_2
                   filterExpr: (ds = '2') (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1002 Data size: 106240 Basic stats: PARTIAL Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -656,7 +656,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1002 Data size: 106240 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -710,7 +710,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1002 Data size: 106240 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -732,7 +732,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 1002 Data size: 106240 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -747,11 +747,11 @@ STAGE PLANS:
                 TableScan
                   alias: src_union_3
                   filterExpr: (ds = '3') (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      Statistics: Num rows: 1002 Data size: 10624 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 1002 Data size: 106240 Basic stats: PARTIAL Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -897,7 +897,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 502 Data size: 53120 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -919,7 +919,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       Select Operator
-                        Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                        Statistics: Num rows: 502 Data size: 53120 Basic stats: PARTIAL Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -934,11 +934,11 @@ STAGE PLANS:
                 TableScan
                   alias: src_union_3
                   filterExpr: (ds = '4') (type: boolean)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 53120 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 53120 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      Statistics: Num rows: 502 Data size: 5312 Basic stats: PARTIAL Column stats: NONE
+                      Statistics: Num rows: 502 Data size: 53120 Basic stats: PARTIAL Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash

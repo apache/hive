@@ -44,7 +44,7 @@ STAGE PLANS:
               outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 42500 Basic stats: COMPLETE Column stats: COMPLETE
               Union
-                Statistics: Num rows: 1522 Data size: 59264 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1522 Data size: 114524 Basic stats: COMPLETE Column stats: PARTIAL
                 Group By Operator
                   aggregations: count(1)
                   keys: _col0 (type: string)
@@ -65,7 +65,7 @@ STAGE PLANS:
               outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Union
-                Statistics: Num rows: 1522 Data size: 59264 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1522 Data size: 114524 Basic stats: COMPLETE Column stats: PARTIAL
                 Group By Operator
                   aggregations: count(1)
                   keys: _col0 (type: string)
@@ -86,7 +86,7 @@ STAGE PLANS:
               outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Union
-                Statistics: Num rows: 1522 Data size: 59264 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1522 Data size: 114524 Basic stats: COMPLETE Column stats: PARTIAL
                 Group By Operator
                   aggregations: count(1)
                   keys: _col0 (type: string)
@@ -101,13 +101,13 @@ STAGE PLANS:
                     value expressions: _col1 (type: bigint)
           TableScan
             alias: src_thrift
-            Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: astring (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
               Union
-                Statistics: Num rows: 1522 Data size: 59264 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1522 Data size: 114524 Basic stats: COMPLETE Column stats: PARTIAL
                 Group By Operator
                   aggregations: count(1)
                   keys: _col0 (type: string)
@@ -122,13 +122,13 @@ STAGE PLANS:
                     value expressions: _col1 (type: bigint)
           TableScan
             alias: src_thrift
-            Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: lstring[0] (type: string)
               outputColumnNames: _col0
-              Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
               Union
-                Statistics: Num rows: 1522 Data size: 59264 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 1522 Data size: 114524 Basic stats: COMPLETE Column stats: PARTIAL
                 Group By Operator
                   aggregations: count(1)
                   keys: _col0 (type: string)

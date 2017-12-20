@@ -339,7 +339,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics: Num rows: 8 Data size: 2246 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 8 Data size: 9212 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: year (type: string)
             outputColumnNames: _col0

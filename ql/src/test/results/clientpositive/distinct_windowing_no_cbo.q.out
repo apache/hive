@@ -61,18 +61,18 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over10k
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: si (type: smallint), i (type: int)
               sort order: ++
               Map-reduce partition columns: si (type: smallint)
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               value expressions: t (type: tinyint)
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: tinyint), KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: int)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -92,16 +92,16 @@ STAGE PLANS:
                         name: first_value
                         window function: GenericUDAFFirstValueEvaluator
                         window frame: RANGE PRECEDING(MAX)~CURRENT
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: first_value_window_0 (type: tinyint)
               outputColumnNames: first_value_window_0
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: first_value_window_0 (type: tinyint)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -117,20 +117,20 @@ STAGE PLANS:
               key expressions: _col0 (type: tinyint)
               sort order: +
               Map-reduce partition columns: _col0 (type: tinyint)
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 10
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -179,17 +179,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over10k
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: si (type: smallint), i (type: int)
               sort order: ++
               Map-reduce partition columns: si (type: smallint)
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: int)
           outputColumnNames: _col1, _col2
-          Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -209,16 +209,16 @@ STAGE PLANS:
                         name: last_value
                         window function: GenericUDAFLastValueEvaluator
                         window frame: RANGE PRECEDING(MAX)~CURRENT
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: last_value_window_0 (type: int)
               outputColumnNames: last_value_window_0
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: last_value_window_0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -234,20 +234,20 @@ STAGE PLANS:
               key expressions: _col0 (type: int)
               sort order: +
               Map-reduce partition columns: _col0 (type: int)
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 10
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -300,18 +300,18 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over10k
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: si (type: smallint), i (type: int)
               sort order: ++
               Map-reduce partition columns: si (type: smallint)
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               value expressions: t (type: tinyint)
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: tinyint), KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: int)
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -337,16 +337,16 @@ STAGE PLANS:
                         name: first_value
                         window function: GenericUDAFFirstValueEvaluator
                         window frame: RANGE PRECEDING(MAX)~CURRENT
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: last_value_window_0 (type: int), first_value_window_1 (type: tinyint)
               outputColumnNames: last_value_window_0, first_value_window_1
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: last_value_window_0 (type: int), first_value_window_1 (type: tinyint)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -362,20 +362,20 @@ STAGE PLANS:
               key expressions: _col0 (type: int), _col1 (type: tinyint)
               sort order: ++
               Map-reduce partition columns: _col0 (type: int), _col1 (type: tinyint)
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: int), KEY._col1 (type: tinyint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 50
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -474,22 +474,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over10k
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: si (type: smallint), f (type: float)
               outputColumnNames: si, f
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: max(f)
                 keys: si (type: smallint)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: smallint)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: smallint)
-                  Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: float)
       Reduce Operator Tree:
         Group By Operator
@@ -497,10 +497,10 @@ STAGE PLANS:
           keys: KEY._col0 (type: smallint)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (_col1 > 0.0) (type: boolean)
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -516,12 +516,12 @@ STAGE PLANS:
               key expressions: _col0 (type: smallint), _col1 (type: float)
               sort order: ++
               Map-reduce partition columns: _col0 (type: smallint)
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: float)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -542,17 +542,17 @@ STAGE PLANS:
                         window function: GenericUDAFRankEvaluator
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: smallint), _col1 (type: float), rank_window_0 (type: int)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 50
-                Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -651,17 +651,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: over10k
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: si (type: smallint), i (type: int)
               sort order: ++
               Map-reduce partition columns: si (type: smallint)
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: int)
           outputColumnNames: _col1, _col2
-          Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -682,16 +682,16 @@ STAGE PLANS:
                         window function: GenericUDAFRankEvaluator
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: rank_window_0 (type: int), _col1 (type: smallint)
               outputColumnNames: rank_window_0, _col1
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 keys: _col1 (type: smallint), rank_window_0 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   table:
@@ -707,20 +707,20 @@ STAGE PLANS:
               key expressions: _col0 (type: smallint), _col1 (type: int)
               sort order: ++
               Map-reduce partition columns: _col0 (type: smallint), _col1 (type: int)
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: smallint), KEY._col1 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 50
-            Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 10175440 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
