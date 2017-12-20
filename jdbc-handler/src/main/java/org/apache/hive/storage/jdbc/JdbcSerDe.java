@@ -79,12 +79,6 @@ public class JdbcSerDe extends AbstractSerDe {
           final List<String> columnTypes = dbAccessor.getColumnTypes(tableConfig);
           hiveColumnTypeArray = new String [columnTypes.size()];
           hiveColumnTypeArray = columnTypes.toArray (hiveColumnTypeArray);
-          for (int i = 0; i < hiveColumnTypeArray.length; i++) {
-            if (hiveColumnTypeArray [i].equalsIgnoreCase("integer")) {
-              hiveColumnTypeArray [i] = "int";
-            }
-            hiveColumnTypeArray [i] = hiveColumnTypeArray [i].toLowerCase();
-          }
         } else {
 
           String[] hiveColumnNameArray = parseProperty(tbl.getProperty(serdeConstants.LIST_COLUMNS), ",");

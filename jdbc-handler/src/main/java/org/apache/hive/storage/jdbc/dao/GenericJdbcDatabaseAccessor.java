@@ -16,6 +16,7 @@ package org.apache.hive.storage.jdbc.dao;
 
 import org.apache.commons.dbcp.BasicDataSourceFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -34,6 +35,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -116,7 +118,36 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       int numColumns = metadata.getColumnCount();
       List<String> columnTypes = new ArrayList<String>(numColumns);
       for (int i = 0; i < numColumns; i++) {
-        columnTypes.add(metadata.getColumnTypeName(i + 1));
+        switch (metadata.getColumnType(i + 1)) {
+        case Types.CHAR:
+          columnTypes.add(serdeConstants.STRING_TYPE_NAME);
+          break;
+        case Types.INTEGER:
+          columnTypes.add(serdeConstants.INT_TYPE_NAME);
+          break;
+        case Types.BIGINT:
+          columnTypes.add(serdeConstants.BIGINT_TYPE_NAME);
+          break;
+        case Types.DECIMAL:
+          columnTypes.add(serdeConstants.DECIMAL_TYPE_NAME);
+          break;
+        case Types.REAL:
+          columnTypes.add(serdeConstants.DOUBLE_TYPE_NAME);
+          break;
+        case Types.DOUBLE:
+          columnTypes.add(serdeConstants.DOUBLE_TYPE_NAME);
+          break;
+        case Types.DATE:
+          columnTypes.add(serdeConstants.DATE_TYPE_NAME);
+          break;
+        case Types.TIMESTAMP:
+          columnTypes.add(serdeConstants.TIMESTAMP_TYPE_NAME);
+          break;
+          
+        default:
+          columnTypes.add(metadata.getColumnTypeName(i+1));
+          break;
+        };
       }
 
       return columnTypes;

@@ -348,11 +348,7 @@ public class ASTConverter {
       HiveJdbcConverter f = (HiveJdbcConverter) r;
       s = new Schema(f);
       ast = ASTBuilder.table(f);
-    } /*else if (r instanceof JdbcHiveTableScan) {
-      JdbcHiveTableScan f = (JdbcHiveTableScan) r;
-      s = new Schema(f);
-      ast = ASTBuilder.table(f);
-    } */else if (r instanceof TableScan) {
+    } else if (r instanceof TableScan) {
       TableScan f = (TableScan) r;
       s = new Schema(f);
       ast = ASTBuilder.table(f);
@@ -763,13 +759,6 @@ public class ASTConverter {
       }
     }
     
-    /*Schema(JdbcHiveTableScan hts) {
-      String tabName = hts.jdbcTable.jdbcTableName;
-      for (RelDataTypeField field : hts.getHiveTableScan().getRowType().getFieldList()) {
-        add(new ColumnInfo(tabName, field.getName()));
-      }
-    }*/
-
     Schema(Project select, String alias) {
       for (RelDataTypeField field : select.getRowType().getFieldList()) {
         add(new ColumnInfo(alias, field.getName()));

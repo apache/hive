@@ -43,8 +43,6 @@ public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
   public RelNode copy(
       RelTraitSet traitSet,
       List<RelNode> inputs) {
-    //TODOY 1st: try use this(causes cast exception)return new HiveJdbcConverter(getCluster(), traitSet, (JdbcRel) sole(inputs));
-    //TODOY 2st: return new HiveJdbcConverter(getCluster(), getTraitSet(), (JdbcRel) getInput());
     return new HiveJdbcConverter(getCluster(), traitSet, sole(inputs), _convention);
   }
   
