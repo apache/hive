@@ -38,11 +38,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (key + key) (type: decimal(21,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key + key FROM DECIMAL_UDF
@@ -105,11 +105,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (key + CAST( value AS decimal(10,0))) (type: decimal(21,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key + value FROM DECIMAL_UDF
@@ -172,11 +172,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (UDFToDouble(key) + (UDFToDouble(value) / 2.0)) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key + (value/2) FROM DECIMAL_UDF
@@ -239,11 +239,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (UDFToDouble(key) + 1.0) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key + '1.0' FROM DECIMAL_UDF
@@ -306,11 +306,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (key - key) (type: decimal(21,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key - key FROM DECIMAL_UDF
@@ -373,11 +373,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (key - CAST( value AS decimal(10,0))) (type: decimal(21,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key - value FROM DECIMAL_UDF
@@ -440,11 +440,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (UDFToDouble(key) - (UDFToDouble(value) / 2.0)) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key - (value/2) FROM DECIMAL_UDF
@@ -507,11 +507,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (UDFToDouble(key) - 1.0) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key - '1.0' FROM DECIMAL_UDF
@@ -574,11 +574,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (key * key) (type: decimal(38,17))
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key * key FROM DECIMAL_UDF
@@ -641,14 +641,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: ((key * CAST( value AS decimal(10,0))) > 0) (type: boolean)
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10)), value (type: int)
               outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT key, value FROM DECIMAL_UDF where key * value > 0
@@ -696,11 +696,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (key * CAST( value AS decimal(10,0))) (type: decimal(31,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key * value FROM DECIMAL_UDF
@@ -763,11 +763,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (UDFToDouble(key) * (UDFToDouble(value) / 2.0)) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key * (value/2) FROM DECIMAL_UDF
@@ -830,11 +830,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (UDFToDouble(key) * 2.0) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT key * '2.0' FROM DECIMAL_UDF
@@ -897,14 +897,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (key / 0) (type: decimal(22,12))
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Limit
               Number of rows: 1
-              Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT key / 0 FROM DECIMAL_UDF limit 1
@@ -930,14 +930,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (UDFToDouble(key) / null) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Limit
               Number of rows: 1
-              Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT key / NULL FROM DECIMAL_UDF limit 1
@@ -963,14 +963,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (key <> 0) (type: boolean)
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (key / key) (type: decimal(38,18))
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT key / key FROM DECIMAL_UDF WHERE key is not null and key <> 0
@@ -1029,14 +1029,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (value <> 0) (type: boolean)
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (key / CAST( value AS decimal(10,0))) (type: decimal(31,21))
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
@@ -1085,14 +1085,14 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (value <> 0) (type: boolean)
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0)) (type: double)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
@@ -1141,11 +1141,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (1.0 + (UDFToDouble(key) / 2.0)) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT 1 + (key / '2.0') FROM DECIMAL_UDF
@@ -1208,11 +1208,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: abs(key) (type: decimal(20,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT abs(key) FROM DECIMAL_UDF
@@ -1276,22 +1276,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_udf
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10)), value (type: int)
               outputColumnNames: key, value
-              Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(key), count(key), avg(key)
                 keys: value (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: decimal(30,10)), _col2 (type: bigint), _col3 (type: struct<count:bigint,sum:decimal(30,10),input:decimal(20,10)>)
       Reduce Operator Tree:
         Group By Operator
@@ -1299,11 +1299,11 @@ STAGE PLANS:
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: int), (_col1 / CAST( _col2 AS decimal(19,0))) (type: decimal(38,18)), _col3 (type: decimal(24,14)), _col1 (type: decimal(30,10))
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -1318,16 +1318,16 @@ STAGE PLANS:
             Reduce Output Operator
               key expressions: _col0 (type: int)
               sort order: +
-              Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: decimal(38,18)), _col2 (type: decimal(24,14)), _col3 (type: decimal(30,10))
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: decimal(38,18)), VALUE._col1 (type: decimal(24,14)), VALUE._col2 (type: decimal(30,10))
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1378,11 +1378,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: (- key) (type: decimal(20,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT -key FROM DECIMAL_UDF
@@ -1445,11 +1445,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: decimal(20,10))
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT +key FROM DECIMAL_UDF
@@ -1512,11 +1512,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: ceil(key) (type: decimal(11,0))
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT CEIL(key) FROM DECIMAL_UDF
@@ -1579,11 +1579,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: floor(key) (type: decimal(11,0))
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT FLOOR(key) FROM DECIMAL_UDF
@@ -1646,11 +1646,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: round(key, 2) (type: decimal(13,2))
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT ROUND(key, 2) FROM DECIMAL_UDF
@@ -1713,11 +1713,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: power(key, 2) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF
@@ -1780,11 +1780,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: ((key + 1) % (key / 2)) (type: decimal(22,12))
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF
@@ -1847,22 +1847,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_udf
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10)), value (type: int)
               outputColumnNames: key, value
-              Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: stddev(key), variance(key)
                 keys: value (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>)
       Reduce Operator Tree:
         Group By Operator
@@ -1870,10 +1870,10 @@ STAGE PLANS:
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1924,22 +1924,22 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_udf
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10)), value (type: int)
               outputColumnNames: key, value
-              Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: stddev_samp(key), var_samp(key)
                 keys: value (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>)
       Reduce Operator Tree:
         Group By Operator
@@ -1947,10 +1947,10 @@ STAGE PLANS:
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2001,11 +2001,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_udf
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10))
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: histogram_numeric(_col0, 3)
                 mode: hash
@@ -2058,11 +2058,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_udf
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10))
               outputColumnNames: key
-              Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: min(key)
                 mode: hash
@@ -2115,11 +2115,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_udf
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10))
               outputColumnNames: key
-              Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: max(key)
                 mode: hash
@@ -2172,11 +2172,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_udf
-            Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: decimal(20,10))
               outputColumnNames: key
-              Statistics: Num rows: 1 Data size: 359 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(key)
                 mode: hash

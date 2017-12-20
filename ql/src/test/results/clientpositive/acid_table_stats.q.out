@@ -133,9 +133,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
-            Statistics: Num rows: 1 Data size: 3950 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 39500 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              Statistics: Num rows: 1 Data size: 3950 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 39500 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: hash
@@ -299,9 +299,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
-            Statistics: Num rows: 1000 Data size: 208000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1000 Data size: 2080000 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              Statistics: Num rows: 1000 Data size: 208000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1000 Data size: 2080000 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: hash
@@ -460,9 +460,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
-            Statistics: Num rows: 2000 Data size: 416000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2000 Data size: 4160000 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              Statistics: Num rows: 2000 Data size: 416000 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2000 Data size: 4160000 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: hash

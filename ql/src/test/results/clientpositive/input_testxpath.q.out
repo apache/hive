@@ -30,14 +30,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src_thrift
-            Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: lint[1] (type: int), lintstring[0].mystring (type: string), mstringstring['key_2'] (type: string)
               outputColumnNames: _col0, _col1, _col2
-              Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -46,7 +46,7 @@ STAGE PLANS:
               Select Operator
                 expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
                 outputColumnNames: key, value, mapvalue
-                Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll'), compute_stats(mapvalue, 'hll')
                   mode: hash

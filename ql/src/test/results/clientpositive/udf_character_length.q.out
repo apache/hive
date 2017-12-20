@@ -242,11 +242,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dest1
-          Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: character_length(name) (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT character_length(dest1.name) FROM dest1
@@ -273,11 +273,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dest1
-          Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: character_length(name) (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT char_length(dest1.name) FROM dest1

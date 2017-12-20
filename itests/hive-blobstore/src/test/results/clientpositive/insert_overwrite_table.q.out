@@ -64,18 +64,18 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: values__tmp__table__3
-            Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
               expressions: UDFToInteger(tmp_values_col1) (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
                 directory: ### BLOBSTORE_STAGING_PATH ###
                 NumFilesPerFileSink: 1
-                Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                 Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -106,7 +106,7 @@ STAGE PLANS:
               Select Operator
                 expressions: _col0 (type: int)
                 outputColumnNames: id
-                Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: compute_stats(id, 'hll')
                   mode: hash

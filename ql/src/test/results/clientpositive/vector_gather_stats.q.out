@@ -75,7 +75,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cd
-            Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true

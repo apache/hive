@@ -60,11 +60,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: tab_date
-            Statistics: Num rows: 1 Data size: 778 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 7780 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: fl_date (type: date)
               outputColumnNames: fl_date
-              Statistics: Num rows: 1 Data size: 778 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 7780 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(fl_date, 'hll')
                 mode: hash

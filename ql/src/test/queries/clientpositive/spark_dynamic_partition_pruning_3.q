@@ -1,3 +1,4 @@
+set hive.stats.deserialization.factor=1.0;
 CREATE TABLE partitioned_table1 (col int) PARTITIONED BY (part_col int);
 CREATE TABLE partitioned_table2 (col int) PARTITIONED BY (part_col int);
 CREATE TABLE partitioned_table3 (col int) PARTITIONED BY (part_col int);

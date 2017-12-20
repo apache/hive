@@ -106,11 +106,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_thrift
-                  Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: astring (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(1)
                       keys: _col0 (type: string)
@@ -127,11 +127,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_thrift
-                  Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: lstring[0] (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(1)
                       keys: _col0 (type: string)

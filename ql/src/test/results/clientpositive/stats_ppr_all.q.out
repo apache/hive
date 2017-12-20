@@ -274,7 +274,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: ss
-          Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 2 Data size: 256 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0) (type: boolean)
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
