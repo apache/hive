@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -58,11 +57,32 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
 
   private T serializeWrite;
 
-  private TypeInfo[] typeInfos;
+  private Field root;
 
-  private ObjectInspector[] objectInspectors;
+  private static class Field {
+    Field[] children;
 
-  private int[] outputColumnNums;
+    boolean isPrimitive;
+    Category category;
+    PrimitiveCategory primitiveCategory;
+    TypeInfo typeInfo;
+
+    int count;
+
+    ObjectInspector objectInspector;
+    int outputColumnNum;
+
+    Field() {
+      children = null;
+      isPrimitive = false;
+      category = null;
+      primitiveCategory = null;
+      typeInfo = null;
+      count = 0;
+      objectInspector = null;
+      outputColumnNum = -1;
+    }
+  }
 
   private VectorExtractRow vectorExtractRow;
 
@@ -76,18 +96,72 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
   private VectorSerializeRow() {
   }
 
+  private Field[] createFields(TypeInfo[] typeInfos) {
+    final Field[] children = new Field[typeInfos.length];
+    for (int i = 0; i < typeInfos.length; i++) {
+      children[i] = createField(typeInfos[i]);
+    }
+    return children;
+  }
+
+  private Field createField(TypeInfo typeInfo) {
+    final Field field = new Field();
+    final Category category = typeInfo.getCategory();
+    field.category = category;
+    field.typeInfo = typeInfo;
+    if (category == Category.PRIMITIVE) {
+      field.isPrimitive = true;
+      field.primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+    } else {
+      field.isPrimitive = false;
+      field.objectInspector =
+          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo);
+      switch (category) {
+      case LIST:
+        field.children = new Field[1];
+        field.children[0] = createField(((ListTypeInfo) typeInfo).getListElementTypeInfo());
+        break;
+      case MAP:
+        field.children = new Field[2];
+        field.children[0] = createField(((MapTypeInfo) typeInfo).getMapKeyTypeInfo());
+        field.children[1] = createField(((MapTypeInfo) typeInfo).getMapValueTypeInfo());
+        break;
+      case STRUCT:
+        StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+        List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+        field.children = createFields(fieldTypeInfos.toArray(new TypeInfo[fieldTypeInfos.size()]));
+        break;
+      case UNION:
+        UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
+        List<TypeInfo> objectTypeInfos = unionTypeInfo.getAllUnionObjectTypeInfos();
+        field.children = createFields(objectTypeInfos.toArray(new TypeInfo[objectTypeInfos.size()]));
+        break;
+      default:
+        throw new RuntimeException();
+      }
+      field.count = field.children.length;
+    }
+    return field;
+  }
+
   public void init(List<String> typeNames, int[] columnMap) throws HiveException {
 
-    final int size = typeNames.size();
-    typeInfos = new TypeInfo[size];
-    outputColumnNums = Arrays.copyOf(columnMap, size);
-    objectInspectors = new ObjectInspector[size];
-    for (int i = 0; i < size; i++) {
-      final TypeInfo typeInfo =
-          TypeInfoUtils.getTypeInfoFromTypeString(typeNames.get(i));
-      typeInfos[i] = typeInfo;
-      objectInspectors[i] =
-          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo);
+    TypeInfo[] typeInfos =
+        TypeInfoUtils.typeInfosFromTypeNames(typeNames).toArray(new TypeInfo[typeNames.size()]);
+
+    final int count = typeInfos.length;
+
+    root = new Field();
+    root.isPrimitive = false;
+    root.category = Category.STRUCT;
+    root.children = createFields(typeInfos);
+    root.count = count;
+    root.objectInspector = null;
+    int[] outputColumnNums = new int[count];
+    for (int i = 0; i < count; i++) {
+      final int outputColumnNum = columnMap[i];
+      outputColumnNums[i] = outputColumnNum;
+      root.children[i].outputColumnNum = outputColumnNum;
     }
 
     vectorExtractRow.init(typeInfos, outputColumnNums);
@@ -95,17 +169,19 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
 
   public void init(List<String> typeNames) throws HiveException {
 
-    final int size = typeNames.size();
-    typeInfos = new TypeInfo[size];
-    outputColumnNums = new int[size];
-    objectInspectors = new ObjectInspector[size];
-    for (int i = 0; i < size; i++) {
-      final TypeInfo typeInfo =
-          TypeInfoUtils.getTypeInfoFromTypeString(typeNames.get(i));
-      typeInfos[i] = typeInfo;
-      objectInspectors[i] =
-          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo);
-      outputColumnNums[i] = i;
+    TypeInfo[] typeInfos =
+        TypeInfoUtils.typeInfosFromTypeNames(typeNames).toArray(new TypeInfo[typeNames.size()]);
+
+    final int count = typeInfos.length;
+
+    root = new Field();
+    root.isPrimitive = false;
+    root.category = Category.STRUCT;
+    root.children = createFields(typeInfos);
+    root.count = count;
+    root.objectInspector = null;
+    for (int i = 0; i < count; i++) {
+      root.children[i].outputColumnNum = i;
     }
 
     vectorExtractRow.init(typeInfos);
@@ -114,36 +190,44 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
   public void init(TypeInfo[] typeInfos)
       throws HiveException {
 
-    final int size = typeInfos.length;
-    this.typeInfos = Arrays.copyOf(typeInfos, size);
-    outputColumnNums = new int[size];
-    objectInspectors = new ObjectInspector[size];
-    for (int i = 0; i < size; i++) {
-      objectInspectors[i] =
-          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfos[i]);
-      outputColumnNums[i] = i;
+    final int count = typeInfos.length;
+
+    root = new Field();
+    root.isPrimitive = false;
+    root.category = Category.STRUCT;
+    root.children = createFields(typeInfos);
+    root.count = count;
+    root.objectInspector = null;
+    for (int i = 0; i < count; i++) {
+      root.children[i].outputColumnNum = i;
     }
 
-    vectorExtractRow.init(this.typeInfos, outputColumnNums);
+    vectorExtractRow.init(typeInfos);
   }
 
   public void init(TypeInfo[] typeInfos, int[] columnMap)
       throws HiveException {
 
-    final int size = typeInfos.length;
-    this.typeInfos = Arrays.copyOf(typeInfos, size);
-    outputColumnNums = Arrays.copyOf(columnMap, size);
-    objectInspectors = new ObjectInspector[size];
-    for (int i = 0; i < size; i++) {
-      objectInspectors[i] =
-          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfos[i]);
+    final int count = typeInfos.length;
+
+    root = new Field();
+    root.isPrimitive = false;
+    root.category = Category.STRUCT;
+    root.children = createFields(typeInfos);
+    root.count = count;
+    root.objectInspector = null;
+    int[] outputColumnNums = new int[count];
+    for (int i = 0; i < count; i++) {
+      final int outputColumnNum = columnMap[i];
+      outputColumnNums[i] = outputColumnNum;
+      root.children[i].outputColumnNum = outputColumnNum;
     }
 
-    vectorExtractRow.init(this.typeInfos, outputColumnNums);
+    vectorExtractRow.init(typeInfos, outputColumnNums);
   }
 
   public int getCount() {
-    return typeInfos.length;
+    return root.count;
   }
 
   public void setOutput(Output output) {
@@ -165,15 +249,17 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
 
     hasAnyNulls = false;
     isAllNulls = true;
-    for (int i = 0; i < typeInfos.length; i++) {
-      final ColumnVector colVector = batch.cols[outputColumnNums[i]];
-      serializeWrite(colVector, typeInfos[i], objectInspectors[i], batchIndex);
+    final Field[] children = root.children;
+    final int size = root.count;
+    for (int i = 0; i < size; i++) {
+      final Field field = children[i];
+      final ColumnVector colVector = batch.cols[field.outputColumnNum];
+      serializeWrite(colVector, field, batchIndex);
     }
   }
 
   private void serializeWrite(
-      ColumnVector colVector, TypeInfo typeInfo,
-      ObjectInspector objectInspector, int batchIndex) throws IOException {
+      ColumnVector colVector, Field field, int batchIndex) throws IOException {
 
     int adjustedBatchIndex;
     if (colVector.isRepeating) {
@@ -188,37 +274,34 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
     }
     isAllNulls = false;
 
-    final Category category = typeInfo.getCategory();
+    if (field.isPrimitive) {
+      serializePrimitiveWrite(colVector, field, adjustedBatchIndex);
+      return;
+    }
+    final Category category = field.category;
     switch (category) {
-    case PRIMITIVE:
-      serializePrimitiveWrite(colVector, (PrimitiveTypeInfo) typeInfo, adjustedBatchIndex);
-      break;
     case LIST:
       serializeListWrite(
           (ListColumnVector) colVector,
-          (ListTypeInfo) typeInfo,
-          (ListObjectInspector) objectInspector,
+          field,
           adjustedBatchIndex);
       break;
     case MAP:
       serializeMapWrite(
           (MapColumnVector) colVector,
-          (MapTypeInfo) typeInfo,
-          (MapObjectInspector) objectInspector,
+          field,
           adjustedBatchIndex);
       break;
     case STRUCT:
       serializeStructWrite(
           (StructColumnVector) colVector,
-          (StructTypeInfo) typeInfo,
-          (StructObjectInspector) objectInspector,
+          field,
           adjustedBatchIndex);
       break;
     case UNION:
       serializeUnionWrite(
           (UnionColumnVector) colVector,
-          (UnionTypeInfo) typeInfo,
-          (UnionObjectInspector) objectInspector,
+          field,
           adjustedBatchIndex);
       break;
     default:
@@ -227,30 +310,33 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
   }
 
   private void serializeUnionWrite(
-      UnionColumnVector colVector, UnionTypeInfo typeInfo,
-      UnionObjectInspector objectInspector, int adjustedBatchIndex) throws IOException {
+      UnionColumnVector colVector, Field field, int adjustedBatchIndex) throws IOException {
+
+    UnionTypeInfo typeInfo = (UnionTypeInfo) field.typeInfo;
+    UnionObjectInspector objectInspector = (UnionObjectInspector) field.objectInspector;
 
     final byte tag = (byte) colVector.tags[adjustedBatchIndex];
     final ColumnVector fieldColumnVector = colVector.fields[tag];
-    final TypeInfo objectTypeInfo = typeInfo.getAllUnionObjectTypeInfos().get(tag);
+    final Field childField = field.children[tag];
 
     serializeWrite.beginUnion(tag);
     serializeWrite(
         fieldColumnVector,
-        objectTypeInfo,
-        objectInspector.getObjectInspectors().get(tag),
+        childField,
         adjustedBatchIndex);
     serializeWrite.finishUnion();
   }
 
   private void serializeStructWrite(
-      StructColumnVector colVector, StructTypeInfo typeInfo,
-      StructObjectInspector objectInspector, int adjustedBatchIndex) throws IOException {
+      StructColumnVector colVector, Field field, int adjustedBatchIndex) throws IOException {
+
+    StructTypeInfo typeInfo = (StructTypeInfo) field.typeInfo;
+    StructObjectInspector objectInspector = (StructObjectInspector) field.objectInspector;
 
     final ColumnVector[] fieldColumnVectors = colVector.fields;
-    final List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
+    final Field[] children = field.children;
     final List<? extends StructField> structFields = objectInspector.getAllStructFieldRefs();
-    final int size = fieldTypeInfos.size();
+    final int size = field.count;
 
     final List list = (List) vectorExtractRow.extractRowColumn(
         colVector, typeInfo, objectInspector, adjustedBatchIndex);
@@ -262,21 +348,22 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
       }
       serializeWrite(
           fieldColumnVectors[i],
-          fieldTypeInfos.get(i),
-          structFields.get(i).getFieldObjectInspector(),
+          children[i],
           adjustedBatchIndex);
     }
     serializeWrite.finishStruct();
   }
 
   private void serializeMapWrite(
-      MapColumnVector colVector, MapTypeInfo typeInfo,
-      MapObjectInspector objectInspector, int adjustedBatchIndex) throws IOException {
+      MapColumnVector colVector, Field field, int adjustedBatchIndex) throws IOException {
+
+    MapTypeInfo typeInfo = (MapTypeInfo) field.typeInfo;
+    MapObjectInspector objectInspector = (MapObjectInspector) field.objectInspector;
 
     final ColumnVector keyColumnVector = colVector.keys;
     final ColumnVector valueColumnVector = colVector.values;
-    final TypeInfo keyTypeInfo = typeInfo.getMapKeyTypeInfo();
-    final TypeInfo valueTypeInfo = typeInfo.getMapValueTypeInfo();
+    final Field keyField = field.children[0];
+    final Field valueField = field.children[1];
     final int offset = (int) colVector.offsets[adjustedBatchIndex];
     final int size = (int) colVector.lengths[adjustedBatchIndex];
 
@@ -288,21 +375,21 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
       if (i > 0) {
         serializeWrite.separateKeyValuePair();
       }
-      serializeWrite(keyColumnVector, keyTypeInfo,
-          objectInspector.getMapKeyObjectInspector(), offset + i);
+      serializeWrite(keyColumnVector, keyField, offset + i);
       serializeWrite.separateKey();
-      serializeWrite(valueColumnVector, valueTypeInfo,
-          objectInspector.getMapValueObjectInspector(), offset + i);
+      serializeWrite(valueColumnVector, valueField, offset + i);
     }
     serializeWrite.finishMap();
   }
 
   private void serializeListWrite(
-      ListColumnVector colVector, ListTypeInfo typeInfo,
-      ListObjectInspector objectInspector, int adjustedBatchIndex) throws IOException {
+      ListColumnVector colVector, Field field, int adjustedBatchIndex) throws IOException {
+
+    final ListTypeInfo typeInfo = (ListTypeInfo) field.typeInfo;
+    final ListObjectInspector objectInspector = (ListObjectInspector) field.objectInspector;
 
     final ColumnVector childColumnVector = colVector.child;
-    final TypeInfo elementTypeInfo = typeInfo.getListElementTypeInfo();
+    final Field elementField = field.children[0];
     final int offset = (int) colVector.offsets[adjustedBatchIndex];
     final int size = (int) colVector.lengths[adjustedBatchIndex];
 
@@ -316,15 +403,15 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
         serializeWrite.separateList();
       }
       serializeWrite(
-          childColumnVector, elementTypeInfo, elementObjectInspector, offset + i);
+          childColumnVector, elementField, offset + i);
     }
     serializeWrite.finishList();
   }
 
   private void serializePrimitiveWrite(
-      ColumnVector colVector, PrimitiveTypeInfo typeInfo, int adjustedBatchIndex) throws IOException {
+      ColumnVector colVector, Field field, int adjustedBatchIndex) throws IOException {
 
-    final PrimitiveCategory primitiveCategory = typeInfo.getPrimitiveCategory();
+    final PrimitiveCategory primitiveCategory = field.primitiveCategory;
     switch (primitiveCategory) {
     case BOOLEAN:
       serializeWrite.writeBoolean(((LongColumnVector) colVector).vector[adjustedBatchIndex] != 0);
