@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
-
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
@@ -43,7 +42,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.CellComparator;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
@@ -63,8 +61,8 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
-import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BooleanWritable;
@@ -1453,6 +1451,18 @@ public class TestHBaseSerDe extends TestCase {
 
     deserializeAndSerializeHBaseValueStruct(serDe, r, p);
 
+  }
+
+  /**
+   * Since there are assertions in the code, when running this test it throws an assertion error
+   * and not the error in a production setup. The Properties.java object that is passed to the serDe
+   * initializer, is passed with empty value "" for "columns.comments" key for hbase backed tables.
+   */
+  public void testEmptyColumnComment() throws SerDeException {
+    HBaseSerDe serDe = new HBaseSerDe();
+    Properties tbl = createPropertiesForValueStruct();
+    tbl.setProperty("columns.comments", "");
+    serDe.initialize(new Configuration(), tbl);
   }
 
   private Properties createPropertiesForValueStruct() {
