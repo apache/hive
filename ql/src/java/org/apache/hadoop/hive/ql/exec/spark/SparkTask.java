@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Throwables;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.slf4j.Logger;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -67,6 +69,7 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
 
 import com.google.common.collect.Lists;
+import org.apache.spark.SparkException;
 
 public class SparkTask extends Task<SparkWork> {
   private static final String CLASS_NAME = SparkTask.class.getName();
@@ -155,7 +158,12 @@ public class SparkTask extends Task<SparkWork> {
       console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
       LOG.error(msg, e);
       setException(e);
-      rc = 1;
+      if (e instanceof HiveException) {
+        HiveException he = (HiveException) e;
+        rc = he.getCanonicalErrorMsg().getErrorCode();
+      } else {
+        rc = 1;
+      }
     } finally {
       startTime = perfLogger.getEndTime(PerfLogger.SPARK_SUBMIT_TO_RUNNING);
       // The startTime may not be set if the sparkTask finished too fast,
@@ -417,11 +425,30 @@ public class SparkTask extends Task<SparkWork> {
               error.getCause() instanceof InterruptedException)) {
             killJob();
           }
-          setException(error);
+          HiveException he;
+          if (isOOMError(error)) {
+            he = new HiveException(error, ErrorMsg.SPARK_RUNTIME_OOM);
+          } else {
+            he = new HiveException(error, ErrorMsg.SPARK_JOB_RUNTIME_ERROR);
+          }
+          setException(he);
         }
       }
     } catch (Exception e) {
       LOG.error("Failed to get Spark job information", e);
     }
+  }
+
+  private boolean isOOMError(Throwable error) {
+    while (error != null) {
+      if (error instanceof OutOfMemoryError) {
+        return true;
+      } else if (error instanceof SparkException) {
+        String sts = Throwables.getStackTraceAsString(error);
+        return sts.contains("Container killed by YARN for exceeding memory limits");
+      }
+      error = error.getCause();
+    }
+    return false;
   }
 }

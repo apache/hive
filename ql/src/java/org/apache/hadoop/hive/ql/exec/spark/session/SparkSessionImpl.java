@@ -18,12 +18,20 @@
 package org.apache.hadoop.hive.ql.exec.spark.session;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,15 +52,30 @@ public class SparkSessionImpl implements SparkSession {
   private static final Logger LOG = LoggerFactory.getLogger(SparkSession.class);
   private static final String SPARK_DIR = "_spark_session_dir";
 
+  /** Regex for different Spark session error messages */
+  private static final String AM_TIMEOUT_ERR = ".*ApplicationMaster for attempt.*timed out.*";
+  private static final String UNKNOWN_QUEUE_ERR = "(submitted by user.*to unknown queue:.*)\n";
+  private static final String STOPPED_QUEUE_ERR = "(Queue.*is STOPPED)";
+  private static final String FULL_QUEUE_ERR = "(Queue.*already has.*applications)";
+  private static final String INVALILD_MEM_ERR =
+      "(Required executor memory.*is above the max threshold.*) of this";
+  private static final String INVALID_CORE_ERR =
+      "(initial executor number.*must between min executor.*and max executor number.*)\n";
+
+  /** Pre-compiled error patterns. Shared between all Spark sessions */
+  private static Map<String, Pattern> errorPatterns;
+
   private HiveConf conf;
   private boolean isOpen;
   private final String sessionId;
   private HiveSparkClient hiveSparkClient;
   private Path scratchDir;
   private final Object dirLock = new Object();
+  private String matchedString = null;
 
   public SparkSessionImpl() {
     sessionId = makeSessionId();
+    initErrorPatterns();
   }
 
   @Override
@@ -64,9 +87,13 @@ public class SparkSessionImpl implements SparkSession {
       hiveSparkClient = HiveSparkClientFactory.createHiveSparkClient(conf, sessionId);
     } catch (Throwable e) {
       // It's possible that user session is closed while creating Spark client.
-      String msg = isOpen ? "Failed to create Spark client for Spark session " + sessionId :
-        "Spark Session " + sessionId + " is closed before Spark client is created";
-      throw new HiveException(msg, e);
+      HiveException he;
+      if (isOpen) {
+        he = getHiveException(e);
+      } else {
+        he = new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_CLOSED_SESSION, sessionId);
+      }
+      throw he;
     }
     LOG.info("Spark session {} is successfully opened", sessionId);
   }
@@ -150,6 +177,67 @@ public class SparkSessionImpl implements SparkSession {
     fs.mkdirs(sparkDir, fsPermission);
     fs.deleteOnExit(sparkDir);
     return sparkDir;
+  }
+
+  private static void initErrorPatterns() {
+    errorPatterns = Maps.newHashMap(
+        new ImmutableMap.Builder<String, Pattern>()
+            .put(AM_TIMEOUT_ERR, Pattern.compile(AM_TIMEOUT_ERR))
+            .put(UNKNOWN_QUEUE_ERR, Pattern.compile(UNKNOWN_QUEUE_ERR))
+            .put(STOPPED_QUEUE_ERR, Pattern.compile(STOPPED_QUEUE_ERR))
+            .put(FULL_QUEUE_ERR, Pattern.compile(FULL_QUEUE_ERR))
+            .put(INVALILD_MEM_ERR, Pattern.compile(INVALILD_MEM_ERR))
+            .put(INVALID_CORE_ERR, Pattern.compile(INVALID_CORE_ERR))
+            .build()
+    );
+  }
+
+  @VisibleForTesting
+  HiveException getHiveException(Throwable e) {
+    Throwable oe = e;
+    while (e != null) {
+      if (e instanceof TimeoutException) {
+        return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_TIMEOUT);
+      } else if (e instanceof InterruptedException) {
+        return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_INTERRUPTED, sessionId);
+      } else if (e instanceof RuntimeException) {
+        String sts = Throwables.getStackTraceAsString(e);
+        if (matches(sts, AM_TIMEOUT_ERR)) {
+          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_TIMEOUT);
+        } else if (matches(sts, UNKNOWN_QUEUE_ERR) || matches(sts, STOPPED_QUEUE_ERR)) {
+          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_INVALID_QUEUE, matchedString);
+        } else if (matches(sts, FULL_QUEUE_ERR)) {
+          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_QUEUE_FULL, matchedString);
+        } else if (matches(sts, INVALILD_MEM_ERR) || matches(sts, INVALID_CORE_ERR)) {
+          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_INVALID_RESOURCE_REQUEST,
+              matchedString);
+        } else {
+          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, sessionId);
+        }
+      }
+      e = e.getCause();
+    }
+
+    return new HiveException(oe, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, sessionId);
+  }
+
+  @VisibleForTesting
+  String getMatchedString() {
+    return matchedString;
+  }
+
+  private boolean matches(String input, String regex) {
+    if (!errorPatterns.containsKey(regex)) {
+      LOG.warn("No error pattern found for regex: {}", regex);
+      return false;
+    }
+    Pattern p = errorPatterns.get(regex);
+    Matcher m = p.matcher(input);
+    boolean result = m.find();
+    if (result && m.groupCount() == 1) {
+      this.matchedString = m.group(1);
+    }
+    return result;
   }
 
   private void cleanScratchDir() throws IOException {

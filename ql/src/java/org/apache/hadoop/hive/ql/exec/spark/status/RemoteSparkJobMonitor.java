@@ -23,9 +23,11 @@ import java.util.Map;
 
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobStatus;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.spark.client.JobHandle;
 import org.apache.spark.JobExecutionStatus;
 
@@ -70,11 +72,11 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
         case QUEUED:
           long timeCount = (System.currentTimeMillis() - startTime) / 1000;
           if ((timeCount > monitorTimeoutInterval)) {
-            console.printError("Job hasn't been submitted after " + timeCount + "s." +
-                " Aborting it.\nPossible reasons include network issues, " +
-                "errors in remote driver or the cluster has no available resources, etc.\n" +
-                "Please check YARN or Spark driver's logs for further information.");
+            HiveException he = new HiveException(ErrorMsg.SPARK_JOB_MONITOR_TIMEOUT,
+                Long.toString(timeCount));
+            console.printError(he.getMessage());
             console.printError("Status: " + state);
+            sparkJobStatus.setError(he);
             running = false;
             done = true;
             rc = 2;
@@ -181,6 +183,10 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
           Thread.sleep(checkInterval);
         }
       } catch (Exception e) {
+        Exception finalException = e;
+        if (e instanceof InterruptedException) {
+          finalException = new HiveException(e, ErrorMsg.SPARK_JOB_INTERRUPTED);
+        }
         String msg = " with exception '" + Utilities.getNameMessage(e) + "'";
         msg = "Failed to monitor Job[" + sparkJobStatus.getJobId() + "]" + msg;
 
@@ -190,7 +196,7 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
         console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
         rc = 1;
         done = true;
-        sparkJobStatus.setError(e);
+        sparkJobStatus.setError(finalException);
       } finally {
         if (done) {
           break;
