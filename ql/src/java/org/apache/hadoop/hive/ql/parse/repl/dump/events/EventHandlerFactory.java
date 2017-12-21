@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -34,6 +34,7 @@ public class EventHandlerFactory {
 
   static {
     register(MessageFactory.ADD_PARTITION_EVENT, AddPartitionHandler.class);
+    register(MessageFactory.ALTER_DATABASE_EVENT, AlterDatabaseHandler.class);
     register(MessageFactory.ALTER_PARTITION_EVENT, AlterPartitionHandler.class);
     register(MessageFactory.ALTER_TABLE_EVENT, AlterTableHandler.class);
     register(MessageFactory.CREATE_FUNCTION_EVENT, CreateFunctionHandler.class);
