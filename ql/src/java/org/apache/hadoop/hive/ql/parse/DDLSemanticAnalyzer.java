@@ -900,19 +900,30 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     String resourcePlanName = unescapeIdentifier(ast.getChild(0).getText());
     Integer queryParallelism = null;
+    String likeName = null;
     for (int i = 1; i < ast.getChildCount(); ++i) {
       Tree child = ast.getChild(i);
-      if (child.getType() == HiveParser.TOK_QUERY_PARALLELISM) {
-        if (queryParallelism == null) {
+      switch (child.getType()) {
+      case HiveParser.TOK_QUERY_PARALLELISM:
+        // Note: later we may be able to set multiple things together (except LIKE).
+        if (queryParallelism == null && likeName == null) {
           queryParallelism = Integer.parseInt(child.getChild(0).getText());
         } else {
-          throw new SemanticException("QUERY_PARALLELISM should be set only once.");
+          throw new SemanticException("Conflicting create arguments " + ast.toStringTree());
         }
-      } else {
-        throw new SemanticException("Invalid set in create resource plan: " + child.getText());
+        break;
+      case HiveParser.TOK_LIKERP:
+        if (queryParallelism == null && likeName == null) {
+          likeName = unescapeIdentifier(child.getChild(0).getText());
+        } else {
+          throw new SemanticException("Conflicting create arguments " + ast.toStringTree());
+        }
+        break;
+      default: throw new SemanticException("Invalid create arguments " + ast.toStringTree());
       }
     }
-    CreateResourcePlanDesc desc = new CreateResourcePlanDesc(resourcePlanName, queryParallelism);
+    CreateResourcePlanDesc desc = new CreateResourcePlanDesc(
+        resourcePlanName, queryParallelism, likeName);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
 
@@ -942,7 +953,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_DISABLE:
       WMResourcePlan anyRp = new WMResourcePlan();
       anyRp.setStatus(WMResourcePlanStatus.ENABLED);
-      AlterResourcePlanDesc desc = new AlterResourcePlanDesc(anyRp, null, false, false, true);
+      AlterResourcePlanDesc desc = new AlterResourcePlanDesc(
+          anyRp, null, false, false, true, false);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
       return;
     default: // Continue to handle changes to a specific plan.
@@ -952,7 +964,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     String rpName = unescapeIdentifier(ast.getChild(0).getText());
     WMResourcePlan resourcePlan = new WMResourcePlan();
-    boolean isEnableActive = false;
+    boolean isEnableActivate = false, isReplace = false;
     boolean validate = false;
     for (int i = 1; i < ast.getChildCount(); ++i) {
       Tree child = ast.getChild(i);
@@ -962,19 +974,39 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.TOK_ACTIVATE:
         if (resourcePlan.getStatus() == WMResourcePlanStatus.ENABLED) {
-          isEnableActive = true;
+          isEnableActivate = true;
+        }
+        if (child.getChildCount() > 1) {
+          throw new SemanticException("Expected 0 or 1 arguments " + ast.toStringTree());
+        } else if (child.getChildCount() == 1) {
+          if (child.getChild(0).getType() != HiveParser.TOK_REPLACE) {
+            throw new SemanticException("Incorrect syntax " + ast.toStringTree());
+          }
+          isReplace = true;
+          isEnableActivate = false; // Implied.
         }
         resourcePlan.setStatus(WMResourcePlanStatus.ACTIVE);
         break;
       case HiveParser.TOK_ENABLE:
         if (resourcePlan.getStatus() == WMResourcePlanStatus.ACTIVE) {
-          isEnableActive = true;
+          isEnableActivate = !isReplace;
         } else {
           resourcePlan.setStatus(WMResourcePlanStatus.ENABLED);
         }
         break;
       case HiveParser.TOK_DISABLE:
         resourcePlan.setStatus(WMResourcePlanStatus.DISABLED);
+        break;
+      case HiveParser.TOK_REPLACE:
+        isReplace = true;
+        if (child.getChildCount() > 1) {
+          throw new SemanticException("Expected 0 or 1 arguments " + ast.toStringTree());
+        } else if (child.getChildCount() == 1) {
+          // Replace is essentially renaming a plan to the name of an existing plan, with backup.
+          resourcePlan.setName(unescapeIdentifier(child.getChild(0).getText()));
+        } else {
+          resourcePlan.setStatus(WMResourcePlanStatus.ACTIVE);
+        }
         break;
       case HiveParser.TOK_QUERY_PARALLELISM:
         if (child.getChildCount() != 1) {
@@ -989,18 +1021,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         resourcePlan.setDefaultPoolPath(poolPath(child.getChild(0)));
         break;
       case HiveParser.TOK_RENAME:
-        if (ast.getChildCount() == (i + 1)) {
-          throw new SemanticException("Expected an argument");
+        if (child.getChildCount() != 1) {
+          throw new SemanticException("Expected one argument");
         }
-        resourcePlan.setName(unescapeIdentifier(ast.getChild(++i).getText()));
+        resourcePlan.setName(unescapeIdentifier(child.getChild(0).getText()));
         break;
       default:
         throw new SemanticException(
           "Unexpected token in alter resource plan statement: " + child.getType());
       }
     }
-    AlterResourcePlanDesc desc =
-        new AlterResourcePlanDesc(resourcePlan, rpName, validate, isEnableActive, false);
+    AlterResourcePlanDesc desc = new AlterResourcePlanDesc(
+        resourcePlan, rpName, validate, isEnableActivate, false, isReplace);
     if (validate) {
       ctx.setResFile(ctx.getLocalTmpPath());
       desc.setResFile(ctx.getResFile().toString());
@@ -1106,6 +1138,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeCreatePool(ASTNode ast) throws SemanticException {
+    // TODO: allow defaults for e.g. scheduling policy.
     if (ast.getChildCount() != 5) {
       throw new SemanticException("Invalid syntax for create pool.");
     }

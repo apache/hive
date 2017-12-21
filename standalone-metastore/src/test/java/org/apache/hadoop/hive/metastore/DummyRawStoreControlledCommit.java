@@ -943,9 +943,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void createResourcePlan(WMResourcePlan resourcePlan, int defaultPoolSize)
-      throws AlreadyExistsException, InvalidObjectException, MetaException {
-    objectStore.createResourcePlan(resourcePlan, defaultPoolSize);
+  public void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException {
+    objectStore.createResourcePlan(resourcePlan, copyFrom, defaultPoolSize);
   }
 
   @Override
@@ -960,10 +960,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan,
-      boolean canActivateDisabled, boolean canDeactivate)
+      boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException {
-    return objectStore.alterResourcePlan(name, resourcePlan, canActivateDisabled, canDeactivate);
+    return objectStore.alterResourcePlan(
+      name, resourcePlan, canActivateDisabled, canDeactivate, isReplace);
   }
 
   @Override

@@ -29,6 +29,7 @@ resourcePlanDdlStatements
     | alterResourcePlanStatement
     | dropResourcePlanStatement
     | globalWmStatement
+    | replaceResourcePlanStatement
     | createTriggerStatement
     | alterTriggerStatement
     | dropTriggerStatement
@@ -58,11 +59,15 @@ rpAssignList
 createResourcePlanStatement
 @init { gParent.pushMsg("create resource plan statement", state); }
 @after { gParent.popMsg(state); }
-    : KW_CREATE KW_RESOURCE KW_PLAN name=identifier (KW_WITH rpAssignList)?
-    -> ^(TOK_CREATE_RP $name rpAssignList?)
+    : KW_CREATE KW_RESOURCE KW_PLAN (
+          (name=identifier KW_LIKE likeName=identifier -> ^(TOK_CREATE_RP $name ^(TOK_LIKERP $likeName)))
+        | (name=identifier (KW_WITH rpAssignList)? -> ^(TOK_CREATE_RP $name rpAssignList?))
+      )
     ;
 
-activate : KW_ACTIVATE -> ^(TOK_ACTIVATE);
+
+withReplace : KW_WITH KW_REPLACE -> ^(TOK_REPLACE);
+activate : KW_ACTIVATE withReplace? -> ^(TOK_ACTIVATE withReplace?);
 enable : KW_ENABLE -> ^(TOK_ENABLE);
 disable : KW_DISABLE -> ^(TOK_DISABLE);
 
@@ -73,7 +78,7 @@ alterResourcePlanStatement
           (KW_VALIDATE -> ^(TOK_ALTER_RP $name TOK_VALIDATE))
         | (KW_DISABLE -> ^(TOK_ALTER_RP $name TOK_DISABLE))
         | (KW_SET rpAssignList -> ^(TOK_ALTER_RP $name rpAssignList))
-        | (KW_RENAME KW_TO newName=identifier -> ^(TOK_ALTER_RP $name TOK_RENAME $newName))
+        | (KW_RENAME KW_TO newName=identifier -> ^(TOK_ALTER_RP $name ^(TOK_RENAME $newName)))
         | ((activate enable? | enable activate?) -> ^(TOK_ALTER_RP $name activate? enable?))
       )
     ;
@@ -84,6 +89,15 @@ globalWmStatement
 @init { gParent.pushMsg("global WM statement", state); }
 @after { gParent.popMsg(state); }
     : (enable | disable) KW_WORKLOAD KW_MANAGEMENT -> ^(TOK_ALTER_RP enable? disable?)
+    ;
+
+replaceResourcePlanStatement
+@init { gParent.pushMsg("replace resource plan statement", state); }
+@after { gParent.popMsg(state); }
+    : KW_REPLACE (
+          (KW_ACTIVE KW_RESOURCE KW_PLAN KW_WITH src=identifier -> ^(TOK_ALTER_RP $src TOK_REPLACE))
+        | (KW_RESOURCE KW_PLAN dest=identifier KW_WITH src=identifier -> ^(TOK_ALTER_RP $src ^(TOK_REPLACE $dest)))
+      )
     ;
 
 dropResourcePlanStatement

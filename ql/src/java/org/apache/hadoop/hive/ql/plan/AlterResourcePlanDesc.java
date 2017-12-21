@@ -31,18 +31,19 @@ public class AlterResourcePlanDesc extends DDLDesc implements Serializable {
   private WMResourcePlan resourcePlan;
   private String rpName;
   private boolean validate;
-  private boolean isEnableActivate, isForceDeactivate;
+  private boolean isEnableActivate, isForceDeactivate, isReplace;
   private String resFile;
 
   public AlterResourcePlanDesc() {}
 
   public AlterResourcePlanDesc(WMResourcePlan resourcePlan, String rpName, boolean validate,
-      boolean isEnableActivate, boolean isForceDeactivate) {
+      boolean isEnableActivate, boolean isForceDeactivate, boolean isReplace) {
     this.resourcePlan = resourcePlan;
     this.rpName = rpName;
     this.validate = validate;
     this.isEnableActivate = isEnableActivate;
     this.isForceDeactivate = isForceDeactivate;
+    this.isReplace = isReplace;
   }
 
   @Explain(displayName="Resource plan changed fields",
@@ -89,6 +90,14 @@ public class AlterResourcePlanDesc extends DDLDesc implements Serializable {
 
   public void setIsForceDeactivate(boolean b) {
     this.isForceDeactivate = b;
+  }
+
+  public boolean isReplace() {
+    return isReplace;
+  }
+
+  public void setIsReplace(boolean b) {
+    this.isReplace = b;
   }
 
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })

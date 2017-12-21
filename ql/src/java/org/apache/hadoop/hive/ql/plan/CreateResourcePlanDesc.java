@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -28,20 +27,27 @@ public class CreateResourcePlanDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = -3492803425541479414L;
 
   private WMResourcePlan resourcePlan;
+  private String copyFromName;
 
   // For serialization only.
   public CreateResourcePlanDesc() {
   }
 
-  public CreateResourcePlanDesc(String planName, Integer queryParallelism) {
+  public CreateResourcePlanDesc(String planName, Integer queryParallelism, String copyFromName) {
     resourcePlan = new WMResourcePlan(planName);
     if (queryParallelism != null) {
       resourcePlan.setQueryParallelism(queryParallelism);
     }
+    this.copyFromName = copyFromName;
   }
 
   @Explain(displayName="resourcePlan", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public WMResourcePlan getResourcePlan() {
     return resourcePlan;
+  }
+
+  @Explain(displayName="Copy from", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getCopyFromName() {
+    return copyFromName;
   }
 }

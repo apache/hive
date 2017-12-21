@@ -21820,6 +21820,11 @@ void WMCreateResourcePlanRequest::__set_resourcePlan(const WMResourcePlan& val) 
 __isset.resourcePlan = true;
 }
 
+void WMCreateResourcePlanRequest::__set_copyFrom(const std::string& val) {
+  this->copyFrom = val;
+__isset.copyFrom = true;
+}
+
 uint32_t WMCreateResourcePlanRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -21849,6 +21854,14 @@ uint32_t WMCreateResourcePlanRequest::read(::apache::thrift::protocol::TProtocol
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->copyFrom);
+          this->__isset.copyFrom = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -21871,6 +21884,11 @@ uint32_t WMCreateResourcePlanRequest::write(::apache::thrift::protocol::TProtoco
     xfer += this->resourcePlan.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.copyFrom) {
+    xfer += oprot->writeFieldBegin("copyFrom", ::apache::thrift::protocol::T_STRING, 2);
+    xfer += oprot->writeString(this->copyFrom);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -21879,15 +21897,18 @@ uint32_t WMCreateResourcePlanRequest::write(::apache::thrift::protocol::TProtoco
 void swap(WMCreateResourcePlanRequest &a, WMCreateResourcePlanRequest &b) {
   using ::std::swap;
   swap(a.resourcePlan, b.resourcePlan);
+  swap(a.copyFrom, b.copyFrom);
   swap(a.__isset, b.__isset);
 }
 
 WMCreateResourcePlanRequest::WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest& other900) {
   resourcePlan = other900.resourcePlan;
+  copyFrom = other900.copyFrom;
   __isset = other900.__isset;
 }
 WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCreateResourcePlanRequest& other901) {
   resourcePlan = other901.resourcePlan;
+  copyFrom = other901.copyFrom;
   __isset = other901.__isset;
   return *this;
 }
@@ -21895,6 +21916,7 @@ void WMCreateResourcePlanRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "WMCreateResourcePlanRequest(";
   out << "resourcePlan="; (__isset.resourcePlan ? (out << to_string(resourcePlan)) : (out << "<null>"));
+  out << ", " << "copyFrom="; (__isset.copyFrom ? (out << to_string(copyFrom)) : (out << "<null>"));
   out << ")";
 }
 
@@ -22481,6 +22503,11 @@ void WMAlterResourcePlanRequest::__set_isForceDeactivate(const bool val) {
 __isset.isForceDeactivate = true;
 }
 
+void WMAlterResourcePlanRequest::__set_isReplace(const bool val) {
+  this->isReplace = val;
+__isset.isReplace = true;
+}
+
 uint32_t WMAlterResourcePlanRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -22534,6 +22561,14 @@ uint32_t WMAlterResourcePlanRequest::read(::apache::thrift::protocol::TProtocol*
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->isReplace);
+          this->__isset.isReplace = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -22571,6 +22606,11 @@ uint32_t WMAlterResourcePlanRequest::write(::apache::thrift::protocol::TProtocol
     xfer += oprot->writeBool(this->isForceDeactivate);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.isReplace) {
+    xfer += oprot->writeFieldBegin("isReplace", ::apache::thrift::protocol::T_BOOL, 5);
+    xfer += oprot->writeBool(this->isReplace);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -22582,6 +22622,7 @@ void swap(WMAlterResourcePlanRequest &a, WMAlterResourcePlanRequest &b) {
   swap(a.resourcePlan, b.resourcePlan);
   swap(a.isEnableAndActivate, b.isEnableAndActivate);
   swap(a.isForceDeactivate, b.isForceDeactivate);
+  swap(a.isReplace, b.isReplace);
   swap(a.__isset, b.__isset);
 }
 
@@ -22590,6 +22631,7 @@ WMAlterResourcePlanRequest::WMAlterResourcePlanRequest(const WMAlterResourcePlan
   resourcePlan = other922.resourcePlan;
   isEnableAndActivate = other922.isEnableAndActivate;
   isForceDeactivate = other922.isForceDeactivate;
+  isReplace = other922.isReplace;
   __isset = other922.__isset;
 }
 WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterResourcePlanRequest& other923) {
@@ -22597,6 +22639,7 @@ WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterR
   resourcePlan = other923.resourcePlan;
   isEnableAndActivate = other923.isEnableAndActivate;
   isForceDeactivate = other923.isForceDeactivate;
+  isReplace = other923.isReplace;
   __isset = other923.__isset;
   return *this;
 }
@@ -22607,6 +22650,7 @@ void WMAlterResourcePlanRequest::printTo(std::ostream& out) const {
   out << ", " << "resourcePlan="; (__isset.resourcePlan ? (out << to_string(resourcePlan)) : (out << "<null>"));
   out << ", " << "isEnableAndActivate="; (__isset.isEnableAndActivate ? (out << to_string(isEnableAndActivate)) : (out << "<null>"));
   out << ", " << "isForceDeactivate="; (__isset.isForceDeactivate ? (out << to_string(isForceDeactivate)) : (out << "<null>"));
+  out << ", " << "isReplace="; (__isset.isReplace ? (out << to_string(isReplace)) : (out << "<null>"));
   out << ")";
 }
 

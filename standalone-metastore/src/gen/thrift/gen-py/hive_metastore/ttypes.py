@@ -15124,15 +15124,18 @@ class WMCreateResourcePlanRequest:
   """
   Attributes:
    - resourcePlan
+   - copyFrom
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'resourcePlan', (WMResourcePlan, WMResourcePlan.thrift_spec), None, ), # 1
+    (2, TType.STRING, 'copyFrom', None, None, ), # 2
   )
 
-  def __init__(self, resourcePlan=None,):
+  def __init__(self, resourcePlan=None, copyFrom=None,):
     self.resourcePlan = resourcePlan
+    self.copyFrom = copyFrom
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -15149,6 +15152,11 @@ class WMCreateResourcePlanRequest:
           self.resourcePlan.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.copyFrom = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -15163,6 +15171,10 @@ class WMCreateResourcePlanRequest:
       oprot.writeFieldBegin('resourcePlan', TType.STRUCT, 1)
       self.resourcePlan.write(oprot)
       oprot.writeFieldEnd()
+    if self.copyFrom is not None:
+      oprot.writeFieldBegin('copyFrom', TType.STRING, 2)
+      oprot.writeString(self.copyFrom)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -15173,6 +15185,7 @@ class WMCreateResourcePlanRequest:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.resourcePlan)
+    value = (value * 31) ^ hash(self.copyFrom)
     return value
 
   def __repr__(self):
@@ -15602,6 +15615,7 @@ class WMAlterResourcePlanRequest:
    - resourcePlan
    - isEnableAndActivate
    - isForceDeactivate
+   - isReplace
   """
 
   thrift_spec = (
@@ -15610,13 +15624,15 @@ class WMAlterResourcePlanRequest:
     (2, TType.STRUCT, 'resourcePlan', (WMResourcePlan, WMResourcePlan.thrift_spec), None, ), # 2
     (3, TType.BOOL, 'isEnableAndActivate', None, None, ), # 3
     (4, TType.BOOL, 'isForceDeactivate', None, None, ), # 4
+    (5, TType.BOOL, 'isReplace', None, None, ), # 5
   )
 
-  def __init__(self, resourcePlanName=None, resourcePlan=None, isEnableAndActivate=None, isForceDeactivate=None,):
+  def __init__(self, resourcePlanName=None, resourcePlan=None, isEnableAndActivate=None, isForceDeactivate=None, isReplace=None,):
     self.resourcePlanName = resourcePlanName
     self.resourcePlan = resourcePlan
     self.isEnableAndActivate = isEnableAndActivate
     self.isForceDeactivate = isForceDeactivate
+    self.isReplace = isReplace
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -15648,6 +15664,11 @@ class WMAlterResourcePlanRequest:
           self.isForceDeactivate = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.BOOL:
+          self.isReplace = iprot.readBool()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -15674,6 +15695,10 @@ class WMAlterResourcePlanRequest:
       oprot.writeFieldBegin('isForceDeactivate', TType.BOOL, 4)
       oprot.writeBool(self.isForceDeactivate)
       oprot.writeFieldEnd()
+    if self.isReplace is not None:
+      oprot.writeFieldBegin('isReplace', TType.BOOL, 5)
+      oprot.writeBool(self.isReplace)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -15687,6 +15712,7 @@ class WMAlterResourcePlanRequest:
     value = (value * 31) ^ hash(self.resourcePlan)
     value = (value * 31) ^ hash(self.isEnableAndActivate)
     value = (value * 31) ^ hash(self.isForceDeactivate)
+    value = (value * 31) ^ hash(self.isReplace)
     return value
 
   def __repr__(self):

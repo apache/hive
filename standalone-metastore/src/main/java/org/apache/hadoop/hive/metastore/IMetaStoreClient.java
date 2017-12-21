@@ -1771,7 +1771,7 @@ public interface IMetaStoreClient {
    */
   String getMetastoreDbUuid() throws MetaException, TException;
 
-  void createResourcePlan(WMResourcePlan resourcePlan)
+  void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName)
       throws InvalidObjectException, MetaException, TException;
 
   WMResourcePlan getResourcePlan(String resourcePlanName)
@@ -1784,7 +1784,7 @@ public interface IMetaStoreClient {
       throws NoSuchObjectException, MetaException, TException;
 
   WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMResourcePlan resourcePlan,
-      boolean canActivateDisabled, boolean isForceDeactivate)
+      boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
   WMFullResourcePlan getActiveResourcePlan() throws MetaException, TException;

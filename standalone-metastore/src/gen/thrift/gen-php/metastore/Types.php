@@ -21454,6 +21454,10 @@ class WMCreateResourcePlanRequest {
    * @var \metastore\WMResourcePlan
    */
   public $resourcePlan = null;
+  /**
+   * @var string
+   */
+  public $copyFrom = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -21463,11 +21467,18 @@ class WMCreateResourcePlanRequest {
           'type' => TType::STRUCT,
           'class' => '\metastore\WMResourcePlan',
           ),
+        2 => array(
+          'var' => 'copyFrom',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['resourcePlan'])) {
         $this->resourcePlan = $vals['resourcePlan'];
+      }
+      if (isset($vals['copyFrom'])) {
+        $this->copyFrom = $vals['copyFrom'];
       }
     }
   }
@@ -21499,6 +21510,13 @@ class WMCreateResourcePlanRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->copyFrom);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -21518,6 +21536,11 @@ class WMCreateResourcePlanRequest {
       }
       $xfer += $output->writeFieldBegin('resourcePlan', TType::STRUCT, 1);
       $xfer += $this->resourcePlan->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->copyFrom !== null) {
+      $xfer += $output->writeFieldBegin('copyFrom', TType::STRING, 2);
+      $xfer += $output->writeString($this->copyFrom);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -22034,6 +22057,10 @@ class WMAlterResourcePlanRequest {
    * @var bool
    */
   public $isForceDeactivate = null;
+  /**
+   * @var bool
+   */
+  public $isReplace = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -22055,6 +22082,10 @@ class WMAlterResourcePlanRequest {
           'var' => 'isForceDeactivate',
           'type' => TType::BOOL,
           ),
+        5 => array(
+          'var' => 'isReplace',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -22069,6 +22100,9 @@ class WMAlterResourcePlanRequest {
       }
       if (isset($vals['isForceDeactivate'])) {
         $this->isForceDeactivate = $vals['isForceDeactivate'];
+      }
+      if (isset($vals['isReplace'])) {
+        $this->isReplace = $vals['isReplace'];
       }
     }
   }
@@ -22121,6 +22155,13 @@ class WMAlterResourcePlanRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isReplace);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -22155,6 +22196,11 @@ class WMAlterResourcePlanRequest {
     if ($this->isForceDeactivate !== null) {
       $xfer += $output->writeFieldBegin('isForceDeactivate', TType::BOOL, 4);
       $xfer += $output->writeBool($this->isForceDeactivate);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->isReplace !== null) {
+      $xfer += $output->writeFieldBegin('isReplace', TType::BOOL, 5);
+      $xfer += $output->writeBool($this->isReplace);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
