@@ -108,6 +108,6 @@ public class FileOperations {
   private String encodedUri(FileStatus fileStatus) throws IOException {
     Path currentDataFilePath = fileStatus.getPath();
     String checkSum = ReplChangeManager.checksumFor(currentDataFilePath, dataFileSystem);
-    return ReplChangeManager.encodeFileUri(currentDataFilePath.toUri().toString(), checkSum);
+    return ReplChangeManager.encodeFileUri(currentDataFilePath.toString(), checkSum);
   }
 }
