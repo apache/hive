@@ -2999,7 +2999,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       Table t = createTable(dbName, tblName, owner, params, null, sd, 0);
       Assert.assertTrue("Expected exception", false);
     } catch (MetaException e) {
-      Assert.assertEquals("'transactional' property of TBLPROPERTIES may only have value 'true'", e.getMessage());
+      Assert.assertEquals("'transactional' property of TBLPROPERTIES may only have value 'true': acidDb.acidTable", e.getMessage());
     }
 
     // Fail - "transactional" property is set to an invalid value
@@ -3009,7 +3009,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       Table t = createTable(dbName, tblName, owner, params, null, sd, 0);
       Assert.assertTrue("Expected exception", false);
     } catch (MetaException e) {
-      Assert.assertEquals("'transactional' property of TBLPROPERTIES may only have value 'true'", e.getMessage());
+      Assert.assertEquals("'transactional' property of TBLPROPERTIES may only have value 'true': acidDb.acidTable", e.getMessage());
     }
 
     // Fail - "transactional" is set to true, but the table is not bucketed
@@ -3019,7 +3019,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       Table t = createTable(dbName, tblName, owner, params, null, sd, 0);
       Assert.assertTrue("Expected exception", false);
     } catch (MetaException e) {
-      Assert.assertEquals("The table must be stored using an ACID compliant format (such as ORC)", e.getMessage());
+      Assert.assertEquals("The table must be stored using an ACID compliant format (such as ORC): acidDb.acidTable", e.getMessage());
     }
 
     // Fail - "transactional" is set to true, and the table is bucketed, but doesn't use ORC
@@ -3032,7 +3032,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       Table t = createTable(dbName, tblName, owner, params, null, sd, 0);
       Assert.assertTrue("Expected exception", false);
     } catch (MetaException e) {
-      Assert.assertEquals("The table must be stored using an ACID compliant format (such as ORC)", e.getMessage());
+      Assert.assertEquals("The table must be stored using an ACID compliant format (such as ORC): acidDb.acidTable", e.getMessage());
     }
 
     // Succeed - "transactional" is set to true, and the table is bucketed, and uses ORC
@@ -3052,12 +3052,11 @@ public abstract class TestHiveMetaStore extends TestCase {
     try {
       params.clear();
       params.put("transactional", "false");
-      t = new Table();
       t.setParameters(params);
       client.alter_table(dbName, tblName, t);
       Assert.assertTrue("Expected exception", false);
     } catch (MetaException e) {
-      Assert.assertEquals("TBLPROPERTIES with 'transactional'='true' cannot be unset", e.getMessage());
+      Assert.assertEquals("TBLPROPERTIES with 'transactional'='true' cannot be unset: aciddb.acidtable", e.getMessage());
     }
 
     // Fail - trying to set "transactional" to "true" but doesn't satisfy bucketing and Input/OutputFormat requirement
@@ -3072,7 +3071,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       client.alter_table(dbName, tblName, t);
       Assert.assertTrue("Expected exception", false);
     } catch (MetaException e) {
-      Assert.assertEquals("The table must be stored using an ACID compliant format (such as ORC)", e.getMessage());
+      Assert.assertEquals("The table must be stored using an ACID compliant format (such as ORC): aciddb.acidtable1", e.getMessage());
     }
 
     // Succeed - trying to set "transactional" to "true", and satisfies bucketing and Input/OutputFormat requirement
