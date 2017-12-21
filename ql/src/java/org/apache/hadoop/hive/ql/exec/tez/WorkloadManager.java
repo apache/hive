@@ -876,8 +876,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
           session.getWmContext(), session.extractHiveResources());
       // We have just removed the session from the same pool, so don't check concurrency here.
       pool.initializingSessions.add(sw);
-      ListenableFuture<WmTezSession> getFuture = tezAmPool.getSessionAsync();
-      Futures.addCallback(getFuture, sw);
+      sw.start();
       syncWork.toRestartInUse.add(session);
       return;
     case IGNORE:
@@ -1143,8 +1142,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       // See SessionInitContext javadoc.
       SessionInitContext sw = new SessionInitContext(
           queueReq.future, poolName, queueReq.queryId, queueReq.wmContext, null);
-      ListenableFuture<WmTezSession> getFuture = tezAmPool.getSessionAsync();
-      Futures.addCallback(getFuture, sw);
+      sw.start();
       // It is possible that all the async methods returned on the same thread because the
       // session with registry data and stuff was available in the pool.
       // If this happens, we'll take the session out here and "cancel" the init so we skip
@@ -1778,6 +1776,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
    * for async session initialization, as well as parallel cancellation.
    */
   private final class SessionInitContext implements FutureCallback<WmTezSession> {
+    private final static int MAX_ATTEMPT_NUMBER = 1; // Retry once.
+
     private final String poolName, queryId;
 
     private final ReentrantLock lock = new ReentrantLock();
@@ -1788,6 +1788,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     private HiveResources prelocalizedResources;
     private Path pathToDelete;
     private WmContext wmContext;
+    private int attemptNumber = 0;
 
     public SessionInitContext(SettableFuture<WmTezSession> future,
         String poolName, String queryId, WmContext wmContext,
@@ -1798,6 +1799,11 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       this.queryId = queryId;
       this.prelocalizedResources = prelocalizedResources;
       this.wmContext = wmContext;
+    }
+
+    public void start() throws Exception {
+      ListenableFuture<WmTezSession> getFuture = tezAmPool.getSessionAsync();
+      Futures.addCallback(getFuture, this);
     }
 
     @Override
@@ -1856,16 +1862,15 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       }
       case WAITING_FOR_REGISTRY: {
         // Notify the master thread and the user.
-        future.set(session);
         notifyInitializationCompleted(this);
+        future.set(session);
         break;
       }
       case CANCELED: {
         // Return session to the pool; we can do it directly here.
         future.setException(new HiveException(
             "The query was killed by workload management: " + cancelReason));
-        session.setPoolName(null);
-        session.setClusterFraction(0f);
+        session.clearWm();
         session.setQueryId(null);
         session.setWmContext(null);
         tezAmPool.returnSession(session);
@@ -1883,36 +1888,56 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     public void onFailure(Throwable t) {
       SettableFuture<WmTezSession> future;
       WmTezSession session;
-      boolean wasCanceled = false;
+      boolean wasCanceled = false, doRetry = false;
       lock.lock();
       try {
         wasCanceled = (state == SessionInitState.CANCELED);
         session = this.session;
-        future = this.future;
-        this.future = null;
         this.session = null;
-        if (!wasCanceled) {
-          this.state = SessionInitState.DONE;
+        doRetry = !wasCanceled && (attemptNumber < MAX_ATTEMPT_NUMBER);
+        if (doRetry) {
+          ++attemptNumber;
+          this.state = SessionInitState.GETTING;
+          future = null;
+        } else {
+          future = this.future;
+          this.future = null;
+          if (!wasCanceled) {
+            this.state = SessionInitState.DONE;
+          }
         }
       } finally {
         lock.unlock();
       }
-      future.setException(t);
+      if (doRetry) {
+        try {
+          start();
+          return;
+        } catch (Exception e) {
+          LOG.error("Failed to retry; propagating original error. The new error is ", e);
+        } finally {
+          discardSessionOnFailure(session);
+        }
+      }
       if (!wasCanceled) {
         if (LOG.isDebugEnabled()) {
           LOG.info("Queueing the initialization failure with " + session);
         }
         notifyInitializationCompleted(this); // Report failure to the main thread.
       }
-      if (session != null) {
-        session.clearWm();
-        session.setQueryId(null);
-        // We can just restart the session if we have received one.
-        try {
-          tezAmPool.replaceSession(session);
-        } catch (Exception e) {
-          LOG.error("Failed to restart a failed session", e);
-        }
+      future.setException(t);
+      discardSessionOnFailure(session);
+    }
+
+    public void discardSessionOnFailure(WmTezSession session) {
+      if (session == null) return;
+      session.clearWm();
+      session.setQueryId(null);
+      // We can just restart the session if we have received one.
+      try {
+        tezAmPool.replaceSession(session);
+      } catch (Exception e) {
+        LOG.error("Failed to restart a failed session", e);
       }
     }
 
