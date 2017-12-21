@@ -131,8 +131,9 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
         case Types.DECIMAL:
           columnTypes.add(serdeConstants.DECIMAL_TYPE_NAME);
           break;
+        case Types.FLOAT:
         case Types.REAL:
-          columnTypes.add(serdeConstants.DOUBLE_TYPE_NAME);
+          columnTypes.add(serdeConstants.FLOAT_TYPE_NAME);
           break;
         case Types.DOUBLE:
           columnTypes.add(serdeConstants.DOUBLE_TYPE_NAME);

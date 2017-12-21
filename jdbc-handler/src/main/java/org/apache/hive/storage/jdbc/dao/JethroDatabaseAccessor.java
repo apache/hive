@@ -16,7 +16,7 @@ public class JethroDatabaseAccessor extends GenericJdbcDatabaseAccessor {
 
   @Override
   protected String addLimitToQuery(String sql, int limit) {
-    return sql + " LIMIT " + limit;
+    return "Select * from (" + sql + ") as \"tmp\" limit " + limit;
   }
   
   @Override

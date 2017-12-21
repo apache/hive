@@ -1678,27 +1678,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       
       
       // 11. Apply Jdbc transformation rules
-      perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-      
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("JETHRO: Original plan for jdbc rules " +System.lineSeparator()+ RelOptUtil.toString(calciteOptimizedPlan));
-      }
-      
-      //calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
-      //        HepMatchOrder.BOTTOM_UP,
-      //        new MySplitFilter (),
-      //        
-      //        new MyFilterPushDown(), new MyProjectPushDownRule (), 
-      //        new MyAggregationPushDownRule (), new MySortPushDownRule (),
-      //        new MyJoinPushDown()
-      //);
-      
-      
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("JETHRO: Updated plan after jdbc rules " + System.lineSeparator()+ RelOptUtil.toString(calciteOptimizedPlan));
-      }
-      
+     
       // 12. Run rules to aid in translation from Calcite tree to Hive tree
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);

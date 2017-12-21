@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import org.apache.calcite.adapter.jdbc.JdbcConvention;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcSortRule;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcSort;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -37,17 +38,6 @@ public class MySortPushDownRule extends RelOptRule {
     return true;
   }
   
-  private JdbcSort convert(RelNode rel, JdbcConvention out) {
-    final Sort sort = (Sort) rel;
-    //if (sort.offset != null || sort.fetch != null) {
-    //  // Cannot implement "OFFSET n FETCH n" currently.
-    //  return null;
-    //}
-    final RelTraitSet traitSet = sort.getTraitSet().replace(out);
-    return new JdbcSort(rel.getCluster(), traitSet,
-        sort.getInput(), sort.getCollation());
-  }
-
   @Override
   public void onMatch(RelOptRuleCall call) {
     LOG.debug("MySortPushDownRule has been called");
@@ -59,8 +49,8 @@ public class MySortPushDownRule extends RelOptRule {
     
     //FIXME TODOY not working!!!!!!
     
-    Sort newHiveSort = sort.copy(sort.getTraitSet(), input, sort.getCollation() ,sort.getOffsetExpr (),sort.getFetchExpr());
-    JdbcSort newJdbcSort = convert (newHiveSort, converter.getJdbcConvention());
+    Sort newHiveSort = sort.copy(sort.getTraitSet(), input, sort.getCollation(), sort.getOffsetExpr (), sort.getFetchExpr());
+    JdbcSort newJdbcSort = (JdbcSort) new JdbcSortRule(converter.getJdbcConvention()).convert (newHiveSort, false);
     if (newJdbcSort != null) {
       RelNode ConverterRes = converter.copy(converter.getTraitSet(), Arrays.asList(newJdbcSort));
       
