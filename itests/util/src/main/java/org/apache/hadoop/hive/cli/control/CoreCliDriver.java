@@ -40,7 +40,7 @@ public class CoreCliDriver extends CliAdapter {
 
   private static final Logger LOG = LoggerFactory.getLogger(CoreCliDriver.class);
   private static QTestUtil qt;
-  
+
   public CoreCliDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
   }
@@ -153,7 +153,7 @@ public class CoreCliDriver extends CliAdapter {
 
   @Override
   public void runTest(String tname, String fname, String fpath) throws Exception {
-    Stopwatch sw = new Stopwatch().start();
+    Stopwatch sw = Stopwatch.createStarted();
     boolean skipped = false;
     boolean failed = false;
     try {

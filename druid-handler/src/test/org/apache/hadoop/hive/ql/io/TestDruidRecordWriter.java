@@ -64,7 +64,6 @@ import org.apache.hadoop.hive.druid.serde.DruidWritable;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -116,8 +115,7 @@ public class TestDruidRecordWriter {
             DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, DruidTable.DEFAULT_TIMESTAMP_COLUMN
     );
   }
-  // This test fails due to conflict of guava classes with hive-exec jar.
-  @Ignore
+
   @Test
   public void testWrite() throws IOException, SegmentLoadingException {
 
