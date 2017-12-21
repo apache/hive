@@ -21,7 +21,7 @@ package org.apache.hive.hcatalog.streaming;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -336,15 +336,10 @@ public class HiveEndPoint {
         LOG.warn("Unable to check the endPoint: " + endPoint, e);
         throw new InvalidTable(endPoint.database, endPoint.table, e);
       }
-
-      // 1 - check if TBLPROPERTIES ('transactional'='true') is set on table
-      Map<String, String> params = t.getParameters();
-      if (params != null) {
-        String transactionalProp = params.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-        if (transactionalProp == null || !transactionalProp.equalsIgnoreCase("true")) {
-          LOG.error("'transactional' property is not set on Table " + endPoint);
-          throw new InvalidTable(endPoint.database, endPoint.table, "\'transactional\' property" +
-              " is not set on Table");          }
+      // 1 - check that the table is Acid
+      if (!AcidUtils.isAcidTable(t)) {
+        LOG.error("HiveEndPoint " + endPoint + " must use an acid table");
+        throw new InvalidTable(endPoint.database, endPoint.table, "is not an Acid table");
       }
 
       // 2 - check if partitionvals are legitimate

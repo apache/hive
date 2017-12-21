@@ -1271,9 +1271,18 @@ public class AcidUtils {
    * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#isAcidTable(org.apache.hadoop.hive.metastore.api.Table)}
    */
   public static boolean isAcidTable(Table table) {
-    return isTransactionalTable(table) && !AcidUtils.isInsertOnlyTable(table);
+    return isAcidTable(table == null ? null : table.getTTable());
   }
-  
+  /**
+   * Should produce the same result as
+   * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#isAcidTable(org.apache.hadoop.hive.metastore.api.Table)}
+   */
+  public static boolean isAcidTable(org.apache.hadoop.hive.metastore.api.Table table) {
+    return table != null && table.getParameters() != null &&
+        isTablePropertyTransactional(table.getParameters()) &&
+        !isInsertOnlyTable(table.getParameters());
+  }
+
   public static boolean isAcidTable(CreateTableDesc td) {
     if (td == null || td.getTblProps() == null) {
       return false;
