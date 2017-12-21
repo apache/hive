@@ -155,6 +155,8 @@ public class TestWorkloadManager {
 
   public static class WorkloadManagerForTest extends WorkloadManager {
 
+    private SettableFuture<Boolean> failedWait;
+
     public WorkloadManagerForTest(String yarnQueue, HiveConf conf, int numSessions,
         QueryAllocationManager qam) throws ExecutionException, InterruptedException {
       super(null, yarnQueue, conf, qam, createDummyPlan(numSessions));
@@ -185,7 +187,12 @@ public class TestWorkloadManager {
     @Override
     protected WmTezSession createSessionObject(String sessionId, HiveConf conf) {
       conf = conf == null ? new HiveConf(getConf()) : conf;
-      return new SampleTezSessionState(sessionId, this, conf);
+      SampleTezSessionState sess = new SampleTezSessionState(sessionId, this, conf);
+      if (failedWait != null) {
+        sess.setWaitForAmRegistryFuture(failedWait);
+        failedWait = null;
+      }
+      return sess;
     }
 
     @Override
@@ -219,6 +226,10 @@ public class TestWorkloadManager {
       session = super.reopen(session);
       ensureWm();
       return session;
+    }
+
+    public void setNextWaitForAmRegistryFuture(SettableFuture<Boolean> failedWait) {
+      this.failedWait = failedWait;
     }
   }
 
@@ -1068,7 +1079,7 @@ public class TestWorkloadManager {
     WMFullResourcePlan plan = new WMFullResourcePlan(plan(),
         Lists.newArrayList(pool("A", 1, 1.0f)));
     plan.setMappings(Lists.newArrayList(mapping("A", "A")));
-    final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
+    final WorkloadManagerForTest wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
 
     // Make sure session init gets stuck in init.
@@ -1112,10 +1123,19 @@ public class TestWorkloadManager {
     error.set(null);
     theOnlySession = validatePoolAfterCleanup(theOnlySession, conf, wm, pool, "B");
 
-    // Initialization fails, no resource plan change.
+    // Initialization fails with retry, no resource plan change.
     SettableFuture<Boolean> failedWait = SettableFuture.create();
     failedWait.setException(new Exception("foo"));
     theOnlySession.setWaitForAmRegistryFuture(failedWait);
+    TezSessionState retriedSession = wm.getSession(null, new MappingInput("A"), conf);
+    assertNotNull(retriedSession);
+    assertNotSame(theOnlySession, retriedSession); // Should have been replaced.
+    retriedSession.returnToSessionManager();
+    theOnlySession = (SampleTezSessionState)retriedSession;
+
+    // Initialization fails and so does the retry, no resource plan change.
+    theOnlySession.setWaitForAmRegistryFuture(failedWait);
+    wm.setNextWaitForAmRegistryFuture(failedWait); // Fail the retry.
     try {
       TezSessionState r = wm.getSession(null, new MappingInput("A"), conf);
       fail("Expected an error but got " + r);
@@ -1127,6 +1147,7 @@ public class TestWorkloadManager {
     // Init fails, but the session is also killed by WM before that.
     failedWait = SettableFuture.create();
     theOnlySession.setWaitForAmRegistryFuture(failedWait);
+    wm.setNextWaitForAmRegistryFuture(failedWait); // Fail the retry.
     sessionA.set(null);
     cdl = new CountDownLatch(1);
     t1 = new Thread(new GetSessionRunnable(sessionA, wm, error, conf, cdl, "A"));
