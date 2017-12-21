@@ -229,6 +229,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   }
 
   private static int determineQueryParallelism(WMFullResourcePlan plan) {
+    if (plan == null) return 0;
     int result = 0;
     for (WMPool pool : plan.getPools()) {
       result += pool.getQueryParallelism();
@@ -314,6 +315,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     private final LinkedList<GetRequest> getRequests = new LinkedList<>();
     private final IdentityHashMap<WmTezSession, GetRequest> toReuse = new IdentityHashMap<>();
     private WMFullResourcePlan resourcePlanToApply = null;
+    private boolean doClearResourcePlan = false;
     private boolean hasClusterStateChanged = false;
     private SettableFuture<Boolean> testEvent, applyRpFuture;
     private SettableFuture<List<String>> dumpStateFuture;
@@ -590,13 +592,14 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
     // 6. Now apply a resource plan if any. This is expected to be pretty rare.
     boolean hasRequeues = false;
-    if (e.resourcePlanToApply != null) {
+    if (e.resourcePlanToApply != null || e.doClearResourcePlan) {
       LOG.info("Applying new resource plan");
       int getReqCount = e.getRequests.size();
       applyNewResourcePlanOnMasterThread(e, syncWork, poolsToRedistribute);
       hasRequeues = getReqCount != e.getRequests.size();
     }
     e.resourcePlanToApply = null;
+    e.doClearResourcePlan = false;
 
     // 7. Handle any move session requests. The way move session works right now is
     // a) sessions get moved to destination pool if there is capacity in destination pool
@@ -934,25 +937,35 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   private void applyNewResourcePlanOnMasterThread(
     EventState e, WmThreadSyncWork syncWork, HashSet<String> poolsToRedistribute) {
     int totalQueryParallelism = 0;
-    // FIXME: Add Triggers from metastore to poolstate
+    WMFullResourcePlan plan = e.resourcePlanToApply;
+    if (plan == null) {
+      // NULL plan means WM is disabled via a command; it could still be reenabled.
+      LOG.info("Disabling workload management because the resource plan has been removed");
+      this.rpName = null;
+      this.defaultPool = null;
+      this.userPoolMapping = new UserPoolMapping(null, null);
+    } else {
+      this.rpName = plan.getPlan().getName();
+      this.defaultPool = plan.getPlan().getDefaultPoolPath();
+      this.userPoolMapping = new UserPoolMapping(plan.getMappings(), defaultPool);
+    }
     // Note: we assume here that plan has been validated beforehand, so we don't verify
     //       that fractions or query parallelism add up, etc.
-    this.rpName = e.resourcePlanToApply.getPlan().getName();
-    this.defaultPool = e.resourcePlanToApply.getPlan().getDefaultPoolPath();
-    this.userPoolMapping = new UserPoolMapping(e.resourcePlanToApply.getMappings(), defaultPool);
     Map<String, PoolState> oldPools = pools;
     pools = new HashMap<>();
 
-    // For simplicity, to always have parents while storing pools in a flat structure, we'll
-    // first distribute them by levels, then add level by level.
     ArrayList<List<WMPool>> poolsByLevel = new ArrayList<>();
-    for (WMPool pool : e.resourcePlanToApply.getPools()) {
-      String fullName = pool.getPoolPath();
-      int ix = StringUtils.countMatches(fullName, POOL_SEPARATOR_STR);
-      while (poolsByLevel.size() <= ix) {
-        poolsByLevel.add(new LinkedList<WMPool>()); // We expect all the levels to have items.
+    if (plan != null) {
+      // For simplicity, to always have parents while storing pools in a flat structure, we'll
+      // first distribute them by levels, then add level by level.
+      for (WMPool pool : plan.getPools()) {
+        String fullName = pool.getPoolPath();
+        int ix = StringUtils.countMatches(fullName, POOL_SEPARATOR_STR);
+        while (poolsByLevel.size() <= ix) {
+          poolsByLevel.add(new LinkedList<WMPool>()); // We expect all the levels to have items.
+        }
+        poolsByLevel.get(ix).add(pool);
       }
-      poolsByLevel.get(ix).add(pool);
     }
     for (int level = 0; level < poolsByLevel.size(); ++level) {
       List<WMPool> poolsOnLevel = poolsByLevel.get(level);
@@ -988,13 +1001,13 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // ONLY - only to pool
     // INHERIT - child pools inherit from parent
     // GLOBAL - all pools inherit
-    if (e.resourcePlanToApply.isSetTriggers() && e.resourcePlanToApply.isSetPoolTriggers()) {
+    if (plan != null && plan.isSetTriggers() && plan.isSetPoolTriggers()) {
       Map<String, Trigger> triggers = new HashMap<>();
-      for (WMTrigger trigger : e.resourcePlanToApply.getTriggers()) {
+      for (WMTrigger trigger : plan.getTriggers()) {
         ExecutionTrigger execTrigger = ExecutionTrigger.fromWMTrigger(trigger);
         triggers.put(trigger.getTriggerName(), execTrigger);
       }
-      for (WMPoolTrigger poolTrigger : e.resourcePlanToApply.getPoolTriggers()) {
+      for (WMPoolTrigger poolTrigger : plan.getPoolTriggers()) {
         PoolState pool = pools.get(poolTrigger.getPool());
         Trigger trigger = triggers.get(poolTrigger.getTrigger());
         pool.triggers.add(trigger);
@@ -1257,8 +1270,14 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         current.applyRpFuture.setException(
           new HiveException("Another plan was applied in parallel"));
       }
-      current.resourcePlanToApply = plan;
       current.applyRpFuture = applyRpFuture;
+      if (plan == null) {
+        current.resourcePlanToApply = null;
+        current.doClearResourcePlan = true;
+      } else {
+        current.resourcePlanToApply = plan;
+        current.doClearResourcePlan = false;
+      }
       notifyWmThreadUnderLock();
     } finally {
       currentLock.unlock();
@@ -1351,9 +1370,14 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     } finally {
       currentLock.unlock();
     }
-    WmTezSession sessionState = future.get();
-    wmEvent.endEvent(sessionState);
-    return sessionState;
+    try {
+      WmTezSession sessionState = future.get();
+      wmEvent.endEvent(sessionState);
+      return sessionState;
+    } catch (ExecutionException ex) {
+      Throwable realEx = ex.getCause();
+      throw realEx instanceof Exception ? (Exception)realEx : ex;
+    }
   }
 
   @Override

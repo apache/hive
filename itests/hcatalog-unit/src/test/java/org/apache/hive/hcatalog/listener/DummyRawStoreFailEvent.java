@@ -999,10 +999,10 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan, boolean canActivateDisabled)
+  public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan, boolean canActivateDisabled, boolean canDeactivate)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException {
-    return objectStore.alterResourcePlan(name, resourcePlan, canActivateDisabled);
+    return objectStore.alterResourcePlan(name, resourcePlan, canActivateDisabled, canDeactivate);
   }
 
   @Override

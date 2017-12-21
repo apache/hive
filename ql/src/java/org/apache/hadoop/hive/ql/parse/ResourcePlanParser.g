@@ -28,6 +28,7 @@ resourcePlanDdlStatements
     : createResourcePlanStatement
     | alterResourcePlanStatement
     | dropResourcePlanStatement
+    | globalWmStatement
     | createTriggerStatement
     | alterTriggerStatement
     | dropTriggerStatement
@@ -63,6 +64,7 @@ createResourcePlanStatement
 
 activate : KW_ACTIVATE -> ^(TOK_ACTIVATE);
 enable : KW_ENABLE -> ^(TOK_ENABLE);
+disable : KW_DISABLE -> ^(TOK_DISABLE);
 
 alterResourcePlanStatement
 @init { gParent.pushMsg("alter resource plan statement", state); }
@@ -74,6 +76,14 @@ alterResourcePlanStatement
         | (KW_RENAME KW_TO newName=identifier -> ^(TOK_ALTER_RP $name TOK_RENAME $newName))
         | ((activate enable? | enable activate?) -> ^(TOK_ALTER_RP $name activate? enable?))
       )
+    ;
+
+/** It might make sense to make this more generic, if something else could be enabled/disabled.
+    For now, it's only used for WM. Translate into another form of an alter statement. */
+globalWmStatement
+@init { gParent.pushMsg("global WM statement", state); }
+@after { gParent.popMsg(state); }
+    : (enable | disable) KW_WORKLOAD KW_MANAGEMENT -> ^(TOK_ALTER_RP enable? disable?)
     ;
 
 dropResourcePlanStatement

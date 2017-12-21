@@ -15601,6 +15601,7 @@ class WMAlterResourcePlanRequest:
    - resourcePlanName
    - resourcePlan
    - isEnableAndActivate
+   - isForceDeactivate
   """
 
   thrift_spec = (
@@ -15608,12 +15609,14 @@ class WMAlterResourcePlanRequest:
     (1, TType.STRING, 'resourcePlanName', None, None, ), # 1
     (2, TType.STRUCT, 'resourcePlan', (WMResourcePlan, WMResourcePlan.thrift_spec), None, ), # 2
     (3, TType.BOOL, 'isEnableAndActivate', None, None, ), # 3
+    (4, TType.BOOL, 'isForceDeactivate', None, None, ), # 4
   )
 
-  def __init__(self, resourcePlanName=None, resourcePlan=None, isEnableAndActivate=None,):
+  def __init__(self, resourcePlanName=None, resourcePlan=None, isEnableAndActivate=None, isForceDeactivate=None,):
     self.resourcePlanName = resourcePlanName
     self.resourcePlan = resourcePlan
     self.isEnableAndActivate = isEnableAndActivate
+    self.isForceDeactivate = isForceDeactivate
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -15640,6 +15643,11 @@ class WMAlterResourcePlanRequest:
           self.isEnableAndActivate = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.BOOL:
+          self.isForceDeactivate = iprot.readBool()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -15662,6 +15670,10 @@ class WMAlterResourcePlanRequest:
       oprot.writeFieldBegin('isEnableAndActivate', TType.BOOL, 3)
       oprot.writeBool(self.isEnableAndActivate)
       oprot.writeFieldEnd()
+    if self.isForceDeactivate is not None:
+      oprot.writeFieldBegin('isForceDeactivate', TType.BOOL, 4)
+      oprot.writeBool(self.isForceDeactivate)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -15674,6 +15686,7 @@ class WMAlterResourcePlanRequest:
     value = (value * 31) ^ hash(self.resourcePlanName)
     value = (value * 31) ^ hash(self.resourcePlan)
     value = (value * 31) ^ hash(self.isEnableAndActivate)
+    value = (value * 31) ^ hash(self.isForceDeactivate)
     return value
 
   def __repr__(self):

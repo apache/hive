@@ -499,10 +499,10 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   }
 
   public void updateTriggers(final WMFullResourcePlan appliedRp) {
-    if (sessionTriggerProvider != null && appliedRp != null) {
-      List<WMTrigger> wmTriggers = appliedRp.getTriggers();
+    if (sessionTriggerProvider != null) {
+      List<WMTrigger> wmTriggers = appliedRp != null ? appliedRp.getTriggers() : null;
       List<Trigger> triggers = new ArrayList<>();
-      if (appliedRp.isSetTriggers()) {
+      if (wmTriggers != null) {
         for (WMTrigger wmTrigger : wmTriggers) {
           triggers.add(ExecutionTrigger.fromWMTrigger(wmTrigger));
         }

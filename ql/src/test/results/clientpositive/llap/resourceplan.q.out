@@ -3327,7 +3327,7 @@ plan_2	DISABLED	4	default
 plan_3	ACTIVE	4	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is active, activate another plan first.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is active; activate another plan first, or disable workload management.)
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -3340,7 +3340,39 @@ plan_2	DISABLED	4	default
 plan_3	ACTIVE	4	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is active, activate another plan first.)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is active; activate another plan first, or disable workload management.)
+PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+plan_2	DISABLED	4	default
+plan_3	ACTIVE	4	default
+PREHOOK: query: DISABLE WORKLOAD MANAGEMENT
+PREHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: query: DISABLE WORKLOAD MANAGEMENT
+POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+plan_2	DISABLED	4	default
+plan_3	ENABLED	4	default
+PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
+PREHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
+POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE ACTIVATE
+PREHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE ACTIVATE
+POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans

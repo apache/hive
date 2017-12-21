@@ -931,11 +931,27 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeAlterResourcePlan(ASTNode ast) throws SemanticException {
+    if (ast.getChildCount() < 1) {
+      throw new SemanticException("Incorrect syntax");
+    }
+    Tree nameOrGlobal = ast.getChild(0);
+    switch (nameOrGlobal.getType()) {
+    case HiveParser.TOK_ENABLE:
+      // This command exists solely to output this message. TODO: can we do it w/o an error?
+      throw new SemanticException("Activate a resource plan to enable workload management");
+    case HiveParser.TOK_DISABLE:
+      WMResourcePlan anyRp = new WMResourcePlan();
+      anyRp.setStatus(WMResourcePlanStatus.ENABLED);
+      AlterResourcePlanDesc desc = new AlterResourcePlanDesc(anyRp, null, false, false, true);
+      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
+      return;
+    default: // Continue to handle changes to a specific plan.
+    }
     if (ast.getChildCount() < 2) {
       throw new SemanticException("Invalid syntax for ALTER RESOURCE PLAN statement");
     }
     String rpName = unescapeIdentifier(ast.getChild(0).getText());
-    WMResourcePlan resourcePlan = new WMResourcePlan(rpName);
+    WMResourcePlan resourcePlan = new WMResourcePlan();
     boolean isEnableActive = false;
     boolean validate = false;
     for (int i = 1; i < ast.getChildCount(); ++i) {
@@ -984,7 +1000,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     AlterResourcePlanDesc desc =
-        new AlterResourcePlanDesc(resourcePlan, rpName, validate, isEnableActive);
+        new AlterResourcePlanDesc(resourcePlan, rpName, validate, isEnableActive, false);
     if (validate) {
       ctx.setResFile(ctx.getLocalTmpPath());
       desc.setResFile(ctx.getResFile().toString());

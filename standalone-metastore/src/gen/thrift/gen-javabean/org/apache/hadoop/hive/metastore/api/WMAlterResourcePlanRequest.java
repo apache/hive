@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField RESOURCE_PLAN_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("resourcePlanName", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField RESOURCE_PLAN_FIELD_DESC = new org.apache.thrift.protocol.TField("resourcePlan", org.apache.thrift.protocol.TType.STRUCT, (short)2);
   private static final org.apache.thrift.protocol.TField IS_ENABLE_AND_ACTIVATE_FIELD_DESC = new org.apache.thrift.protocol.TField("isEnableAndActivate", org.apache.thrift.protocol.TType.BOOL, (short)3);
+  private static final org.apache.thrift.protocol.TField IS_FORCE_DEACTIVATE_FIELD_DESC = new org.apache.thrift.protocol.TField("isForceDeactivate", org.apache.thrift.protocol.TType.BOOL, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -51,12 +52,14 @@ import org.slf4j.LoggerFactory;
   private String resourcePlanName; // optional
   private WMResourcePlan resourcePlan; // optional
   private boolean isEnableAndActivate; // optional
+  private boolean isForceDeactivate; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     RESOURCE_PLAN_NAME((short)1, "resourcePlanName"),
     RESOURCE_PLAN((short)2, "resourcePlan"),
-    IS_ENABLE_AND_ACTIVATE((short)3, "isEnableAndActivate");
+    IS_ENABLE_AND_ACTIVATE((short)3, "isEnableAndActivate"),
+    IS_FORCE_DEACTIVATE((short)4, "isForceDeactivate");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +80,8 @@ import org.slf4j.LoggerFactory;
           return RESOURCE_PLAN;
         case 3: // IS_ENABLE_AND_ACTIVATE
           return IS_ENABLE_AND_ACTIVATE;
+        case 4: // IS_FORCE_DEACTIVATE
+          return IS_FORCE_DEACTIVATE;
         default:
           return null;
       }
@@ -118,8 +123,9 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __ISENABLEANDACTIVATE_ISSET_ID = 0;
+  private static final int __ISFORCEDEACTIVATE_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.RESOURCE_PLAN_NAME,_Fields.RESOURCE_PLAN,_Fields.IS_ENABLE_AND_ACTIVATE};
+  private static final _Fields optionals[] = {_Fields.RESOURCE_PLAN_NAME,_Fields.RESOURCE_PLAN,_Fields.IS_ENABLE_AND_ACTIVATE,_Fields.IS_FORCE_DEACTIVATE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -128,6 +134,8 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.RESOURCE_PLAN, new org.apache.thrift.meta_data.FieldMetaData("resourcePlan", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, WMResourcePlan.class)));
     tmpMap.put(_Fields.IS_ENABLE_AND_ACTIVATE, new org.apache.thrift.meta_data.FieldMetaData("isEnableAndActivate", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.IS_FORCE_DEACTIVATE, new org.apache.thrift.meta_data.FieldMetaData("isForceDeactivate", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(WMAlterResourcePlanRequest.class, metaDataMap);
@@ -148,6 +156,7 @@ import org.slf4j.LoggerFactory;
       this.resourcePlan = new WMResourcePlan(other.resourcePlan);
     }
     this.isEnableAndActivate = other.isEnableAndActivate;
+    this.isForceDeactivate = other.isForceDeactivate;
   }
 
   public WMAlterResourcePlanRequest deepCopy() {
@@ -160,6 +169,8 @@ import org.slf4j.LoggerFactory;
     this.resourcePlan = null;
     setIsEnableAndActivateIsSet(false);
     this.isEnableAndActivate = false;
+    setIsForceDeactivateIsSet(false);
+    this.isForceDeactivate = false;
   }
 
   public String getResourcePlanName() {
@@ -230,6 +241,28 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISENABLEANDACTIVATE_ISSET_ID, value);
   }
 
+  public boolean isIsForceDeactivate() {
+    return this.isForceDeactivate;
+  }
+
+  public void setIsForceDeactivate(boolean isForceDeactivate) {
+    this.isForceDeactivate = isForceDeactivate;
+    setIsForceDeactivateIsSet(true);
+  }
+
+  public void unsetIsForceDeactivate() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ISFORCEDEACTIVATE_ISSET_ID);
+  }
+
+  /** Returns true if field isForceDeactivate is set (has been assigned a value) and false otherwise */
+  public boolean isSetIsForceDeactivate() {
+    return EncodingUtils.testBit(__isset_bitfield, __ISFORCEDEACTIVATE_ISSET_ID);
+  }
+
+  public void setIsForceDeactivateIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISFORCEDEACTIVATE_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case RESOURCE_PLAN_NAME:
@@ -256,6 +289,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case IS_FORCE_DEACTIVATE:
+      if (value == null) {
+        unsetIsForceDeactivate();
+      } else {
+        setIsForceDeactivate((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -269,6 +310,9 @@ import org.slf4j.LoggerFactory;
 
     case IS_ENABLE_AND_ACTIVATE:
       return isIsEnableAndActivate();
+
+    case IS_FORCE_DEACTIVATE:
+      return isIsForceDeactivate();
 
     }
     throw new IllegalStateException();
@@ -287,6 +331,8 @@ import org.slf4j.LoggerFactory;
       return isSetResourcePlan();
     case IS_ENABLE_AND_ACTIVATE:
       return isSetIsEnableAndActivate();
+    case IS_FORCE_DEACTIVATE:
+      return isSetIsForceDeactivate();
     }
     throw new IllegalStateException();
   }
@@ -331,6 +377,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_isForceDeactivate = true && this.isSetIsForceDeactivate();
+    boolean that_present_isForceDeactivate = true && that.isSetIsForceDeactivate();
+    if (this_present_isForceDeactivate || that_present_isForceDeactivate) {
+      if (!(this_present_isForceDeactivate && that_present_isForceDeactivate))
+        return false;
+      if (this.isForceDeactivate != that.isForceDeactivate)
+        return false;
+    }
+
     return true;
   }
 
@@ -352,6 +407,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_isEnableAndActivate);
     if (present_isEnableAndActivate)
       list.add(isEnableAndActivate);
+
+    boolean present_isForceDeactivate = true && (isSetIsForceDeactivate());
+    list.add(present_isForceDeactivate);
+    if (present_isForceDeactivate)
+      list.add(isForceDeactivate);
 
     return list.hashCode();
   }
@@ -390,6 +450,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetIsEnableAndActivate()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isEnableAndActivate, other.isEnableAndActivate);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetIsForceDeactivate()).compareTo(other.isSetIsForceDeactivate());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIsForceDeactivate()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isForceDeactivate, other.isForceDeactivate);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -437,6 +507,12 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("isEnableAndActivate:");
       sb.append(this.isEnableAndActivate);
+      first = false;
+    }
+    if (isSetIsForceDeactivate()) {
+      if (!first) sb.append(", ");
+      sb.append("isForceDeactivate:");
+      sb.append(this.isForceDeactivate);
       first = false;
     }
     sb.append(")");
@@ -512,6 +588,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // IS_FORCE_DEACTIVATE
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.isForceDeactivate = iprot.readBool();
+              struct.setIsForceDeactivateIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -544,6 +628,11 @@ import org.slf4j.LoggerFactory;
         oprot.writeBool(struct.isEnableAndActivate);
         oprot.writeFieldEnd();
       }
+      if (struct.isSetIsForceDeactivate()) {
+        oprot.writeFieldBegin(IS_FORCE_DEACTIVATE_FIELD_DESC);
+        oprot.writeBool(struct.isForceDeactivate);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -571,7 +660,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetIsEnableAndActivate()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetIsForceDeactivate()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetResourcePlanName()) {
         oprot.writeString(struct.resourcePlanName);
       }
@@ -581,12 +673,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetIsEnableAndActivate()) {
         oprot.writeBool(struct.isEnableAndActivate);
       }
+      if (struct.isSetIsForceDeactivate()) {
+        oprot.writeBool(struct.isForceDeactivate);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, WMAlterResourcePlanRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.resourcePlanName = iprot.readString();
         struct.setResourcePlanNameIsSet(true);
@@ -599,6 +694,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(2)) {
         struct.isEnableAndActivate = iprot.readBool();
         struct.setIsEnableAndActivateIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.isForceDeactivate = iprot.readBool();
+        struct.setIsForceDeactivateIsSet(true);
       }
     }
   }

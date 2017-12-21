@@ -366,6 +366,8 @@ KW_ALLOC_FRACTION: 'ALLOC_FRACTION';
 KW_SCHEDULING_POLICY: 'SCHEDULING_POLICY';
 KW_PATH: 'PATH';
 KW_MAPPING: 'MAPPING';
+KW_WORKLOAD: 'WORKLOAD';
+KW_MANAGEMENT: 'MANAGEMENT';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

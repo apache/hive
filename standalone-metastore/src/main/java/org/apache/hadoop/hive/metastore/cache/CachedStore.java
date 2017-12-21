@@ -2400,10 +2400,10 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public WMFullResourcePlan alterResourcePlan(
-      String name, WMResourcePlan resourcePlan, boolean canActivateDisabled)
+      String name, WMResourcePlan resourcePlan, boolean canActivateDisabled, boolean canDeactivate)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException {
-    return rawStore.alterResourcePlan(name, resourcePlan, canActivateDisabled);
+    return rawStore.alterResourcePlan(name, resourcePlan, canActivateDisabled, canDeactivate);
   }
 
   @Override

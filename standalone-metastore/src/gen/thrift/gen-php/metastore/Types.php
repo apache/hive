@@ -22030,6 +22030,10 @@ class WMAlterResourcePlanRequest {
    * @var bool
    */
   public $isEnableAndActivate = null;
+  /**
+   * @var bool
+   */
+  public $isForceDeactivate = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -22047,6 +22051,10 @@ class WMAlterResourcePlanRequest {
           'var' => 'isEnableAndActivate',
           'type' => TType::BOOL,
           ),
+        4 => array(
+          'var' => 'isForceDeactivate',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -22058,6 +22066,9 @@ class WMAlterResourcePlanRequest {
       }
       if (isset($vals['isEnableAndActivate'])) {
         $this->isEnableAndActivate = $vals['isEnableAndActivate'];
+      }
+      if (isset($vals['isForceDeactivate'])) {
+        $this->isForceDeactivate = $vals['isForceDeactivate'];
       }
     }
   }
@@ -22103,6 +22114,13 @@ class WMAlterResourcePlanRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isForceDeactivate);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -22132,6 +22150,11 @@ class WMAlterResourcePlanRequest {
     if ($this->isEnableAndActivate !== null) {
       $xfer += $output->writeFieldBegin('isEnableAndActivate', TType::BOOL, 3);
       $xfer += $output->writeBool($this->isEnableAndActivate);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->isForceDeactivate !== null) {
+      $xfer += $output->writeFieldBegin('isForceDeactivate', TType::BOOL, 4);
+      $xfer += $output->writeBool($this->isForceDeactivate);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

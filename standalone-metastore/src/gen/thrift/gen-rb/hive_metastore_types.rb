@@ -3532,11 +3532,13 @@ class WMAlterResourcePlanRequest
   RESOURCEPLANNAME = 1
   RESOURCEPLAN = 2
   ISENABLEANDACTIVATE = 3
+  ISFORCEDEACTIVATE = 4
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
     RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true},
-    ISENABLEANDACTIVATE => {:type => ::Thrift::Types::BOOL, :name => 'isEnableAndActivate', :optional => true}
+    ISENABLEANDACTIVATE => {:type => ::Thrift::Types::BOOL, :name => 'isEnableAndActivate', :optional => true},
+    ISFORCEDEACTIVATE => {:type => ::Thrift::Types::BOOL, :name => 'isForceDeactivate', :optional => true}
   }
 
   def struct_fields; FIELDS; end

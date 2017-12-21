@@ -31,20 +31,21 @@ public class AlterResourcePlanDesc extends DDLDesc implements Serializable {
   private WMResourcePlan resourcePlan;
   private String rpName;
   private boolean validate;
-  private boolean isEnableActivate;
+  private boolean isEnableActivate, isForceDeactivate;
   private String resFile;
 
   public AlterResourcePlanDesc() {}
 
   public AlterResourcePlanDesc(WMResourcePlan resourcePlan, String rpName, boolean validate,
-      boolean isEnableActivate) {
+      boolean isEnableActivate, boolean isForceDeactivate) {
     this.resourcePlan = resourcePlan;
     this.rpName = rpName;
     this.validate = validate;
     this.isEnableActivate = isEnableActivate;
+    this.isForceDeactivate = isForceDeactivate;
   }
 
-  @Explain(displayName="resourcePlan",
+  @Explain(displayName="Resource plan changed fields",
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public WMResourcePlan getResourcePlan() {
     return resourcePlan;
@@ -54,7 +55,7 @@ public class AlterResourcePlanDesc extends DDLDesc implements Serializable {
     this.resourcePlan = resourcePlan;
   }
 
-  @Explain(displayName="resourcePlanName",
+  @Explain(displayName="Resource plan to modify",
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getResourcePlanName() {
     return rpName;
@@ -80,6 +81,14 @@ public class AlterResourcePlanDesc extends DDLDesc implements Serializable {
 
   public void setIsEnableActivate(boolean b) {
     this.isEnableActivate = b;
+  }
+
+  public boolean isForceDeactivate() {
+    return isForceDeactivate;
+  }
+
+  public void setIsForceDeactivate(boolean b) {
+    this.isForceDeactivate = b;
   }
 
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
