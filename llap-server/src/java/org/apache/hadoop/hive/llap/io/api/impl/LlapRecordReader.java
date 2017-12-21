@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.llap.io.api.impl;
 
 import java.util.ArrayList;
-
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -80,6 +79,7 @@ class LlapRecordReader
   private final LinkedList<ColumnVectorBatch> pendingData = new LinkedList<ColumnVectorBatch>();
   private ColumnVectorBatch lastCvb = null;
   private boolean isFirst = true;
+  private int maxQueueSize = 0;
 
   private Throwable pendingError = null;
   /** Vector that is currently being processed by our user. */
@@ -355,13 +355,23 @@ class LlapRecordReader
       if (doLogBlocking) {
         LlapIoImpl.LOG.trace("next will block");
       }
+      boolean didWait = false;
       while (isNothingToReport()) {
+        didWait = true;
         pendingData.wait(100);
+      }
+      // If we didn't wait, check for interruption explicitly.
+      // TODO: given that we also want a queue limit, might make sense to rely on a blocking queue;
+      //       or a more advanced lock. But do double check that they will ALWAYS check interrupt.
+      //       Hive operators don't, so if we don't either, everything goes to hell.
+      if (!didWait && Thread.interrupted()) {
+        throw new InterruptedException("Thread interrupted");
       }
       if (doLogBlocking) {
         LlapIoImpl.LOG.trace("next is unblocked");
       }
       rethrowErrorIfAny();
+      maxQueueSize = Math.max(pendingData.size(), maxQueueSize);
       lastCvb = pendingData.poll();
     }
     if (LlapIoImpl.LOG.isTraceEnabled() && lastCvb != null) {
@@ -395,6 +405,7 @@ class LlapRecordReader
       LlapIoImpl.LOG.trace("close called; closed {}, done {}, err {}, pending {}",
           isClosed, isDone, pendingError, pendingData.size());
     }
+    LlapIoImpl.LOG.info("Maximum queue length observed " + maxQueueSize);
     LlapIoImpl.LOG.info("Llap counters: {}" ,counters); // This is where counters are logged!
     feedback.stop();
     rethrowErrorIfAny();
