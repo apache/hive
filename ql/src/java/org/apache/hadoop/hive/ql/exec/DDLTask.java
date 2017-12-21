@@ -728,22 +728,34 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     final TezSessionPoolManager pm = TezSessionPoolManager.getInstance();
     boolean isActivate = false, isInTest = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
     if (resourcePlan.getStatus() != null) {
-      resourcePlan.setStatus(resourcePlan.getStatus());
       isActivate = resourcePlan.getStatus() == WMResourcePlanStatus.ACTIVE;
     }
 
     WMFullResourcePlan appliedRp = db.alterResourcePlan(
-      desc.getResourcePlanName(), resourcePlan, desc.isEnableActivate());
-    if (!isActivate || (wm == null && isInTest) || (pm == null && isInTest)) {
+      desc.getResourcePlanName(), resourcePlan, desc.isEnableActivate(), desc.isForceDeactivate());
+    if (!isActivate && !desc.isForceDeactivate()) return 0; // DB-only modification.
+    if (wm == null && isInTest) {
       return 0;
     }
 
-    if (appliedRp == null) {
-      throw new HiveException("Cannot get a resource plan to apply");
+    if ((appliedRp == null) != desc.isForceDeactivate()) {
+      throw new HiveException("Cannot get a resource plan to apply; or non-null plan on disable");
       // TODO: shut down HS2?
     }
-    final String name = resourcePlan.getName();
-    LOG.info("Activating a new resource plan " + name + ": " + appliedRp);
+
+    handleWorkloadManagementServiceChange(wm, pm, isActivate, appliedRp);
+    return 0;
+  }
+
+  private int handleWorkloadManagementServiceChange(WorkloadManager wm, TezSessionPoolManager pm,
+      boolean isActivate, WMFullResourcePlan appliedRp) throws HiveException {
+    String name = null;
+    if (isActivate) {
+      name = appliedRp.getPlan().getName();
+      LOG.info("Activating a new resource plan " + name + ": " + appliedRp);
+    } else {
+      LOG.info("Disabling workload management");
+    }
     if (wm != null) {
       // Note: as per our current constraints, the behavior of two parallel activates is
       //       undefined; although only one will succeed and the other will receive exception.
@@ -754,20 +766,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         // Note: we may add an async option in future. For now, let the task fail for the user.
         future.get();
         isOk = true;
-        LOG.info("Successfully activated resource plan " + name);
-        return 0;
+        if (isActivate) {
+          LOG.info("Successfully activated resource plan " + name);
+        } else {
+          LOG.info("Successfully disabled workload management");
+        }
       } catch (InterruptedException | ExecutionException e) {
         throw new HiveException(e);
       } finally {
         if (!isOk) {
-          LOG.error("Failed to activate resource plan " + name);
+          if (isActivate) {
+            LOG.error("Failed to activate resource plan " + name);
+          } else {
+            LOG.error("Failed to disable workload management");
+          }
           // TODO: shut down HS2?
         }
       }
     }
     if (pm != null) {
       pm.updateTriggers(appliedRp);
-      LOG.info("Updated tez session pool manager with active resource plan: {}", appliedRp.getPlan().getName());
+      LOG.info("Updated tez session pool manager with active resource plan: {}", name);
     }
     return 0;
   }

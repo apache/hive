@@ -1117,6 +1117,7 @@ struct WMAlterResourcePlanRequest {
   1: optional string resourcePlanName;
   2: optional WMResourcePlan resourcePlan;
   3: optional bool isEnableAndActivate;
+  4: optional bool isForceDeactivate;
 }
 
 struct WMAlterResourcePlanResponse {

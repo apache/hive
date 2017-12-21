@@ -760,8 +760,8 @@ public interface RawStore extends Configurable {
 
   List<WMResourcePlan> getAllResourcePlans() throws MetaException;
 
-  WMFullResourcePlan alterResourcePlan(
-      String name, WMResourcePlan resourcePlan, boolean canActivateDisabled)
+  WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan,
+      boolean canActivateDisabled, boolean canDeactivate)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException;
 

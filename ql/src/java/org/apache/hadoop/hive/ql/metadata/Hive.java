@@ -4784,9 +4784,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public WMFullResourcePlan alterResourcePlan(String rpName, WMResourcePlan resourcePlan,
-      boolean canActivateDisabled) throws HiveException {
+      boolean canActivateDisabled, boolean isForceDeactivate) throws HiveException {
     try {
-      return getMSC().alterResourcePlan(rpName, resourcePlan, canActivateDisabled);
+      return getMSC().alterResourcePlan(
+          rpName, resourcePlan, canActivateDisabled, isForceDeactivate);
     } catch (Exception e) {
       throw new HiveException(e);
     }

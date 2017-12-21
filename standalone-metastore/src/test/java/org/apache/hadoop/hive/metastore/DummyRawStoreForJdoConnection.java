@@ -971,7 +971,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public WMFullResourcePlan alterResourcePlan(
-      String name, WMResourcePlan resourcePlan, boolean canActivateDisabled)
+      String name, WMResourcePlan resourcePlan, boolean canActivateDisabled, boolean canDeactivate)
       throws NoSuchObjectException, InvalidOperationException, MetaException {
     return null;
   }

@@ -7314,7 +7314,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // to give the caller the result atomically with the activation.
         WMFullResourcePlan fullPlanAfterAlter = getMS().alterResourcePlan(
             request.getResourcePlanName(), request.getResourcePlan(),
-            request.isIsEnableAndActivate());
+            request.isIsEnableAndActivate(), request.isIsForceDeactivate());
         if (fullPlanAfterAlter != null) {
           response.setFullResourcePlan(fullPlanAfterAlter);
         }
