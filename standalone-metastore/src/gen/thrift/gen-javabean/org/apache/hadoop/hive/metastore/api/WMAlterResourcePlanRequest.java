@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField RESOURCE_PLAN_FIELD_DESC = new org.apache.thrift.protocol.TField("resourcePlan", org.apache.thrift.protocol.TType.STRUCT, (short)2);
   private static final org.apache.thrift.protocol.TField IS_ENABLE_AND_ACTIVATE_FIELD_DESC = new org.apache.thrift.protocol.TField("isEnableAndActivate", org.apache.thrift.protocol.TType.BOOL, (short)3);
   private static final org.apache.thrift.protocol.TField IS_FORCE_DEACTIVATE_FIELD_DESC = new org.apache.thrift.protocol.TField("isForceDeactivate", org.apache.thrift.protocol.TType.BOOL, (short)4);
+  private static final org.apache.thrift.protocol.TField IS_REPLACE_FIELD_DESC = new org.apache.thrift.protocol.TField("isReplace", org.apache.thrift.protocol.TType.BOOL, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,13 +54,15 @@ import org.slf4j.LoggerFactory;
   private WMResourcePlan resourcePlan; // optional
   private boolean isEnableAndActivate; // optional
   private boolean isForceDeactivate; // optional
+  private boolean isReplace; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     RESOURCE_PLAN_NAME((short)1, "resourcePlanName"),
     RESOURCE_PLAN((short)2, "resourcePlan"),
     IS_ENABLE_AND_ACTIVATE((short)3, "isEnableAndActivate"),
-    IS_FORCE_DEACTIVATE((short)4, "isForceDeactivate");
+    IS_FORCE_DEACTIVATE((short)4, "isForceDeactivate"),
+    IS_REPLACE((short)5, "isReplace");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -82,6 +85,8 @@ import org.slf4j.LoggerFactory;
           return IS_ENABLE_AND_ACTIVATE;
         case 4: // IS_FORCE_DEACTIVATE
           return IS_FORCE_DEACTIVATE;
+        case 5: // IS_REPLACE
+          return IS_REPLACE;
         default:
           return null;
       }
@@ -124,8 +129,9 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __ISENABLEANDACTIVATE_ISSET_ID = 0;
   private static final int __ISFORCEDEACTIVATE_ISSET_ID = 1;
+  private static final int __ISREPLACE_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.RESOURCE_PLAN_NAME,_Fields.RESOURCE_PLAN,_Fields.IS_ENABLE_AND_ACTIVATE,_Fields.IS_FORCE_DEACTIVATE};
+  private static final _Fields optionals[] = {_Fields.RESOURCE_PLAN_NAME,_Fields.RESOURCE_PLAN,_Fields.IS_ENABLE_AND_ACTIVATE,_Fields.IS_FORCE_DEACTIVATE,_Fields.IS_REPLACE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -136,6 +142,8 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.IS_ENABLE_AND_ACTIVATE, new org.apache.thrift.meta_data.FieldMetaData("isEnableAndActivate", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.IS_FORCE_DEACTIVATE, new org.apache.thrift.meta_data.FieldMetaData("isForceDeactivate", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.IS_REPLACE, new org.apache.thrift.meta_data.FieldMetaData("isReplace", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(WMAlterResourcePlanRequest.class, metaDataMap);
@@ -157,6 +165,7 @@ import org.slf4j.LoggerFactory;
     }
     this.isEnableAndActivate = other.isEnableAndActivate;
     this.isForceDeactivate = other.isForceDeactivate;
+    this.isReplace = other.isReplace;
   }
 
   public WMAlterResourcePlanRequest deepCopy() {
@@ -171,6 +180,8 @@ import org.slf4j.LoggerFactory;
     this.isEnableAndActivate = false;
     setIsForceDeactivateIsSet(false);
     this.isForceDeactivate = false;
+    setIsReplaceIsSet(false);
+    this.isReplace = false;
   }
 
   public String getResourcePlanName() {
@@ -263,6 +274,28 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISFORCEDEACTIVATE_ISSET_ID, value);
   }
 
+  public boolean isIsReplace() {
+    return this.isReplace;
+  }
+
+  public void setIsReplace(boolean isReplace) {
+    this.isReplace = isReplace;
+    setIsReplaceIsSet(true);
+  }
+
+  public void unsetIsReplace() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ISREPLACE_ISSET_ID);
+  }
+
+  /** Returns true if field isReplace is set (has been assigned a value) and false otherwise */
+  public boolean isSetIsReplace() {
+    return EncodingUtils.testBit(__isset_bitfield, __ISREPLACE_ISSET_ID);
+  }
+
+  public void setIsReplaceIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISREPLACE_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case RESOURCE_PLAN_NAME:
@@ -297,6 +330,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case IS_REPLACE:
+      if (value == null) {
+        unsetIsReplace();
+      } else {
+        setIsReplace((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -313,6 +354,9 @@ import org.slf4j.LoggerFactory;
 
     case IS_FORCE_DEACTIVATE:
       return isIsForceDeactivate();
+
+    case IS_REPLACE:
+      return isIsReplace();
 
     }
     throw new IllegalStateException();
@@ -333,6 +377,8 @@ import org.slf4j.LoggerFactory;
       return isSetIsEnableAndActivate();
     case IS_FORCE_DEACTIVATE:
       return isSetIsForceDeactivate();
+    case IS_REPLACE:
+      return isSetIsReplace();
     }
     throw new IllegalStateException();
   }
@@ -386,6 +432,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_isReplace = true && this.isSetIsReplace();
+    boolean that_present_isReplace = true && that.isSetIsReplace();
+    if (this_present_isReplace || that_present_isReplace) {
+      if (!(this_present_isReplace && that_present_isReplace))
+        return false;
+      if (this.isReplace != that.isReplace)
+        return false;
+    }
+
     return true;
   }
 
@@ -412,6 +467,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_isForceDeactivate);
     if (present_isForceDeactivate)
       list.add(isForceDeactivate);
+
+    boolean present_isReplace = true && (isSetIsReplace());
+    list.add(present_isReplace);
+    if (present_isReplace)
+      list.add(isReplace);
 
     return list.hashCode();
   }
@@ -460,6 +520,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetIsForceDeactivate()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isForceDeactivate, other.isForceDeactivate);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetIsReplace()).compareTo(other.isSetIsReplace());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIsReplace()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isReplace, other.isReplace);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -513,6 +583,12 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("isForceDeactivate:");
       sb.append(this.isForceDeactivate);
+      first = false;
+    }
+    if (isSetIsReplace()) {
+      if (!first) sb.append(", ");
+      sb.append("isReplace:");
+      sb.append(this.isReplace);
       first = false;
     }
     sb.append(")");
@@ -596,6 +672,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // IS_REPLACE
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.isReplace = iprot.readBool();
+              struct.setIsReplaceIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -633,6 +717,11 @@ import org.slf4j.LoggerFactory;
         oprot.writeBool(struct.isForceDeactivate);
         oprot.writeFieldEnd();
       }
+      if (struct.isSetIsReplace()) {
+        oprot.writeFieldBegin(IS_REPLACE_FIELD_DESC);
+        oprot.writeBool(struct.isReplace);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -663,7 +752,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetIsForceDeactivate()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetIsReplace()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetResourcePlanName()) {
         oprot.writeString(struct.resourcePlanName);
       }
@@ -676,12 +768,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetIsForceDeactivate()) {
         oprot.writeBool(struct.isForceDeactivate);
       }
+      if (struct.isSetIsReplace()) {
+        oprot.writeBool(struct.isReplace);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, WMAlterResourcePlanRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.resourcePlanName = iprot.readString();
         struct.setResourcePlanNameIsSet(true);
@@ -698,6 +793,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(3)) {
         struct.isForceDeactivate = iprot.readBool();
         struct.setIsForceDeactivateIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.isReplace = iprot.readBool();
+        struct.setIsReplaceIsSet(true);
       }
     }
   }

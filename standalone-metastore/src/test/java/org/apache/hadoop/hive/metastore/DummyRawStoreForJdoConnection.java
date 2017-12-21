@@ -956,7 +956,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public void createResourcePlan(
-      WMResourcePlan resourcePlan, int defaultPoolSize) throws MetaException {
+      WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize) throws MetaException {
   }
 
   @Override
@@ -971,7 +971,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public WMFullResourcePlan alterResourcePlan(
-      String name, WMResourcePlan resourcePlan, boolean canActivateDisabled, boolean canDeactivate)
+      String name, WMResourcePlan resourcePlan, boolean canActivateDisabled, boolean canDeactivate,
+      boolean isReplace)
       throws NoSuchObjectException, InvalidOperationException, MetaException {
     return null;
   }

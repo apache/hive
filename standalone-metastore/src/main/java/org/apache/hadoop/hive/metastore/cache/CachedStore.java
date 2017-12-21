@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore.cache;
 
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +34,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -103,7 +101,6 @@ import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.google.common.annotations.VisibleForTesting;
 
 // TODO filter->expr
@@ -2383,9 +2380,9 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createResourcePlan(WMResourcePlan resourcePlan, int defaultPoolSize)
-      throws AlreadyExistsException, InvalidObjectException, MetaException {
-    rawStore.createResourcePlan(resourcePlan, defaultPoolSize);
+  public void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException {
+    rawStore.createResourcePlan(resourcePlan, copyFrom, defaultPoolSize);
   }
 
   @Override
@@ -2399,11 +2396,12 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(
-      String name, WMResourcePlan resourcePlan, boolean canActivateDisabled, boolean canDeactivate)
+  public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan,
+    boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException {
-    return rawStore.alterResourcePlan(name, resourcePlan, canActivateDisabled, canDeactivate);
+    return rawStore.alterResourcePlan(
+      name, resourcePlan, canActivateDisabled, canDeactivate, isReplace);
   }
 
   @Override

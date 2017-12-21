@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
-
+import java.util.Random;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.metastore.model.MWMMapping.EntityType;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.model.MWMPool;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
@@ -60,7 +59,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
-
 import javax.jdo.JDOCanRetryException;
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
@@ -74,8 +72,6 @@ import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 import javax.sql.DataSource;
-
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -201,7 +197,6 @@ import org.datanucleus.store.scostore.Store;
 import org.datanucleus.util.WeakValueMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.annotations.VisibleForTesting;
@@ -220,6 +215,9 @@ public class ObjectStore implements RawStore, Configurable {
   private static Properties prop = null;
   private static PersistenceManagerFactory pmf = null;
   private static boolean forTwoMetastoreTesting = false;
+
+  private static final DateTimeFormatter YMDHMS_FORMAT = DateTimeFormatter.ofPattern(
+      "yyyy_MM_dd_HH_mm_ss");
 
   private static Lock pmfPropLock = new ReentrantLock();
   /**
@@ -9536,32 +9534,49 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createResourcePlan(WMResourcePlan resourcePlan, int defaultPoolSize)
-      throws AlreadyExistsException, InvalidObjectException, MetaException {
+  public void createResourcePlan(
+      WMResourcePlan resourcePlan, String copyFromName, int defaultPoolSize)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException {
     boolean commited = false;
     String rpName = normalizeIdentifier(resourcePlan.getName());
-    Integer queryParallelism = resourcePlan.isSetQueryParallelism() ?
-        resourcePlan.getQueryParallelism() : null;
-    MWMResourcePlan rp = new MWMResourcePlan(
-        rpName, queryParallelism, MWMResourcePlan.Status.DISABLED);
     if (rpName.isEmpty()) {
       throw new InvalidObjectException("Resource name cannot be empty.");
     }
-    if (queryParallelism != null && queryParallelism <= 0) {
-      throw new InvalidObjectException("Query parallelism should be positive.");
+    MWMResourcePlan rp = null;
+    if (copyFromName == null) {
+      Integer queryParallelism = null;
+      if (resourcePlan.isSetQueryParallelism()) {
+        queryParallelism = resourcePlan.getQueryParallelism();
+        if (queryParallelism <= 0) {
+          throw new InvalidObjectException("Query parallelism should be positive.");
+        }
+      }
+      rp = new MWMResourcePlan(rpName, queryParallelism, Status.DISABLED);
+    } else {
+      rp = new MWMResourcePlan(rpName, null, Status.DISABLED);
     }
     try {
       openTransaction();
       pm.makePersistent(rp);
-      // TODO: ideally, this should be moved outside to HiveMetaStore to be shared between
-      //       all the RawStore-s. Right now there's no method to create a pool.
-      if (defaultPoolSize > 0) {
-        MWMPool defaultPool = new MWMPool(rp, "default", 1.0, defaultPoolSize, null);
-        pm.makePersistent(defaultPool);
-        rp.setPools(Sets.newHashSet(defaultPool));
-        rp.setDefaultPool(defaultPool);
+      if (copyFromName != null) {
+        MWMResourcePlan copyFrom = getMWMResourcePlan(copyFromName, false);
+        if (copyFrom == null) {
+          throw new NoSuchObjectException(copyFromName);
+        }
+        copyRpContents(rp, copyFrom);
+      } else {
+        // TODO: ideally, this should be moved outside to HiveMetaStore to be shared between
+        //       all the RawStore-s. Right now there's no method to create a pool.
+        if (defaultPoolSize > 0) {
+          MWMPool defaultPool = new MWMPool(rp, "default", 1.0, defaultPoolSize, null);
+          pm.makePersistent(defaultPool);
+          rp.setPools(Sets.newHashSet(defaultPool));
+          rp.setDefaultPool(defaultPool);
+        }
       }
       commited = commitTransaction();
+    } catch (InvalidOperationException e) {
+      throw new RuntimeException(e);
     } catch (Exception e) {
       checkForConstraintException(e, "Resource plan already exists: ");
       throw e;
@@ -9570,6 +9585,60 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+  }
+
+  private void copyRpContents(MWMResourcePlan dest, MWMResourcePlan src) {
+    dest.setQueryParallelism(src.getQueryParallelism());
+    Map<String, MWMPool> pools = new HashMap<>();
+    Map<String, Set<MWMPool>> triggersToPools = new HashMap<>();
+    for (MWMPool copyPool : src.getPools()) {
+      MWMPool pool = new MWMPool(dest, copyPool.getPath(), copyPool.getAllocFraction(),
+          copyPool.getQueryParallelism(), copyPool.getSchedulingPolicy());
+      pm.makePersistent(pool);
+      pools.put(copyPool.getPath(), pool);
+      if (copyPool.getTriggers() != null) {
+        for (MWMTrigger trigger : copyPool.getTriggers()) {
+          Set<MWMPool> p2t = triggersToPools.get(trigger.getName());
+          if (p2t == null) {
+            p2t = new HashSet<>();
+            triggersToPools.put(trigger.getName(), p2t);
+          }
+          p2t.add(pool);
+          pool.setTriggers(new HashSet<>());
+        }
+      }
+    }
+    dest.setPools(new HashSet<>(pools.values()));
+    if (src.getDefaultPool() != null) {
+      dest.setDefaultPool(pools.get(src.getDefaultPool().getPath()));
+    }
+    Set<MWMMapping> mappings = new HashSet<>();
+    for (MWMMapping copyMapping : src.getMappings()) {
+      MWMPool pool = null;
+      if (copyMapping.getPool() != null) {
+        pool = pools.get(copyMapping.getPool().getPath());
+      }
+      MWMMapping mapping = new MWMMapping(dest, copyMapping.getEntityType(),
+          copyMapping.getEntityName(), pool, copyMapping.getOrdering());
+      pm.makePersistent(mapping);
+      mappings.add(mapping);
+    }
+    dest.setMappings(mappings);
+    Set<MWMTrigger> triggers = new HashSet<>();
+    for (MWMTrigger copyTrigger : src.getTriggers()) {
+      Set<MWMPool> p2t = triggersToPools.get(copyTrigger.getName());
+      if (p2t == null) {
+        p2t = new HashSet<>();
+      }
+      MWMTrigger trigger = new MWMTrigger(dest, copyTrigger.getName(),
+          copyTrigger.getTriggerExpression(), copyTrigger.getActionExpression(), p2t);
+      pm.makePersistent(trigger);
+      for (MWMPool pool : p2t) {
+        pool.getTriggers().add(trigger);
+      }
+      triggers.add(trigger);
+    }
+    dest.setTriggers(triggers);
   }
 
   private WMResourcePlan fromMResourcePlan(MWMResourcePlan mplan) {
@@ -9644,6 +9713,11 @@ public class ObjectStore implements RawStore, Configurable {
 
   private MWMResourcePlan getMWMResourcePlan(String name, boolean editCheck)
       throws NoSuchObjectException, InvalidOperationException {
+    return getMWMResourcePlan(name, editCheck, true);
+  }
+
+  private MWMResourcePlan getMWMResourcePlan(String name, boolean editCheck, boolean mustExist)
+      throws NoSuchObjectException, InvalidOperationException {
     MWMResourcePlan resourcePlan;
     boolean commited = false;
     Query query = null;
@@ -9660,10 +9734,11 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       rollbackAndCleanup(commited, query);
     }
-    if (resourcePlan == null) {
+    if (mustExist && resourcePlan == null) {
       throw new NoSuchObjectException("There is no resource plan named: " + name);
     }
-    if (editCheck && resourcePlan.getStatus() != MWMResourcePlan.Status.DISABLED) {
+    if (editCheck && resourcePlan != null
+        && resourcePlan.getStatus() != MWMResourcePlan.Status.DISABLED) {
       throw new InvalidOperationException("Resource plan must be disabled to edit it.");
     }
     return resourcePlan;
@@ -9692,10 +9767,13 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan,
-      boolean canActivateDisabled, boolean canDeactivate) throws AlreadyExistsException,
-      NoSuchObjectException, InvalidOperationException, MetaException {
+  public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan changes,
+      boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
+    throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
     name = name == null ? null : normalizeIdentifier(name);
+    if (isReplace && name == null) {
+      throw new InvalidOperationException("Cannot replace without specifying the source plan");
+    }
     boolean commited = false;
     Query query = null;
     // This method only returns the result when activating a resource plan.
@@ -9704,38 +9782,12 @@ public class ObjectStore implements RawStore, Configurable {
     WMFullResourcePlan result = null;
     try {
       openTransaction();
-      MWMResourcePlan mResourcePlan = name == null ? getActiveMWMResourcePlan()
-          : getMWMResourcePlan(name, !resourcePlan.isSetStatus());
-      boolean hasNameChange = resourcePlan.isSetName() && !resourcePlan.getName().equals(name);
-      if (resourcePlan.isSetQueryParallelism() || resourcePlan.isSetDefaultPoolPath()
-        || hasNameChange) {
-        if (resourcePlan.isSetStatus()) {
-          throw new InvalidOperationException("Cannot change values during status switch.");
-        } else if (resourcePlan.getStatus() == WMResourcePlanStatus.DISABLED) {
-          throw new InvalidOperationException("Resource plan must be disabled to edit it.");
-        }
+      if (isReplace) {
+        result = handleAlterReplace(name, changes);
+      } else {
+        result = handleSimpleAlter(name, changes, canActivateDisabled, canDeactivate);
       }
-      if (hasNameChange) {
-        String newName = normalizeIdentifier(resourcePlan.getName());
-        if (newName.isEmpty()) {
-          throw new InvalidOperationException("Cannot rename to empty value.");
-        }
-        mResourcePlan.setName(resourcePlan.getName());
-      }
-      if (resourcePlan.isSetQueryParallelism()) {
-        if (resourcePlan.getQueryParallelism() <= 0) {
-          throw new InvalidOperationException("queryParallelism should be positive.");
-        }
-        mResourcePlan.setQueryParallelism(resourcePlan.getQueryParallelism());
-      }
-      if (resourcePlan.isSetDefaultPoolPath()) {
-        MWMPool pool = getPool(mResourcePlan, resourcePlan.getDefaultPoolPath());
-        mResourcePlan.setDefaultPool(pool);
-      }
-      if (resourcePlan.isSetStatus()) {
-        result = switchStatus(name, mResourcePlan,
-            resourcePlan.getStatus().name(), canActivateDisabled, canDeactivate);
-      }
+ 
       commited = commitTransaction();
       return result;
     } catch (Exception e) {
@@ -9743,6 +9795,102 @@ public class ObjectStore implements RawStore, Configurable {
       throw e;
     } finally {
       rollbackAndCleanup(commited, query);
+    }
+  }
+
+  private WMFullResourcePlan handleSimpleAlter(String name, WMResourcePlan changes,
+      boolean canActivateDisabled, boolean canDeactivate)
+          throws InvalidOperationException, NoSuchObjectException, MetaException {
+    MWMResourcePlan plan = name == null ? getActiveMWMResourcePlan()
+        : getMWMResourcePlan(name, !changes.isSetStatus());
+    boolean hasNameChange = changes.isSetName() && !changes.getName().equals(name);
+    // Verify that field changes are consistent with what Hive does. Note: we could handle this.
+    if (changes.isSetQueryParallelism() || changes.isSetDefaultPoolPath() || hasNameChange) {
+      if (changes.isSetStatus()) {
+        throw new InvalidOperationException("Cannot change values during status switch.");
+      } else if (plan.getStatus() != MWMResourcePlan.Status.DISABLED) {
+        throw new InvalidOperationException("Resource plan must be disabled to edit it.");
+      }
+    }
+
+    // Handle rename and other changes.
+    if (changes.isSetName()) {
+      String newName = normalizeIdentifier(changes.getName());
+      if (newName.isEmpty()) {
+        throw new InvalidOperationException("Cannot rename to empty value.");
+      }
+      if (!newName.equals(plan.getName())) {
+        plan.setName(newName);
+      }
+    }
+    if (changes.isSetQueryParallelism()) {
+      if (changes.getQueryParallelism() <= 0) {
+        throw new InvalidOperationException("queryParallelism should be positive.");
+      }
+      plan.setQueryParallelism(changes.getQueryParallelism());
+    }
+    if (changes.isSetDefaultPoolPath()) {
+      MWMPool pool = getPool(plan, changes.getDefaultPoolPath());
+      plan.setDefaultPool(pool);
+    }
+
+    // Handle the status change.
+    if (changes.isSetStatus()) {
+      return switchStatus(name, plan,
+          changes.getStatus().name(), canActivateDisabled, canDeactivate);
+    }
+    return null;
+  }
+
+  private WMFullResourcePlan handleAlterReplace(String name, WMResourcePlan changes)
+          throws InvalidOperationException, NoSuchObjectException, MetaException {
+    // Verify that field changes are consistent with what Hive does. Note: we could handle this.
+    if (changes.isSetQueryParallelism() || changes.isSetDefaultPoolPath()) {
+      throw new InvalidOperationException("Cannot change values during replace.");
+    }
+    boolean isReplacingSpecific = changes.isSetName();
+    boolean isReplacingActive = (changes.isSetStatus()
+        && changes.getStatus() == WMResourcePlanStatus.ACTIVE);
+    if (isReplacingActive == isReplacingSpecific) {
+      throw new InvalidOperationException("Must specify a name, or the active plan; received "
+          + changes.getName() + ", " + (changes.isSetStatus() ? changes.getStatus() : null));
+    }
+    if (name == null) {
+      throw new InvalidOperationException("Invalid replace - no name specified");
+    }
+    MWMResourcePlan replacedPlan = isReplacingSpecific
+        ? getMWMResourcePlan(changes.getName(), false) : getActiveMWMResourcePlan();
+    MWMResourcePlan plan = getMWMResourcePlan(name, false);
+
+    if (replacedPlan.getName().equals(plan.getName())) {
+      throw new InvalidOperationException("A plan cannot replace itself");
+    }
+    // We will inherit the name and status from the plan we are replacing.
+    String newName = replacedPlan.getName();
+    int i = 0;
+    String copyName = generateOldPlanName(newName, i);
+    while (true) {
+      MWMResourcePlan dup = getMWMResourcePlan(copyName, false, false);
+      if (dup == null) break;
+      // Note: this can still conflict with parallel transactions. We do not currently handle
+      //       parallel changes from two admins (by design :().
+      copyName = generateOldPlanName(newName, ++i);
+    }
+    replacedPlan.setName(copyName);
+    plan.setName(newName);
+    plan.setStatus(replacedPlan.getStatus());
+    replacedPlan.setStatus(MWMResourcePlan.Status.DISABLED);
+    // TODO: add a configurable option to skip the history and just drop it?
+    return plan.getStatus() == Status.ACTIVE ? fullFromMResourcePlan(plan) : null;
+  }
+
+  private String generateOldPlanName(String newName, int i) {
+    if (MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
+      // Do not use datetime in tests to avoid result changes.
+      return newName + "-old-" + i;
+    } else {
+      return newName + "-old-"
+          + LocalDateTime.now().format(YMDHMS_FORMAT) + (i == 0 ? "" : ("-" + i));
     }
   }
 
@@ -9779,6 +9927,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.declareParameters("java.lang.String activeStatus");
       query.setUnique(true);
       result = (MWMResourcePlan) query.execute(Status.ACTIVE.toString());
+      pm.retrieve(result);
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, query);

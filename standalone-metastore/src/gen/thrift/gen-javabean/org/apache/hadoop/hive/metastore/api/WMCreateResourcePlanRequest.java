@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("WMCreateResourcePlanRequest");
 
   private static final org.apache.thrift.protocol.TField RESOURCE_PLAN_FIELD_DESC = new org.apache.thrift.protocol.TField("resourcePlan", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+  private static final org.apache.thrift.protocol.TField COPY_FROM_FIELD_DESC = new org.apache.thrift.protocol.TField("copyFrom", org.apache.thrift.protocol.TType.STRING, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,10 +48,12 @@ import org.slf4j.LoggerFactory;
   }
 
   private WMResourcePlan resourcePlan; // optional
+  private String copyFrom; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    RESOURCE_PLAN((short)1, "resourcePlan");
+    RESOURCE_PLAN((short)1, "resourcePlan"),
+    COPY_FROM((short)2, "copyFrom");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -67,6 +70,8 @@ import org.slf4j.LoggerFactory;
       switch(fieldId) {
         case 1: // RESOURCE_PLAN
           return RESOURCE_PLAN;
+        case 2: // COPY_FROM
+          return COPY_FROM;
         default:
           return null;
       }
@@ -107,12 +112,14 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.RESOURCE_PLAN};
+  private static final _Fields optionals[] = {_Fields.RESOURCE_PLAN,_Fields.COPY_FROM};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.RESOURCE_PLAN, new org.apache.thrift.meta_data.FieldMetaData("resourcePlan", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, WMResourcePlan.class)));
+    tmpMap.put(_Fields.COPY_FROM, new org.apache.thrift.meta_data.FieldMetaData("copyFrom", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(WMCreateResourcePlanRequest.class, metaDataMap);
   }
@@ -127,6 +134,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetResourcePlan()) {
       this.resourcePlan = new WMResourcePlan(other.resourcePlan);
     }
+    if (other.isSetCopyFrom()) {
+      this.copyFrom = other.copyFrom;
+    }
   }
 
   public WMCreateResourcePlanRequest deepCopy() {
@@ -136,6 +146,7 @@ import org.slf4j.LoggerFactory;
   @Override
   public void clear() {
     this.resourcePlan = null;
+    this.copyFrom = null;
   }
 
   public WMResourcePlan getResourcePlan() {
@@ -161,6 +172,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getCopyFrom() {
+    return this.copyFrom;
+  }
+
+  public void setCopyFrom(String copyFrom) {
+    this.copyFrom = copyFrom;
+  }
+
+  public void unsetCopyFrom() {
+    this.copyFrom = null;
+  }
+
+  /** Returns true if field copyFrom is set (has been assigned a value) and false otherwise */
+  public boolean isSetCopyFrom() {
+    return this.copyFrom != null;
+  }
+
+  public void setCopyFromIsSet(boolean value) {
+    if (!value) {
+      this.copyFrom = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case RESOURCE_PLAN:
@@ -171,6 +205,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case COPY_FROM:
+      if (value == null) {
+        unsetCopyFrom();
+      } else {
+        setCopyFrom((String)value);
+      }
+      break;
+
     }
   }
 
@@ -178,6 +220,9 @@ import org.slf4j.LoggerFactory;
     switch (field) {
     case RESOURCE_PLAN:
       return getResourcePlan();
+
+    case COPY_FROM:
+      return getCopyFrom();
 
     }
     throw new IllegalStateException();
@@ -192,6 +237,8 @@ import org.slf4j.LoggerFactory;
     switch (field) {
     case RESOURCE_PLAN:
       return isSetResourcePlan();
+    case COPY_FROM:
+      return isSetCopyFrom();
     }
     throw new IllegalStateException();
   }
@@ -218,6 +265,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_copyFrom = true && this.isSetCopyFrom();
+    boolean that_present_copyFrom = true && that.isSetCopyFrom();
+    if (this_present_copyFrom || that_present_copyFrom) {
+      if (!(this_present_copyFrom && that_present_copyFrom))
+        return false;
+      if (!this.copyFrom.equals(that.copyFrom))
+        return false;
+    }
+
     return true;
   }
 
@@ -229,6 +285,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_resourcePlan);
     if (present_resourcePlan)
       list.add(resourcePlan);
+
+    boolean present_copyFrom = true && (isSetCopyFrom());
+    list.add(present_copyFrom);
+    if (present_copyFrom)
+      list.add(copyFrom);
 
     return list.hashCode();
   }
@@ -247,6 +308,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetResourcePlan()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.resourcePlan, other.resourcePlan);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetCopyFrom()).compareTo(other.isSetCopyFrom());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCopyFrom()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.copyFrom, other.copyFrom);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -277,6 +348,16 @@ import org.slf4j.LoggerFactory;
         sb.append("null");
       } else {
         sb.append(this.resourcePlan);
+      }
+      first = false;
+    }
+    if (isSetCopyFrom()) {
+      if (!first) sb.append(", ");
+      sb.append("copyFrom:");
+      if (this.copyFrom == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.copyFrom);
       }
       first = false;
     }
@@ -335,6 +416,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 2: // COPY_FROM
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.copyFrom = iprot.readString();
+              struct.setCopyFromIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -352,6 +441,13 @@ import org.slf4j.LoggerFactory;
         if (struct.isSetResourcePlan()) {
           oprot.writeFieldBegin(RESOURCE_PLAN_FIELD_DESC);
           struct.resourcePlan.write(oprot);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.copyFrom != null) {
+        if (struct.isSetCopyFrom()) {
+          oprot.writeFieldBegin(COPY_FROM_FIELD_DESC);
+          oprot.writeString(struct.copyFrom);
           oprot.writeFieldEnd();
         }
       }
@@ -376,20 +472,30 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetResourcePlan()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetCopyFrom()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetResourcePlan()) {
         struct.resourcePlan.write(oprot);
+      }
+      if (struct.isSetCopyFrom()) {
+        oprot.writeString(struct.copyFrom);
       }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, WMCreateResourcePlanRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.resourcePlan = new WMResourcePlan();
         struct.resourcePlan.read(iprot);
         struct.setResourcePlanIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.copyFrom = iprot.readString();
+        struct.setCopyFromIsSet(true);
       }
     }
   }

@@ -687,7 +687,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int createResourcePlan(Hive db, CreateResourcePlanDesc createResourcePlanDesc)
       throws HiveException {
-    db.createResourcePlan(createResourcePlanDesc.getResourcePlan());
+    db.createResourcePlan(createResourcePlanDesc.getResourcePlan(),
+        createResourcePlanDesc.getCopyFromName());
     return 0;
   }
 
@@ -731,17 +732,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       isActivate = resourcePlan.getStatus() == WMResourcePlanStatus.ACTIVE;
     }
 
-    WMFullResourcePlan appliedRp = db.alterResourcePlan(
-      desc.getResourcePlanName(), resourcePlan, desc.isEnableActivate(), desc.isForceDeactivate());
-    if (!isActivate && !desc.isForceDeactivate()) return 0; // DB-only modification.
-    if (wm == null && isInTest) {
-      return 0;
+    WMFullResourcePlan appliedRp = db.alterResourcePlan(desc.getResourcePlanName(), resourcePlan,
+        desc.isEnableActivate(), desc.isForceDeactivate(), desc.isReplace());
+    boolean mustHaveAppliedChange = isActivate || desc.isForceDeactivate();
+    if (!mustHaveAppliedChange && !desc.isReplace()) {
+      return 0; // The modification cannot affect an active plan.
     }
+    if (appliedRp == null && !mustHaveAppliedChange) return 0; // Replacing an inactive plan.
+    if (wm == null && isInTest) return 0; // Skip for tests if WM is not present.
 
     if ((appliedRp == null) != desc.isForceDeactivate()) {
       throw new HiveException("Cannot get a resource plan to apply; or non-null plan on disable");
       // TODO: shut down HS2?
     }
+    assert appliedRp == null || appliedRp.getPlan().getStatus() == WMResourcePlanStatus.ACTIVE;
 
     handleWorkloadManagementServiceChange(wm, pm, isActivate, appliedRp);
     return 0;

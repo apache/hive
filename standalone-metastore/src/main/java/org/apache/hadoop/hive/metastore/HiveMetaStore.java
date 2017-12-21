@@ -7268,9 +7268,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
       int defaultPoolSize = MetastoreConf.getIntVar(
           conf, MetastoreConf.ConfVars.WM_DEFAULT_POOL_SIZE);
-
       try {
-        getMS().createResourcePlan(request.getResourcePlan(), defaultPoolSize);
+        getMS().createResourcePlan(
+            request.getResourcePlan(), request.getCopyFrom(), defaultPoolSize);
         return new WMCreateResourcePlanResponse();
       } catch (MetaException e) {
         LOG.error("Exception while trying to persist resource plan", e);
@@ -7309,12 +7309,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public WMAlterResourcePlanResponse alter_resource_plan(WMAlterResourcePlanRequest request)
         throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
       try {
+        if (((request.isIsEnableAndActivate() ? 1 : 0) + (request.isIsReplace() ? 1 : 0)
+           + (request.isIsForceDeactivate() ? 1 : 0)) > 1) {
+          throw new MetaException("Invalid request; multiple flags are set");
+        }
         WMAlterResourcePlanResponse response = new WMAlterResourcePlanResponse();
         // This method will only return full resource plan when activating one,
         // to give the caller the result atomically with the activation.
         WMFullResourcePlan fullPlanAfterAlter = getMS().alterResourcePlan(
             request.getResourcePlanName(), request.getResourcePlan(),
-            request.isIsEnableAndActivate(), request.isIsForceDeactivate());
+            request.isIsEnableAndActivate(), request.isIsForceDeactivate(), request.isIsReplace());
         if (fullPlanAfterAlter != null) {
           response.setFullResourcePlan(fullPlanAfterAlter);
         }
