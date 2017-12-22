@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
+
 import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -61,7 +63,6 @@ import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.util.MachineList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
@@ -1559,5 +1560,22 @@ public class MetaStoreUtils {
       cols.add(fs.getName());
     }
     return cols;
+  }
+
+
+  public static boolean isValidSchedulingPolicy(String str) {
+    try {
+      parseSchedulingPolicy(str);
+      return true;
+    } catch (IllegalArgumentException ex) {
+    }
+    return false;
+  }
+
+  public static WMPoolSchedulingPolicy parseSchedulingPolicy(String schedulingPolicy) {
+    if (schedulingPolicy == null) return WMPoolSchedulingPolicy.FAIR;
+    schedulingPolicy = schedulingPolicy.trim().toUpperCase();
+    if ("DEFAULT".equals(schedulingPolicy)) return WMPoolSchedulingPolicy.FAIR;
+    return Enum.valueOf(WMPoolSchedulingPolicy.class, schedulingPolicy);
   }
 }

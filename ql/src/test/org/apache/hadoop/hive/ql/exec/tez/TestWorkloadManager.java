@@ -127,9 +127,14 @@ public class TestWorkloadManager {
   }
 
   public static WMPool pool(String path, int qp, double alloc) {
+    return pool(path, qp, alloc, "fair");
+  }
+
+  public static WMPool pool(String path, int qp, double alloc, String policy) {
     WMPool pool = new WMPool("rp", path);
     pool.setAllocFraction(alloc);
     pool.setQueryParallelism(qp);
+    pool.setSchedulingPolicy(policy);
     return pool;
   }
 
@@ -267,8 +272,6 @@ public class TestWorkloadManager {
     assertEquals("test", session.getQueueName());
   }
 
-  // Note (unrelated to epsilon): all the fraction checks are valid with the current logic in the
-  //                              absence of policies. This will change when there are policies.
   private final static double EPSILON = 0.001;
 
   @Test(timeout = 10000)
@@ -699,6 +702,57 @@ public class TestWorkloadManager {
     assertEquals(4, tezAmPool.getCurrentSize());
   }
 
+
+
+  @Test(timeout=10000)
+  public void testFifoSchedulingPolicy() throws Exception {
+    final HiveConf conf = createConf();
+    MockQam qam = new MockQam();
+    WMFullResourcePlan plan = new WMFullResourcePlan(
+        plan(), Lists.newArrayList(pool("A", 3, 1f, "fair")));
+    plan.getPlan().setDefaultPoolPath("A");
+    final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
+    wm.start();
+ 
+    // 2 running.
+    WmTezSession sessionA1 = (WmTezSession) wm.getSession(
+        null, new MappingInput("A", null), conf, null),
+        sessionA2 = (WmTezSession) wm.getSession(null, new MappingInput("A", null), conf, null);
+    assertEquals(0.5f, sessionA1.getClusterFraction(), EPSILON);
+    assertEquals(0.5f, sessionA2.getClusterFraction(), EPSILON);
+
+    // Change the resource plan to use fifo policy.
+    plan = new WMFullResourcePlan(plan(), Lists.newArrayList(pool("A", 3, 1f, "fifo")));
+    plan.getPlan().setDefaultPoolPath("A");
+    wm.updateResourcePlanAsync(plan).get();
+    assertEquals(1f, sessionA1.getClusterFraction(), EPSILON);
+    assertEquals(0f, sessionA2.getClusterFraction(), EPSILON);
+    assertEquals("A", sessionA2.getPoolName());
+
+    // Add another session.
+    WmTezSession sessionA3 = (WmTezSession) wm.getSession(
+        null, new MappingInput("A", null), conf, null);
+    assertEquals(0f, sessionA3.getClusterFraction(), EPSILON);
+    assertEquals("A", sessionA3.getPoolName());
+
+    // Make sure the allocation is transfered correctly on return.
+    sessionA1.returnToSessionManager();
+    assertEquals(1f, sessionA2.getClusterFraction(), EPSILON);
+    assertEquals(0f, sessionA3.getClusterFraction(), EPSILON);
+    assertEquals("A", sessionA3.getPoolName());
+
+    // Make sure reuse changes the FIFO order of the session.
+    WmTezSession sessionA4 =  (WmTezSession) wm.getSession(
+        sessionA2, new MappingInput("A", null), conf, null);
+    assertSame(sessionA2, sessionA4);
+    assertEquals(1f, sessionA3.getClusterFraction(), EPSILON);
+    assertEquals(0f, sessionA2.getClusterFraction(), EPSILON);
+    assertEquals("A", sessionA2.getPoolName());
+
+    sessionA3.returnToSessionManager();
+    assertEquals(1f, sessionA2.getClusterFraction(), EPSILON);
+    sessionA2.returnToSessionManager();
+  }
 
   @Test(timeout=10000)
   public void testDisableEnable() throws Exception {

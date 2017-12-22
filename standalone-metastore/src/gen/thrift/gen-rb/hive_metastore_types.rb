@@ -133,6 +133,13 @@ module WMResourcePlanStatus
   VALID_VALUES = Set.new([ACTIVE, ENABLED, DISABLED]).freeze
 end
 
+module WMPoolSchedulingPolicy
+  FAIR = 1
+  FIFO = 2
+  VALUE_MAP = {1 => "FAIR", 2 => "FIFO"}
+  VALID_VALUES = Set.new([FAIR, FIFO]).freeze
+end
+
 class Version
   include ::Thrift::Struct, ::Thrift::Struct_Union
   VERSION = 1

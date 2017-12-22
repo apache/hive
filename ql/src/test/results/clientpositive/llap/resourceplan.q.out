@@ -3671,11 +3671,12 @@ POSTHOOK: Input: sys@wm_pools
 plan_1	default	1.0	4	NULL
 plan_2	default	1.0	4	NULL
 table	default	1.0	4	NULL
+FAILED: SemanticException Invalid scheduling policy invalid
 PREHOOK: query: CREATE POOL plan_2.default.c1 WITH
-    ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='priority'
+    ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='fair'
 PREHOOK: type: CREATE POOL
 POSTHOOK: query: CREATE POOL plan_2.default.c1 WITH
-    ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='priority'
+    ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='fair'
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: CREATE POOL plan_2.default.c2 WITH
     QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.2
@@ -3726,7 +3727,7 @@ POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
 plan_1	default	1.0	4	NULL
 plan_2	def	1.0	4	NULL
-plan_2	def.c1	0.3	3	priority
+plan_2	def.c1	0.3	3	fair
 plan_2	def.c2	0.7	1	fair
 table	default	1.0	4	NULL
 PREHOOK: query: DROP POOL plan_2.default
@@ -3742,30 +3743,30 @@ POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
 plan_1	default	1.0	4	NULL
 plan_2	def	1.0	4	NULL
-plan_2	def.c1	0.3	3	priority
+plan_2	def.c1	0.3	3	fair
 plan_2	def.c2	0.7	1	fair
 table	default	1.0	4	NULL
 PREHOOK: query: CREATE POOL plan_2.child1.child2 WITH
-    QUERY_PARALLELISM=2, SCHEDULING_POLICY='fcfs', ALLOC_FRACTION=0.8
+    QUERY_PARALLELISM=2, SCHEDULING_POLICY='fifo', ALLOC_FRACTION=0.8
 PREHOOK: type: CREATE POOL
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Pool path is invalid, the parent does not exist)
 PREHOOK: query: CREATE POOL `table`.`table` WITH
-  SCHEDULING_POLICY='random', ALLOC_FRACTION=0.5, QUERY_PARALLELISM=1
+  SCHEDULING_POLICY='fifo', ALLOC_FRACTION=0.5, QUERY_PARALLELISM=1
 PREHOOK: type: CREATE POOL
 POSTHOOK: query: CREATE POOL `table`.`table` WITH
-  SCHEDULING_POLICY='random', ALLOC_FRACTION=0.5, QUERY_PARALLELISM=1
+  SCHEDULING_POLICY='fifo', ALLOC_FRACTION=0.5, QUERY_PARALLELISM=1
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: CREATE POOL `table`.`table`.pool1 WITH
-  SCHEDULING_POLICY='priority', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.9
+  SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.9
 PREHOOK: type: CREATE POOL
 POSTHOOK: query: CREATE POOL `table`.`table`.pool1 WITH
-  SCHEDULING_POLICY='priority', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.9
+  SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.9
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: CREATE POOL `table`.`table`.pool1.child1 WITH
-  SCHEDULING_POLICY='random', QUERY_PARALLELISM=1, ALLOC_FRACTION=0.3
+  SCHEDULING_POLICY='fair', QUERY_PARALLELISM=1, ALLOC_FRACTION=0.3
 PREHOOK: type: CREATE POOL
 POSTHOOK: query: CREATE POOL `table`.`table`.pool1.child1 WITH
-  SCHEDULING_POLICY='random', QUERY_PARALLELISM=1, ALLOC_FRACTION=0.3
+  SCHEDULING_POLICY='fair', QUERY_PARALLELISM=1, ALLOC_FRACTION=0.3
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: CREATE POOL `table`.`table`.pool1.child2 WITH
   SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.7
@@ -3787,12 +3788,12 @@ POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
 plan_1	default	1.0	4	NULL
 plan_2	def	1.0	4	NULL
-plan_2	def.c1	0.3	3	priority
+plan_2	def.c1	0.3	3	fair
 plan_2	def.c2	0.7	1	fair
 table	default	1.0	4	NULL
-table	table	0.0	1	random
-table	table.pool1	0.9	3	priority
-table	table.pool1.child1	0.3	1	random
+table	table	0.0	1	fifo
+table	table.pool1	0.9	3	fair
+table	table.pool1.child1	0.3	1	fair
 table	table.pool1.child2	0.7	3	fair
 PREHOOK: query: ALTER POOL `table`.`table`.pool1 SET PATH = `table`.pool
 PREHOOK: type: ALTER POOL
@@ -3808,12 +3809,12 @@ POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
 plan_1	default	1.0	4	NULL
 plan_2	def	1.0	4	NULL
-plan_2	def.c1	0.3	3	priority
+plan_2	def.c1	0.3	3	fair
 plan_2	def.c2	0.7	1	fair
 table	default	1.0	4	NULL
-table	table	0.0	1	random
-table	table.pool	0.9	3	priority
-table	table.pool.child1	0.3	1	random
+table	table	0.0	1	fifo
+table	table.pool	0.9	3	fair
+table	table.pool.child1	0.3	1	fair
 table	table.pool.child2	0.7	3	fair
 PREHOOK: query: DROP POOL `table`.`table`
 PREHOOK: type: DROP POOL
@@ -3828,12 +3829,12 @@ POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
 plan_1	default	1.0	4	NULL
 plan_2	def	1.0	4	NULL
-plan_2	def.c1	0.3	3	priority
+plan_2	def.c1	0.3	3	fair
 plan_2	def.c2	0.7	1	fair
 table	default	1.0	4	NULL
-table	table	0.0	1	random
-table	table.pool	0.9	3	priority
-table	table.pool.child1	0.3	1	random
+table	table	0.0	1	fifo
+table	table.pool	0.9	3	fair
+table	table.pool.child1	0.3	1	fair
 table	table.pool.child2	0.7	3	fair
 PREHOOK: query: DROP POOL `table`.default
 PREHOOK: type: DROP POOL
@@ -3848,12 +3849,12 @@ POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
 plan_1	default	1.0	4	NULL
 plan_2	def	1.0	4	NULL
-plan_2	def.c1	0.3	3	priority
+plan_2	def.c1	0.3	3	fair
 plan_2	def.c2	0.7	1	fair
 table	default	1.0	4	NULL
-table	table	0.0	1	random
-table	table.pool	0.9	3	priority
-table	table.pool.child1	0.3	1	random
+table	table	0.0	1	fifo
+table	table.pool	0.9	3	fair
+table	table.pool.child1	0.3	1	fair
 table	table.pool.child2	0.7	3	fair
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
@@ -3884,11 +3885,11 @@ POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
 plan_1	default	1.0	4	NULL
 plan_2	def	1.0	4	NULL
-plan_2	def.c1	0.3	3	priority
+plan_2	def.c1	0.3	3	fair
 plan_2	def.c2	0.7	1	fair
-table	table	0.0	1	random
-table	table.pool	0.9	3	priority
-table	table.pool.child1	0.3	1	random
+table	table	0.0	1	fifo
+table	table.pool	0.9	3	fair
+table	table.pool.child1	0.3	1	fair
 table	table.pool.child2	0.7	3	fair
 PREHOOK: query: ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
@@ -4067,8 +4068,8 @@ POSTHOOK: Input: sys@wm_pools
 plan_1	default	1.0	4	NULL
 plan_2	default	1.0	4	NULL
 plan_4	default	1.0	4	NULL
-table	table	0.0	1	random
-table	table.pool	0.9	3	priority
+table	table	0.0	1	fifo
+table	table.pool	0.9	3	fair
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_triggers
@@ -4161,8 +4162,8 @@ plan_4a	pool1	0.0	2	fair
 plan_4b	default	1.0	4	NULL
 plan_4b	pool1	0.0	2	fair
 plan_4b	pool2	0.0	3	fair
-table	table	0.0	1	random
-table	table.pool	0.9	3	priority
+table	table	0.0	1	fifo
+table	table.pool	0.9	3	fair
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_triggers
@@ -4235,8 +4236,8 @@ plan_4a	pool1	0.0	2	fair
 plan_4a	pool2	0.0	3	fair
 plan_4a-old-0	default	1.0	4	NULL
 plan_4a-old-0	pool1	0.0	2	fair
-table	table	0.0	1	random
-table	table.pool	0.9	3	priority
+table	table	0.0	1	fifo
+table	table.pool	0.9	3	fair
 PREHOOK: query: REPLACE ACTIVE RESOURCE PLAN WITH plan_4a
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: REPLACE ACTIVE RESOURCE PLAN WITH plan_4a
@@ -4302,5 +4303,5 @@ plan_4-old-1	pool1	0.0	2	fair
 plan_4-old-1	pool2	0.0	3	fair
 plan_4a-old-0	default	1.0	4	NULL
 plan_4a-old-0	pool1	0.0	2	fair
-table	table	0.0	1	random
-table	table.pool	0.9	3	priority
+table	table	0.0	1	fifo
+table	table.pool	0.9	3	fair

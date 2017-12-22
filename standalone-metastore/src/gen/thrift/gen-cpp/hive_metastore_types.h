@@ -177,6 +177,15 @@ struct WMResourcePlanStatus {
 
 extern const std::map<int, const char*> _WMResourcePlanStatus_VALUES_TO_NAMES;
 
+struct WMPoolSchedulingPolicy {
+  enum type {
+    FAIR = 1,
+    FIFO = 2
+  };
+};
+
+extern const std::map<int, const char*> _WMPoolSchedulingPolicy_VALUES_TO_NAMES;
+
 class Version;
 
 class FieldSchema;

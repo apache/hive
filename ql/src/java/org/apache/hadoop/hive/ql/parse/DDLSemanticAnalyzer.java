@@ -18,9 +18,10 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -173,7 +174,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.util.StringUtils;
-
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -191,7 +191,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASELOCATION;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASEPROPERTIES;
 
@@ -1159,7 +1158,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         pool.setQueryParallelism(Integer.parseInt(param));
         break;
       case HiveParser.TOK_SCHEDULING_POLICY:
-        pool.setSchedulingPolicy(PlanUtils.stripQuotes(param));
+        String schedulingPolicyStr = PlanUtils.stripQuotes(param);
+        if (!MetaStoreUtils.isValidSchedulingPolicy(schedulingPolicyStr)) {
+          throw new SemanticException("Invalid scheduling policy " + schedulingPolicyStr);
+        }
+        pool.setSchedulingPolicy(schedulingPolicyStr);
         break;
       case HiveParser.TOK_PATH:
         throw new SemanticException("Invalid parameter path in create pool");

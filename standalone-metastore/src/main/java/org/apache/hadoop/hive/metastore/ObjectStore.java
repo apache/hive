@@ -10052,7 +10052,10 @@ public class ObjectStore implements RawStore, Configurable {
         currentPoolData.queryParallelism = pool.getQueryParallelism();
         parentPoolData.totalChildrenQueryParallelism += pool.getQueryParallelism();
       }
-      // Check for valid pool.getSchedulingPolicy();
+      if (!MetaStoreUtils.isValidSchedulingPolicy(pool.getSchedulingPolicy())) {
+        errors.add("Invalid scheduling policy "
+            + pool.getSchedulingPolicy() + " for pool: " + pool.getPath());
+      }
     }
     for (Entry<String, PoolData> entry : poolInfo.entrySet()) {
       PoolData poolData = entry.getValue();
@@ -10266,8 +10269,12 @@ public class ObjectStore implements RawStore, Configurable {
       if (!poolParentExists(resourcePlan, pool.getPoolPath())) {
         throw new NoSuchObjectException("Pool path is invalid, the parent does not exist");
       }
+      String policy = pool.getSchedulingPolicy();
+      if (!MetaStoreUtils.isValidSchedulingPolicy(policy)) {
+        throw new InvalidOperationException("Invalid scheduling policy " + policy);
+      }
       MWMPool mPool = new MWMPool(resourcePlan, pool.getPoolPath(), pool.getAllocFraction(),
-          pool.getQueryParallelism(), pool.getSchedulingPolicy());
+          pool.getQueryParallelism(), policy);
       pm.makePersistent(mPool);
       commited = commitTransaction();
     } catch (Exception e) {
@@ -10294,6 +10301,10 @@ public class ObjectStore implements RawStore, Configurable {
         mPool.setQueryParallelism(pool.getQueryParallelism());
       }
       if (pool.isSetSchedulingPolicy()) {
+        String policy = pool.getSchedulingPolicy();
+        if (!MetaStoreUtils.isValidSchedulingPolicy(policy)) {
+          throw new InvalidOperationException("Invalid scheduling policy " + policy);
+        }
         mPool.setSchedulingPolicy(pool.getSchedulingPolicy());
       }
       if (pool.isSetPoolPath() && !pool.getPoolPath().equals(mPool.getPath())) {

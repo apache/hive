@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -249,7 +252,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
     final long triggerValidationIntervalMs = HiveConf.getTimeVar(conf,
       HiveConf.ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL_MS, TimeUnit.MILLISECONDS);
-    TriggerActionHandler triggerActionHandler = new KillMoveTriggerActionHandler(this);
+    TriggerActionHandler<?> triggerActionHandler = new KillMoveTriggerActionHandler(this);
     triggerValidatorRunnable = new PerPoolTriggerValidatorRunnable(perPoolProviders, triggerActionHandler,
       triggerValidationIntervalMs);
     startTriggerValidator(triggerValidationIntervalMs);
@@ -980,10 +983,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         }
         PoolState state = oldPools == null ? null : oldPools.remove(fullName);
         if (state == null) {
-          state = new PoolState(fullName, qp, fraction);
+          state = new PoolState(fullName, qp, fraction, pool.getSchedulingPolicy());
         } else {
           // This will also take care of the queries if query parallelism changed.
-          state.update(qp, fraction, syncWork, e);
+          state.update(qp, fraction, syncWork, e, pool.getSchedulingPolicy());
           poolsToRedistribute.add(fullName);
         }
         state.setTriggers(new LinkedList<Trigger>());
@@ -1665,10 +1668,12 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     private double finalFractionRemaining;
     private int queryParallelism = -1;
     private List<Trigger> triggers = new ArrayList<>();
+    private WMPoolSchedulingPolicy schedulingPolicy;
 
-    public PoolState(String fullName, int queryParallelism, double fraction) {
+    public PoolState(String fullName, int queryParallelism, double fraction,
+        String schedulingPolicy) {
       this.fullName = fullName;
-      update(queryParallelism, fraction, null, null);
+      update(queryParallelism, fraction, null, null, schedulingPolicy);
     }
 
     public int getTotalActiveSessions() {
@@ -1676,9 +1681,16 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     }
 
     public void update(int queryParallelism, double fraction,
-        WmThreadSyncWork syncWork, EventState e) {
+        WmThreadSyncWork syncWork, EventState e, String schedulingPolicy) {
       this.finalFraction = this.finalFractionRemaining = fraction;
       this.queryParallelism = queryParallelism;
+      try {
+        this.schedulingPolicy = MetaStoreUtils.parseSchedulingPolicy(schedulingPolicy);
+      } catch (IllegalArgumentException ex) {
+        // This should be validated at change time; let's fall back to a default here.
+        LOG.error("Unknown scheduling policy " + schedulingPolicy + "; using FAIR");
+        this.schedulingPolicy = WMPoolSchedulingPolicy.FAIR;
+      }
       // TODO: two possible improvements
       //       1) Right now we kill all the queries here; we could just kill -qpDelta.
       //       2) After the queries are killed queued queries would take their place.
@@ -1706,14 +1718,28 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     }
 
     public double updateAllocationPercentages() {
-      // TODO: real implementation involving in-the-pool policy interface, etc.
-      double allocation = finalFractionRemaining / (sessions.size() + initializingSessions.size());
-      for (WmTezSession session : sessions) {
-        session.setClusterFraction(allocation);
+      switch (schedulingPolicy) {
+      case FAIR:
+        int totalSessions = sessions.size() + initializingSessions.size();
+        if (totalSessions == 0) return 0;
+        double allocation = finalFractionRemaining / totalSessions;
+        for (WmTezSession session : sessions) {
+          session.setClusterFraction(allocation);
+        }
+        // Do not give out the capacity of the initializing sessions to the running ones;
+        // we expect init to be fast.
+        return finalFractionRemaining - allocation * initializingSessions.size();
+      case FIFO:
+        if (sessions.isEmpty()) return 0;
+        boolean isFirst = true;
+        for (WmTezSession session : sessions) {
+          session.setClusterFraction(isFirst ? finalFractionRemaining : 0);
+          isFirst = false;
+        }
+        return finalFractionRemaining;
+      default:
+        throw new AssertionError("Unexpected enum value " + schedulingPolicy);
       }
-      // Do not give out the capacity of the initializing sessions to the running ones;
-      // we expect init to be fast.
-      return finalFractionRemaining - allocation * initializingSessions.size();
     }
 
     public LinkedList<WmTezSession> getSessions() {
