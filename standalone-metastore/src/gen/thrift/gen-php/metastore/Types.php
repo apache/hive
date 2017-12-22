@@ -187,6 +187,15 @@ final class WMResourcePlanStatus {
   );
 }
 
+final class WMPoolSchedulingPolicy {
+  const FAIR = 1;
+  const FIFO = 2;
+  static public $__names = array(
+    1 => 'FAIR',
+    2 => 'FIFO',
+  );
+}
+
 class Version {
   static $_TSPEC;
 

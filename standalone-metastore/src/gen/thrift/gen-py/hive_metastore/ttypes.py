@@ -281,6 +281,20 @@ class WMResourcePlanStatus:
     "DISABLED": 3,
   }
 
+class WMPoolSchedulingPolicy:
+  FAIR = 1
+  FIFO = 2
+
+  _VALUES_TO_NAMES = {
+    1: "FAIR",
+    2: "FIFO",
+  }
+
+  _NAMES_TO_VALUES = {
+    "FAIR": 1,
+    "FIFO": 2,
+  }
+
 
 class Version:
   """

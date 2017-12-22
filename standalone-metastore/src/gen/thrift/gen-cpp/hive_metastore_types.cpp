@@ -199,6 +199,16 @@ const char* _kWMResourcePlanStatusNames[] = {
 };
 const std::map<int, const char*> _WMResourcePlanStatus_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(3, _kWMResourcePlanStatusValues, _kWMResourcePlanStatusNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
+int _kWMPoolSchedulingPolicyValues[] = {
+  WMPoolSchedulingPolicy::FAIR,
+  WMPoolSchedulingPolicy::FIFO
+};
+const char* _kWMPoolSchedulingPolicyNames[] = {
+  "FAIR",
+  "FIFO"
+};
+const std::map<int, const char*> _WMPoolSchedulingPolicy_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(2, _kWMPoolSchedulingPolicyValues, _kWMPoolSchedulingPolicyNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+
 
 Version::~Version() throw() {
 }

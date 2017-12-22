@@ -1039,6 +1039,11 @@ enum WMResourcePlanStatus {
   DISABLED = 3
 }
 
+enum  WMPoolSchedulingPolicy {
+  FAIR = 1,
+  FIFO = 2
+}
+
 struct WMResourcePlan {
   1: required string name;
   2: optional WMResourcePlanStatus status;
