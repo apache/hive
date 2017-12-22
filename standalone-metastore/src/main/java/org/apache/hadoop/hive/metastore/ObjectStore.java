@@ -9631,7 +9631,8 @@ public class ObjectStore implements RawStore, Configurable {
         p2t = new HashSet<>();
       }
       MWMTrigger trigger = new MWMTrigger(dest, copyTrigger.getName(),
-          copyTrigger.getTriggerExpression(), copyTrigger.getActionExpression(), p2t);
+          copyTrigger.getTriggerExpression(), copyTrigger.getActionExpression(), p2t,
+          copyTrigger.getIsInUnmanaged());
       pm.makePersistent(trigger);
       for (MWMPool pool : p2t) {
         pool.getTriggers().add(trigger);
@@ -9669,7 +9670,6 @@ public class ObjectStore implements RawStore, Configurable {
         rp.addToPoolTriggers(new WMPoolTrigger(mPool.getPath(), mTrigger.getName()));
       }
     }
-    // TODO: add global triggers to pTPT map depending on how they are stored, with a special key?
     for (MWMTrigger mTrigger : mplan.getTriggers()) {
       rp.addToTriggers(fromMWMTrigger(mTrigger, mplan.getName()));
     }
@@ -10141,7 +10141,8 @@ public class ObjectStore implements RawStore, Configurable {
       MWMResourcePlan resourcePlan = getMWMResourcePlan(trigger.getResourcePlanName(), true);
       MWMTrigger mTrigger = new MWMTrigger(resourcePlan,
           normalizeIdentifier(trigger.getTriggerName()), trigger.getTriggerExpression(),
-          trigger.getActionExpression(), null);
+          trigger.getActionExpression(), null,
+          trigger.isSetIsInUnmanaged() && trigger.isIsInUnmanaged());
       pm.makePersistent(mTrigger);
       commited = commitTransaction();
     } catch (Exception e) {
@@ -10162,8 +10163,15 @@ public class ObjectStore implements RawStore, Configurable {
       MWMResourcePlan resourcePlan = getMWMResourcePlan(trigger.getResourcePlanName(), true);
       MWMTrigger mTrigger = getTrigger(resourcePlan, trigger.getTriggerName());
       // Update the object.
-      mTrigger.setTriggerExpression(trigger.getTriggerExpression());
-      mTrigger.setActionExpression(trigger.getActionExpression());
+      if (trigger.isSetTriggerExpression()) {
+        mTrigger.setTriggerExpression(trigger.getTriggerExpression());
+      }
+      if (trigger.isSetActionExpression()) {
+        mTrigger.setActionExpression(trigger.getActionExpression());
+      }
+      if (trigger.isSetIsInUnmanaged()) {
+        mTrigger.setIsInUnmanaged(trigger.isIsInUnmanaged());
+      }
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, query);
@@ -10252,6 +10260,7 @@ public class ObjectStore implements RawStore, Configurable {
     trigger.setTriggerName(mTrigger.getName());
     trigger.setTriggerExpression(mTrigger.getTriggerExpression());
     trigger.setActionExpression(mTrigger.getActionExpression());
+    trigger.setIsInUnmanaged(mTrigger.getIsInUnmanaged());
     return trigger;
   }
 
