@@ -1,5 +1,4 @@
 Warning: Shuffle Join MERGEJOIN[131][tables = [$hdt$_2, $hdt$_3, $hdt$_1]] in Stage 'Reducer 9' is a cross product
-Warning: Shuffle Join MERGEJOIN[133][tables = [$hdt$_4, $hdt$_5, $hdt$_3]] in Stage 'Reducer 13' is a cross product
 PREHOOK: query: explain
 select  asceding.rnk, i1.i_product_name best_performing, i2.i_product_name worst_performing
 from(select *
@@ -72,21 +71,16 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 10 <- Reducer 9 (SIMPLE_EDGE)
-Reducer 11 <- Map 6 (SIMPLE_EDGE)
-Reducer 12 <- Reducer 11 (CUSTOM_SIMPLE_EDGE)
-Reducer 13 <- Reducer 12 (CUSTOM_SIMPLE_EDGE), Reducer 17 (CUSTOM_SIMPLE_EDGE), Reducer 20 (CUSTOM_SIMPLE_EDGE)
-Reducer 14 <- Reducer 13 (SIMPLE_EDGE)
-Reducer 16 <- Map 15 (SIMPLE_EDGE)
-Reducer 17 <- Map 15 (SIMPLE_EDGE)
-Reducer 19 <- Map 18 (SIMPLE_EDGE)
+Reducer 11 <- Reducer 9 (SIMPLE_EDGE)
+Reducer 13 <- Map 12 (SIMPLE_EDGE)
+Reducer 15 <- Map 14 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
-Reducer 20 <- Map 18 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Map 1 (SIMPLE_EDGE), Reducer 14 (SIMPLE_EDGE)
+Reducer 5 <- Map 1 (SIMPLE_EDGE), Reducer 11 (SIMPLE_EDGE)
 Reducer 7 <- Map 6 (SIMPLE_EDGE)
 Reducer 8 <- Reducer 7 (CUSTOM_SIMPLE_EDGE)
-Reducer 9 <- Reducer 16 (CUSTOM_SIMPLE_EDGE), Reducer 19 (CUSTOM_SIMPLE_EDGE), Reducer 8 (CUSTOM_SIMPLE_EDGE)
+Reducer 9 <- Reducer 13 (CUSTOM_SIMPLE_EDGE), Reducer 15 (CUSTOM_SIMPLE_EDGE), Reducer 8 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -136,13 +130,13 @@ Stage-0
                                     predicate:(_col3 > (0.9 * _col1))
                                     Merge Join Operator [MERGEJOIN_131] (rows=10367842752596232 width=185)
                                       Conds:(Inner),(Inner),Output:["_col1","_col2","_col3"]
-                                    <-Reducer 16 [CUSTOM_SIMPLE_EDGE]
+                                    <-Reducer 13 [CUSTOM_SIMPLE_EDGE]
                                       PARTITION_ONLY_SHUFFLE [RS_34]
                                         Select Operator [SEL_25] (rows=71999454 width=88)
                                           Output:["_col0"]
                                           Group By Operator [GBY_24] (rows=71999454 width=88)
                                             Output:["_col0","_col1"],aggregations:["avg(VALUE._col0)"],keys:KEY._col0
-                                          <-Map 15 [SIMPLE_EDGE]
+                                          <-Map 12 [SIMPLE_EDGE]
                                             SHUFFLE [RS_23]
                                               PartitionCols:_col0
                                               Group By Operator [GBY_22] (rows=143998908 width=88)
@@ -153,11 +147,11 @@ Stage-0
                                                     predicate:((ss_store_sk = 410) and ss_hdemo_sk is null)
                                                     TableScan [TS_18] (rows=575995635 width=88)
                                                       default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_hdemo_sk","ss_store_sk","ss_net_profit"]
-                                    <-Reducer 19 [CUSTOM_SIMPLE_EDGE]
+                                    <-Reducer 15 [CUSTOM_SIMPLE_EDGE]
                                       PARTITION_ONLY_SHUFFLE [RS_35]
                                         Group By Operator [GBY_31] (rows=143998908 width=88)
                                           Output:["_col0","_col1"],aggregations:["avg(VALUE._col0)"],keys:KEY._col0
-                                        <-Map 18 [SIMPLE_EDGE]
+                                        <-Map 14 [SIMPLE_EDGE]
                                           SHUFFLE [RS_30]
                                             PartitionCols:_col0
                                             Group By Operator [GBY_29] (rows=287997817 width=88)
@@ -201,7 +195,7 @@ Stage-0
                       SHUFFLE [RS_90]
                         PartitionCols:_col0
                          Please refer to the previous Select Operator [SEL_2]
-                    <-Reducer 14 [SIMPLE_EDGE]
+                    <-Reducer 11 [SIMPLE_EDGE]
                       SHUFFLE [RS_91]
                         PartitionCols:_col0
                         Select Operator [SEL_86] (rows=1151982528066248 width=185)
@@ -212,47 +206,8 @@ Stage-0
                               Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col3 DESC NULLS LAST","partition by:":"0"}]
                               Select Operator [SEL_84] (rows=3455947584198744 width=185)
                                 Output:["_col2","_col3"]
-                              <-Reducer 13 [SIMPLE_EDGE]
+                              <-Reducer 9 [SIMPLE_EDGE]
                                 SHUFFLE [RS_83]
                                   PartitionCols:0
-                                  Filter Operator [FIL_82] (rows=3455947584198744 width=185)
-                                    predicate:(_col3 > (0.9 * _col1))
-                                    Merge Join Operator [MERGEJOIN_133] (rows=10367842752596232 width=185)
-                                      Conds:(Inner),(Inner),Output:["_col1","_col2","_col3"]
-                                    <-Reducer 12 [CUSTOM_SIMPLE_EDGE]
-                                      PARTITION_ONLY_SHUFFLE [RS_78]
-                                        Select Operator [SEL_62] (rows=1 width=8)
-                                          Filter Operator [FIL_61] (rows=1 width=8)
-                                            predicate:(sq_count_check(_col0) <= 1)
-                                            Group By Operator [GBY_59] (rows=1 width=8)
-                                              Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                            <-Reducer 11 [CUSTOM_SIMPLE_EDGE]
-                                              PARTITION_ONLY_SHUFFLE [RS_58]
-                                                Group By Operator [GBY_57] (rows=1 width=8)
-                                                  Output:["_col0"],aggregations:["count()"]
-                                                  Select Operator [SEL_55] (rows=71999454 width=88)
-                                                    Group By Operator [GBY_54] (rows=71999454 width=88)
-                                                      Output:["_col0"],keys:KEY._col0
-                                                    <-Map 6 [SIMPLE_EDGE]
-                                                      SHUFFLE [RS_53]
-                                                        PartitionCols:_col0
-                                                         Please refer to the previous Group By Operator [GBY_7]
-                                    <-Reducer 17 [CUSTOM_SIMPLE_EDGE]
-                                      PARTITION_ONLY_SHUFFLE [RS_79]
-                                        Select Operator [SEL_70] (rows=71999454 width=88)
-                                          Output:["_col0"]
-                                          Group By Operator [GBY_69] (rows=71999454 width=88)
-                                            Output:["_col0","_col1"],aggregations:["avg(VALUE._col0)"],keys:KEY._col0
-                                          <-Map 15 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_68]
-                                              PartitionCols:_col0
-                                               Please refer to the previous Group By Operator [GBY_22]
-                                    <-Reducer 20 [CUSTOM_SIMPLE_EDGE]
-                                      PARTITION_ONLY_SHUFFLE [RS_80]
-                                        Group By Operator [GBY_76] (rows=143998908 width=88)
-                                          Output:["_col0","_col1"],aggregations:["avg(VALUE._col0)"],keys:KEY._col0
-                                        <-Map 18 [SIMPLE_EDGE]
-                                          SHUFFLE [RS_75]
-                                            PartitionCols:_col0
-                                             Please refer to the previous Group By Operator [GBY_29]
+                                   Please refer to the previous Filter Operator [FIL_37]
 
