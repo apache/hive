@@ -112,6 +112,8 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
       createTable = createTable + "partitioned by (" + partitionedBy + ") ";
     }
     createTable = createTable + "stored as " +storageFormat;
+    //HCat doesn't support transactional tables
+    createTable += " TBLPROPERTIES ('transactional'='false')";
     executeStatementOnDriver(createTable, driver);
   }
 

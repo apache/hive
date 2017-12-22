@@ -97,18 +97,7 @@ public class TestHCatLoaderComplexSchema {
   }
 
   private void createTable(String tablename, String schema, String partitionedBy) throws IOException, CommandNeedRetryException {
-    String createTable;
-    createTable = "create table " + tablename + "(" + schema + ") ";
-    if ((partitionedBy != null) && (!partitionedBy.trim().isEmpty())) {
-      createTable = createTable + "partitioned by (" + partitionedBy + ") ";
-    }
-    createTable = createTable + "stored as " + storageFormat;
-    LOG.info("Creating table:\n {}", createTable);
-    CommandProcessorResponse result = driver.run(createTable);
-    int retCode = result.getResponseCode();
-    if (retCode != 0) {
-      throw new IOException("Failed to create table. [" + createTable + "], return code from hive driver : [" + retCode + " " + result.getErrorMessage() + "]");
-    }
+    AbstractHCatLoaderTest.createTable(tablename, schema, partitionedBy, driver, storageFormat);
   }
 
   private void createTable(String tablename, String schema) throws IOException, CommandNeedRetryException {
