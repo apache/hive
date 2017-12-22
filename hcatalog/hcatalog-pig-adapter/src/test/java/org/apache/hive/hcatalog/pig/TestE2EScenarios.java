@@ -112,15 +112,7 @@ public class TestE2EScenarios {
   }
 
   private void createTable(String tablename, String schema, String partitionedBy, String storageFormat) throws IOException, CommandNeedRetryException {
-    String createTable;
-    createTable = "create table " + tablename + "(" + schema + ") ";
-    if ((partitionedBy != null) && (!partitionedBy.trim().isEmpty())) {
-      createTable = createTable + "partitioned by (" + partitionedBy + ") ";
-    }
-    if (storageFormat != null){
-      createTable = createTable + "stored as " +storageFormat;
-    }
-    driverRun(createTable);
+   AbstractHCatLoaderTest.createTable(tablename, schema, partitionedBy, driver, storageFormat);
   }
 
   private void driverRun(String cmd) throws IOException, CommandNeedRetryException {

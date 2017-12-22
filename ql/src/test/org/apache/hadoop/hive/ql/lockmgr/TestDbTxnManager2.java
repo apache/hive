@@ -623,7 +623,7 @@ public class TestDbTxnManager2 {
     CommandProcessorResponse cpr = null;
     cpr = driver.run("create table acidPart(a int, b int) partitioned by (p string) clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     checkCmdOnDriver(cpr);
-    cpr = driver.run("create table nonAcidPart(a int, b int) partitioned by (p string) stored as orc");
+    cpr = driver.run("create table nonAcidPart(a int, b int) partitioned by (p string) stored as orc TBLPROPERTIES ('transactional'='false')");
     checkCmdOnDriver(cpr);
 
     cpr = driver.compileAndRespond("insert into nonAcidPart partition(p) values(1,2,3)");

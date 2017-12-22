@@ -92,7 +92,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver(
       "create table T (a int, b int) stored as orc tblproperties('transactional'='true')");
     //Tstage is just a simple way to generate test data
-    runStatementOnDriver("create table Tstage (a int, b int) stored as orc");
+    runStatementOnDriver("create table Tstage (a int, b int) stored as orc tblproperties('transactional'='false')");
     runStatementOnDriver("insert into Tstage values(1,2),(3,4)");
     //this creates an ORC data file with correct schema under table root
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/1'");
@@ -160,7 +160,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("create table T (a int, b int) stored as orc tblproperties('transactional'='true')");
     runStatementOnDriver("insert into T values(0,2),(0,4)");
     //Tstage is just a simple way to generate test data
-    runStatementOnDriver("create table Tstage (a int, b int) stored as orc");
+    runStatementOnDriver("create table Tstage (a int, b int) stored as orc tblproperties('transactional'='false')");
     runStatementOnDriver("insert into Tstage values(1,2),(3,4)");
     //this creates an ORC data file with correct schema under table root
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() +"/1'");
@@ -230,10 +230,10 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
   private void loadDataNonAcid2AcidConversion(boolean isVectorized) throws Exception {
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists Tstage");
-    runStatementOnDriver("create table T (a int, b int) stored as orc");
+    runStatementOnDriver("create table T (a int, b int) stored as orc tblproperties('transactional'='false')");
     //per acid write to test nonAcid2acid conversion mixed with load data
     runStatementOnDriver("insert into T values(0,2),(0,4)");
-    runStatementOnDriver("create table Tstage (a int, b int) stored as orc");
+    runStatementOnDriver("create table Tstage (a int, b int) stored as orc tblproperties('transactional'='false')");
     runStatementOnDriver("insert into Tstage values(1,2),(3,4)");
     //make 2 more inserts so that we have 000000_0_copy_1, 000000_0_copy_2 files in export
     //export works at file level so if you have copy_N in the table dir, you'll have those in output
@@ -307,7 +307,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("drop table if exists Tstage");
     runStatementOnDriver("create table T (a int, b int) partitioned by (p int) stored as orc tblproperties('transactional'='true')");
-    runStatementOnDriver("create table Tstage (a int, b int) stored as orc");
+    runStatementOnDriver("create table Tstage (a int, b int) stored as orc tblproperties('transactional'='false')");
 
     runStatementOnDriver("insert into Tstage values(0,2),(0,4)");
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() +"/1'");
@@ -361,7 +361,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("create table T (a int, b int) clustered by (a) into 2 buckets stored as orc tblproperties('transactional'='true')");
     File createdFile= folder.newFile("myfile.txt");
     FileUtils.writeStringToFile(createdFile, "hello world");
-    runStatementOnDriver("create table Tstage (a int, b int) stored as orc");
+    runStatementOnDriver("create table Tstage (a int, b int) stored as orc tblproperties('transactional'='false')");
     //this creates an ORC data file with correct schema under table root
     runStatementOnDriver("insert into Tstage values(1,2),(3,4)");
     CommandProcessorResponse cpr = runStatementOnDriverNegative("load data local inpath '" + getWarehouseDir() + "' into table T");
@@ -389,7 +389,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("drop table if exists Tstage");
     runStatementOnDriver("create table T (a int, b int) stored as orc tblproperties('transactional'='true')");
     //Tstage is just a simple way to generate test data
-    runStatementOnDriver("create table Tstage (a int, b int) stored as orc");
+    runStatementOnDriver("create table Tstage (a int, b int) stored as orc tblproperties('transactional'='false')");
     runStatementOnDriver("insert into Tstage values(5,5),(6,6)");
     //this creates an ORC data file with correct schema under table root
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/1'");
@@ -430,7 +430,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("drop table if exists Tstage");
     runStatementOnDriver("create table T (a int, b int) stored as orc tblproperties('transactional'='true')");
     //Tstage is just a simple way to generate test data
-    runStatementOnDriver("create table Tstage (a int, b int) stored as orc");
+    runStatementOnDriver("create table Tstage (a int, b int) stored as orc tblproperties('transactional'='false')");
     runStatementOnDriver("insert into Tstage values(5,5),(6,6)");
     //this creates an ORC data file with correct schema under table root
     runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/1'");

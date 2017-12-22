@@ -511,7 +511,7 @@ public class TestStreaming {
     runDDL(driver, "use testBucketing3");
 
     runDDL(driver, "create table " + tbl1 + " ( key1 string, data string ) clustered by ( key1 ) into "
-            + bucketCount + " buckets  stored as orc  location " + tableLoc) ;
+            + bucketCount + " buckets  stored as orc  location " + tableLoc + " TBLPROPERTIES ('transactional'='false')") ;
 
     runDDL(driver, "create table " + tbl2 + " ( key1 string, data string ) clustered by ( key1 ) into "
             + bucketCount + " buckets  stored as orc  location " + tableLoc2 + " TBLPROPERTIES ('transactional'='false')") ;
