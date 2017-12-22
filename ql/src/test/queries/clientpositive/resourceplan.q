@@ -276,8 +276,13 @@ ALTER POOL `table`.`table` ADD TRIGGER `table`;
 -- Test m:n mappings.
 ALTER POOL `table`.`table`.pool.child1 ADD TRIGGER `table`;
 ALTER POOL `table`.`table`.pool.child1 ADD TRIGGER `trigger1`;
-ALTER POOL `table`.`table`.pool.child2 ADD TRIGGER `trigger1`;
+ALTER TRIGGER `table`.`trigger1` ADD TO POOL `table`.pool.child2;
 ALTER POOL `table`.`table`.pool.child2 ADD TRIGGER `trigger2`;
+ALTER TRIGGER `table`.`trigger1` ADD TO UNMANAGED; 
+SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS;
+
+ALTER TRIGGER `table`.`trigger1` DROP FROM POOL `table`.pool.child2;
+ALTER TRIGGER `table`.`trigger1` DROP FROM UNMANAGED; 
 SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS;
 
 -- Failures.

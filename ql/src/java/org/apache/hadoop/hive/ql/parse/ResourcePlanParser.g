@@ -169,10 +169,16 @@ createTriggerStatement
 alterTriggerStatement
 @init { gParent.pushMsg("alter trigger statement", state); }
 @after { gParent.popMsg(state); }
-    : KW_ALTER KW_TRIGGER rpName=identifier DOT triggerName=identifier
-      KW_WHEN triggerExpression KW_DO triggerActionExpression
-    -> ^(TOK_ALTER_TRIGGER $rpName $triggerName triggerExpression triggerActionExpression)
+    : KW_ALTER KW_TRIGGER rpName=identifier DOT triggerName=identifier (
+        (KW_WHEN triggerExpression KW_DO triggerActionExpression
+          -> ^(TOK_ALTER_TRIGGER $rpName $triggerName triggerExpression triggerActionExpression))
+      | (KW_ADD KW_TO KW_POOL poolName=poolPath -> ^(TOK_ALTER_POOL $rpName $poolName ^(TOK_ADD_TRIGGER $triggerName)))
+      | (KW_DROP KW_FROM KW_POOL poolName=poolPath -> ^(TOK_ALTER_POOL $rpName $poolName ^(TOK_DROP_TRIGGER $triggerName)))
+      | (KW_ADD KW_TO KW_UNMANAGED -> ^(TOK_ALTER_POOL $rpName TOK_UNMANAGED ^(TOK_ADD_TRIGGER $triggerName)))
+      | (KW_DROP KW_FROM KW_UNMANAGED -> ^(TOK_ALTER_POOL $rpName TOK_UNMANAGED ^(TOK_DROP_TRIGGER $triggerName)))
+    )
     ;
+
 
 dropTriggerStatement
 @init { gParent.pushMsg("drop trigger statement", state); }

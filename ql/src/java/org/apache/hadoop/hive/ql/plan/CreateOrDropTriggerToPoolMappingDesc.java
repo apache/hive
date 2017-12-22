@@ -29,15 +29,17 @@ public class CreateOrDropTriggerToPoolMappingDesc extends DDLDesc implements Ser
   private String resourcePlanName;
   private String triggerName;
   private String poolPath;
+  private boolean isUnmanagedPool;
   private boolean drop;
 
   public CreateOrDropTriggerToPoolMappingDesc() {}
 
   public CreateOrDropTriggerToPoolMappingDesc(String resourcePlanName, String triggerName,
-      String poolPath, boolean drop) {
+      String poolPath, boolean drop, boolean isUnmanagedPool) {
     this.resourcePlanName = resourcePlanName;
     this.triggerName = triggerName;
     this.poolPath = poolPath;
+    this.isUnmanagedPool = isUnmanagedPool;
     this.drop = drop;
   }
 
@@ -51,7 +53,7 @@ public class CreateOrDropTriggerToPoolMappingDesc extends DDLDesc implements Ser
     this.resourcePlanName = resourcePlanName;
   }
 
-  @Explain(displayName = "triggerName",
+  @Explain(displayName = "Trigger name",
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTriggerName() {
     return triggerName;
@@ -61,10 +63,18 @@ public class CreateOrDropTriggerToPoolMappingDesc extends DDLDesc implements Ser
     this.triggerName = triggerName;
   }
 
-  @Explain(displayName = "poolPath",
+  @Explain(displayName = "Pool path",
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getPoolPathForExplain() {
+    return isUnmanagedPool ? "<unmanaged queries>" : poolPath;
+  }
+
   public String getPoolPath() {
     return poolPath;
+  }
+
+  public boolean isUnmanagedPool() {
+    return isUnmanagedPool;
   }
 
   public void setPoolPath(String poolPath) {

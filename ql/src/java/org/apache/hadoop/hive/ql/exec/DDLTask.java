@@ -21,13 +21,13 @@ package org.apache.hadoop.hive.ql.exec;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
-import java.util.concurrent.ExecutionException;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 
+import java.util.concurrent.ExecutionException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
-
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
@@ -55,7 +55,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -841,8 +840,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int createOrDropTriggerToPoolMapping(Hive db, CreateOrDropTriggerToPoolMappingDesc desc)
       throws HiveException {
-    db.createOrDropTriggerToPoolMapping(desc.getResourcePlanName(), desc.getTriggerName(),
-        desc.getPoolPath(), desc.shouldDrop());
+    if (!desc.isUnmanagedPool()) {
+      db.createOrDropTriggerToPoolMapping(desc.getResourcePlanName(), desc.getTriggerName(),
+          desc.getPoolPath(), desc.shouldDrop());
+    } else {
+      assert desc.getPoolPath() == null;
+      WMTrigger trigger = new WMTrigger(desc.getResourcePlanName(), desc.getTriggerName());
+      // If we are dropping from unmanaged, unset the flag; and vice versa
+      trigger.setIsInUnmanaged(!desc.shouldDrop());
+      db.alterWMTrigger(trigger);
+    }
     return 0;
   }
 

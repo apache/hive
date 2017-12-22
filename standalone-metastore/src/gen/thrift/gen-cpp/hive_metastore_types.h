@@ -8685,9 +8685,10 @@ inline std::ostream& operator<<(std::ostream& out, const WMPool& obj)
 }
 
 typedef struct _WMTrigger__isset {
-  _WMTrigger__isset() : triggerExpression(false), actionExpression(false) {}
+  _WMTrigger__isset() : triggerExpression(false), actionExpression(false), isInUnmanaged(false) {}
   bool triggerExpression :1;
   bool actionExpression :1;
+  bool isInUnmanaged :1;
 } _WMTrigger__isset;
 
 class WMTrigger {
@@ -8695,7 +8696,7 @@ class WMTrigger {
 
   WMTrigger(const WMTrigger&);
   WMTrigger& operator=(const WMTrigger&);
-  WMTrigger() : resourcePlanName(), triggerName(), triggerExpression(), actionExpression() {
+  WMTrigger() : resourcePlanName(), triggerName(), triggerExpression(), actionExpression(), isInUnmanaged(0) {
   }
 
   virtual ~WMTrigger() throw();
@@ -8703,6 +8704,7 @@ class WMTrigger {
   std::string triggerName;
   std::string triggerExpression;
   std::string actionExpression;
+  bool isInUnmanaged;
 
   _WMTrigger__isset __isset;
 
@@ -8713,6 +8715,8 @@ class WMTrigger {
   void __set_triggerExpression(const std::string& val);
 
   void __set_actionExpression(const std::string& val);
+
+  void __set_isInUnmanaged(const bool val);
 
   bool operator == (const WMTrigger & rhs) const
   {
@@ -8727,6 +8731,10 @@ class WMTrigger {
     if (__isset.actionExpression != rhs.__isset.actionExpression)
       return false;
     else if (__isset.actionExpression && !(actionExpression == rhs.actionExpression))
+      return false;
+    if (__isset.isInUnmanaged != rhs.__isset.isInUnmanaged)
+      return false;
+    else if (__isset.isInUnmanaged && !(isInUnmanaged == rhs.isInUnmanaged))
       return false;
     return true;
   }

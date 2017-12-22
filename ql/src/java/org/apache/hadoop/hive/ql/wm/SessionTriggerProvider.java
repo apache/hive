@@ -26,7 +26,7 @@ public class SessionTriggerProvider {
   private List<TezSessionState> sessions;
   private List<Trigger> triggers;
 
-  public SessionTriggerProvider(final List<TezSessionState> openSessions, final List<Trigger> triggers) {
+  public SessionTriggerProvider(List<TezSessionState> openSessions, List<Trigger> triggers) {
     this.sessions = openSessions;
     this.triggers = triggers;
   }

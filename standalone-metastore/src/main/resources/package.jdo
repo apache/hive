@@ -1163,6 +1163,9 @@
       <field name="actionExpression">
         <column name="ACTION_EXPRESSION" jdbc-type="string" allows-null="true"/>
       </field>
+      <field name="isInUnmanaged">
+        <column name="IS_IN_UNMANAGED" allows-null="false"/>
+      </field>
       <field name="pools" mapped-by="triggers">
         <collection element-type="MWMPool" />
       </field>

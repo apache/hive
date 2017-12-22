@@ -16,8 +16,9 @@
 
 package org.apache.hive.jdbc;
 
-import java.util.List;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 
+import java.util.List;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
@@ -28,7 +29,6 @@ import org.apache.hadoop.hive.ql.wm.Expression;
 import org.apache.hadoop.hive.ql.wm.ExpressionFactory;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.junit.Test;
-
 import com.google.common.collect.Lists;
 
 public class TestTriggersNoTezSessionPool extends AbstractJdbcTriggersTest {
@@ -58,7 +58,9 @@ public class TestTriggersNoTezSessionPool extends AbstractJdbcTriggersTest {
     WMFullResourcePlan rp = new WMFullResourcePlan(
       new WMResourcePlan("rp"), null);
     for (Trigger trigger : triggers) {
-      rp.addToTriggers(wmTriggerFromTrigger(trigger));
+      WMTrigger wmTrigger = wmTriggerFromTrigger(trigger);
+      wmTrigger.setIsInUnmanaged(true);
+      rp.addToTriggers(wmTrigger);
     }
     TezSessionPoolManager.getInstance().updateTriggers(rp);
   }

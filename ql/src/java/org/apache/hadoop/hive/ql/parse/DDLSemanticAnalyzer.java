@@ -1181,42 +1181,59 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Invalid syntax for alter pool.");
     }
     String rpName = unescapeIdentifier(ast.getChild(0).getText());
-    String poolPath = poolPath(ast.getChild(1));
-    WMPool pool = new WMPool(rpName, poolPath);
+    Tree poolTarget = ast.getChild(1);
 
+    boolean isUnmanagedPool = false;
+    String poolPath = null;
+    if (poolTarget.getType() == HiveParser.TOK_UNMANAGED) {
+      isUnmanagedPool = true;
+    } else {
+      poolPath = poolPath(ast.getChild(1));
+    }
+
+    WMPool poolChanges = null;
     for (int i = 2; i < ast.getChildCount(); ++i) {
       Tree child = ast.getChild(i);
       if (child.getChildCount() != 1) {
         throw new SemanticException("Invalid syntax in alter pool expected parameter.");
       }
       Tree param = child.getChild(0);
-      switch (child.getType()) {
+      if (child.getType() == HiveParser.TOK_ADD_TRIGGER
+          || child.getType() == HiveParser.TOK_DROP_TRIGGER) {
+        boolean drop = child.getType() == HiveParser.TOK_DROP_TRIGGER;
+        String triggerName = unescapeIdentifier(param.getText());
+        rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+            new CreateOrDropTriggerToPoolMappingDesc(
+                rpName, triggerName, poolPath, drop, isUnmanagedPool)), conf));
+      } else {
+        if (isUnmanagedPool) {
+          throw new SemanticException("Cannot alter the unmanaged pool");
+        }
+        if (poolChanges == null) {
+          poolChanges = new WMPool(rpName, null);
+        }
+        switch (child.getType()) {
         case HiveParser.TOK_ALLOC_FRACTION:
-          pool.setAllocFraction(Double.parseDouble(param.getText()));
+          poolChanges.setAllocFraction(Double.parseDouble(param.getText()));
           break;
         case HiveParser.TOK_QUERY_PARALLELISM:
-          pool.setQueryParallelism(Integer.parseInt(param.getText()));
+          poolChanges.setQueryParallelism(Integer.parseInt(param.getText()));
           break;
         case HiveParser.TOK_SCHEDULING_POLICY:
-          pool.setSchedulingPolicy(PlanUtils.stripQuotes(param.getText()));
+          poolChanges.setSchedulingPolicy(PlanUtils.stripQuotes(param.getText()));
           break;
         case HiveParser.TOK_PATH:
-          pool.setPoolPath(poolPath(param));
+          poolChanges.setPoolPath(poolPath(param));
           break;
-        case HiveParser.TOK_ADD_TRIGGER:
-        case HiveParser.TOK_DROP_TRIGGER:
-          boolean drop = child.getType() == HiveParser.TOK_DROP_TRIGGER;
-          String triggerName = unescapeIdentifier(param.getText());
-          rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-              new CreateOrDropTriggerToPoolMappingDesc(rpName, triggerName, poolPath, drop)),
-              conf));
-          break;
+        default: throw new SemanticException("Incorrect alter syntax: " + child.toStringTree());
+        }
       }
     }
 
-    CreateOrAlterWMPoolDesc desc = new CreateOrAlterWMPoolDesc(pool, poolPath, true);
-    rootTasks.add(TaskFactory.get(
-        new DDLWork(getInputs(), getOutputs(), desc), conf));
+    if (poolChanges != null) {
+      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+          new CreateOrAlterWMPoolDesc(poolChanges, poolPath, true)), conf));
+    }
   }
 
   private void analyzeDropPool(ASTNode ast) throws SemanticException {

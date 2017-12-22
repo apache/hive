@@ -39,7 +39,8 @@ CREATE TABLE "WM_TRIGGER" (
     "RP_ID" bigint NOT NULL,
     "NAME" character varying(128) NOT NULL,
     "TRIGGER_EXPRESSION" character varying(1024) DEFAULT NULL::character varying,
-    "ACTION_EXPRESSION" character varying(1024) DEFAULT NULL::character varying
+    "ACTION_EXPRESSION" character varying(1024) DEFAULT NULL::character varying,
+    "IS_IN_UNMANAGED" boolean NOT NULL DEFAULT false
 );
 
 ALTER TABLE ONLY "WM_TRIGGER"

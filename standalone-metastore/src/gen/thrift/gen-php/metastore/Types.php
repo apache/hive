@@ -20782,6 +20782,10 @@ class WMTrigger {
    * @var string
    */
   public $actionExpression = null;
+  /**
+   * @var bool
+   */
+  public $isInUnmanaged = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -20802,6 +20806,10 @@ class WMTrigger {
           'var' => 'actionExpression',
           'type' => TType::STRING,
           ),
+        5 => array(
+          'var' => 'isInUnmanaged',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -20816,6 +20824,9 @@ class WMTrigger {
       }
       if (isset($vals['actionExpression'])) {
         $this->actionExpression = $vals['actionExpression'];
+      }
+      if (isset($vals['isInUnmanaged'])) {
+        $this->isInUnmanaged = $vals['isInUnmanaged'];
       }
     }
   }
@@ -20867,6 +20878,13 @@ class WMTrigger {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isInUnmanaged);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -20898,6 +20916,11 @@ class WMTrigger {
     if ($this->actionExpression !== null) {
       $xfer += $output->writeFieldBegin('actionExpression', TType::STRING, 4);
       $xfer += $output->writeString($this->actionExpression);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->isInUnmanaged !== null) {
+      $xfer += $output->writeFieldBegin('isInUnmanaged', TType::BOOL, 5);
+      $xfer += $output->writeBool($this->isInUnmanaged);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

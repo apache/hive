@@ -25,15 +25,18 @@ public class MWMTrigger {
   private String name;
   private String triggerExpression;
   private String actionExpression;
+  // This is integer because in Derby DN converts boolean to char, breaking sysdb.
+  private int isInUnmanaged;
   private Set<MWMPool> pools;
 
-  public MWMTrigger(MWMResourcePlan resourcePlan, String name,
-      String triggerExpression, String actionExpression, Set<MWMPool> pools) {
+  public MWMTrigger(MWMResourcePlan resourcePlan, String name, String triggerExpression,
+      String actionExpression, Set<MWMPool> pools, boolean isInUnmanaged) {
     this.resourcePlan = resourcePlan;
     this.name = name;
     this.triggerExpression = triggerExpression;
     this.actionExpression = actionExpression;
     this.pools = pools;
+    this.isInUnmanaged = isInUnmanaged ? 1 : 0;
   }
 
   public MWMResourcePlan getResourcePlan() {
@@ -74,5 +77,13 @@ public class MWMTrigger {
 
   public void setPools(Set<MWMPool> pools) {
     this.pools = pools;
+  }
+
+  public boolean getIsInUnmanaged() {
+    return isInUnmanaged == 1;
+  }
+
+  public void setIsInUnmanaged(boolean isInUnmanaged) {
+    this.isInUnmanaged = isInUnmanaged ? 1 : 0;
   }
 }
