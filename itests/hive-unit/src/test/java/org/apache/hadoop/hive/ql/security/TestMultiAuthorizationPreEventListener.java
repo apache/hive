@@ -28,7 +28,8 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.security.DummyHiveMetastoreAuthorizationProvider.AuthCallContext;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -43,7 +44,7 @@ import org.junit.Test;
 public class TestMultiAuthorizationPreEventListener {
   private static HiveConf clientHiveConf;
   private static HiveMetaStoreClient msc;
-  private static Driver driver;
+  private static IDriver driver;
 
   @BeforeClass
   public static void setUp() throws Exception {
@@ -67,7 +68,7 @@ public class TestMultiAuthorizationPreEventListener {
 
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf);
-    driver = new Driver(clientHiveConf);
+    driver = DriverFactory.newDriver(clientHiveConf);
   }
 
   @Test

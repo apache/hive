@@ -27,7 +27,8 @@ import java.util.Map.Entry;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.MiniCluster;
 import org.slf4j.Logger;
@@ -40,7 +41,7 @@ public class HCatDataCheckUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(HCatDataCheckUtil.class);
 
-  public static Driver instantiateDriver(MiniCluster cluster) {
+  public static IDriver instantiateDriver(MiniCluster cluster) {
     HiveConf hiveConf = new HiveConf(HCatDataCheckUtil.class);
     for (Entry e : cluster.getProperties().entrySet()) {
       hiveConf.set(e.getKey().toString(), e.getValue().toString());
@@ -50,7 +51,7 @@ public class HCatDataCheckUtil {
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
     LOG.debug("Hive conf : {}", hiveConf.getAllProperties());
-    Driver driver = new Driver(hiveConf);
+    IDriver driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
     return driver;
   }
@@ -64,7 +65,7 @@ public class HCatDataCheckUtil {
     MiniCluster.createInputFile(cluster, fileName, input);
   }
 
-  public static void createTable(Driver driver, String tableName, String createTableArgs)
+  public static void createTable(IDriver driver, String tableName, String createTableArgs)
     throws CommandNeedRetryException, IOException {
     String createTable = "create table " + tableName + createTableArgs;
     int retCode = driver.run(createTable).getResponseCode();
@@ -73,11 +74,11 @@ public class HCatDataCheckUtil {
     }
   }
 
-  public static void dropTable(Driver driver, String tablename) throws IOException, CommandNeedRetryException {
+  public static void dropTable(IDriver driver, String tablename) throws IOException, CommandNeedRetryException {
     driver.run("drop table if exists " + tablename);
   }
 
-  public static ArrayList<String> formattedRun(Driver driver, String name, String selectCmd)
+  public static ArrayList<String> formattedRun(IDriver driver, String name, String selectCmd)
     throws CommandNeedRetryException, IOException {
     driver.run(selectCmd);
     ArrayList<String> src_values = new ArrayList<String>();

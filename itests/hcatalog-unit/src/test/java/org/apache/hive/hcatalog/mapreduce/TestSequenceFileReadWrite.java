@@ -32,7 +32,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -59,7 +60,7 @@ public class TestSequenceFileReadWrite {
   private File dataDir;
   private String warehouseDir;
   private String inputFileName;
-  private Driver driver;
+  private IDriver driver;
   private PigServer server;
   private String[] input;
   private HiveConf hiveConf;
@@ -79,7 +80,7 @@ public class TestSequenceFileReadWrite {
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
 
     if(!(new File(warehouseDir).mkdirs())) {

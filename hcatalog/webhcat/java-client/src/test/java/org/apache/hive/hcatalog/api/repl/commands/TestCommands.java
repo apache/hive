@@ -26,7 +26,8 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.HcatTestUtils;
@@ -67,7 +68,7 @@ public class TestCommands {
   private static Logger LOG = LoggerFactory.getLogger(CommandTestUtils.class.getName());
 
   private static HiveConf hconf;
-  private static Driver driver;
+  private static IDriver driver;
   private static HCatClient client;
   private static String TEST_PATH;
 
@@ -86,7 +87,7 @@ public class TestCommands {
     FileSystem fs = FileSystem.get(testPath.toUri(),hconf);
     fs.mkdirs(testPath);
 
-    driver = new Driver(hconf);
+    driver = DriverFactory.newDriver(hconf);
     SessionState.start(new CliSessionState(hconf));
     client = HCatClient.create(hconf);
   }

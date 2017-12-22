@@ -51,7 +51,8 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFil
 import org.apache.hadoop.hive.metastore.messaging.event.filters.MessageFormatFilter;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -101,12 +102,12 @@ public class TestReplicationScenarios {
 
   private static HiveConf hconf;
   private static int msPort;
-  private static Driver driver;
+  private static IDriver driver;
   private static HiveMetaStoreClient metaStoreClient;
   private static String proxySettingName;
   static HiveConf hconfMirror;
   static int msPortMirror;
-  static Driver driverMirror;
+  static IDriver driverMirror;
   static HiveMetaStoreClient metaStoreClientMirror;
 
   @Rule
@@ -159,7 +160,7 @@ public class TestReplicationScenarios {
     FileSystem fs = FileSystem.get(testPath.toUri(),hconf);
     fs.mkdirs(testPath);
 
-    driver = new Driver(hconf);
+    driver = DriverFactory.newDriver(hconf);
     SessionState.start(new CliSessionState(hconf));
     metaStoreClient = new HiveMetaStoreClient(hconf);
 
@@ -170,7 +171,7 @@ public class TestReplicationScenarios {
     hconfMirror = new HiveConf(hconf);
     hconfMirror.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
         + msPortMirror);
-    driverMirror = new Driver(hconfMirror);
+    driverMirror = DriverFactory.newDriver(hconfMirror);
     metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
 
     ObjectStore.setTwoMetastoreTesting(true);
@@ -586,7 +587,7 @@ public class TestReplicationScenarios {
             public void run() {
               try {
                 LOG.info("Entered new thread");
-                Driver driver2 = new Driver(hconf);
+                IDriver driver2 = DriverFactory.newDriver(hconf);
                 SessionState.start(new CliSessionState(hconf));
                 CommandProcessorResponse ret = driver2.run("ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=10)");
                 success = (ret.getException() == null);
@@ -661,7 +662,7 @@ public class TestReplicationScenarios {
             public void run() {
               try {
                 LOG.info("Entered new thread");
-                Driver driver2 = new Driver(hconf);
+                IDriver driver2 = DriverFactory.newDriver(hconf);
                 SessionState.start(new CliSessionState(hconf));
                 CommandProcessorResponse ret = driver2.run("DROP TABLE " + dbName + ".ptned");
                 success = (ret.getException() == null);
@@ -3358,7 +3359,7 @@ public class TestReplicationScenarios {
     verifyRun("SELECT count(*) from " + dbName + "_dupe.unptned", new String[]{"2"}, driverMirror);
   }
 
-  private static String createDB(String name, Driver myDriver) {
+  private static String createDB(String name, IDriver myDriver) {
     LOG.info("Testing " + name);
     String dbName = name + "_" + tid;
     run("CREATE DATABASE " + dbName, myDriver);
@@ -3542,10 +3543,10 @@ public class TestReplicationScenarios {
   }
 
 
-  private String getResult(int rowNum, int colNum, Driver myDriver) throws IOException {
+  private String getResult(int rowNum, int colNum, IDriver myDriver) throws IOException {
     return getResult(rowNum,colNum,false, myDriver);
   }
-  private String getResult(int rowNum, int colNum, boolean reuse, Driver myDriver) throws IOException {
+  private String getResult(int rowNum, int colNum, boolean reuse, IDriver myDriver) throws IOException {
     if (!reuse) {
       lastResults = new ArrayList<String>();
       try {
@@ -3566,7 +3567,7 @@ public class TestReplicationScenarios {
    * Unless for Null Values it actually returns in UpperCase and hence explicitly lowering case
    * before assert.
    */
-  private void verifyResults(String[] data, Driver myDriver) throws IOException {
+  private void verifyResults(String[] data, IDriver myDriver) throws IOException {
     List<String> results = getOutput(myDriver);
     LOG.info("Expecting {}", data);
     LOG.info("Got {}", results);
@@ -3576,7 +3577,7 @@ public class TestReplicationScenarios {
     }
   }
 
-  private List<String> getOutput(Driver myDriver) throws IOException {
+  private List<String> getOutput(IDriver myDriver) throws IOException {
     List<String> results = new ArrayList<>();
     try {
       myDriver.getResults(results);
@@ -3587,7 +3588,7 @@ public class TestReplicationScenarios {
     return results;
   }
 
-  private void printOutput(Driver myDriver) throws IOException {
+  private void printOutput(IDriver myDriver) throws IOException {
     for (String s : getOutput(myDriver)){
       LOG.info(s);
     }
@@ -3648,23 +3649,23 @@ public class TestReplicationScenarios {
     }
   }
 
-  private void verifySetup(String cmd, String[] data, Driver myDriver) throws  IOException {
+  private void verifySetup(String cmd, String[] data, IDriver myDriver) throws  IOException {
     if (VERIFY_SETUP_STEPS){
       run(cmd, myDriver);
       verifyResults(data, myDriver);
     }
   }
 
-  private void verifyRun(String cmd, String data, Driver myDriver) throws IOException {
+  private void verifyRun(String cmd, String data, IDriver myDriver) throws IOException {
     verifyRun(cmd, new String[] { data }, myDriver);
   }
 
-  private void verifyRun(String cmd, String[] data, Driver myDriver) throws IOException {
+  private void verifyRun(String cmd, String[] data, IDriver myDriver) throws IOException {
     run(cmd, myDriver);
     verifyResults(data, myDriver);
   }
 
-  private void verifyFail(String cmd, Driver myDriver) throws RuntimeException {
+  private void verifyFail(String cmd, IDriver myDriver) throws RuntimeException {
     boolean success = false;
     try {
       success = run(cmd, false, myDriver);
@@ -3677,7 +3678,7 @@ public class TestReplicationScenarios {
     assertFalse(success);
   }
 
-  private void verifyRunWithPatternMatch(String cmd, String key, String pattern, Driver myDriver) throws IOException {
+  private void verifyRunWithPatternMatch(String cmd, String key, String pattern, IDriver myDriver) throws IOException {
     run(cmd, myDriver);
     List<String> results = getOutput(myDriver);
     assertTrue(results.size() > 0);
@@ -3692,7 +3693,7 @@ public class TestReplicationScenarios {
     assertTrue(success);
   }
 
-  private static void run(String cmd, Driver myDriver) throws RuntimeException {
+  private static void run(String cmd, IDriver myDriver) throws RuntimeException {
     try {
     run(cmd,false, myDriver); // default arg-less run simply runs, and does not care about failure
     } catch (AssertionError ae){
@@ -3702,7 +3703,7 @@ public class TestReplicationScenarios {
     }
   }
 
-  private static boolean run(String cmd, boolean errorOnFail, Driver myDriver) throws RuntimeException {
+  private static boolean run(String cmd, boolean errorOnFail, IDriver myDriver) throws RuntimeException {
     boolean success = false;
     try {
       CommandProcessorResponse ret = myDriver.run(cmd);

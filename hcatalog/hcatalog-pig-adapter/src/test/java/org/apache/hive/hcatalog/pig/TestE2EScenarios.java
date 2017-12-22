@@ -30,7 +30,8 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -67,7 +68,7 @@ public class TestE2EScenarios {
 
   private static final String TEXTFILE_LOCN = TEST_DATA_DIR + "/textfile";
 
-  private static Driver driver;
+  private static IDriver driver;
 
   protected String storageFormat() {
     return "orc";
@@ -91,7 +92,7 @@ public class TestE2EScenarios {
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
 
   }

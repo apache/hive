@@ -56,7 +56,8 @@ import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -96,7 +97,7 @@ public class TestCompactor {
   public TemporaryFolder stagingFolder = new TemporaryFolder();
   private HiveConf conf;
   IMetaStoreClient msClient;
-  private Driver driver;
+  private IDriver driver;
 
   @Before
   public void setup() throws Exception {
@@ -122,7 +123,7 @@ public class TestCompactor {
 
     conf = hiveConf;
     msClient = new HiveMetaStoreClient(conf);
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
 
 
@@ -1375,7 +1376,7 @@ public class TestCompactor {
   /**
    * convenience method to execute a select stmt and dump results to log file
    */
-  private static List<String> execSelectAndDumpData(String selectStmt, Driver driver, String msg)
+  private static List<String> execSelectAndDumpData(String selectStmt, IDriver driver, String msg)
     throws  Exception {
     executeStatementOnDriver(selectStmt, driver);
     ArrayList<String> valuesReadFromHiveDriver = new ArrayList<String>();
@@ -1391,7 +1392,7 @@ public class TestCompactor {
    * Execute Hive CLI statement
    * @param cmd arbitrary statement to execute
    */
-  static void executeStatementOnDriver(String cmd, Driver driver) throws IOException, CommandNeedRetryException {
+  static void executeStatementOnDriver(String cmd, IDriver driver) throws IOException, CommandNeedRetryException {
     LOG.debug("Executing: " + cmd);
     CommandProcessorResponse cpr = driver.run(cmd);
     if(cpr.getResponseCode() != 0) {

@@ -21,9 +21,8 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -37,7 +36,7 @@ public class TestMetaStoreMetrics {
 
 
   private static HiveConf hiveConf;
-  private static Driver driver;
+  private static IDriver driver;
 
   @BeforeClass
   public static void before() throws Exception {
@@ -56,7 +55,7 @@ public class TestMetaStoreMetrics {
 
     //Increments one HMS connection (Hive.get())
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
   }
 
 

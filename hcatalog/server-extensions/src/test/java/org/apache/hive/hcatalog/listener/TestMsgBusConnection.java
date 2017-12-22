@@ -37,7 +37,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.HCatEventMessage;
@@ -45,7 +46,7 @@ import org.apache.hive.hcatalog.messaging.jms.MessagingUtils;
 
 public class TestMsgBusConnection extends TestCase {
 
-  private Driver driver;
+  private IDriver driver;
   private BrokerService broker;
   private MessageConsumer consumer;
   private static final int TIMEOUT = 2000;
@@ -74,7 +75,7 @@ public class TestMsgBusConnection extends TestCase {
     "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.set(HCatConstants.HCAT_MSGBUS_TOPIC_PREFIX, "planetlab.hcat");
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
   }
 
   private void connectClient() throws JMSException {

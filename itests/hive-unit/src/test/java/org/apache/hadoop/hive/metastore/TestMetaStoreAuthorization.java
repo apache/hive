@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -33,7 +31,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+
+import junit.framework.TestCase;
 
 
 public class TestMetaStoreAuthorization extends TestCase {

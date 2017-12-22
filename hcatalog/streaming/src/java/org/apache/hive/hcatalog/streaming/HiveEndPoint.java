@@ -41,7 +41,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatUtil;
 
@@ -451,7 +452,7 @@ public class HiveEndPoint {
       if(SessionState.get() == null) {
         localSession = SessionState.start(new CliSessionState(conf));
       }
-      Driver driver = new Driver(conf);
+      IDriver driver = DriverFactory.newDriver(conf);
 
       try {
         if (LOG.isDebugEnabled()) {
@@ -488,7 +489,7 @@ public class HiveEndPoint {
       }
     }
 
-    private static boolean runDDL(Driver driver, String sql) throws QueryFailedException {
+    private static boolean runDDL(IDriver driver, String sql) throws QueryFailedException {
       int retryCount = 1; // # of times to retry if first attempt fails
       for (int attempt=0; attempt<=retryCount; ++attempt) {
         try {

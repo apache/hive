@@ -48,7 +48,8 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatUtil;
@@ -63,7 +64,7 @@ import org.junit.Test;
 public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
   private static HiveConf   hcatConf;
-  private static Driver driver;
+  private static IDriver driver;
   private static String mypath;
 
   private final byte[] FAMILY     = Bytes.toBytes("testFamily");
@@ -93,7 +94,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
       }
     }
 
-    driver = new Driver(hcatConf);
+    driver = DriverFactory.newDriver(hcatConf);
     SessionState.start(new CliSessionState(hcatConf));
 
   }

@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -103,7 +104,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -130,9 +130,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 
-public class Driver implements CommandProcessor {
-
-  public static final String MAPREDUCE_WORKFLOW_NODE_NAME = "mapreduce.workflow.node.name";
+public class Driver implements IDriver {
 
   static final private String CLASS_NAME = Driver.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
@@ -273,6 +271,7 @@ public class Driver implements CommandProcessor {
   }
 
 
+  @Override
   public Schema getSchema() {
     return schema;
   }
@@ -362,6 +361,7 @@ public class Driver implements CommandProcessor {
   /**
    * Set the maximum number of rows returned by getResults
    */
+  @Override
   public void setMaxRows(int maxRows) {
     this.maxRows = maxRows;
   }
@@ -435,6 +435,8 @@ public class Driver implements CommandProcessor {
    * @param conf The HiveConf which should be used
    * @return The new QueryState object
    */
+  // move to driverFactory ; with those constructors...
+  @Deprecated
   private static QueryState getNewQueryState(HiveConf conf) {
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
   }
@@ -460,6 +462,7 @@ public class Driver implements CommandProcessor {
    * @param command
    *          The SQL query to compile.
    */
+  @Override
   public int compile(String command) {
     return compile(command, true);
   }
@@ -599,7 +602,7 @@ public class Driver implements CommandProcessor {
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
       List<HiveSemanticAnalyzerHook> saHooks =
-          hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console);
+          hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console, HiveSemanticAnalyzerHook.class);
 
       // Flush the metastore cache.  This assures that we don't pick up objects from a previous
       // query running in this same thread.  This has to be done after we get our semantic
@@ -1194,6 +1197,7 @@ public class Driver implements CommandProcessor {
   /**
    * @return The current query plan associated with this Driver, if any.
    */
+  @Override
   public QueryPlan getPlan() {
     return plan;
   }
@@ -1201,6 +1205,7 @@ public class Driver implements CommandProcessor {
   /**
    * @return The current FetchTask associated with the Driver's plan, if any.
    */
+  @Override
   public FetchTask getFetchTask() {
     return fetchTask;
   }
@@ -1368,11 +1373,13 @@ public class Driver implements CommandProcessor {
   }
 
   @Override
+
   public CommandProcessorResponse run(String command)
       throws CommandNeedRetryException {
     return run(command, false);
   }
 
+  @Override
   public CommandProcessorResponse run()
       throws CommandNeedRetryException {
     return run(null, true);
@@ -1439,6 +1446,7 @@ public class Driver implements CommandProcessor {
     }
   }
 
+  @Override
   public CommandProcessorResponse compileAndRespond(String command) {
     try {
       compileInternal(command, false);
@@ -1601,7 +1609,7 @@ public class Driver implements CommandProcessor {
       // Get all the driver run hooks and pre-execute them.
       List<HiveDriverRunHook> driverRunHooks;
       try {
-        driverRunHooks = hooksLoader.getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console);
+        driverRunHooks = hooksLoader.getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console, HiveDriverRunHook.class);
         for (HiveDriverRunHook driverRunHook : driverRunHooks) {
             driverRunHook.preDriverRun(hookContext);
         }
@@ -1841,13 +1849,12 @@ public class Driver implements CommandProcessor {
           ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger, queryInfo);
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
-      for (Hook peh : hooksLoader.getHooks(HiveConf.ConfVars.PREEXECHOOKS, console)) {
+      for (Hook peh : hooksLoader.getHooks(HiveConf.ConfVars.PREEXECHOOKS, console, ExecuteWithHookContext.class)) {
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
 
         ((ExecuteWithHookContext) peh).run(hookContext);
 
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
-
       }
 
       // Trigger query hooks before query execution.
@@ -2033,7 +2040,7 @@ public class Driver implements CommandProcessor {
 
       hookContext.setHookType(HookContext.HookType.POST_EXEC_HOOK);
       // Get all the post execution hooks and execute them.
-      for (Hook peh : hooksLoader.getHooks(HiveConf.ConfVars.POSTEXECHOOKS, console)) {
+      for (Hook peh : hooksLoader.getHooks(HiveConf.ConfVars.POSTEXECHOOKS, console, ExecuteWithHookContext.class)) {
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.POST_HOOK + peh.getClass().getName());
 
         ((ExecuteWithHookContext) peh).run(hookContext);
@@ -2200,7 +2207,7 @@ public class Driver implements CommandProcessor {
     hookContext.setErrorMessage(errorMessage);
     hookContext.setException(exception);
     // Get all the failure execution hooks and execute them.
-    for (Hook ofh : hooksLoader.getHooks(HiveConf.ConfVars.ONFAILUREHOOKS, console)) {
+    for (Hook ofh : hooksLoader.getHooks(HiveConf.ConfVars.ONFAILUREHOOKS, console, ExecuteWithHookContext.class)) {
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
 
       ((ExecuteWithHookContext) ofh).run(hookContext);
@@ -2234,7 +2241,7 @@ public class Driver implements CommandProcessor {
       if (noName) {
         conf.set(MRJobConfig.JOB_NAME, jobname + " (" + tsk.getId() + ")");
       }
-      conf.set(MAPREDUCE_WORKFLOW_NODE_NAME, tsk.getId());
+      conf.set(DagUtils.MAPREDUCE_WORKFLOW_NODE_NAME, tsk.getId());
       Utilities.setWorkflowAdjacencies(conf, plan);
       cxt.incCurJobNo(1);
       console.printInfo("Launching Job " + cxt.getCurJobNo() + " out of " + jobs);
@@ -2259,11 +2266,13 @@ public class Driver implements CommandProcessor {
     return tskRun;
   }
 
+  @Override
   public boolean isFetchingTable() {
     return fetchTask != null;
   }
 
   @SuppressWarnings("unchecked")
+  @Override
   public boolean getResults(List res) throws IOException, CommandNeedRetryException {
     if (lDrvState.driverState == DriverState.DESTROYED || lDrvState.driverState == DriverState.CLOSED) {
       throw new IOException("FAILED: query has been cancelled, closed, or destroyed.");
@@ -2328,6 +2337,7 @@ public class Driver implements CommandProcessor {
     return true;
   }
 
+  @Override
   public void resetFetch() throws IOException {
     if (lDrvState.driverState == DriverState.DESTROYED || lDrvState.driverState == DriverState.CLOSED) {
       throw new IOException("FAILED: driver has been cancelled, closed or destroyed.");
@@ -2350,6 +2360,7 @@ public class Driver implements CommandProcessor {
     return tryCount;
   }
 
+  @Override
   public void setTryCount(int tryCount) {
     this.tryCount = tryCount;
   }
@@ -2445,6 +2456,7 @@ public class Driver implements CommandProcessor {
   }
 
   // is called to stop the query if it is running, clean query results, and release resources.
+  @Override
   public int close() {
     lDrvState.stateLock.lock();
     try {
@@ -2468,6 +2480,7 @@ public class Driver implements CommandProcessor {
 
   // is usually called after close() to commit or rollback a query and end the driver life cycle.
   // do not understand why it is needed and wonder if it could be combined with close.
+  @Override
   public void destroy() {
     lDrvState.stateLock.lock();
     try {
@@ -2502,6 +2515,7 @@ public class Driver implements CommandProcessor {
   }
 
 
+  @Override
   public QueryDisplay getQueryDisplay() {
     return queryDisplay;
   }
@@ -2510,6 +2524,7 @@ public class Driver implements CommandProcessor {
    * Set the HS2 operation handle's guid string
    * @param opId base64 encoded guid string
    */
+  @Override
   public void setOperationId(String opId) {
     this.operationId = opId;
   }
@@ -2517,6 +2532,8 @@ public class Driver implements CommandProcessor {
   /**
    * Resets QueryState to get new queryId on Driver reuse.
    */
+
+  @Override
   public void resetQueryState() {
     // Note: Driver cleanup for reuse at this point is not very clear. The assumption here is that
     // repeated compile/execute calls create new contexts, plan, etc., so we don't need to worry
