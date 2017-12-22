@@ -28,7 +28,8 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
@@ -93,7 +94,7 @@ public class TestHCatLoaderEncryption {
   private HadoopShims.MiniDFSShim dfs = null;
   private HadoopShims.HdfsEncryptionShim hes = null;
   private final String[] testOnlyCommands = new String[]{"crypto"};
-  private Driver driver;
+  private IDriver driver;
   private Map<Integer, Pair<Integer, String>> basicInputData;
   private static List<HCatRecord> readRecords = new ArrayList<HCatRecord>();
 
@@ -115,7 +116,7 @@ public class TestHCatLoaderEncryption {
     dropTable(tablename, driver);
   }
 
-  static void dropTable(String tablename, Driver driver) throws IOException, CommandNeedRetryException {
+  static void dropTable(String tablename, IDriver driver) throws IOException, CommandNeedRetryException {
     driver.run("drop table if exists " + tablename);
   }
 
@@ -123,7 +124,7 @@ public class TestHCatLoaderEncryption {
     createTable(tablename, schema, partitionedBy, driver, storageFormat);
   }
 
-  static void createTable(String tablename, String schema, String partitionedBy, Driver driver, String storageFormat)
+  static void createTable(String tablename, String schema, String partitionedBy, IDriver driver, String storageFormat)
       throws IOException, CommandNeedRetryException {
     String createTable;
     createTable = "create table " + tablename + "(" + schema + ") ";
@@ -142,7 +143,7 @@ public class TestHCatLoaderEncryption {
    * Execute Hive CLI statement
    * @param cmd arbitrary statement to execute
    */
-  static void executeStatementOnDriver(String cmd, Driver driver) throws IOException, CommandNeedRetryException {
+  static void executeStatementOnDriver(String cmd, IDriver driver) throws IOException, CommandNeedRetryException {
     LOG.debug("Executing: " + cmd);
     CommandProcessorResponse cpr = driver.run(cmd);
     if(cpr.getResponseCode() != 0) {
@@ -177,7 +178,7 @@ public class TestHCatLoaderEncryption {
           "_" + salt.getAndIncrement() + "/dfs/");
     }
 
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
 
     initEncryptionShim(hiveConf);
     String encryptedTablePath =  TEST_WAREHOUSE_DIR + "/encryptedTable";
@@ -393,7 +394,7 @@ public class TestHCatLoaderEncryption {
     }
   }
 
-  static void createTableInSpecifiedPath(String tableName, String schema, String path, Driver driver) throws IOException, CommandNeedRetryException {
+  static void createTableInSpecifiedPath(String tableName, String schema, String path, IDriver driver) throws IOException, CommandNeedRetryException {
     String createTableStr;
     createTableStr = "create table " + tableName + "(" + schema + ") location \'" + path + "\'";
     executeStatementOnDriver(createTableStr, driver);

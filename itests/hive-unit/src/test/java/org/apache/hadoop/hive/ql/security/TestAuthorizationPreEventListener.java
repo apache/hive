@@ -33,7 +33,8 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.security.DummyHiveMetastoreAuthorizationProvider.AuthCallContext;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -46,7 +47,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public class TestAuthorizationPreEventListener extends TestCase {
   private HiveConf clientHiveConf;
   private HiveMetaStoreClient msc;
-  private Driver driver;
+  private IDriver driver;
 
   @Override
   protected void setUp() throws Exception {
@@ -74,7 +75,7 @@ public class TestAuthorizationPreEventListener extends TestCase {
 
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf);
-    driver = new Driver(clientHiveConf);
+    driver = DriverFactory.newDriver(clientHiveConf);
   }
 
   @Override

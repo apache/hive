@@ -49,7 +49,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.QueryDisplay;
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -89,7 +90,7 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 @SuppressWarnings("deprecation")
 public class SQLOperation extends ExecuteStatementOperation {
-  private Driver driver = null;
+  private IDriver driver = null;
   private CommandProcessorResponse response;
   private TableSchema resultSchema = null;
   private Schema mResultSchema = null;
@@ -159,7 +160,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   public void prepare(QueryState queryState) throws HiveSQLException {
     setState(OperationState.RUNNING);
     try {
-      driver = new Driver(queryState, getParentSession().getUserName(), queryInfo);
+      driver = DriverFactory.newDriver(queryState, getParentSession().getUserName(), queryInfo);
 
       // Start the timer thread for cancelling the query when query timeout is reached
       // queryTimeout == 0 means no timeout

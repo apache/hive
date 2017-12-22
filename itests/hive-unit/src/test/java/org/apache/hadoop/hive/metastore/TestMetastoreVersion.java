@@ -20,25 +20,25 @@ package org.apache.hadoop.hive.metastore;
 import java.io.File;
 import java.lang.reflect.Field;
 
-import junit.framework.TestCase;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.ObjectStore;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.common.util.HiveStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import junit.framework.TestCase;
 
 public class TestMetastoreVersion extends TestCase {
   private static final Logger LOG = LoggerFactory.getLogger(TestMetastoreVersion.class);
   protected HiveConf hiveConf;
-  private Driver driver;
+  private IDriver driver;
   private String metaStoreRoot;
   private String testMetastoreDB;
   private IMetaStoreSchemaInfo metastoreSchemaInfo;
@@ -120,7 +120,7 @@ public class TestMetastoreVersion extends TestCase {
     System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION_RECORD_VERSION.toString(), "true");
     hiveConf = new HiveConf(this.getClass());
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
     driver.run("show tables");
 
     // correct version stored by Metastore during startup
@@ -137,13 +137,13 @@ public class TestMetastoreVersion extends TestCase {
     System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "false");
     hiveConf = new HiveConf(this.getClass());
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
     driver.run("show tables");
 
     ObjectStore.setSchemaVerified(false);
     hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION, true);
     setVersion(hiveConf, metastoreSchemaInfo.getHiveSchemaVersion());
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
     CommandProcessorResponse proc = driver.run("show tables");
     assertTrue(proc.getResponseCode() == 0);
   }
@@ -156,7 +156,7 @@ public class TestMetastoreVersion extends TestCase {
     System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "false");
     hiveConf = new HiveConf(this.getClass());
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
     driver.run("show tables");
 
     ObjectStore.setSchemaVerified(false);
@@ -164,7 +164,7 @@ public class TestMetastoreVersion extends TestCase {
     hiveConf = new HiveConf(this.getClass());
     setVersion(hiveConf, "fooVersion");
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
     CommandProcessorResponse proc = driver.run("show tables");
     assertTrue(proc.getResponseCode() != 0);
   }
@@ -178,14 +178,14 @@ public class TestMetastoreVersion extends TestCase {
     System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "false");
     hiveConf = new HiveConf(this.getClass());
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
     driver.run("show tables");
 
     System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "true");
     hiveConf = new HiveConf(this.getClass());
     setVersion(hiveConf, "3.9000.0");
     SessionState.start(new CliSessionState(hiveConf));
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
     CommandProcessorResponse proc = driver.run("show tables");
     assertEquals(0, proc.getResponseCode());
   }

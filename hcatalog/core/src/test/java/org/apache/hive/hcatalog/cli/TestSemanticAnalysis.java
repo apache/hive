@@ -27,7 +27,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
@@ -57,7 +58,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   private static final Logger LOG = LoggerFactory.getLogger(TestSemanticAnalysis.class);
   private static final String TBL_NAME = "junit_sem_analysis";
 
-  private Driver hcatDriver = null;
+  private IDriver hcatDriver = null;
   private String query;
 
   @Before
@@ -72,7 +73,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
       hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
           HCatSemanticAnalyzer.class.getName());
       hcatConf.setBoolVar(HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES, false);
-      hcatDriver = new Driver(hcatConf);
+      hcatDriver = DriverFactory.newDriver(hcatConf);
       SessionState.start(new CliSessionState(hcatConf));
     }
   }

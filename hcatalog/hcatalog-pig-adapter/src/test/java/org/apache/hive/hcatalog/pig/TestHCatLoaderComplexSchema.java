@@ -32,7 +32,8 @@ import java.util.Set;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -67,7 +68,7 @@ import static org.junit.Assume.assumeTrue;
 public class TestHCatLoaderComplexSchema {
 
   //private static MiniCluster cluster = MiniCluster.buildCluster();
-  private static Driver driver;
+  private static IDriver driver;
   //private static Properties props;
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatLoaderComplexSchema.class);
 
@@ -114,7 +115,7 @@ public class TestHCatLoaderComplexSchema {
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
 
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
     //props = new Properties();
     //props.setProperty("fs.default.name", cluster.getProperties().getProperty("fs.default.name"));

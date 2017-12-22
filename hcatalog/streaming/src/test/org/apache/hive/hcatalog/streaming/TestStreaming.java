@@ -67,7 +67,8 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.IOConstants;
@@ -153,7 +154,7 @@ public class TestStreaming {
   private static final String COL2 = "msg";
 
   private final HiveConf conf;
-  private Driver driver;
+  private IDriver driver;
   private final IMetaStoreClient msClient;
 
   final String metaStoreURI = null;
@@ -221,7 +222,7 @@ public class TestStreaming {
   @Before
   public void setup() throws Exception {
     SessionState.start(new CliSessionState(conf));
-    driver = new Driver(conf);
+    driver = DriverFactory.newDriver(conf);
     driver.setMaxRows(200002);//make sure Driver returns all results
     // drop and recreate the necessary databases and tables
     dropDB(msClient, dbName);
@@ -2078,7 +2079,7 @@ public class TestStreaming {
 
   ///////// -------- UTILS ------- /////////
   // returns Path of the partition created (if any) else Path of table
-  public static Path createDbAndTable(Driver driver, String databaseName,
+  public static Path createDbAndTable(IDriver driver, String databaseName,
                                       String tableName, List<String> partVals,
                                       String[] colNames, String[] colTypes,
                                       String[] bucketCols,
@@ -2105,14 +2106,14 @@ public class TestStreaming {
     return new Path(tableLoc);
   }
 
-  private static Path addPartition(Driver driver, String tableName, List<String> partVals, String[] partNames) throws QueryFailedException, CommandNeedRetryException, IOException {
+  private static Path addPartition(IDriver driver, String tableName, List<String> partVals, String[] partNames) throws QueryFailedException, CommandNeedRetryException, IOException {
     String partSpec = getPartsSpec(partNames, partVals);
     String addPart = "alter table " + tableName + " add partition ( " + partSpec  + " )";
     runDDL(driver, addPart);
     return getPartitionPath(driver, tableName, partSpec);
   }
 
-  private static Path getPartitionPath(Driver driver, String tableName, String partSpec) throws CommandNeedRetryException, IOException {
+  private static Path getPartitionPath(IDriver driver, String tableName, String partSpec) throws CommandNeedRetryException, IOException {
     ArrayList<String> res = queryTable(driver, "describe extended " + tableName + " PARTITION (" + partSpec + ")");
     String partInfo = res.get(res.size() - 1);
     int start = partInfo.indexOf("location:") + "location:".length();
@@ -2179,7 +2180,7 @@ public class TestStreaming {
     return " partitioned by (" + getTablePartsStr(partNames) + " )";
   }
 
-  private static boolean runDDL(Driver driver, String sql) throws QueryFailedException {
+  private static boolean runDDL(IDriver driver, String sql) throws QueryFailedException {
     LOG.debug(sql);
     System.out.println(sql);
     int retryCount = 1; // # of times to retry if first attempt fails
@@ -2202,7 +2203,7 @@ public class TestStreaming {
   }
 
 
-  public static ArrayList<String> queryTable(Driver driver, String query)
+  public static ArrayList<String> queryTable(IDriver driver, String query)
           throws CommandNeedRetryException, IOException {
     CommandProcessorResponse cpr = driver.run(query);
     if(cpr.getResponseCode() != 0) {

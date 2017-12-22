@@ -30,7 +30,8 @@ import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -44,7 +45,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 public class TestClientSideAuthorizationProvider extends TestCase {
   protected HiveConf clientHiveConf;
   protected HiveMetaStoreClient msc;
-  protected Driver driver;
+  protected IDriver driver;
   protected UserGroupInformation ugi;
 
 
@@ -85,7 +86,7 @@ public class TestClientSideAuthorizationProvider extends TestCase {
 
     SessionState.start(new CliSessionState(clientHiveConf));
     msc = new HiveMetaStoreClient(clientHiveConf);
-    driver = new Driver(clientHiveConf);
+    driver = DriverFactory.newDriver(clientHiveConf);
   }
 
   @Override

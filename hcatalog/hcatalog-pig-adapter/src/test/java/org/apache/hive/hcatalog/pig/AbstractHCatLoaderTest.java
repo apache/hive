@@ -43,7 +43,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.mapreduce.Job;
@@ -96,7 +96,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
     dropTable(tablename, driver);
   }
 
-  static void dropTable(String tablename, Driver driver) throws IOException, CommandNeedRetryException {
+  static void dropTable(String tablename, IDriver driver) throws IOException, CommandNeedRetryException {
     driver.run("drop table if exists " + tablename);
   }
 
@@ -104,7 +104,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
     createTable(tablename, schema, partitionedBy, driver, storageFormat);
   }
 
-  static void createTable(String tablename, String schema, String partitionedBy, Driver driver, String storageFormat)
+  static void createTable(String tablename, String schema, String partitionedBy, IDriver driver, String storageFormat)
       throws IOException, CommandNeedRetryException {
     String createTable;
     createTable = "create table " + tablename + "(" + schema + ") ";
@@ -125,7 +125,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
    * Execute Hive CLI statement
    * @param cmd arbitrary statement to execute
    */
-  static void executeStatementOnDriver(String cmd, Driver driver) throws IOException, CommandNeedRetryException {
+  static void executeStatementOnDriver(String cmd, IDriver driver) throws IOException, CommandNeedRetryException {
     LOG.debug("Executing: " + cmd);
     CommandProcessorResponse cpr = driver.run(cmd);
     if(cpr.getResponseCode() != 0) {
@@ -725,7 +725,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
       }
       assertTrue("Expected " + primitiveRows.length + "; found " + numTuplesRead, numTuplesRead == primitiveRows.length);
     }
-    private static void setupAllTypesTable(Driver driver) throws Exception {
+    private static void setupAllTypesTable(IDriver driver) throws Exception {
       String[] primitiveData = new String[primitiveRows.length];
       for (int i = 0; i < primitiveRows.length; i++) {
         Object[] rowData = primitiveRows[i];

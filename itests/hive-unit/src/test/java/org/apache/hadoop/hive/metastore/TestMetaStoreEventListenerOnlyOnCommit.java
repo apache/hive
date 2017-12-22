@@ -20,15 +20,14 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
+import junit.framework.TestCase;
 
 /**
  * Ensure that the status of MetaStore events depend on the RawStore's commit status.
@@ -37,7 +36,7 @@ public class TestMetaStoreEventListenerOnlyOnCommit extends TestCase {
 
   private HiveConf hiveConf;
   private HiveMetaStoreClient msc;
-  private Driver driver;
+  private IDriver driver;
 
   @Override
   protected void setUp() throws Exception {
@@ -61,7 +60,7 @@ public class TestMetaStoreEventListenerOnlyOnCommit extends TestCase {
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(new CliSessionState(hiveConf));
     msc = new HiveMetaStoreClient(hiveConf);
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
 
     DummyListener.notifyList.clear();
   }

@@ -64,7 +64,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
   private static Hive db;
   private static FileSystem fs, fs2;
   private static HiveConf jobConf;
-  private static Driver driver;
+  private static IDriver driver;
   private static int tests = 0;
   private static Boolean isInitialized = false;
 
@@ -100,7 +100,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
       fs2Uri = fs2.getUri().toString();
       jobConf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, fs2Uri);
 
-      driver = new Driver(jobConf);
+      driver = DriverFactory.newDriver(jobConf);
 
       fs = FileSystem.get(conf);
       if (fs.exists(tmppath) && !fs.getFileStatus(tmppath).isDir()) {

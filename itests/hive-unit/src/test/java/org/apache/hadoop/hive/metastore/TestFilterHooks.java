@@ -36,17 +36,16 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 public class TestFilterHooks {
   private static final Logger LOG = LoggerFactory.getLogger(TestFilterHooks.class);
@@ -165,7 +164,7 @@ public class TestFilterHooks {
   private static final String INDEX1 = "idx1";
   private static HiveConf hiveConf;
   private static HiveMetaStoreClient msc;
-  private static Driver driver;
+  private static IDriver driver;
 
   @BeforeClass
   public static void setUp() throws Exception {
@@ -183,7 +182,7 @@ public class TestFilterHooks {
 
     SessionState.start(new CliSessionState(hiveConf));
     msc = new HiveMetaStoreClient(hiveConf);
-    driver = new Driver(hiveConf);
+    driver = DriverFactory.newDriver(hiveConf);
 
     driver.run("drop database if exists " + DBNAME1  + " cascade");
     driver.run("drop database if exists " + DBNAME2  + " cascade");
