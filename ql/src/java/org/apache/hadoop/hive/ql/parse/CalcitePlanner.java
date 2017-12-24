@@ -55,7 +55,6 @@ import org.apache.calcite.adapter.druid.DruidRules;
 import org.apache.calcite.adapter.druid.DruidSchema;
 import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.calcite.adapter.jdbc.JdbcConvention;
-import org.apache.calcite.adapter.jdbc.JdbcRules;
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.adapter.jdbc.JdbcTable;
 import org.apache.calcite.config.CalciteConnectionConfig;
@@ -83,7 +82,6 @@ import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SetOp;
-import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.DefaultRelMetadataProvider;
@@ -95,9 +93,6 @@ import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
 import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
 import org.apache.calcite.rel.rules.ProjectMergeRule;
 import org.apache.calcite.rel.rules.ProjectRemoveRule;
-import org.apache.calcite.rel.rules.SemiJoinFilterTransposeRule;
-import org.apache.calcite.rel.rules.SemiJoinJoinTransposeRule;
-import org.apache.calcite.rel.rules.SemiJoinProjectTransposeRule;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -118,7 +113,6 @@ import org.apache.calcite.sql.SqlLiteral;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.SqlWindow;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.dialect.JethrodataSqlDialect;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
@@ -1438,17 +1432,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.debug("JETHRO: Original plan for jdbc rules phase 1" +System.lineSeparator()+ RelOptUtil.toString(calciteGenPlan));
       }
       
-      calciteGenPlan = hepPlan(calciteGenPlan, true, mdProvider.getMetadataProvider(), null,
-              HepMatchOrder.TOP_DOWN,
-              new MyJoinExtractFilterRule(),
-              MyAbstractSplitFilter.SPLIT_FILTER_ABOVE_JOIN, MyAbstractSplitFilter.SPLIT_FILTER_ABOVE_CONVERTER,
-              new MyFilterJoinRule (),
-              
-              new MyJoinPushDown(),
-              new MyFilterPushDown(), new MyProjectPushDownRule (), 
-              new MyAggregationPushDownRule (), new MySortPushDownRule ()
-              //,new HiveFilterJoinRule.FILTER_ON_JOIN
-      );
+      //calciteGenPlan = hepPlan(calciteGenPlan, true, mdProvider.getMetadataProvider(), null,
+      //        HepMatchOrder.TOP_DOWN,
+      //        new MyJoinExtractFilterRule(),
+      //        MyAbstractSplitFilter.SPLIT_FILTER_ABOVE_JOIN, MyAbstractSplitFilter.SPLIT_FILTER_ABOVE_CONVERTER,
+      //        new MyFilterJoinRule (),
+      //        
+      //        new MyJoinPushDown(),
+      //        new MyFilterPushDown(), new MyProjectPushDownRule (), 
+      //        new MyAggregationPushDownRule (), new MySortPushDownRule ()
+      //        //,new HiveFilterJoinRule.FILTER_ON_JOIN
+      //);
       
       
       if (LOG.isDebugEnabled()) {
@@ -1678,6 +1672,26 @@ public class CalcitePlanner extends SemanticAnalyzer {
       
       
       // 11. Apply Jdbc transformation rules
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("JETHRO: Original plan for jdbc rules phase 2" +System.lineSeparator()+ RelOptUtil.toString(calciteOptimizedPlan));
+      }
+      
+      calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, true, mdProvider.getMetadataProvider(), null,
+              HepMatchOrder.TOP_DOWN,
+              new MyJoinExtractFilterRule(),
+              MyAbstractSplitFilter.SPLIT_FILTER_ABOVE_JOIN, MyAbstractSplitFilter.SPLIT_FILTER_ABOVE_CONVERTER,
+              new MyFilterJoinRule (),
+              
+              new MyJoinPushDown(),
+              new MyFilterPushDown(), new MyProjectPushDownRule (), 
+              new MyAggregationPushDownRule (), new MySortPushDownRule ()
+              //,new HiveFilterJoinRule.FILTER_ON_JOIN
+      );
+      
+      
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("JETHRO: Updated plan after jdbc rules phase 2 " + System.lineSeparator()+ RelOptUtil.toString(calciteOptimizedPlan));
+      }
 
      
       // 12. Run rules to aid in translation from Calcite tree to Hive tree
