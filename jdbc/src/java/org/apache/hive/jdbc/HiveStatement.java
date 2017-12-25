@@ -318,7 +318,7 @@ public class HiveStatement implements java.sql.Statement {
    * @throws SQLException if the latch failed
    */
   public boolean latchSync(TOperationHandle tOperationHandle) throws SQLException {
-    refreshStatus(new TGetOperationStatusReq(tOperationHandle));
+    getStatus(new TGetOperationStatusReq(tOperationHandle));
     stmtHandle = tOperationHandle;
     waitForOperationToComplete();
     if (!stmtHandle.isHasResultSet()) {
@@ -337,7 +337,7 @@ public class HiveStatement implements java.sql.Statement {
    * @throws SQLException if the latch failed
    */
   public boolean latchAsync(TOperationHandle tOperationHandle) throws SQLException {
-    refreshStatus(new TGetOperationStatusReq(tOperationHandle));
+    getStatus(new TGetOperationStatusReq(tOperationHandle));
     stmtHandle = tOperationHandle;
     if (!stmtHandle.isHasResultSet()) {
       return false;
@@ -352,7 +352,7 @@ public class HiveStatement implements java.sql.Statement {
    * @return returns operation handle if avilable
    * @throws SQLException
    */
-  private TGetOperationStatusResp refreshStatus(TGetOperationStatusReq statusReq) throws SQLException {
+  private TGetOperationStatusResp getStatus(TGetOperationStatusReq statusReq) throws SQLException {
     TGetOperationStatusResp statusResp;
     try {
       /**
@@ -364,31 +364,31 @@ public class HiveStatement implements java.sql.Statement {
       Utils.verifySuccessWithInfo(statusResp.getStatus());
       if (statusResp.isSetOperationState()) {
         switch (statusResp.getOperationState()) {
-          case CLOSED_STATE:
-          case FINISHED_STATE:
-            isOperationComplete = true;
-            isLogBeingGenerated = false;
-            break;
-          case CANCELED_STATE:
-            // 01000 -> warning
-            String errMsg = statusResp.getErrorMessage();
-            if (errMsg != null && !errMsg.isEmpty()) {
-              throw new SQLException("Query was cancelled. " + errMsg, "01000");
-            } else {
-              throw new SQLException("Query was cancelled", "01000");
-            }
-          case TIMEDOUT_STATE:
-            throw new SQLTimeoutException("Query timed out after " + queryTimeout + " seconds");
-          case ERROR_STATE:
-            // Get the error details from the underlying exception
-            throw new SQLException(statusResp.getErrorMessage(), statusResp.getSqlState(),
-                statusResp.getErrorCode());
-          case UKNOWN_STATE:
-            throw new SQLException("Unknown query", "HY000");
-          case INITIALIZED_STATE:
-          case PENDING_STATE:
-          case RUNNING_STATE:
-            break;
+        case CLOSED_STATE:
+        case FINISHED_STATE:
+          isOperationComplete = true;
+          isLogBeingGenerated = false;
+          break;
+        case CANCELED_STATE:
+          // 01000 -> warning
+          String errMsg = statusResp.getErrorMessage();
+          if (errMsg != null && !errMsg.isEmpty()) {
+            throw new SQLException("Query was cancelled. " + errMsg, "01000");
+          } else {
+            throw new SQLException("Query was cancelled", "01000");
+          }
+        case TIMEDOUT_STATE:
+          throw new SQLTimeoutException("Query timed out after " + queryTimeout + " seconds");
+        case ERROR_STATE:
+          // Get the error details from the underlying exception
+          throw new SQLException(statusResp.getErrorMessage(), statusResp.getSqlState(),
+              statusResp.getErrorCode());
+        case UKNOWN_STATE:
+          throw new SQLException("Unknown query", "HY000");
+        case INITIALIZED_STATE:
+        case PENDING_STATE:
+        case RUNNING_STATE:
+          break;
         }
       }
     } catch (SQLException e) {
@@ -467,7 +467,7 @@ public class HiveStatement implements java.sql.Statement {
 
     // Poll on the operation status, till the operation is complete
     while (!isOperationComplete) {
-      statusResp = refreshStatus(statusReq);
+      statusResp = getStatus(statusReq);
     }
 
     /*
