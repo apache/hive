@@ -462,6 +462,10 @@ public class HiveConf extends Configuration {
     REPL_DUMPDIR_TTL("hive.repl.dumpdir.ttl", "7d",
         new TimeValidator(TimeUnit.DAYS),
         "TTL of dump dirs before cleanup."),
+    //https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html#Running_as_the_superuser
+    REPL_ADD_RAW_RESERVED_NAMESPACE("hive.repl.add.raw.reserved.namespace", false,
+        "For TDE with same encryption keys on source and target, allow Distcp super user to access \n"
+            + "the raw bytes from filesystem without decrypting on source and then encrypting on target."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),

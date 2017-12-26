@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -68,8 +69,8 @@ class WarehouseInstance implements Closeable {
 
   private final static String LISTENER_CLASS = DbNotificationListener.class.getCanonicalName();
 
-  WarehouseInstance(Logger logger, MiniDFSCluster cluster, Map<String, String> overridesForHiveConf)
-      throws Exception {
+  WarehouseInstance(Logger logger, MiniDFSCluster cluster, Map<String, String> overridesForHiveConf,
+      String keyNameForEncryptedZone) throws Exception {
     this.logger = logger;
     this.miniDFSCluster = cluster;
     assert miniDFSCluster.isClusterUp();
@@ -77,15 +78,28 @@ class WarehouseInstance implements Closeable {
     DistributedFileSystem fs = miniDFSCluster.getFileSystem();
 
     Path warehouseRoot = mkDir(fs, "/warehouse" + uniqueIdentifier);
+    if (StringUtils.isNotEmpty(keyNameForEncryptedZone)) {
+      fs.createEncryptionZone(warehouseRoot, keyNameForEncryptedZone);
+    }
     Path cmRootPath = mkDir(fs, "/cmroot" + uniqueIdentifier);
     this.functionsRoot = mkDir(fs, "/functions" + uniqueIdentifier).toString();
     initialize(cmRootPath.toString(), warehouseRoot.toString(), overridesForHiveConf);
   }
 
-  WarehouseInstance(Logger logger, MiniDFSCluster cluster) throws Exception {
+  WarehouseInstance(Logger logger, MiniDFSCluster cluster, String keyNameForEncryptedZone)
+      throws Exception {
     this(logger, cluster, new HashMap<String, String>() {{
       put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "true");
-    }});
+    }}, keyNameForEncryptedZone);
+  }
+
+  WarehouseInstance(Logger logger, MiniDFSCluster cluster,
+      Map<String, String> overridesForHiveConf) throws Exception {
+    this(logger, cluster, overridesForHiveConf, null);
+  }
+
+  WarehouseInstance(Logger logger, MiniDFSCluster cluster) throws Exception {
+    this(logger, cluster, (String) null);
   }
 
   private void initialize(String cmRoot, String warehouseRoot,
@@ -215,6 +229,20 @@ class WarehouseInstance implements Closeable {
     for (int i = 0; i < data.length; i++) {
       assertEquals(data[i].toLowerCase(), results.get(i).toLowerCase());
     }
+    return this;
+  }
+
+  WarehouseInstance verifyFailure(String[] data) throws IOException {
+    List<String> results = getOutput();
+    logger.info("Expecting {}", StringUtils.join(data, ","));
+    logger.info("Got {}", results);
+    boolean dataMatched = (data.length == results.size());
+    if (dataMatched) {
+      for (int i = 0; i < data.length; i++) {
+        dataMatched &= data[i].toLowerCase().equals(results.get(i).toLowerCase());
+      }
+    }
+    assertFalse(dataMatched);
     return this;
   }
 
