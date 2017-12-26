@@ -456,7 +456,7 @@ public class HiveStatement implements java.sql.Statement {
     return statusResp;
   }
 
-  TGetOperationStatusResp waitForOperationToComplete() throws SQLException {
+  public TGetOperationStatusResp waitForOperationToComplete() throws SQLException {
     TGetOperationStatusReq statusReq = new TGetOperationStatusReq(stmtHandle);
     boolean shouldGetProgressUpdate = inPlaceUpdateStream != InPlaceUpdateStream.NO_OP;
     statusReq.setGetProgressUpdate(shouldGetProgressUpdate);
