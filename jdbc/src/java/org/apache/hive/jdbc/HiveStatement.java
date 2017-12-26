@@ -329,7 +329,7 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   /**
-   * Given an operation handle, this method tries to latch on to the execution
+   * Given an operation handle, this method tries to latch on to the execution.
    *
    * @param tOperationHandle
    * @return true if the first result is a ResultSet object; false if it is an update count or there
@@ -347,9 +347,10 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   /**
+   * Thrift call for operation request.
    *
    * @param statusReq
-   * @return returns operation handle if avilable
+   * @return returns thrift response.
    * @throws SQLException
    */
   private TGetOperationStatusResp getStatus(TGetOperationStatusReq statusReq) throws SQLException {
@@ -389,6 +390,8 @@ public class HiveStatement implements java.sql.Statement {
         case PENDING_STATE:
         case RUNNING_STATE:
           break;
+        default:
+          throw new SQLException("Unknown state " + statusResp.getOperationState());
         }
       }
     } catch (SQLException e) {
@@ -433,7 +436,7 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   /**
-   * Poll the result set status by checking if isSetHasResultSet is set
+   * Poll the result set status by checking if isSetHasResultSet is set.
    * @return
    * @throws SQLException
    */
