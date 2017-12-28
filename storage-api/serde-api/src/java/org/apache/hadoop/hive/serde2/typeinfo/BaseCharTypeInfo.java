@@ -18,51 +18,53 @@
 
 package org.apache.hadoop.hive.serde2.typeinfo;
 
-import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 
-public class CharTypeInfo  extends BaseCharTypeInfo {
+@InterfaceAudience.Public
+@InterfaceStability.Stable
+public abstract class BaseCharTypeInfo extends PrimitiveTypeInfo {
   private static final long serialVersionUID = 1L;
 
+  private int length;
+
   // no-arg constructor to make kyro happy.
-  public CharTypeInfo() {
-    super(serdeConstants.CHAR_TYPE_NAME);
+  public BaseCharTypeInfo() {
   }
 
-  public CharTypeInfo(int length) {
-    super(serdeConstants.CHAR_TYPE_NAME, length);
-    BaseCharUtils.validateCharParameter(length);
+  public BaseCharTypeInfo(String typeName) {
+    super(typeName);
   }
 
-  @Override
-  public String getTypeName() {
-    return getQualifiedName();
+  public BaseCharTypeInfo(String typeName, int length) {
+    super(typeName);
+    this.length = length;
   }
 
-  @Override
-  public boolean equals(Object other) {
-    if (this == other) {
-      return true;
-    }
-    if (other == null || getClass() != other.getClass()) {
-      return false;
-    }
-
-    CharTypeInfo pti = (CharTypeInfo) other;
-
-    return this.typeName.equals(pti.typeName) && this.getLength() == pti.getLength();
+  public int getLength() {
+    return length;
   }
 
-  /**
-   * Generate the hashCode for this TypeInfo.
-   */
-  @Override
-  public int hashCode() {
-    return getQualifiedName().hashCode();
+  public void setLength(int length) {
+    this.length = length;
   }
 
   @Override
-  public String toString() {
-    return getQualifiedName();
+  public String getQualifiedName() {
+    return getQualifiedName(typeName, length);
   }
 
+  public static String getQualifiedName(String typeName, int length) {
+    StringBuilder sb = new StringBuilder(typeName);
+    sb.append("(");
+    sb.append(length);
+    sb.append(")");
+    return sb.toString();
+  }
+
+  @Override
+  public void setTypeName(String typeName) {
+    // type name should already be set by subclass
+    return;
+  }
 }

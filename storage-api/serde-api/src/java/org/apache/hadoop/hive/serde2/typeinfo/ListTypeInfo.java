@@ -15,76 +15,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.serde2.typeinfo;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 /**
- * UnionTypeInfo represents the TypeInfo of an union. A union holds only one
- * field of the specified fields at any point of time. The fields, a Union can
- * hold, can have the same or different TypeInfo.
- *
+ * A List Type has homogeneous elements. All elements of the List has the same
+ * TypeInfo which is returned by getListElementTypeInfo.
+ * 
  * Always use the TypeInfoFactory to create new TypeInfo objects, instead of
  * directly creating an instance of this class.
  */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
-public class UnionTypeInfo extends TypeInfo implements Serializable {
+public final class ListTypeInfo extends TypeInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
-
-  private List<TypeInfo> allUnionObjectTypeInfos;
+  private TypeInfo listElementTypeInfo;
 
   /**
    * For java serialization use only.
    */
-  public UnionTypeInfo() {
+  public ListTypeInfo() {
   }
 
   @Override
   public String getTypeName() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(serdeConstants.UNION_TYPE_NAME + "<");
-    for (int i = 0; i < allUnionObjectTypeInfos.size(); i++) {
-      if (i > 0) {
-        sb.append(",");
-      }
-      sb.append(allUnionObjectTypeInfos.get(i).getTypeName());
-    }
-    sb.append(">");
-    return sb.toString();
+    return org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME + "<"
+        + listElementTypeInfo.getTypeName() + ">";
   }
 
   /**
    * For java serialization use only.
    */
-  public void setAllUnionObjectTypeInfos(
-      List<TypeInfo> allUnionObjectTypeInfos) {
-    this.allUnionObjectTypeInfos = allUnionObjectTypeInfos;
+  public void setListElementTypeInfo(TypeInfo listElementTypeInfo) {
+    this.listElementTypeInfo = listElementTypeInfo;
   }
 
   /**
    * For TypeInfoFactory use only.
    */
-  UnionTypeInfo(List<TypeInfo> typeInfos) {
-    allUnionObjectTypeInfos = new ArrayList<TypeInfo>();
-    allUnionObjectTypeInfos.addAll(typeInfos);
+  ListTypeInfo(TypeInfo elementTypeInfo) {
+    listElementTypeInfo = elementTypeInfo;
   }
 
   @Override
   public Category getCategory() {
-    return Category.UNION;
+    return Category.LIST;
   }
 
-  public List<TypeInfo> getAllUnionObjectTypeInfos() {
-    return allUnionObjectTypeInfos;
+  public TypeInfo getListElementTypeInfo() {
+    return listElementTypeInfo;
   }
 
   @Override
@@ -92,17 +78,16 @@ public class UnionTypeInfo extends TypeInfo implements Serializable {
     if (this == other) {
       return true;
     }
-    if (!(other instanceof UnionTypeInfo)) {
+    if (!(other instanceof ListTypeInfo)) {
       return false;
     }
-    UnionTypeInfo o = (UnionTypeInfo) other;
-
-    // Compare the field types
-    return o.getAllUnionObjectTypeInfos().equals(getAllUnionObjectTypeInfos());
+    return getListElementTypeInfo().equals(
+        ((ListTypeInfo) other).getListElementTypeInfo());
   }
 
   @Override
   public int hashCode() {
-    return allUnionObjectTypeInfos.hashCode();
+    return listElementTypeInfo.hashCode();
   }
+
 }

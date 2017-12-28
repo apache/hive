@@ -133,18 +133,4 @@ public class TimestampTZUtil {
     return parse(s, defaultTimeZone);
   }
 
-  public static ZoneId parseTimeZone(String timeZoneStr) {
-    if (timeZoneStr == null || timeZoneStr.trim().isEmpty() ||
-        timeZoneStr.trim().toLowerCase().equals("local")) {
-      // default
-      return ZoneId.systemDefault();
-    }
-    try {
-      return ZoneId.of(timeZoneStr);
-    } catch (DateTimeException e1) {
-      // default
-      throw new RuntimeException("Invalid time zone displacement value");
-    }
-  }
-
 }

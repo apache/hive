@@ -33,7 +33,8 @@ public class DecimalTypeInfo extends PrimitiveTypeInfo {
 
   public DecimalTypeInfo(int precision, int scale) {
     super(serdeConstants.DECIMAL_TYPE_NAME);
-    HiveDecimalUtils.validateParameter(precision, scale);
+    //TODO : Should the validation be in this TypeInfo?
+    //HiveDecimalUtils.validateParameter(precision, scale);
     this.precision = precision;
     this.scale = scale;
   }

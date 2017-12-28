@@ -48,6 +48,11 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-storage-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-serde-api</artifactId>
+      <version>${serde-api.version}</version>
+    </dependency>
     <!-- inter-project -->
     <dependency>
       <groupId>commons-cli</groupId>

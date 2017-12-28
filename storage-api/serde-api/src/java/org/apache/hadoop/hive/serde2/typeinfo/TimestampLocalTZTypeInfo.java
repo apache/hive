@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.serde2.typeinfo;
 
+import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.Objects;
 
-import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.serde.serdeConstants;
 
 public class TimestampLocalTZTypeInfo extends PrimitiveTypeInfo {
@@ -35,7 +35,21 @@ public class TimestampLocalTZTypeInfo extends PrimitiveTypeInfo {
 
   public TimestampLocalTZTypeInfo(String timeZoneStr) {
     super(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
-    this.timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
+    this.timeZone = TimestampLocalTZTypeInfo.parseTimeZone(timeZoneStr);
+  }
+
+  public static ZoneId parseTimeZone(String timeZoneStr) {
+    if (timeZoneStr == null || timeZoneStr.trim().isEmpty() ||
+        timeZoneStr.trim().toLowerCase().equals("local")) {
+      // default
+      return ZoneId.systemDefault();
+    }
+    try {
+      return ZoneId.of(timeZoneStr);
+    } catch (DateTimeException e1) {
+      // default
+      throw new RuntimeException("Invalid time zone displacement value");
+    }
   }
 
   @Override

@@ -15,77 +15,76 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.serde2.typeinfo;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 /**
- * A Map Type has homogeneous keys and homogeneous values. All keys of the Map
- * have the same TypeInfo, which is returned by getMapKeyTypeInfo(); and all
- * values of the Map has the same TypeInfo, which is returned by
- * getMapValueTypeInfo().
- * 
+ * UnionTypeInfo represents the TypeInfo of an union. A union holds only one
+ * field of the specified fields at any point of time. The fields, a Union can
+ * hold, can have the same or different TypeInfo.
+ *
  * Always use the TypeInfoFactory to create new TypeInfo objects, instead of
  * directly creating an instance of this class.
  */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
-public final class MapTypeInfo extends TypeInfo implements Serializable {
+public class UnionTypeInfo extends TypeInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private TypeInfo mapKeyTypeInfo;
-  private TypeInfo mapValueTypeInfo;
+  private List<TypeInfo> allUnionObjectTypeInfos;
 
   /**
    * For java serialization use only.
    */
-  public MapTypeInfo() {
+  public UnionTypeInfo() {
   }
 
   @Override
   public String getTypeName() {
-    return org.apache.hadoop.hive.serde.serdeConstants.MAP_TYPE_NAME + "<"
-        + mapKeyTypeInfo.getTypeName() + "," + mapValueTypeInfo.getTypeName()
-        + ">";
+    StringBuilder sb = new StringBuilder();
+    sb.append(serdeConstants.UNION_TYPE_NAME + "<");
+    for (int i = 0; i < allUnionObjectTypeInfos.size(); i++) {
+      if (i > 0) {
+        sb.append(",");
+      }
+      sb.append(allUnionObjectTypeInfos.get(i).getTypeName());
+    }
+    sb.append(">");
+    return sb.toString();
   }
 
   /**
    * For java serialization use only.
    */
-  public void setMapKeyTypeInfo(TypeInfo mapKeyTypeInfo) {
-    this.mapKeyTypeInfo = mapKeyTypeInfo;
+  public void setAllUnionObjectTypeInfos(
+      List<TypeInfo> allUnionObjectTypeInfos) {
+    this.allUnionObjectTypeInfos = allUnionObjectTypeInfos;
   }
 
   /**
-   * For java serialization use only.
+   * For TypeInfoFactory use only.
    */
-  public void setMapValueTypeInfo(TypeInfo mapValueTypeInfo) {
-    this.mapValueTypeInfo = mapValueTypeInfo;
-  }
-
-  // For TypeInfoFactory use only
-  MapTypeInfo(TypeInfo keyTypeInfo, TypeInfo valueTypeInfo) {
-    mapKeyTypeInfo = keyTypeInfo;
-    mapValueTypeInfo = valueTypeInfo;
+  UnionTypeInfo(List<TypeInfo> typeInfos) {
+    allUnionObjectTypeInfos = new ArrayList<TypeInfo>();
+    allUnionObjectTypeInfos.addAll(typeInfos);
   }
 
   @Override
   public Category getCategory() {
-    return Category.MAP;
+    return Category.UNION;
   }
 
-  public TypeInfo getMapKeyTypeInfo() {
-    return mapKeyTypeInfo;
-  }
-
-  public TypeInfo getMapValueTypeInfo() {
-    return mapValueTypeInfo;
+  public List<TypeInfo> getAllUnionObjectTypeInfos() {
+    return allUnionObjectTypeInfos;
   }
 
   @Override
@@ -93,17 +92,17 @@ public final class MapTypeInfo extends TypeInfo implements Serializable {
     if (this == other) {
       return true;
     }
-    if (!(other instanceof MapTypeInfo)) {
+    if (!(other instanceof UnionTypeInfo)) {
       return false;
     }
-    MapTypeInfo o = (MapTypeInfo) other;
-    return o.getMapKeyTypeInfo().equals(getMapKeyTypeInfo())
-        && o.getMapValueTypeInfo().equals(getMapValueTypeInfo());
+    UnionTypeInfo o = (UnionTypeInfo) other;
+
+    // Compare the field types
+    return o.getAllUnionObjectTypeInfos().equals(getAllUnionObjectTypeInfos());
   }
 
   @Override
   public int hashCode() {
-    return mapKeyTypeInfo.hashCode() ^ mapValueTypeInfo.hashCode();
+    return allUnionObjectTypeInfos.hashCode();
   }
-
 }

@@ -20,17 +20,18 @@ package org.apache.hadoop.hive.serde2.typeinfo;
 
 import org.apache.hadoop.hive.serde.serdeConstants;
 
-public class VarcharTypeInfo extends BaseCharTypeInfo {
+public class CharTypeInfo  extends BaseCharTypeInfo {
   private static final long serialVersionUID = 1L;
 
   // no-arg constructor to make kyro happy.
-  public VarcharTypeInfo() {
-    super(serdeConstants.VARCHAR_TYPE_NAME);
+  public CharTypeInfo() {
+    super(serdeConstants.CHAR_TYPE_NAME);
   }
 
-  public VarcharTypeInfo(int length) {
-    super(serdeConstants.VARCHAR_TYPE_NAME, length);
-    BaseCharUtils.validateVarcharParameter(length);
+  public CharTypeInfo(int length) {
+    super(serdeConstants.CHAR_TYPE_NAME, length);
+    //TODO : Should the validation be in this TypeInfo?
+    //BaseCharUtils.validateCharParameter(length);
   }
 
   @Override
@@ -47,9 +48,9 @@ public class VarcharTypeInfo extends BaseCharTypeInfo {
       return false;
     }
 
-    VarcharTypeInfo pti = (VarcharTypeInfo) other;
+    CharTypeInfo pti = (CharTypeInfo) other;
 
-    return this.getLength() == pti.getLength();
+    return this.typeName.equals(pti.typeName) && this.getLength() == pti.getLength();
   }
 
   /**
@@ -57,7 +58,7 @@ public class VarcharTypeInfo extends BaseCharTypeInfo {
    */
   @Override
   public int hashCode() {
-    return getLength();
+    return getQualifiedName().hashCode();
   }
 
   @Override
