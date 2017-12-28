@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveTypeEntry;
 import org.apache.hadoop.hive.serde2.thrift.ConfigurableTProtocol;
 import org.apache.hadoop.hive.serde2.thrift.TReflectionUtils;
 import org.apache.hadoop.io.BytesWritable;

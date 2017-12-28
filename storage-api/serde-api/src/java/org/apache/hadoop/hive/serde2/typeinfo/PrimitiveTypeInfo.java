@@ -19,13 +19,14 @@
 package org.apache.hadoop.hive.serde2.typeinfo;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveTypeEntry;
 
 /**
  * There are limited number of Primitive Types. All Primitive Types are defined
@@ -86,7 +87,7 @@ public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
   }
 
   public PrimitiveTypeEntry getPrimitiveTypeEntry() {
-    return PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName);
+    return PrimitiveTypeEntry.fromTypeName(typeName);
   }
 
   @Override
