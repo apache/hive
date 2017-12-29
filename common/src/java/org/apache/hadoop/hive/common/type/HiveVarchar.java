@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.common.type;
 
+import org.apache.hadoop.hive.serde.serdeConstants;
+
 /**
  *
  * HiveVarChar.
@@ -27,7 +29,7 @@ package org.apache.hadoop.hive.common.type;
 public class HiveVarchar extends HiveBaseChar
   implements Comparable<HiveVarchar> {
 
-  public static final int MAX_VARCHAR_LENGTH = 65535;
+  public static final int MAX_VARCHAR_LENGTH = serdeConstants.MAX_VARCHAR_LENGTH;
 
   public HiveVarchar() {
   }

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.common.type;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.serde.serdeConstants;
 
 /**
  * HiveChar.
@@ -27,7 +28,7 @@ import org.apache.commons.lang.StringUtils;
 public class HiveChar extends HiveBaseChar
   implements Comparable<HiveChar> {
 
-  public static final int MAX_CHAR_LENGTH = 255;
+  public static final int MAX_CHAR_LENGTH = serdeConstants.MAX_CHAR_LENGTH;
 
   public HiveChar() {
   }

@@ -23,11 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveTypeEntry;
 
 /**
@@ -48,8 +44,8 @@ public final class TypeInfoFactory {
   public static final PrimitiveTypeInfo intTypeInfo = new PrimitiveTypeInfo(serdeConstants.INT_TYPE_NAME);
   public static final PrimitiveTypeInfo longTypeInfo = new PrimitiveTypeInfo(serdeConstants.BIGINT_TYPE_NAME);
   public static final PrimitiveTypeInfo stringTypeInfo = new PrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
-  public static final PrimitiveTypeInfo charTypeInfo = new CharTypeInfo(HiveChar.MAX_CHAR_LENGTH);
-  public static final PrimitiveTypeInfo varcharTypeInfo = new VarcharTypeInfo(HiveVarchar.MAX_VARCHAR_LENGTH);
+  public static final PrimitiveTypeInfo charTypeInfo = new CharTypeInfo(serdeConstants.MAX_CHAR_LENGTH);
+  public static final PrimitiveTypeInfo varcharTypeInfo = new VarcharTypeInfo(serdeConstants.MAX_VARCHAR_LENGTH);
   public static final PrimitiveTypeInfo floatTypeInfo = new PrimitiveTypeInfo(serdeConstants.FLOAT_TYPE_NAME);
   public static final PrimitiveTypeInfo doubleTypeInfo = new PrimitiveTypeInfo(serdeConstants.DOUBLE_TYPE_NAME);
   public static final PrimitiveTypeInfo byteTypeInfo = new PrimitiveTypeInfo(serdeConstants.TINYINT_TYPE_NAME);
@@ -63,8 +59,8 @@ public final class TypeInfoFactory {
   /**
    * A DecimalTypeInfo instance that has max precision and max scale.
    */
-  public static final DecimalTypeInfo decimalTypeInfo = new DecimalTypeInfo(HiveDecimal.SYSTEM_DEFAULT_PRECISION,
-      HiveDecimal.SYSTEM_DEFAULT_SCALE);
+  public static final DecimalTypeInfo decimalTypeInfo = new DecimalTypeInfo(serdeConstants.SYSTEM_DEFAULT_PRECISION,
+      serdeConstants.SYSTEM_DEFAULT_SCALE);
 
   /**
    * A TimestampTZTypeInfo with system default time zone.
@@ -134,14 +130,16 @@ public final class TypeInfoFactory {
    * @return PrimitiveTypeInfo instance
    */
   private static PrimitiveTypeInfo createPrimitiveTypeInfo(String fullName) {
-    String baseName = TypeInfoUtils.getBaseName(fullName);
+    //TODO logic copied from TypeInfoUtils.getBaseName(fullName). Should we move this TypeInfoUtils as well?
+    int idx = fullName.indexOf('(');
+    String baseName = idx == -1 ? fullName : fullName.substring(0, idx);
     PrimitiveTypeEntry typeEntry =
-        PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(baseName);
+        PrimitiveTypeEntry.fromTypeName(baseName);
     if (null == typeEntry) {
       throw new RuntimeException("Unknown type " + fullName);
     }
 
-    TypeInfoUtils.PrimitiveParts parts = TypeInfoUtils.parsePrimitiveParts(fullName);
+    TypeInfoParser.PrimitiveParts parts = TypeInfoParser.parsePrimitiveParts(fullName);
     if (parts.typeParams == null || parts.typeParams.length < 1) {
       return null;
     }
@@ -195,8 +193,8 @@ public final class TypeInfoFactory {
 
   public static TypeInfo getPrimitiveTypeInfoFromPrimitiveWritable(
       Class<?> clazz) {
-    String typeName = PrimitiveObjectInspectorUtils
-        .getTypeNameFromPrimitiveWritable(clazz);
+    PrimitiveTypeEntry typeEntry = PrimitiveTypeEntry.fromWritableClass(clazz);
+    String typeName = typeEntry == null ? null : typeEntry.typeName;
     if (typeName == null) {
       throw new RuntimeException("Internal error: Cannot get typeName for "
           + clazz);
@@ -205,8 +203,12 @@ public final class TypeInfoFactory {
   }
 
   public static TypeInfo getPrimitiveTypeInfoFromJavaPrimitive(Class<?> clazz) {
-    return getPrimitiveTypeInfo(PrimitiveObjectInspectorUtils
-        .getTypeNameFromPrimitiveJava(clazz));
+    PrimitiveTypeEntry t = PrimitiveTypeEntry.fromJavaType(clazz);
+    if (t == null) {
+      t = PrimitiveTypeEntry.fromJavaClass(clazz);
+    }
+    String typeName = t == null ? null : t.typeName;
+    return getPrimitiveTypeInfo(typeName);
   }
 
   static ConcurrentHashMap<ArrayList<List<?>>, TypeInfo> cachedStructTypeInfo =

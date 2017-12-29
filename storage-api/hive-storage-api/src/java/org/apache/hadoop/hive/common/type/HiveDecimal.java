@@ -95,6 +95,7 @@ public final class HiveDecimal extends FastHiveDecimal implements Comparable<Hiv
    *    of a HiveDecimal class.
    */
 
+  //TODO : We should ideally get the values of these constants from serdeConstants for consistency
   @HiveDecimalVersionV1
   public static final int MAX_PRECISION = 38;
   @HiveDecimalVersionV1

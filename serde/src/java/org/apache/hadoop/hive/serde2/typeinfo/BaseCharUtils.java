@@ -27,20 +27,6 @@ import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 
 public class BaseCharUtils {
 
-  public static void validateVarcharParameter(int length) {
-    if (length > HiveVarchar.MAX_VARCHAR_LENGTH || length < 1) {
-      throw new RuntimeException("Varchar length " + length + " out of allowed range [1, " +
-          HiveVarchar.MAX_VARCHAR_LENGTH + "]");
-    }
-  }
-
-  public static void validateCharParameter(int length) {
-    if (length > HiveChar.MAX_CHAR_LENGTH || length < 1) {
-      throw new RuntimeException("Char length " + length + " out of allowed range [1, " +
-          HiveChar.MAX_CHAR_LENGTH + "]");
-    }
-  }
-
   public static boolean doesWritableMatchTypeParams(HiveBaseCharWritable writable,
       BaseCharTypeInfo typeInfo) {
     return typeInfo.getLength() >= writable.getCharacterLength();

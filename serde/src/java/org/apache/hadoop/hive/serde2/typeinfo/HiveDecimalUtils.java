@@ -39,22 +39,6 @@ public class HiveDecimalUtils {
     return (result.isSet() ? result : null);
   }
 
-  public static void validateParameter(int precision, int scale) {
-    if (precision < 1 || precision > HiveDecimal.MAX_PRECISION) {
-      throw new IllegalArgumentException("Decimal precision out of allowed range [1," +
-          HiveDecimal.MAX_PRECISION + "]");
-    }
-
-    if (scale < 0 || scale > HiveDecimal.MAX_SCALE) {
-      throw new IllegalArgumentException("Decimal scale out of allowed range [0," +
-          HiveDecimal.MAX_SCALE + "]");
-    }
-
-    if (precision < scale) {
-      throw new IllegalArgumentException("Decimal scale must be less than or equal to precision");
-    }
-  }
-
   /**
    * Need to keep consistent with JdbcColumn.columnPrecision
    *

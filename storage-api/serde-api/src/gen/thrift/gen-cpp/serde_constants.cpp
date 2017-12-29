@@ -131,6 +131,22 @@ serdeConstants::serdeConstants() {
   IntegralTypes.insert("int");
   IntegralTypes.insert("bigint");
 
+  MAX_CHAR_LENGTH = 255;
+
+  MAX_VARCHAR_LENGTH = 65535;
+
+  SYSTEM_DEFAULT_PRECISION = 38;
+
+  SYSTEM_DEFAULT_SCALE = 18;
+
+  USER_DEFAULT_PRECISION = 10;
+
+  USER_DEFAULT_SCALE = 0;
+
+  MAX_PRECISION = 38;
+
+  MAX_SCALE = 38;
+
 }
 
 } // namespace

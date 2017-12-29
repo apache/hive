@@ -64,6 +64,14 @@ class serdeConstants {
   std::set<std::string>  PrimitiveTypes;
   std::set<std::string>  CollectionTypes;
   std::set<std::string>  IntegralTypes;
+  int32_t MAX_CHAR_LENGTH;
+  int32_t MAX_VARCHAR_LENGTH;
+  int32_t SYSTEM_DEFAULT_PRECISION;
+  int32_t SYSTEM_DEFAULT_SCALE;
+  int32_t USER_DEFAULT_PRECISION;
+  int32_t USER_DEFAULT_SCALE;
+  int32_t MAX_PRECISION;
+  int32_t MAX_SCALE;
 };
 
 extern const serdeConstants g_serde_constants;

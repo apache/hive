@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.avro.Schema;
-import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfoValidationUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -143,7 +143,7 @@ class SchemaToTypeInfo {
       }
 
       try {
-        HiveDecimalUtils.validateParameter(precision, scale);
+        PrimitiveTypeInfoValidationUtils.validateParameter(precision, scale);
       } catch (Exception ex) {
         throw new AvroSerdeException("Invalid precision or scale for decimal type", ex);
       }
