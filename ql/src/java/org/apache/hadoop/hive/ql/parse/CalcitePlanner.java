@@ -107,6 +107,8 @@ import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlCall;
+import org.apache.calcite.sql.SqlDialect;
+import org.apache.calcite.sql.SqlDialectFactoryImpl;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlLiteral;
@@ -1428,27 +1430,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelMetadataQuery.THREAD_PROVIDERS.set(
               JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("JETHRO: Original plan for jdbc rules phase 1" +System.lineSeparator()+ RelOptUtil.toString(calciteGenPlan));
-      }
-      
-      //calciteGenPlan = hepPlan(calciteGenPlan, true, mdProvider.getMetadataProvider(), null,
-      //        HepMatchOrder.TOP_DOWN,
-      //        new MyJoinExtractFilterRule(),
-      //        MyAbstractSplitFilter.SPLIT_FILTER_ABOVE_JOIN, MyAbstractSplitFilter.SPLIT_FILTER_ABOVE_CONVERTER,
-      //        new MyFilterJoinRule (),
-      //        
-      //        new MyJoinPushDown(),
-      //        new MyFilterPushDown(), new MyProjectPushDownRule (), 
-      //        new MyAggregationPushDownRule (), new MySortPushDownRule ()
-      //        //,new HiveFilterJoinRule.FILTER_ON_JOIN
-      //);
-      
-      
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("JETHRO: Updated plan after jdbc rules phase 1 " + System.lineSeparator()+ RelOptUtil.toString(calciteGenPlan));
-      }
-      
       //Remove subquery
       LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
       calciteGenPlan = hepPlan(calciteGenPlan, false, mdProvider.getMetadataProvider(), null,
@@ -2504,22 +2485,27 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 optTable, druidTable, ImmutableList.<RelNode> of(hts));
           } else if (tableType == TableType.JDBC) {
             LOG.debug("JDBC is running");
-
+            final String dataBaseType = tabMetaData.getProperty("hive.sql.database.type");
             final String url = tabMetaData.getProperty("hive.sql.jdbc.url");
             final String driver = tabMetaData.getProperty("hive.sql.jdbc.driver");
             final String user = tabMetaData.getProperty("hive.sql.dbcp.username");
             final String pswd = tabMetaData.getProperty("hive.sql.dbcp.password");
             //final String query = tabMetaData.getProperty("hive.sql.query");
-            final String tbl = tabMetaData.getProperty("hive.sql.table");
+            final String tableName = tabMetaData.getProperty("hive.sql.table");
 
             final DataSource ds = JdbcSchema.dataSource(url, driver, user, pswd);
+            SqlDialect jdbcDialect = JdbcSchema.createDialect(new SqlDialectFactoryImpl(), ds);
+            JdbcConvention jc = JdbcConvention.of(jdbcDialect, null, dataBaseType);
+            JdbcSchema schema = new JdbcSchema(ds, jc.dialect, jc, null/*catalog */, null/*schema */);
+            JdbcTable jt = (JdbcTable) schema.getTable(tableName.toLowerCase());
+            if (jt == null) {
+              throw new SemanticException ("Table " + tableName + " was not found in the database");
+            }
+            
+            if (jc.dialect instanceof JethrodataSqlDialect) {
+              JethrodataSqlDialect.initializeSupportedFunctions(ds);
+            }
 
-            JdbcConvention jc = JdbcConvention.JETHRO_DEFAULT_CONVENTION;
-            JdbcSchema schema = new JdbcSchema(ds, JethrodataSqlDialect.DEFAULT, jc,
-                null/* empty catalog */, null/* empty schema */);
-            JdbcTable jt = (JdbcTable) schema.getTable(tbl.toLowerCase());
-
-            //(JdbcTableScan) jt.toRel(RelOptUtil.getContext(cluster), optTable);
             JdbcHiveTableScan jdbcTableRel = new JdbcHiveTableScan (cluster, optTable, jt, jc, hts);
             tableRel = new HiveJdbcConverter(cluster, jdbcTableRel.getTraitSet().replace (HiveRelNode.CONVENTION), jdbcTableRel, jc);
           }

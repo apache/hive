@@ -22,5 +22,5 @@ public enum DatabaseType {
   POSTGRES,
   MSSQL,
   METASTORE, 
-  JETHRO
+  JethroData
 }

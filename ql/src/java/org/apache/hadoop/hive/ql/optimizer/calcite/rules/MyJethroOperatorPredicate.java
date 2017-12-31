@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlDialect;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.slf4j.Logger;
@@ -20,16 +21,20 @@ class JethroOperatorsPredicate {
   final static Set<String> allowedJethroOperators = new HashSet<>(Arrays.asList("=", "<>","!=", "<",">", "sqrt",
                                           "cast", "<>", "+", "-", "*", "/", "is not null", "and", "or", "not", "cast"));
   
-  private static boolean isValidOperator (SqlOperator operator, RelDataType type, ArrayList<RelDataType> paramsList) {
+  private static boolean isValidOperator (SqlOperator operator, RelDataType type, ArrayList<RelDataType> paramsList, SqlDialect dialect) {
+    if (dialect != null) {
+      return dialect.supportsFunction(operator, type, paramsList);
+    }
+    
     if (allowedJethroOperators.contains(operator.toString().toLowerCase())) {
-      return true;
+      return true;//type.getSqlTypeName()
     }
     LOG.debug("JETHRO: Skipped push down for " + operator.toString() + ", due to unsupporetd function.");
     return false;
   }
   
   
-  public static boolean validRexCall (RexCall call) {
+  public static boolean validRexCall (RexCall call, SqlDialect dialect) {
     final SqlOperator operator = call.getOperator();
     //SqlKind kind = call.getKind();
     List <RexNode> operands = call.getOperands();
@@ -38,6 +43,6 @@ class JethroOperatorsPredicate {
     for (RexNode currNode : operands) {
       paramsListType.add(currNode.getType());
     }
-    return isValidOperator(operator, resType, paramsListType);
+    return isValidOperator(operator, resType, paramsListType, dialect);
   }
 }

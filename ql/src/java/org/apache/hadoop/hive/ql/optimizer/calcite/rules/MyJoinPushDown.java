@@ -38,33 +38,6 @@ public class MyJoinPushDown extends RelOptRule {
     return visitorRes;
   }
   
-  private JdbcJoin convert(HiveJoin rel, JdbcConvention out) {
-    Join join = (Join) rel;
-    final List<RelNode> newInputs = new ArrayList<>();
-    for (RelNode input : join.getInputs()) {
-      if (!(input.getConvention() == getOutTrait())) {
-        input =
-            convert(input,
-                input.getTraitSet().replace(out));
-      }
-      newInputs.add(input);
-    }
-
-    try {
-      return new JdbcJoin(
-          join.getCluster(),
-          join.getTraitSet().replace(out),
-          newInputs.get(0),
-          newInputs.get(1),
-          join.getCondition(),
-          join.getVariablesSet(),
-          join.getJoinType());
-    } catch (InvalidRelException e) {
-      LOG.debug(e.toString());
-      return null;
-    }
-  }
-
   @Override
   public void onMatch(RelOptRuleCall call) {
     LOG.debug("MyJoinPushDown has been called");
@@ -81,7 +54,7 @@ public class MyJoinPushDown extends RelOptRule {
     RelNode input2 = converter2.getInput();
     
     HiveJoin newHiveJoin = join.copy(join.getTraitSet(), join.getCondition(), input1, input2, join.getJoinType(),join.isSemiJoinDone());
-    JdbcJoin newJdbcJoin = convert(newHiveJoin, converter1.getJdbcConvention());
+    JdbcJoin newJdbcJoin = (JdbcJoin) new JdbcJoinRule(converter1.getJdbcConvention()).convert(newHiveJoin, false);
     if (newJdbcJoin != null) {
       RelNode ConverterRes = converter1.copy(converter1.getTraitSet(), Arrays.asList(newJdbcJoin));
       if (ConverterRes != null) {

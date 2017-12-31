@@ -2,7 +2,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.Arrays;
 
-import org.apache.calcite.adapter.jdbc.JdbcConvention;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcFilter;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcFilterRule;
 import org.apache.calcite.plan.RelOptRule;
@@ -25,11 +24,12 @@ public class MyFilterPushDown extends RelOptRule {
   @Override
   public boolean matches(RelOptRuleCall call) {
     final HiveFilter filter = call.rel(0);
+    final HiveJdbcConverter converter = call.rel(1);
     //TODOY this is very naive imp, consult others!!!!!!
     
     RexNode cond = filter.getCondition ();
 
-    return MyJdbcRexCallValidator.isValidJdbcOperation(cond);
+    return MyJdbcRexCallValidator.isValidJdbcOperation(cond, converter.getJdbcConvention().dialect);
   }
 
   @Override
