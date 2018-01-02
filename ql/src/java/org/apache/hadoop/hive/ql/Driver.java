@@ -1337,6 +1337,9 @@ public class Driver implements IDriver {
     // If we've opened a transaction we need to commit or rollback rather than explicitly
     // releasing the locks.
     conf.unset(ValidTxnList.VALID_TXNS_KEY);
+    if(!checkConcurrency()) {
+      return;
+    }
     if (txnMgr.isTxnOpen()) {
       if (commit) {
         if(conf.getBoolVar(ConfVars.HIVE_IN_TEST) && conf.getBoolVar(ConfVars.HIVETESTMODEROLLBACKTXN)) {
