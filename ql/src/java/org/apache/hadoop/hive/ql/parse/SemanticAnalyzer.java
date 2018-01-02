@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -108,6 +109,7 @@ import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
@@ -119,6 +121,7 @@ import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -12202,14 +12205,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       validate(childTask, reworkMapredWork);
     }
   }
-
-  /**
-   * Get the row resolver given an operator.
-   */
-  public RowResolver getRowResolver(Operator opt) {
-    return opParseCtx.get(opt).getRowResolver();
-  }
-
   /**
    * Add default properties for table property. If a default parameter exists
    * in the tblProp, the value in tblProp will be kept.
@@ -12219,7 +12214,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @return Modified table property map
    */
   private Map<String, String> addDefaultProperties(
-      Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat) {
+      Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
+      String qualifiedTableName, List<Order> sortCols) {
     Map<String, String> retValue;
     if (tblProp == null) {
       retValue = new HashMap<String, String>();
@@ -12238,16 +12234,45 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY)
+    boolean makeInsertOnly = HiveConf.getBoolVar(conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY);
+    boolean makeAcid = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID) &&
+        HiveConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
+        DbTxnManager.class.getCanonicalName().equals(HiveConf.getVar(conf, ConfVars.HIVE_TXN_MANAGER));
+    if ((makeInsertOnly || makeAcid)
         && !isExt && StringUtils.isBlank(storageFormat.getStorageHandler())
+        //don't overwrite user choice if transactional attribute is explicitly set
         && !retValue.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)) {
-      retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
-      String oldProps = retValue.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-      if (oldProps != null) {
-        LOG.warn("Non-transactional table has transactional properties; overwriting " + oldProps);
+      if(makeInsertOnly) {
+        retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+        retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+            TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
       }
-      retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
-          TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
+      if(makeAcid) {
+        /*for CTAS, TransactionalValidationListener.makeAcid() runs to late to make table Acid
+         so the initial write ends up running as non-acid...*/
+        try {
+          Class inputFormatClass = storageFormat.getInputFormat() == null ? null :
+              Class.forName(storageFormat.getInputFormat());
+          Class outputFormatClass = storageFormat.getOutputFormat() == null ? null :
+              Class.forName(storageFormat.getOutputFormat());
+          if (inputFormatClass == null || outputFormatClass == null ||
+              !AcidInputFormat.class.isAssignableFrom(inputFormatClass) ||
+              !AcidOutputFormat.class.isAssignableFrom(outputFormatClass)) {
+            return retValue;
+          }
+        } catch (ClassNotFoundException e) {
+          LOG.warn("Could not verify InputFormat=" + storageFormat.getInputFormat() + " or OutputFormat=" +
+              storageFormat.getOutputFormat() + "  for " + qualifiedTableName);
+          return retValue;
+        }
+        if(sortCols != null && !sortCols.isEmpty()) {
+          return retValue;
+        }
+        retValue.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+        retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+            TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY);
+        LOG.info("Automatically chose to make " + qualifiedTableName + " acid.");
+      }
     }
     return retValue;
   }
@@ -12472,7 +12497,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (command_type) {
 
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
-      tblProps = addDefaultProperties(tblProps, isExt, storageFormat);
+      tblProps = addDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols);
 
       CreateTableDesc crtTblDesc = new CreateTableDesc(dbDotTab, isExt, isTemporary, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
@@ -12493,7 +12518,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
 
     case CTLT: // create table like <tbl_name>
-      tblProps = addDefaultProperties(tblProps, isExt, storageFormat);
+      tblProps = addDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols);
 
       if (isTemporary) {
         Table likeTable = getTable(likeTableName, false);
@@ -12570,7 +12595,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      tblProps = addDefaultProperties(tblProps, isExt, storageFormat);
+      tblProps = addDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols);
       tableDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
           partCols, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape, rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim,

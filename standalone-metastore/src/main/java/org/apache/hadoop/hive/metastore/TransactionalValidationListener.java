@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
@@ -199,6 +201,57 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
   }
 
   /**
+   * Want to make a a newly create table Acid (unless it explicitly has transactional=false param)
+   * if table can support it.  Also see SemanticAnalyzer.addDefaultProperties() which performs the
+   * same logic.  This code path is more general since it is activated even if you create a table
+   * via Thrift, WebHCat etc but some operations like CTAS create the table (metastore object) as
+   * the last step (i.e. after the data is written) but write itself is has to be aware of the type
+   * of table so this Listener is too late.
+   */
+  private void makeAcid(Table newTable) throws MetaException {
+    if(newTable.getParameters() != null &&
+        newTable.getParameters().containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)) {
+      LOG.info("Could not make " + Warehouse.getQualifiedName(newTable) + " acid: already has " +
+          hive_metastoreConstants.TABLE_IS_TRANSACTIONAL + "=" +
+          newTable.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL));
+      return;
+    }
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    boolean makeAcid =
+        //no point making an acid table if these other props are not set since it will just throw
+        //exceptions when someone tries to use the table.
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
+        "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager".equals(
+            MetastoreConf.getVar(conf, MetastoreConf.ConfVars.HIVE_TXN_MANAGER)
+        );
+
+    if(makeAcid) {
+      if(!conformToAcid(newTable)) {
+        LOG.info("Could not make " + Warehouse.getQualifiedName(newTable) + " acid: wrong IO format");
+        return;
+      }
+      if(!TableType.MANAGED_TABLE.toString().equalsIgnoreCase(newTable.getTableType())) {
+        //todo should this check be in conformToAcid()?
+        LOG.info("Could not make " + Warehouse.getQualifiedName(newTable) + " acid: it's " +
+            newTable.getTableType());
+        return;
+      }
+      if(newTable.getSd().getSortColsSize() > 0) {
+        LOG.info("Could not make " + Warehouse.getQualifiedName(newTable) + " acid: it's sorted");
+        return;
+      }
+      //check if orc and not sorted
+      Map<String, String> parameters = newTable.getParameters();
+      if (parameters == null || parameters.isEmpty()) {
+        parameters = new HashMap<>();
+      }
+      parameters.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+      newTable.setParameters(parameters);
+      LOG.info("Automatically chose to make " + Warehouse.getQualifiedName(newTable) + " acid.");
+    }
+  }
+  /**
    * Normalize case and make sure:
    * 1. 'true' is the only value to be set for 'transactional' (if set at all)
    * 2. If set to 'true', we should also enforce bucketing and ORC format
@@ -207,6 +260,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     Table newTable = context.getTable();
     Map<String, String> parameters = newTable.getParameters();
     if (parameters == null || parameters.isEmpty()) {
+      makeAcid(newTable);
       return;
     }
     String transactional = null;
@@ -226,6 +280,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     }
 
     if (transactional == null) {
+      makeAcid(newTable);
       return;
     }
 
