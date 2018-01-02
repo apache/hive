@@ -63,7 +63,7 @@ public class JdbcSerDe extends AbstractSerDe {
   @Override
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
     try {
-      LOGGER.debug("Initializing the SerDe");
+      LOGGER.trace("Initializing the SerDe");
 
       if (tbl.containsKey(JdbcStorageConfig.DATABASE_TYPE.getPropertyName())) {
         final boolean hive_query_execution = tbl.containsKey("YONI_ATTR");
@@ -125,7 +125,7 @@ public class JdbcSerDe extends AbstractSerDe {
 
   @Override
   public Object deserialize(Writable blob) throws SerDeException {
-    LOGGER.debug("Deserializing from SerDe");
+    LOGGER.trace("Deserializing from SerDe");
     if (!(blob instanceof MapWritable)) {
       throw new SerDeException("Expected MapWritable. Got " + blob.getClass().getName());
     }
