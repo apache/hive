@@ -2494,7 +2494,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             final String tableName = tabMetaData.getProperty("hive.sql.table");
 
             final DataSource ds = JdbcSchema.dataSource(url, driver, user, pswd);
-            SqlDialect jdbcDialect = JdbcSchema.createDialect(new SqlDialectFactoryImpl(), ds);
+            SqlDialect jdbcDialect = JdbcSchema.createDialect(SqlDialectFactoryImpl.inst () , ds);
             JdbcConvention jc = JdbcConvention.of(jdbcDialect, null, dataBaseType);
             JdbcSchema schema = new JdbcSchema(ds, jc.dialect, jc, null/*catalog */, null/*schema */);
             JdbcTable jt = (JdbcTable) schema.getTable(tableName.toLowerCase());

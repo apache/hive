@@ -28,9 +28,8 @@ public class MyJdbcRexCallValidator {
     
     @Override
     public Void visitCall(RexCall call) {
-      boolean isValidCall = JethroOperatorsPredicate.validRexCall (call, dialect);
       if (res == true) {
-        res = isValidCall;
+        res = JethroOperatorsPredicate.validRexCall (call, dialect);
         if (res == true) {
           return super.visitCall(call);
         }

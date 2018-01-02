@@ -21,18 +21,18 @@ TBLPROPERTIES ( "hive.sql.database.type" = "JethroData",
                 "hive.sql.table" = "mytable2",
                 "hive.sql.dbcp.maxActive" = "1");                
 
-SELECT abs (ext_mytable1.x1), ext_mytable1.y1 FROM ext_mytable1 where bround (x1) +1 = 8;
---SELECT x1,y1 FROM ext_mytable1 limit 3 offset 1;
-SELECT x1, sum(y1*8.0) FROM ext_mytable1 group by x1 order by sum(y1*8);
-SELECT x1 FROM ext_mytable1 order by y1;
-SELECT sum(y1*8.0) FROM ext_mytable1 group by x1 order by sum(y1*8);
-
-SELECT x1,y1 FROM ext_mytable1 order by y1 limit 3 offset 1;
-SELECT x1 FROM ext_mytable1 order by y1 limit 3;
-
-select count (*) from ext_mytable2;
-
-select count (x1) from ext_mytable1;
+--SELECT abs (ext_mytable1.x1), ext_mytable1.y1 FROM ext_mytable1 where bround (x1) +1 = 8;
+----SELECT x1,y1 FROM ext_mytable1 limit 3 offset 1;
+--SELECT x1, sum(y1*8.0) FROM ext_mytable1 group by x1 order by sum(y1*8);
+--SELECT x1 FROM ext_mytable1 order by y1;
+--SELECT sum(y1*8.0) FROM ext_mytable1 group by x1 order by sum(y1*8);
+--
+--SELECT x1,y1 FROM ext_mytable1 order by y1 limit 3 offset 1;
+--SELECT x1 FROM ext_mytable1 order by y1 limit 3;
+--
+--select count (*) from ext_mytable2;
+--
+--select count (x1) from ext_mytable1;
 
 SELECT ext_mytable1.x1, ext_mytable1.y1, ext_mytable2.x2
 FROM ext_mytable1
