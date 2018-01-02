@@ -868,7 +868,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
   private void setupMapJoin(HiveConf conf) {
     conf.setBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASK, true);
-    conf.setLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD, 10000);
+    conf.setLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD, 100000);
   }
 
   private List<String> runStatementOnDriver(String stmt) throws Exception {
