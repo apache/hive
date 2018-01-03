@@ -88,18 +88,20 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private transient List<URI> localFiles = new ArrayList<URI>();
 
   private final transient long sparkClientTimtout;
+  private final String sessionId;
 
-  RemoteHiveSparkClient(HiveConf hiveConf, Map<String, String> conf) throws Exception {
+  RemoteHiveSparkClient(HiveConf hiveConf, Map<String, String> conf, String sessionId) throws Exception {
     this.hiveConf = hiveConf;
     sparkClientTimtout = hiveConf.getTimeVar(HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT,
         TimeUnit.SECONDS);
     sparkConf = HiveSparkClientFactory.generateSparkConf(conf);
     this.conf = conf;
+    this.sessionId = sessionId;
     createRemoteClient();
   }
 
   private void createRemoteClient() throws Exception {
-    remoteClient = SparkClientFactory.createClient(conf, hiveConf);
+    remoteClient = SparkClientFactory.createClient(conf, hiveConf, sessionId);
 
     if (HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_PREWARM_ENABLED) &&
             (SparkClientUtilities.isYarnMaster(hiveConf.get("spark.master")) ||
