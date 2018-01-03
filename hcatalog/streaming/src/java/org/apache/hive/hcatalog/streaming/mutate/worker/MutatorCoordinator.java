@@ -98,11 +98,11 @@ public class MutatorCoordinator implements Closeable, Flushable {
   }
 
   /**
-   * We expect records grouped by (partitionValues,bucketId) and ordered by (origTxnId,rowId).
+   * We expect records grouped by (partitionValues,bucketId) and ordered by (origWriteId,rowId).
    * 
    * @throws BucketIdException The bucket ID in the {@link RecordIdentifier} of the record does not match that computed
    *           using the values in the record's bucketed columns.
-   * @throws RecordSequenceException The record was submitted that was not in the correct ascending (origTxnId, rowId)
+   * @throws RecordSequenceException The record was submitted that was not in the correct ascending (origWriteId, rowId)
    *           sequence.
    * @throws GroupRevisitedException If an event was submitted for a (partition, bucketId) combination that has already
    *           been closed.
@@ -120,11 +120,11 @@ public class MutatorCoordinator implements Closeable, Flushable {
   }
 
   /**
-   * We expect records grouped by (partitionValues,bucketId) and ordered by (origTxnId,rowId).
+   * We expect records grouped by (partitionValues,bucketId) and ordered by (origWriteId,rowId).
    * 
    * @throws BucketIdException The bucket ID in the {@link RecordIdentifier} of the record does not match that computed
    *           using the values in the record's bucketed columns.
-   * @throws RecordSequenceException The record was submitted that was not in the correct ascending (origTxnId, rowId)
+   * @throws RecordSequenceException The record was submitted that was not in the correct ascending (origWriteId, rowId)
    *           sequence.
    * @throws GroupRevisitedException If an event was submitted for a (partition, bucketId) combination that has already
    *           been closed.
@@ -142,11 +142,11 @@ public class MutatorCoordinator implements Closeable, Flushable {
   }
 
   /**
-   * We expect records grouped by (partitionValues,bucketId) and ordered by (origTxnId,rowId).
+   * We expect records grouped by (partitionValues,bucketId) and ordered by (origWriteId,rowId).
    * 
    * @throws BucketIdException The bucket ID in the {@link RecordIdentifier} of the record does not match that computed
    *           using the values in the record's bucketed columns.
-   * @throws RecordSequenceException The record was submitted that was not in the correct ascending (origTxnId, rowId)
+   * @throws RecordSequenceException The record was submitted that was not in the correct ascending (origWriteId, rowId)
    *           sequence.
    * @throws GroupRevisitedException If an event was submitted for a (partition, bucketId) combination that has already
    *           been closed.
@@ -229,9 +229,9 @@ public class MutatorCoordinator implements Closeable, Flushable {
     sequenceValidator.reset();
     if (deleteDeltaIfExists) {
       // TODO: Should this be the concern of the mutator?
-      deleteDeltaIfExists(newPartitionPath, table.getTransactionId(), newBucketId);
+      deleteDeltaIfExists(newPartitionPath, table.getWriteId(), newBucketId);
     }
-    mutator = mutatorFactory.newMutator(outputFormat, table.getTransactionId(), newPartitionPath, newBucketId);
+    mutator = mutatorFactory.newMutator(outputFormat, table.getWriteId(), newPartitionPath, newBucketId);
     bucketId = newBucketId;
     partitionValues = newPartitionValues;
     partitionPath = newPartitionPath;
@@ -282,12 +282,12 @@ public class MutatorCoordinator implements Closeable, Flushable {
   }
 
   /* A delta may be present from a previous failed task attempt. */
-  private void deleteDeltaIfExists(Path partitionPath, long transactionId, int bucketId) throws IOException {
+  private void deleteDeltaIfExists(Path partitionPath, long writeId, int bucketId) throws IOException {
     Path deltaPath = AcidUtils.createFilename(partitionPath,
         new AcidOutputFormat.Options(configuration)
             .bucket(bucketId)
-            .minimumTransactionId(transactionId)
-            .maximumTransactionId(transactionId));
+            .minimumWriteId(writeId)
+            .maximumWriteId(writeId));
     FileSystem fileSystem = deltaPath.getFileSystem(configuration);
     if (fileSystem.exists(deltaPath)) {
       LOG.info("Deleting existing delta path: {}", deltaPath);

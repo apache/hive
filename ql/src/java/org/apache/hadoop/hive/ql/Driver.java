@@ -44,8 +44,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -76,6 +77,7 @@ import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
@@ -1193,27 +1195,65 @@ public class Driver implements IDriver {
   // Write the current set of valid transactions into the conf file so that it can be read by
   // the input format.
   private void recordValidTxns(HiveTxnManager txnMgr) throws LockException {
-    ValidTxnList oldList = null;
-    String s = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    ValidTxnWriteIdList oldList = null;
+    String s = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
     if(s != null && s.length() > 0) {
-      oldList = new ValidReadTxnList(s);
+      oldList = new ValidTxnWriteIdList(s);
     }
-    ValidTxnList txns = txnMgr.getValidTxns();
+    // TODO (Sankar): Need to set ValidTxnList for some callers which need snapshot
+    // Get the current set of valid write IDs for the current transaction and write it into the
+    // conf file so that it can be read by the input format.
+    ValidTxnWriteIdList txnWriteIds = txnMgr.getValidWriteIds(getTransactionalTableList(plan));
     if(oldList != null) {
       throw new IllegalStateException("calling recordValidTxn() more than once in the same " +
         JavaUtils.txnIdToString(txnMgr.getCurrentTxnId()));
     }
-    String txnStr = txns.toString();
-    conf.set(ValidTxnList.VALID_TXNS_KEY, txnStr);
+    String writeIdStr = txnWriteIds.toString();
+    conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, writeIdStr);
     if(plan.getFetchTask() != null) {
+      // TODO (Sankar): Need to validate this usecase to see if only one table is being read
       /**
        * This is needed for {@link HiveConf.ConfVars.HIVEFETCHTASKCONVERSION} optimization which
        * initializes JobConf in FetchOperator before recordValidTxns() but this has to be done
        * after locks are acquired to avoid race conditions in ACID.
        */
-      plan.getFetchTask().setValidTxnList(txnStr);
+      plan.getFetchTask().setValidWriteIdList(writeIdStr);
     }
-    LOG.debug("Encoding valid txns info " + txnStr + " txnid:" + txnMgr.getCurrentTxnId());
+    LOG.debug("Encoding valid write ids info " + writeIdStr + " txnid:" + txnMgr.getCurrentTxnId());
+  }
+
+  // TODO (Sankar): Need to see if it make sense to traverse the operator tree to find TableScanOperator
+  // Make the list of transactional tables list which are getting read or written by current txn
+  private List<String> getTransactionalTableList(QueryPlan plan) {
+    List<String> tableList = new ArrayList<>();
+
+    for (ReadEntity input : plan.getInputs()) {
+      addTableFromEntity(input, tableList);
+    }
+    // TODO (Sankar): Need to check if WriteEntity need to be traversed
+    for (WriteEntity output : plan.getOutputs()) {
+      addTableFromEntity(output, tableList);
+    }
+    return tableList;
+  }
+
+  private void addTableFromEntity(Entity entity, List<String> tableList) {
+    Table tbl;
+    switch (entity.getType()) {
+      case TABLE:
+        tbl = entity.getTable();
+        break;
+      case PARTITION:
+      case DUMMYPARTITION:
+        tbl = entity.getPartition().getTable();
+        break;
+      default:
+        return;
+    }
+    String fullTableName = AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName());
+    if (AcidUtils.isTransactionalTable(tbl) && !tableList.contains(fullTableName)) {
+      tableList.add(fullTableName);
+    }
   }
 
   private String getUserFromUGI() {
@@ -1256,7 +1296,7 @@ public class Driver implements IDriver {
       if(userFromUGI == null) {
         throw createProcessorResponse(10);
       }
-      // Set the transaction id in all of the acid file sinks
+      // Set the table write id in all of the acid file sinks
       if (haveAcidWrite()) {
         List<FileSinkDesc> acidSinks = new ArrayList<>(plan.getAcidSinks());
         //sorting makes tests easier to write since file names and ROW__IDs depend on statementId
@@ -1264,10 +1304,14 @@ public class Driver implements IDriver {
         acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) ->
           fsd1.getDirName().compareTo(fsd2.getDirName()));
         for (FileSinkDesc desc : acidSinks) {
-          desc.setTransactionId(queryTxnMgr.getCurrentTxnId());
+          TableDesc tableInfo = desc.getTableInfo();
+          long writeId = queryTxnMgr.getTableWriteId(Utilities.getDatabaseName(tableInfo.getTableName()),
+                  Utilities.getTableName(tableInfo.getTableName()));
+          desc.setTableWriteId(writeId);
+
           //it's possible to have > 1 FileSink writing to the same table/partition
           //e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
-          desc.setStatementId(queryTxnMgr.getWriteIdAndIncrement());
+          desc.setStatementId(queryTxnMgr.getStmtIdAndIncrement());
         }
       }
       /*It's imperative that {@code acquireLocks()} is called for all commands so that
@@ -1316,7 +1360,7 @@ public class Driver implements IDriver {
     }
     // If we've opened a transaction we need to commit or rollback rather than explicitly
     // releasing the locks.
-    conf.unset(ValidTxnList.VALID_TXNS_KEY);
+    conf.unset(ValidWriteIdList.VALID_WRITEIDS_KEY);
     if(!checkConcurrency()) {
       return;
     }

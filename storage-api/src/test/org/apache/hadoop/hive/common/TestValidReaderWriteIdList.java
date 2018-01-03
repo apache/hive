@@ -29,58 +29,59 @@ import java.io.FileOutputStream;
 import java.util.BitSet;
 
 /**
- * Tests for {@link ValidReadTxnList}
+ * Tests for {@link ValidReaderWriteIdList}
  */
-public class TestValidReadTxnList {
+public class TestValidReaderWriteIdList {
+  private final String tableName = "t1";
 
   @Test
   public void noExceptions() throws Exception {
-    ValidTxnList txnList = new ValidReadTxnList(new long[0], new BitSet(), 1, Long.MAX_VALUE);
-    String str = txnList.writeToString();
+    ValidWriteIdList writeIdList = new ValidReaderWriteIdList(tableName, new long[0], new BitSet(), 1, Long.MAX_VALUE);
+    String str = writeIdList.writeToString();
     Assert.assertEquals("1:" + Long.MAX_VALUE + "::", str);
-    ValidTxnList newList = new ValidReadTxnList();
+    ValidWriteIdList newList = new ValidReaderWriteIdList();
     newList.readFromString(str);
-    Assert.assertTrue(newList.isTxnValid(1));
-    Assert.assertFalse(newList.isTxnValid(2));
+    Assert.assertTrue(newList.isWriteIdValid(1));
+    Assert.assertFalse(newList.isWriteIdValid(2));
   }
 
   @Test
   public void exceptions() throws Exception {
-    ValidTxnList txnList = new ValidReadTxnList(new long[]{2L,4L}, new BitSet(), 5, 4L);
-    String str = txnList.writeToString();
+    ValidWriteIdList writeIdList = new ValidReaderWriteIdList(tableName, new long[]{2L,4L}, new BitSet(), 5, 4L);
+    String str = writeIdList.writeToString();
     Assert.assertEquals("5:4:2,4:", str);
-    ValidTxnList newList = new ValidReadTxnList();
+    ValidWriteIdList newList = new ValidReaderWriteIdList();
     newList.readFromString(str);
-    Assert.assertTrue(newList.isTxnValid(1));
-    Assert.assertFalse(newList.isTxnValid(2));
-    Assert.assertTrue(newList.isTxnValid(3));
-    Assert.assertFalse(newList.isTxnValid(4));
-    Assert.assertTrue(newList.isTxnValid(5));
-    Assert.assertFalse(newList.isTxnValid(6));
+    Assert.assertTrue(newList.isWriteIdValid(1));
+    Assert.assertFalse(newList.isWriteIdValid(2));
+    Assert.assertTrue(newList.isWriteIdValid(3));
+    Assert.assertFalse(newList.isWriteIdValid(4));
+    Assert.assertTrue(newList.isWriteIdValid(5));
+    Assert.assertFalse(newList.isWriteIdValid(6));
   }
 
   @Test
   public void longEnoughToCompress() throws Exception {
     long[] exceptions = new long[1000];
     for (int i = 0; i < 1000; i++) exceptions[i] = i + 100;
-    ValidTxnList txnList = new ValidReadTxnList(exceptions, new BitSet(), 2000, 900);
-    String str = txnList.writeToString();
-    ValidTxnList newList = new ValidReadTxnList();
+    ValidWriteIdList writeIdList = new ValidReaderWriteIdList(tableName, exceptions, new BitSet(), 2000, 900);
+    String str = writeIdList.writeToString();
+    ValidWriteIdList newList = new ValidReaderWriteIdList();
     newList.readFromString(str);
-    for (int i = 0; i < 100; i++) Assert.assertTrue(newList.isTxnValid(i));
-    for (int i = 100; i < 1100; i++) Assert.assertFalse(newList.isTxnValid(i));
-    for (int i = 1100; i < 2001; i++) Assert.assertTrue(newList.isTxnValid(i));
-    Assert.assertFalse(newList.isTxnValid(2001));
+    for (int i = 0; i < 100; i++) Assert.assertTrue(newList.isWriteIdValid(i));
+    for (int i = 100; i < 1100; i++) Assert.assertFalse(newList.isWriteIdValid(i));
+    for (int i = 1100; i < 2001; i++) Assert.assertTrue(newList.isWriteIdValid(i));
+    Assert.assertFalse(newList.isWriteIdValid(2001));
   }
 
   @Test
   public void readWriteConfig() throws Exception {
     long[] exceptions = new long[1000];
     for (int i = 0; i < 1000; i++) exceptions[i] = i + 100;
-    ValidTxnList txnList = new ValidReadTxnList(exceptions, new BitSet(), 2000, 900);
-    String str = txnList.writeToString();
+    ValidWriteIdList writeIdList = new ValidReaderWriteIdList(tableName, exceptions, new BitSet(), 2000, 900);
+    String str = writeIdList.writeToString();
     Configuration conf = new Configuration();
-    conf.set(ValidTxnList.VALID_TXNS_KEY, str);
+    conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, str);
     File tmpFile = File.createTempFile("TestValidTxnImpl", "readWriteConfig");
     DataOutputStream out = new DataOutputStream(new FileOutputStream(tmpFile));
     conf.write(out);
@@ -88,7 +89,7 @@ public class TestValidReadTxnList {
     DataInputStream in = new DataInputStream(new FileInputStream(tmpFile));
     Configuration newConf = new Configuration();
     newConf.readFields(in);
-    Assert.assertEquals(str, newConf.get(ValidTxnList.VALID_TXNS_KEY));
+    Assert.assertEquals(str, newConf.get(ValidWriteIdList.VALID_WRITEIDS_KEY));
   }
 
   @Test
@@ -97,13 +98,13 @@ public class TestValidReadTxnList {
     BitSet bitSet = new BitSet(exceptions.length);
     bitSet.set(0);  // mark txn "2L" aborted
     bitSet.set(3);  // mark txn "8L" aborted
-    ValidTxnList txnList = new ValidReadTxnList(exceptions, bitSet, 11, 4L);
-    String str = txnList.writeToString();
+    ValidWriteIdList writeIdList = new ValidReaderWriteIdList(tableName, exceptions, bitSet, 11, 4L);
+    String str = writeIdList.writeToString();
     Assert.assertEquals("11:4:4,6,10:2,8", str);
-    Assert.assertTrue(txnList.isTxnAborted(2L));
-    Assert.assertFalse(txnList.isTxnAborted(4L));
-    Assert.assertFalse(txnList.isTxnAborted(6L));
-    Assert.assertTrue(txnList.isTxnAborted(8L));
-    Assert.assertFalse(txnList.isTxnAborted(10L));
+    Assert.assertTrue(writeIdList.isWriteIdAborted(2L));
+    Assert.assertFalse(writeIdList.isWriteIdAborted(4L));
+    Assert.assertFalse(writeIdList.isWriteIdAborted(6L));
+    Assert.assertTrue(writeIdList.isWriteIdAborted(8L));
+    Assert.assertFalse(writeIdList.isWriteIdAborted(10L));
   }
 }

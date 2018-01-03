@@ -278,8 +278,8 @@ public abstract class AbstractRecordWriter implements RecordWriter {
                       .inspector(getSerde().getObjectInspector())
                       .bucket(bucketId)
                       .tableProperties(tblProperties)
-                      .minimumTransactionId(minTxnId)
-                      .maximumTransactionId(maxTxnID)
+                      .minimumWriteId(minTxnId)
+                      .maximumWriteId(maxTxnID)
                       .statementId(-1)
                       .finalDestination(partitionPath));
     } catch (SerDeException e) {

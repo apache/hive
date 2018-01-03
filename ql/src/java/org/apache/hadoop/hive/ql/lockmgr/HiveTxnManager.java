@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
-import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -121,16 +121,17 @@ public interface HiveTxnManager {
   void heartbeat() throws LockException;
 
   /**
-   * Get the transactions that are currently valid.  The resulting
-   * {@link ValidTxnList} object is a thrift object and can
+   * Get the table write Ids that are valid for the current transaction.  The resulting
+   * {@link ValidTxnWriteIdList} object is a thrift object and can
    * be  passed to  the processing
    * tasks for use in the reading the data.  This call should be made once up
-   * front by the planner and should never be called on the backend,
+   * front by the planner per table and should never be called on the backend,
    * as this will violate the isolation level semantics.
-   * @return list of valid transactions.
+   * @param tableList list of tables (<db_name>.<table_name>) read/written by current transaction.
+   * @return list of valid table write Ids.
    * @throws LockException
    */
-  ValidTxnList getValidTxns() throws LockException;
+  ValidTxnWriteIdList getValidWriteIds(List<String> tableList) throws LockException;
 
   /**
    * Get the name for currently installed transaction manager.
@@ -222,9 +223,14 @@ public interface HiveTxnManager {
   long getCurrentTxnId();
 
   /**
+   * if {@code isTxnOpen()}, returns the table write ID associated with current active transaction
+   */
+  long getTableWriteId(String dbName, String tableName) throws LockException;
+
+  /**
    * Should be though of more as a unique write operation ID in a given txn (at QueryPlan level).
    * Each statement writing data within a multi statement txn should have a unique WriteId.
    * Even a single statement, (e.g. Merge, multi-insert may generates several writes).
    */
-  int getWriteIdAndIncrement();
+  int getStmtIdAndIncrement();
 }

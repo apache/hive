@@ -69,6 +69,9 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
+import org.apache.hadoop.hive.metastore.api.AddTransactionalTableRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdResponse;
 import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
@@ -80,6 +83,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.GetOpenWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetOpenWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
@@ -94,6 +99,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.OpenWriteIds;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -865,6 +871,246 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     } catch (RetryException e) {
       commitTxn(rqst);
+    }
+  }
+
+  @Override
+  @RetrySemantics.ReadOnly
+  public GetOpenWriteIdsResponse getOpenWriteIds(GetOpenWriteIdsRequest rqst)
+          throws NoSuchTxnException, MetaException {
+    try {
+      // We need to figure out the current transaction number and the list of
+      // open transactions.  To avoid needing a transaction on the underlying
+      // database we'll look at the current transaction number first.  If it
+      // subsequently shows up in the open list that's ok.
+      Connection dbConn = null;
+      Statement stmt = null;
+      ResultSet rs = null;
+      try {
+        /**
+         * This runs at READ_COMMITTED for exactly the same reason as {@link #getOpenTxnsInfo()}
+         */
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        String s = "select ntxn_next - 1 from NEXT_TXN_ID";
+        LOG.debug("Going to execute query <" + s + ">");
+        rs = stmt.executeQuery(s);
+        if (!rs.next()) {
+          throw new MetaException("Transaction tables not properly " +
+                  "initialized, no record found in next_txn_id");
+        }
+        long txnHwm = rs.getLong(1);
+        if (rs.wasNull()) {
+          throw new MetaException("Transaction tables not properly " +
+                  "initialized, null record found in next_txn_id");
+        }
+        close(rs);
+        List<Long> openList = new ArrayList<>();
+        List<Long> abortedList = new ArrayList<>();
+        //need the WHERE clause below to ensure consistent results with READ_COMMITTED
+        s = "select txn_id, txn_state from TXNS where txn_id <= " + txnHwm + " order by txn_id";
+        LOG.debug("Going to execute query<" + s + ">");
+        rs = stmt.executeQuery(s);
+        while (rs.next()) {
+          long txnId = rs.getLong(1);
+          char c = rs.getString(2).charAt(0);
+          if (c == TXN_OPEN) {
+            openList.add(txnId);
+          } else if (c == TXN_ABORTED) {
+            abortedList.add(txnId);
+          }
+        }
+        long currentTxn = rqst.getCurrentTxnId();
+        List<OpenWriteIds> openWriteIdsList = new ArrayList<>();
+        for (String table : rqst.getTableNames()) {
+          OpenWriteIds writeIds = getOpenWriteIdsForTable(stmt, table, currentTxn,
+                                                          txnHwm, openList, abortedList);
+          openWriteIdsList.add(writeIds);
+        }
+
+        LOG.debug("Going to rollback");
+        dbConn.rollback();
+        GetOpenWriteIdsResponse owr = new GetOpenWriteIdsResponse(openWriteIdsList);
+        return owr;
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "getOpenWriteIds");
+        throw new MetaException("Unable to select from transaction database, "
+                + StringUtils.stringifyException(e));
+      } finally {
+        close(rs, stmt, dbConn);
+      }
+    } catch (RetryException e) {
+      return getOpenWriteIds(rqst);
+    }
+  }
+
+  private OpenWriteIds getOpenWriteIdsForTable(Statement stmt, String tableName, long currentTxn,
+       long txnHwm, List<Long>openList, List<Long>abortedList) throws SQLException {
+    ResultSet rs = null;
+    try {
+      // Need to initialize to 0 to make sure if nobody modified this table, then current txn
+      // shouldn't read any data
+      long writeIdHwm = 0;
+      List<Long> openWriteIdList = new ArrayList<>();
+
+      // The output includes all the txns which are under the high water mark. It includes
+      // the committed transactions as well.
+      String s = "select t2w_txnid, t2w_writeid from TXN_TO_WRITE_ID where t2w_txnid <= " + txnHwm
+              + " and t2w_table = " + quoteString(tableName) + " order by t2w_writeid";
+      LOG.debug("Going to execute query<" + s + ">");
+      rs = stmt.executeQuery(s);
+      long minOpenWriteId = Long.MAX_VALUE;
+      BitSet abortedBits = new BitSet();
+      while (rs.next()) {
+        long txnId = rs.getLong(1);
+        long writeId = rs.getLong(2);
+        writeIdHwm = Math.max(writeIdHwm, writeId);
+
+        // Skip the current transaction from the open list as the write ID corresponding to this
+        // should be valid within current transaction
+        if (txnId == currentTxn) {
+          continue;
+        }
+        if (openList.contains(txnId)) {
+          openWriteIdList.add(writeId);
+          minOpenWriteId = Math.min(minOpenWriteId, writeId);
+        } else if (abortedList.contains(txnId)) {
+          openWriteIdList.add(writeId);
+          abortedBits.set(openWriteIdList.size() - 1);
+        }
+
+        // Skip of the transaction under evaluation is already committed.
+      }
+
+      ByteBuffer byteBuffer = ByteBuffer.wrap(abortedBits.toByteArray());
+      OpenWriteIds owi = new OpenWriteIds(tableName, writeIdHwm, openWriteIdList, byteBuffer);
+      if (minOpenWriteId < Long.MAX_VALUE) {
+        owi.setMinWriteId(minOpenWriteId);
+      }
+      return owi;
+    } finally {
+      close(rs);
+    }
+  }
+
+  @Override
+  public void addTransactionalTable(AddTransactionalTableRequest rqst) throws MetaException {
+    String fullTableName = TxnUtils.getFullTableName(rqst.getDbName(), rqst.getTableName());
+
+    try {
+      Connection dbConn = null;
+      Statement stmt = null;
+      ResultSet rs = null;
+      try {
+        lockInternal();
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+
+        // Check if any entry already exist for the given table name,
+        // If yes, then reset next ID to 1 else create a new entry with initial value as 1
+        String s = sqlGenerator.addForUpdateClause(
+                "select nwi_next from NEXT_WRITE_ID where nwi_table = " + quoteString(fullTableName));
+
+        LOG.debug("Going to execute query <" + s + ">");
+        rs = stmt.executeQuery(s);
+        if (rs.next()) {
+          s = "update NEXT_WRITE_ID set nwi_next = 1 where nwi_table = " + quoteString(fullTableName);
+          LOG.debug("Going to execute update <" + s + ">");
+          stmt.executeUpdate(s);
+        } else {
+          s = "insert into NEXT_WRITE_ID (nwi_table, nwi_next) values (" + quoteString(fullTableName) + ", 1)";
+          LOG.debug("Going to execute insert <" + s + ">");
+          stmt.execute(s);
+        }
+
+        LOG.debug("Going to commit");
+        dbConn.commit();
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "addTransactionalTable(" + rqst + ")");
+        throw new MetaException("Unable to update transaction database "
+                + StringUtils.stringifyException(e));
+      } finally {
+        close(rs, stmt, dbConn);
+        unlockInternal();
+      }
+    } catch (RetryException e) {
+      addTransactionalTable(rqst);
+    }
+  }
+
+  @Override
+  public AllocateTableWriteIdResponse allocateTableWriteId(AllocateTableWriteIdRequest rqst)
+          throws NoSuchTxnException, TxnAbortedException, MetaException {
+    long txnId = rqst.getTxnId();
+    String fullTableName = TxnUtils.getFullTableName(rqst.getDbName(), rqst.getTableName());
+    try {
+      Connection dbConn = null;
+      Statement stmt = null;
+      ResultSet rs = null;
+      try {
+        lockInternal();
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+
+        // Validate the transaction's state. Write ID should be allocated only for open transactions
+        TxnStatus txnStatus = findTxnState(txnId, stmt);
+        if (txnStatus != TxnStatus.OPEN) {
+          raiseTxnUnexpectedState(txnStatus, txnId);
+          shouldNeverHappen(txnId);
+          //dbConn is rolled back in finally{}
+        }
+
+        // If table write ID is already allocated for the current transaction, then just return it
+        // else allocate it
+        long writeId;
+        String s = "select t2w_writeid from TXN_TO_WRITE_ID where t2w_txnid = " + txnId
+                                              + " and t2w_table = " + quoteString(fullTableName);
+        LOG.debug("Going to execute query <" + s + ">");
+        rs = stmt.executeQuery(s);
+        if (rs.next()) {
+          writeId = rs.getLong(1);
+        } else {
+          // Get the next write ID for the given table and increment it
+          s = sqlGenerator.addForUpdateClause(
+                  "select nwi_next from NEXT_WRITE_ID where nwi_table = " + quoteString(fullTableName));
+
+          LOG.debug("Going to execute query <" + s + ">");
+          rs = stmt.executeQuery(s);
+          if (!rs.next()) {
+            throw new MetaException("Transaction database not properly " +
+                    "configured, can't find next per table write id.");
+          }
+          writeId = rs.getLong(1);
+          s = "update NEXT_WRITE_ID set nwi_next = " + (writeId + 1)
+                  + " where nwi_table = " + quoteString(fullTableName);
+          LOG.debug("Going to execute update <" + s + ">");
+          stmt.executeUpdate(s);
+
+          s = "insert into TXN_TO_WRITE_ID (t2w_txnid, t2w_table, t2w_writeid) values ("
+                  + txnId + ", " + quoteString(fullTableName) + ", " + writeId + ")";
+          LOG.debug("Going to execute insert <" + s + ">");
+          stmt.execute(s);
+        }
+
+        LOG.debug("Going to commit");
+        dbConn.commit();
+        return new AllocateTableWriteIdResponse(writeId);
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "allocateTableWriteId(" + rqst + ")");
+        throw new MetaException("Unable to update transaction database "
+                + StringUtils.stringifyException(e));
+      } finally {
+        close(rs, stmt, dbConn);
+        unlockInternal();
+      }
+    } catch (RetryException e) {
+      return allocateTableWriteId(rqst);
     }
   }
 

@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.*;
 
 import java.sql.SQLException;
+import java.util.IllegalFormatCodePointException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -123,6 +124,31 @@ public interface TxnStore extends Configurable {
   public BasicTxnInfo getFirstCompletedTransactionForTableAfterCommit(
       String inputDbName, String inputTableName, ValidTxnList txnList)
           throws MetaException;
+  /**
+   * Gets the list of write ids which are open/aborted
+   * @param rqst info on transaction and list of table names associated with given transaction
+   * @throws NoSuchTxnException
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  GetOpenWriteIdsResponse getOpenWriteIds(GetOpenWriteIdsRequest rqst)
+          throws NoSuchTxnException,  MetaException;
+  /**
+   * Create metadata for transactional table which is newly added
+   * @param rqst info on transactional table for which need to add metadata
+   * @throws MetaException
+   */
+  void addTransactionalTable(AddTransactionalTableRequest rqst) throws MetaException;
+
+  /**
+   * Allocate a write ID for the given table and associate it with a transaction
+   * @param rqst info on transaction and table to allocate write id
+   * @throws NoSuchTxnException
+   * @throws TxnAbortedException
+   * @throws MetaException
+   */
+  AllocateTableWriteIdResponse allocateTableWriteId(AllocateTableWriteIdRequest rqst)
+    throws NoSuchTxnException, TxnAbortedException, MetaException;
 
   /**
    * Obtain a lock.
@@ -350,10 +376,10 @@ public interface TxnStore extends Configurable {
   List<String> findColumnsWithStats(CompactionInfo ci) throws MetaException;
 
   /**
-   * Record the highest txn id that the {@code ci} compaction job will pay attention to.
+   * Record the highest write id that the {@code ci} compaction job will pay attention to.
    */
   @RetrySemantics.Idempotent
-  void setCompactionHighestTxnId(CompactionInfo ci, long highestTxnId) throws MetaException;
+  void setCompactionHighestWriteId(CompactionInfo ci, long highestWriteId) throws MetaException;
 
   /**
    * For any given compactable entity (partition, table if not partitioned) the history of compactions

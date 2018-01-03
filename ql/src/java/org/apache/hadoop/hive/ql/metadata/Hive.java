@@ -1723,7 +1723,7 @@ public class Hive {
    * delta_x_x directory - same as any other Acid write.  This method modifies the destPath to add
    * this path component.
    * @param txnId - id of current transaction (in which this operation is running)
-   * @param stmtId - see {@link DbTxnManager#getWriteIdAndIncrement()}
+   * @param stmtId - see {@link DbTxnManager#getStmtIdAndIncrement()}
    * @return appropriately modified path
    */
   private Path fixFullAcidPathForLoadData(LoadFileType loadFileType, Path destPath, long txnId, int stmtId, Table tbl) throws HiveException {

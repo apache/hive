@@ -364,6 +364,18 @@ class AbortTxnsRequest;
 
 class CommitTxnRequest;
 
+class GetOpenWriteIdsRequest;
+
+class OpenWriteIds;
+
+class GetOpenWriteIdsResponse;
+
+class AddTransactionalTableRequest;
+
+class AllocateTableWriteIdRequest;
+
+class AllocateTableWriteIdResponse;
+
 class LockComponent;
 
 class LockRequest;
@@ -5949,6 +5961,294 @@ class CommitTxnRequest {
 void swap(CommitTxnRequest &a, CommitTxnRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const CommitTxnRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetOpenWriteIdsRequest {
+ public:
+
+  GetOpenWriteIdsRequest(const GetOpenWriteIdsRequest&);
+  GetOpenWriteIdsRequest& operator=(const GetOpenWriteIdsRequest&);
+  GetOpenWriteIdsRequest() : currentTxnId(0) {
+  }
+
+  virtual ~GetOpenWriteIdsRequest() throw();
+  int64_t currentTxnId;
+  std::vector<std::string>  tableNames;
+
+  void __set_currentTxnId(const int64_t val);
+
+  void __set_tableNames(const std::vector<std::string> & val);
+
+  bool operator == (const GetOpenWriteIdsRequest & rhs) const
+  {
+    if (!(currentTxnId == rhs.currentTxnId))
+      return false;
+    if (!(tableNames == rhs.tableNames))
+      return false;
+    return true;
+  }
+  bool operator != (const GetOpenWriteIdsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetOpenWriteIdsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetOpenWriteIdsRequest &a, GetOpenWriteIdsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetOpenWriteIdsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _OpenWriteIds__isset {
+  _OpenWriteIds__isset() : minWriteId(false) {}
+  bool minWriteId :1;
+} _OpenWriteIds__isset;
+
+class OpenWriteIds {
+ public:
+
+  OpenWriteIds(const OpenWriteIds&);
+  OpenWriteIds& operator=(const OpenWriteIds&);
+  OpenWriteIds() : tableName(), writeIdHighWaterMark(0), minWriteId(0), abortedBits() {
+  }
+
+  virtual ~OpenWriteIds() throw();
+  std::string tableName;
+  int64_t writeIdHighWaterMark;
+  std::vector<int64_t>  openWriteIds;
+  int64_t minWriteId;
+  std::string abortedBits;
+
+  _OpenWriteIds__isset __isset;
+
+  void __set_tableName(const std::string& val);
+
+  void __set_writeIdHighWaterMark(const int64_t val);
+
+  void __set_openWriteIds(const std::vector<int64_t> & val);
+
+  void __set_minWriteId(const int64_t val);
+
+  void __set_abortedBits(const std::string& val);
+
+  bool operator == (const OpenWriteIds & rhs) const
+  {
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (!(writeIdHighWaterMark == rhs.writeIdHighWaterMark))
+      return false;
+    if (!(openWriteIds == rhs.openWriteIds))
+      return false;
+    if (__isset.minWriteId != rhs.__isset.minWriteId)
+      return false;
+    else if (__isset.minWriteId && !(minWriteId == rhs.minWriteId))
+      return false;
+    if (!(abortedBits == rhs.abortedBits))
+      return false;
+    return true;
+  }
+  bool operator != (const OpenWriteIds &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const OpenWriteIds & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(OpenWriteIds &a, OpenWriteIds &b);
+
+inline std::ostream& operator<<(std::ostream& out, const OpenWriteIds& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetOpenWriteIdsResponse {
+ public:
+
+  GetOpenWriteIdsResponse(const GetOpenWriteIdsResponse&);
+  GetOpenWriteIdsResponse& operator=(const GetOpenWriteIdsResponse&);
+  GetOpenWriteIdsResponse() {
+  }
+
+  virtual ~GetOpenWriteIdsResponse() throw();
+  std::vector<OpenWriteIds>  openWriteIds;
+
+  void __set_openWriteIds(const std::vector<OpenWriteIds> & val);
+
+  bool operator == (const GetOpenWriteIdsResponse & rhs) const
+  {
+    if (!(openWriteIds == rhs.openWriteIds))
+      return false;
+    return true;
+  }
+  bool operator != (const GetOpenWriteIdsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetOpenWriteIdsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetOpenWriteIdsResponse &a, GetOpenWriteIdsResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetOpenWriteIdsResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class AddTransactionalTableRequest {
+ public:
+
+  AddTransactionalTableRequest(const AddTransactionalTableRequest&);
+  AddTransactionalTableRequest& operator=(const AddTransactionalTableRequest&);
+  AddTransactionalTableRequest() : dbName(), tableName() {
+  }
+
+  virtual ~AddTransactionalTableRequest() throw();
+  std::string dbName;
+  std::string tableName;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  bool operator == (const AddTransactionalTableRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    return true;
+  }
+  bool operator != (const AddTransactionalTableRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AddTransactionalTableRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AddTransactionalTableRequest &a, AddTransactionalTableRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const AddTransactionalTableRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class AllocateTableWriteIdRequest {
+ public:
+
+  AllocateTableWriteIdRequest(const AllocateTableWriteIdRequest&);
+  AllocateTableWriteIdRequest& operator=(const AllocateTableWriteIdRequest&);
+  AllocateTableWriteIdRequest() : txnId(0), dbName(), tableName() {
+  }
+
+  virtual ~AllocateTableWriteIdRequest() throw();
+  int64_t txnId;
+  std::string dbName;
+  std::string tableName;
+
+  void __set_txnId(const int64_t val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  bool operator == (const AllocateTableWriteIdRequest & rhs) const
+  {
+    if (!(txnId == rhs.txnId))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    return true;
+  }
+  bool operator != (const AllocateTableWriteIdRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AllocateTableWriteIdRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AllocateTableWriteIdRequest &a, AllocateTableWriteIdRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const AllocateTableWriteIdRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class AllocateTableWriteIdResponse {
+ public:
+
+  AllocateTableWriteIdResponse(const AllocateTableWriteIdResponse&);
+  AllocateTableWriteIdResponse& operator=(const AllocateTableWriteIdResponse&);
+  AllocateTableWriteIdResponse() : writeId(0) {
+  }
+
+  virtual ~AllocateTableWriteIdResponse() throw();
+  int64_t writeId;
+
+  void __set_writeId(const int64_t val);
+
+  bool operator == (const AllocateTableWriteIdResponse & rhs) const
+  {
+    if (!(writeId == rhs.writeId))
+      return false;
+    return true;
+  }
+  bool operator != (const AllocateTableWriteIdResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AllocateTableWriteIdResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AllocateTableWriteIdResponse &a, AllocateTableWriteIdResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const AllocateTableWriteIdResponse& obj)
 {
   obj.printTo(out);
   return out;

@@ -53,9 +53,9 @@ public class TestOrcRecordUpdater {
     OrcStruct event = new OrcStruct(OrcRecordUpdater.FIELDS);
     event.setFieldValue(OrcRecordUpdater.OPERATION,
         new IntWritable(OrcRecordUpdater.INSERT_OPERATION));
-    event.setFieldValue(OrcRecordUpdater.CURRENT_TRANSACTION,
+    event.setFieldValue(OrcRecordUpdater.CURRENT_WRITEID,
         new LongWritable(100));
-    event.setFieldValue(OrcRecordUpdater.ORIGINAL_TRANSACTION,
+    event.setFieldValue(OrcRecordUpdater.ORIGINAL_WRITEID,
         new LongWritable(50));
     event.setFieldValue(OrcRecordUpdater.BUCKET, new IntWritable(200));
     event.setFieldValue(OrcRecordUpdater.ROW_ID, new LongWritable(300));
@@ -101,8 +101,8 @@ public class TestOrcRecordUpdater {
         .filesystem(fs)
         .bucket(10)
         .writingBase(false)
-        .minimumTransactionId(10)
-        .maximumTransactionId(19)
+        .minimumWriteId(10)
+        .maximumWriteId(19)
         .inspector(inspector)
         .reporter(Reporter.NULL)
         .finalDestination(root);
@@ -210,8 +210,8 @@ public class TestOrcRecordUpdater {
         .filesystem(fs)
         .bucket(10)
         .writingBase(false)
-        .minimumTransactionId(10)
-        .maximumTransactionId(19)
+        .minimumWriteId(10)
+        .maximumWriteId(19)
         .inspector(inspector)
         .reporter(Reporter.NULL)
         .finalDestination(root)
@@ -252,8 +252,8 @@ public class TestOrcRecordUpdater {
         .filesystem(fs)
         .bucket(bucket)
         .writingBase(false)
-        .minimumTransactionId(100)
-        .maximumTransactionId(100)
+        .minimumWriteId(100)
+        .maximumWriteId(100)
         .inspector(inspector)
         .reporter(Reporter.NULL)
         .recordIdColumn(1)

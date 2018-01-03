@@ -54,6 +54,8 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -2231,6 +2233,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public ValidWriteIdList getValidWriteIds(String tableName) throws TException {
+    GetOpenWriteIdsRequest rqst = new GetOpenWriteIdsRequest(0, Collections.singletonList(tableName));
+    GetOpenWriteIdsResponse openWriteIds = client.get_open_write_ids(rqst);
+    return TxnUtils.createValidReaderWriteIdList(openWriteIds.getOpenWriteIds().get(0));
+  }
+
+  // TODO (Sankar): Need to modify the API definition to take ValidTxnList as input.
+  @Override
+  public ValidTxnWriteIdList getValidWriteIds(long currentTxn, List<String> tablesList) throws TException {
+    GetOpenWriteIdsRequest rqst = new GetOpenWriteIdsRequest(currentTxn, tablesList);
+    return TxnUtils.createValidTxnWriteIdList(client.get_open_write_ids(rqst));
+  }
+
+  @Override
   public long openTxn(String user) throws TException {
     OpenTxnsResponse txns = openTxns(user, 1);
     return txns.getTxn_ids().get(0);
@@ -2267,6 +2283,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void abortTxns(List<Long> txnids) throws NoSuchTxnException, TException {
     client.abort_txns(new AbortTxnsRequest(txnids));
+  }
+
+  @Override
+  public long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException {
+    AllocateTableWriteIdResponse writeId
+            = client.allocate_table_write_id(new AllocateTableWriteIdRequest(txnId, dbName, tableName));
+    return writeId.getWriteId();
   }
 
   @Override

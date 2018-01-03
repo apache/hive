@@ -731,6 +731,38 @@ struct CommitTxnRequest {
     1: required i64 txnid,
 }
 
+struct GetOpenWriteIdsRequest {
+    1: required i64 currentTxnId,
+    2: required list<string> tableNames,
+}
+
+struct OpenWriteIds {
+    1: required string tableName,
+    2: required i64 writeIdHighWaterMark,
+    3: required list<i64> openWriteIds,
+    4: optional i64 minWriteId,
+    5: required binary abortedBits,
+}
+
+struct GetOpenWriteIdsResponse {
+    1: required list<OpenWriteIds> openWriteIds,
+}
+
+struct AddTransactionalTableRequest {
+    1: required string dbName,
+    2: required string tableName,
+}
+
+struct AllocateTableWriteIdRequest {
+    1: required i64 txnId,
+    2: required string dbName,
+    3: required string tableName,
+}
+
+struct AllocateTableWriteIdResponse {
+    1: required i64 writeId,
+}
+
 struct LockComponent {
     1: required LockType type,
     2: required LockLevel level,
@@ -1807,6 +1839,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void abort_txn(1:AbortTxnRequest rqst) throws (1:NoSuchTxnException o1)
   void abort_txns(1:AbortTxnsRequest rqst) throws (1:NoSuchTxnException o1)
   void commit_txn(1:CommitTxnRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
+  GetOpenWriteIdsResponse get_open_write_ids(1:GetOpenWriteIdsRequest rqst)
+      throws (1:NoSuchTxnException o1, 2:MetaException o2)
+  void add_transactional_table(1:AddTransactionalTableRequest rqst) throws (1:MetaException o1)
+  AllocateTableWriteIdResponse allocate_table_write_id(1:AllocateTableWriteIdRequest rqst)
+    throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:MetaException o3)
   LockResponse lock(1:LockRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
   LockResponse check_lock(1:CheckLockRequest rqst)
     throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:NoSuchLockException o3)

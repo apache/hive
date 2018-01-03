@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.io;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -109,8 +109,8 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     extends InputFormat<KEY, VALUE>, InputFormatChecker {
 
   static final class DeltaMetaData implements Writable {
-    private long minTxnId;
-    private long maxTxnId;
+    private long minWriteId;
+    private long maxWriteId;
     private List<Integer> stmtIds;
     //would be useful to have enum for Type: insert/delete/load data
 
@@ -120,27 +120,27 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     /**
      * @param stmtIds delta dir suffixes when a single txn writes > 1 delta in the same partition
      */
-    DeltaMetaData(long minTxnId, long maxTxnId, List<Integer> stmtIds) {
-      this.minTxnId = minTxnId;
-      this.maxTxnId = maxTxnId;
+    DeltaMetaData(long minWriteId, long maxWriteId, List<Integer> stmtIds) {
+      this.minWriteId = minWriteId;
+      this.maxWriteId = maxWriteId;
       if (stmtIds == null) {
         throw new IllegalArgumentException("stmtIds == null");
       }
       this.stmtIds = stmtIds;
     }
-    long getMinTxnId() {
-      return minTxnId;
+    long getMinWriteId() {
+      return minWriteId;
     }
-    long getMaxTxnId() {
-      return maxTxnId;
+    long getMaxWriteId() {
+      return maxWriteId;
     }
     List<Integer> getStmtIds() {
       return stmtIds;
     }
     @Override
     public void write(DataOutput out) throws IOException {
-      out.writeLong(minTxnId);
-      out.writeLong(maxTxnId);
+      out.writeLong(minWriteId);
+      out.writeLong(maxWriteId);
       out.writeInt(stmtIds.size());
       for(Integer id : stmtIds) {
         out.writeInt(id);
@@ -148,8 +148,8 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     }
     @Override
     public void readFields(DataInput in) throws IOException {
-      minTxnId = in.readLong();
-      maxTxnId = in.readLong();
+      minWriteId = in.readLong();
+      maxWriteId = in.readLong();
       stmtIds.clear();
       int numStatements = in.readInt();
       for(int i = 0; i < numStatements; i++) {
@@ -159,7 +159,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     @Override
     public String toString() {
       //? is Type - when implemented
-      return "Delta(?," + minTxnId + "," + maxTxnId + "," + stmtIds + ")";
+      return "Delta(?," + minWriteId + "," + maxWriteId + "," + stmtIds + ")";
     }
   }
   /**
@@ -227,7 +227,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
    * @param collapseEvents should the ACID events be collapsed so that only
    *                       the last version of the row is kept.
    * @param bucket the bucket to read
-   * @param validTxnList the list of valid transactions to use
+   * @param validWriteIdList the list of valid write ids to use
    * @param baseDirectory the base directory to read or the root directory for
    *                      old style files
    * @param deltaDirectory a list of delta files to include in the merge
@@ -237,7 +237,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
    RawReader<VALUE> getRawReader(Configuration conf,
                              boolean collapseEvents,
                              int bucket,
-                             ValidTxnList validTxnList,
+                             ValidWriteIdList validWriteIdList,
                              Path baseDirectory,
                              Path[] deltaDirectory
                              ) throws IOException;

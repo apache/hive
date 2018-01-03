@@ -22,70 +22,81 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 /**
- * An implementation of {@link org.apache.hadoop.hive.common.ValidTxnList} for use by readers.
- * This class will view a transaction as valid only if it is committed.  Both open and aborted
- * transactions will be seen as invalid.
+ * An implementation of {@link ValidWriteIdList} for use by readers.
+ * This class will view a write id as valid only if it maps to committed transaction.
+ * Write ids of both open and aborted transactions will be seen as invalid.
  */
-public class ValidReadTxnList implements ValidTxnList {
+public class ValidReaderWriteIdList implements ValidWriteIdList {
 
+  protected String tableName; // Full table name of format <db_name>.<table_name>
   protected long[] exceptions;
-  protected BitSet abortedBits; // BitSet for flagging aborted transactions. Bit is true if aborted, false if open
-  //default value means there are no open txn in the snapshot
-  private long minOpenTxn = Long.MAX_VALUE;
+  protected BitSet abortedBits; // BitSet for flagging aborted write ids. Bit is true if aborted, false if open
+  //default value means there are no open write ids in the snapshot
+  private long minOpenWriteId = Long.MAX_VALUE;
   protected long highWatermark;
 
-  public ValidReadTxnList() {
-    this(new long[0], new BitSet(), Long.MAX_VALUE, Long.MAX_VALUE);
+  public ValidReaderWriteIdList() {
+    this(null, new long[0], new BitSet(), Long.MAX_VALUE, Long.MAX_VALUE);
   }
 
   /**
-   * Used if there are no open transactions in the snapshot
+   * Used if there are no open write ids in the snapshot
    */
-  public ValidReadTxnList(long[] exceptions, BitSet abortedBits, long highWatermark) {
-    this(exceptions, abortedBits, highWatermark, Long.MAX_VALUE);
+  public ValidReaderWriteIdList(String tableName, long[] exceptions, BitSet abortedBits, long highWatermark) {
+    this(tableName, exceptions, abortedBits, highWatermark, Long.MAX_VALUE);
   }
-  public ValidReadTxnList(long[] exceptions, BitSet abortedBits, long highWatermark, long minOpenTxn) {
+  public ValidReaderWriteIdList(String tableName,
+                                long[] exceptions, BitSet abortedBits, long highWatermark, long minOpenWriteId) {
+    this.tableName = tableName;
     if (exceptions.length > 0) {
-      this.minOpenTxn = minOpenTxn;
+      this.minOpenWriteId = minOpenWriteId;
     }
     this.exceptions = exceptions;
     this.abortedBits = abortedBits;
     this.highWatermark = highWatermark;
   }
 
-  public ValidReadTxnList(String value) {
+  public ValidReaderWriteIdList(String value) {
     readFromString(value);
   }
 
   @Override
-  public boolean isTxnValid(long txnid) {
-    if (highWatermark < txnid) {
+  public boolean isWriteIdValid(long writeId) {
+    if (highWatermark < writeId) {
       return false;
     }
-    return Arrays.binarySearch(exceptions, txnid) < 0;
+    return Arrays.binarySearch(exceptions, writeId) < 0;
   }
 
+  /**
+   * We cannot use a base file if its range contains an open write id.
+   * @param writeId from base_xxxx
+   */
   @Override
-  public RangeResponse isTxnRangeValid(long minTxnId, long maxTxnId) {
+  public boolean isValidBase(long writeId) {
+    return minOpenWriteId > writeId && writeId <= highWatermark;
+  }
+  @Override
+  public RangeResponse isWriteIdRangeValid(long minWriteId, long maxWriteId) {
     // check the easy cases first
-    if (highWatermark < minTxnId) {
+    if (highWatermark < minWriteId) {
       return RangeResponse.NONE;
-    } else if (exceptions.length > 0 && exceptions[0] > maxTxnId) {
+    } else if (exceptions.length > 0 && exceptions[0] > maxWriteId) {
       return RangeResponse.ALL;
     }
 
     // since the exceptions and the range in question overlap, count the
     // exceptions in the range
-    long count = Math.max(0, maxTxnId - highWatermark);
+    long count = Math.max(0, maxWriteId - highWatermark);
     for(long txn: exceptions) {
-      if (minTxnId <= txn && txn <= maxTxnId) {
+      if (minWriteId <= txn && txn <= maxWriteId) {
         count += 1;
       }
     }
 
     if (count == 0) {
       return RangeResponse.ALL;
-    } else if (count == (maxTxnId - minTxnId + 1)) {
+    } else if (count == (maxWriteId - minWriteId + 1)) {
       return RangeResponse.NONE;
     } else {
       return RangeResponse.SOME;
@@ -97,15 +108,17 @@ public class ValidReadTxnList implements ValidTxnList {
     return writeToString();
   }
 
+  // TODO (Sankar): Need to modify the format to include table name and parenthesis to encapsulate
+  // each ValidReaderWriteIdList
   @Override
   public String writeToString() {
     StringBuilder buf = new StringBuilder();
     buf.append(highWatermark);
     buf.append(':');
-    buf.append(minOpenTxn);
+    buf.append(minOpenWriteId);
     if (exceptions.length == 0) {
-      buf.append(':');  // separator for open txns
-      buf.append(':');  // separator for aborted txns
+      buf.append(':');  // separator for open write ids
+      buf.append(':');  // separator for aborted write ids
     } else {
       StringBuilder open = new StringBuilder();
       StringBuilder abort = new StringBuilder();
@@ -130,6 +143,7 @@ public class ValidReadTxnList implements ValidTxnList {
     return buf.toString();
   }
 
+  // TODO (Sankar): Need to modify to read new format to include table name
   @Override
   public void readFromString(String src) {
     if (src == null || src.length() == 0) {
@@ -139,39 +153,44 @@ public class ValidReadTxnList implements ValidTxnList {
     } else {
       String[] values = src.split(":");
       highWatermark = Long.parseLong(values[0]);
-      minOpenTxn = Long.parseLong(values[1]);
-      String[] openTxns = new String[0];
-      String[] abortedTxns = new String[0];
+      minOpenWriteId = Long.parseLong(values[1]);
+      String[] openWriteIds = new String[0];
+      String[] abortedWriteIds = new String[0];
       if (values.length < 3) {
-        openTxns = new String[0];
-        abortedTxns = new String[0];
+        openWriteIds = new String[0];
+        abortedWriteIds = new String[0];
       } else if (values.length == 3) {
         if (!values[2].isEmpty()) {
-          openTxns = values[2].split(",");
+          openWriteIds = values[2].split(",");
         }
       } else {
         if (!values[2].isEmpty()) {
-          openTxns = values[2].split(",");
+          openWriteIds = values[2].split(",");
         }
         if (!values[3].isEmpty()) {
-          abortedTxns = values[3].split(",");
+          abortedWriteIds = values[3].split(",");
         }
       }
-      exceptions = new long[openTxns.length + abortedTxns.length];
+      exceptions = new long[openWriteIds.length + abortedWriteIds.length];
       int i = 0;
-      for (String open : openTxns) {
+      for (String open : openWriteIds) {
         exceptions[i++] = Long.parseLong(open);
       }
-      for (String abort : abortedTxns) {
+      for (String abort : abortedWriteIds) {
         exceptions[i++] = Long.parseLong(abort);
       }
       Arrays.sort(exceptions);
       abortedBits = new BitSet(exceptions.length);
-      for (String abort : abortedTxns) {
+      for (String abort : abortedWriteIds) {
         int index = Arrays.binarySearch(exceptions, Long.parseLong(abort));
         abortedBits.set(index);
       }
     }
+  }
+
+  @Override
+  public String getTableName() {
+    return tableName;
   }
 
   @Override
@@ -180,25 +199,25 @@ public class ValidReadTxnList implements ValidTxnList {
   }
 
   @Override
-  public long[] getInvalidTransactions() {
+  public long[] getInvalidWriteIds() {
     return exceptions;
   }
 
   @Override
-  public Long getMinOpenTxn() {
-    return minOpenTxn == Long.MAX_VALUE ? null : minOpenTxn;
+  public Long getMinOpenWriteId() {
+    return minOpenWriteId == Long.MAX_VALUE ? null : minOpenWriteId;
   }
 
   @Override
-  public boolean isTxnAborted(long txnid) {
-    int index = Arrays.binarySearch(exceptions, txnid);
+  public boolean isWriteIdAborted(long writeId) {
+    int index = Arrays.binarySearch(exceptions, writeId);
     return index >= 0 && abortedBits.get(index);
   }
 
   @Override
-  public RangeResponse isTxnRangeAborted(long minTxnId, long maxTxnId) {
+  public RangeResponse isWriteIdRangeAborted(long minWriteId, long maxWriteId) {
     // check the easy cases first
-    if (highWatermark < minTxnId) {
+    if (highWatermark < minWriteId) {
       return RangeResponse.NONE;
     }
 
@@ -207,17 +226,17 @@ public class ValidReadTxnList implements ValidTxnList {
     // traverse the aborted txns list, starting at first aborted txn index
     for (int i = abortedBits.nextSetBit(0); i >= 0; i = abortedBits.nextSetBit(i + 1)) {
       long abortedTxnId = exceptions[i];
-      if (abortedTxnId > maxTxnId) {  // we've already gone beyond the specified range
+      if (abortedTxnId > maxWriteId) {  // we've already gone beyond the specified range
         break;
       }
-      if (abortedTxnId >= minTxnId && abortedTxnId <= maxTxnId) {
+      if (abortedTxnId >= minWriteId && abortedTxnId <= maxWriteId) {
         count++;
       }
     }
 
     if (count == 0) {
       return RangeResponse.NONE;
-    } else if (count == (maxTxnId - minTxnId + 1)) {
+    } else if (count == (maxWriteId - minWriteId + 1)) {
       return RangeResponse.ALL;
     } else {
       return RangeResponse.SOME;

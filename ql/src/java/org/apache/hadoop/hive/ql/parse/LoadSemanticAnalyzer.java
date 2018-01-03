@@ -320,7 +320,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     int stmtId = -1;
     if (AcidUtils.isTransactionalTable(ts.tableHandle)) {
       txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
-      stmtId = SessionState.get().getTxnMgr().getWriteIdAndIncrement();
+      stmtId = SessionState.get().getTxnMgr().getStmtIdAndIncrement();
     }
 
     LoadTableDesc loadTableWork;

@@ -302,7 +302,7 @@ class CompactionTxnHandler extends TxnHandler {
             default: throw new MetaException("Unexpected compaction type " + rs.getString(5));
           }
           info.runAs = rs.getString(6);
-          info.highestTxnId = rs.getLong(7);
+          info.highestWriteId = rs.getLong(7);
           rc.add(info);
         }
         LOG.debug("Going to rollback");
@@ -338,7 +338,7 @@ class CompactionTxnHandler extends TxnHandler {
       ResultSet rs = null;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        pStmt = dbConn.prepareStatement("select CQ_ID, CQ_DATABASE, CQ_TABLE, CQ_PARTITION, CQ_STATE, CQ_TYPE, CQ_TBLPROPERTIES, CQ_WORKER_ID, CQ_START, CQ_RUN_AS, CQ_HIGHEST_TXN_ID, CQ_META_INFO, CQ_HADOOP_JOB_ID from COMPACTION_QUEUE WHERE CQ_ID = ?");
+        pStmt = dbConn.prepareStatement("select CQ_ID, CQ_DATABASE, CQ_TABLE, CQ_PARTITION, CQ_STATE, CQ_TYPE, CQ_TBLPROPERTIES, CQ_WORKER_ID, CQ_START, CQ_RUN_AS, CQ_HIGHEST_WRITE_ID, CQ_META_INFO, CQ_HADOOP_JOB_ID from COMPACTION_QUEUE WHERE CQ_ID = ?");
         pStmt.setLong(1, info.id);
         rs = pStmt.executeQuery();
         if(rs.next()) {
@@ -365,13 +365,13 @@ class CompactionTxnHandler extends TxnHandler {
 
         // Remove entries from completed_txn_components as well, so we don't start looking there
         // again but only up to the highest txn ID include in this compaction job.
-        //highestTxnId will be NULL in upgrade scenarios
+        //highestWriteId will be NULL in upgrade scenarios
         s = "delete from COMPLETED_TXN_COMPONENTS where ctc_database = ? and " +
             "ctc_table = ?";
         if (info.partName != null) {
           s += " and ctc_partition = ?";
         }
-        if(info.highestTxnId != 0) {
+        if(info.highestWriteId != 0) {
           s += " and ctc_txnid <= ?";
         }
         pStmt = dbConn.prepareStatement(s);
@@ -381,8 +381,8 @@ class CompactionTxnHandler extends TxnHandler {
         if (info.partName != null) {
           pStmt.setString(paramCount++, info.partName);
         }
-        if(info.highestTxnId != 0) {
-          pStmt.setLong(paramCount++, info.highestTxnId);
+        if(info.highestWriteId != 0) {
+          pStmt.setLong(paramCount++, info.highestWriteId);
         }
         LOG.debug("Going to execute update <" + s + ">");
         if (pStmt.executeUpdate() < 1) {
@@ -392,15 +392,15 @@ class CompactionTxnHandler extends TxnHandler {
 
         s = "select distinct txn_id from TXNS, TXN_COMPONENTS where txn_id = tc_txnid and txn_state = '" +
           TXN_ABORTED + "' and tc_database = ? and tc_table = ?";
-        if (info.highestTxnId != 0) s += " and txn_id <= ?";
+        if (info.highestWriteId != 0) s += " and txn_id <= ?";
         if (info.partName != null) s += " and tc_partition = ?";
 
         pStmt = dbConn.prepareStatement(s);
         paramCount = 1;
         pStmt.setString(paramCount++, info.dbname);
         pStmt.setString(paramCount++, info.tableName);
-        if(info.highestTxnId != 0) {
-          pStmt.setLong(paramCount++, info.highestTxnId);
+        if(info.highestWriteId != 0) {
+          pStmt.setLong(paramCount++, info.highestWriteId);
         }
         if (info.partName != null) {
           pStmt.setString(paramCount++, info.partName);
@@ -700,14 +700,14 @@ class CompactionTxnHandler extends TxnHandler {
    */
   @Override
   @RetrySemantics.Idempotent
-  public void setCompactionHighestTxnId(CompactionInfo ci, long highestTxnId) throws MetaException {
+  public void setCompactionHighestWriteId(CompactionInfo ci, long highestWriteId) throws MetaException {
     Connection dbConn = null;
     Statement stmt = null;
     try {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        int updCount = stmt.executeUpdate("UPDATE COMPACTION_QUEUE SET CQ_HIGHEST_TXN_ID = " + highestTxnId +
+        int updCount = stmt.executeUpdate("UPDATE COMPACTION_QUEUE SET CQ_HIGHEST_WRITE_ID = " + highestWriteId +
           " WHERE CQ_ID = " + ci.id);
         if(updCount != 1) {
           throw new IllegalStateException("Could not find record in COMPACTION_QUEUE for " + ci);
@@ -715,14 +715,14 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn.commit();
       } catch (SQLException e) {
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "setCompactionHighestTxnId(" + ci + "," + highestTxnId + ")");
+        checkRetryable(dbConn, e, "setCompactionHighestWriteId(" + ci + "," + highestWriteId + ")");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
         close(null, stmt, dbConn);
       }
     } catch (RetryException ex) {
-      setCompactionHighestTxnId(ci, highestTxnId);
+      setCompactionHighestWriteId(ci, highestWriteId);
     }
   }
   private static class RetentionCounters {
@@ -932,7 +932,7 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        pStmt = dbConn.prepareStatement("select CQ_ID, CQ_DATABASE, CQ_TABLE, CQ_PARTITION, CQ_STATE, CQ_TYPE, CQ_TBLPROPERTIES, CQ_WORKER_ID, CQ_START, CQ_RUN_AS, CQ_HIGHEST_TXN_ID, CQ_META_INFO, CQ_HADOOP_JOB_ID from COMPACTION_QUEUE WHERE CQ_ID = ?");
+        pStmt = dbConn.prepareStatement("select CQ_ID, CQ_DATABASE, CQ_TABLE, CQ_PARTITION, CQ_STATE, CQ_TYPE, CQ_TBLPROPERTIES, CQ_WORKER_ID, CQ_START, CQ_RUN_AS, CQ_HIGHEST_WRITE_ID, CQ_META_INFO, CQ_HADOOP_JOB_ID from COMPACTION_QUEUE WHERE CQ_ID = ?");
         pStmt.setLong(1, ci.id);
         rs = pStmt.executeQuery();
         if(rs.next()) {

@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,13 +23,13 @@ package org.apache.hadoop.hive.common;
  * It is modelled as a high water mark, which is the largest transaction id that
  * has been committed and a list of transactions that are not included.
  */
-public interface ValidTxnList {
+public interface ValidWriteIdList {
 
   /**
    * Key used to store valid txn list in a
    * {@link org.apache.hadoop.conf.Configuration} object.
    */
-  public static final String VALID_TXNS_KEY = "hive.txn.valid.txns";
+  public static final String VALID_WRITEIDS_KEY = "hive.txn.valid.writeids";
 
   /**
    * The response to a range query.  NONE means no values in this range match,
@@ -38,68 +38,81 @@ public interface ValidTxnList {
   public enum RangeResponse {NONE, SOME, ALL};
 
   /**
-   * Indicates whether a given transaction is valid. Note that valid may have different meanings
+   * Indicates whether a given write ID is valid. Note that valid may have different meanings
    * for different implementations, as some will only want to see committed transactions and some
    * both committed and aborted.
-   * @param txnid id for the transaction
+   * @param writeId write ID of the table
    * @return true if valid, false otherwise
    */
-  public boolean isTxnValid(long txnid);
+  public boolean isWriteIdValid(long writeId);
 
   /**
-   * Find out if a range of transaction ids are valid.  Note that valid may have different meanings
+   * Returns {@code true} if such base file can be used to materialize the snapshot represented by
+   * this {@code ValidWriteIdList}.
+   * @param writeId highest write ID in a given base_xxxx file
+   */
+  public boolean isValidBase(long writeId);
+
+  /**
+   * Find out if a range of write ids are valid.  Note that valid may have different meanings
    * for different implementations, as some will only want to see committed transactions and some
    * both committed and aborted.
-   * @param minTxnId minimum txnid to look for, inclusive
-   * @param maxTxnId maximum txnid to look for, inclusive
+   * @param minWriteId minimum write ID to look for, inclusive
+   * @param maxWriteId maximum write ID to look for, inclusive
    * @return Indicate whether none, some, or all of these transactions are valid.
    */
-  public RangeResponse isTxnRangeValid(long minTxnId, long maxTxnId);
+  public RangeResponse isWriteIdRangeValid(long minWriteId, long maxWriteId);
 
   /**
-   * Write this validTxnList into a string. This should produce a string that
-   * can be used by {@link #readFromString(String)} to populate a validTxnsList.
+   * Write this ValidWriteIdList into a string. This should produce a string that
+   * can be used by {@link #readFromString(String)} to populate a ValidWriteIdList.
    */
   public String writeToString();
 
   /**
-   * Populate this validTxnList from the string.  It is assumed that the string
+   * Populate this ValidWriteIdList from the string.  It is assumed that the string
    * was created via {@link #writeToString()} and the exceptions list is sorted.
    * @param src source string.
    */
   public void readFromString(String src);
 
   /**
-   * Get the largest transaction id used.
-   * @return largest transaction id used
+   * Get the table for which the ValidWriteIdList is formed
+   * @return table name (<db_name>.<table_name>) associated with ValidWriteIdList.
+   */
+  public String getTableName();
+
+  /**
+   * Get the largest write id used.
+   * @return largest write id used
    */
   public long getHighWatermark();
 
   /**
-   * Get the list of transactions under the high water mark that are not valid.  Note that invalid
+   * Get the list of write ids under the high water mark that are not valid.  Note that invalid
    * may have different meanings for different implementations, as some will only want to see open
    * transactions and some both open and aborted.
-   * @return a list of invalid transaction ids
+   * @return a list of invalid write ids
    */
-  public long[] getInvalidTransactions();
+  public long[] getInvalidWriteIds();
 
   /**
-   * Indicates whether a given transaction is aborted.
-   * @param txnid id for the transaction
+   * Indicates whether a given write maps to aborted transaction.
+   * @param writeId write id to be validated
    * @return true if aborted, false otherwise
    */
-  public boolean isTxnAborted(long txnid);
+  public boolean isWriteIdAborted(long writeId);
 
   /**
-   * Find out if a range of transaction ids are aborted.
-   * @param minTxnId minimum txnid to look for, inclusive
-   * @param maxTxnId maximum txnid to look for, inclusive
-   * @return Indicate whether none, some, or all of these transactions are aborted.
+   * Find out if a range of write ids are aborted.
+   * @param minWriteId minimum write Id to look for, inclusive
+   * @param maxWriteId maximum write Id  to look for, inclusive
+   * @return Indicate whether none, some, or all of these write ids are aborted.
    */
-  public RangeResponse isTxnRangeAborted(long minTxnId, long maxTxnId);
+  public RangeResponse isWriteIdRangeAborted(long minWriteId, long maxWriteId);
 
   /**
-   * Returns smallest Open transaction in this set, {@code null} if there is none.
+   * Returns smallest Open write Id in this set, {@code null} if there is none.
    */
-  Long getMinOpenTxn();
+  Long getMinOpenWriteId();
 }
