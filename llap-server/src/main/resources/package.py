@@ -40,8 +40,7 @@ class LlapResource(object):
 		if (not config.get("hive.llap.daemon.queue.name","")):
 			self.queueString = ""
 		else:
-			self.queueString = "--queue "
-			self.queueString += config["hive.llap.daemon.queue.name"]
+			self.queueString = config["hive.llap.daemon.queue.name"]
 
 		if (not config.get("private.hive.llap.servicedriver.cluster.name")):
 			self.clusterName="llap0"
