@@ -22,8 +22,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.io.IOUtils;
@@ -149,6 +152,30 @@ public class Utils {
               && params.get(key).equals(ReplDumpState.ACTIVE.name())) {
         return true;
       }
+    }
+    return false;
+  }
+
+  /**
+   * validates if a table can be exported, similar to EximUtil.shouldExport with few replication
+   * specific checks.
+   */
+  public static Boolean shouldReplicate(ReplicationSpec replicationSpec, Table tableHandle,
+      HiveConf hiveConf) {
+    if (replicationSpec == null) {
+      replicationSpec = new ReplicationSpec();
+    }
+
+    if (replicationSpec.isNoop() || tableHandle == null) {
+      return false;
+    }
+
+    if (replicationSpec.isInReplicationScope()) {
+      boolean isAcidTable = AcidUtils.isAcidTable(tableHandle);
+      if (isAcidTable) {
+        return hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES);
+      }
+      return !(tableHandle.isTemporary() || tableHandle.isNonNative());
     }
     return false;
   }

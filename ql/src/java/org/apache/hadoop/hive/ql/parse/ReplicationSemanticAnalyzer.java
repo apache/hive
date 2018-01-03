@@ -128,9 +128,18 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     // skip the first node, which is always required
     int currNode = 1;
     while (currNode < numChildren) {
-      if (ast.getChild(currNode).getType() != TOK_FROM) {
+      if (ast.getChild(currNode).getType() == TOK_REPL_CONFIG) {
+        Map<String, String> replConfigs
+            = DDLSemanticAnalyzer.getProps((ASTNode) ast.getChild(currNode).getChild(0));
+        if (null != replConfigs) {
+          for (Map.Entry<String, String> config : replConfigs.entrySet()) {
+            conf.set(config.getKey(), config.getValue());
+          }
+        }
+      }
+      else if (ast.getChild(currNode).getType() == TOK_TABNAME) {
         // optional tblName was specified.
-        tblNameOrPattern = PlanUtils.stripQuotes(ast.getChild(currNode).getText());
+        tblNameOrPattern = PlanUtils.stripQuotes(ast.getChild(currNode).getChild(0).getText());
       } else {
         // TOK_FROM subtree
         Tree fromNode = ast.getChild(currNode);
@@ -152,8 +161,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           // move to the next child in FROM tree
           numChild++;
         }
-        // FROM node is always the last
-        break;
       }
       // move to the next root node
       currNode++;
@@ -176,7 +183,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
               ErrorMsg.INVALID_PATH.getMsg(ast),
               maxEventLimit,
               ctx.getResFile().toUri().toString()
-          ), conf);
+          ), conf, true);
       rootTasks.add(replDumpWorkTask);
       if (dbNameOrPattern != null) {
         for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {

@@ -177,8 +177,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     replLogger.eventLog(String.valueOf(ev.getEventId()), eventHandler.dumpType().toString());
   }
 
-  private ReplicationSpec getNewEventOnlyReplicationSpec(Long eventId) throws SemanticException {
-    ReplicationSpec rspec = getNewReplicationSpec(eventId.toString(), eventId.toString());
+  private ReplicationSpec getNewEventOnlyReplicationSpec(Long eventId) {
+    ReplicationSpec rspec =
+        getNewReplicationSpec(eventId.toString(), eventId.toString(), conf.getBoolean(
+            HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY.varname, false));
     rspec.setReplSpecType(ReplicationSpec.Type.INCREMENTAL_DUMP);
     return rspec;
   }
@@ -269,8 +271,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private ReplicationSpec getNewReplicationSpec(String evState, String objState) {
-    return new ReplicationSpec(true, false, evState, objState, false, true, true);
+  private ReplicationSpec getNewReplicationSpec(String evState, String objState,
+      boolean isMetadataOnly) {
+    return new ReplicationSpec(true, isMetadataOnly, evState, objState, false, true, true);
   }
 
   private String getNextDumpDir() {

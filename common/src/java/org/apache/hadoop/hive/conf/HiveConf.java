@@ -462,6 +462,13 @@ public class HiveConf extends Configuration {
     REPL_DUMPDIR_TTL("hive.repl.dumpdir.ttl", "7d",
         new TimeValidator(TimeUnit.DAYS),
         "TTL of dump dirs before cleanup."),
+    REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
+        "Indicates whether replication dump only metadata information or data + metadata."),
+    REPL_DUMP_INCLUDE_ACID_TABLES("hive.repl.dump.include.acid.tables", false,
+        "Indicates if repl dump should include information about ACID tables. This has to be used \n"
+            + "in conjunction with 'hive.repl.dump.metadata.only' to enable copying of metadata for \n"
+            + "acid tables which do not require the corresponding transaction semantics to be applied on target. \n"
+            + "This can be removed when ACID table replication is supported."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),

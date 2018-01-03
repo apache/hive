@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -34,7 +35,6 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.repl.dump.TableExport.AuthEntities;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,16 +60,16 @@ public class TableExport {
   private final HiveConf conf;
   private final Paths paths;
 
-  public TableExport(Paths paths, TableSpec tableSpec,
-      ReplicationSpec replicationSpec, Hive db, String distCpDoAsUser, HiveConf conf)
-      throws SemanticException {
+  public TableExport(Paths paths, TableSpec tableSpec, ReplicationSpec replicationSpec, Hive db,
+      String distCpDoAsUser, HiveConf conf) {
     this.tableSpec = (tableSpec != null
         && tableSpec.tableHandle.isTemporary()
         && replicationSpec.isInReplicationScope())
         ? null
         : tableSpec;
     this.replicationSpec = replicationSpec;
-    if (this.tableSpec != null && this.tableSpec.tableHandle.isView()) {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY) || (this.tableSpec != null
+        && this.tableSpec.tableHandle.isView())) {
       this.replicationSpec.setIsMetadataOnly(true);
     }
     this.db = db;
@@ -82,10 +82,6 @@ public class TableExport {
     if (tableSpec == null) {
       writeMetaData(null);
     } else if (shouldExport()) {
-      //first we should get the correct replication spec before doing metadata/data export
-      if (tableSpec.tableHandle.isView()) {
-        replicationSpec.setIsMetadataOnly(true);
-      }
       PartitionIterable withPartitions = getPartitions();
       writeMetaData(withPartitions);
       if (!replicationSpec.isMetadataOnly()) {
@@ -130,7 +126,8 @@ public class TableExport {
           paths.metaDataExportFile(),
           tableSpec == null ? null : tableSpec.tableHandle,
           partitions,
-          replicationSpec);
+          replicationSpec,
+          conf);
       logger.debug("_metadata file written into " + paths.metaDataExportFile().toString());
     } catch (Exception e) {
       // the path used above should not be used on a second try as each dump request is written to a unique location.
@@ -159,8 +156,12 @@ public class TableExport {
     }
   }
 
-  private boolean shouldExport() throws SemanticException {
-    return EximUtil.shouldExportTable(replicationSpec, tableSpec.tableHandle);
+  private boolean shouldExport() {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES)
+        && AcidUtils.isAcidTable(tableSpec.tableHandle)) {
+      return true;
+    }
+    return Utils.shouldReplicate(replicationSpec, tableSpec.tableHandle, conf);
   }
 
   /**
@@ -172,7 +173,7 @@ public class TableExport {
     private final HiveConf conf;
     private final Path exportRootDir;
     private final FileSystem exportFileSystem;
-    private boolean writeData = true;
+    private boolean writeData;
 
     public Paths(String astRepresentationForErrorMsg, Path dbRoot, String tblName, HiveConf conf,
         boolean shouldWriteData) throws SemanticException {
