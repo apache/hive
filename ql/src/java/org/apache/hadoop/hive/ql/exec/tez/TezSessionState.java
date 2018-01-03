@@ -588,17 +588,19 @@ public class TezSessionState {
       }
     }
 
-    // Finally add the files to AM. The old code seems to do this twice, first for all the new
-    // resources regardless of type; and then for all the session resources that are not of type
-    // file (see branch-1 calls to addAppMasterLocalFiles: from updateSession and with resourceMap
-    // from submit).
+    // Finally, add the files to the existing AM (if any). The old code seems to do this twice,
+    // first for all the new resources regardless of type; and then for all the session resources
+    // that are not of type file (see branch-1 calls to addAppMasterLocalFiles: from updateSession
+    // and with resourceMap from submit).
     // TODO: Do we really need all this nonsense?
-    if (newResources != null && !newResources.isEmpty()) {
-      session.addAppMasterLocalFiles(DagUtils.createTezLrMap(null, newResources));
-    }
-    if (!resources.localizedResources.isEmpty()) {
-      session.addAppMasterLocalFiles(
-          DagUtils.getResourcesUpdatableForAm(resources.localizedResources));
+    if (session != null) {
+      if (newResources != null && !newResources.isEmpty()) {
+        session.addAppMasterLocalFiles(DagUtils.createTezLrMap(null, newResources));
+      }
+      if (!resources.localizedResources.isEmpty()) {
+        session.addAppMasterLocalFiles(
+            DagUtils.getResourcesUpdatableForAm(resources.localizedResources));
+      }
     }
   }
 
