@@ -72,6 +72,9 @@ public class ColumnType {
 
   public static final String TIMESTAMPTZ_TYPE_NAME = "timestamp with time zone";
 
+  //TODO:HIVE-17580 seems like this type is missing here?
+  public static final String TIMESTAMPLOCALTZ_TYPE_NAME = "timestamp with local time zone";
+
   public static final String LIST_TYPE_NAME = "array";
 
   public static final String MAP_TYPE_NAME = "map";
@@ -85,6 +88,32 @@ public class ColumnType {
   public static final String LIST_COLUMN_TYPES = "columns.types";
 
   public static final String COLUMN_NAME_DELIMITER = "column.name.delimiter";
+
+  //used for validation of the params while parsing the types using MetastoreTypeParser
+  public static final int MAX_VARCHAR_LENGTH = 65535;
+  public static final int MAX_CHAR_LENGTH = 255;
+
+  /**
+   *  Default precision/scale when system is not able to determine them, such as in case
+   *  of a non-generic udf.
+   */
+  //HiveDecimalV1
+  public static final int SYSTEM_DEFAULT_PRECISION = 38;
+  public static final int SYSTEM_DEFAULT_SCALE = 18;
+
+  /**
+   * Default precision/scale when user doesn't specify in the column metadata, such as
+   * decimal and decimal(8).
+   */
+  //HiveDecimalVersionV1
+  public static final int USER_DEFAULT_PRECISION = 10;
+  //HiveDecimalVersionV1
+  public static final int USER_DEFAULT_SCALE = 0;
+
+  //HiveDecimalVersionV1
+  public static final int MAX_PRECISION = 38;
+  //HiveDecimalVersionV1
+  public static final int MAX_SCALE = 38;
 
   public static final Set<String> PrimitiveTypes = StringUtils.asSet(
     VOID_TYPE_NAME,
@@ -185,6 +214,7 @@ public class ColumnType {
     MAP_TYPE_NAME,
     STRUCT_TYPE_NAME,
     UNION_TYPE_NAME,
+    //TODO:HIVE-17580 : Why are these in allTypes? This will probably mess up MetastoreTypeInfoFactory create method
     LIST_COLUMNS,
     LIST_COLUMN_TYPES,
     COLUMN_NAME_DELIMITER
