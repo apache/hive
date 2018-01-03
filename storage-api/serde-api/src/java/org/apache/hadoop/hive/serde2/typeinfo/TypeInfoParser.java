@@ -1,5 +1,7 @@
 package org.apache.hadoop.hive.serde2.typeinfo;
 
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveTypeEntry;
@@ -18,7 +20,9 @@ import java.util.List;
  * TypeInfoParser("int,string"); ArrayList<TypeInfo> typeInfos =
  * parser.parseTypeInfos();
  */
-class TypeInfoParser {
+@InterfaceStability.Evolving
+@InterfaceAudience.LimitedPrivate({"Standalone Metastore", "Hive"})
+public class TypeInfoParser {
 
   /**
    * Make some of the TypeInfo parsing available as a utility.
