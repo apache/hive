@@ -10,7 +10,7 @@ CREATE TABLE t_hbase(key STRING,
                      boolean_col BOOLEAN)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:binarykey#-,cf:binarybyte#-,cf:binaryshort#-,:key#-,cf:binarylong#-,cf:binaryfloat#-,cf:binarydouble#-,cf:binaryboolean#-")
-TBLPROPERTIES ("hbase.table.name" = "t_hive",
+TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name" = "t_hive",
                "hbase.table.default.storage.type" = "binary");
 
 DESCRIBE FORMATTED t_hbase;

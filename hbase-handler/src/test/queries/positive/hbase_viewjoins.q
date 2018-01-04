@@ -16,7 +16,7 @@ WITH SERDEPROPERTIES (
   'hbase.scan.cacheblocks'='false',
   'serialization.format'='1')
 TBLPROPERTIES (
-  'hbase.table.name'='hbase_table_test_1',
+  'hbase.mapreduce.hfileoutputformat.table.name'='hbase_table_test_1',
   'serialization.null.format'=''  );
 
 CREATE VIEW VIEW_HBASE_TABLE_TEST_1 AS SELECT hbase_table_test_1.cvalue,hbase_table_test_1.pk,hbase_table_test_1.ccount FROM hbase_table_test_1 WHERE hbase_table_test_1.ccount IS NOT NULL;
@@ -35,7 +35,7 @@ WITH SERDEPROPERTIES (
   'hbase.scan.cacheblocks'='false',
   'serialization.format'='1')
 TBLPROPERTIES (
-  'hbase.table.name'='hbase_table_test_2',
+  'hbase.mapreduce.hfileoutputformat.table.name'='hbase_table_test_2',
   'serialization.null.format'='');
 
 CREATE VIEW VIEW_HBASE_TABLE_TEST_2 AS SELECT hbase_table_test_2.cvalue,hbase_table_test_2.pk,hbase_table_test_2.ccount
