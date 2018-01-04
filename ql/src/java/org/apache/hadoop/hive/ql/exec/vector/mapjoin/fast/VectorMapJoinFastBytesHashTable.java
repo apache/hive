@@ -208,6 +208,10 @@ public abstract class VectorMapJoinFastBytesHashTable
   protected long[] slotTriples;
 
   private void allocateBucketArray() {
+    // We allocate triples, so we cannot go above highest Integer power of 2 / 6.
+    if (logicalHashBucketCount > ONE_SIXTH_LIMIT) {
+      throwExpandError(ONE_SIXTH_LIMIT, "Bytes");
+    }
     int slotTripleArraySize = 3 * logicalHashBucketCount;
     slotTriples = new long[slotTripleArraySize];
   }
