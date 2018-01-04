@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore.utils;
+package org.apache.hadoop.hive.metastore.schema.utils;
 
 import org.apache.avro.Schema;
 

@@ -28,7 +28,7 @@ import static org.apache.avro.Schema.Type.NULL;
 import static org.apache.avro.Schema.Type.STRING;
 
 import org.apache.avro.Schema;
-import org.apache.hadoop.hive.metastore.utils.AvroSchemaUtils;
+import org.apache.hadoop.hive.metastore.schema.utils.AvroSchemaUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfoValidationUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;

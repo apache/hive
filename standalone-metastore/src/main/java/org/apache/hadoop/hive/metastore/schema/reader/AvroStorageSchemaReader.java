@@ -1,11 +1,11 @@
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.metastore.schema.reader;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.utils.AvroSchemaUtils;
+import org.apache.hadoop.hive.metastore.schema.utils.AvroSchemaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeException;
 import org.slf4j.Logger;

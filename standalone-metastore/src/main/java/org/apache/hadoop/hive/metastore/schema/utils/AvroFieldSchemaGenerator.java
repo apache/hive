@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.metastore.utils;
+package org.apache.hadoop.hive.metastore.schema.utils;
 
 import org.apache.avro.Schema;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;

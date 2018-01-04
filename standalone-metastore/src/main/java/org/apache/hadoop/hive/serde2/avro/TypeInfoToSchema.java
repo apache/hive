@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.serde2.avro;
 
 import org.apache.avro.Schema;
-import org.apache.hadoop.hive.metastore.utils.AvroSchemaUtils;
+import org.apache.hadoop.hive.metastore.schema.utils.AvroSchemaUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.*;
 import org.codehaus.jackson.JsonNode;

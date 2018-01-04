@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.metastore.utils;
+package org.apache.hadoop.hive.metastore.schema.utils;
 
 import org.apache.avro.Schema;
 import org.apache.hadoop.conf.Configuration;
@@ -6,6 +6,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.avro.AvroSerDeConstants;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeException;

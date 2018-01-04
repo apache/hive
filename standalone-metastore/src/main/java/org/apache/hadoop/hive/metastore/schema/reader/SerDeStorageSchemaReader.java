@@ -15,15 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.metastore.schema.reader;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.StorageSchemaReader;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.utils.SerDeUtils;
+import org.apache.hadoop.hive.metastore.schema.utils.SerDeUtils;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 
 import java.util.List;
