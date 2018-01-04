@@ -19,14 +19,16 @@ package org.apache.hadoop.hive.metastore.schema.reader;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ColumnType;
-import org.apache.hadoop.hive.metastore.StorageSchemaReader;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.schema.utils.AvroSchemaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.schema.utils.StorageSchemaUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeException;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,12 +48,33 @@ import static org.apache.hadoop.hive.metastore.ColumnType.LIST_COLUMN_COMMENTS;
 public class DefaultStorageSchemaReader implements StorageSchemaReader {
   private final static Logger LOG = LoggerFactory.getLogger(DefaultStorageSchemaReader.class);
 
+  private static final String AVRO_SERIALIZATION_LIB =
+      "org.apache.hadoop.hive.serde2.avro.AvroSerDe";
+
   @Override
   public List<FieldSchema> readSchema(Table tbl, EnvironmentContext envContext,
       Configuration conf) throws MetaException {
-    //throw new UnsupportedOperationException("Storage schema reading not supported");
+    String serializationLib = tbl.getSd().getSerdeInfo().getSerializationLib();
+    if (null == serializationLib || MetastoreConf
+        .getStringCollection(conf, MetastoreConf.ConfVars.SERDES_USING_METASTORE_FOR_SCHEMA)
+        .contains(serializationLib)) {
+      //safety check to make sure we should be using storage schema reader for this table
+      throw new MetaException(
+          "Invalid usage of default storage schema reader for table " + tbl.getTableName()
+              + " with storage descriptor " + tbl.getSd().getSerdeInfo().getSerializationLib());
+    }
     Properties tblMetadataProperties = MetaStoreUtils.getTableMetadata(tbl);
-    return getFieldSchemasFromTableMetadata(tblMetadataProperties);
+    if(AVRO_SERIALIZATION_LIB.equals(serializationLib)) {
+      //in case of avro table use AvroStorageSchemaReader utils
+      try {
+        return AvroSchemaUtils.getFieldsFromAvroSchema(conf, tblMetadataProperties);
+      } catch (AvroSerdeException e) {
+        LOG.warn("Exception received while reading avro schema for table " + tbl.getTableName(), e);
+        throw new MetaException(e.getMessage());
+      }
+    } else {
+      return getFieldSchemasFromTableMetadata(tblMetadataProperties);
+    }
   }
 
   /**
