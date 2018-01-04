@@ -12,7 +12,6 @@ import org.apache.hadoop.hive.serde2.avro.AvroSerdeException;
 import org.apache.hadoop.hive.serde2.avro.TypeInfoToSchema;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +69,6 @@ public class AvroSchemaUtils {
       + AvroTableProperties.SCHEMA_URL.getPropName() + " specified, can't determine table schema";
 
   public static final String LIST_COLUMN_COMMENTS = "columns.comments";
-  public static final char COMMA = ',';
 
   public static List<FieldSchema> getFieldsFromAvroSchema(Configuration configuration,
       Properties properties) throws AvroSerdeException {
@@ -83,7 +81,7 @@ public class AvroSchemaUtils {
     final String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     final String columnCommentProperty = properties.getProperty(LIST_COLUMN_COMMENTS,"");
     final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? properties
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(COMMA);
+        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
 
     if (hasExternalSchema(properties)
         || columnNameProperty == null || columnNameProperty.isEmpty()
@@ -93,7 +91,7 @@ public class AvroSchemaUtils {
       // Get column names and sort order
       columnNames = StringUtils.intern(
           Arrays.asList(columnNameProperty.split(columnNameDelimiter)));
-      columnTypes = new TypeInfoParser(columnTypeProperty).parseTypeInfos();
+      columnTypes = StorageSchemaUtils.getTypeInfosFromTypeString(columnTypeProperty);
 
       schema = getSchemaFromCols(properties, columnNames, columnTypes, columnCommentProperty);
       properties.setProperty(AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
@@ -169,10 +167,10 @@ public class AvroSchemaUtils {
         throw new AvroSerdeException(EXCEPTION_MESSAGE);
       }
       final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? properties
-          .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(COMMA);
+          .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
       // Get column names and types
       List<String> columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-      List<TypeInfo> columnTypes = new TypeInfoParser(columnTypeProperty).parseTypeInfos();
+      List<TypeInfo> columnTypes = StorageSchemaUtils.getTypeInfosFromTypeString(columnTypeProperty);
 
       Schema schema = getSchemaFromCols(properties, columnNames, columnTypes, columnCommentProperty);
       properties.setProperty(AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());

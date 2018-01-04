@@ -68,15 +68,9 @@ public class AvroFieldSchemaGenerator {
       //of individual fields when the ColumnType was constructed
       //in SchemaToTypeInfo.generateColumnTypes in the constructor
       fieldSchema.setType(columnTypes.get(i).getTypeName());
-      fieldSchema.setComment(determineFieldComment(columnComments.get(i)));
+      fieldSchema.setComment(StorageSchemaUtils.determineFieldComment(columnComments.get(i)));
     }
     return fieldSchemas;
-  }
-
-  private static final String FROM_SERIALIZER = "from deserializer";
-
-  private static String determineFieldComment(String comment) {
-    return (comment == null) ? FROM_SERIALIZER : comment;
   }
 
   private boolean supportedCategories(TypeInfo ti) {

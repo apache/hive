@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 public class SerDeUtils {
 
+  public static final char COMMA = ',';
   private static final String FROM_SERIALIZER = "from deserializer";
   private static final Logger LOG = LoggerFactory.getLogger(SerDeUtils.class.getName());
 
