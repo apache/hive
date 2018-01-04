@@ -31,8 +31,7 @@ import java.util.List;
  * An interface to implement reading schemas from stored data.
  */
 @InterfaceAudience.Public
-@InterfaceStability.Evolving
-interface StorageSchemaReader {
+@InterfaceStability.Evolving public interface StorageSchemaReader {
   /**
    * Read the schema from the storage representation of the table.
    * @param tbl metastore table object

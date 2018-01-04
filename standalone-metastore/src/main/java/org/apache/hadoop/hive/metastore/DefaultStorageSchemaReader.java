@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -44,10 +45,21 @@ import static org.apache.hadoop.hive.metastore.ColumnType.LIST_COLUMN_COMMENTS;
 public class DefaultStorageSchemaReader implements StorageSchemaReader {
   private final static Logger LOG = LoggerFactory.getLogger(DefaultStorageSchemaReader.class);
 
+  private static final String AVRO_SERIALIZATION_LIB =
+      "org.apache.hadoop.hive.serde2.avro.AvroSerDe";
+
   @Override
   public List<FieldSchema> readSchema(Table tbl, EnvironmentContext envContext,
       Configuration conf) throws MetaException {
-    //throw new UnsupportedOperationException("Storage schema reading not supported");
+    String serializationLib = tbl.getSd().getSerdeInfo().getSerializationLib();
+    if (null == serializationLib || MetastoreConf
+        .getStringCollection(conf, MetastoreConf.ConfVars.SERDES_USING_METASTORE_FOR_SCHEMA)
+        .contains(serializationLib)) {
+      //safety check to make sure we should be using storage schema reader for this table
+      throw new MetaException(
+          "Invalid usage of default storage schema reader for table " + tbl.getTableName()
+              + " with storage descriptor " + tbl.getSd().getSerdeInfo().getSerializationLib());
+    }
     Properties tblMetadataProperties = MetaStoreUtils.getTableMetadata(tbl);
     return getFieldSchemasFromTableMetadata(tblMetadataProperties);
   }
