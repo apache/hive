@@ -254,7 +254,7 @@ public class ColumnType {
       if (from.equals(VOID_TYPE_NAME)) return true;
 
       // Allow date to string casts.  NOTE: I suspect this is the reverse of what we actually
-      // want, but it matches the code in o.a.h.h.serde2.typeinfo.TypeInfoUtils.  I can't see how
+      // want, but it matches the code in o.a.h.h.serde2.typeinfo.StorageSchemaUtils.  I can't see how
       // users would be altering date columns into string columns.  The other I easily see since
       // Hive did not originally support datetime types.  Also, the comment in the Hive code
       // says string to date, even though the code does the opposite.  But for now I'm keeping
@@ -277,6 +277,8 @@ public class ColumnType {
   public static final String SERIALIZATION_DDL = "serialization.ddl";
 
   public static final char COLUMN_COMMENTS_DELIMITER = '\0';
+
+  public static final String LIST_COLUMN_COMMENTS = "columns.comments";
 
   private static HashMap<String, String> typeToThriftTypeMap;
   static {

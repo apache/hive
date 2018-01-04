@@ -28,6 +28,7 @@ import java.util.*;
  */
 public class AvroSchemaUtils {
   private static final Logger LOG = LoggerFactory.getLogger(AvroSchemaUtils.class);
+  private static final char COMMA = ',';
   /**
    * Enum container for all avro table properties.
    * If introducing a new avro-specific table property,
@@ -69,7 +70,6 @@ public class AvroSchemaUtils {
       + AvroTableProperties.SCHEMA_URL.getPropName() + " specified, can't determine table schema";
 
   public static final String LIST_COLUMN_COMMENTS = "columns.comments";
-  public static final char COMMA = ',';
 
   public static List<FieldSchema> getFieldsFromAvroSchema(Configuration configuration,
       Properties properties) throws AvroSerdeException {
@@ -92,7 +92,7 @@ public class AvroSchemaUtils {
       // Get column names and sort order
       columnNames = StringUtils.intern(
           Arrays.asList(columnNameProperty.split(columnNameDelimiter)));
-      columnTypes = new MetastoreTypeInfoParser(columnTypeProperty).parseTypeInfos();
+      columnTypes = StorageSchemaUtils.getTypeInfosFromTypeString(columnTypeProperty);
 
       schema = getSchemaFromCols(properties, columnNames, columnTypes, columnCommentProperty);
       properties.setProperty(AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
