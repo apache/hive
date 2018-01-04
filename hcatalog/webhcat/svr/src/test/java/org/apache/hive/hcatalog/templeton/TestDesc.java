@@ -122,7 +122,7 @@ public class TestDesc extends TestCase {
     x.className = "org.apache.hadoop.hive.hbase.HBaseStorageHandler";
     x.properties = new HashMap<String, String>();
     x.properties.put("hbase.columns.mapping", "cf:string");
-    x.properties.put("hbase.table.name", "hbase_table_0");
+    x.properties.put("hbase.mapreduce.hfileoutputformat.table.name", "hbase_table_0");
     return x;
   }
 
