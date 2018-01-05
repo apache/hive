@@ -479,7 +479,7 @@ STAGE PLANS:
                 TableScan
                   alias: agg
                   filterExpr: dim_shops_id is not null (type: boolean)
-                  Statistics: Num rows: 9 Data size: 306 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 9 Data size: 63 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: dim_shops_id (type: int)
                     outputColumnNames: _col0
@@ -1057,7 +1057,7 @@ STAGE PLANS:
                 TableScan
                   alias: s1
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 580480 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
                     outputColumnNames: _col0
@@ -1087,7 +1087,7 @@ STAGE PLANS:
                 TableScan
                   alias: s2
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 580480 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
                     outputColumnNames: _col0

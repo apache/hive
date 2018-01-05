@@ -185,16 +185,16 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily
-          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 80 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Filter Operator
             isSamplingPred: false
             predicate: (x = 484) (type: boolean)
-            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 80 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: 484 (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 80 Basic stats: PARTIAL Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT x FROM fact_daily WHERE ds='1' and x=484
@@ -266,16 +266,16 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily
-          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 80 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Filter Operator
             isSamplingPred: false
             predicate: (x = 495) (type: boolean)
-            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 80 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: 495 (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 80 Basic stats: PARTIAL Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT x FROM fact_daily WHERE ds='1' and x=495
@@ -347,16 +347,16 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily
-          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 80 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Filter Operator
             isSamplingPred: false
             predicate: (x = 1) (type: boolean)
-            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 80 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: 1 (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 80 Basic stats: PARTIAL Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT x FROM fact_daily WHERE ds='1' and x=1

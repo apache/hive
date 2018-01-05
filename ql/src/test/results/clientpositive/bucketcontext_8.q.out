@@ -229,12 +229,12 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
-            Statistics: Num rows: 54 Data size: 5500 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 54 Data size: 5500 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: string)
@@ -253,12 +253,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -266,7 +266,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 Position of Big Table: 1
-                Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 264 Data size: 127864 Basic stats: COMPLETE Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()
@@ -455,12 +455,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1

@@ -324,13 +324,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: spart
-                  Statistics: Num rows: 58 Data size: 53944 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 196 Data size: 257552 Basic stats: COMPLETE Column stats: PARTIAL
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                     outputColumnNames: key, value, ds, hr
-                    Statistics: Num rows: 58 Data size: 53944 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 196 Data size: 257552 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       keys: ds (type: string), hr (type: string)
@@ -730,13 +730,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: spart
-                  Statistics: Num rows: 58 Data size: 53944 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 196 Data size: 257552 Basic stats: COMPLETE Column stats: PARTIAL
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                     outputColumnNames: key, value, ds, hr
-                    Statistics: Num rows: 58 Data size: 53944 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 196 Data size: 257552 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       keys: ds (type: string), hr (type: string)
@@ -1136,13 +1136,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: spart
-                  Statistics: Num rows: 29 Data size: 21820 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 117 Data size: 121232 Basic stats: COMPLETE Column stats: PARTIAL
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string)
                     outputColumnNames: key, value, ds
-                    Statistics: Num rows: 29 Data size: 21820 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 117 Data size: 121232 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       keys: ds (type: string), '11' (type: string)

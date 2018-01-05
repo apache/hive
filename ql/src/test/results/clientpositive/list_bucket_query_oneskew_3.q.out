@@ -208,16 +208,16 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily
-          Statistics: Num rows: 29 Data size: 117 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
             isSamplingPred: false
             predicate: (x <> 86) (type: boolean)
-            Statistics: Num rows: 29 Data size: 117 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: x (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 29 Data size: 117 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
 PREHOOK: query: SELECT x FROM fact_daily WHERE ds='1' and not (x = 86)

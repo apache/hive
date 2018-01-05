@@ -124,12 +124,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 54 Data size: 5500 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 54 Data size: 5500 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -137,7 +137,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 Position of Big Table: 1
-                Statistics: Num rows: 59 Data size: 6050 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 123 Data size: 60500 Basic stats: COMPLETE Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()
@@ -322,12 +322,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 54 Data size: 5500 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 54 Data size: 5500 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
