@@ -23,7 +23,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.hadoop.io.Text;
-import org.apache.hive.common.util.HiveStringUtils;
 
 public abstract class HiveBaseCharWritable {
   protected Text value = new Text();
@@ -32,7 +31,7 @@ public abstract class HiveBaseCharWritable {
   }
 
   public int getCharacterLength() {
-    return HiveStringUtils.getTextUtfLength(value);
+    return getTextUtfLength(value);
   }
 
   /**
@@ -60,5 +59,24 @@ public abstract class HiveBaseCharWritable {
 
   public int hashCode() {
     return value.hashCode();
+  }
+
+  /**
+   * Checks if b is the first byte of a UTF-8 character.
+   *
+   */
+  public static boolean isUtfStartByte(byte b) {
+    return (b & 0xC0) != 0x80;
+  }
+
+  public static int getTextUtfLength(Text t) {
+    byte[] data = t.getBytes();
+    int len = 0;
+    for (int i = 0; i < t.getLength(); i++) {
+      if (isUtfStartByte(data[i])) {
+        len++;
+      }
+    }
+    return len;
   }
 }

@@ -19,10 +19,8 @@ package org.apache.hadoop.hive.serde2.io;
 
 import org.apache.hadoop.hive.common.type.HiveBaseChar;
 import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
-import org.apache.hive.common.util.HiveStringUtils;
 
 /**
  * HiveCharWritable.
@@ -88,7 +86,7 @@ public class HiveCharWritable extends HiveBaseCharWritable
   }
 
   public int getCharacterLength() {
-    return HiveStringUtils.getTextUtfLength(getStrippedValue());
+    return HiveBaseCharWritable.getTextUtfLength(getStrippedValue());
   }
 
   public int compareTo(HiveCharWritable rhs) {

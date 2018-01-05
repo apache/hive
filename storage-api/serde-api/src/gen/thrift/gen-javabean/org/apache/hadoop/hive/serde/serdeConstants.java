@@ -162,20 +162,4 @@ public class serdeConstants {
     IntegralTypes.add("bigint");
   }
 
-  public static final int MAX_CHAR_LENGTH = 255;
-
-  public static final int MAX_VARCHAR_LENGTH = 65535;
-
-  public static final int SYSTEM_DEFAULT_PRECISION = 38;
-
-  public static final int SYSTEM_DEFAULT_SCALE = 18;
-
-  public static final int USER_DEFAULT_PRECISION = 10;
-
-  public static final int USER_DEFAULT_SCALE = 0;
-
-  public static final int MAX_PRECISION = 38;
-
-  public static final int MAX_SCALE = 38;
-
 }

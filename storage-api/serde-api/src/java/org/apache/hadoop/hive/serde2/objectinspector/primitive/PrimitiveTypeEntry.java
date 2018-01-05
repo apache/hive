@@ -103,10 +103,8 @@ public class PrimitiveTypeEntry implements Writable, Cloneable {
     super();
   }
 
-  PrimitiveTypeEntry(
-      PrimitiveObjectInspector.PrimitiveCategory primitiveCategory,
-      String typeName, Class<?> primitiveType, Class<?> javaClass,
-      Class<?> hiveClass) {
+  public PrimitiveTypeEntry(PrimitiveObjectInspector.PrimitiveCategory primitiveCategory,
+      String typeName, Class<?> primitiveType, Class<?> javaClass, Class<?> hiveClass) {
     this.primitiveCategory = primitiveCategory;
     primitiveJavaType = primitiveType;
     primitiveJavaClass = javaClass;

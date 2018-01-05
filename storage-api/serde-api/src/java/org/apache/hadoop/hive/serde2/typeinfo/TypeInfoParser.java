@@ -2,6 +2,7 @@ package org.apache.hadoop.hive.serde2.typeinfo;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveTypeEntry;
@@ -228,8 +229,8 @@ public class TypeInfoParser {
         }
 
       case DECIMAL:
-        int precision = serdeConstants.USER_DEFAULT_PRECISION;
-        int scale = serdeConstants.USER_DEFAULT_SCALE;
+        int precision = HiveDecimal.USER_DEFAULT_PRECISION;
+        int scale = HiveDecimal.USER_DEFAULT_SCALE;
         if (params == null || params.length == 0) {
           // It's possible that old metadata still refers to "decimal" as a column type w/o
           // precision/scale. In this case, the default (10,0) is assumed. Thus, do nothing here.

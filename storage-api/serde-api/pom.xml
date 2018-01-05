@@ -30,6 +30,7 @@
 
   <properties>
     <libthrift.version>0.9.3</libthrift.version>
+    <storage-api.version>3.0.0-SNAPSHOT</storage-api.version>
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <maven.compiler.plugin.version>3.6.1</maven.compiler.plugin.version>
@@ -102,6 +103,11 @@
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
       <version>${jsr305.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-storage-api</artifactId>
+      <version>${storage-api.version}</version>
     </dependency>
   </dependencies>
 

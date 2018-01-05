@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveTypeEntry;
 
@@ -44,8 +47,8 @@ public final class TypeInfoFactory {
   public static final PrimitiveTypeInfo intTypeInfo = new PrimitiveTypeInfo(serdeConstants.INT_TYPE_NAME);
   public static final PrimitiveTypeInfo longTypeInfo = new PrimitiveTypeInfo(serdeConstants.BIGINT_TYPE_NAME);
   public static final PrimitiveTypeInfo stringTypeInfo = new PrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
-  public static final PrimitiveTypeInfo charTypeInfo = new CharTypeInfo(serdeConstants.MAX_CHAR_LENGTH);
-  public static final PrimitiveTypeInfo varcharTypeInfo = new VarcharTypeInfo(serdeConstants.MAX_VARCHAR_LENGTH);
+  public static final PrimitiveTypeInfo charTypeInfo = new CharTypeInfo(HiveChar.MAX_CHAR_LENGTH);
+  public static final PrimitiveTypeInfo varcharTypeInfo = new VarcharTypeInfo(HiveVarchar.MAX_VARCHAR_LENGTH);
   public static final PrimitiveTypeInfo floatTypeInfo = new PrimitiveTypeInfo(serdeConstants.FLOAT_TYPE_NAME);
   public static final PrimitiveTypeInfo doubleTypeInfo = new PrimitiveTypeInfo(serdeConstants.DOUBLE_TYPE_NAME);
   public static final PrimitiveTypeInfo byteTypeInfo = new PrimitiveTypeInfo(serdeConstants.TINYINT_TYPE_NAME);
@@ -59,8 +62,8 @@ public final class TypeInfoFactory {
   /**
    * A DecimalTypeInfo instance that has max precision and max scale.
    */
-  public static final DecimalTypeInfo decimalTypeInfo = new DecimalTypeInfo(serdeConstants.SYSTEM_DEFAULT_PRECISION,
-      serdeConstants.SYSTEM_DEFAULT_SCALE);
+  public static final DecimalTypeInfo decimalTypeInfo = new DecimalTypeInfo(HiveDecimal.SYSTEM_DEFAULT_PRECISION,
+      HiveDecimal.SYSTEM_DEFAULT_SCALE);
 
   /**
    * A TimestampTZTypeInfo with system default time zone.

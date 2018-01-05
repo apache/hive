@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore.schema.reader;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.StorageSchemaReader;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;

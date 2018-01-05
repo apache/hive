@@ -101,17 +101,3 @@ const set<string> PrimitiveTypes  = [
 
 const set<string> CollectionTypes = [ LIST_TYPE_NAME MAP_TYPE_NAME ],
 const set<string> IntegralTypes = [ TINYINT_TYPE_NAME SMALLINT_TYPE_NAME INT_TYPE_NAME BIGINT_TYPE_NAME ],
-
-// defaults for primitives
-// max char length
-const i32 MAX_CHAR_LENGTH = 255;
-// max varchar length
-const i32 MAX_VARCHAR_LENGTH = 65535;
-// default precision for decimal
-const i32 SYSTEM_DEFAULT_PRECISION = 38;
-// default scale for decimal
-const i32 SYSTEM_DEFAULT_SCALE = 18;
-const i32 USER_DEFAULT_PRECISION = 10;
-const i32 USER_DEFAULT_SCALE = 0;
-const i32 MAX_PRECISION = 38;
-const i32 MAX_SCALE = 38;
