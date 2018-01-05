@@ -234,6 +234,12 @@
             <artifactId>commons-beanutils-core</artifactId>
           </exclusion>
       </exclusions>
-   </dependency>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-zookeeper</artifactId>
+      <version>${hbase.version}</version>
+      <classifier>tests</classifier>
+    </dependency>
   </dependencies>
 </project>
