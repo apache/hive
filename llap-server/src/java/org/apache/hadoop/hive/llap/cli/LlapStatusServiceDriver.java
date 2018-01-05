@@ -50,6 +50,10 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ContainerExitStatus;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.hadoop.yarn.service.api.records.Container;
+import org.apache.hadoop.yarn.service.api.records.Service;
+import org.apache.hadoop.yarn.service.api.records.ServiceState;
 import org.apache.hadoop.yarn.service.client.ServiceClient;
 import org.apache.hadoop.yarn.util.Clock;
 import org.apache.hadoop.yarn.util.SystemClock;
@@ -109,7 +113,7 @@ public class LlapStatusServiceDriver {
 
   private static final long LOG_SUMMARY_INTERVAL = 15000L; // Log summary every ~15 seconds.
 
-  private static final String LLAP_KEY = "LLAP";
+  private static final String LLAP_KEY = "llap";
   private final Configuration conf;
   private final Clock clock = new SystemClock();
   private String appName = null;
@@ -345,10 +349,6 @@ public class LlapStatusServiceDriver {
     }
   }
 
-
-
-
-
   /**
    * Populates information from YARN Service Status.
    *
@@ -362,7 +362,39 @@ public class LlapStatusServiceDriver {
   private ExitCode populateAppStatusFromServiceStatus(String appName,
       ServiceClient serviceClient, AppStatusBuilder appStatusBuilder)
       throws LlapStatusCliException {
-    return ExitCode.SUCCESS;
+    ExitCode exitCode = ExitCode.YARN_ERROR;
+    try {
+      Service service = serviceClient.getStatus(appName);
+      if (service != null) {
+        // How to get config paths and AmInfo
+        ServiceState state = service.getState();
+        appStatusBuilder.setAppStartTime(service.getLaunchTime() == null ? 0
+            : service.getLaunchTime().getTime());
+        appStatusBuilder.setDesiredInstances(
+            service.getComponent(LLAP_KEY).getNumberOfContainers() == null ? 0
+                : service.getComponent(LLAP_KEY).getNumberOfContainers()
+                    .intValue());
+        appStatusBuilder.setLiveInstances(
+            service.getComponent(LLAP_KEY).getContainers().size());
+        for (Container cont : service.getComponent(LLAP_KEY).getContainers()) {
+          LlapInstance llapInstance = new LlapInstance(cont.getHostname(),
+              cont.getId());
+          appStatusBuilder.addNewRunningLlapInstance(llapInstance);
+        }
+        if (state == ServiceState.STABLE) {
+          exitCode = ExitCode.SUCCESS;
+        }
+      } else {
+        exitCode = ExitCode.SERVICE_CLIENT_ERROR_OTHER;
+      }
+    } catch (IOException | YarnException e) {
+      LlapStatusCliException le = new LlapStatusCliException(
+          LlapStatusServiceDriver.ExitCode.SERVICE_CLIENT_ERROR_OTHER,
+          "Failed to get service status", e);
+      logError(le);
+      exitCode = le.getExitCode();
+    }
+    return exitCode;
   }
 
   /**
@@ -429,7 +461,8 @@ public class LlapStatusServiceDriver {
 
       appStatusBuilder.setLiveInstances(validatedInstances.size());
       appStatusBuilder.setLaunchingInstances(llapExtraInstances.size());
-      if (validatedInstances.size() >= appStatusBuilder.getDesiredInstances()) {
+      if (appStatusBuilder.getDesiredInstances() != null && validatedInstances
+          .size() >= appStatusBuilder.getDesiredInstances()) {
         appStatusBuilder.setState(State.RUNNING_ALL);
         if (validatedInstances.size() > appStatusBuilder.getDesiredInstances()) {
           LOG.warn("Found more entries in LLAP registry, as compared to desired entries");
