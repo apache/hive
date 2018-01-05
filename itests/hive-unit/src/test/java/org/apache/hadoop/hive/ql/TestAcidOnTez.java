@@ -675,7 +675,6 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
   @Test
   public void testBucketedAcidInsertWithRemoveUnion() throws Exception {
     HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
-    confForTez.setBoolean("hive.stats.column.autogather", false);
     setupTez(confForTez);
     int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};
     runStatementOnDriver("delete from " + Table.ACIDTBL, confForTez);
@@ -708,9 +707,9 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     String[][] expected2 = {
       {"{\"transactionid\":21,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "warehouse/t/delta_0000021_0000021_0000/bucket_00001"},
       {"{\"transactionid\":21,\"bucketid\":536870912,\"rowid\":0}\t2\t4", "warehouse/t/delta_0000021_0000021_0000/bucket_00000"},
-      {"{\"transactionid\":21,\"bucketid\":536936448,\"rowid\":1}\t5\t6", "warehouse/t/delta_0000021_0000021_0000/bucket_00001"},
+      {"{\"transactionid\":21,\"bucketid\":536936448,\"rowid\":2}\t5\t6", "warehouse/t/delta_0000021_0000021_0000/bucket_00001"},
       {"{\"transactionid\":21,\"bucketid\":536870912,\"rowid\":1}\t6\t8", "warehouse/t/delta_0000021_0000021_0000/bucket_00000"},
-      {"{\"transactionid\":21,\"bucketid\":536936448,\"rowid\":2}\t9\t10", "warehouse/t/delta_0000021_0000021_0000/bucket_00001"}
+      {"{\"transactionid\":21,\"bucketid\":536936448,\"rowid\":1}\t9\t10", "warehouse/t/delta_0000021_0000021_0000/bucket_00001"}
     };
     Assert.assertEquals("Unexpected row count", expected2.length, rs.size());
     for(int i = 0; i < expected2.length; i++) {
