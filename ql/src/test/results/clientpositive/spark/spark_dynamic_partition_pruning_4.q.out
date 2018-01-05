@@ -2019,12 +2019,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part2
-                  Statistics: Num rows: 8 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: p (type: string)
                     sort order: +
                     Map-reduce partition columns: p (type: string)
-                    Statistics: Num rows: 8 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -2047,12 +2047,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part1
-                  Statistics: Num rows: 8 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: p (type: string)
                     sort order: +
                     Map-reduce partition columns: p (type: string)
-                    Statistics: Num rows: 8 Data size: 240 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
         Map 9 
             Map Operator Tree:
                 TableScan
@@ -2097,14 +2097,14 @@ STAGE PLANS:
                 condition map:
                      Left Semi Join 0 to 1
                 outputColumnNames: _col2
-                Statistics: Num rows: 8 Data size: 264 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 8 Data size: 26 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col2 (type: string)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 8 Data size: 264 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 26 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 16 Data size: 528 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 16 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2135,14 +2135,14 @@ STAGE PLANS:
                 condition map:
                      Left Semi Join 0 to 1
                 outputColumnNames: _col2
-                Statistics: Num rows: 8 Data size: 264 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 8 Data size: 26 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col2 (type: string)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 8 Data size: 264 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 26 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 16 Data size: 528 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 16 Data size: 52 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

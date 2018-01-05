@@ -100,16 +100,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -117,7 +117,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 1
-                        Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 132 Data size: 63932 Basic stats: COMPLETE Column stats: NONE
                         BucketMapJoin: true
                         Group By Operator
                           aggregations: count()
@@ -258,16 +258,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -275,7 +275,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 0
-                        Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 132 Data size: 63932 Basic stats: COMPLETE Column stats: NONE
                         BucketMapJoin: true
                         Group By Operator
                           aggregations: count()
@@ -416,16 +416,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -433,7 +433,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 0
-                        Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 132 Data size: 63932 Basic stats: COMPLETE Column stats: NONE
                         BucketMapJoin: true
                         Group By Operator
                           aggregations: count()

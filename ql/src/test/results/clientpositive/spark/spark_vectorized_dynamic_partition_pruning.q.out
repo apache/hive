@@ -59,7 +59,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -70,7 +70,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
@@ -82,7 +82,7 @@ STAGE PLANS:
                       keys: ds (type: string)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
@@ -93,7 +93,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: []
-                        Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -138,7 +138,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: string), _col0 (type: string)
                   outputColumnNames: _col0, _col1
@@ -146,13 +146,13 @@ STAGE PLANS:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: [0, 0]
-                  Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -356,7 +356,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -367,7 +367,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -378,7 +378,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -460,7 +460,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -559,7 +559,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -570,7 +570,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -581,7 +581,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -663,7 +663,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -843,7 +843,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -854,7 +854,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: day(_col0) (type: int)
                       sort order: +
@@ -866,7 +866,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -949,7 +949,7 @@ STAGE PLANS:
                 keys:
                   0 day(_col0) (type: int)
                   1 day(_col0) (type: int)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1048,7 +1048,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1059,7 +1059,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: day(_col0) (type: int)
                       sort order: +
@@ -1071,7 +1071,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -1154,7 +1154,7 @@ STAGE PLANS:
                 keys:
                   0 day(_col0) (type: int)
                   1 day(_col0) (type: int)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1325,7 +1325,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: abs(((- UDFToLong(concat(UDFToString(day(ds)), '0'))) + 10)) is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1335,7 +1335,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsNotNull(col 8:bigint)(children: FuncAbsLongToLong(col 5:bigint)(children: LongColAddLongScalar(col 8:bigint, val 10)(children: LongColUnaryMinus(col 5:bigint)(children: CastStringToLong(col 7:string)(children: StringGroupColConcatStringScalar(col 6:string, val 0)(children: CastLongToString(col 5:int)(children: VectorUDFDayOfMonthString(col 2:string, fieldStart 8, fieldLength 2) -> 5:int) -> 6:string) -> 7:string) -> 5:bigint) -> 8:bigint) -> 5:bigint) -> 8:bigint)
                     predicate: abs(((- UDFToLong(concat(UDFToString(day(ds)), '0'))) + 10)) is not null (type: boolean)
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string)
                       outputColumnNames: _col0
@@ -1343,7 +1343,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [2]
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: abs(((- UDFToLong(concat(UDFToString(day(_col0)), '0'))) + 10)) (type: bigint)
                         sort order: +
@@ -1355,7 +1355,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: []
-                        Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -1438,7 +1438,7 @@ STAGE PLANS:
                 keys:
                   0 abs(((- UDFToLong(concat(UDFToString(day(_col0)), '0'))) + 10)) (type: bigint)
                   1 abs(((- UDFToLong(concat(UDFToString(day(_col0)), '0'))) + 10)) (type: bigint)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1609,7 +1609,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1620,7 +1620,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: CAST( UDFToShort(day(_col0)) AS decimal(10,0)) (type: decimal(10,0))
                       sort order: +
@@ -1632,7 +1632,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -1715,7 +1715,7 @@ STAGE PLANS:
                 keys:
                   0 CAST( UDFToShort(day(_col0)) AS decimal(10,0)) (type: decimal(10,0))
                   1 CAST( day(_col0) AS decimal(10,0)) (type: decimal(10,0))
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -1952,7 +1952,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1963,7 +1963,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -1974,7 +1974,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: [3]
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
             Execution mode: vectorized
             Map Vectorization:
@@ -2109,12 +2109,12 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col1
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Vectorization:
                 enabled: true
@@ -2128,7 +2128,7 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 2420 Data size: 257100 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -2234,7 +2234,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: (ds is not null and hr is not null) (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2245,7 +2245,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -2256,7 +2256,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: [3]
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
             Execution mode: vectorized
             Map Vectorization:
@@ -2391,12 +2391,12 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col1
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Vectorization:
                 enabled: true
@@ -2410,7 +2410,7 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 2420 Data size: 257100 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -2617,7 +2617,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2628,7 +2628,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: ++
@@ -2639,7 +2639,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -2721,7 +2721,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
                   1 _col0 (type: string), _col2 (type: string)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -2820,7 +2820,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: (ds is not null and hr is not null) (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2831,7 +2831,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: ++
@@ -2842,7 +2842,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -2924,7 +2924,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
                   1 _col0 (type: string), _col2 (type: string)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -3103,7 +3103,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3114,7 +3114,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -3125,7 +3125,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -3207,7 +3207,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -3306,7 +3306,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3317,7 +3317,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -3328,7 +3328,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -3410,7 +3410,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -3590,7 +3590,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: hr is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3601,7 +3601,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: UDFToDouble(_col0) (type: double)
                       sort order: +
@@ -3613,7 +3613,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -3696,7 +3696,7 @@ STAGE PLANS:
                 keys:
                   0 UDFToDouble(_col0) (type: double)
                   1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -3866,7 +3866,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: hr is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3877,7 +3877,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: (UDFToDouble(_col0) * 2.0) (type: double)
                       sort order: +
@@ -3889,7 +3889,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -3971,7 +3971,7 @@ STAGE PLANS:
                 keys:
                   0 (UDFToDouble(_col0) * 2.0) (type: double)
                   1 _col0 (type: double)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -4070,7 +4070,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: hr is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -4081,7 +4081,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: UDFToDouble(_col0) (type: double)
                       sort order: +
@@ -4093,7 +4093,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -4176,7 +4176,7 @@ STAGE PLANS:
                 keys:
                   0 UDFToDouble(_col0) (type: double)
                   1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -4275,7 +4275,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: hr is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -4286,7 +4286,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: (UDFToDouble(_col0) * 2.0) (type: double)
                       sort order: +
@@ -4298,7 +4298,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -4380,7 +4380,7 @@ STAGE PLANS:
                 keys:
                   0 (UDFToDouble(_col0) * 2.0) (type: double)
                   1 _col0 (type: double)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -4560,7 +4560,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: hr is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -4571,7 +4571,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
                       sort order: +
@@ -4583,7 +4583,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -4666,7 +4666,7 @@ STAGE PLANS:
                 keys:
                   0 UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
                   1 UDFToString(_col0) (type: string)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -4776,7 +4776,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: (ds = '2008-04-08') (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -4785,7 +4785,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: []
-                    Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       sort order: 
                       Reduce Sink Vectorization:
@@ -4794,7 +4794,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -4817,7 +4817,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: (ds = '2008-04-08') (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -4826,7 +4826,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: []
-                    Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
@@ -4838,7 +4838,7 @@ STAGE PLANS:
                       keys: '2008-04-08' (type: string)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
@@ -4849,7 +4849,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: []
-                        Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -4880,7 +4880,7 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                Statistics: Num rows: 500000 Data size: 106740000 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500000 Data size: 11124000 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -4955,13 +4955,13 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 53120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: []
-                  Statistics: Num rows: 500 Data size: 53120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     sort order: 
                     Reduce Sink Vectorization:
@@ -4970,7 +4970,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumnNums: []
-                    Statistics: Num rows: 500 Data size: 53120 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
@@ -5026,7 +5026,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -5037,7 +5037,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       sort order: 
                       Reduce Sink Vectorization:
@@ -5046,7 +5046,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: [2, 3]
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: vectorized
             Map Vectorization:
@@ -5129,12 +5129,12 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col0, _col1, _col2, _col4
-                Statistics: Num rows: 2000 Data size: 934480 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2000 Data size: 743248 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
                   predicate: ((_col0 = _col2) or (_col1 = _col4)) (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 934480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 743248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    Statistics: Num rows: 2000 Data size: 934480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 743248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -5329,7 +5329,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -5340,7 +5340,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: ++
@@ -5351,7 +5351,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -5433,7 +5433,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string), _col1 (type: string)
                   1 _col0 (type: string), _col2 (type: string)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -5603,7 +5603,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -5614,7 +5614,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -5625,7 +5625,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -5707,7 +5707,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -5908,7 +5908,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -5919,7 +5919,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -5930,7 +5930,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -5961,7 +5961,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -6111,7 +6111,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -6122,7 +6122,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -6133,7 +6133,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -6215,7 +6215,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -6433,7 +6433,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -6444,7 +6444,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 3]
-                    Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -6455,7 +6455,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: [3]
-                      Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
             Execution mode: vectorized
             Map Vectorization:
@@ -6590,12 +6590,12 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col1
-                Statistics: Num rows: 1100 Data size: 116864 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 1100 Data size: 116864 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Vectorization:
                 enabled: true
@@ -6609,7 +6609,7 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 1210 Data size: 128550 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -6986,7 +6986,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -6997,7 +6997,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: min(ds)
                       Group By Vectorization:
@@ -7041,7 +7041,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -7052,7 +7052,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(ds)
                       Group By Vectorization:
@@ -7251,7 +7251,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -7262,7 +7262,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -7273,7 +7273,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -7295,7 +7295,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -7306,7 +7306,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(ds)
                       Group By Vectorization:
@@ -7350,7 +7350,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -7361,7 +7361,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: min(ds)
                       Group By Vectorization:
@@ -7414,7 +7414,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -7627,7 +7627,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -7638,7 +7638,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: min(ds)
                       Group By Vectorization:
@@ -7682,7 +7682,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -7693,7 +7693,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(ds)
                       Group By Vectorization:
@@ -7892,7 +7892,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -7903,7 +7903,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -7914,7 +7914,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -7936,7 +7936,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -7947,7 +7947,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(ds)
                       Group By Vectorization:
@@ -7991,7 +7991,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -8002,7 +8002,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: min(ds)
                       Group By Vectorization:
@@ -8056,17 +8056,17 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Execution mode: vectorized
             Reduce Vectorization:
@@ -8094,13 +8094,13 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1100 Data size: 116864 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1100 Data size: 116864 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -8271,7 +8271,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -8282,7 +8282,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(ds)
                       Group By Vectorization:
@@ -8326,7 +8326,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -8337,7 +8337,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: min(ds)
                       Group By Vectorization:
@@ -8536,7 +8536,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -8551,7 +8551,7 @@ STAGE PLANS:
                     keys: ds (type: string)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -8562,7 +8562,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -8584,7 +8584,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -8595,7 +8595,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(ds)
                       Group By Vectorization:
@@ -8639,7 +8639,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -8650,7 +8650,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: min(ds)
                       Group By Vectorization:
@@ -8717,7 +8717,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
@@ -8728,7 +8728,7 @@ STAGE PLANS:
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       valueColumnNums: []
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Vectorization:
                 enabled: true
@@ -8743,10 +8743,10 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -8998,7 +8998,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -9009,7 +9009,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -9023,7 +9023,7 @@ STAGE PLANS:
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -9243,7 +9243,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -9254,7 +9254,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -9269,7 +9269,7 @@ STAGE PLANS:
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -9554,7 +9554,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -9565,7 +9565,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -9583,7 +9583,7 @@ STAGE PLANS:
                       outputColumnNames: _col1
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -9597,7 +9597,7 @@ STAGE PLANS:
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 2420 Data size: 257100 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2420 Data size: 25709 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -9844,7 +9844,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -9855,7 +9855,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -9869,7 +9869,7 @@ STAGE PLANS:
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -10088,7 +10088,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -10099,7 +10099,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -10113,7 +10113,7 @@ STAGE PLANS:
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -10324,7 +10324,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: hr is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -10335,7 +10335,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -10350,7 +10350,7 @@ STAGE PLANS:
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -10560,7 +10560,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: hr is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -10571,7 +10571,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [3]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -10586,7 +10586,7 @@ STAGE PLANS:
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -10727,7 +10727,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: (ds = '2008-04-08') (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -10736,7 +10736,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: []
-                    Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
@@ -10748,7 +10748,7 @@ STAGE PLANS:
                       keys: '2008-04-08' (type: string)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
@@ -10759,7 +10759,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: []
-                        Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -10806,13 +10806,13 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 53120 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: []
-                  Statistics: Num rows: 500 Data size: 53120 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Spark HashTable Sink Operator
                     Spark Hash Table Sink Vectorization:
                         className: VectorSparkHashTableSinkOperator
@@ -10832,7 +10832,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: (ds = '2008-04-08') (type: boolean)
-                  Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -10841,7 +10841,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: []
-                    Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -10854,7 +10854,7 @@ STAGE PLANS:
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                       input vertices:
                         1 Reducer 4
-                      Statistics: Num rows: 500000 Data size: 106740000 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500000 Data size: 11124000 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -11068,7 +11068,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -11079,7 +11079,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -11093,7 +11093,7 @@ STAGE PLANS:
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -11202,7 +11202,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -11213,7 +11213,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
                           className: VectorSparkHashTableSinkOperator
@@ -11284,7 +11284,7 @@ STAGE PLANS:
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -11392,7 +11392,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -11403,7 +11403,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
                           className: VectorSparkHashTableSinkOperator
@@ -11474,7 +11474,7 @@ STAGE PLANS:
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                         input vertices:
                           0 Map 1
-                        Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -11739,7 +11739,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -11750,7 +11750,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2, 3]
-                    Statistics: Num rows: 1000 Data size: 106240 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -11768,7 +11768,7 @@ STAGE PLANS:
                       outputColumnNames: _col1
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 1100 Data size: 116864 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -11782,7 +11782,7 @@ STAGE PLANS:
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 1210 Data size: 128550 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1210 Data size: 12854 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -12191,7 +12191,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -12202,7 +12202,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: min(ds)
                       Group By Vectorization:
@@ -12246,7 +12246,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -12257,7 +12257,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(ds)
                       Group By Vectorization:
@@ -12456,7 +12456,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -12467,7 +12467,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -12478,7 +12478,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -12500,7 +12500,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -12511,7 +12511,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(ds)
                       Group By Vectorization:
@@ -12555,7 +12555,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -12566,7 +12566,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 2000 Data size: 212480 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: min(ds)
                       Group By Vectorization:
@@ -12620,17 +12620,17 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 2200 Data size: 233728 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Execution mode: vectorized
             Reduce Vectorization:
@@ -12658,13 +12658,13 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1100 Data size: 116864 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1100 Data size: 116864 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

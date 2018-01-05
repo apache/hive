@@ -117,16 +117,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 4 Data size: 1188 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 5992 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 4 Data size: 1188 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 5992 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 4 Data size: 1188 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 8 Data size: 5992 Basic stats: COMPLETE Column stats: NONE
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -232,16 +232,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 27 Data size: 7718 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 56 Data size: 37620 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 7432 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 54 Data size: 36276 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 26 Data size: 7432 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 54 Data size: 36276 Basic stats: COMPLETE Column stats: NONE
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -249,7 +249,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 1
-                        Statistics: Num rows: 28 Data size: 8175 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 59 Data size: 39903 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -391,16 +391,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 4 Data size: 1188 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 5992 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 4 Data size: 1188 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 5992 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 4 Data size: 1188 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 8 Data size: 5992 Basic stats: COMPLETE Column stats: NONE
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -506,16 +506,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 27 Data size: 7718 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 56 Data size: 37620 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 7432 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 54 Data size: 36276 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 26 Data size: 7432 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 54 Data size: 36276 Basic stats: COMPLETE Column stats: NONE
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -523,7 +523,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 0
-                        Statistics: Num rows: 28 Data size: 8175 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 59 Data size: 39903 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -665,16 +665,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 4 Data size: 1188 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 5992 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 4 Data size: 1188 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 5992 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 4 Data size: 1188 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 8 Data size: 5992 Basic stats: COMPLETE Column stats: NONE
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -780,16 +780,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 27 Data size: 7718 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 56 Data size: 37620 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 7432 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 54 Data size: 36276 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 26 Data size: 7432 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 54 Data size: 36276 Basic stats: COMPLETE Column stats: NONE
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -797,7 +797,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 0
-                        Statistics: Num rows: 28 Data size: 8175 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 59 Data size: 39903 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
