@@ -72,7 +72,7 @@ public class AvroSchemaUtils {
   public static final String LIST_COLUMN_COMMENTS = "columns.comments";
 
   public static List<FieldSchema> getFieldsFromAvroSchema(Configuration configuration,
-      Properties properties) throws AvroSerdeException {
+      Properties properties) throws AvroSerdeException, IOException {
     // Reset member variables so we don't get in a half-constructed state
     Schema schema = null;
     List<String> columnNames = null;
@@ -87,7 +87,7 @@ public class AvroSchemaUtils {
     if (hasExternalSchema(properties)
         || columnNameProperty == null || columnNameProperty.isEmpty()
         || columnTypeProperty == null || columnTypeProperty.isEmpty()) {
-      schema = AvroSchemaUtils.determineSchemaOrReturnErrorSchema(configuration, properties);
+      schema = AvroSchemaUtils.determineSchemaOrThrowException(configuration, properties);
     } else {
       // Get column names and sort order
       columnNames = StringUtils.intern(

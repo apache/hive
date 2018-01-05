@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -69,6 +70,9 @@ public class DefaultStorageSchemaReader implements StorageSchemaReader {
       try {
         return AvroSchemaUtils.getFieldsFromAvroSchema(conf, tblMetadataProperties);
       } catch (AvroSerdeException e) {
+        LOG.warn("Exception received while reading avro schema for table " + tbl.getTableName(), e);
+        throw new MetaException(e.getMessage());
+      } catch (IOException e) {
         LOG.warn("Exception received while reading avro schema for table " + tbl.getTableName(), e);
         throw new MetaException(e.getMessage());
       }
