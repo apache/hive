@@ -175,8 +175,10 @@ public class TezTask extends Task<TezWork> {
       CallerContext callerContext = CallerContext.create(
           "HIVE", queryPlan.getQueryId(), "HIVE_QUERY_ID", queryPlan.getQueryStr());
 
+      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
       session = sessionRef.value = WorkloadManagerFederation.getSession(
           sessionRef.value, conf, mi, getWork().getLlapMode(), wmContext);
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
 
       try {
         ss.setTezSession(session);
