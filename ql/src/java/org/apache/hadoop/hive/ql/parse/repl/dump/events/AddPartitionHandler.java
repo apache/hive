@@ -63,16 +63,17 @@ class AddPartitionHandler extends AbstractEventHandler {
       return;
     }
 
-    Iterable<Partition> qlPtns = StreamSupport.stream(ptns.spliterator(), false).map(input -> {
-      if (input == null) {
-        return null;
-      }
-      try {
-        return new Partition(qlMdTable, input);
-      } catch (HiveException e) {
-        throw new IllegalArgumentException(e);
-      }
-    }).collect(Collectors.toList());
+    Iterable<Partition> qlPtns = StreamSupport.stream(ptns.spliterator(), false).map(
+        input -> {
+          if (input == null) {
+            return null;
+          }
+          try {
+            return new Partition(qlMdTable, input);
+          } catch (HiveException e) {
+            throw new IllegalArgumentException(e);
+          }
+        }).collect(Collectors.toList());
 
     Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
     EximUtil.createExportDump(
