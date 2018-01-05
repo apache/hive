@@ -23,13 +23,17 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.type.MetastoreTypeInfo;
+import org.apache.hadoop.hive.metastore.utils.AvroSchemaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StorageSchemaUtils;
 
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,7 +65,20 @@ public class DefaultStorageSchemaReader implements StorageSchemaReader {
               + " with storage descriptor " + tbl.getSd().getSerdeInfo().getSerializationLib());
     }
     Properties tblMetadataProperties = MetaStoreUtils.getTableMetadata(tbl);
-    return getFieldSchemasFromTableMetadata(tblMetadataProperties);
+    if(AVRO_SERIALIZATION_LIB.equals(serializationLib)) {
+      //in case of avro table use AvroStorageSchemaReader utils
+      try {
+        return AvroSchemaUtils.getFieldsFromAvroSchema(conf, tblMetadataProperties);
+      } catch (AvroSerdeException e) {
+        LOG.warn("Exception received while reading avro schema for table " + tbl.getTableName(), e);
+        throw new MetaException(e.getMessage());
+      } catch (IOException e) {
+        LOG.warn("Exception received while reading avro schema for table " + tbl.getTableName(), e);
+        throw new MetaException(e.getMessage());
+      }
+    } else {
+      return getFieldSchemasFromTableMetadata(tblMetadataProperties);
+    }
   }
 
   /**

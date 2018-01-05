@@ -68,6 +68,7 @@ public class AvroFieldSchemaGenerator {
       //in SchemaToTypeInfo.generateColumnTypes in the constructor
       fieldSchema.setType(columnTypes.get(i).getTypeName());
       fieldSchema.setComment(StorageSchemaUtils.determineFieldComment(columnComments.get(i)));
+      fieldSchemas.add(fieldSchema);
     }
     return fieldSchemas;
   }

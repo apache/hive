@@ -128,8 +128,7 @@ public class MetastoreTypeInfoParser {
           && !ColumnType.STRUCT_TYPE_NAME.equals(t.text)
           && !ColumnType.UNION_TYPE_NAME.equals(t.text)
           //TODO:HIVE-17580 do we need to support "unknown" type in metastore?
-          //&& null == PrimitiveObjectInspectorUtils
-          //.getTypeEntryFromTypeName(t.text)
+          && null == MetastorePrimitiveTypeCategory.from(t.text)
           && !t.text.equals(alternative)) {
         throw new IllegalArgumentException("Error: " + item
             + " expected at the position " + t.position + " of '"
