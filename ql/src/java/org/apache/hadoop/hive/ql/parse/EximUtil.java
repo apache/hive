@@ -404,47 +404,4 @@ public class EximUtil {
       }
     };
   }
-
-  /**
-   * Verify if a table should be exported or not
-   */
-  private static Boolean shouldExportTable(ReplicationSpec replicationSpec, Table tableHandle) throws SemanticException {
-    if (replicationSpec == null) {
-      replicationSpec = new ReplicationSpec();
-    }
-
-    if (replicationSpec.isNoop()) {
-      return false;
-    }
-
-    if (tableHandle == null) {
-      return false;
-    }
-
-    if (replicationSpec.isInReplicationScope()) {
-      return !(tableHandle.isTemporary() || tableHandle.isNonNative() ||
-          (tableHandle.getParameters() != null && StringUtils.equals(tableHandle.getParameters().get("transactional"), "true")));
-    }
-
-    if (tableHandle.isNonNative()) {
-      throw new SemanticException(ErrorMsg.EXIM_FOR_NON_NATIVE.getMsg());
-    }
-
-    return true;
-  }
-
-  /**
-   * Verify if a table should be exported or not by talking to metastore to fetch table info.
-   * Return true when running into errors with metastore call. 
-   */
-  public static Boolean tryValidateShouldExportTable(Hive db, String dbName, String tableName, ReplicationSpec replicationSpec) {
-    try {
-      Table table = db.getTable(dbName, tableName);
-      return EximUtil.shouldExportTable(replicationSpec, table);
-    } catch (Exception e) {
-      // Swallow the exception
-      LOG.error("Failed to validate if the table should be exported or not", e);
-    }
-    return true;
-  }
 }
