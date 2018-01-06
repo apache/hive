@@ -1774,7 +1774,7 @@ public interface IMetaStoreClient {
   void createResourcePlan(WMResourcePlan resourcePlan, String copyFromName)
       throws InvalidObjectException, MetaException, TException;
 
-  WMResourcePlan getResourcePlan(String resourcePlanName)
+  WMFullResourcePlan getResourcePlan(String resourcePlanName)
     throws NoSuchObjectException, MetaException, TException;
 
   List<WMResourcePlan> getAllResourcePlans()

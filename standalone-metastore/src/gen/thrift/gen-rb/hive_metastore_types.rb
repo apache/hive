@@ -3496,7 +3496,7 @@ class WMGetResourcePlanResponse
   RESOURCEPLAN = 1
 
   FIELDS = {
-    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true}
+    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMFullResourcePlan, :optional => true}
   }
 
   def struct_fields; FIELDS; end

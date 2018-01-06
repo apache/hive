@@ -2613,7 +2613,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public WMResourcePlan getResourcePlan(String resourcePlanName)
+  public WMFullResourcePlan getResourcePlan(String resourcePlanName)
       throws NoSuchObjectException, MetaException, TException {
     WMGetResourcePlanRequest request = new WMGetResourcePlanRequest();
     request.setResourcePlanName(resourcePlanName);

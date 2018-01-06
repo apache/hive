@@ -2386,7 +2386,8 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException, MetaException {
+  public WMFullResourcePlan getResourcePlan(String name)
+      throws NoSuchObjectException, MetaException {
     return rawStore.getResourcePlan(name);
   }
 

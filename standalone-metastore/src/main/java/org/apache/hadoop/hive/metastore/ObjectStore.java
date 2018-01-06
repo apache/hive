@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
-import java.util.Random;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
@@ -9702,12 +9701,18 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
+  public WMFullResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
+    boolean commited = false;
     try {
-      return fromMResourcePlan(getMWMResourcePlan(name, false));
+      openTransaction();
+      WMFullResourcePlan fullRp = fullFromMResourcePlan(getMWMResourcePlan(name, false));
+      commited = commitTransaction();
+      return fullRp;
     } catch (InvalidOperationException e) {
       // Should not happen, edit check is false.
       throw new RuntimeException(e);
+    } finally {
+      rollbackAndCleanup(commited, (Query)null);
     }
   }
 

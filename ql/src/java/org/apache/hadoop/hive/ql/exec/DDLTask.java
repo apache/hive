@@ -696,14 +696,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // Note: Enhance showResourcePlan to display all the pools, triggers and mappings.
     DataOutputStream out = getOutputStream(showResourcePlanDesc.getResFile());
     try {
-      List<WMResourcePlan> resourcePlans;
       String rpName = showResourcePlanDesc.getResourcePlanName();
       if (rpName != null) {
-        resourcePlans = Collections.singletonList(db.getResourcePlan(rpName));
+        formatter.showFullResourcePlan(out, db.getResourcePlan(rpName));
       } else {
-        resourcePlans = db.getAllResourcePlans();
+        formatter.showResourcePlans(out, db.getAllResourcePlans());
       }
-      formatter.showResourcePlans(out, resourcePlans);
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {

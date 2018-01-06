@@ -15457,7 +15457,7 @@ class WMGetResourcePlanResponse:
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRUCT, 'resourcePlan', (WMResourcePlan, WMResourcePlan.thrift_spec), None, ), # 1
+    (1, TType.STRUCT, 'resourcePlan', (WMFullResourcePlan, WMFullResourcePlan.thrift_spec), None, ), # 1
   )
 
   def __init__(self, resourcePlan=None,):
@@ -15474,7 +15474,7 @@ class WMGetResourcePlanResponse:
         break
       if fid == 1:
         if ftype == TType.STRUCT:
-          self.resourcePlan = WMResourcePlan()
+          self.resourcePlan = WMFullResourcePlan()
           self.resourcePlan.read(iprot)
         else:
           iprot.skip(ftype)

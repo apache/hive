@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.antlr.runtime.tree.CommonTree;
@@ -937,7 +935,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     ShowResourcePlanDesc showResourcePlanDesc = new ShowResourcePlanDesc(rpName, ctx.getResFile());
     rootTasks.add(TaskFactory.get(
         new DDLWork(getInputs(), getOutputs(), showResourcePlanDesc), conf));
-    setFetchTask(createFetchTask(showResourcePlanDesc.getSchema()));
+    setFetchTask(createFetchTask(showResourcePlanDesc.getSchema(rpName)));
   }
 
   private void analyzeAlterResourcePlan(ASTNode ast) throws SemanticException {

@@ -22257,7 +22257,7 @@ WMGetResourcePlanResponse::~WMGetResourcePlanResponse() throw() {
 }
 
 
-void WMGetResourcePlanResponse::__set_resourcePlan(const WMResourcePlan& val) {
+void WMGetResourcePlanResponse::__set_resourcePlan(const WMFullResourcePlan& val) {
   this->resourcePlan = val;
 __isset.resourcePlan = true;
 }
