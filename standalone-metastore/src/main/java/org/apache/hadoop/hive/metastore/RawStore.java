@@ -756,7 +756,7 @@ public interface RawStore extends Configurable {
   void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
       throws AlreadyExistsException, MetaException, InvalidObjectException, NoSuchObjectException;
 
-  WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException, MetaException;
+  WMFullResourcePlan getResourcePlan(String name) throws NoSuchObjectException, MetaException;
 
   List<WMResourcePlan> getAllResourcePlans() throws MetaException;
 

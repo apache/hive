@@ -937,7 +937,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     ShowResourcePlanDesc showResourcePlanDesc = new ShowResourcePlanDesc(rpName, ctx.getResFile());
     rootTasks.add(TaskFactory.get(
         new DDLWork(getInputs(), getOutputs(), showResourcePlanDesc), conf));
-    setFetchTask(createFetchTask(showResourcePlanDesc.getSchema()));
+    setFetchTask(createFetchTask(showResourcePlanDesc.getSchema(rpName)));
   }
 
   private void analyzeAlterResourcePlan(ASTNode ast) throws SemanticException {

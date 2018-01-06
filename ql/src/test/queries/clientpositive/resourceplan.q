@@ -330,6 +330,8 @@ CREATE RESOURCE PLAN plan_4;
 
 ALTER RESOURCE PLAN plan_4 ENABLE ACTIVATE;
 
+SHOW RESOURCE PLAN plan_2;
+
 -- This should remove all pools, triggers & mappings. 
 DROP RESOURCE PLAN plan_2;
 

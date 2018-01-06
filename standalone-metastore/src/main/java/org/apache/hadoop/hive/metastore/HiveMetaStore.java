@@ -7307,7 +7307,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public WMGetResourcePlanResponse get_resource_plan(WMGetResourcePlanRequest request)
         throws NoSuchObjectException, MetaException, TException {
       try {
-        WMResourcePlan rp = getMS().getResourcePlan(request.getResourcePlanName());
+        WMFullResourcePlan rp = getMS().getResourcePlan(request.getResourcePlanName());
         WMGetResourcePlanResponse resp = new WMGetResourcePlanResponse();
         resp.setResourcePlan(rp);
         return resp;

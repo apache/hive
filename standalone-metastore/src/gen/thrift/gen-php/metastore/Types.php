@@ -21841,7 +21841,7 @@ class WMGetResourcePlanResponse {
   static $_TSPEC;
 
   /**
-   * @var \metastore\WMResourcePlan
+   * @var \metastore\WMFullResourcePlan
    */
   public $resourcePlan = null;
 
@@ -21851,7 +21851,7 @@ class WMGetResourcePlanResponse {
         1 => array(
           'var' => 'resourcePlan',
           'type' => TType::STRUCT,
-          'class' => '\metastore\WMResourcePlan',
+          'class' => '\metastore\WMFullResourcePlan',
           ),
         );
     }
@@ -21883,7 +21883,7 @@ class WMGetResourcePlanResponse {
       {
         case 1:
           if ($ftype == TType::STRUCT) {
-            $this->resourcePlan = new \metastore\WMResourcePlan();
+            $this->resourcePlan = new \metastore\WMFullResourcePlan();
             $xfer += $this->resourcePlan->read($input);
           } else {
             $xfer += $input->skip($ftype);

@@ -3158,7 +3158,8 @@ PREHOOK: query: SHOW RESOURCE PLAN plan_1
 PREHOOK: type: SHOW RESOURCEPLAN
 POSTHOOK: query: SHOW RESOURCE PLAN plan_1
 POSTHOOK: type: SHOW RESOURCEPLAN
-plan_1	DISABLED	 
+plan_1[status=DISABLED,parallelism=null,defaultPool=default]
+    default[allocFraction=1.0,schedulingPolicy=null,parallelism=4]
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -3182,7 +3183,8 @@ PREHOOK: query: SHOW RESOURCE PLAN plan_2
 PREHOOK: type: SHOW RESOURCEPLAN
 POSTHOOK: query: SHOW RESOURCE PLAN plan_2
 POSTHOOK: type: SHOW RESOURCEPLAN
-plan_2	DISABLED	4
+plan_2[status=DISABLED,parallelism=4,defaultPool=default]
+    default[allocFraction=1.0,schedulingPolicy=null,parallelism=4]
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -4079,6 +4081,15 @@ PREHOOK: query: ALTER RESOURCE PLAN plan_4 ENABLE ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_4 ENABLE ACTIVATE
 POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: SHOW RESOURCE PLAN plan_2
+PREHOOK: type: SHOW RESOURCEPLAN
+POSTHOOK: query: SHOW RESOURCE PLAN plan_2
+POSTHOOK: type: SHOW RESOURCEPLAN
+plan_2[status=DISABLED,parallelism=4,defaultPool=def]
+    def[allocFraction=1.0,schedulingPolicy=null,parallelism=4]
+        c2[allocFraction=0.7,schedulingPolicy=fair,parallelism=1]
+          > trigger_1: if(BYTES_READ = 0){MOVE TO null_pool}
+        c1[allocFraction=0.3,schedulingPolicy=fair,parallelism=3]
 PREHOOK: query: DROP RESOURCE PLAN plan_2
 PREHOOK: type: DROP RESOURCEPLAN
 POSTHOOK: query: DROP RESOURCE PLAN plan_2

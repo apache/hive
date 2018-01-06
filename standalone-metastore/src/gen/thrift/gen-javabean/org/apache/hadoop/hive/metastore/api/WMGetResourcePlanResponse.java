@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new WMGetResourcePlanResponseTupleSchemeFactory());
   }
 
-  private WMResourcePlan resourcePlan; // optional
+  private WMFullResourcePlan resourcePlan; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -112,7 +112,7 @@ import org.slf4j.LoggerFactory;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.RESOURCE_PLAN, new org.apache.thrift.meta_data.FieldMetaData("resourcePlan", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, WMResourcePlan.class)));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, WMFullResourcePlan.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(WMGetResourcePlanResponse.class, metaDataMap);
   }
@@ -125,7 +125,7 @@ import org.slf4j.LoggerFactory;
    */
   public WMGetResourcePlanResponse(WMGetResourcePlanResponse other) {
     if (other.isSetResourcePlan()) {
-      this.resourcePlan = new WMResourcePlan(other.resourcePlan);
+      this.resourcePlan = new WMFullResourcePlan(other.resourcePlan);
     }
   }
 
@@ -138,11 +138,11 @@ import org.slf4j.LoggerFactory;
     this.resourcePlan = null;
   }
 
-  public WMResourcePlan getResourcePlan() {
+  public WMFullResourcePlan getResourcePlan() {
     return this.resourcePlan;
   }
 
-  public void setResourcePlan(WMResourcePlan resourcePlan) {
+  public void setResourcePlan(WMFullResourcePlan resourcePlan) {
     this.resourcePlan = resourcePlan;
   }
 
@@ -167,7 +167,7 @@ import org.slf4j.LoggerFactory;
       if (value == null) {
         unsetResourcePlan();
       } else {
-        setResourcePlan((WMResourcePlan)value);
+        setResourcePlan((WMFullResourcePlan)value);
       }
       break;
 
@@ -328,7 +328,7 @@ import org.slf4j.LoggerFactory;
         switch (schemeField.id) {
           case 1: // RESOURCE_PLAN
             if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.resourcePlan = new WMResourcePlan();
+              struct.resourcePlan = new WMFullResourcePlan();
               struct.resourcePlan.read(iprot);
               struct.setResourcePlanIsSet(true);
             } else { 
@@ -387,7 +387,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
-        struct.resourcePlan = new WMResourcePlan();
+        struct.resourcePlan = new WMFullResourcePlan();
         struct.resourcePlan.read(iprot);
         struct.setResourcePlanIsSet(true);
       }
