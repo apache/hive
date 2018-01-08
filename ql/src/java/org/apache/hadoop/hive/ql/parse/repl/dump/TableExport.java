@@ -78,16 +78,19 @@ public class TableExport {
     this.paths = paths;
   }
 
-  public void write() throws SemanticException {
+  public boolean write() throws SemanticException {
     if (tableSpec == null) {
       writeMetaData(null);
+      return true;
     } else if (shouldExport()) {
       PartitionIterable withPartitions = getPartitions();
       writeMetaData(withPartitions);
       if (!replicationSpec.isMetadataOnly()) {
         writeData(withPartitions);
       }
+      return true;
     }
+    return false;
   }
 
   private PartitionIterable getPartitions() throws SemanticException {
