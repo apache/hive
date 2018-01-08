@@ -63,7 +63,7 @@ class AddPartitionHandler extends AbstractEventHandler {
       return;
     }
 
-    Iterable<Partition> qlPtns = StreamSupport.stream(ptns.spliterator(), false).map(
+    Iterable<Partition> qlPtns = StreamSupport.stream(ptns.spliterator(), true).map(
         input -> {
           if (input == null) {
             return null;
