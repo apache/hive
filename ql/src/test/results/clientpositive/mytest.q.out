@@ -1,0 +1,126 @@
+PREHOOK: query: CREATE EXTERNAL TABLE ext_mytable1 (x1 INT, y1 DOUBLE)
+STORED BY
+'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES ( "hive.sql.database.type" = "JethroData",
+                "hive.sql.jdbc.driver" = "com.jethrodata.JethroDriver",
+                "hive.sql.jdbc.url" = "jdbc:JethroData://10.0.0.221:9111/demo3",
+                "hive.sql.dbcp.username" = "jethro",
+                "hive.sql.dbcp.password" = "jethro", 
+                "hive.sql.table" = "mytable1",
+                "hive.sql.dbcp.maxActive" = "1")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext_mytable1
+POSTHOOK: query: CREATE EXTERNAL TABLE ext_mytable1 (x1 INT, y1 DOUBLE)
+STORED BY
+'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES ( "hive.sql.database.type" = "JethroData",
+                "hive.sql.jdbc.driver" = "com.jethrodata.JethroDriver",
+                "hive.sql.jdbc.url" = "jdbc:JethroData://10.0.0.221:9111/demo3",
+                "hive.sql.dbcp.username" = "jethro",
+                "hive.sql.dbcp.password" = "jethro", 
+                "hive.sql.table" = "mytable1",
+                "hive.sql.dbcp.maxActive" = "1")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext_mytable1
+PREHOOK: query: CREATE EXTERNAL TABLE ext_mytable2 (x2 INT, y2 DOUBLE)
+STORED BY
+'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES ( "hive.sql.database.type" = "JethroData",
+                "hive.sql.jdbc.driver" = "com.jethrodata.JethroDriver",
+                "hive.sql.jdbc.url" = "jdbc:JethroData://10.0.0.221:9111/demo3",
+                "hive.sql.dbcp.username" = "jethro",
+                "hive.sql.dbcp.password" = "jethro", 
+                "hive.sql.table" = "mytable2",
+                "hive.sql.dbcp.maxActive" = "1")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext_mytable2
+POSTHOOK: query: CREATE EXTERNAL TABLE ext_mytable2 (x2 INT, y2 DOUBLE)
+STORED BY
+'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES ( "hive.sql.database.type" = "JethroData",
+                "hive.sql.jdbc.driver" = "com.jethrodata.JethroDriver",
+                "hive.sql.jdbc.url" = "jdbc:JethroData://10.0.0.221:9111/demo3",
+                "hive.sql.dbcp.username" = "jethro",
+                "hive.sql.dbcp.password" = "jethro", 
+                "hive.sql.table" = "mytable2",
+                "hive.sql.dbcp.maxActive" = "1")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext_mytable2
+PREHOOK: query: SELECT ext_mytable1.x1, ext_mytable1.y1, ext_mytable2.x2
+FROM ext_mytable1
+JOIN ext_mytable2 ON ext_mytable1.x1=ext_mytable2.x2 where (sqrt(x1*y1)   = sqrt(x2*y2) and bround (x1) != sqrt (y1)) and 
+														   sqrt(x1*x2)   = sqrt(y1*y2) and
+ 													       bround(x1*y1) = bround(x2*y2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_mytable1
+PREHOOK: Input: default@ext_mytable2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ext_mytable1.x1, ext_mytable1.y1, ext_mytable2.x2
+FROM ext_mytable1
+JOIN ext_mytable2 ON ext_mytable1.x1=ext_mytable2.x2 where (sqrt(x1*y1)   = sqrt(x2*y2) and bround (x1) != sqrt (y1)) and 
+														   sqrt(x1*x2)   = sqrt(y1*y2) and
+ 													       bround(x1*y1) = bround(x2*y2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_mytable1
+POSTHOOK: Input: default@ext_mytable2
+#### A masked pattern was here ####
+10	10.0	10
+20	20.0	20
+200	200.0	200
+PREHOOK: query: SELECT count (ext_mytable1.x1) FROM ext_mytable1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_mytable1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count (ext_mytable1.x1) FROM ext_mytable1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_mytable1
+#### A masked pattern was here ####
+3
+PREHOOK: query: SELECT ext_mytable1.x1, ext_mytable1.y1, ext_mytable2.x2
+FROM ext_mytable1
+JOIN ext_mytable2 ON ext_mytable1.x1=ext_mytable2.x2 and sqrt(x1*y1)   = sqrt(x2*y2) and 
+														 sqrt(x1*x2)   = sqrt(y1*y2) and
+ 													     bround(x1*y1) = bround(x2*y2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_mytable1
+PREHOOK: Input: default@ext_mytable2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ext_mytable1.x1, ext_mytable1.y1, ext_mytable2.x2
+FROM ext_mytable1
+JOIN ext_mytable2 ON ext_mytable1.x1=ext_mytable2.x2 and sqrt(x1*y1)   = sqrt(x2*y2) and 
+														 sqrt(x1*x2)   = sqrt(y1*y2) and
+ 													     bround(x1*y1) = bround(x2*y2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_mytable1
+POSTHOOK: Input: default@ext_mytable2
+#### A masked pattern was here ####
+10	10.0	10
+20	20.0	20
+200	200.0	200
+PREHOOK: query: select y1,x1,sqrt(x1) from ext_mytable1 where bround(x1) + 1 = sqrt(y1) and x1*y1 = sqrt(y1*x1*y1) and x1+y1 = y1-x1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_mytable1
+#### A masked pattern was here ####
+POSTHOOK: query: select y1,x1,sqrt(x1) from ext_mytable1 where bround(x1) + 1 = sqrt(y1) and x1*y1 = sqrt(y1*x1*y1) and x1+y1 = y1-x1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_mytable1
+#### A masked pattern was here ####
+PREHOOK: query: SELECT ext_mytable1.x1, ext_mytable1.y1, ext_mytable2.x2
+FROM ext_mytable1
+INNER JOIN ext_mytable2 ON ext_mytable1.x1=ext_mytable2.x2 and ext_mytable1.y1=ext_mytable2.y2 and ext_mytable1.x1=10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_mytable1
+PREHOOK: Input: default@ext_mytable2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ext_mytable1.x1, ext_mytable1.y1, ext_mytable2.x2
+FROM ext_mytable1
+INNER JOIN ext_mytable2 ON ext_mytable1.x1=ext_mytable2.x2 and ext_mytable1.y1=ext_mytable2.y2 and ext_mytable1.x1=10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_mytable1
+POSTHOOK: Input: default@ext_mytable2
+#### A masked pattern was here ####
+10	10.0	10

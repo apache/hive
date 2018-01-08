@@ -1,14 +1,11 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.Arrays;
-import java.util.Iterator;
 
-import org.apache.calcite.adapter.jdbc.JdbcConvention;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcSortRule;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcSort;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rex.RexNode;
@@ -46,8 +43,6 @@ public class MySortPushDownRule extends RelOptRule {
     final HiveJdbcConverter converter = call.rel(1);
     final RelNode input = call.rel(2);
     
-    
-    //FIXME TODOY not working!!!!!!
     
     Sort newHiveSort = sort.copy(sort.getTraitSet(), input, sort.getCollation(), sort.getOffsetExpr (), sort.getFetchExpr());
     JdbcSort newJdbcSort = (JdbcSort) new JdbcSortRule(converter.getJdbcConvention()).convert (newHiveSort, false);

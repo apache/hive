@@ -2443,9 +2443,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
                   partitionCache, colStatsCache, noColsMissingStats);
           
-          //TODOY
-          //final org.apache.calcite.plan.Convention conv = (tableType == TableType.DRUID) ? HiveRelNode.CONVENTION : new JdbcConvention(JethrodataSqlDialect.DEFAULT, null, "JdbcConventionName");
-          
           final HiveTableScan hts = new HiveTableScan(cluster,
               cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
               null == tableAlias ? tabMetaData.getTableName() : tableAlias,

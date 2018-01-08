@@ -34,6 +34,7 @@ public class Constants {
   public static final String DRUID_TIMESTAMP_GRANULARITY_COL_NAME = "__time_granularity";
   public static final String DRUID_QUERY_JSON = "druid.query.json";
   public static final String JDBC_QUERY = "hive.sql.query";
+  public static final String HIVE_JDBC_QUERY = "hive.sql.generated.query";
   public static final String DRUID_QUERY_TYPE = "druid.query.type";
   public static final String DRUID_QUERY_FETCH = "druid.query.fetch";
   public static final String DRUID_SEGMENT_DIRECTORY = "druid.storage.storageDirectory";

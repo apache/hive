@@ -2,7 +2,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.Arrays;
 
-import org.apache.calcite.adapter.jdbc.JdbcConvention;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregate;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregateRule;
 import org.apache.calcite.plan.RelOptRule;
@@ -11,7 +10,6 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.sql.SqlAggFunction;
-import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter;
@@ -49,7 +47,6 @@ public class MyAggregationPushDownRule extends RelOptRule {
     
     final HiveAggregate agg = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
-    //TODOY this is very naive imp, consult others!!!!!!
     
     Aggregate newHiveAggregate = agg.copy(agg.getTraitSet(), converter.getInput(),agg.getIndicatorCount() !=0,agg.getGroupSet(),agg.getGroupSets(),agg.getAggCallList());
     JdbcAggregate newJdbcAggregate = (JdbcAggregate) new JdbcAggregateRule(converter.getJdbcConvention()).convert(newHiveAggregate);

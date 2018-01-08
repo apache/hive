@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 public class MyFilterPushDown extends RelOptRule {
   static Logger LOG = LoggerFactory.getLogger(MyFilterPushDown.class);
+  
   public MyFilterPushDown() {
     super(operand(HiveFilter.class,
         operand(HiveJdbcConverter.class, any())));
@@ -25,7 +26,6 @@ public class MyFilterPushDown extends RelOptRule {
   public boolean matches(RelOptRuleCall call) {
     final HiveFilter filter = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
-    //TODOY this is very naive imp, consult others!!!!!!
     
     RexNode cond = filter.getCondition ();
 
@@ -38,7 +38,6 @@ public class MyFilterPushDown extends RelOptRule {
     
     final HiveFilter filter = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
-    //TODOY this is very naive imp, consult others!!!!!!
     
     Filter newHiveFilter = filter.copy(filter.getTraitSet(), converter.getInput(),filter.getCondition());
     JdbcFilter newJdbcFilter = (JdbcFilter) new JdbcFilterRule(converter.getJdbcConvention()).convert(newHiveFilter);

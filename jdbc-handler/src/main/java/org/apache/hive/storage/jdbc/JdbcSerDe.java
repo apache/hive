@@ -15,6 +15,7 @@
 package org.apache.hive.storage.jdbc;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -66,7 +67,7 @@ public class JdbcSerDe extends AbstractSerDe {
       LOGGER.trace("Initializing the SerDe");
 
       if (tbl.containsKey(JdbcStorageConfig.DATABASE_TYPE.getPropertyName())) {
-        final boolean hive_query_execution = tbl.containsKey("YONI_ATTR");
+        final boolean hive_query_execution = tbl.containsKey(Constants.HIVE_JDBC_QUERY);
         
         Configuration tableConfig = JdbcStorageConfigManager.convertPropertiesToConfiguration(tbl);
 

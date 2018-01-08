@@ -1,7 +1,6 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -77,10 +76,9 @@ public abstract class MyAbstractSplitFilter extends RelOptRule {
   
   @Override
   public boolean matches(RelOptRuleCall call) {
-    LOG.info("MySplitFilter.matches has been called");
+    LOG.debug("MySplitFilter.matches has been called");
     
     final HiveFilter filter = call.rel(0);
-    //TODOY this is very naive imp, consult others!!!!!!
     
     RexNode cond = filter.getCondition ();
 
@@ -93,8 +91,6 @@ public abstract class MyAbstractSplitFilter extends RelOptRule {
     LOG.debug("MySplitFilter.onMatch has been called");
     
     final HiveFilter        filter = call.rel(0);
-    //final HiveJdbcConverter converter = call.rel(1);
-    //TODOY this is very naive imp, consult others!!!!!!
 
     RexCall callExpression = (RexCall) filter.getCondition ();
     
@@ -136,7 +132,6 @@ public abstract class MyAbstractSplitFilter extends RelOptRule {
   
   public static class MyUpperJoinFilterFilter extends MyAbstractSplitFilter {
     public MyUpperJoinFilterFilter() {
-      //super(operand(HiveFilter.class, any()));
       super(operand(HiveFilter.class,
               operand(HiveJoin.class, 
                   operand(HiveJdbcConverter.class, any()))));
@@ -144,10 +139,9 @@ public abstract class MyAbstractSplitFilter extends RelOptRule {
     
     @Override
     public boolean matches(RelOptRuleCall call) {
-      LOG.info("MyUpperJoinFilterFilter.matches has been called");
+      LOG.debug("MyUpperJoinFilterFilter.matches has been called");
       
       final HiveJoin join = call.rel(1);
-      //TODOY this is very naive imp, consult others!!!!!!
       
       RexNode joinCond = join.getCondition ();
 
@@ -157,7 +151,6 @@ public abstract class MyAbstractSplitFilter extends RelOptRule {
   
   public static class MySplitFilter extends MyAbstractSplitFilter {
     public MySplitFilter() {
-      //super(operand(HiveFilter.class, any()));
       super(operand(HiveFilter.class,
               operand(HiveJdbcConverter.class, any())));
     }

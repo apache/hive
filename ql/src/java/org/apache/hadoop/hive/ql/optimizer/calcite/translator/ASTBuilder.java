@@ -79,7 +79,6 @@ public class ASTBuilder {
     HiveTableScan hts = null;
     if (scan instanceof HiveJdbcConverter) {
       HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
-      //TODOY find the first jdbc using RelVisitor an extract the HiveTableScan out of it and assign hts
       jdbcHiveTableScan = jdbcConverter.getTableScan();
       
       hts = jdbcHiveTableScan.getHiveTableScan();
@@ -98,7 +97,7 @@ public class ASTBuilder {
             .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName()));
 
     ASTBuilder propList = ASTBuilder.construct(HiveParser.TOK_TABLEPROPLIST, "TOK_TABLEPROPLIST");
-    if (scan instanceof DruidQuery) {// TODOY 34:00
+    if (scan instanceof DruidQuery) {
       // Pass possible query to Druid
       DruidQuery dq = (DruidQuery) scan;
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
@@ -108,7 +107,7 @@ public class ASTBuilder {
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
               .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_TYPE + "\"")
               .add(HiveParser.StringLiteral, "\"" + dq.getQueryType().getQueryName() + "\""));
-    } else if (scan instanceof HiveJdbcConverter) {// TODOY 35:30
+    } else if (scan instanceof HiveJdbcConverter) {
             HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
             final String query = jdbcConverter.generateSql (jdbcConverter.getJdbcConvention().dialect);
             final String query2 = jdbcConverter.generateSql (jdbcConverter.getJdbcConvention().dialect);
@@ -118,7 +117,7 @@ public class ASTBuilder {
                 .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(query) + "\""));
             
             propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
-                .add(HiveParser.StringLiteral, "\"" + "YONI_ATTR" + "\"")
+                .add(HiveParser.StringLiteral, "\"" + Constants.HIVE_JDBC_QUERY + "\"")
                 .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(query) + "\""));
     }
 

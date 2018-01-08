@@ -3,7 +3,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.calcite.adapter.jdbc.JdbcConvention;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcUnion;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcUnionRule;
 import org.apache.calcite.plan.RelOptRule;
@@ -17,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 public class MyUnionPushDown extends RelOptRule {
   static Logger LOG = LoggerFactory.getLogger(MyUnionPushDown.class);
+  
   public MyUnionPushDown() {
     super(operand(HiveUnion.class,
             operand(HiveJdbcConverter.class, any()),
@@ -26,6 +26,12 @@ public class MyUnionPushDown extends RelOptRule {
   @Override
   public boolean matches(RelOptRuleCall call) {
     final HiveUnion union = call.rel(0);
+    final HiveJdbcConverter converter1 = call.rel(1);
+    final HiveJdbcConverter converter2 = call.rel(2);
+    
+    if (converter1.getJdbcConvention().dialect.equals(converter2.getJdbcConvention().dialect) == false) {
+      return false;//TODOY ask
+    }
     
     boolean res = union.getInputs().size() == 2;
     
@@ -41,7 +47,6 @@ public class MyUnionPushDown extends RelOptRule {
     final HiveJdbcConverter converter1 = call.rel(1);
     final HiveJdbcConverter converter2 = call.rel(2);
     
-    //assert converter1.getUnderlyingConvention().equals(converter2.getUnderlyingConvention());
     
     final List<RelNode> unionInput = Arrays.asList(converter1.getInput(), converter2.getInput());
     Union newHiveUnion = (Union) union.copy(union.getTraitSet(), unionInput, union.all);

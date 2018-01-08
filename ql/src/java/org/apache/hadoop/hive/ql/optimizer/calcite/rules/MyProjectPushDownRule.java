@@ -1,9 +1,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.Arrays;
-import java.util.List;
 
-import org.apache.calcite.adapter.jdbc.JdbcConvention;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcProject;
 import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcProjectRule;
 import org.apache.calcite.plan.RelOptRule;
@@ -18,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 public class MyProjectPushDownRule extends RelOptRule {
   static Logger LOG = LoggerFactory.getLogger(MyProjectPushDownRule.class);
+  
   public MyProjectPushDownRule() {
     super(operand(HiveProject.class,
         operand(HiveJdbcConverter.class, any())));
@@ -41,8 +40,6 @@ public class MyProjectPushDownRule extends RelOptRule {
     
     final HiveProject project = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
-    //List<RexNode> projects = project.getProjects();
-    //TODOY this is very naive imp, consult others!!!!!!
     
     Project newHiveProject = project.copy(project.getTraitSet(), converter.getInput(),project.getProjects(), project.getRowType());
     JdbcProject newJdbcProject = (JdbcProject) new JdbcProjectRule(converter.getJdbcConvention()).convert(newHiveProject);
