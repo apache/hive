@@ -70,7 +70,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
   private String tmpStatsDir;
 
   private ExprNodeGenericFuncDesc filterExpr;
-  private transient Serializable filterObject;
+  private Serializable filterObject;
   private String serializedFilterExpr;
   private String serializedFilterObject;
 
