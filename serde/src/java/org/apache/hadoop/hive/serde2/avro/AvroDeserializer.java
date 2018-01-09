@@ -198,11 +198,18 @@ class AvroDeserializer {
 
   private Object worker(Object datum, Schema fileSchema, Schema recordSchema, TypeInfo columnType)
           throws AvroSerdeException {
-    // Klaxon! Klaxon! Klaxon!
-    // Avro requires NULLable types to be defined as unions of some type T
-    // and NULL.  This is annoying and we're going to hide it from the user.
+    if (datum == null) {
+      return null;
+    }
+
+    // Avro requires nullable types to be defined as unions of some type T
+    // and NULL. This is annoying and we're going to hide it from the user.
+
     if (AvroSerdeUtils.isNullableType(recordSchema)) {
-      return deserializeNullableUnion(datum, fileSchema, recordSchema, columnType);
+      recordSchema = AvroSerdeUtils.getOtherTypeFromNullableType(recordSchema);
+    }
+    if (fileSchema != null && AvroSerdeUtils.isNullableType(fileSchema)) {
+      fileSchema = AvroSerdeUtils.getOtherTypeFromNullableType(fileSchema);
     }
 
     switch(columnType.getCategory()) {
@@ -300,68 +307,6 @@ class AvroDeserializer {
     }
   }
 
-  /**
-   * Extract either a null or the correct type from a Nullable type.
-   */
-  private Object deserializeNullableUnion(Object datum, Schema fileSchema, Schema recordSchema, TypeInfo columnType)
-                                            throws AvroSerdeException {
-    if (recordSchema.getTypes().size() == 2) {
-      // A type like [NULL, T]
-      return deserializeSingleItemNullableUnion(datum, fileSchema, recordSchema, columnType);
-    } else {
-      // Types like [NULL, T1, T2, ...]
-      if (datum == null) {
-        return null;
-      } else {
-        Schema newRecordSchema = AvroSerdeUtils.getOtherTypeFromNullableType(recordSchema);
-        return worker(datum, fileSchema, newRecordSchema, columnType);
-      }
-    }
-  }
-
-  private Object deserializeSingleItemNullableUnion(Object datum,
-                                                    Schema fileSchema,
-                                                    Schema recordSchema,
-                                                    TypeInfo columnType)
-      throws AvroSerdeException {
-    int tag = GenericData.get().resolveUnion(recordSchema, datum); // Determine index of value
-    Schema schema = recordSchema.getTypes().get(tag);
-    if (schema.getType().equals(Type.NULL)) {
-      return null;
-    }
-
-    Schema currentFileSchema = null;
-    if (fileSchema != null) {
-      if (fileSchema.getType() == Type.UNION) {
-        // The fileSchema may have the null value in a different position, so
-        // we need to get the correct tag
-        try {
-          tag = GenericData.get().resolveUnion(fileSchema, datum);
-          currentFileSchema = fileSchema.getTypes().get(tag);
-        } catch (UnresolvedUnionException e) {
-          if (LOG.isDebugEnabled()) {
-            String datumClazz = null;
-            if (datum != null) {
-              datumClazz = datum.getClass().getName();
-            }
-            String msg = "File schema union could not resolve union. fileSchema = " + fileSchema +
-              ", recordSchema = " + recordSchema + ", datum class = " + datumClazz + ": " + e;
-            LOG.debug(msg, e);
-          }
-          // This occurs when the datum type is different between
-          // the file and record schema. For example if datum is long
-          // and the field in the file schema is int. See HIVE-9462.
-          // in this case we will re-use the record schema as the file
-          // schema, Ultimately we need to clean this code up and will
-          // do as a follow-on to HIVE-9462.
-          currentFileSchema = schema;
-        }
-      } else {
-        currentFileSchema = fileSchema;
-      }
-    }
-    return worker(datum, currentFileSchema, schema, columnType);
-  }
 
   private Object deserializeStruct(GenericData.Record datum, Schema fileSchema, StructTypeInfo columnType)
           throws AvroSerdeException {
