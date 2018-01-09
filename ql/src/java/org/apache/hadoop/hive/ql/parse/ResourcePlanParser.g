@@ -234,7 +234,7 @@ dropPoolStatement
 createMappingStatement
 @init { gParent.pushMsg("create mapping statement", state); }
 @after { gParent.popMsg(state); }
-    : (KW_CREATE mappingType=(KW_USER | KW_GROUP)
+    : (KW_CREATE mappingType=(KW_USER | KW_GROUP | KW_APPLICATION)
          KW_MAPPING name=StringLiteral
          KW_IN rpName=identifier KW_TO poolPath
          (KW_WITH KW_ORDER order=Number)?)
@@ -244,7 +244,7 @@ createMappingStatement
 alterMappingStatement
 @init { gParent.pushMsg("alter mapping statement", state); }
 @after { gParent.popMsg(state); }
-    : (KW_ALTER mappingType=(KW_USER | KW_GROUP) KW_MAPPING
+    : (KW_ALTER mappingType=(KW_USER | KW_GROUP | KW_APPLICATION) KW_MAPPING
          KW_MAPPING name=StringLiteral
          KW_IN rpName=identifier KW_TO poolPath
          (KW_WITH KW_ORDER order=Number)?)
@@ -254,7 +254,7 @@ alterMappingStatement
 dropMappingStatement
 @init { gParent.pushMsg("drop mapping statement", state); }
 @after { gParent.popMsg(state); }
-    : KW_DROP mappingType=(KW_USER | KW_GROUP) KW_MAPPING
+    : KW_DROP mappingType=(KW_USER | KW_GROUP | KW_APPLICATION) KW_MAPPING
          name=StringLiteral KW_IN rpName=identifier
     -> ^(TOK_DROP_MAPPING $rpName $mappingType $name)
     ;

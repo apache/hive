@@ -232,4 +232,9 @@ public class EmbeddedCLIServiceClient extends CLIServiceClient {
   public String getQueryId(TOperationHandle operationHandle) throws HiveSQLException {
     return cliService.getQueryId(operationHandle);
   }
+
+  @Override
+  public void setApplicationName(SessionHandle sh, String value) throws HiveSQLException {
+    cliService.setApplicationName(sh, value);
+  }
 }

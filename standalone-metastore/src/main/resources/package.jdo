@@ -1183,7 +1183,7 @@
         <column name="RP_ID" jdbc-type="integer" allows-null="false"/>
       </field>
       <field name="entityType">
-        <column name="ENTITY_TYPE" jdbc-type="string" length="10" />
+        <column name="ENTITY_TYPE" jdbc-type="string" length="128" />
       </field>
       <field name="entityName">
         <column name="ENTITY_NAME" jdbc-type="string" length="128" />

@@ -370,6 +370,7 @@ KW_WORKLOAD: 'WORKLOAD';
 KW_MANAGEMENT: 'MANAGEMENT';
 KW_ACTIVE: 'ACTIVE';
 KW_UNMANAGED: 'UNMANAGED';
+KW_APPLICATION: 'APPLICATION';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

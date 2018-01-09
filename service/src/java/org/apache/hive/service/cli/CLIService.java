@@ -593,6 +593,11 @@ public class CLIService extends CompositeService implements ICLIService {
   }
 
   @Override
+  public void setApplicationName(SessionHandle sh, String value) throws HiveSQLException {
+    sessionManager.getSession(sh).setApplicationName(value);
+  }
+
+  @Override
   public void cancelDelegationToken(SessionHandle sessionHandle, HiveAuthFactory authFactory,
       String tokenStr) throws HiveSQLException {
     sessionManager.getSession(sessionHandle).
