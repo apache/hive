@@ -136,6 +136,11 @@ public class AvroSerDe extends AbstractSerDe {
     this.columnNames = StringInternUtils.internStringsInList(aoig.getColumnNames());
     this.columnTypes = aoig.getColumnTypes();
     this.oi = aoig.getObjectInspector();
+
+    if(!badSchema) {
+      this.avroSerializer = new AvroSerializer();
+      this.avroDeserializer = new AvroDeserializer();
+    }
   }
 
   private boolean hasExternalSchema(Properties properties) {
@@ -214,7 +219,7 @@ public class AvroSerDe extends AbstractSerDe {
     if(badSchema) {
       throw new BadSchemaException();
     }
-    return getSerializer().serialize(o, objectInspector, columnNames, columnTypes, schema);
+    return avroSerializer.serialize(o, objectInspector, columnNames, columnTypes, schema);
   }
 
   @Override
@@ -222,7 +227,7 @@ public class AvroSerDe extends AbstractSerDe {
     if(badSchema) {
       throw new BadSchemaException();
     }
-    return getDeserializer().deserialize(columnNames, columnTypes, writable, schema);
+    return avroDeserializer.deserialize(columnNames, columnTypes, writable, schema);
   }
 
   @Override
@@ -234,22 +239,6 @@ public class AvroSerDe extends AbstractSerDe {
   public SerDeStats getSerDeStats() {
     // No support for statistics. That seems to be a popular answer.
     return null;
-  }
-
-  private AvroDeserializer getDeserializer() {
-    if(avroDeserializer == null) {
-      avroDeserializer = new AvroDeserializer();
-    }
-
-    return avroDeserializer;
-  }
-
-  private AvroSerializer getSerializer() {
-    if(avroSerializer == null) {
-      avroSerializer = new AvroSerializer();
-    }
-
-    return avroSerializer;
   }
 
   @Override
