@@ -65,7 +65,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: hbase_ck_5
-          filterExpr: ((key.col1 = '238') and (key.col2 = '1238')) (type: boolean)
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: ((key.col1 = '238') and (key.col2 = '1238')) (type: boolean)
