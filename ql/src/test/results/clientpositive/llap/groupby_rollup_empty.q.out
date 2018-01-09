@@ -111,11 +111,11 @@ POSTHOOK: Input: default@tx1
 #### A masked pattern was here ####
 1	1	1,1 and 1,0
 1	0	1,1 and 1,0
-PREHOOK: query: create table tx2 (a integer,b integer,c integer,d double,u string) stored as orc
+PREHOOK: query: create table tx2 (a integer,b integer,c integer,d double,u string,bi binary) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tx2
-POSTHOOK: query: create table tx2 (a integer,b integer,c integer,d double,u string) stored as orc
+POSTHOOK: query: create table tx2 (a integer,b integer,c integer,d double,u string,bi binary) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tx2
@@ -234,3 +234,44 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx2
 #### A masked pattern was here ####
 NULL	NULL	asd	1	NULL,1
+PREHOOK: query: insert into tx2 values
+(1,2,3,1.1,'x','b'),
+(3,2,3,1.1,'y','b')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@tx2
+POSTHOOK: query: insert into tx2 values
+(1,2,3,1.1,'x','b'),
+(3,2,3,1.1,'y','b')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@tx2
+POSTHOOK: Lineage: tx2.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tx2.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: tx2.bi EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
+POSTHOOK: Lineage: tx2.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: tx2.d EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: tx2.u SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+PREHOOK: query: select  sum(a),
+	u,
+	bi,
+	'asd',
+        grouping(bi),
+	'NULL,1' as expected
+from    tx2
+where	a=2
+group by a,u,bi grouping sets ( u, (), bi)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tx2
+#### A masked pattern was here ####
+POSTHOOK: query: select  sum(a),
+	u,
+	bi,
+	'asd',
+        grouping(bi),
+	'NULL,1' as expected
+from    tx2
+where	a=2
+group by a,u,bi grouping sets ( u, (), bi)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx2
+#### A masked pattern was here ####
+NULL	NULL	NULL	asd	1	NULL,1
