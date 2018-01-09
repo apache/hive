@@ -6,14 +6,14 @@ set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE bucket_small (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
-load data local inpath '../../data/files/smallsrcsortbucket1outof4.txt' INTO TABLE bucket_small;
-load data local inpath '../../data/files/smallsrcsortbucket2outof4.txt' INTO TABLE bucket_small;
-load data local inpath '../../data/files/smallsrcsortbucket3outof4.txt' INTO TABLE bucket_small;
-load data local inpath '../../data/files/smallsrcsortbucket4outof4.txt' INTO TABLE bucket_small;
+load data local inpath '../../data/files/auto_sortmerge_join/small/000000_0' INTO TABLE bucket_small;
+load data local inpath '../../data/files/auto_sortmerge_join/small/000001_0' INTO TABLE bucket_small;
+load data local inpath '../../data/files/auto_sortmerge_join/small/000002_0' INTO TABLE bucket_small;
+load data local inpath '../../data/files/auto_sortmerge_join/small/000003_0' INTO TABLE bucket_small;
 
 CREATE TABLE bucket_big (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
-load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_big;
-load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_big;
+load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big;
+load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big;
 
 set hive.auto.convert.sortmerge.join=true;
 set hive.optimize.bucketmapjoin = true;
