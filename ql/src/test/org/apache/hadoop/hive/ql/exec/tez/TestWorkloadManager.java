@@ -32,8 +32,10 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.SettableFuture;
+
 import java.lang.Thread.State;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +43,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
@@ -85,7 +88,7 @@ public class TestWorkloadManager {
         cdl.countDown();
       }
       try {
-       session.set((WmTezSession) wm.getSession(old, new MappingInput(userName), conf));
+       session.set((WmTezSession) wm.getSession(old, mappingInput(userName), conf));
       } catch (Throwable e) {
         error.compareAndSet(null, e);
       }
@@ -147,6 +150,18 @@ public class TestWorkloadManager {
     mapping.setPoolPath(pool);
     mapping.setOrdering(ordering);
     return mapping;
+  }
+
+  public static MappingInput mappingInput(String userName) {
+    return new MappingInput(userName, null, null, null);
+  }
+
+  public static MappingInput mappingInput(String userName, List<String> groups) {
+    return new MappingInput(userName, groups, null, null);
+  }
+
+  public static MappingInput mappingInput(String userName, List<String> groups, String wmPool) {
+    return new MappingInput(userName, groups, wmPool, null);
   }
 
   private List<String> groups(String... groups) {
@@ -242,17 +257,17 @@ public class TestWorkloadManager {
     TezSessionState nonPool = mock(TezSessionState.class);
     when(nonPool.getConf()).thenReturn(conf);
     doNothing().when(nonPool).close(anyBoolean());
-    TezSessionState session = wm.getSession(nonPool, new MappingInput("user"), conf);
+    TezSessionState session = wm.getSession(nonPool, mappingInput("user"), conf);
     verify(nonPool).close(anyBoolean());
     assertNotSame(nonPool, session);
     session.returnToSessionManager();
     TezSessionPoolSession diffPool = mock(TezSessionPoolSession.class);
     when(diffPool.getConf()).thenReturn(conf);
     doNothing().when(diffPool).returnToSessionManager();
-    session = wm.getSession(diffPool, new MappingInput("user"), conf);
+    session = wm.getSession(diffPool, mappingInput("user"), conf);
     verify(diffPool).returnToSessionManager();
     assertNotSame(diffPool, session);
-    TezSessionState session2 = wm.getSession(session, new MappingInput("user"), conf);
+    TezSessionState session2 = wm.getSession(session, mappingInput("user"), conf);
     assertSame(session, session2);
   }
 
@@ -264,11 +279,11 @@ public class TestWorkloadManager {
     wm.start();
     // The queue should be ignored.
     conf.set(TezConfiguration.TEZ_QUEUE_NAME, "test2");
-    TezSessionState session = wm.getSession(null, new MappingInput("user"), conf);
+    TezSessionState session = wm.getSession(null, mappingInput("user"), conf);
     assertEquals("test", session.getQueueName());
     assertEquals("test", conf.get(TezConfiguration.TEZ_QUEUE_NAME));
     session.setQueueName("test2");
-    session = wm.getSession(session, new MappingInput("user"), conf);
+    session = wm.getSession(session, mappingInput("user"), conf);
     assertEquals("test", session.getQueueName());
   }
 
@@ -282,7 +297,7 @@ public class TestWorkloadManager {
     WorkloadManager wm = new WorkloadManagerForTest("test", conf, 1, qam);
     wm.start();
     WmTezSession session = (WmTezSession) wm.getSession(
-        null, new MappingInput("user"), conf);
+        null, mappingInput("user"), conf);
     assertEquals(1.0, session.getClusterFraction(), EPSILON);
     qam.assertWasCalledAndReset();
     WmTezSession session2 = (WmTezSession) session.reopen();
@@ -300,10 +315,10 @@ public class TestWorkloadManager {
     MockQam qam = new MockQam();
     WorkloadManager wm = new WorkloadManagerForTest("test", conf, 2, qam);
     wm.start();
-    WmTezSession session = (WmTezSession) wm.getSession(null, new MappingInput("user"), conf);
+    WmTezSession session = (WmTezSession) wm.getSession(null, mappingInput("user"), conf);
     assertEquals(1.0, session.getClusterFraction(), EPSILON);
     qam.assertWasCalledAndReset();
-    WmTezSession session2 = (WmTezSession) wm.getSession(null, new MappingInput("user"), conf);
+    WmTezSession session2 = (WmTezSession) wm.getSession(null, mappingInput("user"), conf);
     assertEquals(0.5, session.getClusterFraction(), EPSILON);
     assertEquals(0.5, session2.getClusterFraction(), EPSILON);
     qam.assertWasCalledAndReset();
@@ -314,7 +329,7 @@ public class TestWorkloadManager {
     qam.assertWasCalledAndReset();
 
     // We never lose pool session, so we should still be able to get.
-    session = (WmTezSession) wm.getSession(null, new MappingInput("user"), conf);
+    session = (WmTezSession) wm.getSession(null, mappingInput("user"), conf);
     session.returnToSessionManager();
     assertEquals(1.0, session2.getClusterFraction(), EPSILON);
     assertEquals(0.0, session.getClusterFraction(), EPSILON);
@@ -335,20 +350,20 @@ public class TestWorkloadManager {
     assertEquals(5, wm.getNumSessions());
     // Get all the 5 sessions; validate cluster fractions.
     WmTezSession session05of06 = (WmTezSession) wm.getSession(
-        null, new MappingInput("p1"), conf);
+        null, mappingInput("p1"), conf);
     assertEquals(0.3, session05of06.getClusterFraction(), EPSILON);
     WmTezSession session03of06 = (WmTezSession) wm.getSession(
-        null, new MappingInput("p2"), conf);
+        null, mappingInput("p2"), conf);
     assertEquals(0.18, session03of06.getClusterFraction(), EPSILON);
     WmTezSession session03of06_2 = (WmTezSession) wm.getSession(
-        null, new MappingInput("p2"), conf);
+        null, mappingInput("p2"), conf);
     assertEquals(0.09, session03of06.getClusterFraction(), EPSILON);
     assertEquals(0.09, session03of06_2.getClusterFraction(), EPSILON);
     WmTezSession session02of06 = (WmTezSession) wm.getSession(
-        null,new MappingInput("r1"), conf);
+        null,mappingInput("r1"), conf);
     assertEquals(0.12, session02of06.getClusterFraction(), EPSILON);
     WmTezSession session04 = (WmTezSession) wm.getSession(
-        null, new MappingInput("r2"), conf);
+        null, mappingInput("r2"), conf);
     assertEquals(0.4, session04.getClusterFraction(), EPSILON);
     session05of06.returnToSessionManager();
     session03of06.returnToSessionManager();
@@ -363,28 +378,30 @@ public class TestWorkloadManager {
     conf.set(ConfVars.HIVE_SERVER2_WM_ALLOW_ANY_POOL_VIA_JDBC.varname, "false");
     MockQam qam = new MockQam();
     WMFullResourcePlan plan = new WMFullResourcePlan(plan(),
-        Lists.newArrayList(pool("u0"), pool("g0"), pool("g1"), pool("u2")));
+        Lists.newArrayList(pool("u0"), pool("g0"), pool("g1"), pool("u2"), pool("a0")));
     plan.setMappings(Lists.newArrayList(mapping("USER", "u0", "u0", 0),
-        mapping("GROUP", "g0", "g0", 0), mapping("GROUP", "g1", "g1", 1),
-        mapping("USER", "u2", "u2", 2)));
+        mapping("APPLICATION", "a0", "a0", 0), mapping("GROUP", "g0", "g0", 0),
+        mapping("GROUP", "g1", "g1", 1), mapping("USER", "u2", "u2", 2)));
     WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
     // Test various combinations.
-    verifyMapping(wm, conf, new MappingInput("u0", groups("zzz")), "u0");
-    verifyMapping(wm, conf, new MappingInput("zzz", groups("g1")), "g1");
-    verifyMapping(wm, conf, new MappingInput("u0", groups("g1")), "u0");
+    verifyMapping(wm, conf, mappingInput("u0", groups("zzz")), "u0");
+    verifyMapping(wm, conf, new MappingInput("u0", null, null, "a0"), "u0");
+    verifyMapping(wm, conf, new MappingInput("zzz", groups("g0"), null, "a0"), "a0");
+    verifyMapping(wm, conf, mappingInput("zzz", groups("g1")), "g1");
+    verifyMapping(wm, conf, mappingInput("u0", groups("g1")), "u0");
     // User takes precendence over groups unless ordered explicitly.
-    verifyMapping(wm, conf, new MappingInput("u0", groups("g0")), "u0");
-    verifyMapping(wm, conf, new MappingInput("u2", groups("g1")), "g1");
-    verifyMapping(wm, conf, new MappingInput("u2", groups("g0", "g1")), "g0");
+    verifyMapping(wm, conf, mappingInput("u0", groups("g0")), "u0");
+    verifyMapping(wm, conf, mappingInput("u2", groups("g1")), "g1");
+    verifyMapping(wm, conf, mappingInput("u2", groups("g0", "g1")), "g0");
     // Check explicit pool specifications - valid cases where priority is changed.
-    verifyMapping(wm, conf, new MappingInput("u0", groups("g1"), "g1"), "g1");
-    verifyMapping(wm, conf, new MappingInput("u2", groups("g1"), "u2"), "u2");
-    verifyMapping(wm, conf, new MappingInput("zzz", groups("g0", "g1"), "g1"), "g1");
+    verifyMapping(wm, conf, mappingInput("u0", groups("g1"), "g1"), "g1");
+    verifyMapping(wm, conf, mappingInput("u2", groups("g1"), "u2"), "u2");
+    verifyMapping(wm, conf, mappingInput("zzz", groups("g0", "g1"), "g1"), "g1");
     // Explicit pool specification - invalid - there's no mapping that matches.
     try {
       TezSessionState r = wm.getSession(
-        null, new MappingInput("u0", groups("g0", "g1"), "u2"), conf);
+        null, mappingInput("u0", groups("g0", "g1"), "u2"), conf);
       fail("Expected failure, but got " + r);
     } catch (Exception ex) {
       // Expected.
@@ -393,11 +410,11 @@ public class TestWorkloadManager {
     conf.set(ConfVars.HIVE_SERVER2_WM_ALLOW_ANY_POOL_VIA_JDBC.varname, "true");
     wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
-    verifyMapping(wm, conf, new MappingInput("u0", groups("g0", "g1"), "u2"), "u2");
+    verifyMapping(wm, conf, mappingInput("u0", groups("g0", "g1"), "u2"), "u2");
     // The mapping that doesn't exist still shouldn't work.
     try {
       TezSessionState r = wm.getSession(
-        null, new MappingInput("u0", groups("g0", "g1"), "zzz"), conf);
+        null, mappingInput("u0", groups("g0", "g1"), "zzz"), conf);
       fail("Expected failure, but got " + r);
     } catch (Exception ex) {
       // Expected.
@@ -423,9 +440,9 @@ public class TestWorkloadManager {
     plan.setMappings(Lists.newArrayList(mapping("A", "A"), mapping("B", "B")));
     final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
-    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf),
-        sessionA2 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf),
-        sessionB1 = (WmTezSession) wm.getSession(null, new MappingInput("B"), conf);
+    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf),
+        sessionA2 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf),
+        sessionB1 = (WmTezSession) wm.getSession(null, mappingInput("B"), conf);
     final AtomicReference<WmTezSession> sessionA3 = new AtomicReference<>(),
         sessionA4 = new AtomicReference<>();
     final AtomicReference<Throwable> error = new AtomicReference<>();
@@ -439,7 +456,7 @@ public class TestWorkloadManager {
     assertNull(sessionA4.get());
     checkError(error);
     // While threads are blocked on A, we should still be able to get and return a B session.
-    WmTezSession sessionB2 = (WmTezSession) wm.getSession(null, new MappingInput("B"), conf);
+    WmTezSession sessionB2 = (WmTezSession) wm.getSession(null, mappingInput("B"), conf);
     sessionB1.returnToSessionManager();
     sessionB2.returnToSessionManager();
     assertNull(sessionA3.get());
@@ -467,8 +484,8 @@ public class TestWorkloadManager {
     plan.getPlan().setDefaultPoolPath("A");
     final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
-    WmTezSession session1 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf),
-        session2 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf);
+    WmTezSession session1 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf),
+        session2 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf);
     assertEquals(0.5, session1.getClusterFraction(), EPSILON);
     assertEquals(0.5, session2.getClusterFraction(), EPSILON);
     qam.assertWasCalledAndReset();
@@ -490,19 +507,19 @@ public class TestWorkloadManager {
     final WorkloadManager wm = new WorkloadManagerForTest("test", conf, 2, qam);
     wm.start();
     WmTezSession session1 = (WmTezSession) wm.getSession(
-        null, new MappingInput("user"), conf);
+        null, mappingInput("user"), conf);
     // First, try to reuse from the same pool - should "just work".
     WmTezSession session1a = (WmTezSession) wm.getSession(
-        session1, new MappingInput("user"), conf);
+        session1, mappingInput("user"), conf);
     assertSame(session1, session1a);
     assertEquals(1.0, session1.getClusterFraction(), EPSILON);
     // Should still be able to get the 2nd session.
     WmTezSession session2 = (WmTezSession) wm.getSession(
-        null, new MappingInput("user"), conf);
+        null, mappingInput("user"), conf);
 
     // Now try to reuse with no other sessions remaining. Should still work.
     WmTezSession session2a = (WmTezSession) wm.getSession(
-        session2, new MappingInput("user"), conf);
+        session2, mappingInput("user"), conf);
     assertSame(session2, session2a);
     assertEquals(0.5, session1.getClusterFraction(), EPSILON);
     assertEquals(0.5, session2.getClusterFraction(), EPSILON);
@@ -559,19 +576,19 @@ public class TestWorkloadManager {
     plan.setMappings(Lists.newArrayList(mapping("A", "A"), mapping("B", "B")));
     final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
-    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf),
-        sessionA2 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf);
+    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf),
+        sessionA2 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf);
     assertEquals("A", sessionA1.getPoolName());
     assertEquals(0.3f, sessionA1.getClusterFraction(), EPSILON);
     assertEquals("A", sessionA2.getPoolName());
     assertEquals(0.3f, sessionA2.getClusterFraction(), EPSILON);
-    WmTezSession sessionB1 = (WmTezSession) wm.getSession(sessionA1, new MappingInput("B"), conf);
+    WmTezSession sessionB1 = (WmTezSession) wm.getSession(sessionA1, mappingInput("B"), conf);
     assertSame(sessionA1, sessionB1);
     assertEquals("B", sessionB1.getPoolName());
     assertEquals(0.4f, sessionB1.getClusterFraction(), EPSILON);
     assertEquals(0.6f, sessionA2.getClusterFraction(), EPSILON); // A1 removed from A.
     // Make sure that we can still get a session from A.
-    WmTezSession sessionA3 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf);
+    WmTezSession sessionA3 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf);
     assertEquals("A", sessionA3.getPoolName());
     assertEquals(0.3f, sessionA3.getClusterFraction(), EPSILON);
     assertEquals(0.3f, sessionA3.getClusterFraction(), EPSILON);
@@ -591,7 +608,7 @@ public class TestWorkloadManager {
     wm.start();
  
     // One session will be running, the other will be queued in "A"
-    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, new MappingInput("U"), conf);
+    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, mappingInput("U"), conf);
     assertEquals("A", sessionA1.getPoolName());
     assertEquals(0.5f, sessionA1.getClusterFraction(), EPSILON);
     final AtomicReference<WmTezSession> sessionA2 = new AtomicReference<>();
@@ -616,7 +633,7 @@ public class TestWorkloadManager {
     assertEquals(0.4f, sessionA2.get().getClusterFraction(), EPSILON);
     // The new session will also go to B now.
     sessionA2.get().returnToSessionManager();
-    WmTezSession sessionB1 = (WmTezSession) wm.getSession(null, new MappingInput("U"), conf);
+    WmTezSession sessionB1 = (WmTezSession) wm.getSession(null, mappingInput("U"), conf);
     assertEquals("B", sessionB1.getPoolName());
     assertEquals(0.4f, sessionB1.getClusterFraction(), EPSILON);
     sessionA1.returnToSessionManager();
@@ -640,11 +657,11 @@ public class TestWorkloadManager {
  
     // A: 1/1 running, 1 queued; B: 2/2 running, C: 1/2 running, D: 1/1 running, 1 queued.
     // Total: 5/6 running.
-    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf),
-        sessionB1 = (WmTezSession) wm.getSession(null, new MappingInput("B"), conf),
-        sessionB2 = (WmTezSession) wm.getSession(null, new MappingInput("B"), conf),
-        sessionC1 = (WmTezSession) wm.getSession(null, new MappingInput("C"), conf),
-        sessionD1 = (WmTezSession) wm.getSession(null, new MappingInput("D"), conf);
+    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf),
+        sessionB1 = (WmTezSession) wm.getSession(null, mappingInput("B"), conf),
+        sessionB2 = (WmTezSession) wm.getSession(null, mappingInput("B"), conf),
+        sessionC1 = (WmTezSession) wm.getSession(null, mappingInput("C"), conf),
+        sessionD1 = (WmTezSession) wm.getSession(null, mappingInput("D"), conf);
     final AtomicReference<WmTezSession> sessionA2 = new AtomicReference<>(),
         sessionD2 = new AtomicReference<>();
     final AtomicReference<Throwable> error = new AtomicReference<>();
@@ -716,8 +733,8 @@ public class TestWorkloadManager {
  
     // 2 running.
     WmTezSession sessionA1 = (WmTezSession) wm.getSession(
-        null, new MappingInput("A", null), conf, null),
-        sessionA2 = (WmTezSession) wm.getSession(null, new MappingInput("A", null), conf, null);
+        null, mappingInput("A", null), conf, null),
+        sessionA2 = (WmTezSession) wm.getSession(null, mappingInput("A", null), conf, null);
     assertEquals(0.5f, sessionA1.getClusterFraction(), EPSILON);
     assertEquals(0.5f, sessionA2.getClusterFraction(), EPSILON);
 
@@ -731,7 +748,7 @@ public class TestWorkloadManager {
 
     // Add another session.
     WmTezSession sessionA3 = (WmTezSession) wm.getSession(
-        null, new MappingInput("A", null), conf, null);
+        null, mappingInput("A", null), conf, null);
     assertEquals(0f, sessionA3.getClusterFraction(), EPSILON);
     assertEquals("A", sessionA3.getPoolName());
 
@@ -743,7 +760,7 @@ public class TestWorkloadManager {
 
     // Make sure reuse changes the FIFO order of the session.
     WmTezSession sessionA4 =  (WmTezSession) wm.getSession(
-        sessionA2, new MappingInput("A", null), conf, null);
+        sessionA2, mappingInput("A", null), conf, null);
     assertSame(sessionA2, sessionA4);
     assertEquals(1f, sessionA3.getClusterFraction(), EPSILON);
     assertEquals(0f, sessionA2.getClusterFraction(), EPSILON);
@@ -766,7 +783,7 @@ public class TestWorkloadManager {
 
     // 1 running, 1 queued.
     WmTezSession sessionA1 = (WmTezSession) wm.getSession(
-        null, new MappingInput("A", null), conf, null);
+        null, mappingInput("A", null), conf, null);
     final AtomicReference<WmTezSession> sessionA2 = new AtomicReference<>();
     final AtomicReference<Throwable> error = new AtomicReference<>();
     final CountDownLatch cdl1 = new CountDownLatch(1);
@@ -786,7 +803,7 @@ public class TestWorkloadManager {
     assertEquals(0, tezAmPool.getCurrentSize());
 
     try {
-      TezSessionState r =  wm.getSession(null, new MappingInput("A", null), conf, null);
+      TezSessionState r =  wm.getSession(null, mappingInput("A", null), conf, null);
       fail("Expected an error but got " + r);
     } catch (WorkloadManager.NoPoolMappingException ex) {
       // Ignore, this particular error is expected.
@@ -794,7 +811,7 @@ public class TestWorkloadManager {
 
     // Apply the plan again - enable WM.
     wm.updateResourcePlanAsync(plan).get();
-    sessionA1 = (WmTezSession) wm.getSession(null, new MappingInput("A", null), conf, null);
+    sessionA1 = (WmTezSession) wm.getSession(null, mappingInput("A", null), conf, null);
     assertEquals("A", sessionA1.getPoolName());
     sessionA1.returnToSessionManager();
     assertEquals(1, tezAmPool.getCurrentSize());
@@ -879,7 +896,7 @@ public class TestWorkloadManager {
     final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
 
-    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf);
+    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf);
 
     // [A: 1, B: 0]
     Map<String, SessionTriggerProvider> allSessionProviders = wm.getAllSessionTriggerProviders();
@@ -903,7 +920,7 @@ public class TestWorkloadManager {
     assertEquals(0.4f, sessionA1.getClusterFraction(), EPSILON);
     assertEquals("B", sessionA1.getPoolName());
 
-    WmTezSession sessionA2 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf);
+    WmTezSession sessionA2 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf);
     // [A: 1, B: 1]
     allSessionProviders = wm.getAllSessionTriggerProviders();
     assertEquals(1, allSessionProviders.get("A").getSessions().size());
@@ -930,7 +947,7 @@ public class TestWorkloadManager {
     assertEquals("B", sessionA2.getPoolName());
     assertEquals("B", sessionA1.getPoolName());
 
-    WmTezSession sessionA3 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf);
+    WmTezSession sessionA3 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf);
     // [A: 1, B: 2]
     allSessionProviders = wm.getAllSessionTriggerProviders();
     assertEquals(1, allSessionProviders.get("A").getSessions().size());
@@ -970,7 +987,7 @@ public class TestWorkloadManager {
     final WorkloadManager wm = new WorkloadManagerForTest("test", conf, qam, plan);
     wm.start();
 
-    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf);
+    WmTezSession sessionA1 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf);
 
     // [A: 1, B: 0, B.x: 0, B.y: 0, C: 0]
     Map<String, SessionTriggerProvider> allSessionProviders = wm.getAllSessionTriggerProviders();
@@ -1028,7 +1045,7 @@ public class TestWorkloadManager {
     assertTrue(allSessionProviders.get("B.x").getSessions().contains(sessionA1));
     assertEquals("B.x", sessionA1.getPoolName());
 
-    WmTezSession sessionA2 = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf);
+    WmTezSession sessionA2 = (WmTezSession) wm.getSession(null, mappingInput("A"), conf);
 
     // [A: 1, B: 0, B.x: 1, B.y: 0, C: 0]
     allSessionProviders = wm.getAllSessionTriggerProviders();
@@ -1127,7 +1144,7 @@ public class TestWorkloadManager {
     SettableFuture<Boolean> failedWait = SettableFuture.create();
     failedWait.setException(new Exception("foo"));
     theOnlySession.setWaitForAmRegistryFuture(failedWait);
-    TezSessionState retriedSession = wm.getSession(null, new MappingInput("A"), conf);
+    TezSessionState retriedSession = wm.getSession(null, mappingInput("A"), conf);
     assertNotNull(retriedSession);
     assertNotSame(theOnlySession, retriedSession); // Should have been replaced.
     retriedSession.returnToSessionManager();
@@ -1137,7 +1154,7 @@ public class TestWorkloadManager {
     theOnlySession.setWaitForAmRegistryFuture(failedWait);
     wm.setNextWaitForAmRegistryFuture(failedWait); // Fail the retry.
     try {
-      TezSessionState r = wm.getSession(null, new MappingInput("A"), conf);
+      TezSessionState r = wm.getSession(null, mappingInput("A"), conf);
       fail("Expected an error but got " + r);
     } catch (Exception ex) {
       // Expected.
@@ -1189,7 +1206,7 @@ public class TestWorkloadManager {
     assertEquals(0f, oldSession.getClusterFraction(), EPSILON);
     pool.returnSession(theOnlySession);
     // Make sure we can actually get a session still - parallelism/etc. should not be affected.
-    WmTezSession result = (WmTezSession) wm.getSession(null, new MappingInput("A"), conf);
+    WmTezSession result = (WmTezSession) wm.getSession(null, mappingInput("A"), conf);
     assertEquals(sessionPoolName, result.getPoolName());
     assertEquals(1f, result.getClusterFraction(), EPSILON);
     result.returnToSessionManager();

@@ -653,7 +653,7 @@ CREATE TABLE "WM_POOL_TO_TRIGGER" (
 CREATE TABLE "WM_MAPPING" (
     "MAPPING_ID" bigint NOT NULL,
     "RP_ID" bigint NOT NULL,
-    "ENTITY_TYPE" character varying(10) NOT NULL,
+    "ENTITY_TYPE" character varying(128) NOT NULL,
     "ENTITY_NAME" character varying(128) NOT NULL,
     "POOL_ID" bigint,
     "ORDERING" integer

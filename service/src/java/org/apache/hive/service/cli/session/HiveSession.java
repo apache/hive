@@ -222,4 +222,6 @@ public interface HiveSession extends HiveSessionBase {
   long getNoOperationTime();
 
   Future<?> submitBackgroundOperation(Runnable work);
+
+  void setApplicationName(String value);
 }

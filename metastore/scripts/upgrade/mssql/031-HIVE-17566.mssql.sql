@@ -64,7 +64,7 @@ CREATE TABLE WM_MAPPING
 (
     MAPPING_ID bigint NOT NULL,
     RP_ID bigint NOT NULL,
-    ENTITY_TYPE nvarchar(10) NOT NULL,
+    ENTITY_TYPE nvarchar(128) NOT NULL,
     ENTITY_NAME nvarchar(128) NOT NULL,
     POOL_ID bigint,
     ORDERING int

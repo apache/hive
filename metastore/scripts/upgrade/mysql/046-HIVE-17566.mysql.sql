@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS WM_MAPPING
 (
     `MAPPING_ID` bigint(20) NOT NULL,
     `RP_ID` bigint(20) NOT NULL,
-    `ENTITY_TYPE` varchar(10) NOT NULL,
+    `ENTITY_TYPE` varchar(128) NOT NULL,
     `ENTITY_NAME` varchar(128) NOT NULL,
     `POOL_ID` bigint(20),
     `ORDERING` int,

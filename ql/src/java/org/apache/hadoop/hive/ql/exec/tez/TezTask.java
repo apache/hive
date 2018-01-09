@@ -162,7 +162,8 @@ public class TezTask extends Task<TezWork> {
       } else {
         groups = UserGroupInformation.createRemoteUser(ss.getUserName()).getGroups();
       }
-      MappingInput mi = new MappingInput(userName, groups, ss.getHiveVariables().get("wmpool"));
+      MappingInput mi = new MappingInput(userName, groups,
+          ss.getHiveVariables().get("wmpool"), ss.getHiveVariables().get("wmapp"));
 
       WmContext wmContext = ctx.getWmContext();
       // jobConf will hold all the configuration for hadoop, tez, and hive
