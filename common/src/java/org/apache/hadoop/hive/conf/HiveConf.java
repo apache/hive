@@ -468,8 +468,8 @@ public class HiveConf extends Configuration {
         "Indicates if repl dump should include information about ACID tables. It should be \n"
             + "used in conjunction with 'hive.repl.dump.metadata.only' to enable copying of \n"
             + "metadata for acid tables which do not require the corresponding transaction \n"
-            + "semantics to be applied on target. This can be removed when ACID table \n"
-            + "replication is supported."),
+            + "semantics to be applied on target. This configuration option will be dropped \n"
+            + "when ACID table replication is supported."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
