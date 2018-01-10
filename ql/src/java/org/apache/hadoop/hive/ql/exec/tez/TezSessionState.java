@@ -37,7 +37,9 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.security.auth.login.LoginException;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -90,6 +92,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
@@ -134,6 +137,12 @@ public class TezSessionState {
     public final Set<String> additionalFilesNotFromConf = new HashSet<>();
     /** Localized resources of this session; both from conf and not from conf (above). */
     public final Set<LocalResource> localizedResources = new HashSet<>();
+
+    @Override
+    public String toString() {
+      return dagResourcesDir + "; " + additionalFilesNotFromConf.size() + " additional files, "
+          + localizedResources.size() + " localized resources";
+    }
   }
 
   private HiveResources resources;
@@ -259,9 +268,11 @@ public class TezSessionState {
     if (resources != null) {
       // If we are getting the resources externally, don't relocalize anything.
       this.resources = resources;
+      LOG.info("Setting resources to " + resources);
     } else {
       this.resources = new HiveResources(createTezDir(sessionId, "resources"));
       ensureLocalResources(conf, additionalFilesNotFromConf);
+      LOG.info("Created new resources: " + resources);
     }
 
     // unless already installed on all the cluster nodes, we'll have to
@@ -555,6 +566,9 @@ public class TezSessionState {
   /** This is called in openInternal and in TezTask.updateSession to localize conf resources. */
   public void ensureLocalResources(Configuration conf, String[] newFilesNotFromConf)
           throws IOException, LoginException, URISyntaxException, TezException {
+    if (resources == null) {
+      throw new AssertionError("Ensure called on an unitialized (or closed) session " + sessionId);
+    }
     String dir = resources.dagResourcesDir.toString();
     resources.localizedResources.clear();
 
@@ -614,36 +628,40 @@ public class TezSessionState {
    * @throws Exception
    */
   void close(boolean keepDagFilesDir) throws Exception {
-    if (session != null) {
-      LOG.info("Closing Tez Session");
-      closeClient(session);
-    } else if (sessionFuture != null) {
-      sessionFuture.cancel(true);
-      TezClient asyncSession = null;
-      try {
-        asyncSession = sessionFuture.get(); // In case it was done and noone looked at it.
-      } catch (ExecutionException | CancellationException e) {
-        // ignore
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        // ignore
-      }
-      if (asyncSession != null) {
-        LOG.info("Closing Tez Session");
-        closeClient(asyncSession);
-      }
-    }
-
-    cleanupScratchDir();
-    if (!keepDagFilesDir) {
-      cleanupDagResources();
-    }
-    session = null;
-    sessionFuture = null;
     console = null;
-    tezScratchDir = null;
-    // Do not reset dag resources; if it wasn't cleaned it's still needed.
     appJarLr = null;
+
+    try {
+      if (session != null) {
+        LOG.info("Closing Tez Session");
+        closeClient(session);
+        session = null;
+      } else if (sessionFuture != null) {
+        sessionFuture.cancel(true);
+        TezClient asyncSession = null;
+        try {
+          asyncSession = sessionFuture.get(); // In case it was done and noone looked at it.
+        } catch (ExecutionException | CancellationException e) {
+          // ignore
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          // ignore
+        }
+        sessionFuture = null;
+        if (asyncSession != null) {
+          LOG.info("Closing Tez Session");
+          closeClient(asyncSession);
+        }
+      }
+    } finally {
+      try {
+        cleanupScratchDir();
+      } finally {
+        if (!keepDagFilesDir) {
+          cleanupDagResources();
+        }
+      }
+    }
   }
 
   private void closeClient(TezClient client) throws TezException,
@@ -656,15 +674,20 @@ public class TezSessionState {
   }
 
   protected final void cleanupScratchDir() throws IOException {
-    FileSystem fs = tezScratchDir.getFileSystem(conf);
-    fs.delete(tezScratchDir, true);
-    tezScratchDir = null;
+    if (tezScratchDir != null) {
+      FileSystem fs = tezScratchDir.getFileSystem(conf);
+      fs.delete(tezScratchDir, true);
+      tezScratchDir = null;
+    }
   }
 
   protected final void cleanupDagResources() throws IOException {
-    FileSystem fs = resources.dagResourcesDir.getFileSystem(conf);
-    fs.delete(resources.dagResourcesDir, true);
-    resources = null;
+    LOG.info("Attemting to clean up resources for " + sessionId + ": " + resources);
+    if (resources != null) {
+      FileSystem fs = resources.dagResourcesDir.getFileSystem(conf);
+      fs.delete(resources.dagResourcesDir, true);
+      resources = null;
+    }
   }
 
   public String getSessionId() {
