@@ -78,8 +78,8 @@ CREATE TABLE srcbucket (key INT, value STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket0.txt" INTO TABLE srcbucket_tmp;
-LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket1.txt" INTO TABLE srcbucket_tmp;
+LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/bucketed_files/000000_0" INTO TABLE srcbucket_tmp;
+LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/bucketed_files/000001_0" INTO TABLE srcbucket_tmp;
 INSERT INTO srcbucket SELECT * FROM srcbucket_tmp;
 DROP TABLE srcbucket_tmp;
  
