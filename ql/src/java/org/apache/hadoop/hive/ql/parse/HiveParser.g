@@ -370,11 +370,6 @@ TOK_SHOW_TRANSACTIONS;
 TOK_DELETE_FROM;
 TOK_UPDATE_TABLE;
 TOK_SET_COLUMNS_CLAUSE;
-TOK_VALUE_ROW;
-TOK_VALUES_TABLE;
-TOK_VIRTUAL_TABLE;
-TOK_VIRTUAL_TABREF;
-TOK_ANONYMOUS;
 TOK_COL_NAME;
 TOK_URI_TYPE;
 TOK_SERVER_TYPE;
@@ -2682,8 +2677,7 @@ singleFromStatement
 The valuesClause rule below ensures that the parse tree for
 "insert into table FOO values (1,2),(3,4)" looks the same as
 "insert into table FOO select a,b from (values(1,2),(3,4)) as BAR(a,b)" which itself is made to look
-very similar to the tree for "insert into table FOO select a,b from BAR".  Since virtual table name
-is implicit, it's represented as TOK_ANONYMOUS.
+very similar to the tree for "insert into table FOO select a,b from BAR".
 */
 regularBody
    :
@@ -2694,10 +2688,7 @@ regularBody
      |
      valuesClause
       -> ^(TOK_QUERY
-            ^(TOK_FROM
-              ^(TOK_VIRTUAL_TABLE ^(TOK_VIRTUAL_TABREF ^(TOK_ANONYMOUS)) valuesClause)
-             )
-            ^(TOK_INSERT {$i.tree} ^(TOK_SELECT ^(TOK_SELEXPR TOK_ALLCOLREF)))
+            ^(TOK_INSERT {$i.tree} ^(TOK_SELECT ^(TOK_SELEXPR ^(TOK_FUNCTION Identifier["inline"] valuesClause))))
           )
    )
    |

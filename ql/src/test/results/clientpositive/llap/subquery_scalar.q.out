@@ -8,12 +8,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tnull
 PREHOOK: query: insert into tnull values(NULL, NULL), (NULL, NULL)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tnull
 POSTHOOK: query: insert into tnull values(NULL, NULL), (NULL, NULL)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tnull
-POSTHOOK: Lineage: tnull.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: tnull.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tnull.c EXPRESSION []
+POSTHOOK: Lineage: tnull.i EXPRESSION []
 PREHOOK: query: create table tempty(c char(2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -62,19 +64,21 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part_null
 PREHOOK: query: insert into part_null values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_null
 POSTHOOK: query: insert into part_null values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_null
-POSTHOOK: Lineage: part_null.p_brand SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_comment SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_container SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_mfgr SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_name SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_partkey EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_retailprice EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_size EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_type SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: part_null.p_brand SCRIPT []
+POSTHOOK: Lineage: part_null.p_comment SCRIPT []
+POSTHOOK: Lineage: part_null.p_container SCRIPT []
+POSTHOOK: Lineage: part_null.p_mfgr SCRIPT []
+POSTHOOK: Lineage: part_null.p_name EXPRESSION []
+POSTHOOK: Lineage: part_null.p_partkey SCRIPT []
+POSTHOOK: Lineage: part_null.p_retailprice SCRIPT []
+POSTHOOK: Lineage: part_null.p_size SCRIPT []
+POSTHOOK: Lineage: part_null.p_type SCRIPT []
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null)
 PREHOOK: type: QUERY
@@ -4488,84 +4492,94 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@EMPS
 PREHOOK: query: insert into EMPS values (100,'Fred',10,NULL,NULL,30,25,true,false,'1996-08-03')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@emps
 POSTHOOK: query: insert into EMPS values (100,'Fred',10,NULL,NULL,30,25,true,false,'1996-08-03')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: emps.city SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: emps.deptno EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: emps.empid EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: emps.empno EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: emps.gender SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: emps.joinedat EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: emps.manager EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: emps.name SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: emps.slacker EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
+POSTHOOK: Lineage: emps.age SCRIPT []
+POSTHOOK: Lineage: emps.city EXPRESSION []
+POSTHOOK: Lineage: emps.deptno SCRIPT []
+POSTHOOK: Lineage: emps.empid SCRIPT []
+POSTHOOK: Lineage: emps.empno SCRIPT []
+POSTHOOK: Lineage: emps.gender EXPRESSION []
+POSTHOOK: Lineage: emps.joinedat SCRIPT []
+POSTHOOK: Lineage: emps.manager SCRIPT []
+POSTHOOK: Lineage: emps.name SCRIPT []
+POSTHOOK: Lineage: emps.slacker SCRIPT []
 PREHOOK: query: insert into EMPS values (110,'Eric',20,'M','San Francisco',3,80,NULL,false,'2001-01-01')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@emps
 POSTHOOK: query: insert into EMPS values (110,'Eric',20,'M','San Francisco',3,80,NULL,false,'2001-01-01')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: emps.city SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: emps.deptno EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: emps.empid EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: emps.empno EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: emps.gender SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: emps.joinedat EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: emps.manager EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: emps.name SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: emps.slacker EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
+POSTHOOK: Lineage: emps.age SCRIPT []
+POSTHOOK: Lineage: emps.city SCRIPT []
+POSTHOOK: Lineage: emps.deptno SCRIPT []
+POSTHOOK: Lineage: emps.empid SCRIPT []
+POSTHOOK: Lineage: emps.empno SCRIPT []
+POSTHOOK: Lineage: emps.gender SCRIPT []
+POSTHOOK: Lineage: emps.joinedat SCRIPT []
+POSTHOOK: Lineage: emps.manager SCRIPT []
+POSTHOOK: Lineage: emps.name SCRIPT []
+POSTHOOK: Lineage: emps.slacker EXPRESSION []
 PREHOOK: query: insert into EMPS values (110,'John',40,'M','Vancouver',2,NULL,false,true,'2002-05-03')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@emps
 POSTHOOK: query: insert into EMPS values (110,'John',40,'M','Vancouver',2,NULL,false,true,'2002-05-03')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: emps.city SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: emps.deptno EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: emps.empid EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: emps.empno EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: emps.gender SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: emps.joinedat EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: emps.manager EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: emps.name SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: emps.slacker EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
+POSTHOOK: Lineage: emps.age EXPRESSION []
+POSTHOOK: Lineage: emps.city SCRIPT []
+POSTHOOK: Lineage: emps.deptno SCRIPT []
+POSTHOOK: Lineage: emps.empid SCRIPT []
+POSTHOOK: Lineage: emps.empno SCRIPT []
+POSTHOOK: Lineage: emps.gender SCRIPT []
+POSTHOOK: Lineage: emps.joinedat SCRIPT []
+POSTHOOK: Lineage: emps.manager SCRIPT []
+POSTHOOK: Lineage: emps.name SCRIPT []
+POSTHOOK: Lineage: emps.slacker SCRIPT []
 PREHOOK: query: insert into EMPS values (120,'Wilma',20,'F',NULL,1,5,NULL,true,'2005-09-07')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@emps
 POSTHOOK: query: insert into EMPS values (120,'Wilma',20,'F',NULL,1,5,NULL,true,'2005-09-07')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: emps.city SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: emps.deptno EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: emps.empid EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: emps.empno EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: emps.gender SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: emps.joinedat EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: emps.manager EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: emps.name SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: emps.slacker EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
+POSTHOOK: Lineage: emps.age SCRIPT []
+POSTHOOK: Lineage: emps.city EXPRESSION []
+POSTHOOK: Lineage: emps.deptno SCRIPT []
+POSTHOOK: Lineage: emps.empid SCRIPT []
+POSTHOOK: Lineage: emps.empno SCRIPT []
+POSTHOOK: Lineage: emps.gender SCRIPT []
+POSTHOOK: Lineage: emps.joinedat SCRIPT []
+POSTHOOK: Lineage: emps.manager SCRIPT []
+POSTHOOK: Lineage: emps.name SCRIPT []
+POSTHOOK: Lineage: emps.slacker EXPRESSION []
 PREHOOK: query: insert into EMPS values (130,'Alice',40,'F','Vancouver',2,NULL,false,true,'2007-01-01')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@emps
 POSTHOOK: query: insert into EMPS values (130,'Alice',40,'F','Vancouver',2,NULL,false,true,'2007-01-01')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.age EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: emps.city SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: emps.deptno EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: emps.empid EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: emps.empno EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: emps.gender SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: emps.joinedat EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: emps.manager EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: emps.name SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: emps.slacker EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
+POSTHOOK: Lineage: emps.age EXPRESSION []
+POSTHOOK: Lineage: emps.city SCRIPT []
+POSTHOOK: Lineage: emps.deptno SCRIPT []
+POSTHOOK: Lineage: emps.empid SCRIPT []
+POSTHOOK: Lineage: emps.empno SCRIPT []
+POSTHOOK: Lineage: emps.gender SCRIPT []
+POSTHOOK: Lineage: emps.joinedat SCRIPT []
+POSTHOOK: Lineage: emps.manager SCRIPT []
+POSTHOOK: Lineage: emps.name SCRIPT []
+POSTHOOK: Lineage: emps.slacker SCRIPT []
 PREHOOK: query: create table DEPTS(deptno int, name string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -4576,28 +4590,34 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEPTS
 PREHOOK: query: insert into DEPTS values( 10,'Sales')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@depts
 POSTHOOK: query: insert into DEPTS values( 10,'Sales')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@depts
-POSTHOOK: Lineage: depts.deptno EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: depts.name SIMPLE [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: depts.deptno SCRIPT []
+POSTHOOK: Lineage: depts.name SCRIPT []
 PREHOOK: query: insert into DEPTS values( 20,'Marketing')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@depts
 POSTHOOK: query: insert into DEPTS values( 20,'Marketing')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@depts
-POSTHOOK: Lineage: depts.deptno EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: depts.name SIMPLE [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: depts.deptno SCRIPT []
+POSTHOOK: Lineage: depts.name SCRIPT []
 PREHOOK: query: insert into DEPTS values( 30,'Accounts')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@depts
 POSTHOOK: query: insert into DEPTS values( 30,'Accounts')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@depts
-POSTHOOK: Lineage: depts.deptno EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: depts.name SIMPLE [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: depts.deptno SCRIPT []
+POSTHOOK: Lineage: depts.name SCRIPT []
 PREHOOK: query: explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name)
@@ -6062,12 +6082,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: insert into t values(3,1), (1,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values(3,1), (1,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.i EXPRESSION [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.j EXPRESSION [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: t.i SCRIPT []
+POSTHOOK: Lineage: t.j SCRIPT []
 Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select * from t where 0 = (select count(*) from t tt where tt.j <> t.i)
 PREHOOK: type: QUERY

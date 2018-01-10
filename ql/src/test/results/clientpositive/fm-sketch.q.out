@@ -316,39 +316,49 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@i
 PREHOOK: query: insert into i values ('2012-08-17')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@i
 POSTHOOK: query: insert into i values ('2012-08-17')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@i
-POSTHOOK: Lineage: i.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: i.key SCRIPT []
 PREHOOK: query: insert into i values ('2012-08-17')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@i
 POSTHOOK: query: insert into i values ('2012-08-17')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@i
-POSTHOOK: Lineage: i.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: i.key SCRIPT []
 PREHOOK: query: insert into i values ('2013-08-17')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@i
 POSTHOOK: query: insert into i values ('2013-08-17')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@i
-POSTHOOK: Lineage: i.key EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: i.key SCRIPT []
 PREHOOK: query: insert into i values ('2012-03-17')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@i
 POSTHOOK: query: insert into i values ('2012-03-17')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@i
-POSTHOOK: Lineage: i.key EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: i.key SCRIPT []
 PREHOOK: query: insert into i values ('2012-05-17')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@i
 POSTHOOK: query: insert into i values ('2012-05-17')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@i
-POSTHOOK: Lineage: i.key EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: i.key SCRIPT []
 PREHOOK: query: analyze table i compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@i

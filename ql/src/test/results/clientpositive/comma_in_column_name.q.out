@@ -8,11 +8,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test
 PREHOOK: query: insert into test values (1),(2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
 POSTHOOK: query: insert into test values (1),(2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
-POSTHOOK: Lineage: test.x,y EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test.x,y SCRIPT []
 PREHOOK: query: select `x,y` from test where `x,y` >=2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test
@@ -40,11 +42,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test
 PREHOOK: query: insert into test values (1),(2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
 POSTHOOK: query: insert into test values (1),(2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
-POSTHOOK: Lineage: test.x,y EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test.x,y SCRIPT []
 PREHOOK: query: select `x,y` from test where `x,y` <2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test

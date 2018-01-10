@@ -8,12 +8,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@count_case_groupby
 PREHOOK: query: insert into table count_case_groupby values ('key1', true),('key2', false),('key3', NULL),('key4', false),('key5',NULL)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@count_case_groupby
 POSTHOOK: query: insert into table count_case_groupby values ('key1', true),('key2', false),('key3', NULL),('key4', false),('key5',NULL)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@count_case_groupby
-POSTHOOK: Lineage: count_case_groupby.bool EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: count_case_groupby.key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: count_case_groupby.bool SCRIPT []
+POSTHOOK: Lineage: count_case_groupby.key SCRIPT []
 PREHOOK: query: explain vectorization expression
 SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key
 PREHOOK: type: QUERY

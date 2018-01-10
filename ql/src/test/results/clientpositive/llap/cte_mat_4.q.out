@@ -8,12 +8,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@q1
 PREHOOK: query: insert into q1 values (1, 'A')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@q1
 POSTHOOK: query: insert into q1 values (1, 'A')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@q1
-POSTHOOK: Lineage: q1.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: q1.b SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: q1.a SCRIPT []
+POSTHOOK: Lineage: q1.b SCRIPT []
 PREHOOK: query: show tables
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
@@ -37,7 +39,6 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
-values__tmp__table__1
 PREHOOK: query: explain
 with q1 as (select * from src where key= '5')
 select a.key
@@ -149,7 +150,6 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
-values__tmp__table__1
 PREHOOK: query: select * from q1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@q1
@@ -189,7 +189,6 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
-values__tmp__table__1
 PREHOOK: query: explain
 with q1 as (select * from src where key= '5')
 select a.key
@@ -300,4 +299,3 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
-values__tmp__table__1

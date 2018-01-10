@@ -24,11 +24,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@staging
 PREHOOK: query: insert into staging values (34324.0), (100000000.0), (200000000.0), (300000000.0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@staging
 POSTHOOK: query: insert into staging values (34324.0), (100000000.0), (200000000.0), (300000000.0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@staging
-POSTHOOK: Lineage: staging.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: staging.id SCRIPT []
 PREHOOK: query: insert overwrite table orc_decimal select id from staging
 PREHOOK: type: QUERY
 PREHOOK: Input: default@staging

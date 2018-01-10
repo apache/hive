@@ -10,11 +10,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_tbl_1_orc
 PREHOOK: query: insert into table decimal_tbl_1_orc values(55555)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@decimal_tbl_1_orc
 POSTHOOK: query: insert into table decimal_tbl_1_orc values(55555)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@decimal_tbl_1_orc
-POSTHOOK: Lineage: decimal_tbl_1_orc.dec EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: decimal_tbl_1_orc.dec SCRIPT []
 PREHOOK: query: select * from decimal_tbl_1_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_tbl_1_orc
@@ -169,12 +171,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_tbl_2_orc
 PREHOOK: query: insert into table decimal_tbl_2_orc values(125.315, -125.315)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@decimal_tbl_2_orc
 POSTHOOK: query: insert into table decimal_tbl_2_orc values(125.315, -125.315)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@decimal_tbl_2_orc
-POSTHOOK: Lineage: decimal_tbl_2_orc.neg EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: decimal_tbl_2_orc.pos EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: decimal_tbl_2_orc.neg SCRIPT []
+POSTHOOK: Lineage: decimal_tbl_2_orc.pos SCRIPT []
 PREHOOK: query: select * from decimal_tbl_2_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_tbl_2_orc
@@ -341,11 +345,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_tbl_3_orc
 PREHOOK: query: insert into table decimal_tbl_3_orc values(3.141592653589793)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@decimal_tbl_3_orc
 POSTHOOK: query: insert into table decimal_tbl_3_orc values(3.141592653589793)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@decimal_tbl_3_orc
-POSTHOOK: Lineage: decimal_tbl_3_orc.dec EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: decimal_tbl_3_orc.dec SCRIPT []
 PREHOOK: query: select * from decimal_tbl_3_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_tbl_3_orc
@@ -556,12 +562,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_tbl_4_orc
 PREHOOK: query: insert into table decimal_tbl_4_orc values(1809242.3151111344, -1809242.3151111344)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@decimal_tbl_4_orc
 POSTHOOK: query: insert into table decimal_tbl_4_orc values(1809242.3151111344, -1809242.3151111344)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@decimal_tbl_4_orc
-POSTHOOK: Lineage: decimal_tbl_4_orc.neg EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: decimal_tbl_4_orc.pos EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: decimal_tbl_4_orc.neg SCRIPT []
+POSTHOOK: Lineage: decimal_tbl_4_orc.pos SCRIPT []
 PREHOOK: query: select * from decimal_tbl_4_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_tbl_4_orc

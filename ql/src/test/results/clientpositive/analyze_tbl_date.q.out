@@ -8,11 +8,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table
 PREHOOK: query: insert into test_table values(null), (null), (null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_table
 POSTHOOK: query: insert into test_table values(null), (null), (null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_table
-POSTHOOK: Lineage: test_table.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test_table.d EXPRESSION []
 PREHOOK: query: analyze table test_table compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table

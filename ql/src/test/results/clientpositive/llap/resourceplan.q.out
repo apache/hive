@@ -1868,13 +1868,15 @@ POSTHOOK: Output: SYS@VERSION
 POSTHOOK: Output: database:sys
 PREHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.0.0', 'Hive release version 3.0.0')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: sys@version
 POSTHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.0.0', 'Hive release version 3.0.0')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: sys@version
-POSTHOOK: Lineage: version.schema_version SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: version.ver_id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: version.version_comment SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: version.schema_version SCRIPT []
+POSTHOOK: Lineage: version.ver_id SCRIPT []
+POSTHOOK: Lineage: version.version_comment SCRIPT []
 PREHOOK: query: CREATE TABLE IF NOT EXISTS `DB_VERSION` (
   `VER_ID` BIGINT,
   `SCHEMA_VERSION` string,

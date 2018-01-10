@@ -46,15 +46,17 @@ POSTHOOK: Input: default@table_add_int_permute_select
 POSTHOOK: Output: default@table_add_int_permute_select
 PREHOOK: query: insert into table table_add_int_permute_select VALUES (111, 80000, 'new', 80000)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table_add_int_permute_select
 POSTHOOK: query: insert into table table_add_int_permute_select VALUES (111, 80000, 'new', 80000)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table_add_int_permute_select
-POSTHOOK: Lineage: table_add_int_permute_select.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_add_int_permute_select.b SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_add_int_permute_select.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: table_add_int_permute_select.insert_num EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-_col0	_col1	_col2	_col3
+POSTHOOK: Lineage: table_add_int_permute_select.a SCRIPT []
+POSTHOOK: Lineage: table_add_int_permute_select.b SCRIPT []
+POSTHOOK: Lineage: table_add_int_permute_select.c SCRIPT []
+POSTHOOK: Lineage: table_add_int_permute_select.insert_num SCRIPT []
+col1	col2	col3	col4
 PREHOOK: query: explain vectorization only detail
 select insert_num,a,b,c from table_add_int_permute_select
 PREHOOK: type: QUERY
@@ -149,16 +151,18 @@ POSTHOOK: Input: default@table_add_int_string_permute_select
 POSTHOOK: Output: default@table_add_int_string_permute_select
 PREHOOK: query: insert into table table_add_int_string_permute_select VALUES (111, 80000, 'new', 80000, 'filler')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table_add_int_string_permute_select
 POSTHOOK: query: insert into table table_add_int_string_permute_select VALUES (111, 80000, 'new', 80000, 'filler')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table_add_int_string_permute_select
-POSTHOOK: Lineage: table_add_int_string_permute_select.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_add_int_string_permute_select.b SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_add_int_string_permute_select.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: table_add_int_string_permute_select.d SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: table_add_int_string_permute_select.insert_num EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-_col0	_col1	_col2	_col3	_col4
+POSTHOOK: Lineage: table_add_int_string_permute_select.a SCRIPT []
+POSTHOOK: Lineage: table_add_int_string_permute_select.b SCRIPT []
+POSTHOOK: Lineage: table_add_int_string_permute_select.c SCRIPT []
+POSTHOOK: Lineage: table_add_int_string_permute_select.d SCRIPT []
+POSTHOOK: Lineage: table_add_int_string_permute_select.insert_num SCRIPT []
+col1	col2	col3	col4	col5
 PREHOOK: query: select insert_num,a,b from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
@@ -304,15 +308,17 @@ POSTHOOK: Input: default@table_change_string_group_double
 POSTHOOK: Output: default@table_change_string_group_double
 PREHOOK: query: insert into table table_change_string_group_double VALUES (111, 789.321, 789.321, 789.321, 'new')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table_change_string_group_double
 POSTHOOK: query: insert into table table_change_string_group_double VALUES (111, 789.321, 789.321, 789.321, 'new')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table_change_string_group_double
-POSTHOOK: Lineage: table_change_string_group_double.b SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_double.c1 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_double.c2 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_double.c3 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_double.insert_num EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_string_group_double.b SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_double.c1 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_double.c2 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_double.c3 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_double.insert_num SCRIPT []
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_double
 PREHOOK: type: QUERY
@@ -376,22 +382,24 @@ POSTHOOK: Input: default@table_change_date_group_string_group_date_group
 POSTHOOK: Output: default@table_change_date_group_string_group_date_group
 PREHOOK: query: insert into table table_change_date_group_string_group_date_group VALUES (111, 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'new')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table_change_date_group_string_group_date_group
 POSTHOOK: query: insert into table table_change_date_group_string_group_date_group VALUES (111, 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'new')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table_change_date_group_string_group_date_group
-POSTHOOK: Lineage: table_change_date_group_string_group_date_group.b SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c1 SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c10 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c2 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c3 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c4 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c5 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c6 SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c7 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c8 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c9 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_date_group_string_group_date_group.insert_num EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.b SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c1 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c10 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c2 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c3 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c4 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c5 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c6 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c7 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c8 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c9 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.insert_num SCRIPT []
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from table_change_date_group_string_group_date_group
 PREHOOK: type: QUERY
@@ -507,6 +515,7 @@ PREHOOK: query: insert into table table_change_numeric_group_string_group_multi_
             'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
             'new')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string_group
 POSTHOOK: query: insert into table table_change_numeric_group_string_group_multi_ints_string_group VALUES (111,
             'filler', 'filler', 'filler', 'filler',
@@ -514,29 +523,30 @@ POSTHOOK: query: insert into table table_change_numeric_group_string_group_multi
             'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
             'new')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string_group
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.b SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col22, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c1 SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c10 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c11 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c12 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c13 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col14, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c14 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c15 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col16, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c16 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col17, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c17 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col18, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c18 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col19, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c19 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col20, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c2 SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c20 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col21, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c3 SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c4 SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c5 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c6 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c7 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c8 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c9 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.insert_num EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.b SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c1 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c10 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c11 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c12 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c13 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c14 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c15 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c16 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c17 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c18 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c19 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c2 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c20 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c3 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c4 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c5 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c6 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c7 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c8 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c9 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.insert_num SCRIPT []
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16	_col17	_col18	_col19	_col20	_col21
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group
 PREHOOK: type: QUERY
@@ -647,6 +657,7 @@ PREHOOK: query: insert into table table_change_numeric_group_string_group_floati
              'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
              'new')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
 POSTHOOK: query: insert into table table_change_numeric_group_string_group_floating_string_group VALUES (111,
              'filler', 'filler', 'filler',
@@ -654,24 +665,25 @@ POSTHOOK: query: insert into table table_change_numeric_group_string_group_float
              'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
              'new')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.b SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col17, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c1 SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c10 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c11 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c12 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c13 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col14, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c14 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c15 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col16, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c2 SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c3 SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c4 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c5 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c6 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c7 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c8 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c9 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.insert_num EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.b SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c1 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c10 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c11 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c12 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c13 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c14 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c15 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c2 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c3 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c4 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c5 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c6 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c7 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c8 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c9 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.insert_num SCRIPT []
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group
 PREHOOK: type: QUERY
@@ -773,6 +785,7 @@ PREHOOK: query: insert into table table_change_string_group_string_group_string 
           'filler', 'filler', 'filler',
           'new')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table_change_string_group_string_group_string
 POSTHOOK: query: insert into table table_change_string_group_string_group_string VALUES (111,
           'filler', 'filler', 'filler', 'filler',
@@ -780,19 +793,20 @@ POSTHOOK: query: insert into table table_change_string_group_string_group_string
           'filler', 'filler', 'filler',
           'new')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table_change_string_group_string_group_string
-POSTHOOK: Lineage: table_change_string_group_string_group_string.b SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_string_group_string.c1 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_string_group_string.c10 SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_string_group_string.c2 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_string_group_string.c3 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_string_group_string.c4 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_string_group_string.c5 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_string_group_string.c6 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_string_group_string.c7 SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_string_group_string.c8 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_string_group_string.c9 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_string_group_string_group_string.insert_num EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_string_group_string_group_string.b SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c1 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c10 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c2 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c3 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c4 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c5 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c6 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c7 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c8 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c9 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.insert_num SCRIPT []
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from table_change_string_group_string_group_string
 PREHOOK: type: QUERY
@@ -913,6 +927,7 @@ PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_tin
             1234.5678, 9876.543, 789.321,
            'new')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
 POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_tinyint_to_bigint VALUES (111,
             7000, 80000, 90000000, 1234.5678, 9876.543, 789.321,
@@ -921,27 +936,28 @@ POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_ti
             1234.5678, 9876.543, 789.321,
            'new')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.b SIMPLE [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col20, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c1 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c10 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c11 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c12 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c13 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col14, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c14 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c15 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col16, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c16 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col17, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c17 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col18, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c18 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col19, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c2 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c3 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c4 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c5 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c6 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c7 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c8 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c9 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.insert_num EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.b SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c1 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c10 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c11 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c12 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c13 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c14 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c15 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c16 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c17 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c18 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c2 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c3 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c4 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c5 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c6 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c7 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c8 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c9 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.insert_num SCRIPT []
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16	_col17	_col18	_col19
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from table_change_lower_to_higher_numeric_group_tinyint_to_bigint
 PREHOOK: type: QUERY
@@ -1024,15 +1040,17 @@ POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal_to_f
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal_to_float
 PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_decimal_to_float VALUES (111, 1234.5678, 9876.543, 1234.5678, 'new')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal_to_float
 POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_decimal_to_float VALUES (111, 1234.5678, 9876.543, 1234.5678, 'new')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal_to_float
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.b SIMPLE [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.c1 EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.c2 EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.c3 EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.insert_num EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.b SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.c1 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.c2 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.c3 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.insert_num SCRIPT []
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_decimal_to_float
 PREHOOK: type: QUERY

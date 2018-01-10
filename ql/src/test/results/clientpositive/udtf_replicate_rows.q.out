@@ -20,13 +20,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: insert into table t values (3,'2',0),(2,'3',1),(0,'2',2),(-1,'k',3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into table t values (3,'2',0),(2,'3',1),(0,'2',2),(-1,'k',3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.y SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.z EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
+POSTHOOK: Lineage: t.z SCRIPT []
 PREHOOK: query: SELECT replicate_rows(x,y) FROM t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t

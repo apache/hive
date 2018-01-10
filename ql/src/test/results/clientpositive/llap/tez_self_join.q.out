@@ -16,13 +16,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tez_self_join1
 PREHOOK: query: insert into table tez_self_join1 values(1, 'aa','bb'), (2, 'ab','ab'), (3,'ba','ba')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tez_self_join1
 POSTHOOK: query: insert into table tez_self_join1 values(1, 'aa','bb'), (2, 'ab','ab'), (3,'ba','ba')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tez_self_join1
-POSTHOOK: Lineage: tez_self_join1.id1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: tez_self_join1.id2 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: tez_self_join1.id3 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: tez_self_join1.id1 SCRIPT []
+POSTHOOK: Lineage: tez_self_join1.id2 SCRIPT []
+POSTHOOK: Lineage: tez_self_join1.id3 SCRIPT []
 PREHOOK: query: create table tez_self_join2(id1 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -33,11 +35,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tez_self_join2
 PREHOOK: query: insert into table tez_self_join2 values(1),(2),(3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tez_self_join2
 POSTHOOK: query: insert into table tez_self_join2 values(1),(2),(3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tez_self_join2
-POSTHOOK: Lineage: tez_self_join2.id1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tez_self_join2.id1 SCRIPT []
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain
 select s.id2, s.id3

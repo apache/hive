@@ -8,13 +8,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@amvdo_table
 PREHOOK: query: insert into amvdo_table values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@amvdo_table
 POSTHOOK: query: insert into amvdo_table values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@amvdo_table
-POSTHOOK: Lineage: amvdo_table.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: amvdo_table.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: amvdo_table.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: amvdo_table.a SCRIPT []
+POSTHOOK: Lineage: amvdo_table.b SCRIPT []
+POSTHOOK: Lineage: amvdo_table.c SCRIPT []
 PREHOOK: query: create materialized view amvdo_mat_view as select a, c from amvdo_table
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@amvdo_table

@@ -36,15 +36,17 @@ PREHOOK: query: insert into table encryptedTable partition (key) values
     ('val_501', '501'),
     ('val_502', '502')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@encryptedtable
 POSTHOOK: query: insert into table encryptedTable partition (key) values
     ('val_501', '501'),
     ('val_502', '502')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@encryptedtable@key=501
 POSTHOOK: Output: default@encryptedtable@key=502
-POSTHOOK: Lineage: encryptedtable PARTITION(key=501).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: encryptedtable PARTITION(key=502).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: encryptedtable PARTITION(key=501).value SCRIPT []
+POSTHOOK: Lineage: encryptedtable PARTITION(key=502).value SCRIPT []
 PREHOOK: query: select * from encryptedTable order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encryptedtable

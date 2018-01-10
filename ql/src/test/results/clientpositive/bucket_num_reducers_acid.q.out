@@ -12,9 +12,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_nr_acid
 PREHOOK: query: insert into bucket_nr_acid values(1,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@bucket_nr_acid
 PREHOOK: query: insert into bucket_nr_acid values(0,0),(3,3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@bucket_nr_acid
 PREHOOK: query: update bucket_nr_acid set b = -1
 PREHOOK: type: QUERY

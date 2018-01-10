@@ -8,12 +8,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mm_insertsort
 PREHOOK: query: insert into mm_insertsort values (1, '1'),(2, '2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@mm_insertsort
 POSTHOOK: query: insert into mm_insertsort values (1, '1'),(2, '2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@mm_insertsort
-POSTHOOK: Lineage: mm_insertsort.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: mm_insertsort.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: mm_insertsort.a SCRIPT []
+POSTHOOK: Lineage: mm_insertsort.b SCRIPT []
 PREHOOK: query: create table acid_insertsort(a int, b varchar(128)) clustered by (a) sorted by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

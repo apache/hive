@@ -2136,11 +2136,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tnull
 PREHOOK: query: insert into tnull values(null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tnull
 POSTHOOK: query: insert into tnull values(null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tnull
-POSTHOOK: Lineage: tnull.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tnull.i EXPRESSION []
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select p_size, p_size IN (select i from tnull) from part
 PREHOOK: type: QUERY

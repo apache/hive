@@ -12,11 +12,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testacid1
 PREHOOK: query: insert into table testacid1 values (1),(2),(3),(4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@testacid1
 POSTHOOK: query: insert into table testacid1 values (1),(2),(3),(4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@testacid1
-POSTHOOK: Lineage: testacid1.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: testacid1.id SCRIPT []
 hive.vectorized.execution.enabled=true
 PREHOOK: query: select count(1) from testacid1
 PREHOOK: type: QUERY

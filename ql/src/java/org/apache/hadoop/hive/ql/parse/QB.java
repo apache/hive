@@ -60,7 +60,6 @@ public class QB {
   private boolean isAnalyzeRewrite;
   private CreateTableDesc tblDesc = null; // table descriptor of the final
   private CreateTableDesc directoryDesc = null ;
-  private List<Path> encryptedTargetTablePaths;
   private boolean insideView;
   private Set<String> aliasInsideView;
 
@@ -422,23 +421,6 @@ public class QB {
 
   public boolean isView() {
     return viewDesc != null && !viewDesc.isMaterialized();
-  }
-
-  void addEncryptedTargetTablePath(Path p) {
-    if(encryptedTargetTablePaths == null) {
-      encryptedTargetTablePaths = new ArrayList<>();
-    }
-    encryptedTargetTablePaths.add(p);
-  }
-  /**
-   * List of dbName.tblName of encrypted target tables of insert statement
-   * Used to support Insert ... values(...)
-   */
-  List<Path> getEncryptedTargetTablePaths() {
-    if(encryptedTargetTablePaths == null) {
-      return Collections.emptyList();
-    }
-    return encryptedTargetTablePaths;
   }
 
   public HashMap<String, Table> getViewToTabSchema() {

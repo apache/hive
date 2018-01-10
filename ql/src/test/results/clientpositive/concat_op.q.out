@@ -148,18 +148,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ct2
 PREHOOK: query: insert into ct1 values (7),(5),(3),(1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ct1
 POSTHOOK: query: insert into ct1 values (7),(5),(3),(1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ct1
-POSTHOOK: Lineage: ct1.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: ct1.c SCRIPT []
 PREHOOK: query: insert into ct2 values (8),(6),(4),(2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ct2
 POSTHOOK: query: insert into ct2 values (8),(6),(4),(2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ct2
-POSTHOOK: Lineage: ct2.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: ct2.c SCRIPT []
 PREHOOK: query: create view ct_v1 as select * from ct1 union all select * from ct2
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@ct1

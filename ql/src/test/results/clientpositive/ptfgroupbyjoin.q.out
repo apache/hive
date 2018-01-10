@@ -16,30 +16,36 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tlb2
 PREHOOK: query: insert into table tlb1 values(100,1,'abc')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tlb1
 POSTHOOK: query: insert into table tlb1 values(100,1,'abc')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tlb1
-POSTHOOK: Lineage: tlb1.fkey EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: tlb1.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: tlb1.val SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: tlb1.fkey SCRIPT []
+POSTHOOK: Lineage: tlb1.id SCRIPT []
+POSTHOOK: Lineage: tlb1.val SCRIPT []
 PREHOOK: query: insert into table tlb1 values(200,1,'efg')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tlb1
 POSTHOOK: query: insert into table tlb1 values(200,1,'efg')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tlb1
-POSTHOOK: Lineage: tlb1.fkey EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: tlb1.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: tlb1.val SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: tlb1.fkey SCRIPT []
+POSTHOOK: Lineage: tlb1.id SCRIPT []
+POSTHOOK: Lineage: tlb1.val SCRIPT []
 PREHOOK: query: insert into table tlb2 values(1, 'key1')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tlb2
 POSTHOOK: query: insert into table tlb2 values(1, 'key1')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tlb2
-POSTHOOK: Lineage: tlb2.fid EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: tlb2.name SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: tlb2.fid SCRIPT []
+POSTHOOK: Lineage: tlb2.name SCRIPT []
 PREHOOK: query: explain 
 select ddd.id, ddd.fkey, aaa.name
 from (

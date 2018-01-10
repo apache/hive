@@ -33,23 +33,27 @@ POSTHOOK: Output: default@join_result_3
 PREHOOK: query: INSERT INTO TABLE T_A 
 VALUES ('Id_1', 'val_101'), ('Id_2', 'val_102'), ('Id_3', 'val_103')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t_a
 POSTHOOK: query: INSERT INTO TABLE T_A 
 VALUES ('Id_1', 'val_101'), ('Id_2', 'val_102'), ('Id_3', 'val_103')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t_a
-POSTHOOK: Lineage: t_a.id SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t_a.val SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: t_a.id SCRIPT []
+POSTHOOK: Lineage: t_a.val SCRIPT []
 PREHOOK: query: INSERT INTO TABLE T_B 
 VALUES ('Id_1', 'val_103'), ('Id_2', 'val_104')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t_b
 POSTHOOK: query: INSERT INTO TABLE T_B 
 VALUES ('Id_1', 'val_103'), ('Id_2', 'val_104')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t_b
-POSTHOOK: Lineage: t_b.id SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t_b.val SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: t_b.id SCRIPT []
+POSTHOOK: Lineage: t_b.val SCRIPT []
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain
 FROM T_A a LEFT JOIN T_B b ON a.id = b.id

@@ -18,18 +18,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@skipHTbl
 PREHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 1) VALUES (1), (2), (3), (4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@skiphtbl@b=1
 POSTHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 1) VALUES (1), (2), (3), (4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@skiphtbl@b=1
-POSTHOOK: Lineage: skiphtbl PARTITION(b=1).a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: skiphtbl PARTITION(b=1).a SCRIPT []
 PREHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 2) VALUES (1), (2), (3), (4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@skiphtbl@b=2
 POSTHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 2) VALUES (1), (2), (3), (4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@skiphtbl@b=2
-POSTHOOK: Lineage: skiphtbl PARTITION(b=2).a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: skiphtbl PARTITION(b=2).a SCRIPT []
 PREHOOK: query: SELECT * FROM skipHTbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@skiphtbl
@@ -92,18 +96,22 @@ POSTHOOK: Input: default@skiphtbl@b=2
 3
 PREHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 1) VALUES (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@skiphtbl@b=1
 POSTHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 1) VALUES (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@skiphtbl@b=1
-POSTHOOK: Lineage: skiphtbl PARTITION(b=1).a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: skiphtbl PARTITION(b=1).a SCRIPT []
 PREHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 2) VALUES (1), (2), (3), (4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@skiphtbl@b=2
 POSTHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 2) VALUES (1), (2), (3), (4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@skiphtbl@b=2
-POSTHOOK: Lineage: skiphtbl PARTITION(b=2).a EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: skiphtbl PARTITION(b=2).a SCRIPT []
 PREHOOK: query: SELECT DISTINCT b FROM skipHTbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@skiphtbl
@@ -165,18 +173,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@skipFTbl
 PREHOOK: query: INSERT OVERWRITE TABLE skipFTbl PARTITION (b = 1) VALUES (1), (2), (3), (4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@skipftbl@b=1
 POSTHOOK: query: INSERT OVERWRITE TABLE skipFTbl PARTITION (b = 1) VALUES (1), (2), (3), (4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@skipftbl@b=1
-POSTHOOK: Lineage: skipftbl PARTITION(b=1).a EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: skipftbl PARTITION(b=1).a SCRIPT []
 PREHOOK: query: INSERT OVERWRITE TABLE skipFTbl PARTITION (b = 2) VALUES (1), (2), (3), (4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@skipftbl@b=2
 POSTHOOK: query: INSERT OVERWRITE TABLE skipFTbl PARTITION (b = 2) VALUES (1), (2), (3), (4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@skipftbl@b=2
-POSTHOOK: Lineage: skipftbl PARTITION(b=2).a EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: skipftbl PARTITION(b=2).a SCRIPT []
 PREHOOK: query: SELECT * FROM skipFTbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@skipftbl

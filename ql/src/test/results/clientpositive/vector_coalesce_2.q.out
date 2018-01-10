@@ -8,12 +8,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@str_str_orc
 PREHOOK: query: insert into table str_str_orc values (null, "X"), ("0", "X"), ("1", "X"), (null, "y")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@str_str_orc
 POSTHOOK: query: insert into table str_str_orc values (null, "X"), ("0", "X"), ("1", "X"), (null, "y")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@str_str_orc
-POSTHOOK: Lineage: str_str_orc.str1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: str_str_orc.str2 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: str_str_orc.str1 SCRIPT []
+POSTHOOK: Lineage: str_str_orc.str2 SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
    str2, ROUND(sum(cast(COALESCE(str1, 0) as int))/60, 2) as result

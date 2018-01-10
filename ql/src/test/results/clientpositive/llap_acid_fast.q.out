@@ -177,14 +177,16 @@ POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=3
 528534767	3	NULL
 PREHOOK: query: insert into table orc_llap_acid_fast partition (csmallint = 1) values (1, 1, 1, 1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@orc_llap_acid_fast@csmallint=1
 POSTHOOK: query: insert into table orc_llap_acid_fast partition (csmallint = 1) values (1, 1, 1, 1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@orc_llap_acid_fast@csmallint=1
-POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cbigint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cdouble EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cfloat EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cbigint SCRIPT []
+POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cdouble SCRIPT []
+POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cfloat SCRIPT []
+POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cint SCRIPT []
 PREHOOK: query: explain vectorization only detail
 update orc_llap_acid_fast set cbigint = 2 where cint = 1
 PREHOOK: type: QUERY

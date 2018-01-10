@@ -13,6 +13,7 @@ PREHOOK: query: insert into cmv_basetable values
  (3, 'calvin', 978.76, 3),
  (3, 'charlie', 9.8, 1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cmv_basetable
 POSTHOOK: query: insert into cmv_basetable values
  (1, 'alfred', 10.30, 2),
@@ -21,11 +22,12 @@ POSTHOOK: query: insert into cmv_basetable values
  (3, 'calvin', 978.76, 3),
  (3, 'charlie', 9.8, 1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cmv_basetable
-POSTHOOK: Lineage: cmv_basetable.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: cmv_basetable.a SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.d SCRIPT []
 PREHOOK: query: analyze table cmv_basetable compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable
@@ -48,16 +50,18 @@ PREHOOK: query: insert into cmv_basetable_2 values
  (1, 'alfred', 10.30, 2),
  (3, 'calvin', 978.76, 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cmv_basetable_2
 POSTHOOK: query: insert into cmv_basetable_2 values
  (1, 'alfred', 10.30, 2),
  (3, 'calvin', 978.76, 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cmv_basetable_2
-POSTHOOK: Lineage: cmv_basetable_2.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable_2.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable_2.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable_2.d EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: cmv_basetable_2.a SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_2.b SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_2.c SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_2.d SCRIPT []
 PREHOOK: query: analyze table cmv_basetable_2 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2
@@ -275,15 +279,17 @@ POSTHOOK: Input: default@cmv_mat_view
 PREHOOK: query: insert into cmv_basetable_2 values
  (3, 'charlie', 15.8, 1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cmv_basetable_2
 POSTHOOK: query: insert into cmv_basetable_2 values
  (3, 'charlie', 15.8, 1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cmv_basetable_2
-POSTHOOK: Lineage: cmv_basetable_2.a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable_2.b EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable_2.c EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable_2.d EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: cmv_basetable_2.a SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_2.b SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_2.c SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_2.d SCRIPT []
 PREHOOK: query: analyze table cmv_basetable_2 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2
@@ -813,16 +819,18 @@ PREHOOK: query: insert into cmv_irrelevant_table values
  (1, 'alfred', 10.30, 2),
  (3, 'charlie', 9.8, 1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cmv_irrelevant_table
 POSTHOOK: query: insert into cmv_irrelevant_table values
  (1, 'alfred', 10.30, 2),
  (3, 'charlie', 9.8, 1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cmv_irrelevant_table
-POSTHOOK: Lineage: cmv_irrelevant_table.a EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_irrelevant_table.b EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_irrelevant_table.c EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_irrelevant_table.d EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: cmv_irrelevant_table.a SCRIPT []
+POSTHOOK: Lineage: cmv_irrelevant_table.b SCRIPT []
+POSTHOOK: Lineage: cmv_irrelevant_table.c SCRIPT []
+POSTHOOK: Lineage: cmv_irrelevant_table.d SCRIPT []
 PREHOOK: query: analyze table cmv_irrelevant_table compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_irrelevant_table

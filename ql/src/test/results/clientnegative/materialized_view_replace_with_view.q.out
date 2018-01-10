@@ -8,13 +8,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rmvwv_basetable
 PREHOOK: query: insert into rmvwv_basetable values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@rmvwv_basetable
 POSTHOOK: query: insert into rmvwv_basetable values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@rmvwv_basetable
-POSTHOOK: Lineage: rmvwv_basetable.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: rmvwv_basetable.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: rmvwv_basetable.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: rmvwv_basetable.a SCRIPT []
+POSTHOOK: Lineage: rmvwv_basetable.b SCRIPT []
+POSTHOOK: Lineage: rmvwv_basetable.c SCRIPT []
 PREHOOK: query: create materialized view rmvwv_mat_view as select a, b, c from rmvwv_basetable
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@rmvwv_basetable

@@ -20,12 +20,14 @@ POSTHOOK: Output: database:mydb
 POSTHOOK: Output: mydb@q1
 PREHOOK: query: insert into q1 values (5, 'A')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: mydb@q1
 POSTHOOK: query: insert into q1 values (5, 'A')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: mydb@q1
-POSTHOOK: Lineage: q1.colnum EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: q1.colstring SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: q1.colnum SCRIPT []
+POSTHOOK: Lineage: q1.colstring SCRIPT []
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -39,7 +41,6 @@ POSTHOOK: query: show tables in mydb
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:mydb
 q1
-values__tmp__table__1
 PREHOOK: query: show tables
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default

@@ -182,14 +182,16 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t0
 PREHOOK: query: insert into t0 values(1,2,3.1,4.1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t0
 POSTHOOK: query: insert into t0 values(1,2,3.1,4.1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t0
-POSTHOOK: Lineage: t0.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t0.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t0.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: t0.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: t0.a SCRIPT []
+POSTHOOK: Lineage: t0.b SCRIPT []
+POSTHOOK: Lineage: t0.c SCRIPT []
+POSTHOOK: Lineage: t0.d SCRIPT []
 PREHOOK: query: select	nullif(a,b),
 	nullif(b,c),
 	nullif(c,d),

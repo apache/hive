@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Project;
+import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;

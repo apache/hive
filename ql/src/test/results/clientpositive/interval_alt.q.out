@@ -104,11 +104,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: insert into t values (1),(2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (1),(2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.dt EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.dt SCRIPT []
 PREHOOK: query: explain
 select
 	date '2012-01-01' + interval (-dt*dt) day,

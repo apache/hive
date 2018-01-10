@@ -860,6 +860,15 @@ public final class FunctionRegistry {
       return pcA;
     }
 
+    if (pcA == PrimitiveCategory.VOID) {
+      // Handle NULL, we return the type of pcB
+      return pcB;
+    }
+    if (pcB == PrimitiveCategory.VOID) {
+      // Handle NULL, we return the type of pcA
+      return pcA;
+    }
+
     PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
     PrimitiveGrouping pgB = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcB);
 

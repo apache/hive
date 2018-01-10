@@ -18,9 +18,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_1
 PREHOOK: query: INSERT INTO hbase_table_1 VALUES(1, 'value1')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@hbase_table_1
 POSTHOOK: query: INSERT INTO hbase_table_1 VALUES(1, 'value1')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@hbase_table_1
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table_2(key int comment 'It is a column key', value string comment 'It is the column string value')
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'

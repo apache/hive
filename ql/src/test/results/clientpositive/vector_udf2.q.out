@@ -144,11 +144,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@HIVE_14349
 PREHOOK: query: insert into HIVE_14349 values('XYZa'), ('badXYZa')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@hive_14349
 POSTHOOK: query: insert into HIVE_14349 values('XYZa'), ('badXYZa')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@hive_14349
-POSTHOOK: Lineage: hive_14349.a SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: hive_14349.a SCRIPT []
 PREHOOK: query: select * from HIVE_14349 where a LIKE 'XYZ%a%'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_14349
@@ -160,11 +162,13 @@ POSTHOOK: Input: default@hive_14349
 XYZa
 PREHOOK: query: insert into HIVE_14349 values ('XYZab'), ('XYZabBAD'), ('badXYZab'), ('badXYZabc')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@hive_14349
 POSTHOOK: query: insert into HIVE_14349 values ('XYZab'), ('XYZabBAD'), ('badXYZab'), ('badXYZabc')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@hive_14349
-POSTHOOK: Lineage: hive_14349.a SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: hive_14349.a SCRIPT []
 PREHOOK: query: select * from HIVE_14349 where a LIKE 'XYZ%a_'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_14349

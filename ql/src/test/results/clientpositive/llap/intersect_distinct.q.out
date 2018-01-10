@@ -8,12 +8,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a
 PREHOOK: query: insert into table a values (1,2),(1,2),(1,3),(2,3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@a
 POSTHOOK: query: insert into table a values (1,2),(1,2),(1,3),(2,3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@a
-POSTHOOK: Lineage: a.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: a.value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: a.key SCRIPT []
+POSTHOOK: Lineage: a.value SCRIPT []
 PREHOOK: query: create table b(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -24,12 +26,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@b
 PREHOOK: query: insert into table b values (1,2),(2,3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@b
 POSTHOOK: query: insert into table b values (1,2),(2,3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: b.value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: b.key SCRIPT []
+POSTHOOK: Lineage: b.value SCRIPT []
 PREHOOK: query: select key, count(1) as c from a group by key intersect all select value, max(key) as c from b group by value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a

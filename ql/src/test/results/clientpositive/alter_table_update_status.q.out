@@ -269,44 +269,48 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@datatype_stats
 PREHOOK: query: INSERT INTO datatype_stats values(2, 3, 45, 456, 45454.4, 454.6565, 2355, '2012-01-01 01:02:03', '2012-01-01', 'update_statistics', 'stats', 'hive', 'true', 'bin')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@datatype_stats
 POSTHOOK: query: INSERT INTO datatype_stats values(2, 3, 45, 456, 45454.4, 454.6565, 2355, '2012-01-01 01:02:03', '2012-01-01', 'update_statistics', 'stats', 'hive', 'true', 'bin')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@datatype_stats
-POSTHOOK: Lineage: datatype_stats.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.bin EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col14, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.bl EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.dem EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.dt EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.f EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.s EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.str SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.t EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.ts EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.v EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.b SCRIPT []
+POSTHOOK: Lineage: datatype_stats.bin SCRIPT []
+POSTHOOK: Lineage: datatype_stats.bl SCRIPT []
+POSTHOOK: Lineage: datatype_stats.c SCRIPT []
+POSTHOOK: Lineage: datatype_stats.d SCRIPT []
+POSTHOOK: Lineage: datatype_stats.dem SCRIPT []
+POSTHOOK: Lineage: datatype_stats.dt SCRIPT []
+POSTHOOK: Lineage: datatype_stats.f SCRIPT []
+POSTHOOK: Lineage: datatype_stats.i SCRIPT []
+POSTHOOK: Lineage: datatype_stats.s SCRIPT []
+POSTHOOK: Lineage: datatype_stats.str SCRIPT []
+POSTHOOK: Lineage: datatype_stats.t SCRIPT []
+POSTHOOK: Lineage: datatype_stats.ts SCRIPT []
+POSTHOOK: Lineage: datatype_stats.v SCRIPT []
 PREHOOK: query: INSERT INTO datatype_stats values(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@datatype_stats
 POSTHOOK: query: INSERT INTO datatype_stats values(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@datatype_stats
-POSTHOOK: Lineage: datatype_stats.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.bin EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col14, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.bl EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.d EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.dem EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.dt EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.f EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.i EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.s EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.str SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.t EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.ts EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
-POSTHOOK: Lineage: datatype_stats.v EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.b EXPRESSION []
+POSTHOOK: Lineage: datatype_stats.bin EXPRESSION []
+POSTHOOK: Lineage: datatype_stats.bl EXPRESSION []
+POSTHOOK: Lineage: datatype_stats.c EXPRESSION []
+POSTHOOK: Lineage: datatype_stats.d EXPRESSION []
+POSTHOOK: Lineage: datatype_stats.dem EXPRESSION []
+POSTHOOK: Lineage: datatype_stats.dt EXPRESSION []
+POSTHOOK: Lineage: datatype_stats.f EXPRESSION []
+POSTHOOK: Lineage: datatype_stats.i EXPRESSION []
+POSTHOOK: Lineage: datatype_stats.s EXPRESSION []
+POSTHOOK: Lineage: datatype_stats.str EXPRESSION []
+POSTHOOK: Lineage: datatype_stats.t EXPRESSION []
+POSTHOOK: Lineage: datatype_stats.ts EXPRESSION []
+POSTHOOK: Lineage: datatype_stats.v EXPRESSION []
 PREHOOK: query: DESC FORMATTED datatype_stats s
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats

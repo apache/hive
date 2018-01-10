@@ -20,14 +20,16 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testdeci2
 PREHOOK: query: insert into table testdeci2 values(1,12.123,12345.123,'desk1'),(2,123.123,1234.123,'desk2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@testdeci2
 POSTHOOK: query: insert into table testdeci2 values(1,12.123,12345.123,'desk1'),(2,123.123,1234.123,'desk2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@testdeci2
-POSTHOOK: Lineage: testdeci2.amount EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: testdeci2.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: testdeci2.item SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: testdeci2.sales_tax EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: testdeci2.amount SCRIPT []
+POSTHOOK: Lineage: testdeci2.id SCRIPT []
+POSTHOOK: Lineage: testdeci2.item SCRIPT []
+POSTHOOK: Lineage: testdeci2.sales_tax SCRIPT []
 PREHOOK: query: describe formatted testdeci2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@testdeci2

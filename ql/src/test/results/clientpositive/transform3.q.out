@@ -8,11 +8,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@transform3_t1
 PREHOOK: query: INSERT OVERWRITE TABLE transform3_t1 VALUES('aaaa')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@transform3_t1
 POSTHOOK: query: INSERT OVERWRITE TABLE transform3_t1 VALUES('aaaa')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@transform3_t1
-POSTHOOK: Lineage: transform3_t1.col SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: transform3_t1.col SCRIPT []
 PREHOOK: query: SELECT t.newCol FROM (
   SELECT TRANSFORM(col) USING 'cat' AS (NewCol string) FROM transform3_t1
 ) t

@@ -12,28 +12,34 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@skewtable
 PREHOOK: query: INSERT INTO TABLE skewtable VALUES ("0", "val_0")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@skewtable
 POSTHOOK: query: INSERT INTO TABLE skewtable VALUES ("0", "val_0")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@skewtable
-POSTHOOK: Lineage: skewtable.key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: skewtable.value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: skewtable.key SCRIPT []
+POSTHOOK: Lineage: skewtable.value SCRIPT []
 PREHOOK: query: INSERT INTO TABLE skewtable VALUES ("0", "val_0")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@skewtable
 POSTHOOK: query: INSERT INTO TABLE skewtable VALUES ("0", "val_0")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@skewtable
-POSTHOOK: Lineage: skewtable.key SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: skewtable.value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: skewtable.key SCRIPT []
+POSTHOOK: Lineage: skewtable.value SCRIPT []
 PREHOOK: query: INSERT INTO TABLE skewtable VALUES ("0", "val_0")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@skewtable
 POSTHOOK: query: INSERT INTO TABLE skewtable VALUES ("0", "val_0")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@skewtable
-POSTHOOK: Lineage: skewtable.key SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: skewtable.value SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: skewtable.key SCRIPT []
+POSTHOOK: Lineage: skewtable.value SCRIPT []
 PREHOOK: query: DROP TABLE IF EXISTS nonskewtable
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS nonskewtable
@@ -48,20 +54,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nonskewtable
 PREHOOK: query: INSERT INTO TABLE nonskewtable VALUES ("1", "val_1")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@nonskewtable
 POSTHOOK: query: INSERT INTO TABLE nonskewtable VALUES ("1", "val_1")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@nonskewtable
-POSTHOOK: Lineage: nonskewtable.key SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: nonskewtable.value SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: nonskewtable.key SCRIPT []
+POSTHOOK: Lineage: nonskewtable.value SCRIPT []
 PREHOOK: query: INSERT INTO TABLE nonskewtable VALUES ("2", "val_2")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@nonskewtable
 POSTHOOK: query: INSERT INTO TABLE nonskewtable VALUES ("2", "val_2")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@nonskewtable
-POSTHOOK: Lineage: nonskewtable.key SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: nonskewtable.value SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: nonskewtable.key SCRIPT []
+POSTHOOK: Lineage: nonskewtable.value SCRIPT []
 PREHOOK: query: EXPLAIN
 CREATE TABLE result AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
 PREHOOK: type: CREATETABLE_AS_SELECT

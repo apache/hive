@@ -12,13 +12,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@employee
 PREHOOK: query: insert into employee values (1, 'M', 1),(1, 'M', 1),(2, 'F', 1),(1, 'F', 3),(1, 'M', 2),(4, 'M', 1),(2, 'F', 1),(2, 'F', 3),(3, 'M', 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@employee
 POSTHOOK: query: insert into employee values (1, 'M', 1),(1, 'M', 1),(2, 'F', 1),(1, 'F', 3),(1, 'M', 2),(4, 'M', 1),(2, 'F', 1),(2, 'F', 3),(3, 'M', 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@employee
-POSTHOOK: Lineage: employee.department_id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: employee.education_level EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: employee.gender EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: employee.department_id SCRIPT []
+POSTHOOK: Lineage: employee.education_level SCRIPT []
+POSTHOOK: Lineage: employee.gender SCRIPT []
 PREHOOK: query: explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee

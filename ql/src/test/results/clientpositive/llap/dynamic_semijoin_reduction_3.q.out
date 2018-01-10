@@ -990,19 +990,21 @@ PREHOOK: query: insert into customer values
                      ( 2, "DEF", "Def Co.", "PA", true, null ),
                      ( 3, "XYZ", "Xyz Co.", "CA", true, null )
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: type2_scd_helper@customer
 POSTHOOK: query: insert into customer values
                      ( 1, "ABC", "Abc Co.", "OH", true, null ),
                      ( 2, "DEF", "Def Co.", "PA", true, null ),
                      ( 3, "XYZ", "Xyz Co.", "CA", true, null )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: type2_scd_helper@customer
-POSTHOOK: Lineage: customer.end_date EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: customer.is_current EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: customer.name SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: customer.sk SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: customer.source_pk EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: customer.state SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: customer.end_date EXPRESSION []
+POSTHOOK: Lineage: customer.is_current SCRIPT []
+POSTHOOK: Lineage: customer.name SCRIPT []
+POSTHOOK: Lineage: customer.sk SCRIPT []
+POSTHOOK: Lineage: customer.source_pk SCRIPT []
+POSTHOOK: Lineage: customer.state SCRIPT []
 PREHOOK: query: select * from customer order by source_pk
 PREHOOK: type: QUERY
 PREHOOK: Input: type2_scd_helper@customer
@@ -1036,6 +1038,7 @@ PREHOOK: query: insert into new_customer_stage values
                                ( 3, "Xyz Co.", "TX" ),
                                ( 4, "Pdq Co.", "WI" )
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: type2_scd_helper@new_customer_stage
 POSTHOOK: query: insert into new_customer_stage values
                                ( 1, "Abc Co.", "OH" ),
@@ -1043,10 +1046,11 @@ POSTHOOK: query: insert into new_customer_stage values
                                ( 3, "Xyz Co.", "TX" ),
                                ( 4, "Pdq Co.", "WI" )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: type2_scd_helper@new_customer_stage
-POSTHOOK: Lineage: new_customer_stage.name SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: new_customer_stage.source_pk EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: new_customer_stage.state SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: new_customer_stage.name SCRIPT []
+POSTHOOK: Lineage: new_customer_stage.source_pk SCRIPT []
+POSTHOOK: Lineage: new_customer_stage.state SCRIPT []
 PREHOOK: query: drop table if exists scd_types
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists scd_types
@@ -1067,12 +1071,14 @@ POSTHOOK: Output: database:type2_scd_helper
 POSTHOOK: Output: type2_scd_helper@scd_types
 PREHOOK: query: insert into scd_types values (1, null), (2, -1), (2, null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: type2_scd_helper@scd_types
 POSTHOOK: query: insert into scd_types values (1, null), (2, -1), (2, null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: type2_scd_helper@scd_types
-POSTHOOK: Lineage: scd_types.invalid_key EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: scd_types.type EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: scd_types.invalid_key SCRIPT []
+POSTHOOK: Lineage: scd_types.type SCRIPT []
 PREHOOK: query: merge into customer
 using (
   select

@@ -549,12 +549,14 @@ POSTHOOK: Input: default@insert_into2
 50
 PREHOOK: query: insert into table insert_into2 partition (ds='2') values(1, 'abc')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into2@ds=2
 POSTHOOK: query: insert into table insert_into2 partition (ds='2') values(1, 'abc')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into2@ds=2
-POSTHOOK: Lineage: insert_into2 PARTITION(ds=2).key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: insert_into2 PARTITION(ds=2).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: insert_into2 PARTITION(ds=2).key SCRIPT []
+POSTHOOK: Lineage: insert_into2 PARTITION(ds=2).value SCRIPT []
 PREHOOK: query: explain
 SELECT COUNT(*) FROM insert_into2 where ds='2'
 PREHOOK: type: QUERY

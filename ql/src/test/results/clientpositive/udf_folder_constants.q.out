@@ -24,19 +24,23 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@udf_tb2
 PREHOOK: query: insert into udf_tb1 values(2001, 11)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@udf_tb1
 POSTHOOK: query: insert into udf_tb1 values(2001, 11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@udf_tb1
-POSTHOOK: Lineage: udf_tb1.month EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: udf_tb1.year EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: udf_tb1.month SCRIPT []
+POSTHOOK: Lineage: udf_tb1.year SCRIPT []
 PREHOOK: query: insert into udf_tb2 values(11)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@udf_tb2
 POSTHOOK: query: insert into udf_tb2 values(11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@udf_tb2
-POSTHOOK: Lineage: udf_tb2.month EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: udf_tb2.month SCRIPT []
 PREHOOK: query: explain
 select unix_timestamp(concat(a.year, '-01-01 00:00:00')) from (select * from udf_tb1 where year=2001) a join udf_tb2 b on (a.month=b.month)
 PREHOOK: type: QUERY

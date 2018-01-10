@@ -126,7 +126,7 @@ public class TestMergeStatement {
         "(tok_tabref (tok_tabname target)) (tok_tabref (tok_tabname source)) (= (. (tok_table_or_col target) pk) (. (tok_table_or_col source) pk)) " +
         "(tok_not_matched " +
           "(tok_insert " +
-            "(tok_value_row " +
+            "(tok_function struct " +
               "(. (tok_table_or_col source) a) " +
                 "(tok_function when " +
                   "(tok_function isnull (. (tok_table_or_col source) b)) (. (tok_table_or_col target) b) " +
@@ -157,7 +157,7 @@ public class TestMergeStatement {
         ") " +
         "(tok_not_matched " +
           "(tok_insert " +
-            "(tok_value_row " +
+            "(tok_function struct " +
               "(. (tok_table_or_col source) a) " +
               "2 " +
               "(tok_function current_date)" +
@@ -251,6 +251,6 @@ public class TestMergeStatement {
             "(tok_set_columns_clause (= (tok_table_or_col b) (. (tok_table_or_col source) b2))))) " +
         "(tok_not_matched " +
           "(tok_insert " +
-            "(tok_value_row (. (tok_table_or_col source) a2) (. (tok_table_or_col source) b2)))))");
+            "(tok_function struct (. (tok_table_or_col source) a2) (. (tok_table_or_col source) b2)))))");
   }
 }

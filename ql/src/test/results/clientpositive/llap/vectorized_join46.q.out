@@ -9,14 +9,16 @@ POSTHOOK: Output: default@test1
 PREHOOK: query: INSERT INTO test1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
     (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test1
 POSTHOOK: query: INSERT INTO test1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
     (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test1
-POSTHOOK: Lineage: test1.col_1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: test1.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test1.value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: test1.col_1 SCRIPT []
+POSTHOOK: Lineage: test1.key SCRIPT []
+POSTHOOK: Lineage: test1.value SCRIPT []
 PREHOOK: query: CREATE TABLE test2 (key INT, value INT, col_2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -28,14 +30,16 @@ POSTHOOK: Output: default@test2
 PREHOOK: query: INSERT INTO test2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
     (104, 3, 'Fli'), (105, NULL, 'None')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test2
 POSTHOOK: query: INSERT INTO test2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
     (104, 3, 'Fli'), (105, NULL, 'None')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test2
-POSTHOOK: Lineage: test2.col_2 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: test2.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test2.value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: test2.col_2 SCRIPT []
+POSTHOOK: Lineage: test2.key SCRIPT []
+POSTHOOK: Lineage: test2.value SCRIPT []
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2

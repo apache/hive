@@ -8,88 +8,112 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: insert into t values ('false')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values ('false')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.s SCRIPT []
 PREHOOK: query: insert into t values ('FALSE')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values ('FALSE')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.s SCRIPT []
 PREHOOK: query: insert into t values ('FaLsE')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values ('FaLsE')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.s SCRIPT []
 PREHOOK: query: insert into t values ('true')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values ('true')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.s SCRIPT []
 PREHOOK: query: insert into t values ('TRUE')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values ('TRUE')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.s SCRIPT []
 PREHOOK: query: insert into t values ('TrUe')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values ('TrUe')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.s SCRIPT []
 PREHOOK: query: insert into t values ('')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values ('')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.s SCRIPT []
 PREHOOK: query: insert into t values ('Other')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values ('Other')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SIMPLE [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.s SCRIPT []
 PREHOOK: query: insert into t values ('Off')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values ('Off')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SIMPLE [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.s SCRIPT []
 PREHOOK: query: insert into t values ('No')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values ('No')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SIMPLE [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.s SCRIPT []
 PREHOOK: query: insert into t values ('0')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values ('0')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SIMPLE [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.s SCRIPT []
 PREHOOK: query: insert into t values ('1')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values ('1')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SIMPLE [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.s SCRIPT []
 PREHOOK: query: explain select s,cast(s as boolean) from t order by s
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select s,cast(s as boolean) from t order by s

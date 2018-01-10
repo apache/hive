@@ -16,18 +16,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_table_2a
 PREHOOK: query: insert into table orc_table_1a values(1),(1), (2),(3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@orc_table_1a
 POSTHOOK: query: insert into table orc_table_1a values(1),(1), (2),(3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@orc_table_1a
-POSTHOOK: Lineage: orc_table_1a.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table_1a.a SCRIPT []
 PREHOOK: query: insert into table orc_table_2a values(0),(2), (3),(null),(4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@orc_table_2a
 POSTHOOK: query: insert into table orc_table_2a values(0),(2), (3),(null),(4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@orc_table_2a
-POSTHOOK: Lineage: orc_table_2a.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table_2a.c SCRIPT []
 PREHOOK: query: explain vectorization detail
 select t1.a from orc_table_2a t2 join orc_table_1a t1 on t1.a = t2.c where t1.a > 2
 PREHOOK: type: QUERY
@@ -386,20 +390,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_table_2b
 PREHOOK: query: insert into table orc_table_1b values("one", 1),("one", 1), ("two", 2),("three", 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@orc_table_1b
 POSTHOOK: query: insert into table orc_table_1b values("one", 1),("one", 1), ("two", 2),("three", 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@orc_table_1b
-POSTHOOK: Lineage: orc_table_1b.a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: orc_table_1b.v1 SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table_1b.a SCRIPT []
+POSTHOOK: Lineage: orc_table_1b.v1 SCRIPT []
 PREHOOK: query: insert into table orc_table_2b values(0, "ZERO"),(2, "TWO"), (3, "THREE"),(null, "<NULL>"),(4, "FOUR")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@orc_table_2b
 POSTHOOK: query: insert into table orc_table_2b values(0, "ZERO"),(2, "TWO"), (3, "THREE"),(null, "<NULL>"),(4, "FOUR")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@orc_table_2b
-POSTHOOK: Lineage: orc_table_2b.c EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: orc_table_2b.v2 SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table_2b.c SCRIPT []
+POSTHOOK: Lineage: orc_table_2b.v2 SCRIPT []
 PREHOOK: query: explain vectorization detail
 select t1.v1, t1.a from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 PREHOOK: type: QUERY

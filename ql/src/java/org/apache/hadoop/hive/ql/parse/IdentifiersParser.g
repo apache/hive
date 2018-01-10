@@ -82,7 +82,7 @@ rollupOldSyntax
 @init { gParent.pushMsg("rollup old syntax", state); }
 @after { gParent.popMsg(state); }
     :
-    expr=expressionsNotInParenthesis[false]
+    expr=expressionsNotInParenthesis[false, false]
     ((rollup=KW_WITH KW_ROLLUP) | (cube=KW_WITH KW_CUBE)) ?
     (sets=KW_GROUPING KW_SETS
     LPAREN groupingSetExpression ( COMMA groupingSetExpression)*  RPAREN ) ?
@@ -133,14 +133,16 @@ havingCondition
     expression
     ;
 
-expressionsInParenthesis[boolean isStruct]
+expressionsInParenthesis[boolean isStruct, boolean forceStruct]
     :
-    LPAREN! expressionsNotInParenthesis[isStruct] RPAREN!
+    LPAREN! expressionsNotInParenthesis[isStruct, forceStruct] RPAREN!
     ;
 
-expressionsNotInParenthesis[boolean isStruct]
+expressionsNotInParenthesis[boolean isStruct, boolean forceStruct]
     :
     first=expression more=expressionPart[$expression.tree, isStruct]?
+    -> {forceStruct && more==null}?
+       ^(TOK_FUNCTION Identifier["struct"] {$first.tree})
     -> {more==null}?
        {$first.tree}
     -> {$more.tree}
@@ -155,9 +157,9 @@ expressionPart[CommonTree t, boolean isStruct]
 
 expressions
     :
-    (expressionsInParenthesis[false]) => expressionsInParenthesis[false]
+    (expressionsInParenthesis[false, false]) => expressionsInParenthesis[false, false]
     |
-    expressionsNotInParenthesis[false]
+    expressionsNotInParenthesis[false, false]
     ;
 
 columnRefOrderInParenthesis
@@ -431,7 +433,7 @@ atomExpression
         -> ^(TOK_SUBQUERY_EXPR TOK_SUBQUERY_OP subQueryExpression)
     | (function) => function
     | tableOrColumn
-    | expressionsInParenthesis[true]
+    | expressionsInParenthesis[true, false]
     ;
 
 precedenceFieldExpression
@@ -580,10 +582,10 @@ precedenceSimilarExpressionAtom[CommonTree t]
     KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression)
     -> ^(TOK_FUNCTION Identifier["between"] KW_FALSE {$t} $min $max)
     |
-    KW_LIKE KW_ANY (expr=expressionsInParenthesis[false])
+    KW_LIKE KW_ANY (expr=expressionsInParenthesis[false, false])
     -> ^(TOK_FUNCTION Identifier["likeany"] {$t} {$expr.tree})
     |
-    KW_LIKE KW_ALL (expr=expressionsInParenthesis[false])
+    KW_LIKE KW_ALL (expr=expressionsInParenthesis[false, false])
     -> ^(TOK_FUNCTION Identifier["likeall"] {$t} {$expr.tree})
     ;
 
@@ -591,7 +593,7 @@ precedenceSimilarExpressionIn[CommonTree t]
     :
     (subQueryExpression) => subQueryExpression -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_IN) subQueryExpression {$t})
     |
-    expr=expressionsInParenthesis[false]
+    expr=expressionsInParenthesis[false, false]
     -> ^(TOK_FUNCTION Identifier["in"] {$t} {$expr.tree})
     ;
 

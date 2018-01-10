@@ -14,19 +14,21 @@ PREHOOK: query: insert into table ivdp partition (ds) values
     (1, 109.23, 'and everywhere that mary went', 'today'),
     (6553, 923.19, 'the lamb was sure to go', 'tomorrow')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ivdp
 POSTHOOK: query: insert into table ivdp partition (ds) values 
     (1, 109.23, 'and everywhere that mary went', 'today'),
     (6553, 923.19, 'the lamb was sure to go', 'tomorrow')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ivdp@ds=today
 POSTHOOK: Output: default@ivdp@ds=tomorrow
-POSTHOOK: Lineage: ivdp PARTITION(ds=today).de EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: ivdp PARTITION(ds=today).i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: ivdp PARTITION(ds=today).vc EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: ivdp PARTITION(ds=tomorrow).de EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: ivdp PARTITION(ds=tomorrow).i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: ivdp PARTITION(ds=tomorrow).vc EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: ivdp PARTITION(ds=today).de SCRIPT []
+POSTHOOK: Lineage: ivdp PARTITION(ds=today).i SCRIPT []
+POSTHOOK: Lineage: ivdp PARTITION(ds=today).vc SCRIPT []
+POSTHOOK: Lineage: ivdp PARTITION(ds=tomorrow).de SCRIPT []
+POSTHOOK: Lineage: ivdp PARTITION(ds=tomorrow).i SCRIPT []
+POSTHOOK: Lineage: ivdp PARTITION(ds=tomorrow).vc SCRIPT []
 PREHOOK: query: select * from ivdp order by ds
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ivdp

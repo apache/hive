@@ -56,11 +56,13 @@ PREHOOK: query: insert into accumulo_index_test values( "row1", true, 55, 107, 5
                                  4.5, 0.8, 1232223, "2001-10-10", "123 main street",
                                  "555-555-5555", "2016-02-22 12:45:07.000000000")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@accumulo_index_test
 POSTHOOK: query: insert into accumulo_index_test values( "row1", true, 55, 107, 555555, 1223232332,
                                  4.5, 0.8, 1232223, "2001-10-10", "123 main street",
                                  "555-555-5555", "2016-02-22 12:45:07.000000000")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@accumulo_index_test
 PREHOOK: query: select * from accumulo_index_test where active = 'true'
 PREHOOK: type: QUERY
