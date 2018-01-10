@@ -1752,16 +1752,17 @@ class EncodedReaderImpl implements EncodedReader {
     }
 
     private boolean ensureRangeWithData() {
-      if (range != null && range.remaining() > 0) return true;
-      ++rangeIx;
-      if (rangeIx == ranges.size()) return false;
-      range = ranges.get(rangeIx).getByteBufferDup();
+      while (range == null || range.remaining() <= 0) {
+        ++rangeIx;
+        if (rangeIx == ranges.size()) return false;
+        range = ranges.get(rangeIx).getByteBufferDup();
+      }
       return true;
     }
 
     @Override
     public int read(byte[] data, int offset, int length) {
-      if (!ensureRangeWithData()) {
+     if (!ensureRangeWithData()) {
         return -1;
       }
       int actualLength = Math.min(length, range.remaining());
@@ -1814,6 +1815,7 @@ class EncodedReaderImpl implements EncodedReader {
       if (isTracingEnabled) {
         LOG.trace("Creating context: " + colCtxs[i].toString());
       }
+      trace.logColumnRead(i, colRgIx, ColumnEncoding.Kind.DIRECT); // Bogus encoding.
     }
     long offset = 0;
     for (OrcProto.Stream stream : streams) {
@@ -1824,7 +1826,8 @@ class EncodedReaderImpl implements EncodedReader {
       if ((StreamName.getArea(streamKind) == StreamName.Area.INDEX)
           && ((sargColumns != null && sargColumns[colIx])
               || (included[colIx] && streamKind == Kind.ROW_INDEX))) {
-          colCtxs[colIx].addStream(offset, stream, -1);
+        trace.logAddStream(colIx, streamKind, offset, length, -1, true);
+        colCtxs[colIx].addStream(offset, stream, -1);
         if (isTracingEnabled) {
           LOG.trace("Adding stream for column " + colIx + ": "
               + streamKind + " at " + offset + ", " + length);
