@@ -657,7 +657,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
   }
 
-  protected Void performDataRead() throws IOException {
+  protected Void performDataRead() throws IOException, InterruptedException {
     boolean isOk = false;
     try {
       try {
@@ -760,7 +760,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
   }
 
-  public Boolean readFileWithCache(long startTime) throws IOException {
+  public Boolean readFileWithCache(long startTime) throws IOException, InterruptedException {
     if (fileKey == null) return false;
     BooleanRef gotAllData = new BooleanRef();
     long endOfSplit = split.getStart() + split.getLength();
@@ -820,7 +820,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   }
 
   public boolean processOneFileSplit(FileSplit split, long startTime,
-      Ref<Integer> stripeIxRef, StripeData slice) throws IOException {
+      Ref<Integer> stripeIxRef, StripeData slice) throws IOException, InterruptedException {
     LlapIoImpl.LOG.info("Processing one split {" + split.getPath() + ", "
         + split.getStart() + ", " + split.getLength() + "}");
     if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
@@ -920,7 +920,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private boolean processOneSlice(CacheWriter.CacheStripeData diskData, boolean[] splitIncludes,
-      int stripeIx, StripeData cacheData, long startTime) throws IOException {
+      int stripeIx, StripeData cacheData, long startTime) throws IOException, InterruptedException {
     logProcessOneSlice(stripeIx, diskData, cacheData);
 
     ColumnEncoding[] cacheEncodings = cacheData == null ? null : cacheData.getEncodings();
@@ -1001,8 +1001,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
 
   /** Unlike the other overload of processOneSlice, doesn't cache data. */
-  private boolean processOneSlice(Vectors diskData, boolean[] splitIncludes,
-      int stripeIx, StripeData cacheData, long startTime) throws IOException {
+  private boolean processOneSlice(Vectors diskData, boolean[] splitIncludes, int stripeIx,
+      StripeData cacheData, long startTime) throws IOException, InterruptedException {
     if (diskData == null) {
       throw new AssertionError(); // The other overload should have been used.
     }
@@ -1601,7 +1601,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private boolean sendEcbToConsumer(OrcEncodedColumnBatch ecb,
-      boolean hasCachedSlice, CacheWriter.CacheStripeData diskData) {
+      boolean hasCachedSlice, CacheWriter.CacheStripeData diskData) throws InterruptedException {
     if (ecb == null) { // This basically means stop has been called.
       cleanup(true);
       return false;

@@ -74,11 +74,14 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
   final ExecutorService executor;
   private final String hostName;
 
+  private final Configuration daemonConf;
+
   @SuppressWarnings({ "rawtypes", "unchecked" })
   LlapInputFormat(InputFormat sourceInputFormat, Deserializer sourceSerDe,
-      ColumnVectorProducer cvp, ExecutorService executor) {
+      ColumnVectorProducer cvp, ExecutorService executor, Configuration daemonConf) {
     this.executor = executor;
     this.cvp = cvp;
+    this.daemonConf = daemonConf;
     this.sourceInputFormat = sourceInputFormat;
     this.sourceASC = (sourceInputFormat instanceof AvoidSplitCombination)
         ? (AvoidSplitCombination)sourceInputFormat : null;
@@ -100,7 +103,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       List<Integer> includedCols = ColumnProjectionUtils.isReadAllColumns(job)
           ? null : ColumnProjectionUtils.getReadColumnIDs(job);
       LlapRecordReader rr = LlapRecordReader.create(job, fileSplit, includedCols, hostName,
-          cvp, executor, sourceInputFormat, sourceSerDe, reporter);
+          cvp, executor, sourceInputFormat, sourceSerDe, reporter, daemonConf);
       if (rr == null) {
         // Reader-specific incompatibility like SMB or schema evolution.
         return sourceInputFormat.getRecordReader(split, job, reporter);

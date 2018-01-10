@@ -3185,6 +3185,13 @@ public class HiveConf extends Configuration {
         "MR LineRecordRedader into LLAP cache, if this feature is enabled. Safety flag."),
     LLAP_ORC_ENABLE_TIME_COUNTERS("hive.llap.io.orc.time.counters", true,
         "Whether to enable time counters for LLAP IO layer (time spent in HDFS, etc.)"),
+    LLAP_IO_VRB_QUEUE_LIMIT_BASE("hive.llap.io.vrb.queue.limit.base", 10000,
+        "The default queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
+        "slower than the IO. The actual queue size is set per fragment, and is adjusted down\n" +
+        "from the base, depending on the schema."),
+    LLAP_IO_VRB_QUEUE_LIMIT_MIN("hive.llap.io.vrb.queue.limit.min", 10,
+        "The minimum queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
+        "slower than the IO (used when determining the size from base size)."),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,
         "Whether or not to allow the planner to run vertices in the AM."),
     LLAP_AUTO_ENFORCE_TREE("hive.llap.auto.enforce.tree", true,
