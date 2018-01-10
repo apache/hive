@@ -434,7 +434,9 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<Integer> dataColumnNums;
 
     int partitionColumnCount;
-    boolean useVectorizedInputFileFormat;
+    //not to be confused with useVectorizedInputFileFormat at Vectorizer level
+    //which represents the value of configuration hive.vectorized.use.vectorized.input.format
+    private boolean useVectorizedInputFileFormat;
 
     boolean groupByVectorOutput;
     boolean allNative;
@@ -856,6 +858,20 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
 
+    private boolean shouldUseVectorizedInputFormat(Set<String> inputFileFormatClassNames) {
+      if (inputFileFormatClassNames == null || inputFileFormatClassNames.isEmpty()
+          || !useVectorizedInputFileFormat) {
+        return useVectorizedInputFileFormat;
+      }
+      //Global config of vectorized input format is enabled; check if these inputformats are excluded
+      for (String inputFormat : inputFileFormatClassNames) {
+        if(isInputFormatExcluded(inputFormat, vectorizedInputFormatExcludes)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
     private boolean isInputFormatExcluded(String inputFileFormatClassName, Collection<Class<?>> excludes) {
       Class<?> ifClass = null;
       try {
@@ -1029,7 +1045,8 @@ public class Vectorizer implements PhysicalPlanResolver {
       vectorTaskColumnInfo.setAllTypeInfos(allTypeInfoList);
       vectorTaskColumnInfo.setDataColumnNums(dataColumnNums);
       vectorTaskColumnInfo.setPartitionColumnCount(partitionColumnCount);
-      vectorTaskColumnInfo.setUseVectorizedInputFileFormat(useVectorizedInputFileFormat);
+      vectorTaskColumnInfo.setUseVectorizedInputFileFormat(
+          shouldUseVectorizedInputFormat(inputFileFormatClassNameSet));
 
       // Always set these so EXPLAIN can see.
       mapWork.setVectorizationInputFileFormatClassNameSet(inputFileFormatClassNameSet);
