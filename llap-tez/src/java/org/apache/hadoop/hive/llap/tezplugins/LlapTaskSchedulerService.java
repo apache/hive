@@ -970,17 +970,28 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         }
       }
       int runningCount = 0;
+      // We don't send messages to pending tasks with the flags; they should be killed elsewhere.
       for (Entry<Integer, TreeSet<TaskInfo>> entry : guaranteedTasks.entrySet()) {
-        if (entry.getValue() != null) {
-          runningCount += entry.getValue().size();
+        TreeSet<TaskInfo> set = speculativeTasks.get(entry.getKey());
+        if (set == null) {
+          set = new TreeSet<>();
+          speculativeTasks.put(entry.getKey(), set);
+        }
+        for (TaskInfo info : entry.getValue()) {
+          synchronized (info) {
+            info.isGuaranteed = false;
+          }
+          set.add(info);
         }
       }
+      guaranteedTasks.clear();
       for (Entry<Integer, TreeSet<TaskInfo>> entry : speculativeTasks.entrySet()) {
         if (entry.getValue() != null) {
           runningCount += entry.getValue().size();
         }
       }
 
+      totalGuaranteed = unusedGuaranteed = 0;
       LOG.info(
           "DAG reset. Current knownTaskCount={}, pendingTaskCount={}, runningTaskCount={}",
           knownTasks.size(), pendingCount, runningCount);
