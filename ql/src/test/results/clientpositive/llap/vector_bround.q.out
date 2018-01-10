@@ -17,6 +17,7 @@ values
 (2.51, 1.251),
 (3.51, 1.351)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_vector_bround
 POSTHOOK: query: insert into table test_vector_bround
 values
@@ -29,9 +30,10 @@ values
 (2.51, 1.251),
 (3.51, 1.351)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_vector_bround
-POSTHOOK: Lineage: test_vector_bround.v0 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test_vector_bround.v1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: test_vector_bround.v0 SCRIPT []
+POSTHOOK: Lineage: test_vector_bround.v1 SCRIPT []
 PREHOOK: query: explain vectorization detail
 select bround(v0), bround(v1, 1) from test_vector_bround
 PREHOOK: type: QUERY

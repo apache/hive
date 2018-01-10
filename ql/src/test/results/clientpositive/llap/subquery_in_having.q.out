@@ -1557,12 +1557,14 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@src_null
 PREHOOK: query: INSERT INTO src_null values('5444', null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@src_null
 POSTHOOK: query: INSERT INTO src_null values('5444', null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@src_null
-POSTHOOK: Lineage: src_null.key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: src_null.value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: src_null.key SCRIPT []
+POSTHOOK: Lineage: src_null.value EXPRESSION []
 Warning: Map Join MAPJOIN[123][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[124][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[126][bigTable=?] in task 'Map 1' is a cross product

@@ -8,11 +8,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sample_partitioned
 PREHOOK: query: insert into sample_partitioned partition(y=1) values (1),(2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@sample_partitioned@y=1
 POSTHOOK: query: insert into sample_partitioned partition(y=1) values (1),(2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@sample_partitioned@y=1
-POSTHOOK: Lineage: sample_partitioned PARTITION(y=1).x EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: sample_partitioned PARTITION(y=1).x SCRIPT []
 PREHOOK: query: create temporary table sample as select * from sample_partitioned
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@sample_partitioned

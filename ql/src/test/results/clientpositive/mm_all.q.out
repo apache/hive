@@ -2009,11 +2009,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet1_mm
 PREHOOK: query: INSERT INTO parquet1_mm VALUES(1), (2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@parquet1_mm
 POSTHOOK: query: INSERT INTO parquet1_mm VALUES(1), (2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@parquet1_mm
-POSTHOOK: Lineage: parquet1_mm.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: parquet1_mm.id SCRIPT []
 PREHOOK: query: CREATE TABLE parquet2_mm(id INT, value STRING) STORED AS PARQUET tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -2024,20 +2026,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet2_mm
 PREHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value1')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@parquet2_mm
 POSTHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value1')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@parquet2_mm
-POSTHOOK: Lineage: parquet2_mm.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: parquet2_mm.value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: parquet2_mm.id SCRIPT []
+POSTHOOK: Lineage: parquet2_mm.value SCRIPT []
 PREHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@parquet2_mm
 POSTHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@parquet2_mm
-POSTHOOK: Lineage: parquet2_mm.id EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: parquet2_mm.value SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: parquet2_mm.id SCRIPT []
+POSTHOOK: Lineage: parquet2_mm.value SCRIPT []
 PREHOOK: query: select parquet1_mm.id, t1.value, t2.value FROM parquet1_mm
   JOIN parquet2_mm t1 ON parquet1_mm.id=t1.id
   JOIN parquet2_mm t2 ON parquet1_mm.id=t2.id

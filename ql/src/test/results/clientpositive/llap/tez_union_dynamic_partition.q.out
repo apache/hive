@@ -8,11 +8,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dummy
 PREHOOK: query: insert into table dummy values (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@dummy
 POSTHOOK: query: insert into table dummy values (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@dummy
-POSTHOOK: Lineage: dummy.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: dummy.i SCRIPT []
 PREHOOK: query: select * from dummy
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dummy

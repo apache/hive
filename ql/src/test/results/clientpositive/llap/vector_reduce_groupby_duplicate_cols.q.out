@@ -8,13 +8,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@demo
 PREHOOK: query: insert into table demo values (1, 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@demo
 POSTHOOK: query: insert into table demo values (1, 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@demo
-POSTHOOK: Lineage: demo.one EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: demo.two EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-_col0	_col1
+POSTHOOK: Lineage: demo.one SCRIPT []
+POSTHOOK: Lineage: demo.two SCRIPT []
+col1	col2
 PREHOOK: query: explain vectorization detail
 select one as one_0, two, one as one_1
 from demo a

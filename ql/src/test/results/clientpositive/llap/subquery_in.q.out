@@ -5228,18 +5228,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: insert into t values(1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values(1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.i SCRIPT []
 PREHOOK: query: insert into t values(0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values(0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.i EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.i SCRIPT []
 PREHOOK: query: create table tempty(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -5373,11 +5377,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tnull
 PREHOOK: query: insert into tnull values(NULL) , (NULL)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tnull
 POSTHOOK: query: insert into tnull values(NULL) , (NULL)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tnull
-POSTHOOK: Lineage: tnull.i EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tnull.i EXPRESSION []
 PREHOOK: query: select * from part where p_size IN (select i from tempty)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -5434,12 +5440,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: insert into t values(0,1), (0,2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values(0,1), (0,2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.i EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.j EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: t.i SCRIPT []
+POSTHOOK: Lineage: t.j SCRIPT []
 PREHOOK: query: create table tt(i int, j int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -5450,12 +5458,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tt
 PREHOOK: query: insert into tt values(0,3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tt
 POSTHOOK: query: insert into tt values(0,3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tt
-POSTHOOK: Lineage: tt.i EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: tt.j EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: tt.i SCRIPT []
+POSTHOOK: Lineage: tt.j SCRIPT []
 PREHOOK: query: explain select * from t where i IN (select sum(i) from tt where tt.j = t.j)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t where i IN (select sum(i) from tt where tt.j = t.j)

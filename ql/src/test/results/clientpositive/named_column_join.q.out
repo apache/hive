@@ -8,12 +8,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: insert into t values (1,2),(2,1),(3,4),(4,3),(3,3),(null,null),(null,1),(2,null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (1,2),(2,1),(3,4),(4,3),(3,3),(null,null),(null,1),(2,null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: t.a SCRIPT []
+POSTHOOK: Lineage: t.b SCRIPT []
 PREHOOK: query: explain select * from t t1 join t t2 using (a)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t t1 join t t2 using (a)

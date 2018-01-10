@@ -46,25 +46,31 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucketoutput2
 PREHOOK: query: insert into table bucketinput values ("firstinsert1")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@bucketinput
 POSTHOOK: query: insert into table bucketinput values ("firstinsert1")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@bucketinput
-POSTHOOK: Lineage: bucketinput.data SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: bucketinput.data SCRIPT []
 PREHOOK: query: insert into table bucketinput values ("firstinsert2")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@bucketinput
 POSTHOOK: query: insert into table bucketinput values ("firstinsert2")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@bucketinput
-POSTHOOK: Lineage: bucketinput.data SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: bucketinput.data SCRIPT []
 PREHOOK: query: insert into table bucketinput values ("firstinsert3")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@bucketinput
 POSTHOOK: query: insert into table bucketinput values ("firstinsert3")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@bucketinput
-POSTHOOK: Lineage: bucketinput.data SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: bucketinput.data SCRIPT []
 PREHOOK: query: insert overwrite table bucketoutput1 select * from bucketinput where data like 'first%'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketinput

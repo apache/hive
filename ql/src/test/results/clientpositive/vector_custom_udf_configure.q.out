@@ -14,12 +14,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testorc1
 PREHOOK: query: insert into table testorc1 values(1, 'a1'), (2,'a2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@testorc1
 POSTHOOK: query: insert into table testorc1 values(1, 'a1'), (2,'a2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@testorc1
-POSTHOOK: Lineage: testorc1.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: testorc1.name SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: testorc1.id SCRIPT []
+POSTHOOK: Lineage: testorc1.name SCRIPT []
 PREHOOK: query: explain
 select id, UDFHelloTest(name) from testorc1
 PREHOOK: type: QUERY

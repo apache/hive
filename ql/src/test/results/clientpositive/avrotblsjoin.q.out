@@ -52,21 +52,25 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1_1
 PREHOOK: query: insert into table1 values ("1", "2", "3")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table1
 POSTHOOK: query: insert into table1 values ("1", "2", "3")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.col1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: table1.col2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table1.col3 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: table1.col1 SCRIPT []
+POSTHOOK: Lineage: table1.col2 SCRIPT []
+POSTHOOK: Lineage: table1.col3 SCRIPT []
 PREHOOK: query: insert into table1_1 values (1, "2")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table1_1
 POSTHOOK: query: insert into table1_1 values (1, "2")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table1_1
-POSTHOOK: Lineage: table1_1.col1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: table1_1.col2 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: table1_1.col1 SCRIPT []
+POSTHOOK: Lineage: table1_1.col2 SCRIPT []
 WARNING: Comparing a bigint and a string may result in a loss of precision.
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select table1.col1, table1_1.* from table1 join table1_1 on table1.col1=table1_1.col1 where table1_1.col1="1"

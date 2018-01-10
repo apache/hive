@@ -14,34 +14,38 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table1@key=101
 POSTHOOK: Output: default@table1@key=202
 POSTHOOK: Output: default@table1@key=303
 POSTHOOK: Output: default@table1@key=404
 POSTHOOK: Output: default@table1@key=505
-POSTHOOK: Lineage: table1 PARTITION(key=101).id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: table1 PARTITION(key=202).id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: table1 PARTITION(key=303).id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: table1 PARTITION(key=404).id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: table1 PARTITION(key=505).id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table1 PARTITION(key=101).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=202).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=303).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=404).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=505).id SCRIPT []
 PREHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table1@key=101
 POSTHOOK: Output: default@table1@key=202
 POSTHOOK: Output: default@table1@key=303
 POSTHOOK: Output: default@table1@key=404
 POSTHOOK: Output: default@table1@key=505
-POSTHOOK: Lineage: table1 PARTITION(key=101).id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: table1 PARTITION(key=202).id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: table1 PARTITION(key=303).id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: table1 PARTITION(key=404).id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: table1 PARTITION(key=505).id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table1 PARTITION(key=101).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=202).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=303).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=404).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=505).id SCRIPT []
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
@@ -84,59 +88,67 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: values__tmp__table__3
-            Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            alias: _dummy_table
+            Row Limit Per Split: 1
+            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions: UDFToInteger(tmp_values_col1) (type: int), tmp_values_col2 (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col1 (type: string), '_bucket_number' (type: string)
-                null sort order: aa
-                sort order: ++
-                Map-reduce partition columns: _col1 (type: string)
-                Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
-                tag: -1
-                value expressions: _col0 (type: int)
-                auto parallelism: false
+              expressions: array(const struct(1,'101'),const struct(2,'202'),const struct(3,'303'),const struct(4,'404'),const struct(5,'505')) (type: array<struct<col1:int,col2:string>>)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+              UDTF Operator
+                Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                function name: inline
+                Select Operator
+                  expressions: col1 (type: int), col2 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: string), '_bucket_number' (type: string)
+                    null sort order: aa
+                    sort order: ++
+                    Map-reduce partition columns: _col1 (type: string)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    tag: -1
+                    value expressions: _col0 (type: int)
+                    auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: Values__Tmp__Table__3
-            input format: org.apache.hadoop.mapred.TextInputFormat
+            base file name: dummy_path
+            input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
               bucket_count -1
               column.name.delimiter ,
-              columns tmp_values_col1,tmp_values_col2
+              columns 
               columns.comments 
-              columns.types string:string
+              columns.types 
 #### A masked pattern was here ####
-              name default.values__tmp__table__3
-              serialization.ddl struct values__tmp__table__3 { string tmp_values_col1, string tmp_values_col2}
+              name _dummy_database._dummy_table
+              serialization.ddl struct _dummy_table { }
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+            serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
-              input format: org.apache.hadoop.mapred.TextInputFormat
+              input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
                 column.name.delimiter ,
-                columns tmp_values_col1,tmp_values_col2
+                columns 
                 columns.comments 
-                columns.types string:string
+                columns.types 
 #### A masked pattern was here ####
-                name default.values__tmp__table__3
-                serialization.ddl struct values__tmp__table__3 { string tmp_values_col1, string tmp_values_col2}
+                name _dummy_database._dummy_table
+                serialization.ddl struct _dummy_table { }
                 serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.values__tmp__table__3
-            name: default.values__tmp__table__3
+                serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+              serde: org.apache.hadoop.hive.serde2.NullStructSerDe
+              name: _dummy_database._dummy_table
+            name: _dummy_database._dummy_table
       Truncated Path -> Alias:
 #### A masked pattern was here ####
       Needs Tagging: false
@@ -144,14 +156,14 @@ STAGE PLANS:
         Select Operator
           expressions: VALUE._col0 (type: int), KEY._col1 (type: string), KEY.'_bucket_number' (type: string)
           outputColumnNames: _col0, _col1, '_bucket_number'
-          Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
             GlobalTableId: 1
             directory: ### BLOBSTORE_STAGING_PATH ###
             Dp Sort State: PARTITION_BUCKET_SORTED
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: COMPLETE
             Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -235,28 +247,34 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('John Doe', 23), ('Jane Doe', 22)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table1@country=USA/state=CA
 POSTHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('John Doe', 23), ('Jane Doe', 22)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table1@country=USA/state=CA
-POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).age EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).name SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).age SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).name SCRIPT []
 PREHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('Mark Cage', 38), ('Mirna Cage', 37)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table1@country=USA/state=CA
 POSTHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('Mark Cage', 38), ('Mirna Cage', 37)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table1@country=USA/state=CA
-POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).age EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).name SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).age SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).name SCRIPT []
 PREHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='TX') values ('Bill Rose', 52), ('Maria Full', 50)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table1@country=USA/state=TX
 POSTHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='TX') values ('Bill Rose', 52), ('Maria Full', 50)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table1@country=USA/state=TX
-POSTHOOK: Lineage: table1 PARTITION(country=USA,state=TX).age EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table1 PARTITION(country=USA,state=TX).name SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=TX).age SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=TX).name SCRIPT []
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: ### test.blobstore.path ###/table2
@@ -286,12 +304,14 @@ POSTHOOK: Lineage: table2 PARTITION(country=USA,state=TX).age SIMPLE [(table1)ta
 POSTHOOK: Lineage: table2 PARTITION(country=USA,state=TX).name SIMPLE [(table1)table1.FieldSchema(name:name, type:string, comment:null), ]
 PREHOOK: query: INSERT INTO TABLE table2 PARTITION (country='MEX', state) VALUES ('Peter Mo', 87, 'SON')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table2@country=MEX
 POSTHOOK: query: INSERT INTO TABLE table2 PARTITION (country='MEX', state) VALUES ('Peter Mo', 87, 'SON')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table2@country=MEX/state=SON
-POSTHOOK: Lineage: table2 PARTITION(country=MEX,state=SON).age EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table2 PARTITION(country=MEX,state=SON).name SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: table2 PARTITION(country=MEX,state=SON).age SCRIPT []
+POSTHOOK: Lineage: table2 PARTITION(country=MEX,state=SON).name SCRIPT []
 PREHOOK: query: SHOW PARTITIONS table2
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@table2

@@ -10,7 +10,4 @@ INSERT INTO encrypted_table values(1,'foo'),(2,'bar');
 
 select * from encrypted_table;
 
--- this checks that we've actually created temp table data under encrypted_table folder 
-describe formatted values__tmp__table__1;
-
 CRYPTO DELETE_KEY --keyName key_128;

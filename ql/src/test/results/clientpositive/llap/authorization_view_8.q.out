@@ -18,6 +18,7 @@ PREHOOK: query: insert into my_passwd values
                       ("Gopal", 5),
                       ("Sergey", 6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@my_passwd
 POSTHOOK: query: insert into my_passwd values
                       ("Deepak", 1),
@@ -27,9 +28,10 @@ POSTHOOK: query: insert into my_passwd values
                       ("Gopal", 5),
                       ("Sergey", 6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@my_passwd
-POSTHOOK: Lineage: my_passwd.uid EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: my_passwd.username SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: my_passwd.uid SCRIPT []
+POSTHOOK: Lineage: my_passwd.username SCRIPT []
 PREHOOK: query: create view my_passwd_vw as select * from my_passwd limit 3
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@my_passwd

@@ -16,19 +16,23 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_2
 PREHOOK: query: INSERT INTO test_1 VALUES (3,1),(2,2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_1
 POSTHOOK: query: INSERT INTO test_1 VALUES (3,1),(2,2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_1
-POSTHOOK: Lineage: test_1.attr EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: test_1.member EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test_1.attr SCRIPT []
+POSTHOOK: Lineage: test_1.member SCRIPT []
 PREHOOK: query: INSERT INTO test_2 VALUES (1),(2),(3),(4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_2
 POSTHOOK: query: INSERT INTO test_2 VALUES (1),(2),(3),(4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_2
-POSTHOOK: Lineage: test_2.member EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test_2.member SCRIPT []
 PREHOOK: query: EXPLAIN
 SELECT m.member, (CASE WHEN COALESCE(n.attr, 5)>1 THEN n.attr END) AS attr 
 FROM test_2 m LEFT JOIN test_1 n ON m.member = n.member

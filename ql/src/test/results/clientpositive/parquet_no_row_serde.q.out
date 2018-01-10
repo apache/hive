@@ -28,18 +28,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_parquet
 PREHOOK: query: insert into table tbl_rc values(101)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tbl_rc
 POSTHOOK: query: insert into table tbl_rc values(101)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_rc
-POSTHOOK: Lineage: tbl_rc.val EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tbl_rc.val SCRIPT []
 PREHOOK: query: insert into table tbl_parquet values(101)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tbl_parquet
 POSTHOOK: query: insert into table tbl_parquet values(101)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_parquet
-POSTHOOK: Lineage: tbl_parquet.val EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tbl_parquet.val SCRIPT []
 PREHOOK: query: explain vectorization expression
 select val, round(val, -1) from tbl_rc order by val
 PREHOOK: type: QUERY

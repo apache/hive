@@ -35,26 +35,28 @@ PREHOOK: query: insert into table acid_ivnp values
     (null, null, null, null, null, null, null, null, null, null, null, null, null),
     (3, 25, 6553, null, 0.14, 1923.141592654, 1.2301, '2014-08-24 17:21:30.0', '2014-08-26', false, 'its fleece was white as snow', 'a pocket full of posies', 'blue' )
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_ivnp
 POSTHOOK: query: insert into table acid_ivnp values 
     (1, 257, 65537, 4294967297, 3.14, 3.141592654, 109.23, '2014-08-25 17:21:30.0', '2014-08-25', true, 'mary had a little lamb', 'ring around the rosie', 'red'),
     (null, null, null, null, null, null, null, null, null, null, null, null, null),
     (3, 25, 6553, null, 0.14, 1923.141592654, 1.2301, '2014-08-24 17:21:30.0', '2014-08-26', false, 'its fleece was white as snow', 'a pocket full of posies', 'blue' )
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_ivnp
-POSTHOOK: Lineage: acid_ivnp.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivnp.bi EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivnp.ch EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivnp.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivnp.de EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivnp.dt EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivnp.f EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivnp.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivnp.s SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivnp.si EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivnp.t EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivnp.ti EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivnp.vc EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivnp.b SCRIPT []
+POSTHOOK: Lineage: acid_ivnp.bi SCRIPT []
+POSTHOOK: Lineage: acid_ivnp.ch SCRIPT []
+POSTHOOK: Lineage: acid_ivnp.d SCRIPT []
+POSTHOOK: Lineage: acid_ivnp.de SCRIPT []
+POSTHOOK: Lineage: acid_ivnp.dt SCRIPT []
+POSTHOOK: Lineage: acid_ivnp.f SCRIPT []
+POSTHOOK: Lineage: acid_ivnp.i SCRIPT []
+POSTHOOK: Lineage: acid_ivnp.s SCRIPT []
+POSTHOOK: Lineage: acid_ivnp.si SCRIPT []
+POSTHOOK: Lineage: acid_ivnp.t SCRIPT []
+POSTHOOK: Lineage: acid_ivnp.ti SCRIPT []
+POSTHOOK: Lineage: acid_ivnp.vc SCRIPT []
 PREHOOK: query: select * from acid_ivnp order by ti
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_ivnp

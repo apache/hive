@@ -8,11 +8,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@studenttab10k
 PREHOOK: query: insert into studenttab10k values(1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@studenttab10k
 POSTHOOK: query: insert into studenttab10k values(1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@studenttab10k
-POSTHOOK: Lineage: studenttab10k.age2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: studenttab10k.age2 SCRIPT []
 PREHOOK: query: create table student_acid (age int, grade int)
  clustered by (age) into 1 buckets
 PREHOOK: type: CREATETABLE
@@ -64,19 +66,23 @@ POSTHOOK: Input: default@student_acid
 1	NULL
 PREHOOK: query: insert into student_acid(grade, age) values(20, 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@student_acid
 POSTHOOK: query: insert into student_acid(grade, age) values(20, 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@student_acid
-POSTHOOK: Lineage: student_acid.age EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: student_acid.grade EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: student_acid.age SCRIPT []
+POSTHOOK: Lineage: student_acid.grade SCRIPT []
 PREHOOK: query: insert into student_acid(age) values(22)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@student_acid
 POSTHOOK: query: insert into student_acid(age) values(22)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@student_acid
-POSTHOOK: Lineage: student_acid.age EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: student_acid.age SCRIPT []
 POSTHOOK: Lineage: student_acid.grade SIMPLE []
 PREHOOK: query: select * from student_acid
 PREHOOK: type: QUERY
@@ -108,11 +114,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_partitioned
 PREHOOK: query: insert into acid_partitioned partition (p) (a,p) values(1,2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_partitioned
 POSTHOOK: query: insert into acid_partitioned partition (p) (a,p) values(1,2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_partitioned@p=2
-POSTHOOK: Lineage: acid_partitioned PARTITION(p=2).a EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid_partitioned PARTITION(p=2).a SCRIPT []
 POSTHOOK: Lineage: acid_partitioned PARTITION(p=2).c SIMPLE []
 PREHOOK: query: select * from acid_partitioned
 PREHOOK: type: QUERY

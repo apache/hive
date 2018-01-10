@@ -33,39 +33,30 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: values__tmp__table__1
-                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  TableScan Vectorization:
-                      native: true
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: tmp_values_col1 (type: string), tmp_values_col2 (type: string)
-                    outputColumnNames: _col0, _col1
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [0, 1]
-                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      sort order: 
-                      Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                      Reduce Sink Vectorization:
-                          className: VectorReduceSinkObjectHashOperator
-                          native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col0 (type: string), _col1 (type: string)
-            Execution mode: vectorized, llap
+                    expressions: array(const struct(1,'one'),const struct(1,'one'),const struct(2,'two'),const struct(3,'three')) (type: array<struct<col1:int,col2:string>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: int), col2 (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          sort order: 
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: string)
+            Execution mode: llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
-                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
+                enabled: false
+#### A masked pattern was here ####
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -76,20 +67,19 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
-                expressions: UDFToInteger(VALUE._col0) (type: int), VALUE._col1 (type: string)
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string)
                 outputColumnNames: _col0, _col1
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [2, 1]
-                    selectExpressions: CastStringToLong(col 0:string) -> 2:int
-                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -123,12 +113,14 @@ POSTHOOK: Input: default@non_orc_table
 #### A masked pattern was here ####
 PREHOOK: query: insert into table non_orc_table values(1, 'one'),(1, 'one'), (2, 'two'),(3, 'three')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@non_orc_table
 POSTHOOK: query: insert into table non_orc_table values(1, 'one'),(1, 'one'), (2, 'two'),(3, 'three')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@non_orc_table
-POSTHOOK: Lineage: non_orc_table.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: non_orc_table.b SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: non_orc_table.a SCRIPT []
+POSTHOOK: Lineage: non_orc_table.b SCRIPT []
 PREHOOK: query: select a, b from non_orc_table order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@non_orc_table

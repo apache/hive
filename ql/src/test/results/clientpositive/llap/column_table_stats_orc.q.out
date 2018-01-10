@@ -12,12 +12,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s
 PREHOOK: query: insert into table s values ('1','2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@s
 POSTHOOK: query: insert into table s values ('1','2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@s
-POSTHOOK: Lineage: s.key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: s.value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: s.key SCRIPT []
+POSTHOOK: Lineage: s.value SCRIPT []
 PREHOOK: query: desc formatted s
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@s
@@ -247,20 +249,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@spart
 PREHOOK: query: insert into table spart PARTITION (ds="2008-04-08", hr="12") values ('1','2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@spart@ds=2008-04-08/hr=12
 POSTHOOK: query: insert into table spart PARTITION (ds="2008-04-08", hr="12") values ('1','2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@spart@ds=2008-04-08/hr=12
-POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=12).key SCRIPT []
+POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=12).value SCRIPT []
 PREHOOK: query: insert into table spart PARTITION (ds="2008-04-08", hr="11") values ('1','2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@spart@ds=2008-04-08/hr=11
 POSTHOOK: query: insert into table spart PARTITION (ds="2008-04-08", hr="11") values ('1','2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@spart@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=11).key SCRIPT []
+POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=11).value SCRIPT []
 PREHOOK: query: desc formatted spart
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@spart
@@ -641,20 +647,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@spart
 PREHOOK: query: insert into table spart PARTITION (ds="2008-04-08", hr="12") values ('1','2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@spart@ds=2008-04-08/hr=12
 POSTHOOK: query: insert into table spart PARTITION (ds="2008-04-08", hr="12") values ('1','2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@spart@ds=2008-04-08/hr=12
-POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=12).key SCRIPT []
+POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=12).value SCRIPT []
 PREHOOK: query: insert into table spart PARTITION (ds="2008-04-08", hr="11") values ('1','2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@spart@ds=2008-04-08/hr=11
 POSTHOOK: query: insert into table spart PARTITION (ds="2008-04-08", hr="11") values ('1','2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@spart@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=11).key SCRIPT []
+POSTHOOK: Lineage: spart PARTITION(ds=2008-04-08,hr=11).value SCRIPT []
 PREHOOK: query: desc formatted spart
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@spart

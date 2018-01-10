@@ -28,98 +28,106 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: values__tmp__table__1
-            Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
+            alias: _dummy_table
+            Row Limit Per Split: 1
+            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions: UDFToInteger(tmp_values_col1) (type: int), tmp_values_col2 (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
+              expressions: array(const struct(1,'original')) (type: array<struct<col1:int,col2:string>>)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+              UDTF Operator
+                Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                function name: inline
+                Select Operator
+                  expressions: col1 (type: int), col2 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
 #### A masked pattern was here ####
-                NumFilesPerFileSink: 1
-                Static Partition Specification: part=1/
-                Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
+                    NumFilesPerFileSink: 1
+                    Static Partition Specification: part=1/
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucket_count -1
-                      column.name.delimiter ,
-                      columns a,b
-                      columns.comments 
-                      columns.types int:string
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        properties:
+                          bucket_count -1
+                          column.name.delimiter ,
+                          columns a,b
+                          columns.comments 
+                          columns.types int:string
 #### A masked pattern was here ####
-                      name default.partitioned1
-                      partition_columns.types int
-                      serialization.ddl struct partitioned1 { i32 a, string b}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name default.partitioned1
+                          partition_columns.types int
+                          serialization.ddl struct partitioned1 { i32 a, string b}
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.partitioned1
-                TotalFiles: 1
-                GatherStats: true
-                MultiFileSpray: false
-              Select Operator
-                expressions: _col0 (type: int), _col1 (type: string), UDFToInteger('1') (type: int)
-                outputColumnNames: a, b, part
-                Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll')
-                  keys: part (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    null sort order: a
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                    tag: -1
-                    value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
-                    auto parallelism: false
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.partitioned1
+                    TotalFiles: 1
+                    GatherStats: true
+                    MultiFileSpray: false
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: string), UDFToInteger('1') (type: int)
+                    outputColumnNames: a, b, part
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll')
+                      keys: part (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 868 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 868 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+                        auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: Values__Tmp__Table__1
-            input format: org.apache.hadoop.mapred.TextInputFormat
+            base file name: dummy_path
+            input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
               bucket_count -1
               column.name.delimiter ,
-              columns tmp_values_col1,tmp_values_col2
+              columns 
               columns.comments 
-              columns.types string:string
+              columns.types 
 #### A masked pattern was here ####
-              name default.values__tmp__table__1
-              serialization.ddl struct values__tmp__table__1 { string tmp_values_col1, string tmp_values_col2}
+              name _dummy_database._dummy_table
+              serialization.ddl struct _dummy_table { }
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+            serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
-              input format: org.apache.hadoop.mapred.TextInputFormat
+              input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
                 column.name.delimiter ,
-                columns tmp_values_col1,tmp_values_col2
+                columns 
                 columns.comments 
-                columns.types string:string
+                columns.types 
 #### A masked pattern was here ####
-                name default.values__tmp__table__1
-                serialization.ddl struct values__tmp__table__1 { string tmp_values_col1, string tmp_values_col2}
+                name _dummy_database._dummy_table
+                serialization.ddl struct _dummy_table { }
                 serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.values__tmp__table__1
-            name: default.values__tmp__table__1
+                serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+              serde: org.apache.hadoop.hive.serde2.NullStructSerDe
+              name: _dummy_database._dummy_table
+            name: _dummy_database._dummy_table
       Truncated Path -> Alias:
 #### A masked pattern was here ####
       Needs Tagging: false
@@ -129,17 +137,17 @@ STAGE PLANS:
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 884 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 884 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 884 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -362,13 +370,15 @@ STAGE PLANS:
 
 PREHOOK: query: insert into table partitioned1 partition(part=1) values(1, 'original')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned1@part=1
 POSTHOOK: query: insert into table partitioned1 partition(part=1) values(1, 'original')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned1@part=1
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-_col0	_col1
+POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a SCRIPT []
+POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SCRIPT []
+col1	col2
 PREHOOK: query: desc formatted partitioned1 partition(part=1)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partitioned1
@@ -429,98 +439,106 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: values__tmp__table__3
-            Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+            alias: _dummy_table
+            Row Limit Per Split: 1
+            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Select Operator
-              expressions: UDFToInteger(tmp_values_col1) (type: int), tmp_values_col2 (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
+              expressions: array(const struct(2,'original'),const struct(3,'original'),const struct(4,'original')) (type: array<struct<col1:int,col2:string>>)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+              UDTF Operator
+                Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                function name: inline
+                Select Operator
+                  expressions: col1 (type: int), col2 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
 #### A masked pattern was here ####
-                NumFilesPerFileSink: 1
-                Static Partition Specification: part=1/
-                Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+                    NumFilesPerFileSink: 1
+                    Static Partition Specification: part=1/
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      bucket_count -1
-                      column.name.delimiter ,
-                      columns a,b
-                      columns.comments 
-                      columns.types int:string
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        properties:
+                          bucket_count -1
+                          column.name.delimiter ,
+                          columns a,b
+                          columns.comments 
+                          columns.types int:string
 #### A masked pattern was here ####
-                      name default.partitioned1
-                      partition_columns.types int
-                      serialization.ddl struct partitioned1 { i32 a, string b}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name default.partitioned1
+                          partition_columns.types int
+                          serialization.ddl struct partitioned1 { i32 a, string b}
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.partitioned1
-                TotalFiles: 1
-                GatherStats: true
-                MultiFileSpray: false
-              Select Operator
-                expressions: _col0 (type: int), _col1 (type: string), UDFToInteger('1') (type: int)
-                outputColumnNames: a, b, part
-                Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll')
-                  keys: part (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    null sort order: a
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
-                    tag: -1
-                    value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
-                    auto parallelism: false
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.partitioned1
+                    TotalFiles: 1
+                    GatherStats: true
+                    MultiFileSpray: false
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: string), UDFToInteger('1') (type: int)
+                    outputColumnNames: a, b, part
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll')
+                      keys: part (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 868 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 868 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+                        auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: Values__Tmp__Table__3
-            input format: org.apache.hadoop.mapred.TextInputFormat
+            base file name: dummy_path
+            input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
               bucket_count -1
               column.name.delimiter ,
-              columns tmp_values_col1,tmp_values_col2
+              columns 
               columns.comments 
-              columns.types string:string
+              columns.types 
 #### A masked pattern was here ####
-              name default.values__tmp__table__3
-              serialization.ddl struct values__tmp__table__3 { string tmp_values_col1, string tmp_values_col2}
+              name _dummy_database._dummy_table
+              serialization.ddl struct _dummy_table { }
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+            serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
-              input format: org.apache.hadoop.mapred.TextInputFormat
+              input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
                 column.name.delimiter ,
-                columns tmp_values_col1,tmp_values_col2
+                columns 
                 columns.comments 
-                columns.types string:string
+                columns.types 
 #### A masked pattern was here ####
-                name default.values__tmp__table__3
-                serialization.ddl struct values__tmp__table__3 { string tmp_values_col1, string tmp_values_col2}
+                name _dummy_database._dummy_table
+                serialization.ddl struct _dummy_table { }
                 serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.values__tmp__table__3
-            name: default.values__tmp__table__3
+                serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+              serde: org.apache.hadoop.hive.serde2.NullStructSerDe
+              name: _dummy_database._dummy_table
+            name: _dummy_database._dummy_table
       Truncated Path -> Alias:
 #### A masked pattern was here ####
       Needs Tagging: false
@@ -530,17 +548,17 @@ STAGE PLANS:
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 884 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 884 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Statistics: Num rows: 1 Data size: 330 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 884 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -763,13 +781,15 @@ STAGE PLANS:
 
 PREHOOK: query: insert into table partitioned1 partition(part=1) values(2, 'original'), (3, 'original'),(4, 'original')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned1@part=1
 POSTHOOK: query: insert into table partitioned1 partition(part=1) values(2, 'original'), (3, 'original'),(4, 'original')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned1@part=1
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-_col0	_col1
+POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a SCRIPT []
+POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SCRIPT []
+col1	col2
 PREHOOK: query: explain insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
@@ -790,50 +810,58 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: values__tmp__table__5
-            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+            alias: _dummy_table
+            Row Limit Per Split: 1
+            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: UDFToInteger(tmp_values_col1) (type: int), tmp_values_col2 (type: string)
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.partitioned1
-              Select Operator
-                expressions: _col0 (type: int), _col1 (type: string), UDFToInteger('1') (type: int)
-                outputColumnNames: a, b, part
-                Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll')
-                  keys: part (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+              expressions: array(const struct(1,'original'),const struct(2,'original'),const struct(3,'original'),const struct(4,'original')) (type: array<struct<col1:int,col2:string>>)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+              UDTF Operator
+                Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+                function name: inline
+                Select Operator
+                  expressions: col1 (type: int), col2 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.partitioned1
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: string), UDFToInteger('1') (type: int)
+                    outputColumnNames: a, b, part
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll')
+                      keys: part (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 868 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 868 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
           keys: KEY._col0 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 884 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 884 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 884 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

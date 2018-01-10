@@ -51,12 +51,14 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: insert into p partition (c=1) values (1,2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@p@c=1
 POSTHOOK: query: insert into p partition (c=1) values (1,2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@p@c=1
-POSTHOOK: Lineage: p PARTITION(c=1).a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: p PARTITION(c=1).b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: p PARTITION(c=1).a SCRIPT []
+POSTHOOK: Lineage: p PARTITION(c=1).b SCRIPT []
 PREHOOK: query: desc formatted p partition (c=1) a
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@p
@@ -180,20 +182,24 @@ STAGE PLANS:
 
 PREHOOK: query: insert into p partition (c) values (2,3,4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@p
 POSTHOOK: query: insert into p partition (c) values (2,3,4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@p@c=4
-POSTHOOK: Lineage: p PARTITION(c=4).a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: p PARTITION(c=4).b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: p PARTITION(c=4).a SCRIPT []
+POSTHOOK: Lineage: p PARTITION(c=4).b SCRIPT []
 PREHOOK: query: insert into p partition (c) values (4,5,6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@p
 POSTHOOK: query: insert into p partition (c) values (4,5,6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@p@c=6
-POSTHOOK: Lineage: p PARTITION(c=6).a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: p PARTITION(c=6).b EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: p PARTITION(c=6).a SCRIPT []
+POSTHOOK: Lineage: p PARTITION(c=6).b SCRIPT []
 PREHOOK: query: desc formatted p partition(c=4)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@p
@@ -472,12 +478,14 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: insert into p partition (c=100) values (1,2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@p@c=100
 POSTHOOK: query: insert into p partition (c=100) values (1,2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@p@c=100
-POSTHOOK: Lineage: p PARTITION(c=100).a EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: p PARTITION(c=100).b EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: p PARTITION(c=100).a SCRIPT []
+POSTHOOK: Lineage: p PARTITION(c=100).b SCRIPT []
 PREHOOK: query: analyze table p partition(c=100) compute statistics for columns a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@p

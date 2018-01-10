@@ -161,125 +161,159 @@ POSTHOOK: Output: default@partitioned_table5
 POSTHOOK: Output: default@partitioned_table5@part_col1=3/part_col2=3
 PREHOOK: query: INSERT INTO TABLE regular_table1 VALUES (0, 0), (1, 1), (2, 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@regular_table1
 POSTHOOK: query: INSERT INTO TABLE regular_table1 VALUES (0, 0), (1, 1), (2, 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@regular_table1
-POSTHOOK: Lineage: regular_table1.col1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: regular_table1.col2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: regular_table1.col1 SCRIPT []
+POSTHOOK: Lineage: regular_table1.col2 SCRIPT []
 PREHOOK: query: INSERT INTO TABLE regular_table2 VALUES (0, 0), (1, 1), (2, 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@regular_table2
 POSTHOOK: query: INSERT INTO TABLE regular_table2 VALUES (0, 0), (1, 1), (2, 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@regular_table2
-POSTHOOK: Lineage: regular_table2.col1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: regular_table2.col2 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: regular_table2.col1 SCRIPT []
+POSTHOOK: Lineage: regular_table2.col2 SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table1 PARTITION (part_col = 1) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table1@part_col=1
 POSTHOOK: query: INSERT INTO TABLE partitioned_table1 PARTITION (part_col = 1) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table1@part_col=1
-POSTHOOK: Lineage: partitioned_table1 PARTITION(part_col=1).col EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table1 PARTITION(part_col=1).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table1 PARTITION (part_col = 2) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table1@part_col=2
 POSTHOOK: query: INSERT INTO TABLE partitioned_table1 PARTITION (part_col = 2) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table1@part_col=2
-POSTHOOK: Lineage: partitioned_table1 PARTITION(part_col=2).col EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table1 PARTITION(part_col=2).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table1 PARTITION (part_col = 3) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table1@part_col=3
 POSTHOOK: query: INSERT INTO TABLE partitioned_table1 PARTITION (part_col = 3) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table1@part_col=3
-POSTHOOK: Lineage: partitioned_table1 PARTITION(part_col=3).col EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table1 PARTITION(part_col=3).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table2 PARTITION (part_col = 1) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table2@part_col=1
 POSTHOOK: query: INSERT INTO TABLE partitioned_table2 PARTITION (part_col = 1) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table2@part_col=1
-POSTHOOK: Lineage: partitioned_table2 PARTITION(part_col=1).col EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table2 PARTITION(part_col=1).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table2 PARTITION (part_col = 2) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table2@part_col=2
 POSTHOOK: query: INSERT INTO TABLE partitioned_table2 PARTITION (part_col = 2) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table2@part_col=2
-POSTHOOK: Lineage: partitioned_table2 PARTITION(part_col=2).col EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table2 PARTITION(part_col=2).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table2 PARTITION (part_col = 3) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table2@part_col=3
 POSTHOOK: query: INSERT INTO TABLE partitioned_table2 PARTITION (part_col = 3) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table2@part_col=3
-POSTHOOK: Lineage: partitioned_table2 PARTITION(part_col=3).col EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table2 PARTITION(part_col=3).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table3 PARTITION (part_col = 1) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table3@part_col=1
 POSTHOOK: query: INSERT INTO TABLE partitioned_table3 PARTITION (part_col = 1) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table3@part_col=1
-POSTHOOK: Lineage: partitioned_table3 PARTITION(part_col=1).col EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table3 PARTITION(part_col=1).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table3 PARTITION (part_col = 2) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table3@part_col=2
 POSTHOOK: query: INSERT INTO TABLE partitioned_table3 PARTITION (part_col = 2) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table3@part_col=2
-POSTHOOK: Lineage: partitioned_table3 PARTITION(part_col=2).col EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table3 PARTITION(part_col=2).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table3 PARTITION (part_col = 3) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table3@part_col=3
 POSTHOOK: query: INSERT INTO TABLE partitioned_table3 PARTITION (part_col = 3) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table3@part_col=3
-POSTHOOK: Lineage: partitioned_table3 PARTITION(part_col=3).col EXPRESSION [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table3 PARTITION(part_col=3).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table4 PARTITION (part_col1 = 1, part_col2 = 1) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table4@part_col1=1/part_col2=1
 POSTHOOK: query: INSERT INTO TABLE partitioned_table4 PARTITION (part_col1 = 1, part_col2 = 1) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table4@part_col1=1/part_col2=1
-POSTHOOK: Lineage: partitioned_table4 PARTITION(part_col1=1,part_col2=1).col EXPRESSION [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table4 PARTITION(part_col1=1,part_col2=1).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table4 PARTITION (part_col1 = 2, part_col2 = 2) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table4@part_col1=2/part_col2=2
 POSTHOOK: query: INSERT INTO TABLE partitioned_table4 PARTITION (part_col1 = 2, part_col2 = 2) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table4@part_col1=2/part_col2=2
-POSTHOOK: Lineage: partitioned_table4 PARTITION(part_col1=2,part_col2=2).col EXPRESSION [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table4 PARTITION(part_col1=2,part_col2=2).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table4 PARTITION (part_col1 = 3, part_col2 = 3) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table4@part_col1=3/part_col2=3
 POSTHOOK: query: INSERT INTO TABLE partitioned_table4 PARTITION (part_col1 = 3, part_col2 = 3) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table4@part_col1=3/part_col2=3
-POSTHOOK: Lineage: partitioned_table4 PARTITION(part_col1=3,part_col2=3).col EXPRESSION [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table4 PARTITION(part_col1=3,part_col2=3).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table5 PARTITION (part_col1 = 1, part_col2 = 1) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table5@part_col1=1/part_col2=1
 POSTHOOK: query: INSERT INTO TABLE partitioned_table5 PARTITION (part_col1 = 1, part_col2 = 1) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table5@part_col1=1/part_col2=1
-POSTHOOK: Lineage: partitioned_table5 PARTITION(part_col1=1,part_col2=1).col EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table5 PARTITION(part_col1=1,part_col2=1).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table5 PARTITION (part_col1 = 2, part_col2 = 2) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table5@part_col1=2/part_col2=2
 POSTHOOK: query: INSERT INTO TABLE partitioned_table5 PARTITION (part_col1 = 2, part_col2 = 2) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table5@part_col1=2/part_col2=2
-POSTHOOK: Lineage: partitioned_table5 PARTITION(part_col1=2,part_col2=2).col EXPRESSION [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table5 PARTITION(part_col1=2,part_col2=2).col SCRIPT []
 PREHOOK: query: INSERT INTO TABLE partitioned_table5 PARTITION (part_col1 = 3, part_col2 = 3) VALUES (1), (2), (3), (4), (5), (6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partitioned_table5@part_col1=3/part_col2=3
 POSTHOOK: query: INSERT INTO TABLE partitioned_table5 PARTITION (part_col1 = 3, part_col2 = 3) VALUES (1), (2), (3), (4), (5), (6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned_table5@part_col1=3/part_col2=3
-POSTHOOK: Lineage: partitioned_table5 PARTITION(part_col1=3,part_col2=3).col EXPRESSION [(values__tmp__table__17)values__tmp__table__17.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_table5 PARTITION(part_col1=3,part_col2=3).col SCRIPT []
 PREHOOK: query: -- ensure the partitioned tables are treated as big tables
 
 

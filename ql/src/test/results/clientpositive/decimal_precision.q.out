@@ -641,11 +641,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DECIMAL_PRECISION
 PREHOOK: query: INSERT INTO DECIMAL_PRECISION VALUES(98765432109876543210.12345), (98765432109876543210.12345)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@decimal_precision
 POSTHOOK: query: INSERT INTO DECIMAL_PRECISION VALUES(98765432109876543210.12345), (98765432109876543210.12345)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@decimal_precision
-POSTHOOK: Lineage: decimal_precision.dec EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: decimal_precision.dec SCRIPT []
 PREHOOK: query: SELECT SUM(`dec`) FROM DECIMAL_PRECISION
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_precision

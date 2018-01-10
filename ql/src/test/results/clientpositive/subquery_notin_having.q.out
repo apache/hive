@@ -792,12 +792,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: INSERT INTO t1 VALUES (null,null), (1,''), (2,'abcde'), (100,'abcdefghij')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t1
 POSTHOOK: query: INSERT INTO t1 VALUES (null,null), (1,''), (2,'abcde'), (100,'abcdefghij')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.c1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t1.c2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: t1.c1 SCRIPT []
+POSTHOOK: Lineage: t1.c2 SCRIPT []
 PREHOOK: query: CREATE TABLE t2 (c1 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -808,11 +810,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
 PREHOOK: query: INSERT INTO t2 VALUES (null), (2), (100)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t2
 POSTHOOK: query: INSERT INTO t2 VALUES (null), (2), (100)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.c1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t2.c1 SCRIPT []
 Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain SELECT c1 FROM t1 group by c1 having c1 NOT IN (SELECT c1 FROM t2)
 PREHOOK: type: QUERY

@@ -24,20 +24,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acidjoin3
 PREHOOK: query: insert into table acidjoin1 values ('aaa', 35), ('bbb', 32), ('ccc', 32), ('ddd', 35), ('eee', 32)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acidjoin1
 POSTHOOK: query: insert into table acidjoin1 values ('aaa', 35), ('bbb', 32), ('ccc', 32), ('ddd', 35), ('eee', 32)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acidjoin1
-POSTHOOK: Lineage: acidjoin1.age EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: acidjoin1.name EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acidjoin1.age SCRIPT []
+POSTHOOK: Lineage: acidjoin1.name SCRIPT []
 PREHOOK: query: insert into table acidjoin2 values ('aaa', 3.00), ('bbb', 3.01), ('ccc', 3.02), ('ddd', 3.03), ('eee', 3.04)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acidjoin2
 POSTHOOK: query: insert into table acidjoin2 values ('aaa', 3.00), ('bbb', 3.01), ('ccc', 3.02), ('ddd', 3.03), ('eee', 3.04)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acidjoin2
-POSTHOOK: Lineage: acidjoin2.gpa EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: acidjoin2.name EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acidjoin2.gpa SCRIPT []
+POSTHOOK: Lineage: acidjoin2.name SCRIPT []
 PREHOOK: query: insert into table acidjoin3 select a.name, age, gpa from acidjoin1 a join acidjoin2 b on (a.name = b.name)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidjoin1

@@ -8,13 +8,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@count_distinct_test
 PREHOOK: query: insert into count_distinct_test values (1,1,2),(1,2,3),(1,3,2),(1,4,2),(1,5,3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@count_distinct_test
 POSTHOOK: query: insert into count_distinct_test values (1,1,2),(1,2,3),(1,3,2),(1,4,2),(1,5,3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@count_distinct_test
-POSTHOOK: Lineage: count_distinct_test.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: count_distinct_test.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: count_distinct_test.name EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: count_distinct_test.id SCRIPT []
+POSTHOOK: Lineage: count_distinct_test.key SCRIPT []
+POSTHOOK: Lineage: count_distinct_test.name SCRIPT []
 PREHOOK: query: explain select id,count(distinct key),count(distinct name)
 from count_distinct_test
 group by id

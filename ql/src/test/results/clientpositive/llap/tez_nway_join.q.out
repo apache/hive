@@ -16,18 +16,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bar
 PREHOOK: query: insert into foo values(1),(2),(3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@foo
 POSTHOOK: query: insert into foo values(1),(2),(3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@foo
-POSTHOOK: Lineage: foo.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: foo.key SCRIPT []
 PREHOOK: query: insert into bar values(2),(4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@bar
 POSTHOOK: query: insert into bar values(2),(4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@bar
-POSTHOOK: Lineage: bar.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: bar.key SCRIPT []
 PREHOOK: query: explain select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)

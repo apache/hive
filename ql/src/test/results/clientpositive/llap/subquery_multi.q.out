@@ -8,12 +8,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tnull
 PREHOOK: query: insert into tnull values(NULL, NULL), (NULL, NULL)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tnull
 POSTHOOK: query: insert into tnull values(NULL, NULL), (NULL, NULL)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tnull
-POSTHOOK: Lineage: tnull.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: tnull.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tnull.c EXPRESSION []
+POSTHOOK: Lineage: tnull.i EXPRESSION []
 PREHOOK: query: create table tempty(c char(2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -62,19 +64,21 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part_null
 PREHOOK: query: insert into part_null values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_null
 POSTHOOK: query: insert into part_null values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_null
-POSTHOOK: Lineage: part_null.p_brand SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_comment SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_container SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_mfgr SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_name SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_partkey EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_retailprice EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_size EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: part_null.p_type SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: part_null.p_brand SCRIPT []
+POSTHOOK: Lineage: part_null.p_comment SCRIPT []
+POSTHOOK: Lineage: part_null.p_container SCRIPT []
+POSTHOOK: Lineage: part_null.p_mfgr SCRIPT []
+POSTHOOK: Lineage: part_null.p_name EXPRESSION []
+POSTHOOK: Lineage: part_null.p_partkey SCRIPT []
+POSTHOOK: Lineage: part_null.p_retailprice SCRIPT []
+POSTHOOK: Lineage: part_null.p_size SCRIPT []
+POSTHOOK: Lineage: part_null.p_type SCRIPT []
 PREHOOK: query: explain select * from part_null where p_size IN (select p_size from part_null) AND p_brand IN (select p_brand from part_null)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part_null where p_size IN (select p_size from part_null) AND p_brand IN (select p_brand from part_null)
@@ -3758,12 +3762,14 @@ POSTHOOK: Input: default@part
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
 PREHOOK: query: insert into tnull values(1, 'c')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tnull
 POSTHOOK: query: insert into tnull values(1, 'c')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tnull
-POSTHOOK: Lineage: tnull.c EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: tnull.i EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: tnull.c SCRIPT []
+POSTHOOK: Lineage: tnull.i SCRIPT []
 Warning: Shuffle Join MERGEJOIN[25][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part where p_partkey = 3 OR p_size NOT IN (select i from tnull)
 PREHOOK: type: QUERY

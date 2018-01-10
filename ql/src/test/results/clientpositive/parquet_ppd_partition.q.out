@@ -15,12 +15,14 @@ POSTHOOK: Output: default@part1
 POSTHOOK: Output: default@part1@p=p1
 PREHOOK: query: INSERT INTO TABLE part1 PARTITION (p='p1') VALUES (1, 'a'), (2, 'b')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part1@p=p1
 POSTHOOK: query: INSERT INTO TABLE part1 PARTITION (p='p1') VALUES (1, 'a'), (2, 'b')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part1@p=p1
-POSTHOOK: Lineage: part1 PARTITION(p=p1).content SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: part1 PARTITION(p=p1).id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part1 PARTITION(p=p1).content SCRIPT []
+POSTHOOK: Lineage: part1 PARTITION(p=p1).id SCRIPT []
 PREHOOK: query: SELECT * FROM part1 WHERE p='p1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1

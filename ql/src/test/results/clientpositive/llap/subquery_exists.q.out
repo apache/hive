@@ -942,18 +942,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: insert into t values(1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values(1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.i SCRIPT []
 PREHOOK: query: insert into t values(0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values(0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.i EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.i SCRIPT []
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from t where exists (select count(*) from src where 1=2)
 PREHOOK: type: QUERY
@@ -1083,14 +1087,16 @@ PREHOOK: query: insert into tx1	values  (1, 1),
                          (1, 2),
                          (1, 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tx1
 POSTHOOK: query: insert into tx1	values  (1, 1),
                          (1, 2),
                          (1, 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tx1
-POSTHOOK: Lineage: tx1.a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: tx1.b EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: tx1.a SCRIPT []
+POSTHOOK: Lineage: tx1.b SCRIPT []
 PREHOOK: query: select count(*) as result,3 as expected from tx1 u
     where exists (select * from tx1 v where u.a=v.a and u.b <> v.b)
 PREHOOK: type: QUERY
@@ -1233,12 +1239,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: insert into t1 values(4,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t1
 POSTHOOK: query: insert into t1 values(4,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.i EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t1.j EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: t1.i SCRIPT []
+POSTHOOK: Lineage: t1.j SCRIPT []
 PREHOOK: query: create table t2(i int, j int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1249,12 +1257,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
 PREHOOK: query: insert into t2 values(4,2),(4,3),(4,5)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t2
 POSTHOOK: query: insert into t2 values(4,2),(4,3),(4,5)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.i EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t2.j EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: t2.i SCRIPT []
+POSTHOOK: Lineage: t2.j SCRIPT []
 PREHOOK: query: explain select * from t1 where t1.i in (select t2.i from t2 where t2.j <> t1.j)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 where t1.i in (select t2.i from t2 where t2.j <> t1.j)

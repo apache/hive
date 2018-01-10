@@ -13,14 +13,16 @@ POSTHOOK: Output: default@test
 PREHOOK: query: insert into table test values (1, 1, 'val111'), (1, 2, 'val121'), (1, 3, 'val131'), (2, 1, 'val211'), (2, 2, 'val221'), (2, 2, 'val222'), (2, 3, 'val231'), (2, 4, 'val241'),
 (3, 1, 'val311'), (3, 2, 'val321'), (3, 2, 'val322'), (3, 3, 'val331'), (3, 3, 'val332'), (3, 3, 'val333'), (4, 1, 'val411')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
 POSTHOOK: query: insert into table test values (1, 1, 'val111'), (1, 2, 'val121'), (1, 3, 'val131'), (2, 1, 'val211'), (2, 2, 'val221'), (2, 2, 'val222'), (2, 3, 'val231'), (2, 4, 'val241'),
 (3, 1, 'val311'), (3, 2, 'val321'), (3, 2, 'val322'), (3, 3, 'val331'), (3, 3, 'val332'), (3, 3, 'val333'), (4, 1, 'val411')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
-POSTHOOK: Lineage: test.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test.value1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: test.value2 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: test.key SCRIPT []
+POSTHOOK: Lineage: test.value1 SCRIPT []
+POSTHOOK: Lineage: test.value2 SCRIPT []
 PREHOOK: query: EXPLAIN SELECT T1.KEY AS MYKEY FROM TEST T1 GROUP BY T1.KEY ORDER BY T1.KEY LIMIT 3
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT T1.KEY AS MYKEY FROM TEST T1 GROUP BY T1.KEY ORDER BY T1.KEY LIMIT 3

@@ -53,12 +53,14 @@ POSTHOOK: Input: default@acid_part@ds=2008-04-08
 1000
 PREHOOK: query: insert into table acid_part partition(ds='2008-04-08') values("foo", "bar")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_part@ds=2008-04-08
 POSTHOOK: query: insert into table acid_part partition(ds='2008-04-08') values("foo", "bar")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_part@ds=2008-04-08
-POSTHOOK: Lineage: acid_part PARTITION(ds=2008-04-08).key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid_part PARTITION(ds=2008-04-08).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid_part PARTITION(ds=2008-04-08).key SCRIPT []
+POSTHOOK: Lineage: acid_part PARTITION(ds=2008-04-08).value SCRIPT []
 PREHOOK: query: select count(*) from acid_part where ds='2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_part
@@ -337,12 +339,14 @@ POSTHOOK: Input: default@acid_part_sdpo@ds=2008-04-08
 1000
 PREHOOK: query: insert into table acid_part_sdpo partition(ds='2008-04-08') values("foo", "bar")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_part_sdpo@ds=2008-04-08
 POSTHOOK: query: insert into table acid_part_sdpo partition(ds='2008-04-08') values("foo", "bar")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_part_sdpo@ds=2008-04-08
-POSTHOOK: Lineage: acid_part_sdpo PARTITION(ds=2008-04-08).key SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid_part_sdpo PARTITION(ds=2008-04-08).value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid_part_sdpo PARTITION(ds=2008-04-08).key SCRIPT []
+POSTHOOK: Lineage: acid_part_sdpo PARTITION(ds=2008-04-08).value SCRIPT []
 PREHOOK: query: select count(*) from acid_part_sdpo where ds='2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_part_sdpo
@@ -630,12 +634,14 @@ POSTHOOK: Input: default@acid_2l_part@ds=2008-04-08/hr=11
 500
 PREHOOK: query: insert into table acid_2L_part partition(ds='2008-04-08',hr=11) values("foo", "bar")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_2l_part@ds=2008-04-08/hr=11
 POSTHOOK: query: insert into table acid_2L_part partition(ds='2008-04-08',hr=11) values("foo", "bar")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_2l_part@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: acid_2l_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid_2l_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid_2l_part PARTITION(ds=2008-04-08,hr=11).key SCRIPT []
+POSTHOOK: Lineage: acid_2l_part PARTITION(ds=2008-04-08,hr=11).value SCRIPT []
 PREHOOK: query: select count(*) from acid_2L_part where ds='2008-04-08' and hr=11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_2l_part
@@ -1048,12 +1054,14 @@ POSTHOOK: Input: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
 500
 PREHOOK: query: insert into table acid_2L_part_sdpo partition(ds='2008-04-08',hr=11) values("foo", "bar")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
 POSTHOOK: query: insert into table acid_2L_part_sdpo partition(ds='2008-04-08',hr=11) values("foo", "bar")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_2l_part_sdpo@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: acid_2l_part_sdpo PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid_2l_part_sdpo PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid_2l_part_sdpo PARTITION(ds=2008-04-08,hr=11).key SCRIPT []
+POSTHOOK: Lineage: acid_2l_part_sdpo PARTITION(ds=2008-04-08,hr=11).value SCRIPT []
 PREHOOK: query: select count(*) from acid_2L_part_sdpo where ds='2008-04-08' and hr=11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_2l_part_sdpo
@@ -1466,12 +1474,14 @@ POSTHOOK: Input: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=11
 500
 PREHOOK: query: insert into table acid_2L_part_sdpo_no_cp partition(ds='2008-04-08',hr=11) values("foo", "bar")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=11
 POSTHOOK: query: insert into table acid_2L_part_sdpo_no_cp partition(ds='2008-04-08',hr=11) values("foo", "bar")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_2l_part_sdpo_no_cp@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: acid_2l_part_sdpo_no_cp PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid_2l_part_sdpo_no_cp PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid_2l_part_sdpo_no_cp PARTITION(ds=2008-04-08,hr=11).key SCRIPT []
+POSTHOOK: Lineage: acid_2l_part_sdpo_no_cp PARTITION(ds=2008-04-08,hr=11).value SCRIPT []
 PREHOOK: query: select count(*) from acid_2L_part_sdpo_no_cp where ds='2008-04-08' and hr=11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_2l_part_sdpo_no_cp

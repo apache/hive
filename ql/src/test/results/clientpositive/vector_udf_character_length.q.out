@@ -194,11 +194,13 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@dest1
 PREHOOK: query: INSERT INTO dest1 VALUES(NULL)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@dest1
 POSTHOOK: query: INSERT INTO dest1 VALUES(NULL)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.name SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: dest1.name EXPRESSION []
 PREHOOK: query: CREATE TABLE dest2 STORED AS ORC AS SELECT * FROM dest1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@dest1
@@ -252,8 +254,8 @@ POSTHOOK: query: SELECT character_length(dest2.name) FROM dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
-2
 NULL
+2
 PREHOOK: query: EXPLAIN SELECT char_length(dest2.name) FROM dest2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT char_length(dest2.name) FROM dest2
@@ -296,8 +298,8 @@ POSTHOOK: query: SELECT char_length(dest2.name) FROM dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
-2
 NULL
+2
 PREHOOK: query: DROP TABLE dest1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1

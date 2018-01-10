@@ -8,12 +8,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tx1
 PREHOOK: query: insert into tx1	values (1, 105), (2, 203), (3, 300), (4, 400), (null, 400), (null, null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tx1
 POSTHOOK: query: insert into tx1	values (1, 105), (2, 203), (3, 300), (4, 400), (null, 400), (null, null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tx1
-POSTHOOK: Lineage: tx1.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: tx1.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: tx1.a SCRIPT []
+POSTHOOK: Lineage: tx1.b SCRIPT []
 PREHOOK: query: create table tx2 (a int, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -24,12 +26,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tx2
 PREHOOK: query: insert into tx2 values (1, 105), (1, 1900), (2, 1995), (2, 1996), (4, 400), (4, null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tx2
 POSTHOOK: query: insert into tx2 values (1, 105), (1, 1900), (2, 1995), (2, 1996), (4, 400), (4, null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tx2
-POSTHOOK: Lineage: tx2.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: tx2.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: tx2.a SCRIPT []
+POSTHOOK: Lineage: tx2.b SCRIPT []
 PREHOOK: query: explain
 select * from tx1 u left semi join tx2 v on u.a=v.a
 PREHOOK: type: QUERY

@@ -8,13 +8,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@l_test1
 PREHOOK: query: insert into l_test1 values (1, "table_1", "2016-08-11")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@l_test1
 POSTHOOK: query: insert into l_test1 values (1, "table_1", "2016-08-11")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@l_test1
-POSTHOOK: Lineage: l_test1.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: l_test1.trans_date SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: l_test1.val SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: l_test1.id SCRIPT []
+POSTHOOK: Lineage: l_test1.trans_date SCRIPT []
+POSTHOOK: Lineage: l_test1.val SCRIPT []
 PREHOOK: query: create table l_test2 (id bigint,val string,trans_date string) row format delimited fields terminated by ' '
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -25,13 +27,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@l_test2
 PREHOOK: query: insert into l_test2 values (2, "table_2", "2016-08-11")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@l_test2
 POSTHOOK: query: insert into l_test2 values (2, "table_2", "2016-08-11")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@l_test2
-POSTHOOK: Lineage: l_test2.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: l_test2.trans_date SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: l_test2.val SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: l_test2.id SCRIPT []
+POSTHOOK: Lineage: l_test2.trans_date SCRIPT []
+POSTHOOK: Lineage: l_test2.val SCRIPT []
 PREHOOK: query: explain
 select 
     id,

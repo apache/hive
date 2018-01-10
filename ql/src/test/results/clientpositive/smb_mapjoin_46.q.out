@@ -9,14 +9,16 @@ POSTHOOK: Output: default@aux1
 PREHOOK: query: INSERT INTO aux1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
     (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@aux1
 POSTHOOK: query: INSERT INTO aux1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
     (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@aux1
-POSTHOOK: Lineage: aux1.col_1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: aux1.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: aux1.value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: aux1.col_1 SCRIPT []
+POSTHOOK: Lineage: aux1.key SCRIPT []
+POSTHOOK: Lineage: aux1.value SCRIPT []
 PREHOOK: query: CREATE TABLE test1 (key INT, value INT, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -49,14 +51,16 @@ POSTHOOK: Output: default@aux2
 PREHOOK: query: INSERT INTO aux2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
     (104, 3, 'Fli'), (105, NULL, 'None')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@aux2
 POSTHOOK: query: INSERT INTO aux2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
     (104, 3, 'Fli'), (105, NULL, 'None')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@aux2
-POSTHOOK: Lineage: aux2.col_2 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: aux2.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: aux2.value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: aux2.col_2 SCRIPT []
+POSTHOOK: Lineage: aux2.key SCRIPT []
+POSTHOOK: Lineage: aux2.value SCRIPT []
 PREHOOK: query: CREATE TABLE test2 (key INT, value INT, col_2 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

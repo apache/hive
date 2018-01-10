@@ -16,13 +16,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smalltable_windowing
 PREHOOK: query: insert into smalltable_windowing values(3, 'a'), (1, 'a'), (2, 'a')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@smalltable_windowing
 POSTHOOK: query: insert into smalltable_windowing values(3, 'a'), (1, 'a'), (2, 'a')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@smalltable_windowing
-POSTHOOK: Lineage: smalltable_windowing.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: smalltable_windowing.type SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-_col0	_col1
+POSTHOOK: Lineage: smalltable_windowing.i SCRIPT []
+POSTHOOK: Lineage: smalltable_windowing.type SCRIPT []
+col1	col2
 PREHOOK: query: explain vectorization detail
 select type, i,
 max(i) over (partition by type order by i rows between 1 preceding and 7 following),

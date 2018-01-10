@@ -16,11 +16,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: insert into t values (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.a SCRIPT []
 PREHOOK: query: create table p1 (a int) partitioned by (p int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -31,18 +33,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@p1
 PREHOOK: query: insert into p1 partition (p=1) values (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@p1@p=1
 POSTHOOK: query: insert into p1 partition (p=1) values (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@p1@p=1
-POSTHOOK: Lineage: p1 PARTITION(p=1).a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: p1 PARTITION(p=1).a SCRIPT []
 PREHOOK: query: insert into p1 partition (p=2) values (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@p1@p=2
 POSTHOOK: query: insert into p1 partition (p=2) values (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@p1@p=2
-POSTHOOK: Lineage: p1 PARTITION(p=2).a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: p1 PARTITION(p=2).a SCRIPT []
 PREHOOK: query: truncate table p1
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@p1@p=1
@@ -53,11 +59,13 @@ POSTHOOK: Output: default@p1@p=1
 POSTHOOK: Output: default@p1@p=2
 PREHOOK: query: insert into p1 partition (p=1) values (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@p1@p=1
 POSTHOOK: query: insert into p1 partition (p=1) values (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@p1@p=1
-POSTHOOK: Lineage: p1 PARTITION(p=1).a EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: p1 PARTITION(p=1).a SCRIPT []
 PREHOOK: query: explain
 select * from p1 join t on (t.a=p1.a)
 PREHOOK: type: QUERY

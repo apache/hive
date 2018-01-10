@@ -24,36 +24,44 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@innerjoinsrc2
 PREHOOK: query: INSERT INTO TABLE innerjoinsrc1 (a1) VALUES ('1')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@innerjoinsrc1
 POSTHOOK: query: INSERT INTO TABLE innerjoinsrc1 (a1) VALUES ('1')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@innerjoinsrc1
-POSTHOOK: Lineage: innerjoinsrc1.a1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: innerjoinsrc1.a1 SCRIPT []
 POSTHOOK: Lineage: innerjoinsrc1.a2 SIMPLE []
 PREHOOK: query: INSERT INTO TABLE innerjoinsrc1 VALUES ('2', '2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@innerjoinsrc1
 POSTHOOK: query: INSERT INTO TABLE innerjoinsrc1 VALUES ('2', '2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@innerjoinsrc1
-POSTHOOK: Lineage: innerjoinsrc1.a1 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: innerjoinsrc1.a2 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: innerjoinsrc1.a1 SCRIPT []
+POSTHOOK: Lineage: innerjoinsrc1.a2 SCRIPT []
 PREHOOK: query: INSERT INTO TABLE innerjoinsrc2 (b1) VALUES ('1')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@innerjoinsrc2
 POSTHOOK: query: INSERT INTO TABLE innerjoinsrc2 (b1) VALUES ('1')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@innerjoinsrc2
-POSTHOOK: Lineage: innerjoinsrc2.b1 SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: innerjoinsrc2.b1 SCRIPT []
 POSTHOOK: Lineage: innerjoinsrc2.b2 SIMPLE []
 PREHOOK: query: INSERT INTO TABLE innerjoinsrc2 VALUES ('2', '2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@innerjoinsrc2
 POSTHOOK: query: INSERT INTO TABLE innerjoinsrc2 VALUES ('2', '2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@innerjoinsrc2
-POSTHOOK: Lineage: innerjoinsrc2.b1 SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: innerjoinsrc2.b2 SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: innerjoinsrc2.b1 SCRIPT []
+POSTHOOK: Lineage: innerjoinsrc2.b2 SCRIPT []
 PREHOOK: query: EXPLAIN SELECT * FROM innerjoinsrc1 c1, innerjoinsrc2 c2 WHERE COALESCE(a1,a2)=COALESCE(b1,b2)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT * FROM innerjoinsrc1 c1, innerjoinsrc2 c2 WHERE COALESCE(a1,a2)=COALESCE(b1,b2)

@@ -12,12 +12,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_1
 PREHOOK: query: insert into table test_1 values (123, NULL), (NULL, NULL), (NULL, 123), (123, 123)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_1
 POSTHOOK: query: insert into table test_1 values (123, NULL), (NULL, NULL), (NULL, 123), (123, 123)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_1
-POSTHOOK: Lineage: test_1.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test_1.id2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: test_1.id SCRIPT []
+POSTHOOK: Lineage: test_1.id2 SCRIPT []
 PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1

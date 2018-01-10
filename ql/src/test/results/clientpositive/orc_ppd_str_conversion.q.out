@@ -16,12 +16,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@text_test
 PREHOOK: query: insert into orc_test values ('val1', '1')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@orc_test
 POSTHOOK: query: insert into orc_test values ('val1', '1')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@orc_test
-POSTHOOK: Lineage: orc_test.col1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: orc_test.col2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: orc_test.col1 SCRIPT []
+POSTHOOK: Lineage: orc_test.col2 SCRIPT []
 PREHOOK: query: insert overwrite table text_test select * from orc_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_test

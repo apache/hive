@@ -231,28 +231,32 @@ PREHOOK: query: insert into table acid_uami values
     (1, 109.23, 'mary had a little lamb'),
     (6553, 923.19, 'its fleece was white as snow')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_uami
 POSTHOOK: query: insert into table acid_uami values 
     (1, 109.23, 'mary had a little lamb'),
     (6553, 923.19, 'its fleece was white as snow')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_uami
-POSTHOOK: Lineage: acid_uami.de EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: acid_uami.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid_uami.vc EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: acid_uami.de SCRIPT []
+POSTHOOK: Lineage: acid_uami.i SCRIPT []
+POSTHOOK: Lineage: acid_uami.vc SCRIPT []
 PREHOOK: query: insert into table acid_uami values 
     (10, 119.23, 'and everywhere that mary went'),
     (65530, 823.19, 'the lamb was sure to go')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_uami
 POSTHOOK: query: insert into table acid_uami values 
     (10, 119.23, 'and everywhere that mary went'),
     (65530, 823.19, 'the lamb was sure to go')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_uami
-POSTHOOK: Lineage: acid_uami.de EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: acid_uami.i EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid_uami.vc EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: acid_uami.de SCRIPT []
+POSTHOOK: Lineage: acid_uami.i SCRIPT []
+POSTHOOK: Lineage: acid_uami.vc SCRIPT []
 PREHOOK: query: select * from acid_uami order by de
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uami

@@ -12,12 +12,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@calendar
 PREHOOK: query: insert into calendar values (2010, 10), (2011, 11), (2012, 12)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@calendar
 POSTHOOK: query: insert into calendar values (2010, 10), (2011, 11), (2012, 12)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@calendar
-POSTHOOK: Lineage: calendar.month EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: calendar.year EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: calendar.month SCRIPT []
+POSTHOOK: Lineage: calendar.year SCRIPT []
 PREHOOK: query: desc formatted calendar
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@calendar
