@@ -18,7 +18,7 @@ SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key;
 
 SELECT * FROM outputTbl1;
 
-LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1 PARTITION (ds='2');
+LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1  PARTITION (ds='2');
 
 -- The plan should not be converted to a map-side group since no partition is being accessed
 EXPLAIN EXTENDED
