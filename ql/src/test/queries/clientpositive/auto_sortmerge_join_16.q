@@ -44,8 +44,8 @@ PARTITIONED BY (pri bigint)
 clustered by (key) sorted by (key) into 12 buckets
 stored as RCFile;
 
-load data local inpath '../../data/files/auto_sortmerge_join/small/000000_0' overwrite into table stage_bucket_small partition (file_tag='1');
-load data local inpath '../../data/files/auto_sortmerge_join/small/000000_0' overwrite into table stage_bucket_small partition (file_tag='2');
+load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' overwrite into table stage_bucket_small partition (file_tag='1');
+load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' overwrite into table stage_bucket_small partition (file_tag='2');
 
 insert overwrite table bucket_small partition(pri) 
 select 
