@@ -101,7 +101,7 @@ public class OrcEncodedDataConsumer
 
   @Override
   protected void decodeBatch(OrcEncodedColumnBatch batch,
-      Consumer<ColumnVectorBatch> downstreamConsumer) {
+      Consumer<ColumnVectorBatch> downstreamConsumer) throws InterruptedException {
     long startTime = counters.startTimeCounter();
     int currentStripeIndex = batch.getBatchKey().stripeIx;
 
