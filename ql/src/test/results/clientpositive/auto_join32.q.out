@@ -219,35 +219,35 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@studenttab10k_smb
 POSTHOOK: Input: default@votertab10k_smb
 #### A masked pattern was here ####
-PREHOOK: query: load data local inpath '../../data/files/empty1.txt' into table studenttab10k_smb
+PREHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table studenttab10k_smb
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@studenttab10k_smb
-POSTHOOK: query: load data local inpath '../../data/files/empty1.txt' into table studenttab10k_smb
+POSTHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table studenttab10k_smb
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@studenttab10k_smb
-PREHOOK: query: load data local inpath '../../data/files/empty2.txt' into table studenttab10k_smb
+PREHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table studenttab10k_smb
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@studenttab10k_smb
-POSTHOOK: query: load data local inpath '../../data/files/empty2.txt' into table studenttab10k_smb
+POSTHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table studenttab10k_smb
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@studenttab10k_smb
-PREHOOK: query: load data local inpath '../../data/files/empty1.txt' into table votertab10k_smb
+PREHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table votertab10k_smb
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@votertab10k_smb
-POSTHOOK: query: load data local inpath '../../data/files/empty1.txt' into table votertab10k_smb
+POSTHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table votertab10k_smb
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@votertab10k_smb
-PREHOOK: query: load data local inpath '../../data/files/empty2.txt' into table votertab10k_smb
+PREHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table votertab10k_smb
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@votertab10k_smb
-POSTHOOK: query: load data local inpath '../../data/files/empty2.txt' into table votertab10k_smb
+POSTHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table votertab10k_smb
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@votertab10k_smb
@@ -346,37 +346,37 @@ POSTHOOK: query: create table votertab10k_part (name string, age int, registrati
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@votertab10k_part
-PREHOOK: query: load data local inpath '../../data/files/empty1.txt' into table studenttab10k_part partition (p='foo')
+PREHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table studenttab10k_part partition (p='foo')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@studenttab10k_part
-POSTHOOK: query: load data local inpath '../../data/files/empty1.txt' into table studenttab10k_part partition (p='foo')
+POSTHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table studenttab10k_part partition (p='foo')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@studenttab10k_part
 POSTHOOK: Output: default@studenttab10k_part@p=foo
-PREHOOK: query: load data local inpath '../../data/files/empty2.txt' into table studenttab10k_part partition (p='foo')
+PREHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table studenttab10k_part partition (p='foo')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@studenttab10k_part@p=foo
-POSTHOOK: query: load data local inpath '../../data/files/empty2.txt' into table studenttab10k_part partition (p='foo')
+POSTHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table studenttab10k_part partition (p='foo')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@studenttab10k_part@p=foo
-PREHOOK: query: load data local inpath '../../data/files/empty1.txt' into table votertab10k_part partition (p='foo')
+PREHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table votertab10k_part partition (p='foo')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@votertab10k_part
-POSTHOOK: query: load data local inpath '../../data/files/empty1.txt' into table votertab10k_part partition (p='foo')
+POSTHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table votertab10k_part partition (p='foo')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@votertab10k_part
 POSTHOOK: Output: default@votertab10k_part@p=foo
-PREHOOK: query: load data local inpath '../../data/files/empty2.txt' into table votertab10k_part partition (p='foo')
+PREHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table votertab10k_part partition (p='foo')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@votertab10k_part@p=foo
-POSTHOOK: query: load data local inpath '../../data/files/empty2.txt' into table votertab10k_part partition (p='foo')
+POSTHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table votertab10k_part partition (p='foo')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@votertab10k_part@p=foo
