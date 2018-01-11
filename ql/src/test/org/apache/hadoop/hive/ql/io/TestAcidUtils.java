@@ -105,9 +105,14 @@ public class TestAcidUtils {
 
   @Test
   public void testParsing() throws Exception {
+    Configuration conf = new Configuration();
+    MockFileSystem fs = new MockFileSystem(conf,
+        //new MockFile("mock:/tmp/base_000123/bucket_00001", 500, new byte[0]),
+        new MockFile("mock:/tmp/delta_000005_000006/bucket_00001", 500, new byte[0]),
+        new MockFile("mock:/tmp/delete_delta_000005_000006/bucket_00001", 500,
+            new byte[0]));
     assertEquals(123, AcidUtils.parseBase(new Path("/tmp/base_000123")));
     Path dir = new Path("/tmp/tbl");
-    Configuration conf = new Configuration();
     AcidOutputFormat.Options opts =
         AcidUtils.parseBaseOrDeltaBucketFilename(new Path(dir, "base_567/bucket_123"),
             conf);
@@ -116,15 +121,15 @@ public class TestAcidUtils {
     assertEquals(567, opts.getMaximumTransactionId());
     assertEquals(0, opts.getMinimumTransactionId());
     assertEquals(123, opts.getBucketId());
-    opts = AcidUtils.parseBaseOrDeltaBucketFilename(new Path(dir, "delta_000005_000006/bucket_00001"),
-        conf);
+    opts = AcidUtils.parseBaseOrDeltaBucketFilename(
+        new MockPath(fs, dir + "/delta_000005_000006/bucket_00001"), conf);
     assertEquals(false, opts.getOldStyle());
     assertEquals(false, opts.isWritingBase());
     assertEquals(6, opts.getMaximumTransactionId());
     assertEquals(5, opts.getMinimumTransactionId());
     assertEquals(1, opts.getBucketId());
-    opts = AcidUtils.parseBaseOrDeltaBucketFilename(new Path(dir, "delete_delta_000005_000006/bucket_00001"),
-        conf);
+    opts = AcidUtils.parseBaseOrDeltaBucketFilename(
+        new MockPath(fs, dir + "/delete_delta_000005_000006/bucket_00001"), conf);
     assertEquals(false, opts.getOldStyle());
     assertEquals(false, opts.isWritingBase());
     assertEquals(6, opts.getMaximumTransactionId());

@@ -1921,7 +1921,6 @@ public class Hive {
       if(!FileUtils.mkdir(fs, destPath, conf)) {
         LOG.warn(destPath + " already exists?!?!");
       }
-      AcidUtils.MetaDataFile.createMetaFile(destPath, fs, true);
     } catch (IOException e) {
       throw new HiveException("load: error while creating " + destPath + ";loadFileType=" + loadFileType, e);
     }

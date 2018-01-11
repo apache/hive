@@ -866,7 +866,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, target);
 
       rewrittenQueryStr.append(" HAVING count(*) > 1");
-    //say table T has partiton p, we are generating
+    //say table T has partition p, we are generating
     //select cardinality_violation(ROW_ID, p) WHERE ... GROUP BY ROW__ID, p
     //the Group By args are passed to cardinality_violation to add the violating value to the error msg
     try {
