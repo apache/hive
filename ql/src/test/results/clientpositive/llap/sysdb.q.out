@@ -2412,12 +2412,12 @@ TBLPROPERTIES (
   WM_RESOURCEPLAN.NAME,
   ENTITY_TYPE,
   ENTITY_NAME,
-  WM_POOL.PATH,
+  case when WM_POOL.PATH is null then '<unmanaged>' else WM_POOL.PATH end,
   ORDERING
-FROM
-  WM_MAPPING
+FROM WM_MAPPING
 JOIN WM_RESOURCEPLAN ON WM_MAPPING.RP_ID = WM_RESOURCEPLAN.RP_ID
-LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID"
+LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID
+"
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@WM_MAPPINGS
@@ -2437,12 +2437,12 @@ TBLPROPERTIES (
   WM_RESOURCEPLAN.NAME,
   ENTITY_TYPE,
   ENTITY_NAME,
-  WM_POOL.PATH,
+  case when WM_POOL.PATH is null then '<unmanaged>' else WM_POOL.PATH end,
   ORDERING
-FROM
-  WM_MAPPING
+FROM WM_MAPPING
 JOIN WM_RESOURCEPLAN ON WM_MAPPING.RP_ID = WM_RESOURCEPLAN.RP_ID
-LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID"
+LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID
+"
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_MAPPINGS
@@ -3227,7 +3227,7 @@ POSTHOOK: query: select count(*) from cds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@cds
 #### A masked pattern was here ####
-70
+71
 PREHOOK: query: select column_name, type_name, integer_idx from columns_v2 order by column_name, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@columns_v2
@@ -3381,7 +3381,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-76
+77
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params

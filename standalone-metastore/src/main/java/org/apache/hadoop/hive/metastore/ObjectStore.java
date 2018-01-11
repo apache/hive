@@ -10456,18 +10456,22 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       MWMResourcePlan resourcePlan = getMWMResourcePlan(mapping.getResourcePlanName(), true);
-      MWMPool pool = getPool(resourcePlan, mapping.getPoolPath());
+      MWMPool pool = null;
+      if (mapping.isSetPoolPath()) {
+        pool = getPool(resourcePlan, mapping.getPoolPath());
+      }
       if (!update) {
         MWMMapping mMapping = new MWMMapping(resourcePlan, entityType, entityName, pool,
             mapping.getOrdering());
         pm.makePersistent(mMapping);
       } else {
-        query = pm.newQuery(MWMPool.class, "resourcePlan == rp && entityType == type " +
+        query = pm.newQuery(MWMMapping.class, "resourcePlan == rp && entityType == type " +
             "&& entityName == name");
         query.declareParameters(
             "MWMResourcePlan rp, java.lang.String type, java.lang.String name");
         query.setUnique(true);
-        MWMMapping mMapping = (MWMMapping) query.execute(resourcePlan, entityType, entityName);
+        MWMMapping mMapping = (MWMMapping) query.execute(
+            resourcePlan, entityType.toString(), entityName);
         mMapping.setPool(pool);
       }
       commited = commitTransaction();
