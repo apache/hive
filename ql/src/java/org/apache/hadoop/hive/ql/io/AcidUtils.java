@@ -43,13 +43,17 @@ import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
+import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.Ref;
+import org.apache.orc.FileFormatException;
 import org.apache.orc.impl.OrcAcidUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -124,7 +128,7 @@ public class AcidUtils {
   public static final Pattern   LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
   /**
    * A write into a non-aicd table produces files like 0000_0 or 0000_0_copy_1
-   * (Unless via Load Data statment)
+   * (Unless via Load Data statement)
    */
   public static final PathFilter originalBucketFilter = new PathFilter() {
     @Override
@@ -1525,7 +1529,8 @@ public class AcidUtils {
         throw ioe;
       }
     }
-    public static boolean isRawFormat(Path baseOrDeltaDir, FileSystem fs) throws IOException {
+    //should be useful for import/export
+    public static boolean isImport(Path baseOrDeltaDir, FileSystem fs) throws IOException {
       Path formatFile = new Path(baseOrDeltaDir, METADATA_FILE);
       if(!fs.exists(formatFile)) {
         return false;
@@ -1552,6 +1557,49 @@ public class AcidUtils {
             + ": " + e.getMessage();
         LOG.error(msg, e);
         throw e;
+      }
+    }
+
+    /**
+     * Chooses 1 representantive file from {@code baseOrDeltaDir}
+     * This assumes that all files in the dir are of the same type: either written by an acid
+     * write or Load Data.  This should always be the case for an Acid table.
+     */
+    private static Path chooseFile(Path baseOrDeltaDir, FileSystem fs) throws IOException {
+      if(!(baseOrDeltaDir.getName().startsWith(BASE_PREFIX) ||
+          baseOrDeltaDir.getName().startsWith(DELTA_PREFIX))) {
+        throw new IllegalArgumentException(baseOrDeltaDir + " is not a base/delta");
+      }
+      FileStatus[] dataFiles = fs.listStatus(new Path[] {baseOrDeltaDir}, originalBucketFilter);
+      return dataFiles != null && dataFiles.length > 0 ? dataFiles[0].getPath() : null;
+    }
+
+    /**
+     * Checks if the files in base/delta dir are a result of Load Data statement and thus do not
+     * have ROW_IDs embedded in the data.
+     * @param baseOrDeltaDir base or delta file.
+     */
+    public static boolean isRawFormat(Path baseOrDeltaDir, FileSystem fs) throws IOException {
+      Path dataFile = chooseFile(baseOrDeltaDir, fs);
+      if (dataFile == null) {
+        //directory is empty or doesn't have any that could have been produced by load data
+        return false;
+      }
+      try {
+        Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()));
+        /*
+          acid file would have schema like <op, otid, writerId, rowid, ctid, <f1, ... fn>> so could
+          check it this way once/if OrcRecordUpdater.ACID_KEY_INDEX_NAME is removed
+          TypeDescription schema = reader.getSchema();
+          List<String> columns = schema.getFieldNames();
+         */
+        return OrcInputFormat.isOriginal(reader);
+      } catch (FileFormatException ex) {
+        //We may be parsing a delta for Insert-only table which may not even be an ORC file so
+        //cannot have ROW_IDs in it.
+        LOG.debug("isRawFormat() called on " + dataFile + " which is not an ORC file: " +
+            ex.getMessage());
+        return true;
       }
     }
   }
