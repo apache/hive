@@ -70,6 +70,8 @@ withReplace : KW_WITH KW_REPLACE -> ^(TOK_REPLACE);
 activate : KW_ACTIVATE withReplace? -> ^(TOK_ACTIVATE withReplace?);
 enable : KW_ENABLE -> ^(TOK_ENABLE);
 disable : KW_DISABLE -> ^(TOK_DISABLE);
+unmanaged : KW_UNMANAGED -> ^(TOK_UNMANAGED);
+
 
 alterResourcePlanStatement
 @init { gParent.pushMsg("alter resource plan statement", state); }
@@ -236,9 +238,9 @@ createMappingStatement
 @after { gParent.popMsg(state); }
     : (KW_CREATE mappingType=(KW_USER | KW_GROUP | KW_APPLICATION)
          KW_MAPPING name=StringLiteral
-         KW_IN rpName=identifier KW_TO poolPath
+         KW_IN rpName=identifier ((KW_TO path=poolPath) | unmanaged)
          (KW_WITH KW_ORDER order=Number)?)
-    -> ^(TOK_CREATE_MAPPING $rpName $mappingType $name poolPath $order?)
+    -> ^(TOK_CREATE_MAPPING $rpName $mappingType $name $path? unmanaged? $order?)
     ;
 
 alterMappingStatement
@@ -246,9 +248,9 @@ alterMappingStatement
 @after { gParent.popMsg(state); }
     : (KW_ALTER mappingType=(KW_USER | KW_GROUP | KW_APPLICATION) KW_MAPPING
          KW_MAPPING name=StringLiteral
-         KW_IN rpName=identifier KW_TO poolPath
+         KW_IN rpName=identifier ((KW_TO path=poolPath) | unmanaged)
          (KW_WITH KW_ORDER order=Number)?)
-    -> ^(TOK_ALTER_MAPPING $rpName $mappingType $name poolPath $order?)
+    -> ^(TOK_ALTER_MAPPING $rpName $mappingType $name $path? unmanaged? $order?)
     ;
 
 dropMappingStatement

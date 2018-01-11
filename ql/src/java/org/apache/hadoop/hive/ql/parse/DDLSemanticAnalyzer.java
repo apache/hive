@@ -1254,7 +1254,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String entityType = ast.getChild(1).getText();
     String entityName = PlanUtils.stripQuotes(ast.getChild(2).getText());
     WMMapping mapping = new WMMapping(rpName, entityType, entityName);
-    mapping.setPoolPath(poolPath(ast.getChild(3)));
+    Tree dest = ast.getChild(3);
+    if (dest.getType() != HiveParser.TOK_UNMANAGED) {
+      mapping.setPoolPath(poolPath(dest));
+    } // Null path => unmanaged
     if (ast.getChildCount() == 5) {
       mapping.setOrdering(Integer.valueOf(ast.getChild(4).getText()));
     }
