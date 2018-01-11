@@ -19,11 +19,13 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 import java.io.BufferedWriter;
@@ -41,10 +43,13 @@ class InsertHandler extends AbstractEventHandler {
 
   @Override
   public void handle(Context withinContext) throws Exception {
+    if (withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
+      return;
+    }
     InsertMessage insertMsg = deserializer.getInsertMessage(event.getMessage());
     org.apache.hadoop.hive.ql.metadata.Table qlMdTable = tableObject(insertMsg);
 
-    if (!EximUtil.shouldExportTable(withinContext.replicationSpec, qlMdTable)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, withinContext.hiveConf)) {
       return;
     }
 
@@ -58,7 +63,8 @@ class InsertHandler extends AbstractEventHandler {
     withinContext.replicationSpec.setIsReplace(insertMsg.isReplace());
     EximUtil.createExportDump(metaDataPath.getFileSystem(withinContext.hiveConf), metaDataPath,
         qlMdTable, qlPtns,
-        withinContext.replicationSpec);
+        withinContext.replicationSpec,
+        withinContext.hiveConf);
     Iterable<String> files = insertMsg.getFiles();
 
     if (files != null) {
