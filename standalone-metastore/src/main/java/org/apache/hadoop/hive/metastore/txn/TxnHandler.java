@@ -917,6 +917,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * given the transaction snapshot provided.
    */
   @Override
+  @RetrySemantics.ReadOnly
   public List<BasicTxnInfo> getLastCompletedTransactionForTables(
       List<String> dbNames, List<String> tableNames, TxnsSnapshot txnsSnapshot) throws MetaException {
     List<BasicTxnInfo> r = new ArrayList<>();
@@ -931,6 +932,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * given the transaction snapshot provided.
    */
   @Override
+  @RetrySemantics.ReadOnly
   public BasicTxnInfo getLastCompletedTransactionForTable(
       String inputDbName, String inputTableName, TxnsSnapshot txnsSnapshot) throws MetaException {
     Connection dbConn = null;
@@ -974,6 +976,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * after the transaction with the input id was committed (if any). 
    */
   @Override
+  @RetrySemantics.ReadOnly
   public BasicTxnInfo getFirstCompletedTransactionForTableAfterCommit(
       String inputDbName, String inputTableName, long incrementalIdentifier)
           throws MetaException {
