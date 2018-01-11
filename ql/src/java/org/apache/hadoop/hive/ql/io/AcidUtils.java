@@ -1448,11 +1448,16 @@ public class AcidUtils {
     //       in many cases the conversion might be illegal.
     //       The only thing we allow is tx = true w/o tx-props, for backward compat.
     String transactional = props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+
+    if (transactional == null && transactionalProp == null) {
+      // Not affected or the op is not about transactional.
+      return null;
+    }
+
     if(transactional == null) {
       transactional = tbl.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
     }
-    String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    if (transactional == null && transactionalProp == null) return null; // Not affected.
     boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
     if (transactionalProp == null) {
       if (isSetToTxn) return false; // Assume the full ACID table.
