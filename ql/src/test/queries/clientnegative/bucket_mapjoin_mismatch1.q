@@ -4,19 +4,19 @@ set hive.mapred.mode=nonstrict;
 CREATE TABLE srcbucket_mapjoin_part (key int, value string) 
   partitioned by (ds string) CLUSTERED BY (key) INTO 3 BUCKETS
   STORED AS TEXTFILE;
-load data local inpath '../../data/files/srcbucket20.txt' 
+load data local inpath '../../data/files/bmj/000000_0'
   INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
-load data local inpath '../../data/files/srcbucket21.txt' 
+load data local inpath '../../data/files/bmj/000001_0'
   INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
-load data local inpath '../../data/files/srcbucket22.txt' 
+load data local inpath '../../data/files/bmj/000002_0'
   INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
 
 CREATE TABLE srcbucket_mapjoin_part_2 (key int, value string)
   partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS
   STORED AS TEXTFILE;
-load data local inpath '../../data/files/srcbucket22.txt'
+load data local inpath '../../data/files/bmj/000002_0'
   INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08');
-load data local inpath '../../data/files/srcbucket23.txt'
+load data local inpath '../../data/files/bmj/000003_0'
   INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08');
 
 -- The number of buckets in the 2 tables above (being joined later) dont match.
