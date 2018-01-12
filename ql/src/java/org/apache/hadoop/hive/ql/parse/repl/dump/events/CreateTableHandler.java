@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -48,7 +49,7 @@ class CreateTableHandler extends AbstractEventHandler {
 
     Table qlMdTable = new Table(tobj);
 
-    if (!EximUtil.shouldExportTable(withinContext.replicationSpec, qlMdTable)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, withinContext.hiveConf)) {
       return;
     }
 
@@ -62,7 +63,8 @@ class CreateTableHandler extends AbstractEventHandler {
         metaDataPath,
         qlMdTable,
         null,
-        withinContext.replicationSpec);
+        withinContext.replicationSpec,
+        withinContext.hiveConf);
 
     Path dataPath = new Path(withinContext.eventRoot, "data");
     Iterable<String> files = ctm.getFiles();

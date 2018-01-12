@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 class AlterPartitionHandler extends AbstractEventHandler {
@@ -88,7 +89,7 @@ class AlterPartitionHandler extends AbstractEventHandler {
     LOG.info("Processing#{} ALTER_PARTITION message : {}", fromEventId(), event.getMessage());
 
     Table qlMdTable = new Table(tableObject);
-    if (!EximUtil.shouldExportTable(withinContext.replicationSpec, qlMdTable)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, withinContext.hiveConf)) {
       return;
     }
 
@@ -102,7 +103,8 @@ class AlterPartitionHandler extends AbstractEventHandler {
           metaDataPath,
           qlMdTable,
           partitions,
-          withinContext.replicationSpec);
+          withinContext.replicationSpec,
+          withinContext.hiveConf);
     }
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(event.getMessage());
