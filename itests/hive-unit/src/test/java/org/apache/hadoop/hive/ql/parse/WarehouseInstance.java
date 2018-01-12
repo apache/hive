@@ -1,19 +1,19 @@
 /*
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-  <p>
-  http://www.apache.org/licenses/LICENSE-2.0
-  <p>
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.hadoop.hive.ql.parse;
@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -178,14 +179,26 @@ class WarehouseInstance implements Closeable {
     return this;
   }
 
-  Tuple dump(String dbName, String lastReplicationId) throws Throwable {
-    advanceDumpDir();
+  Tuple dump(String dbName, String lastReplicationId, List<String> withClauseOptions)
+      throws Throwable {
     String dumpCommand =
         "REPL DUMP " + dbName + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
+    if (!withClauseOptions.isEmpty()) {
+      dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    return dump(dumpCommand);
+  }
+
+  Tuple dump(String dumpCommand) throws Throwable {
+    advanceDumpDir();
     run(dumpCommand);
     String dumpLocation = row0Result(0, false);
     String lastDumpId = row0Result(1, true);
     return new Tuple(dumpLocation, lastDumpId);
+  }
+
+  Tuple dump(String dbName, String lastReplicationId) throws Throwable {
+    return dump(dbName, lastReplicationId, Collections.emptyList());
   }
 
   WarehouseInstance load(String replicatedDbName, String dumpLocation) throws Throwable {
@@ -211,10 +224,15 @@ class WarehouseInstance implements Closeable {
     List<String> results = getOutput();
     logger.info("Expecting {}", StringUtils.join(data, ","));
     logger.info("Got {}", results);
-    assertEquals(data.length, results.size());
-    for (int i = 0; i < data.length; i++) {
-      assertEquals(data[i].toLowerCase(), results.get(i).toLowerCase());
-    }
+    List<String> filteredResults = results.stream().filter(
+        x -> !x.toLowerCase()
+            .contains(SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX.toLowerCase()))
+        .map(String::toLowerCase)
+        .collect(Collectors.toList());
+    List<String> lowerCaseData =
+        Arrays.stream(data).map(String::toLowerCase).collect(Collectors.toList());
+    assertEquals(data.length, filteredResults.size());
+    assertTrue(filteredResults.containsAll(lowerCaseData));
     return this;
   }
 

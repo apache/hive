@@ -1,19 +1,19 @@
 /*
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.hadoop.hive.ql.parse;
 
@@ -34,13 +34,13 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.ReplLoadWork;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
-import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
-import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
@@ -59,7 +59,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_FROM;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_LIMIT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_DUMP;
@@ -128,9 +127,17 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     // skip the first node, which is always required
     int currNode = 1;
     while (currNode < numChildren) {
-      if (ast.getChild(currNode).getType() != TOK_FROM) {
+      if (ast.getChild(currNode).getType() == TOK_REPL_CONFIG) {
+        Map<String, String> replConfigs
+            = DDLSemanticAnalyzer.getProps((ASTNode) ast.getChild(currNode).getChild(0));
+        if (null != replConfigs) {
+          for (Map.Entry<String, String> config : replConfigs.entrySet()) {
+            conf.set(config.getKey(), config.getValue());
+          }
+        }
+      } else if (ast.getChild(currNode).getType() == TOK_TABNAME) {
         // optional tblName was specified.
-        tblNameOrPattern = PlanUtils.stripQuotes(ast.getChild(currNode).getText());
+        tblNameOrPattern = PlanUtils.stripQuotes(ast.getChild(currNode).getChild(0).getText());
       } else {
         // TOK_FROM subtree
         Tree fromNode = ast.getChild(currNode);
@@ -152,8 +159,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           // move to the next child in FROM tree
           numChild++;
         }
-        // FROM node is always the last
-        break;
       }
       // move to the next root node
       currNode++;
@@ -176,7 +181,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
               ErrorMsg.INVALID_PATH.getMsg(ast),
               maxEventLimit,
               ctx.getResFile().toUri().toString()
-          ), conf);
+          ), conf, true);
       rootTasks.add(replDumpWorkTask);
       if (dbNameOrPattern != null) {
         for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {

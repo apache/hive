@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -28,14 +26,15 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 
-import javax.annotation.Nullable;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Iterator;
-
-import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 class AddPartitionHandler extends AbstractEventHandler {
   protected AddPartitionHandler(NotificationEvent notificationEvent) {
@@ -54,7 +53,7 @@ class AddPartitionHandler extends AbstractEventHandler {
     }
 
     final Table qlMdTable = new Table(tobj);
-    if (!EximUtil.shouldExportTable(withinContext.replicationSpec, qlMdTable)) {
+    if (!Utils.shouldReplicate(withinContext.replicationSpec, qlMdTable, withinContext.hiveConf)) {
       return;
     }
 
@@ -64,23 +63,17 @@ class AddPartitionHandler extends AbstractEventHandler {
       return;
     }
 
-    Iterable<Partition> qlPtns = Iterables.transform(
-        ptns,
-        new Function<org.apache.hadoop.hive.metastore.api.Partition, Partition>() {
-          @Nullable
-          @Override
-          public Partition apply(@Nullable org.apache.hadoop.hive.metastore.api.Partition input) {
-            if (input == null) {
-              return null;
-            }
-            try {
-              return new Partition(qlMdTable, input);
-            } catch (HiveException e) {
-              throw new IllegalArgumentException(e);
-            }
+    Iterable<Partition> qlPtns = StreamSupport.stream(ptns.spliterator(), true).map(
+        input -> {
+          if (input == null) {
+            return null;
           }
-        }
-    );
+          try {
+            return new Partition(qlMdTable, input);
+          } catch (HiveException e) {
+            throw new IllegalArgumentException(e);
+          }
+        }).collect(Collectors.toList());
 
     Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
     EximUtil.createExportDump(
@@ -88,7 +81,8 @@ class AddPartitionHandler extends AbstractEventHandler {
         metaDataPath,
         qlMdTable,
         qlPtns,
-        withinContext.replicationSpec);
+        withinContext.replicationSpec,
+        withinContext.hiveConf);
 
     Iterator<PartitionFiles> partitionFilesIter = apm.getPartitionFilesIter().iterator();
     for (Partition qlPtn : qlPtns) {
