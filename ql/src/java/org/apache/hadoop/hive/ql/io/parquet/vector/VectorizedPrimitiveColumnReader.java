@@ -193,8 +193,10 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
     case DECIMAL:
       readDecimal(num, (DecimalColumnVector) column, rowId);
       break;
-    case INTERVAL_DAY_TIME:
     case TIMESTAMP:
+      readTimestamp(num, (TimestampColumnVector) column, rowId);
+      break;
+    case INTERVAL_DAY_TIME:
     default:
       throw new IOException("Unsupported type: " + type);
     }
@@ -361,6 +363,35 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
         c.isNull[rowId] = false;
         // TODO figure out a better way to set repeat for Binary type
         c.isRepeating = false;
+      } else {
+        c.isNull[rowId] = true;
+        c.isRepeating = false;
+        c.noNulls = false;
+      }
+      rowId++;
+      left--;
+    }
+  }
+
+  private void readTimestamp(int total, TimestampColumnVector c, int rowId) throws IOException {
+    int left = total;
+    while (left > 0) {
+      readRepetitionAndDefinitionLevels();
+      if (definitionLevel >= maxDefLevel) {
+        switch (descriptor.getType()) {
+          //INT64 is not yet supported for parquet timestamps
+        case INT96:
+          NanoTime nt = NanoTime.fromBinary(dataColumn.readBytes());
+          Timestamp ts = NanoTimeUtils.getTimestamp(nt, skipTimestampConversion);
+          c.set(rowId, ts);
+          break;
+        default:
+          throw new IOException(
+              "Unsupported parquet logical type: " + type.getOriginalType() + " for timestamp");
+        }
+        c.isNull[rowId] = false;
+        c.isRepeating =
+            c.isRepeating && ((c.time[0] == c.time[rowId]) && (c.nanos[0] == c.nanos[rowId]));
       } else {
         c.isNull[rowId] = true;
         c.isRepeating = false;
