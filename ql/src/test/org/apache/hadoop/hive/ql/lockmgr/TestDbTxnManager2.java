@@ -1832,10 +1832,14 @@ public class TestDbTxnManager2 {
       TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where tc_txnid=" + txnid1));
 
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
-    Assert.assertEquals("Unexpected lock count", 2, locks.size());
-    checkLock(causeConflict ? LockType.SHARED_WRITE : LockType.SHARED_READ,
-      LockState.ACQUIRED, "default", "target", null, locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "_dummy_database", "_dummy_table", null, locks);
+    if (causeConflict) {
+      Assert.assertEquals("Unexpected lock count", 1, locks.size());
+      checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "target", null, locks);
+    } else {
+      Assert.assertEquals("Unexpected lock count", 2, locks.size());
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "target", null, locks);
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "_dummy_database", "_dummy_table", null, locks);
+    }
 
     DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     swapTxnManager(txnMgr2);
@@ -1848,13 +1852,15 @@ public class TestDbTxnManager2 {
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "T2", false);
     locks = getLocks();
 
-    Assert.assertEquals("Unexpected lock count", 4, locks.size());
+    Assert.assertEquals("Unexpected lock count", causeConflict ? 3 : 4, locks.size());
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "target", null, locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "_dummy_database", "_dummy_table", null, locks);
     checkLock(LockType.SHARED_READ, causeConflict ? LockState.WAITING : LockState.ACQUIRED,
       "default", "source", null, locks);
     long extLockId = checkLock(LockType.SHARED_WRITE, causeConflict ? LockState.WAITING : LockState.ACQUIRED,
       "default", "target", null, locks).getLockid();
+    if (!causeConflict) {
+      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "_dummy_database", "_dummy_table", null, locks);
+    }
 
     txnMgr.commitTxn();//commit T1
 
