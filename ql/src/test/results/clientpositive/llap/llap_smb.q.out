@@ -234,7 +234,7 @@ STAGE PLANS:
                         0 id (type: bigint)
                         1 id (type: bigint)
                       outputColumnNames: _col2, _col3
-                      Statistics: Num rows: 985 Data size: 7880 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 987 Data size: 7896 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         keys: _col2 (type: int), _col3 (type: smallint)
