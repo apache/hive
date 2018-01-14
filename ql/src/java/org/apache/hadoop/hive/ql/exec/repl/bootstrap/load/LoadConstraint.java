@@ -73,41 +73,49 @@ public class LoadConstraint {
       String nnsString = json.getString("nns");
       List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
 
-      AddPrimaryKeyHandler pkHandler = new AddPrimaryKeyHandler();
-      DumpMetaData pkDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_PRIMARYKEY, Long.MAX_VALUE, Long.MAX_VALUE, null,
-          context.hiveConf);
-      pkDumpMetaData.setPayload(pksString);
-      tasks.addAll(pkHandler.handle(
-          new MessageHandler.Context(
-              dbNameToLoadIn, null, fromPath.toString(), null, pkDumpMetaData, context.hiveConf,
-              context.hiveDb, null, LOG)));
+      if (pksString != null && !pksString.isEmpty()) {
+        AddPrimaryKeyHandler pkHandler = new AddPrimaryKeyHandler();
+        DumpMetaData pkDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_PRIMARYKEY, Long.MAX_VALUE, Long.MAX_VALUE, null,
+            context.hiveConf);
+        pkDumpMetaData.setPayload(pksString);
+        tasks.addAll(pkHandler.handle(
+            new MessageHandler.Context(
+                dbNameToLoadIn, null, fromPath.toString(), null, pkDumpMetaData, context.hiveConf,
+                context.hiveDb, null, LOG)));
+      }
 
-      AddUniqueConstraintHandler ukHandler = new AddUniqueConstraintHandler();
-      DumpMetaData ukDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_UNIQUECONSTRAINT, Long.MAX_VALUE, Long.MAX_VALUE, null,
-          context.hiveConf);
-      ukDumpMetaData.setPayload(uksString);
-      tasks.addAll(ukHandler.handle(
-          new MessageHandler.Context(
-              dbNameToLoadIn, null, fromPath.toString(), null, ukDumpMetaData, context.hiveConf,
-              context.hiveDb, null, LOG)));
+      if (uksString != null && !uksString.isEmpty()) {
+        AddUniqueConstraintHandler ukHandler = new AddUniqueConstraintHandler();
+        DumpMetaData ukDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_UNIQUECONSTRAINT, Long.MAX_VALUE, Long.MAX_VALUE, null,
+            context.hiveConf);
+        ukDumpMetaData.setPayload(uksString);
+        tasks.addAll(ukHandler.handle(
+            new MessageHandler.Context(
+                dbNameToLoadIn, null, fromPath.toString(), null, ukDumpMetaData, context.hiveConf,
+                context.hiveDb, null, LOG)));
+      }
 
-      AddNotNullConstraintHandler nnHandler = new AddNotNullConstraintHandler();
-      DumpMetaData nnDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_NOTNULLCONSTRAINT, Long.MAX_VALUE, Long.MAX_VALUE, null,
-          context.hiveConf);
-      nnDumpMetaData.setPayload(nnsString);
-      tasks.addAll(nnHandler.handle(
-          new MessageHandler.Context(
-              dbNameToLoadIn, null, fromPath.toString(), null, nnDumpMetaData, context.hiveConf,
-              context.hiveDb, null, LOG)));
+      if (nnsString != null && !nnsString.isEmpty()) {
+        AddNotNullConstraintHandler nnHandler = new AddNotNullConstraintHandler();
+        DumpMetaData nnDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_NOTNULLCONSTRAINT, Long.MAX_VALUE, Long.MAX_VALUE, null,
+            context.hiveConf);
+        nnDumpMetaData.setPayload(nnsString);
+        tasks.addAll(nnHandler.handle(
+            new MessageHandler.Context(
+                dbNameToLoadIn, null, fromPath.toString(), null, nnDumpMetaData, context.hiveConf,
+                context.hiveDb, null, LOG)));
+      }
 
-      AddForeignKeyHandler fkHandler = new AddForeignKeyHandler();
-      DumpMetaData fkDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_FOREIGNKEY, Long.MAX_VALUE, Long.MAX_VALUE, null,
-          context.hiveConf);
-      fkDumpMetaData.setPayload(fksString);
-      tasks.addAll(fkHandler.handle(
-          new MessageHandler.Context(
-              dbNameToLoadIn, null, fromPath.toString(), null, fkDumpMetaData, context.hiveConf,
-              context.hiveDb, null, LOG)));
+      if (fksString != null && !fksString.isEmpty()) {
+        AddForeignKeyHandler fkHandler = new AddForeignKeyHandler();
+        DumpMetaData fkDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_FOREIGNKEY, Long.MAX_VALUE, Long.MAX_VALUE, null,
+            context.hiveConf);
+        fkDumpMetaData.setPayload(fksString);
+        tasks.addAll(fkHandler.handle(
+            new MessageHandler.Context(
+                dbNameToLoadIn, null, fromPath.toString(), null, fkDumpMetaData, context.hiveConf,
+                context.hiveDb, null, LOG)));
+      }
 
       tasks.forEach(tracker::addTask);
       return tracker;
