@@ -74,6 +74,21 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
   private static final String CONSTRAINTS_ROOT_DIR_NAME = "_constraints";
   private static final String FUNCTION_METADATA_FILE_NAME = "_metadata";
+  public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
+    private final String name;
+    private final String prefix;
+    private ConstraintFileType(String name, String prefix) {
+      this.name = name;
+      this.prefix = prefix;
+    }
+    public String getName() {
+      return this.name;
+    }
+
+    public String getPrefix() {
+      return prefix;
+    }
+  }
 
   private Logger LOG = LoggerFactory.getLogger(ReplDumpTask.class);
   private ReplLogger replLogger;
@@ -316,17 +331,25 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot) throws Exception {
     try {
       Path constraintsRoot = new Path(dbRoot, CONSTRAINTS_ROOT_DIR_NAME);
-      Path constraintsFile = new Path(constraintsRoot, tblName);
+      Path commonConstraintsFile = new Path(constraintsRoot, ConstraintFileType.COMMON.getPrefix() + tblName);
+      Path fkConstraintsFile = new Path(constraintsRoot, ConstraintFileType.FOREIGNKEY.getPrefix() + tblName);
       Hive db = getHive();
       List<SQLPrimaryKey> pks = db.getPrimaryKeyList(dbName, tblName);
       List<SQLForeignKey> fks = db.getForeignKeyList(dbName, tblName);
       List<SQLUniqueConstraint> uks = db.getUniqueConstraintList(dbName, tblName);
       List<SQLNotNullConstraint> nns = db.getNotNullConstraintList(dbName, tblName);
-      if ((pks != null && !pks.isEmpty()) || (fks != null && !fks.isEmpty()) || (uks != null && !uks.isEmpty())
+      if ((pks != null && !pks.isEmpty()) || (uks != null && !uks.isEmpty())
           || (nns != null && !nns.isEmpty())) {
         try (JsonWriter jsonWriter =
-            new JsonWriter(constraintsFile.getFileSystem(conf), constraintsFile)) {
-          ConstraintsSerializer serializer = new ConstraintsSerializer(pks, fks, uks, nns, conf);
+            new JsonWriter(commonConstraintsFile.getFileSystem(conf), commonConstraintsFile)) {
+          ConstraintsSerializer serializer = new ConstraintsSerializer(pks, null, uks, nns, conf);
+          serializer.writeTo(jsonWriter, null);
+        }
+      }
+      if (fks != null && !fks.isEmpty()) {
+        try (JsonWriter jsonWriter =
+            new JsonWriter(fkConstraintsFile.getFileSystem(conf), fkConstraintsFile)) {
+          ConstraintsSerializer serializer = new ConstraintsSerializer(null, fks, null, null, conf);
           serializer.writeTo(jsonWriter, null);
         }
       }
