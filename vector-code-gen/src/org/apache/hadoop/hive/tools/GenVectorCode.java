@@ -165,55 +165,92 @@ public class GenVectorCode extends Task {
       {"IntervalYearMonthArithmeticTimestamp", "Add","+", "interval_year_month", "Col", "timestamp", "Scalar"},
 
       // Long/double arithmetic
+      {"ColumnArithmeticScalar", "Add", "long", "long", "+", "CHECKED"},
       {"ColumnArithmeticScalar", "Add", "long", "long", "+"},
+      {"ColumnArithmeticScalar", "Subtract", "long", "long", "-", "CHECKED"},
       {"ColumnArithmeticScalar", "Subtract", "long", "long", "-"},
       {"ColumnArithmeticScalar", "Multiply", "long", "long", "*"},
+      {"ColumnArithmeticScalar", "Multiply", "long", "long", "*", "CHECKED"},
 
       {"ColumnArithmeticScalar", "Add", "long", "double", "+"},
+      {"ColumnArithmeticScalar", "Add", "long", "double", "+", "CHECKED"},
       {"ColumnArithmeticScalar", "Subtract", "long", "double", "-"},
+      {"ColumnArithmeticScalar", "Subtract", "long", "double", "-", "CHECKED"},
       {"ColumnArithmeticScalar", "Multiply", "long", "double", "*"},
+      {"ColumnArithmeticScalar", "Multiply", "long", "double", "*", "CHECKED"},
 
       {"ColumnArithmeticScalar", "Add", "double", "long", "+"},
+      {"ColumnArithmeticScalar", "Add", "double", "long", "+", "CHECKED"},
       {"ColumnArithmeticScalar", "Subtract", "double", "long", "-"},
+      {"ColumnArithmeticScalar", "Subtract", "double", "long", "-", "CHECKED"},
       {"ColumnArithmeticScalar", "Multiply", "double", "long", "*"},
+      {"ColumnArithmeticScalar", "Multiply", "double", "long", "*", "CHECKED"},
 
-      {"ColumnArithmeticScalar", "Add", "double", "double", "+"},
+      {"ColumnArithmeticScalar", "Add", "double", "double", "+",},
+      {"ColumnArithmeticScalar", "Add", "double", "double", "+", "CHECKED"},
       {"ColumnArithmeticScalar", "Subtract", "double", "double", "-"},
+      {"ColumnArithmeticScalar", "Subtract", "double", "double", "-", "CHECKED"},
       {"ColumnArithmeticScalar", "Multiply", "double", "double", "*"},
+      {"ColumnArithmeticScalar", "Multiply", "double", "double", "*", "CHECKED"},
 
       {"ScalarArithmeticColumn", "Add", "long", "long", "+"},
+      {"ScalarArithmeticColumn", "Add", "long", "long", "+", "CHECKED"},
       {"ScalarArithmeticColumn", "Subtract", "long", "long", "-"},
+      {"ScalarArithmeticColumn", "Subtract", "long", "long", "-", "CHECKED"},
       {"ScalarArithmeticColumn", "Multiply", "long", "long", "*"},
+      {"ScalarArithmeticColumn", "Multiply", "long", "long", "*", "CHECKED"},
 
       {"ScalarArithmeticColumn", "Add", "long", "double", "+"},
+      {"ScalarArithmeticColumn", "Add", "long", "double", "+", "CHECKED"},
       {"ScalarArithmeticColumn", "Subtract", "long", "double", "-"},
+      {"ScalarArithmeticColumn", "Subtract", "long", "double", "-", "CHECKED"},
       {"ScalarArithmeticColumn", "Multiply", "long", "double", "*"},
+      {"ScalarArithmeticColumn", "Multiply", "long", "double", "*", "CHECKED"},
 
       {"ScalarArithmeticColumn", "Add", "double", "long", "+"},
+      {"ScalarArithmeticColumn", "Add", "double", "long", "+", "CHECKED"},
       {"ScalarArithmeticColumn", "Subtract", "double", "long", "-"},
+      {"ScalarArithmeticColumn", "Subtract", "double", "long", "-", "CHECKED"},
       {"ScalarArithmeticColumn", "Multiply", "double", "long", "*"},
+      {"ScalarArithmeticColumn", "Multiply", "double", "long", "*", "CHECKED"},
 
       {"ScalarArithmeticColumn", "Add", "double", "double", "+"},
+      {"ScalarArithmeticColumn", "Add", "double", "double", "+", "CHECKED"},
       {"ScalarArithmeticColumn", "Subtract", "double", "double", "-"},
+      {"ScalarArithmeticColumn", "Subtract", "double", "double", "-", "CHECKED"},
       {"ScalarArithmeticColumn", "Multiply", "double", "double", "*"},
+      {"ScalarArithmeticColumn", "Multiply", "double", "double", "*", "CHECKED"},
 
       {"ColumnArithmeticColumn", "Add", "long", "long", "+"},
+      {"ColumnArithmeticColumn", "Add", "long", "long", "+", "CHECKED"},
       {"ColumnArithmeticColumn", "Subtract", "long", "long", "-"},
+      {"ColumnArithmeticColumn", "Subtract", "long", "long", "-", "CHECKED"},
       {"ColumnArithmeticColumn", "Multiply", "long", "long", "*"},
+      {"ColumnArithmeticColumn", "Multiply", "long", "long", "*", "CHECKED"},
 
       {"ColumnArithmeticColumn", "Add", "long", "double", "+"},
+      {"ColumnArithmeticColumn", "Add", "long", "double", "+", "CHECKED"},
       {"ColumnArithmeticColumn", "Subtract", "long", "double", "-"},
+      {"ColumnArithmeticColumn", "Subtract", "long", "double", "-", "CHECKED"},
       {"ColumnArithmeticColumn", "Multiply", "long", "double", "*"},
+      {"ColumnArithmeticColumn", "Multiply", "long", "double", "*", "CHECKED"},
 
       {"ColumnArithmeticColumn", "Add", "double", "long", "+"},
+      {"ColumnArithmeticColumn", "Add", "double", "long", "+", "CHECKED"},
       {"ColumnArithmeticColumn", "Subtract", "double", "long", "-"},
+      {"ColumnArithmeticColumn", "Subtract", "double", "long", "-", "CHECKED"},
       {"ColumnArithmeticColumn", "Multiply", "double", "long", "*"},
+      {"ColumnArithmeticColumn", "Multiply", "double", "long", "*", "CHECKED"},
 
       {"ColumnArithmeticColumn", "Add", "double", "double", "+"},
+      {"ColumnArithmeticColumn", "Add", "double", "double", "+", "CHECKED"},
       {"ColumnArithmeticColumn", "Subtract", "double", "double", "-"},
+      {"ColumnArithmeticColumn", "Subtract", "double", "double", "-", "CHECKED"},
       {"ColumnArithmeticColumn", "Multiply", "double", "double", "*"},
+      {"ColumnArithmeticColumn", "Multiply", "double", "double", "*", "CHECKED"},
 
 
+        //Divide operations are not CHECKED because the output is always of the type double
       {"ColumnDivideScalar", "Divide", "long", "double", "/"},
       {"ColumnDivideScalar", "Divide", "double", "long", "/"},
       {"ColumnDivideScalar", "Divide", "double", "double", "/"},
@@ -225,16 +262,27 @@ public class GenVectorCode extends Task {
       {"ColumnDivideColumn", "Divide", "double", "double", "/"},
 
       {"ColumnDivideScalar", "Modulo", "long", "long", "%"},
+      {"ColumnDivideScalar", "Modulo", "long", "long", "%", "CHECKED"},
       {"ColumnDivideScalar", "Modulo", "long", "double", "%"},
+      {"ColumnDivideScalar", "Modulo", "long", "double", "%", "CHECKED"},
       {"ColumnDivideScalar", "Modulo", "double", "long", "%"},
+      {"ColumnDivideScalar", "Modulo", "double", "long", "%", "CHECKED"},
       {"ColumnDivideScalar", "Modulo", "double", "double", "%"},
+      {"ColumnDivideScalar", "Modulo", "double", "double", "%", "CHECKED"},
       {"ScalarDivideColumn", "Modulo", "long", "long", "%"},
+      {"ScalarDivideColumn", "Modulo", "long", "long", "%", "CHECKED"},
       {"ScalarDivideColumn", "Modulo", "long", "double", "%"},
+      {"ScalarDivideColumn", "Modulo", "long", "double", "%", "CHECKED"},
       {"ScalarDivideColumn", "Modulo", "double", "long", "%"},
+      {"ScalarDivideColumn", "Modulo", "double", "long", "%", "CHECKED"},
       {"ScalarDivideColumn", "Modulo", "double", "double", "%"},
+      {"ScalarDivideColumn", "Modulo", "double", "double", "%", "CHECKED"},
       {"ColumnDivideColumn", "Modulo", "long", "double", "%"},
+      {"ColumnDivideColumn", "Modulo", "long", "double", "%", "CHECKED"},
       {"ColumnDivideColumn", "Modulo", "double", "long", "%"},
+      {"ColumnDivideColumn", "Modulo", "double", "long", "%", "CHECKED"},
       {"ColumnDivideColumn", "Modulo", "double", "double", "%"},
+      {"ColumnDivideColumn", "Modulo", "double", "double", "%", "CHECKED"},
 
       {"ColumnArithmeticScalarDecimal", "Add"},
       {"ColumnArithmeticScalarDecimal", "Subtract"},
@@ -996,7 +1044,9 @@ public class GenVectorCode extends Task {
       // classes
 
       {"ColumnUnaryMinus", "long"},
+      {"ColumnUnaryMinus", "long", "CHECKED"},
       {"ColumnUnaryMinus", "double"},
+      {"ColumnUnaryMinus", "double", "CHECKED"},
 
       // IF conditional expression
       // fileHeader, resultType, arg2Type, arg3Type
@@ -2087,8 +2137,10 @@ public class GenVectorCode extends Task {
     String inputColumnVectorType = this.getColumnVectorType(operandType);
     String outputColumnVectorType = inputColumnVectorType;
     String returnType = operandType;
-    String className = getCamelCaseType(operandType) + "ColUnaryMinus";
-        File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    boolean checked = (tdesc.length == 3 && "CHECKED".equals(tdesc[2]));
+    String className = getCamelCaseType(operandType) + "ColUnaryMinus"
+        + (checked ? "Checked" : "");
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     String vectorExprArgType = operandType;
     if (operandType.equals("long")) {
@@ -2101,7 +2153,10 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
     templateString = templateString.replaceAll("<OperandType>", operandType);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
     templateString = templateString.replaceAll("<VectorExprArgType>", vectorExprArgType);
+    String ifDefined = checked ? tdesc[2] : "";
+    templateString = evaluateIfDefined(templateString, ifDefined);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
@@ -2260,8 +2315,10 @@ public class GenVectorCode extends Task {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
+    boolean checked = tdesc.length == 6 && "CHECKED".equals(tdesc[5]);
     String className = getCamelCaseType(operandType1)
-        + "Col" + operatorName + getCamelCaseType(operandType2) + "Column";
+        + "Col" + operatorName + getCamelCaseType(operandType2) + "Column"
+        + (checked ? "Checked" : "");
     String returnType = getArithmeticReturnType(operandType1, operandType2);
     generateColumnArithmeticOperatorColumn(tdesc, returnType, className);
   }
@@ -2636,6 +2693,7 @@ public class GenVectorCode extends Task {
     String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
     String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
     String operatorSymbol = tdesc[4];
+    String ifDefined = tdesc.length == 6 ? tdesc[5] : "";
 
     //Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
@@ -2650,14 +2708,25 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
     templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
+    templateString = evaluateIfDefined(templateString, ifDefined);
+
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
 
-    testCodeGen.addColumnColumnOperationTestCases(
+    if (!ifDefined.isEmpty()) {
+      testCodeGen.addColumnColumnOperationTestCases(
           className,
           inputColumnVectorType1,
           inputColumnVectorType2,
           outputColumnVectorType);
+    } else {
+      testCodeGen.addColumnColumnOperationCheckedTestCases(
+          className,
+          inputColumnVectorType1,
+          inputColumnVectorType2,
+          outputColumnVectorType,
+          "long".equalsIgnoreCase(returnType));
+    }
   }
 
   private void generateColumnCompareOperatorScalar(String[] tdesc, boolean filter,
@@ -2713,6 +2782,8 @@ public class GenVectorCode extends Task {
     String inputColumnVectorType = this.getColumnVectorType(operandType1);
     String operatorSymbol = tdesc[4];
 
+    String ifDefined = (tdesc.length == 6 ? tdesc[5] : "");
+
     //Read the template into a string;
     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
@@ -2724,6 +2795,9 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType1>", operandType1);
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
+    templateString = evaluateIfDefined(templateString, ifDefined);
+
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
 
@@ -2732,12 +2806,24 @@ public class GenVectorCode extends Task {
       testScalarType = "long";
     }
 
-    testCodeGen.addColumnScalarOperationTestCases(
+    if (ifDefined.isEmpty()) {
+      testCodeGen.addColumnScalarOperationTestCases(
           true,
           className,
           inputColumnVectorType,
           outputColumnVectorType,
           testScalarType);
+    } else {
+      //this is a checked expression use a different template for checked expressions
+      testCodeGen.addColumnScalarOperationCheckedTestCases(
+          true,
+          className,
+          inputColumnVectorType,
+          outputColumnVectorType,
+          testScalarType,
+          "long".equalsIgnoreCase(returnType)
+      );
+    }
   }
 
   private void generateScalarCompareOperatorColumn(String[] tdesc, boolean filter,
@@ -2793,6 +2879,7 @@ public class GenVectorCode extends Task {
              returnType == null ? "long" : returnType);
      String inputColumnVectorType = this.getColumnVectorType(operandType2);
      String operatorSymbol = tdesc[4];
+     String ifDefined = (tdesc.length == 6 ? tdesc[5] : "");
 
      //Read the template into a string;
      File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
@@ -2806,6 +2893,7 @@ public class GenVectorCode extends Task {
      templateString = templateString.replaceAll("<OperandType2>", operandType2);
      templateString = templateString.replaceAll("<ReturnType>", returnType);
      templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
+     templateString = evaluateIfDefined(templateString, ifDefined);
      writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
 
@@ -2814,12 +2902,13 @@ public class GenVectorCode extends Task {
        testScalarType = "long";
      }
 
-     testCodeGen.addColumnScalarOperationTestCases(
-           false,
-           className,
-           inputColumnVectorType,
-           outputColumnVectorType,
-           testScalarType);
+     if (!ifDefined.isEmpty()) {
+       testCodeGen.addColumnScalarOperationTestCases(false, className, inputColumnVectorType,
+           outputColumnVectorType, testScalarType);
+     } else {
+       testCodeGen.addColumnScalarOperationCheckedTestCases(false, className, inputColumnVectorType,
+           outputColumnVectorType, testScalarType, "long".equalsIgnoreCase(returnType));
+     }
   }
 
   //Binary arithmetic operator
@@ -2827,8 +2916,10 @@ public class GenVectorCode extends Task {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
+    boolean checked = tdesc.length == 6 && "CHECKED".equals(tdesc[5]);
     String className = getCamelCaseType(operandType1)
-        + "Col" + operatorName + getCamelCaseType(operandType2) + "Scalar";
+        + "Col" + operatorName + getCamelCaseType(operandType2) + "Scalar"
+        + (checked ? "Checked" : "");
     String returnType = getArithmeticReturnType(operandType1, operandType2);
     generateColumnArithmeticOperatorScalar(tdesc, returnType, className);
   }
@@ -2921,8 +3012,10 @@ public class GenVectorCode extends Task {
     String operatorName = tdesc[1];
     String operandType1 = tdesc[2];
     String operandType2 = tdesc[3];
+    boolean checked = (tdesc.length == 6 && "CHECKED".equals(tdesc[5]));
     String className = getCamelCaseType(operandType1)
-        + "Scalar" + operatorName + getCamelCaseType(operandType2) + "Column";
+        + "Scalar" + operatorName + getCamelCaseType(operandType2) + "Column"
+        + (checked ? "Checked" : "");
     String returnType = getArithmeticReturnType(operandType1, operandType2);
     generateScalarArithmeticOperatorColumn(tdesc, returnType, className);
   }

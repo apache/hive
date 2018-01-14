@@ -38,8 +38,10 @@ public class GenVectorTestCode {
 
   public enum TestSuiteClassName{
     TestColumnScalarOperationVectorExpressionEvaluation,
+    TestColumnScalarOperationVectorExpressionCheckedEvaluation,
     TestColumnScalarFilterVectorExpressionEvaluation,
     TestColumnColumnOperationVectorExpressionEvaluation,
+    TestColumnColumnOperationVectorExpressionCheckedEvaluation,
     TestColumnColumnFilterVectorExpressionEvaluation,
   }
 
@@ -56,6 +58,56 @@ public class GenVectorTestCode {
       testsuites.put(className,new StringBuilder());
     }
 
+  }
+
+  public void addColumnScalarOperationCheckedTestCases(boolean op1IsCol, String vectorExpClassName,
+      String inputColumnVectorType, String outputColumnVectorType, String scalarType,
+      boolean isReturnTypeLong)
+      throws IOException {
+
+    TestSuiteClassName template =
+        TestSuiteClassName.TestColumnScalarOperationVectorExpressionCheckedEvaluation;
+
+    //Read the template into a string;
+    String templateFile = GenVectorCode.joinPath(this.testTemplateDirectory,template.toString()+".txt");
+    String templateString = removeTemplateComments(GenVectorCode.readFile(templateFile));
+    String[] outputTypeInfos = null;
+    if (isReturnTypeLong) {
+      outputTypeInfos = new String[] {"tinyint", "smallint", "int", "bigint"};
+    } else {
+      outputTypeInfos = new String[] {"float", "double"};
+    }
+    for (String outputTypeInfo : outputTypeInfos) {
+      for (Boolean[] testMatrix : new Boolean[][] {
+          // Pairwise: InitOuputColHasNulls, InitOuputColIsRepeating, ColumnHasNulls, ColumnIsRepeating
+          { false, true, true, true }, { false, false, false, false }, { true, false, true, false },
+          { true, true, false, false }, { true, false, false, true } }) {
+        String testCase = templateString;
+        testCase = testCase.replaceAll("<TestName>",
+            "test" + vectorExpClassName
+                + createNullRepeatingNameFragment("Out", testMatrix[0], testMatrix[1])
+                + createNullRepeatingNameFragment("Col", testMatrix[2], testMatrix[3])
+                + createOutputTypeInfoFragment("Ret", outputTypeInfo));
+        testCase = testCase.replaceAll("<OutputTypeInfo>", outputTypeInfo);
+        testCase = testCase.replaceAll("<VectorExpClassName>", vectorExpClassName);
+        testCase = testCase.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
+        testCase = testCase.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+        testCase = testCase.replaceAll("<ScalarType>", scalarType);
+        testCase = testCase.replaceAll("<CamelCaseScalarType>", GenVectorCode.getCamelCaseType(scalarType));
+        testCase = testCase.replaceAll("<InitOuputColHasNulls>", testMatrix[0].toString());
+        testCase = testCase.replaceAll("<InitOuputColIsRepeating>", testMatrix[1].toString());
+        testCase = testCase.replaceAll("<ColumnHasNulls>", testMatrix[2].toString());
+        testCase = testCase.replaceAll("<ColumnIsRepeating>", testMatrix[3].toString());
+
+        if (op1IsCol) {
+          testCase = testCase.replaceAll("<ConstructorParams>", "0, scalarValue");
+        } else {
+          testCase = testCase.replaceAll("<ConstructorParams>", "scalarValue, 0");
+        }
+
+        testsuites.get(template).append(testCase);
+      }
+    }
   }
 
   public void addColumnScalarOperationTestCases(boolean op1IsCol, String vectorExpClassName,
@@ -143,6 +195,59 @@ public class GenVectorTestCode {
       }
 
       testsuites.get(template).append(testCase);
+    }
+  }
+
+  public void addColumnColumnOperationCheckedTestCases(String vectorExpClassName,
+      String inputColumnVectorType1, String inputColumnVectorType2, String outputColumnVectorType,
+      boolean isReturnTypeLong)
+      throws IOException {
+
+    TestSuiteClassName template=
+        TestSuiteClassName.TestColumnColumnOperationVectorExpressionCheckedEvaluation;
+
+    //Read the template into a string;
+    String templateFile = GenVectorCode.joinPath(this.testTemplateDirectory,template.toString()+".txt");
+    String templateString = removeTemplateComments(GenVectorCode.readFile(templateFile));
+    String[] outputTypeInfos = null;
+    if (isReturnTypeLong) {
+      outputTypeInfos = new String[] {"tinyint", "smallint", "int", "bigint"};
+    } else {
+      outputTypeInfos = new String[] {"float", "double"};
+    }
+    for (String outputTypeInfo : outputTypeInfos) {
+      for (Boolean[] testMatrix : new Boolean[][] {
+          // Pairwise: InitOuputColHasNulls, InitOuputColIsRepeating, Column1HasNulls,
+          // Column1IsRepeating, Column2HasNulls, Column2IsRepeating
+          { true, true, false, true, true, true },
+          { false, false, true, false, false, false },
+          { true, false, true, false, true, true },
+          { true, true, true, true, false, false },
+          { false, false, false, true, true, false },
+          { false, true, false, false, false, true } }) {
+        String testCase = templateString;
+        testCase = testCase.replaceAll("<TestName>",
+            "test"
+                + vectorExpClassName
+                + createNullRepeatingNameFragment("Out", testMatrix[0],
+                testMatrix[1])
+                + createNullRepeatingNameFragment("C1", testMatrix[2], testMatrix[3])
+                + createNullRepeatingNameFragment("C2", testMatrix[4], testMatrix[5])
+                + createOutputTypeInfoFragment("Ret", outputTypeInfo));
+        testCase = testCase.replaceAll("<VectorExpClassName>", vectorExpClassName);
+        testCase = testCase.replaceAll("<InputColumnVectorType1>", inputColumnVectorType1);
+        testCase = testCase.replaceAll("<InputColumnVectorType2>", inputColumnVectorType2);
+        testCase = testCase.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+        testCase = testCase.replaceAll("<InitOuputColHasNulls>", testMatrix[0].toString());
+        testCase = testCase.replaceAll("<InitOuputColIsRepeating>", testMatrix[1].toString());
+        testCase = testCase.replaceAll("<Column1HasNulls>", testMatrix[2].toString());
+        testCase = testCase.replaceAll("<Column1IsRepeating>", testMatrix[3].toString());
+        testCase = testCase.replaceAll("<Column2HasNulls>", testMatrix[4].toString());
+        testCase = testCase.replaceAll("<Column2IsRepeating>", testMatrix[5].toString());
+        testCase = testCase.replaceAll("<OutputTypeInfo>", outputTypeInfo);
+
+        testsuites.get(template).append(testCase);
+      }
     }
   }
 
@@ -240,19 +345,48 @@ public class GenVectorTestCode {
     }
   }
 
-  private static String createNullRepeatingNameFragment(String idenitfier, boolean nulls, boolean repeating)
+  private static String createNullRepeatingNameFragment(String identifier, boolean nulls, boolean repeating)
   {
     if(nulls || repeating){
       if(nulls){
-        idenitfier+="Nulls";
+        identifier+="Nulls";
       }
       if(repeating){
-        idenitfier+="Repeats";
+        identifier+="Repeats";
       }
-      return idenitfier;
+      return identifier;
     }
 
     return "";
+  }
+
+  private static String createOutputTypeInfoFragment(String identifier, String outputTypeInfo) {
+    if (identifier == null) {
+      throw new RuntimeException("Received null input for the identifier");
+    }
+    switch (outputTypeInfo) {
+    case "tinyint": {
+      return identifier + "TinyInt";
+    }
+    case "smallint": {
+      return identifier + "SmallInt";
+    }
+    case "int": {
+      return identifier + "Int";
+    }
+    case "bigint": {
+      return identifier + "BigInt";
+    }
+    case "float": {
+      return identifier + "Float";
+    }
+    case "double": {
+      return identifier + "Double";
+    }
+    default: {
+      throw new RuntimeException("Unsupported input typeInfo " + outputTypeInfo);
+    }
+    }
   }
 
   private static String removeTemplateComments(String templateString){

@@ -133,6 +133,8 @@ public class VectorizationContext {
   }
 
   private HiveVectorAdaptorUsageMode hiveVectorAdaptorUsageMode;
+  //when set to true use the overflow checked vector expressions
+  private boolean useCheckedVectorExpressions;
 
   private boolean reuseScratchColumns =
       HiveConf.ConfVars.HIVE_VECTORIZATION_TESTING_REUSE_SCRATCH_COLUMNS.defaultBoolVal;
@@ -142,6 +144,8 @@ public class VectorizationContext {
     this.reuseScratchColumns =
         HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_VECTORIZATION_TESTING_REUSE_SCRATCH_COLUMNS);
     this.ocm.setReuseColumns(reuseScratchColumns);
+    useCheckedVectorExpressions =
+        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZATION_USE_CHECKED_EXPRESSIONS);
   }
 
   private void copyHiveConfVars(VectorizationContext vContextEnvironment) {
@@ -1563,7 +1567,8 @@ public class VectorizationContext {
     }
 
     VectorExpressionDescriptor.Descriptor descriptor = builder.build();
-    Class<?> vectorClass = this.vMap.getVectorExpressionClass(udfClass, descriptor);
+    Class<?> vectorClass =
+        this.vMap.getVectorExpressionClass(udfClass, descriptor, useCheckedVectorExpressions);
     if (vectorClass == null) {
       return null;
     }
@@ -1706,7 +1711,8 @@ public class VectorizationContext {
       }
     }
     VectorExpressionDescriptor.Descriptor descriptor = builder.build();
-    Class<?> vclass = this.vMap.getVectorExpressionClass(udfClass, descriptor);
+    Class<?> vclass =
+        this.vMap.getVectorExpressionClass(udfClass, descriptor, useCheckedVectorExpressions);
     if (vclass == null) {
       if (LOG.isDebugEnabled()) {
         LOG.debug("No vector udf found for "+udfClass.getSimpleName() + ", descriptor: "+descriptor);

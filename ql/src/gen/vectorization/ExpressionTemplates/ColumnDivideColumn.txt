@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.OverflowUtils;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.*;
@@ -143,6 +144,12 @@ public class <ClassName> extends VectorExpression {
       }
     }
 
+#IF CHECKED
+        //when operating in checked mode make sure we handle overflows similar to non-vectorized expression
+        OverflowUtils.accountForOverflow<CamelReturnType>(getOutputTypeInfo(), outputColVector,
+          batch.selectedInUse, sel, n);
+#ELSE
+#ENDIF CHECKED
     /* For the case when the output can have null values, follow
      * the convention that the data values must be 1 for long and
      * NaN for double. This is to prevent possible later zero-divide errors
@@ -156,6 +163,13 @@ public class <ClassName> extends VectorExpression {
           outputColVector, batch.selectedInUse, sel, n, inputColVector2);
     }
   }
+
+#IF CHECKED
+  @Override
+  public boolean supportsCheckedExecution() {
+    return true;
+  }
+#ENDIF CHECKED
 
   @Override
   public String vectorExpressionParameters() {

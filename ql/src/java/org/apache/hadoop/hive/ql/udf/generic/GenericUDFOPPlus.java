@@ -35,10 +35,15 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
  */
 @Description(name = "+", value = "a _FUNC_ b - Returns a+b")
 @VectorizedExpressions({LongColAddLongColumn.class, LongColAddDoubleColumn.class,
+  LongColAddLongColumnChecked.class, LongColAddDoubleColumnChecked.class,
   DoubleColAddLongColumn.class, DoubleColAddDoubleColumn.class, LongColAddLongScalar.class,
+  DoubleColAddLongColumnChecked.class, DoubleColAddDoubleColumnChecked.class, LongColAddLongScalarChecked.class,
   LongColAddDoubleScalar.class, DoubleColAddLongScalar.class, DoubleColAddDoubleScalar.class,
+  LongColAddDoubleScalarChecked.class, DoubleColAddLongScalarChecked.class, DoubleColAddDoubleScalarChecked.class,
   LongScalarAddLongColumn.class, LongScalarAddDoubleColumn.class, DoubleScalarAddLongColumn.class,
+  LongScalarAddLongColumnChecked.class, LongScalarAddDoubleColumnChecked.class, DoubleScalarAddLongColumnChecked.class,
   DoubleScalarAddDoubleColumn.class,
+  DoubleScalarAddDoubleColumnChecked.class,
 
   DecimalScalarAddDecimalColumn.class, DecimalColAddDecimalColumn.class,
   DecimalColAddDecimalScalar.class,

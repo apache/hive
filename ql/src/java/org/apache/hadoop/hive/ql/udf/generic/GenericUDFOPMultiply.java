@@ -34,11 +34,17 @@ import org.apache.hadoop.io.LongWritable;
 
 @Description(name = "*", value = "a _FUNC_ b - Multiplies a by b")
 @VectorizedExpressions({LongColMultiplyLongColumn.class, LongColMultiplyDoubleColumn.class,
+    LongColMultiplyLongColumnChecked.class, LongColMultiplyDoubleColumnChecked.class,
   DoubleColMultiplyLongColumn.class, DoubleColMultiplyDoubleColumn.class,
+    DoubleColMultiplyLongColumnChecked.class, DoubleColMultiplyDoubleColumnChecked.class,
   LongColMultiplyLongScalar.class, LongColMultiplyDoubleScalar.class,
+    LongColMultiplyLongScalarChecked.class, LongColMultiplyDoubleScalarChecked.class,
   DoubleColMultiplyLongScalar.class, DoubleColMultiplyDoubleScalar.class,
+    DoubleColMultiplyLongScalarChecked.class, DoubleColMultiplyDoubleScalarChecked.class,
   LongScalarMultiplyLongColumn.class, LongScalarMultiplyDoubleColumn.class,
+    LongScalarMultiplyLongColumnChecked.class, LongScalarMultiplyDoubleColumnChecked.class,
   DoubleScalarMultiplyLongColumn.class, DoubleScalarMultiplyDoubleColumn.class,
+    DoubleScalarMultiplyLongColumnChecked.class, DoubleScalarMultiplyDoubleColumnChecked.class,
   DecimalColMultiplyDecimalColumn.class, DecimalColMultiplyDecimalScalar.class,
   DecimalScalarMultiplyDecimalColumn.class})
 public class GenericUDFOPMultiply extends GenericUDFBaseNumeric {
