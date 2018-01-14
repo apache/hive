@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 public class MyFilterPushDown extends RelOptRule {
   static Logger LOG = LoggerFactory.getLogger(MyFilterPushDown.class);
   
+  public static final MyFilterPushDown INSTANCE = new MyFilterPushDown ();
+  
   public MyFilterPushDown() {
     super(operand(HiveFilter.class,
         operand(HiveJdbcConverter.class, any())));

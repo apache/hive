@@ -42,18 +42,16 @@ public class JdbcHiveTableScan extends JdbcTableScan {
       JdbcConvention jdbcConvention, HiveTableScan hiveTableScan) {
     super(cluster, table, jdbcTable, jdbcConvention);
     this.hiveTableScan= hiveTableScan;
-    // TODO Auto-generated constructor stub
   }
-  
+
   @Override public RelNode copy(RelTraitSet traitSet, List<RelNode> inputs) {
-    assert inputs.isEmpty();//TODOY need to remove or fix?
-    JdbcHiveTableScan res = new JdbcHiveTableScan(
+    assert inputs.isEmpty();
+    return new JdbcHiveTableScan(
         getCluster(), table, jdbcTable, (JdbcConvention) getConvention(), this.hiveTableScan);
-    return res;
   }
-  
+
   public HiveTableScan getHiveTableScan() {
     return hiveTableScan;
   }
-  
+
 }

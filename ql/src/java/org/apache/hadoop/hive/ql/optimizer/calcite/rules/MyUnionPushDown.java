@@ -16,7 +16,9 @@ import org.slf4j.LoggerFactory;
 
 public class MyUnionPushDown extends RelOptRule {
   static Logger LOG = LoggerFactory.getLogger(MyUnionPushDown.class);
-  
+
+  final static public MyUnionPushDown INSTANCE = new MyUnionPushDown ();
+
   public MyUnionPushDown() {
     super(operand(HiveUnion.class,
             operand(HiveJdbcConverter.class, any()),
@@ -34,7 +36,6 @@ public class MyUnionPushDown extends RelOptRule {
     }
     
     boolean res = union.getInputs().size() == 2;
-    
     
     return res;
   }

@@ -19,6 +19,8 @@ import org.slf4j.LoggerFactory;
 public class MyAggregationPushDownRule extends RelOptRule {
   static Logger LOG = LoggerFactory.getLogger(MyAggregationPushDownRule.class);
   
+  public static final MyAggregationPushDownRule INSTANCE = new MyAggregationPushDownRule ();
+  
   public MyAggregationPushDownRule() {
     super(operand(HiveAggregate.class,
             operand(HiveJdbcConverter.class, any())));

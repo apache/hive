@@ -16,7 +16,9 @@ import org.slf4j.LoggerFactory;
 
 public class MySortPushDownRule extends RelOptRule {
   static Logger LOG = LoggerFactory.getLogger(MySortPushDownRule.class);
-  
+
+  public static final MySortPushDownRule INSTANCE = new MySortPushDownRule ();
+
   public MySortPushDownRule() {
     super(operand(HiveSortLimit.class,
         operand(HiveJdbcConverter.class, operand(RelNode.class, any()))));
@@ -24,14 +26,13 @@ public class MySortPushDownRule extends RelOptRule {
   
   public boolean matches(RelOptRuleCall call) {
     final Sort sort = (Sort) call.rel(0);
-    
-    
+
     for (RexNode curr_call : sort.getChildExps()) {
       if (MyJdbcRexCallValidator.isValidJdbcOperation(curr_call) == false) {
         return false;
       }
     }
-    
+
     return true;
   }
   

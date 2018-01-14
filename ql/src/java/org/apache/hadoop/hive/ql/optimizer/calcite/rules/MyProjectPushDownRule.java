@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 public class MyProjectPushDownRule extends RelOptRule {
   static Logger LOG = LoggerFactory.getLogger(MyProjectPushDownRule.class);
   
+  public static final MyProjectPushDownRule INSTANCE = new MyProjectPushDownRule ();
+  
   public MyProjectPushDownRule() {
     super(operand(HiveProject.class,
         operand(HiveJdbcConverter.class, any())));

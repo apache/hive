@@ -344,12 +344,12 @@ public class ASTConverter {
     Schema s = null;
     ASTNode ast = null;
 
-    if (r instanceof HiveJdbcConverter) {
-      HiveJdbcConverter f = (HiveJdbcConverter) r;
+    if (r instanceof TableScan) {
+      TableScan f = (TableScan) r;
       s = new Schema(f);
       ast = ASTBuilder.table(f);
-    } else if (r instanceof TableScan) {
-      TableScan f = (TableScan) r;
+    } else if (r instanceof HiveJdbcConverter) {
+      HiveJdbcConverter f = (HiveJdbcConverter) r;
       s = new Schema(f);
       ast = ASTBuilder.table(f);
     } else if (r instanceof DruidQuery) {

@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 public class MyJoinPushDown extends RelOptRule {
   static Logger LOG = LoggerFactory.getLogger(MyJoinPushDown.class);
   
+  final static public MyJoinPushDown INSTANCE = new MyJoinPushDown ();
+  
   public MyJoinPushDown() {
     super(operand(HiveJoin.class,
             operand(HiveJdbcConverter.class, any()),
@@ -32,10 +34,11 @@ public class MyJoinPushDown extends RelOptRule {
     if (converter1.getJdbcConvention().dialect.equals(converter2.getJdbcConvention().dialect) == false) {
       return false;//TODOY ask
     }
-    //TODOY
-    //if (cond.getKind() == SqlKind.IS_TRUE) {
-    //  return false;//We don't want to push cross join
-    //}
+
+    if (cond.isAlwaysTrue()) {
+      return false;//We don't want to push cross join
+    }
+    
     boolean visitorRes = MyJdbcRexCallValidator.isValidJdbcOperation(cond);
     return visitorRes;
   }

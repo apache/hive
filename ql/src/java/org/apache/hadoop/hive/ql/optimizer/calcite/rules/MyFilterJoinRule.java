@@ -1,20 +1,9 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
-import java.util.List;
-
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.plan.RelOptRuleOperand;
-import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
-import org.apache.calcite.rel.core.RelFactories;
-import org.apache.calcite.rel.core.RelFactories.FilterFactory;
-import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
-import org.apache.calcite.rel.rules.FilterJoinRule;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.tools.RelBuilderFactory;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter;
@@ -25,6 +14,10 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
  * the inputs of the join.
  */
 public class MyFilterJoinRule extends HiveFilterJoinRule {
+  
+  final static public MyFilterJoinRule INSTANCE = new MyFilterJoinRule ();
+  
+  
   public MyFilterJoinRule() {
     super(RelOptRule.operand(HiveFilter.class, 
             RelOptRule.operand(HiveJoin.class, 

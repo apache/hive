@@ -58,7 +58,7 @@ public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
   public JdbcHiveTableScan getTableScan () {
     final  JdbcHiveTableScan []  tmpJdbcHiveTableScan = new JdbcHiveTableScan[1];
     new RelVisitor() {
-      
+
       public void visit(
           RelNode node,
           int ordinal,
@@ -70,14 +70,14 @@ public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
         }
       }
     }.go(this);
-    
+
     JdbcHiveTableScan jdbcHiveTableScan = tmpJdbcHiveTableScan [0];
     
     assert jdbcHiveTableScan != null;
     return jdbcHiveTableScan;
   }
-  
-  
+
+
   public JdbcConvention getUnderlyingConvention () {
     return (JdbcConvention) getTableScan().getConvention ();
   }

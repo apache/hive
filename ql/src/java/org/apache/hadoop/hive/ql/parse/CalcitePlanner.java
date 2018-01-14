@@ -115,7 +115,6 @@ import org.apache.calcite.sql.SqlLiteral;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.SqlWindow;
-import org.apache.calcite.sql.dialect.JethrodataSqlDialect;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.Frameworks;
@@ -1650,31 +1649,28 @@ public class CalcitePlanner extends SemanticAnalyzer {
               DruidRules.PROJECT_SORT_TRANSPOSE
       );
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Druid transformation rules");
-      
-      
+
       // 11. Apply Jdbc transformation rules
       if (LOG.isDebugEnabled()) {
-        LOG.debug("JETHRO: Original plan for jdbc rules phase 2" +System.lineSeparator()+ RelOptUtil.toString(calciteOptimizedPlan));
+        LOG.debug("JETHRO: Original plan for jdbc rules:" +System.lineSeparator()+ RelOptUtil.toString(calciteOptimizedPlan));
       }
-      
+
       calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, true, mdProvider.getMetadataProvider(), null,
               HepMatchOrder.TOP_DOWN,
               new MyJoinExtractFilterRule(),
               MyAbstractSplitFilter.SPLIT_FILTER_ABOVE_JOIN, MyAbstractSplitFilter.SPLIT_FILTER_ABOVE_CONVERTER,
-              new MyFilterJoinRule (),
+              MyFilterJoinRule.INSTANCE,
               
-              new MyJoinPushDown(),
-              new MyFilterPushDown(), new MyProjectPushDownRule (), 
-              new MyAggregationPushDownRule (), new MySortPushDownRule ()
+              MyJoinPushDown.INSTANCE,
+              MyFilterPushDown.INSTANCE, MyProjectPushDownRule.INSTANCE, 
+              MyAggregationPushDownRule.INSTANCE, MySortPushDownRule.INSTANCE
               //,new HiveFilterJoinRule.FILTER_ON_JOIN
       );
-      
-      
+
       if (LOG.isDebugEnabled()) {
-        LOG.debug("JETHRO: Updated plan after jdbc rules phase 2 " + System.lineSeparator()+ RelOptUtil.toString(calciteOptimizedPlan));
+        LOG.debug("JETHRO: Updated plan after jdbc rules:" + System.lineSeparator()+ RelOptUtil.toString(calciteOptimizedPlan));
       }
 
-     
       // 12. Run rules to aid in translation from Calcite tree to Hive tree
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);

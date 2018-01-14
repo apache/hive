@@ -25,7 +25,7 @@ CREATE EXTERNAL TABLE jethro_store_sales ( ss_sold_date_sk           INT,
                                            ss_net_profit             DOUBLE)
 STORED BY
 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES ( "hive.sql.database.type" = "JethroData",
+TBLPROPERTIES ( "hive.sql.database.type" = "JETHRO_DATA",
                 "hive.sql.jdbc.driver" = "com.jethrodata.JethroDriver",
                 "hive.sql.jdbc.url" = "jdbc:JethroData://10.0.0.221:9111/demo3",
                 "hive.sql.dbcp.username" = "jethro",
@@ -58,7 +58,7 @@ CREATE EXTERNAL TABLE jethro_item ( i_item_sk                 INT,
                                     i_product_name            STRING)
 STORED BY
 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES ( "hive.sql.database.type" = "JethroData",
+TBLPROPERTIES ( "hive.sql.database.type" = "JETHRO_DATA",
                 "hive.sql.jdbc.driver" = "com.jethrodata.JethroDriver",
                 "hive.sql.jdbc.url" = "jdbc:JethroData://10.0.0.221:9111/demo3",
                 "hive.sql.dbcp.username" = "jethro",
