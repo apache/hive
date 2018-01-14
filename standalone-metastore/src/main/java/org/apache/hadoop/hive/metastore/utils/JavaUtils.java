@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.utils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.serde2.Deserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,25 +31,6 @@ import java.net.UnknownHostException;
 
 public class JavaUtils {
   public static final Logger LOG = LoggerFactory.getLogger(JavaUtils.class);
-  private static final Method configureMethod;
-  private static final Class<?> jobConfClass, jobConfigurableClass;
-
-  static {
-    Class<?> jobConfClassLocal, jobConfigurableClassLocal;
-    Method configureMethodLocal;
-    try {
-      jobConfClassLocal = Class.forName("org.apache.hadoop.mapred.JobConf");
-      jobConfigurableClassLocal = Class.forName("org.apache.hadoop.mapred.JobConfigurable");
-      configureMethodLocal = jobConfigurableClassLocal.getMethod("configure", jobConfClassLocal);
-    } catch (Throwable t) {
-      // Meh.
-      jobConfClassLocal = jobConfigurableClassLocal = null;
-      configureMethodLocal = null;
-    }
-    jobConfClass = jobConfClassLocal;
-    jobConfigurableClass = jobConfigurableClassLocal;
-    configureMethod = configureMethodLocal;
-  }
 
   /**
    * Standard way of getting classloader in Hive code (outside of Hadoop).
@@ -122,54 +104,7 @@ public class JavaUtils {
       throw new RuntimeException("Unable to instantiate " + theClass.getName(), e);
     }
   }
-  private static final Class<?>[] EMPTY_ARRAY = new Class[] {};
-  /**
-   * Create an object for the given class and initialize it from conf
-   * @param theClass class of which an object is created
-   * @param conf Configuration
-   * @return a new object
-   */
-  @SuppressWarnings("unchecked")
-  public static <T> T newInstance(Class<T> theClass, Configuration conf) {
-    T result;
-    try {
-      // TODO Do we need a constructor cache like Hive here?
-      Constructor<?> ctor = theClass.getDeclaredConstructor(EMPTY_ARRAY);
-      ctor.setAccessible(true);
-      result = (T)ctor.newInstance();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-    setConf(result, conf);
-    return result;
-  }
 
-  /**
-   * Check and set 'configuration' if necessary.
-   * 
-   * @param theObject object for which to set configuration
-   * @param conf Configuration
-   */
-  public static void setConf(Object theObject, Configuration conf) {
-    if (conf != null) {
-      if (theObject instanceof Configurable) {
-        ((Configurable) theObject).setConf(conf);
-      }
-      setJobConf(theObject, conf);
-    }
-  }
-
-  private static void setJobConf(Object theObject, Configuration conf) {
-    if (configureMethod == null) return;
-    try {
-      if (jobConfClass.isAssignableFrom(conf.getClass()) &&
-            jobConfigurableClass.isAssignableFrom(theObject.getClass())) {
-        configureMethod.invoke(theObject, conf);
-      }
-    } catch (Exception e) {
-      throw new RuntimeException("Error in configuring object", e);
-    }
-  }
   /**
    * @return name of current host
    */

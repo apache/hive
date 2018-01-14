@@ -101,3 +101,5 @@ const set<string> PrimitiveTypes  = [
 
 const set<string> CollectionTypes = [ LIST_TYPE_NAME MAP_TYPE_NAME ],
 const set<string> IntegralTypes = [ TINYINT_TYPE_NAME SMALLINT_TYPE_NAME INT_TYPE_NAME BIGINT_TYPE_NAME ],
+
+

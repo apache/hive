@@ -61,7 +61,8 @@ public class TestProtocolBuffersObjectInspectors extends TestCase {
       List<Integer> c2 = Arrays.asList(new Integer[] {1, 2, 3});
       List<String> c3 = Arrays.asList(new String[] {"one", "two"});
       List<IntString> c4 = new ArrayList<IntString>();
-      Complex c = new Complex(1, "test", c2, c3, c4);
+      Complex c = Complex.newBuilder().addLint(1).addLString("test").addAllLint(c2).addAllLString(c3)
+          .addAllLintString(c4).build();
 
       assertEquals(1, soi.getStructFieldData(c, fields.get(0)));
       assertEquals("test", soi.getStructFieldData(c, fields.get(1)));

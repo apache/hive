@@ -30,6 +30,7 @@
 
   <properties>
     <libthrift.version>0.9.3</libthrift.version>
+    <protobuf.version>2.5.0</protobuf.version>
     <storage-api.version>3.0.0-SNAPSHOT</storage-api.version>
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
@@ -41,11 +42,6 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-annotations</artifactId>
       <version>${hadoop.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.thrift</groupId>
-      <artifactId>libthrift</artifactId>
-      <version>${libthrift.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -100,14 +96,24 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-storage-api</artifactId>
+      <version>${storage-api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.thrift</groupId>
+      <artifactId>libthrift</artifactId>
+      <version>${libthrift.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
       <version>${jsr305.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-storage-api</artifactId>
-      <version>${storage-api.version}</version>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>${protobuf.version}</version>
     </dependency>
   </dependencies>
 
@@ -169,6 +175,63 @@
                   </rules>
                   <fail>true</fail>
                 </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>protobuf</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>generate-protobuf-sources</id>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <target>
+                    <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask"
+                             classpathref="maven.plugin.classpath"/>
+                    <property name="protobuf.build.dir"  location="${basedir}/src/gen/protobuf/gen-java"/>
+                    <property name="protobuf.test.dir"  location="${basedir}/if/test"/>
+                    <echo>Building Serde API Protobuf</echo>
+                    <delete dir="${protobuf.build.dir}"/>
+                    <mkdir dir="${protobuf.build.dir}"/>
+                    <for param="proto.file">
+                      <path>
+                        <fileset dir="."
+                                 includes="if/*.proto,if/test/*.proto,src/main/thrift/*.proto"/>
+                      </path>
+                      <sequential>
+                        <echo message="Generating Protobuf code for @{proto.file}"/>
+                        <exec executable="protoc" failonerror="true">
+                          <arg value="--java_out=${protobuf.build.dir}"/>
+                          <!-- currently this module has only .proto file in test directory -->
+                          <arg value="-I=${protobuf.test.dir}"/>
+                          <arg value="@{proto.file}"/>
+                        </exec>
+                      </sequential>
+                    </for>
+                  </target>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>test-jar</goal>
+                </goals>
               </execution>
             </executions>
           </plugin>

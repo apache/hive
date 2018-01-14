@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -33,6 +34,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobConfigurable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -197,8 +200,9 @@ public class SerDeUtils {
       org.apache.hadoop.hive.metastore.api.Table table, boolean skipConfError,
       String lib) throws MetaException {
     try {
-      Deserializer deserializer = JavaUtils.newInstance(conf.getClassByName(lib).
-              asSubclass(Deserializer.class), conf);
+      Deserializer deserializer =
+          JavaUtils.newInstance(conf.getClassByName(lib).asSubclass(Deserializer.class));
+      setConf(deserializer, conf);
       if (skipConfError) {
         SerDeUtils.initializeSerDeWithoutErrorCheck(deserializer, conf,
                 MetaStoreUtils.getTableMetadata(table), null);
@@ -212,6 +216,17 @@ public class SerDeUtils {
       LOG.error("error in initSerDe: " + e.getClass().getName() + " "
           + e.getMessage(), e);
       throw new MetaException(e.getClass().getName() + " " + e.getMessage());
+    }
+  }
+
+  private static void setConf(Deserializer deserializer, Configuration conf) {
+    if (conf != null) {
+      if (deserializer instanceof Configurable) {
+        ((Configurable) deserializer).setConf(conf);
+      }
+      if (conf instanceof JobConf && deserializer instanceof JobConfigurable) {
+        ((JobConfigurable) deserializer).configure((JobConf) conf);
+      }
     }
   }
 }
