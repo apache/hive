@@ -19,11 +19,14 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 public class PosModDoubleToDouble extends MathFuncDoubleToDouble {
   private static final long serialVersionUID = 1L;
 
   private final double divisor;
+  private boolean isOutputTypeFloat;
 
   public PosModDoubleToDouble(int inputCol, double scalarVal, int outputColumnNum) {
     super(inputCol, outputColumnNum);
@@ -37,9 +40,26 @@ public class PosModDoubleToDouble extends MathFuncDoubleToDouble {
     divisor = 0;
   }
 
+  /**
+   * Set type of the output column and also set the flag which determines if cast to float
+   * is needed while calculating PosMod expression
+   */
+  @Override
+  public void setOutputTypeInfo(TypeInfo outputTypeInfo) {
+    this.outputTypeInfo = outputTypeInfo;
+    isOutputTypeFloat = outputTypeInfo != null && serdeConstants.FLOAT_TYPE_NAME
+        .equals(outputTypeInfo.getTypeName());
+  }
+
   @Override
   protected double func(double v) {
-
+    // if the outputType is a float cast the arguments to float to replicate the overflow behavior
+    // in non-vectorized UDF GenericUDFPosMod
+    if (isOutputTypeFloat) {
+      float castedV = (float) v;
+      float castedDivisor = (float) divisor;
+      return ((castedV % castedDivisor) + castedDivisor) % castedDivisor;
+    }
     // return positive modulo
     return ((v % divisor) + divisor) % divisor;
   }

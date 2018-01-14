@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSqrtDoubleToDou
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncTanDoubleToDouble;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
 
 
@@ -585,8 +586,52 @@ public class TestVectorMathFunctions {
     b.cols[0].noNulls = true;
     inV.vector[4] = -4.0;
     VectorExpression expr = new PosModDoubleToDouble(0, 0.3d, 1);
+    expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("double"));
     expr.evaluate(b);
     Assert.assertTrue(equalsWithinTolerance(((-4.0d % 0.3d) + 0.3d) % 0.3d, resultV.vector[4]));
+
+    // test long->long version
+    b = getVectorizedRowBatchLongInLongOut();
+    LongColumnVector resV2 = (LongColumnVector) b.cols[1];
+    b.cols[0].noNulls = true;
+    expr = new PosModLongToLong(0, 3, 1);
+    expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("tinyint"));
+    //((ISetLongArg) expr).setArg(3);
+    expr.evaluate(b);
+    Assert.assertEquals(((-2 % 3) + 3) % 3, resV2.vector[0]);
+    //use smallint as outputTypeInfo
+    expr = new PosModLongToLong(0, 3, 1);
+    expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("smallint"));
+    //((ISetLongArg) expr).setArg(3);
+    expr.evaluate(b);
+    Assert.assertEquals(((-2 % 3) + 3) % 3, resV2.vector[0]);
+    //use int as outputTypeInfo
+    expr = new PosModLongToLong(0, 3, 1);
+    expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    //((ISetLongArg) expr).setArg(3);
+    expr.evaluate(b);
+    Assert.assertEquals(((-2 % 3) + 3) % 3, resV2.vector[0]);
+    //use bigint
+    expr = new PosModLongToLong(0, 3, 1);
+    expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
+    //((ISetLongArg) expr).setArg(3);
+    expr.evaluate(b);
+    Assert.assertEquals(((-2 % 3) + 3) % 3, resV2.vector[0]);
+  }
+
+  @Test
+  public void testVectorPosModWithFloatOutputType() {
+
+    // test double->double version
+    VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
+    DoubleColumnVector inV = (DoubleColumnVector) b.cols[0];
+    DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
+    b.cols[0].noNulls = true;
+    inV.vector[4] = -4.0;
+    VectorExpression expr = new PosModDoubleToDouble(0, 0.3d, 1);
+    expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("float"));
+    expr.evaluate(b);
+    Assert.assertTrue(equalsWithinTolerance(((-4.0f % 0.3f) + 0.3f) % 0.3f, resultV.vector[4]));
 
     // test long->long version
     b = getVectorizedRowBatchLongInLongOut();

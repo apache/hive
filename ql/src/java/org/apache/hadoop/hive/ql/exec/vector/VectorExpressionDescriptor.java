@@ -351,21 +351,36 @@ public class VectorExpressionDescriptor {
     }
   }
 
-  public Class<?> getVectorExpressionClass(Class<?> udf, Descriptor descriptor) throws HiveException {
+  public Class<?> getVectorExpressionClass(Class<?> udf, Descriptor descriptor,
+      boolean useCheckedExpressionIfAvailable) throws HiveException {
     VectorizedExpressions annotation =
         AnnotationUtils.getAnnotation(udf, VectorizedExpressions.class);
     if (annotation == null || annotation.value() == null) {
       return null;
     }
     Class<? extends VectorExpression>[] list = annotation.value();
+    Class<? extends VectorExpression> matchedVe = null;
     for (Class<? extends VectorExpression> ve : list) {
       try {
-        if (ve.newInstance().getDescriptor().matches(descriptor)) {
-          return ve;
+        VectorExpression candidateVe = ve.newInstance();
+        if (candidateVe.getDescriptor().matches(descriptor)) {
+          if (!useCheckedExpressionIfAvailable) {
+            // no need to look further for a checked variant of this expression
+            return ve;
+          } else if (candidateVe.supportsCheckedExecution()) {
+            return ve;
+          } else {
+            // vector expression doesn't support checked execution
+            // hold on to it in case there is no available checked variant
+            matchedVe = ve;
+          }
         }
       } catch (Exception ex) {
         throw new HiveException("Could not instantiate VectorExpression class " + ve.getSimpleName(), ex);
       }
+    }
+    if (matchedVe != null) {
+      return matchedVe;
     }
     if (LOG.isDebugEnabled()) {
       LOG.debug("getVectorExpressionClass udf " + udf.getSimpleName() + " descriptor: " + descriptor.toString());

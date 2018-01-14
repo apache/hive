@@ -18,6 +18,7 @@
  
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.OverflowUtils;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -100,7 +101,21 @@ public class <ClassName> extends VectorExpression {
       }
       outputColVector.isRepeating = false;
     }
+
+#IF CHECKED
+    //when operating in checked mode make sure we handle overflows similar to non-vectorized expression
+    OverflowUtils.accountForOverflow<CamelReturnType>(getOutputTypeInfo(), outputColVector,
+      batch.selectedInUse, sel, n);
+#ELSE
+#ENDIF CHECKED
   }
+
+#IF CHECKED
+  @Override
+  public boolean supportsCheckedExecution() {
+    return true;
+  }
+#ENDIF CHECKED
 
   @Override
   public String vectorExpressionParameters() {
