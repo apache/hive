@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColModuloLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColModuloLongColumnChecked;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -35,11 +36,17 @@ import org.apache.hadoop.io.LongWritable;
 
 @Description(name = "%", value = "a _FUNC_ b - Returns the remainder when dividing a by b")
 @VectorizedExpressions({LongColModuloLongColumn.class, LongColModuloDoubleColumn.class,
+    LongColModuloLongColumnChecked.class, LongColModuloDoubleColumnChecked.class,
   DoubleColModuloLongColumn.class, DoubleColModuloDoubleColumn.class,
+    DoubleColModuloLongColumnChecked.class, DoubleColModuloDoubleColumnChecked.class,
   LongColModuloLongScalar.class, LongColModuloDoubleScalar.class,
+    LongColModuloLongScalarChecked.class, LongColModuloDoubleScalarChecked.class,
   DoubleColModuloLongScalar.class, DoubleColModuloDoubleScalar.class,
+    DoubleColModuloLongScalarChecked.class, DoubleColModuloDoubleScalarChecked.class,
   LongScalarModuloLongColumn.class, LongScalarModuloDoubleColumn.class,
+    LongScalarModuloLongColumnChecked.class, LongScalarModuloDoubleColumnChecked.class,
   DoubleScalarModuloLongColumn.class, DoubleScalarModuloDoubleColumn.class,
+    DoubleScalarModuloLongColumnChecked.class, DoubleScalarModuloDoubleColumnChecked.class,
   DecimalColModuloDecimalColumn.class, DecimalColModuloDecimalScalar.class,
   DecimalScalarModuloDecimalColumn.class})
 public class GenericUDFOPMod extends GenericUDFBaseNumeric {

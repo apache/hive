@@ -2954,7 +2954,10 @@ public class HiveConf extends Configuration {
         "The default value is true."),
     HIVE_VECTORIZATION_ROW_IDENTIFIER_ENABLED("hive.vectorized.row.identifier.enabled", true,
         "This flag should be set to true to enable vectorization of ROW__ID."),
-
+    HIVE_VECTORIZATION_USE_CHECKED_EXPRESSIONS("hive.vectorized.use.checked.expressions", false,
+        "This flag should be set to true to use overflow checked vector expressions when available.\n" +
+        "For example, arithmetic expressions which can overflow the output data type can be evaluated using\n" +
+        " checked vector expressions so that they produce same result as non-vectorized evaluation."),
     HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED(
         "hive.vectorized.input.format.supports.enabled",
         "decimal_64",
@@ -2965,7 +2968,7 @@ public class HiveConf extends Configuration {
     HIVE_TEST_VECTORIZATION_ENABLED_OVERRIDE("hive.test.vectorized.execution.enabled.override",
         "none", new StringSet("none", "enable", "disable"),
         "internal use only, used to override the hive.vectorized.execution.enabled setting and\n" +
-        "turn off vectorization.  The default is false, or course",
+        "turn off vectorization.  The default is false, of course",
         true),
 
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "

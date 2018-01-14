@@ -27,11 +27,17 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 
 @Description(name = "-", value = "a _FUNC_ b - Returns the difference a-b")
 @VectorizedExpressions({LongColSubtractLongColumn.class, LongColSubtractDoubleColumn.class,
+    LongColSubtractLongColumnChecked.class, LongColSubtractDoubleColumnChecked.class,
   DoubleColSubtractLongColumn.class, DoubleColSubtractDoubleColumn.class,
+    DoubleColSubtractLongColumnChecked.class, DoubleColSubtractDoubleColumnChecked.class,
   LongColSubtractLongScalar.class, LongColSubtractDoubleScalar.class,
+    LongColSubtractLongScalarChecked.class, LongColSubtractDoubleScalarChecked.class,
   DoubleColSubtractLongScalar.class, DoubleColSubtractDoubleScalar.class,
+    DoubleColSubtractLongScalarChecked.class, DoubleColSubtractDoubleScalarChecked.class,
   LongScalarSubtractLongColumn.class, LongScalarSubtractDoubleColumn.class,
+    LongScalarSubtractLongColumnChecked.class, LongScalarSubtractDoubleColumnChecked.class,
   DoubleScalarSubtractLongColumn.class, DoubleScalarSubtractDoubleColumn.class,
+    DoubleScalarSubtractLongColumnChecked.class, DoubleScalarSubtractDoubleColumnChecked.class,
 
   DecimalColSubtractDecimalColumn.class, DecimalColSubtractDecimalScalar.class,
   DecimalScalarSubtractDecimalColumn.class,

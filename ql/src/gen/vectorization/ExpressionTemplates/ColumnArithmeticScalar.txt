@@ -18,6 +18,7 @@
  
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.OverflowUtils;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.<InputColumnVectorType>;
 import org.apache.hadoop.hive.ql.exec.vector.<OutputColumnVectorType>;
@@ -103,9 +104,21 @@ public class <ClassName> extends VectorExpression {
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
     }
-
+#IF CHECKED
+    //when operating in checked mode make sure we handle overflows similar to non-vectorized expression
+    OverflowUtils.accountForOverflow<CamelReturnType>(getOutputTypeInfo(), outputColVector,
+      batch.selectedInUse, sel, n);
+#ELSE
+#ENDIF CHECKED
     NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
   }
+
+#IF CHECKED
+  @Override
+  public boolean supportsCheckedExecution() {
+    return true;
+  }
+#ENDIF CHECKED
 
   @Override
   public String vectorExpressionParameters() {

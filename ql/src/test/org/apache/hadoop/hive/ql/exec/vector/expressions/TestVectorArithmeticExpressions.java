@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColMultiplyDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumnChecked;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColAddDecimalColumn;
@@ -52,7 +53,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColMultiplyD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarAddDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarSubtractDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarMultiplyDecimalColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalarChecked;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
 
 /**
@@ -62,8 +65,23 @@ public class TestVectorArithmeticExpressions {
 
   @Test
   public void testLongColAddLongScalarNoNulls()  {
+    longColAddLongScalarNoNulls(false);
+  }
+
+  @Test
+  public void testLongColAddLongScalarCheckedNoNulls()  {
+    longColAddLongScalarNoNulls(true);
+  }
+
+  private void longColAddLongScalarNoNulls(boolean checked)  {
     VectorizedRowBatch vrg = getVectorizedRowBatchSingleLongVector(VectorizedRowBatch.DEFAULT_SIZE);
-    LongColAddLongScalar expr = new LongColAddLongScalar(0, 23, 1);
+    VectorExpression expr;
+    if (checked) {
+      expr = new LongColAddLongScalarChecked(0, 23, 1);
+      expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
+    } else {
+      expr = new LongColAddLongScalar(0, 23, 1);
+    }
     expr.evaluate(vrg);
     //verify
     for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
@@ -105,12 +123,27 @@ public class TestVectorArithmeticExpressions {
 
   @Test
   public void testLongColAddLongScalarWithNulls()  {
+    longColAddLongScalarCheckedWithNulls(false);
+  }
+
+  @Test
+  public void testLongColAddLongScalarCheckedWithNulls()  {
+    longColAddLongScalarCheckedWithNulls(true);
+  }
+
+  private void longColAddLongScalarCheckedWithNulls(boolean isChecked)  {
     VectorizedRowBatch batch = getVectorizedRowBatchSingleLongVector(
         VectorizedRowBatch.DEFAULT_SIZE);
     LongColumnVector lcv = (LongColumnVector) batch.cols[0];
     LongColumnVector lcvOut = (LongColumnVector) batch.cols[1];
     TestVectorizedRowBatch.addRandomNulls(lcv);
-    LongColAddLongScalar expr = new LongColAddLongScalar(0, 23, 1);
+    VectorExpression expr;
+    if (isChecked) {
+      expr = new LongColAddLongScalarChecked(0, 23, 1);
+      expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
+    } else {
+      expr = new LongColAddLongScalar(0, 23, 1);
+    }
     expr.evaluate(batch);
 
     // verify
@@ -128,9 +161,18 @@ public class TestVectorArithmeticExpressions {
 
   @Test
   public void testLongColAddLongScalarWithRepeating() {
+    longColAddLongScalarWithRepeatingUtil(false);
+  }
+
+  @Test
+  public void testLongColAddLongScalarCheckedWithRepeating() {
+    longColAddLongScalarWithRepeatingUtil(true);
+  }
+
+  private void longColAddLongScalarWithRepeatingUtil(boolean isChecked) {
     LongColumnVector in, out;
     VectorizedRowBatch batch;
-    LongColAddLongScalar expr;
+    VectorExpression expr;
 
     // Case 1: is repeating, no nulls
     batch = getVectorizedRowBatchSingleLongVector(VectorizedRowBatch.DEFAULT_SIZE);
@@ -138,7 +180,13 @@ public class TestVectorArithmeticExpressions {
     in.isRepeating = true;
     out = (LongColumnVector) batch.cols[1];
     out.isRepeating = false;
-    expr = new LongColAddLongScalar(0, 23, 1);
+    if(isChecked) {
+      expr = new LongColAddLongScalarChecked(0, 23, 1);
+      expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
+    } else {
+      expr = new LongColAddLongScalar(0, 23, 1);
+    }
+
     expr.evaluate(batch);
     // verify
     Assert.assertTrue(out.isRepeating);
@@ -156,7 +204,13 @@ public class TestVectorArithmeticExpressions {
     out.isRepeating = false;
     out.isNull[0] = false;
     out.noNulls = true;
-    expr = new LongColAddLongScalar(0, 23, 1);
+    if (isChecked) {
+      expr = new LongColAddLongScalarChecked(0, 23, 1);
+      expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
+    } else {
+      expr = new LongColAddLongScalar(0, 23, 1);
+    }
+
     expr.evaluate(batch);
     // verify
     Assert.assertTrue(out.isRepeating);
@@ -195,6 +249,15 @@ public class TestVectorArithmeticExpressions {
 
   @Test
   public void testLongColAddLongColumn() {
+    longColAddLongColumnUtil(false);
+  }
+
+  @Test
+  public void testLongColAddLongColumnChecked() {
+    longColAddLongColumnUtil(true);
+  }
+
+  private void longColAddLongColumnUtil(boolean isChecked) {
     int seed = 17;
     VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
         VectorizedRowBatch.DEFAULT_SIZE,
@@ -205,7 +268,14 @@ public class TestVectorArithmeticExpressions {
     LongColumnVector lcv3 = (LongColumnVector) vrg.cols[3];
     LongColumnVector lcv4 = (LongColumnVector) vrg.cols[4];
     LongColumnVector lcv5 = (LongColumnVector) vrg.cols[5];
-    LongColAddLongColumn expr = new LongColAddLongColumn(0, 1, 2);
+    VectorExpression expr;
+    if (isChecked) {
+      expr = new LongColAddLongColumnChecked(0, 1, 2);
+      expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
+    } else {
+      expr = new LongColAddLongColumn(0, 1, 2);
+    }
+
     expr.evaluate(vrg);
     for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
       assertEquals((i+1) * seed * 3, lcv2.vector[i]);
@@ -235,7 +305,13 @@ public class TestVectorArithmeticExpressions {
 
     // Now test with repeating flag
     lcv3.isRepeating = true;
-    LongColAddLongColumn expr2 = new LongColAddLongColumn(3, 4, 5);
+    VectorExpression expr2;
+    if (isChecked) {
+      expr2 = new LongColAddLongColumnChecked(3, 4, 5);
+      expr2.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
+    } else {
+      expr2 = new LongColAddLongColumn(3, 4, 5);
+    }
     expr2.evaluate(vrg);
     for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
       assertEquals(seed * (4 + 5*(i+1)), lcv5.vector[i]);
