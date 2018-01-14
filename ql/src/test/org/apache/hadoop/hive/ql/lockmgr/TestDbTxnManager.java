@@ -388,6 +388,11 @@ public class TestDbTxnManager {
   @Test
   public void concurrencyFalse() throws Exception {
     HiveConf badConf = new HiveConf();
+    if(badConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY)) {
+      //TxnManagerFactory is a singleton, so if the default is true, it has already been
+      //created and won't throw
+      return;
+    }
     badConf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER,
         "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
     badConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);

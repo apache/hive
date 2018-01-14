@@ -12,294 +12,352 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: insert into t values (101,1,1,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (101,1,1,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (201,2,1,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (201,2,1,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (301,3,1,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (301,3,1,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (401,4,1,11)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (401,4,1,11)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (501,5,1,null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (501,5,1,null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x EXPRESSION []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (601,6,null,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (601,6,null,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y EXPRESSION []
 PREHOOK: query: insert into t values (701,6,null,null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (701,6,null,null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x EXPRESSION []
+POSTHOOK: Lineage: t.y EXPRESSION []
 PREHOOK: query: insert into t values (102,1,2,2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (102,1,2,2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (202,2,1,2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (202,2,1,2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (302,3,2,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (302,3,2,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (402,4,2,12)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (402,4,2,12)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (502,5,2,null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (502,5,2,null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x EXPRESSION []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (602,6,null,2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (602,6,null,2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y EXPRESSION []
 PREHOOK: query: insert into t values (702,6,null,null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (702,6,null,null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x EXPRESSION []
+POSTHOOK: Lineage: t.y EXPRESSION []
 PREHOOK: query: insert into t values (103,1,3,3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (103,1,3,3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (203,2,1,3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (203,2,1,3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (303,3,3,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (303,3,3,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__17)values__tmp__table__17.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__17)values__tmp__table__17.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__17)values__tmp__table__17.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__17)values__tmp__table__17.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (403,4,3,13)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (403,4,3,13)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__18)values__tmp__table__18.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__18)values__tmp__table__18.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__18)values__tmp__table__18.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__18)values__tmp__table__18.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (503,5,3,null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (503,5,3,null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__19)values__tmp__table__19.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__19)values__tmp__table__19.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__19)values__tmp__table__19.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__19)values__tmp__table__19.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x EXPRESSION []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (603,6,null,3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (603,6,null,3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__20)values__tmp__table__20.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__20)values__tmp__table__20.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__20)values__tmp__table__20.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__20)values__tmp__table__20.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y EXPRESSION []
 PREHOOK: query: insert into t values (703,6,null,null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (703,6,null,null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__21)values__tmp__table__21.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__21)values__tmp__table__21.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__21)values__tmp__table__21.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__21)values__tmp__table__21.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x EXPRESSION []
+POSTHOOK: Lineage: t.y EXPRESSION []
 PREHOOK: query: insert into t values (104,1,4,4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (104,1,4,4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__22)values__tmp__table__22.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__22)values__tmp__table__22.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__22)values__tmp__table__22.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__22)values__tmp__table__22.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (204,2,1,4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (204,2,1,4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__23)values__tmp__table__23.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__23)values__tmp__table__23.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__23)values__tmp__table__23.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__23)values__tmp__table__23.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (304,3,4,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (304,3,4,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__24)values__tmp__table__24.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__24)values__tmp__table__24.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__24)values__tmp__table__24.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__24)values__tmp__table__24.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (404,4,4,14)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (404,4,4,14)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__25)values__tmp__table__25.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__25)values__tmp__table__25.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__25)values__tmp__table__25.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__25)values__tmp__table__25.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (504,5,4,null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (504,5,4,null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__26)values__tmp__table__26.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__26)values__tmp__table__26.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__26)values__tmp__table__26.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__26)values__tmp__table__26.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x EXPRESSION []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: insert into t values (604,6,null,4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (604,6,null,4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__27)values__tmp__table__27.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__27)values__tmp__table__27.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__27)values__tmp__table__27.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__27)values__tmp__table__27.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y EXPRESSION []
 PREHOOK: query: insert into t values (704,6,null,null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (704,6,null,null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__28)values__tmp__table__28.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__28)values__tmp__table__28.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__28)values__tmp__table__28.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__28)values__tmp__table__28.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x EXPRESSION []
+POSTHOOK: Lineage: t.y EXPRESSION []
 PREHOOK: query: insert into t values (800,7,1,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values (800,7,1,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id EXPRESSION [(values__tmp__table__29)values__tmp__table__29.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: t.px EXPRESSION [(values__tmp__table__29)values__tmp__table__29.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t.x EXPRESSION [(values__tmp__table__29)values__tmp__table__29.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: t.y EXPRESSION [(values__tmp__table__29)values__tmp__table__29.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.id SCRIPT []
+POSTHOOK: Lineage: t.px SCRIPT []
+POSTHOOK: Lineage: t.x SCRIPT []
+POSTHOOK: Lineage: t.y SCRIPT []
 PREHOOK: query: explain select px,var_pop(x),var_pop(y),corr(y,x),covar_samp(y,x),covar_pop(y,x),regr_count(y,x),regr_slope(y,x),
 regr_intercept(y,x), regr_r2(y,x), regr_sxx(y,x), regr_syy(y,x), regr_sxy(y,x), regr_avgx(y,x), regr_avgy(y,x), regr_count(y,x)
  from t group by px order by px

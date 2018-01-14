@@ -17,12 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.FilenameUtils;
@@ -30,13 +32,19 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
+import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -211,6 +219,33 @@ public class SparkUtilities {
   }
 
   /**
+   * Collect operators of type T starting from root. Matching operators will be put into result.
+   * Set seen can be used to skip search in certain branches.
+   */
+  public static <T extends Operator<?>> void collectOp(Operator<?> root, Class<T> cls,
+      Collection<T> result, Set<Operator<?>> seen) {
+    if (seen.contains(root)) {
+      return;
+    }
+    Deque<Operator<?>> deque = new ArrayDeque<>();
+    deque.add(root);
+    while (!deque.isEmpty()) {
+      Operator<?> op = deque.remove();
+      seen.add(op);
+      if (cls.isInstance(op)) {
+        result.add((T) op);
+      }
+      if (op.getChildOperators() != null) {
+        for (Operator<?> child : op.getChildOperators()) {
+          if (!seen.contains(child)) {
+            deque.add(child);
+          }
+        }
+      }
+    }
+  }
+
+  /**
    * remove currTask from the children of its parentTask
    * remove currTask from the parent of its childrenTask
    * @param currTask
@@ -226,5 +261,81 @@ public class SparkUtilities {
     }
     //remove currTask from childTasks
     currTask.removeFromChildrenTasks();
+  }
+
+  /**
+   * For DPP sinks w/ common join, we'll split the tree and what's above the branching
+   * operator is computed multiple times. Therefore it may not be good for performance to support
+   * nested DPP sinks, i.e. one DPP sink depends on other DPP sinks.
+   * The following is an example:
+   *
+   *             TS          TS
+   *             |           |
+   *            ...         FIL
+   *            |           |  \
+   *            RS         RS  SEL
+   *              \        /    |
+   *     TS          JOIN      GBY
+   *     |         /     \      |
+   *    RS        RS    SEL   DPP2
+   *     \       /       |
+   *       JOIN         GBY
+   *                     |
+   *                    DPP1
+   *
+   * where DPP1 depends on DPP2.
+   *
+   * To avoid such case, we'll visit all the branching operators. If a branching operator has any
+   * further away DPP branches w/ common join in its sub-tree, such branches will be removed.
+   * In the above example, the branch of DPP1 will be removed.
+   */
+  public static void removeNestedDPP(OptimizeSparkProcContext procContext) {
+    Set<SparkPartitionPruningSinkOperator> allDPPs = new HashSet<>();
+    Set<Operator<?>> seen = new HashSet<>();
+    // collect all DPP sinks
+    for (TableScanOperator root : procContext.getParseContext().getTopOps().values()) {
+      SparkUtilities.collectOp(root, SparkPartitionPruningSinkOperator.class, allDPPs, seen);
+    }
+    // collect all branching operators
+    Set<Operator<?>> branchingOps = new HashSet<>();
+    for (SparkPartitionPruningSinkOperator dpp : allDPPs) {
+      branchingOps.add(dpp.getBranchingOp());
+    }
+    // remember the branching ops we have visited
+    Set<Operator<?>> visited = new HashSet<>();
+    for (Operator<?> branchingOp : branchingOps) {
+      if (!visited.contains(branchingOp)) {
+        visited.add(branchingOp);
+        seen.clear();
+        Set<SparkPartitionPruningSinkOperator> nestedDPPs = new HashSet<>();
+        for (Operator<?> branch : branchingOp.getChildOperators()) {
+          if (!isDirectDPPBranch(branch)) {
+            SparkUtilities.collectOp(branch, SparkPartitionPruningSinkOperator.class, nestedDPPs,
+                seen);
+          }
+        }
+        for (SparkPartitionPruningSinkOperator nestedDPP : nestedDPPs) {
+          visited.add(nestedDPP.getBranchingOp());
+          // if a DPP is with MJ, the tree won't be split and so we don't have to remove it
+          if (!nestedDPP.isWithMapjoin()) {
+            OperatorUtils.removeBranch(nestedDPP);
+          }
+        }
+      }
+    }
+  }
+
+  // whether of pattern "SEL - GBY - DPP"
+  private static boolean isDirectDPPBranch(Operator<?> op) {
+    if (op instanceof SelectOperator && op.getChildOperators() != null
+        && op.getChildOperators().size() == 1) {
+      op = op.getChildOperators().get(0);
+      if (op instanceof GroupByOperator && op.getChildOperators() != null
+          && op.getChildOperators().size() == 1) {
+        op = op.getChildOperators().get(0);
+        return op instanceof SparkPartitionPruningSinkOperator;
+      }
+    }
+    return false;
   }
 }

@@ -131,10 +131,12 @@ public class FosterStorageHandler extends DefaultStorageHandler {
         jobProperties.put(IOConstants.SCHEMA_EVOLUTION_COLUMNS, columnNamesSb.toString());
         jobProperties.put(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, typeNamesSb.toString());
 
-        boolean isAcidTable = AcidUtils.isTablePropertyTransactional(tableProperties);
-        AcidUtils.setTransactionalTableScan(jobProperties, isAcidTable);
+        boolean isTransactionalTable = AcidUtils.isTablePropertyTransactional(tableProperties);
         AcidUtils.AcidOperationalProperties acidOperationalProperties =
                 AcidUtils.getAcidOperationalProperties(tableProperties);
+        if(acidOperationalProperties.isSplitUpdate()) {
+          AcidUtils.setAcidTableScan(jobProperties, isTransactionalTable);
+        }
         AcidUtils.setAcidOperationalProperties(jobProperties, acidOperationalProperties);
       }
     } catch (IOException e) {

@@ -12,11 +12,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dependtest
 PREHOOK: query: insert into table dependtest partition (b=1) values ("hello")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@dependtest@b=1
 POSTHOOK: query: insert into table dependtest partition (b=1) values ("hello")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@dependtest@b=1
-POSTHOOK: Lineage: dependtest PARTITION(b=1).a SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: dependtest PARTITION(b=1).a SCRIPT []
 PREHOOK: query: create view viewtest as select * from dependtest where b = 1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@dependtest

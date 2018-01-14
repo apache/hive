@@ -79,6 +79,7 @@ import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -651,7 +652,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ms;
     }
 
-    private TxnStore getTxnHandler() {
+    @Override
+    public TxnStore getTxnHandler() {
       TxnStore txn = threadLocalTxn.get();
       if (txn == null) {
         txn = TxnUtils.getTxnStore(conf);
@@ -1038,6 +1040,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("alter_database" + dbName);
       boolean success = false;
       Exception ex = null;
+      RawStore ms = getMS();
+      Database oldDB = null;
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
 
       // Perform the same URI normalization as create_database_core.
       if (newDB.getLocationUri() != null) {
@@ -1045,17 +1050,38 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       try {
-        Database oldDB = get_database_core(dbName);
+        oldDB = get_database_core(dbName);
         if (oldDB == null) {
           throw new MetaException("Could not alter database \"" + dbName + "\". Could not retrieve old definition.");
         }
         firePreEvent(new PreAlterDatabaseEvent(oldDB, newDB, this));
-        getMS().alterDatabase(dbName, newDB);
-        success = true;
+
+        ms.openTransaction();
+        ms.alterDatabase(dbName, newDB);
+
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+                  MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                          EventType.ALTER_DATABASE,
+                          new AlterDatabaseEvent(oldDB, newDB, true, this));
+        }
+
+        success = ms.commitTransaction();
       } catch (Exception e) {
         ex = e;
         rethrowException(e);
       } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+
+        if ((null != oldDB) && (!listeners.isEmpty())) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+                  EventType.ALTER_DATABASE,
+                  new AlterDatabaseEvent(oldDB, newDB, success, this),
+                  null,
+                  transactionalListenersResponses, ms);
+        }
         endFunction("alter_database", success, ex);
       }
     }
@@ -1474,6 +1500,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             tbl.getParameters().get(hive_metastoreConstants.DDL_TIME) == null) {
           tbl.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
         }
+
         if (primaryKeys == null && foreignKeys == null
                 && uniqueConstraints == null && notNullConstraints == null) {
           ms.createTable(tbl);
@@ -2484,6 +2511,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_multi_table", tables != null, ex, join(tableNames, ","));
       }
       return tables;
+    }
+
+    @Override
+    public Map<String, Materialization> get_materialization_invalidation_info(final String dbName, final List<String> tableNames) {
+      return MaterializationsInvalidationCache.get().getMaterializationInvalidationInfo(dbName, tableNames);
     }
 
     private void assertClientHasCapability(ClientCapabilities client,
@@ -4421,6 +4453,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       } finally {
         endFunction("get_tables_by_type", ret != null, ex);
+      }
+      return ret;
+    }
+
+    @Override
+    public List<String> get_materialized_views_for_rewriting(final String dbname)
+        throws MetaException {
+      startFunction("get_materialized_views_for_rewriting", ": db=" + dbname);
+
+      List<String> ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getMaterializedViewsForRewriting(dbname);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("get_materialized_views_for_rewriting", ret != null, ex);
       }
       return ret;
     }
@@ -6897,6 +6951,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public List<BasicTxnInfo> get_last_completed_transaction_for_tables(
+        List<String> dbNames, List<String> tableNames, TxnsSnapshot txnsSnapshot)
+            throws TException {
+      return getTxnHandler().getLastCompletedTransactionForTables(dbNames, tableNames, txnsSnapshot);
+    }
+
+    @Override
+    public BasicTxnInfo get_last_completed_transaction_for_table(String dbName, String tableName, TxnsSnapshot txnsSnapshot)
+        throws TException {
+      return getTxnHandler().getLastCompletedTransactionForTable(dbName, tableName, txnsSnapshot);
+    }
+
+    @Override
     public NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
             throws TException {
       try {
@@ -7268,9 +7335,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
       int defaultPoolSize = MetastoreConf.getIntVar(
           conf, MetastoreConf.ConfVars.WM_DEFAULT_POOL_SIZE);
-
       try {
-        getMS().createResourcePlan(request.getResourcePlan(), defaultPoolSize);
+        getMS().createResourcePlan(
+            request.getResourcePlan(), request.getCopyFrom(), defaultPoolSize);
         return new WMCreateResourcePlanResponse();
       } catch (MetaException e) {
         LOG.error("Exception while trying to persist resource plan", e);
@@ -7282,7 +7349,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public WMGetResourcePlanResponse get_resource_plan(WMGetResourcePlanRequest request)
         throws NoSuchObjectException, MetaException, TException {
       try {
-        WMResourcePlan rp = getMS().getResourcePlan(request.getResourcePlanName());
+        WMFullResourcePlan rp = getMS().getResourcePlan(request.getResourcePlanName());
         WMGetResourcePlanResponse resp = new WMGetResourcePlanResponse();
         resp.setResourcePlan(rp);
         return resp;
@@ -7309,12 +7376,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public WMAlterResourcePlanResponse alter_resource_plan(WMAlterResourcePlanRequest request)
         throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
       try {
+        if (((request.isIsEnableAndActivate() ? 1 : 0) + (request.isIsReplace() ? 1 : 0)
+           + (request.isIsForceDeactivate() ? 1 : 0)) > 1) {
+          throw new MetaException("Invalid request; multiple flags are set");
+        }
         WMAlterResourcePlanResponse response = new WMAlterResourcePlanResponse();
         // This method will only return full resource plan when activating one,
         // to give the caller the result atomically with the activation.
         WMFullResourcePlan fullPlanAfterAlter = getMS().alterResourcePlan(
             request.getResourcePlanName(), request.getResourcePlan(),
-            request.isIsEnableAndActivate());
+            request.isIsEnableAndActivate(), request.isIsForceDeactivate(), request.isIsReplace());
         if (fullPlanAfterAlter != null) {
           response.setFullResourcePlan(fullPlanAfterAlter);
         }
@@ -7774,6 +7845,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       HMSHandler baseHandler = new HiveMetaStore.HMSHandler("new db based metaserver", conf,
           false);
       IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
+
+      // Initialize materializations invalidation cache
+      MaterializationsInvalidationCache.get().init(handler.getMS(), handler.getTxnHandler());
+
       TServerSocket serverSocket;
 
       if (useSasl) {

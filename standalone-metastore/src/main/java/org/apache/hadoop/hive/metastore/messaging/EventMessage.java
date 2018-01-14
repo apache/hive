@@ -36,6 +36,7 @@ public abstract class EventMessage {
     DROP_TABLE(MessageFactory.DROP_TABLE_EVENT),
     ADD_PARTITION(MessageFactory.ADD_PARTITION_EVENT),
     DROP_PARTITION(MessageFactory.DROP_PARTITION_EVENT),
+    ALTER_DATABASE(MessageFactory.ALTER_DATABASE_EVENT),
     ALTER_TABLE(MessageFactory.ALTER_TABLE_EVENT),
     ALTER_PARTITION(MessageFactory.ALTER_PARTITION_EVENT),
     INSERT(MessageFactory.INSERT_EVENT),

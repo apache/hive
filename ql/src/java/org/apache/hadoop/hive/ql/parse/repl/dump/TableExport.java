@@ -1,19 +1,19 @@
 /*
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump;
 
@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -34,7 +35,6 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.repl.dump.TableExport.AuthEntities;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,16 +60,16 @@ public class TableExport {
   private final HiveConf conf;
   private final Paths paths;
 
-  public TableExport(Paths paths, TableSpec tableSpec,
-      ReplicationSpec replicationSpec, Hive db, String distCpDoAsUser, HiveConf conf)
-      throws SemanticException {
+  public TableExport(Paths paths, TableSpec tableSpec, ReplicationSpec replicationSpec, Hive db,
+      String distCpDoAsUser, HiveConf conf) {
     this.tableSpec = (tableSpec != null
         && tableSpec.tableHandle.isTemporary()
         && replicationSpec.isInReplicationScope())
         ? null
         : tableSpec;
     this.replicationSpec = replicationSpec;
-    if (this.tableSpec != null && this.tableSpec.tableHandle.isView()) {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY) || (this.tableSpec != null
+        && this.tableSpec.tableHandle.isView())) {
       this.replicationSpec.setIsMetadataOnly(true);
     }
     this.db = db;
@@ -78,20 +78,19 @@ public class TableExport {
     this.paths = paths;
   }
 
-  public void write() throws SemanticException {
+  public boolean write() throws SemanticException {
     if (tableSpec == null) {
       writeMetaData(null);
+      return true;
     } else if (shouldExport()) {
-      //first we should get the correct replication spec before doing metadata/data export
-      if (tableSpec.tableHandle.isView()) {
-        replicationSpec.setIsMetadataOnly(true);
-      }
       PartitionIterable withPartitions = getPartitions();
       writeMetaData(withPartitions);
       if (!replicationSpec.isMetadataOnly()) {
         writeData(withPartitions);
       }
+      return true;
     }
+    return false;
   }
 
   private PartitionIterable getPartitions() throws SemanticException {
@@ -130,7 +129,8 @@ public class TableExport {
           paths.metaDataExportFile(),
           tableSpec == null ? null : tableSpec.tableHandle,
           partitions,
-          replicationSpec);
+          replicationSpec,
+          conf);
       logger.debug("_metadata file written into " + paths.metaDataExportFile().toString());
     } catch (Exception e) {
       // the path used above should not be used on a second try as each dump request is written to a unique location.
@@ -159,8 +159,12 @@ public class TableExport {
     }
   }
 
-  private boolean shouldExport() throws SemanticException {
-    return EximUtil.shouldExportTable(replicationSpec, tableSpec.tableHandle);
+  private boolean shouldExport() {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES)
+        && AcidUtils.isAcidTable(tableSpec.tableHandle)) {
+      return true;
+    }
+    return Utils.shouldReplicate(replicationSpec, tableSpec.tableHandle, conf);
   }
 
   /**
@@ -172,7 +176,7 @@ public class TableExport {
     private final HiveConf conf;
     private final Path exportRootDir;
     private final FileSystem exportFileSystem;
-    private boolean writeData = true;
+    private boolean writeData;
 
     public Paths(String astRepresentationForErrorMsg, Path dbRoot, String tblName, HiveConf conf,
         boolean shouldWriteData) throws SemanticException {

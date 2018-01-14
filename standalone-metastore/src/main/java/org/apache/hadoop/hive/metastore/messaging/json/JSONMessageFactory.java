@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
@@ -102,6 +103,12 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
+  public AlterDatabaseMessage buildAlterDatabaseMessage(Database beforeDb, Database afterDb) {
+    return new JSONAlterDatabaseMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
+                                        beforeDb, afterDb, now());
+  }
+
+  @Override
   public DropDatabaseMessage buildDropDatabaseMessage(Database db) {
     return new JSONDropDatabaseMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db.getName(), now());
   }
@@ -113,7 +120,8 @@ public class JSONMessageFactory extends MessageFactory {
 
   @Override
   public AlterTableMessage buildAlterTableMessage(Table before, Table after, boolean isTruncateOp) {
-    return new JSONAlterTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, before, after, isTruncateOp, now());
+    return new JSONAlterTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
+                                    before, after, isTruncateOp, now());
   }
 
   @Override
@@ -131,8 +139,8 @@ public class JSONMessageFactory extends MessageFactory {
   @Override
   public AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before,
       Partition after, boolean isTruncateOp) {
-    return new JSONAlterPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table, before, after, isTruncateOp,
-        now());
+    return new JSONAlterPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
+                                        table, before, after, isTruncateOp, now());
   }
 
   @Override
@@ -170,7 +178,8 @@ public class JSONMessageFactory extends MessageFactory {
   @Override
   public InsertMessage buildInsertMessage(Table tableObj, Partition partObj,
                                           boolean replace, Iterator<String> fileIter) {
-    return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, tableObj, partObj, replace, fileIter, now());
+    return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
+                                tableObj, partObj, replace, fileIter, now());
   }
 
   @Override
@@ -240,6 +249,11 @@ public class JSONMessageFactory extends MessageFactory {
   static String createNotNullConstraintObjJson(SQLNotNullConstraint notNullConstaintObj) throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     return serializer.toString(notNullConstaintObj, "UTF-8");
+  }
+
+  static String createDatabaseObjJson(Database dbObj) throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(dbObj, "UTF-8");
   }
 
   static String createTableObjJson(Table tableObj) throws TException {

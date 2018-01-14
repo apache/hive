@@ -21,13 +21,6 @@ package org.apache.hadoop.hive.ql.exec;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
-import java.util.concurrent.ExecutionException;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.ListenableFuture;
-
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
@@ -55,7 +48,9 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -65,6 +60,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
@@ -79,6 +75,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -110,6 +107,7 @@ import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -184,6 +182,8 @@ import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMMappingDesc;
+import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMPoolDesc;
+import org.apache.hadoop.hive.ql.plan.CreateOrDropTriggerToPoolMappingDesc;
 import org.apache.hadoop.hive.ql.plan.CreateResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
@@ -241,8 +241,6 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
-import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMPoolDesc;
-import org.apache.hadoop.hive.ql.plan.CreateOrDropTriggerToPoolMappingDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationTranslator;
@@ -285,6 +283,11 @@ import org.apache.hive.common.util.RetryUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.ST;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ListenableFuture;
 
 /**
  * DDLTask implementation.
@@ -687,7 +690,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int createResourcePlan(Hive db, CreateResourcePlanDesc createResourcePlanDesc)
       throws HiveException {
-    db.createResourcePlan(createResourcePlanDesc.getResourcePlan());
+    db.createResourcePlan(createResourcePlanDesc.getResourcePlan(),
+        createResourcePlanDesc.getCopyFromName());
     return 0;
   }
 
@@ -696,14 +700,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // Note: Enhance showResourcePlan to display all the pools, triggers and mappings.
     DataOutputStream out = getOutputStream(showResourcePlanDesc.getResFile());
     try {
-      List<WMResourcePlan> resourcePlans;
       String rpName = showResourcePlanDesc.getResourcePlanName();
       if (rpName != null) {
-        resourcePlans = Collections.singletonList(db.getResourcePlan(rpName));
+        formatter.showFullResourcePlan(out, db.getResourcePlan(rpName));
       } else {
-        resourcePlans = db.getAllResourcePlans();
+        formatter.showResourcePlans(out, db.getAllResourcePlans());
       }
-      formatter.showResourcePlans(out, resourcePlans);
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
@@ -728,22 +730,37 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     final TezSessionPoolManager pm = TezSessionPoolManager.getInstance();
     boolean isActivate = false, isInTest = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
     if (resourcePlan.getStatus() != null) {
-      resourcePlan.setStatus(resourcePlan.getStatus());
       isActivate = resourcePlan.getStatus() == WMResourcePlanStatus.ACTIVE;
     }
 
-    WMFullResourcePlan appliedRp = db.alterResourcePlan(
-      desc.getResourcePlanName(), resourcePlan, desc.isEnableActivate());
-    if (!isActivate || (wm == null && isInTest) || (pm == null && isInTest)) {
-      return 0;
+    WMFullResourcePlan appliedRp = db.alterResourcePlan(desc.getResourcePlanName(), resourcePlan,
+        desc.isEnableActivate(), desc.isForceDeactivate(), desc.isReplace());
+    boolean mustHaveAppliedChange = isActivate || desc.isForceDeactivate();
+    if (!mustHaveAppliedChange && !desc.isReplace()) {
+      return 0; // The modification cannot affect an active plan.
     }
+    if (appliedRp == null && !mustHaveAppliedChange) return 0; // Replacing an inactive plan.
+    if (wm == null && isInTest) return 0; // Skip for tests if WM is not present.
 
-    if (appliedRp == null) {
-      throw new HiveException("Cannot get a resource plan to apply");
+    if ((appliedRp == null) != desc.isForceDeactivate()) {
+      throw new HiveException("Cannot get a resource plan to apply; or non-null plan on disable");
       // TODO: shut down HS2?
     }
-    final String name = resourcePlan.getName();
-    LOG.info("Activating a new resource plan " + name + ": " + appliedRp);
+    assert appliedRp == null || appliedRp.getPlan().getStatus() == WMResourcePlanStatus.ACTIVE;
+
+    handleWorkloadManagementServiceChange(wm, pm, isActivate, appliedRp);
+    return 0;
+  }
+
+  private int handleWorkloadManagementServiceChange(WorkloadManager wm, TezSessionPoolManager pm,
+      boolean isActivate, WMFullResourcePlan appliedRp) throws HiveException {
+    String name = null;
+    if (isActivate) {
+      name = appliedRp.getPlan().getName();
+      LOG.info("Activating a new resource plan " + name + ": " + appliedRp);
+    } else {
+      LOG.info("Disabling workload management");
+    }
     if (wm != null) {
       // Note: as per our current constraints, the behavior of two parallel activates is
       //       undefined; although only one will succeed and the other will receive exception.
@@ -754,20 +771,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         // Note: we may add an async option in future. For now, let the task fail for the user.
         future.get();
         isOk = true;
-        LOG.info("Successfully activated resource plan " + name);
-        return 0;
+        if (isActivate) {
+          LOG.info("Successfully activated resource plan " + name);
+        } else {
+          LOG.info("Successfully disabled workload management");
+        }
       } catch (InterruptedException | ExecutionException e) {
         throw new HiveException(e);
       } finally {
         if (!isOk) {
-          LOG.error("Failed to activate resource plan " + name);
+          if (isActivate) {
+            LOG.error("Failed to activate resource plan " + name);
+          } else {
+            LOG.error("Failed to disable workload management");
+          }
           // TODO: shut down HS2?
         }
       }
     }
     if (pm != null) {
       pm.updateTriggers(appliedRp);
-      LOG.info("Updated tez session pool manager with active resource plan: {}", appliedRp.getPlan().getName());
+      LOG.info("Updated tez session pool manager with active resource plan: {}", name);
     }
     return 0;
   }
@@ -818,8 +842,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int createOrDropTriggerToPoolMapping(Hive db, CreateOrDropTriggerToPoolMappingDesc desc)
       throws HiveException {
-    db.createOrDropTriggerToPoolMapping(desc.getResourcePlanName(), desc.getTriggerName(),
-        desc.getPoolPath(), desc.shouldDrop());
+    if (!desc.isUnmanagedPool()) {
+      db.createOrDropTriggerToPoolMapping(desc.getResourcePlanName(), desc.getTriggerName(),
+          desc.getPoolPath(), desc.shouldDrop());
+    } else {
+      assert desc.getPoolPath() == null;
+      WMTrigger trigger = new WMTrigger(desc.getResourcePlanName(), desc.getTriggerName());
+      // If we are dropping from unmanaged, unset the flag; and vice versa
+      trigger.setIsInUnmanaged(!desc.shouldDrop());
+      db.alterWMTrigger(trigger);
+    }
     return 0;
   }
 
@@ -1160,15 +1192,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
 
+    Map<String, String> params = database.getParameters();
+    if ((null != alterDbDesc.getReplicationSpec())
+        && !alterDbDesc.getReplicationSpec().allowEventReplacementInto(params)) {
+      LOG.debug("DDLTask: Alter Database {} is skipped as database is newer than update", dbName);
+      return 0; // no replacement, the existing database state is newer than our update.
+    }
+
     switch (alterDbDesc.getAlterType()) {
     case ALTER_PROPERTY:
       Map<String, String> newParams = alterDbDesc.getDatabaseProperties();
-      Map<String, String> params = database.getParameters();
-
-      if (!alterDbDesc.getReplicationSpec().allowEventReplacementInto(params)) {
-        LOG.debug("DDLTask: Alter Database {} is skipped as database is newer than update", dbName);
-        return 0; // no replacement, the existing database state is newer than our update.
-      }
 
       // if both old and new params are not null, merge them
       if (params != null && newParams != null) {
@@ -1374,11 +1407,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new AssertionError("Unsupported alter materialized view type! : " + alterMVDesc.getOp());
     }
 
-    try {
-      db.alterTable(mv, environmentContext);
-    } catch (InvalidOperationException e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "Unable to alter " + mv.getFullyQualifiedName());
-    }
+    db.alterTable(mv, environmentContext);
+
     return 0;
   }
 
@@ -1528,11 +1558,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     tbl.getTTable().setPartitionKeys(newPartitionKeys);
 
-    try {
-      db.alterTable(tbl, null);
-    } catch (InvalidOperationException e) {
-      throw new HiveException(e, ErrorMsg.GENERIC_ERROR, "Unable to alter " + tbl.getFullyQualifiedName());
-    }
+    db.alterTable(tbl, null);
 
     work.getInputs().add(new ReadEntity(tbl));
     // We've already locked the table as the input, don't relock it as the output.
@@ -1558,11 +1584,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
     if (touchDesc.getPartSpec() == null) {
-      try {
-        db.alterTable(tbl, environmentContext);
-      } catch (InvalidOperationException e) {
-        throw new HiveException("Uable to update table");
-      }
+      db.alterTable(tbl, environmentContext);
       work.getInputs().add(new ReadEntity(tbl));
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
     } else {
@@ -2163,7 +2185,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int compact(Hive db, AlterTableSimpleDesc desc) throws HiveException {
 
     Table tbl = db.getTable(desc.getTableName());
-    if (!AcidUtils.isFullAcidTable(tbl) && !AcidUtils.isInsertOnlyTable(tbl.getParameters())) {
+    if (!AcidUtils.isAcidTable(tbl) && !AcidUtils.isInsertOnlyTable(tbl.getParameters())) {
       throw new HiveException(ErrorMsg.NONACID_COMPACTION_NOT_SUPPORTED, tbl.getDbName(),
           tbl.getTableName());
     }
@@ -4889,11 +4911,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // create the table
     if (crtTbl.getReplaceMode()) {
       // replace-mode creates are really alters using CreateTableDesc.
-      try {
-        db.alterTable(tbl, null);
-      } catch (InvalidOperationException e) {
-        throw new HiveException("Unable to alter table. " + e.getMessage(), e);
-      }
+      db.alterTable(tbl, null);
     } else {
       if ((foreignKeys != null && foreignKeys.size() > 0 ) ||
           (primaryKeys != null && primaryKeys.size() > 0) ||
@@ -5100,6 +5118,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       if (crtView.isMaterialized()) {
+        // We need to update the status of the creation signature
+        String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+        oldview.getTTable().setCreationMetadata(
+            generateCreationMetadata(db, crtView.getTablesUsed(),
+                txnString == null ? null : new ValidReadTxnList(txnString)));
+        db.alterTable(crtView.getViewName(), oldview, null);
         // This is a replace/rebuild, so we need an exclusive lock
         addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_EXCLUSIVE));
       } else {
@@ -5122,16 +5146,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           oldview.setOutputFormatClass(crtView.getOutputFormat());
         }
         oldview.checkValidity(null);
-        try {
-          db.alterTable(crtView.getViewName(), oldview, null);
-        } catch (InvalidOperationException e) {
-          throw new HiveException(e);
-        }
+        db.alterTable(crtView.getViewName(), oldview, null);
         addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK));
       }
     } else {
       // We create new view
       Table tbl = crtView.toTable(conf);
+      // We set the signature for the view if it is a materialized view
+      if (tbl.isMaterializedView()) {
+        String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+        tbl.getTTable().setCreationMetadata(
+            generateCreationMetadata(db, crtView.getTablesUsed(),
+                txnString == null ? null : new ValidReadTxnList(txnString)));
+      }
       db.createTable(tbl, crtView.getIfNotExists());
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
 
@@ -5140,6 +5167,38 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       queryState.getLineageState().setLineage(new Path(crtView.getViewName()), dc, tbl.getCols());
     }
     return 0;
+  }
+
+  private Map<String, BasicTxnInfo> generateCreationMetadata(
+      Hive db, List<String> tablesUsed, ValidReadTxnList txnList)
+          throws SemanticException {
+    Map<String, BasicTxnInfo> signature = new HashMap<>();
+    try {
+      if (!CollectionUtils.isEmpty(tablesUsed)) {
+        if (txnList == null) {
+          for (String fullyQualifiedName : tablesUsed) {
+            signature.put(fullyQualifiedName, new BasicTxnInfo(true));
+          }
+        } else {
+          List<String> dbNames = new ArrayList<>();
+          List<String> tableNames = new ArrayList<>();
+          for (String fullyQualifiedName : tablesUsed) {
+            // Add to creation metadata
+            String[] names =  fullyQualifiedName.split("\\.");
+            dbNames.add(names[0]);
+            tableNames.add(names[1]);
+          }
+          List<BasicTxnInfo> txnInfos =
+              db.getMSC().getLastCompletedTransactionForTables(dbNames, tableNames, txnList);
+          for (int i = 0; i < tablesUsed.size(); i++) {
+            signature.put(tablesUsed.get(i), txnInfos.get(i));
+          }
+        }
+      }
+    } catch (Exception ex) {
+      throw new SemanticException(ex);
+    }
+    return signature;
   }
 
   private int truncateTable(Hive db, TruncateTableDesc truncateTableDesc) throws HiveException {

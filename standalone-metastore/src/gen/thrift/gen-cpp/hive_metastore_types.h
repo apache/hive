@@ -177,6 +177,15 @@ struct WMResourcePlanStatus {
 
 extern const std::map<int, const char*> _WMResourcePlanStatus_VALUES_TO_NAMES;
 
+struct WMPoolSchedulingPolicy {
+  enum type {
+    FAIR = 1,
+    FIFO = 2
+  };
+};
+
+extern const std::map<int, const char*> _WMPoolSchedulingPolicy_VALUES_TO_NAMES;
+
 class Version;
 
 class FieldSchema;
@@ -389,6 +398,10 @@ class ShowCompactResponse;
 
 class AddDynamicPartitions;
 
+class BasicTxnInfo;
+
+class TxnsSnapshot;
+
 class NotificationEventRequest;
 
 class NotificationEvent;
@@ -448,6 +461,8 @@ class CmRecycleRequest;
 class CmRecycleResponse;
 
 class TableMeta;
+
+class Materialization;
 
 class WMResourcePlan;
 
@@ -2353,7 +2368,7 @@ inline std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj)
 }
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -2369,6 +2384,7 @@ typedef struct _Table__isset {
   bool privileges :1;
   bool temporary :1;
   bool rewriteEnabled :1;
+  bool creationMetadata :1;
 } _Table__isset;
 
 class Table {
@@ -2395,6 +2411,7 @@ class Table {
   PrincipalPrivilegeSet privileges;
   bool temporary;
   bool rewriteEnabled;
+  std::map<std::string, BasicTxnInfo>  creationMetadata;
 
   _Table__isset __isset;
 
@@ -2427,6 +2444,8 @@ class Table {
   void __set_temporary(const bool val);
 
   void __set_rewriteEnabled(const bool val);
+
+  void __set_creationMetadata(const std::map<std::string, BasicTxnInfo> & val);
 
   bool operator == (const Table & rhs) const
   {
@@ -2465,6 +2484,10 @@ class Table {
     if (__isset.rewriteEnabled != rhs.__isset.rewriteEnabled)
       return false;
     else if (__isset.rewriteEnabled && !(rewriteEnabled == rhs.rewriteEnabled))
+      return false;
+    if (__isset.creationMetadata != rhs.__isset.creationMetadata)
+      return false;
+    else if (__isset.creationMetadata && !(creationMetadata == rhs.creationMetadata))
       return false;
     return true;
   }
@@ -7058,6 +7081,144 @@ inline std::ostream& operator<<(std::ostream& out, const AddDynamicPartitions& o
   return out;
 }
 
+typedef struct _BasicTxnInfo__isset {
+  _BasicTxnInfo__isset() : id(false), time(false), txnid(false), dbname(false), tablename(false), partitionname(false) {}
+  bool id :1;
+  bool time :1;
+  bool txnid :1;
+  bool dbname :1;
+  bool tablename :1;
+  bool partitionname :1;
+} _BasicTxnInfo__isset;
+
+class BasicTxnInfo {
+ public:
+
+  BasicTxnInfo(const BasicTxnInfo&);
+  BasicTxnInfo& operator=(const BasicTxnInfo&);
+  BasicTxnInfo() : isnull(0), id(0), time(0), txnid(0), dbname(), tablename(), partitionname() {
+  }
+
+  virtual ~BasicTxnInfo() throw();
+  bool isnull;
+  int64_t id;
+  int64_t time;
+  int64_t txnid;
+  std::string dbname;
+  std::string tablename;
+  std::string partitionname;
+
+  _BasicTxnInfo__isset __isset;
+
+  void __set_isnull(const bool val);
+
+  void __set_id(const int64_t val);
+
+  void __set_time(const int64_t val);
+
+  void __set_txnid(const int64_t val);
+
+  void __set_dbname(const std::string& val);
+
+  void __set_tablename(const std::string& val);
+
+  void __set_partitionname(const std::string& val);
+
+  bool operator == (const BasicTxnInfo & rhs) const
+  {
+    if (!(isnull == rhs.isnull))
+      return false;
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
+      return false;
+    if (__isset.time != rhs.__isset.time)
+      return false;
+    else if (__isset.time && !(time == rhs.time))
+      return false;
+    if (__isset.txnid != rhs.__isset.txnid)
+      return false;
+    else if (__isset.txnid && !(txnid == rhs.txnid))
+      return false;
+    if (__isset.dbname != rhs.__isset.dbname)
+      return false;
+    else if (__isset.dbname && !(dbname == rhs.dbname))
+      return false;
+    if (__isset.tablename != rhs.__isset.tablename)
+      return false;
+    else if (__isset.tablename && !(tablename == rhs.tablename))
+      return false;
+    if (__isset.partitionname != rhs.__isset.partitionname)
+      return false;
+    else if (__isset.partitionname && !(partitionname == rhs.partitionname))
+      return false;
+    return true;
+  }
+  bool operator != (const BasicTxnInfo &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const BasicTxnInfo & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(BasicTxnInfo &a, BasicTxnInfo &b);
+
+inline std::ostream& operator<<(std::ostream& out, const BasicTxnInfo& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class TxnsSnapshot {
+ public:
+
+  TxnsSnapshot(const TxnsSnapshot&);
+  TxnsSnapshot& operator=(const TxnsSnapshot&);
+  TxnsSnapshot() : txn_high_water_mark(0) {
+  }
+
+  virtual ~TxnsSnapshot() throw();
+  int64_t txn_high_water_mark;
+  std::vector<int64_t>  open_txns;
+
+  void __set_txn_high_water_mark(const int64_t val);
+
+  void __set_open_txns(const std::vector<int64_t> & val);
+
+  bool operator == (const TxnsSnapshot & rhs) const
+  {
+    if (!(txn_high_water_mark == rhs.txn_high_water_mark))
+      return false;
+    if (!(open_txns == rhs.open_txns))
+      return false;
+    return true;
+  }
+  bool operator != (const TxnsSnapshot &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TxnsSnapshot & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TxnsSnapshot &a, TxnsSnapshot &b);
+
+inline std::ostream& operator<<(std::ostream& out, const TxnsSnapshot& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
 typedef struct _NotificationEventRequest__isset {
   _NotificationEventRequest__isset() : maxEvents(false) {}
   bool maxEvents :1;
@@ -8532,6 +8693,56 @@ inline std::ostream& operator<<(std::ostream& out, const TableMeta& obj)
   return out;
 }
 
+
+class Materialization {
+ public:
+
+  Materialization(const Materialization&);
+  Materialization& operator=(const Materialization&);
+  Materialization() : invalidationTime(0) {
+  }
+
+  virtual ~Materialization() throw();
+  Table materializationTable;
+  std::set<std::string>  tablesUsed;
+  int64_t invalidationTime;
+
+  void __set_materializationTable(const Table& val);
+
+  void __set_tablesUsed(const std::set<std::string> & val);
+
+  void __set_invalidationTime(const int64_t val);
+
+  bool operator == (const Materialization & rhs) const
+  {
+    if (!(materializationTable == rhs.materializationTable))
+      return false;
+    if (!(tablesUsed == rhs.tablesUsed))
+      return false;
+    if (!(invalidationTime == rhs.invalidationTime))
+      return false;
+    return true;
+  }
+  bool operator != (const Materialization &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Materialization & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Materialization &a, Materialization &b);
+
+inline std::ostream& operator<<(std::ostream& out, const Materialization& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
 typedef struct _WMResourcePlan__isset {
   _WMResourcePlan__isset() : status(false), queryParallelism(false), defaultPoolPath(false) {}
   bool status :1;
@@ -8676,9 +8887,10 @@ inline std::ostream& operator<<(std::ostream& out, const WMPool& obj)
 }
 
 typedef struct _WMTrigger__isset {
-  _WMTrigger__isset() : triggerExpression(false), actionExpression(false) {}
+  _WMTrigger__isset() : triggerExpression(false), actionExpression(false), isInUnmanaged(false) {}
   bool triggerExpression :1;
   bool actionExpression :1;
+  bool isInUnmanaged :1;
 } _WMTrigger__isset;
 
 class WMTrigger {
@@ -8686,7 +8898,7 @@ class WMTrigger {
 
   WMTrigger(const WMTrigger&);
   WMTrigger& operator=(const WMTrigger&);
-  WMTrigger() : resourcePlanName(), triggerName(), triggerExpression(), actionExpression() {
+  WMTrigger() : resourcePlanName(), triggerName(), triggerExpression(), actionExpression(), isInUnmanaged(0) {
   }
 
   virtual ~WMTrigger() throw();
@@ -8694,6 +8906,7 @@ class WMTrigger {
   std::string triggerName;
   std::string triggerExpression;
   std::string actionExpression;
+  bool isInUnmanaged;
 
   _WMTrigger__isset __isset;
 
@@ -8704,6 +8917,8 @@ class WMTrigger {
   void __set_triggerExpression(const std::string& val);
 
   void __set_actionExpression(const std::string& val);
+
+  void __set_isInUnmanaged(const bool val);
 
   bool operator == (const WMTrigger & rhs) const
   {
@@ -8718,6 +8933,10 @@ class WMTrigger {
     if (__isset.actionExpression != rhs.__isset.actionExpression)
       return false;
     else if (__isset.actionExpression && !(actionExpression == rhs.actionExpression))
+      return false;
+    if (__isset.isInUnmanaged != rhs.__isset.isInUnmanaged)
+      return false;
+    else if (__isset.isInUnmanaged && !(isInUnmanaged == rhs.isInUnmanaged))
       return false;
     return true;
   }
@@ -8932,8 +9151,9 @@ inline std::ostream& operator<<(std::ostream& out, const WMFullResourcePlan& obj
 }
 
 typedef struct _WMCreateResourcePlanRequest__isset {
-  _WMCreateResourcePlanRequest__isset() : resourcePlan(false) {}
+  _WMCreateResourcePlanRequest__isset() : resourcePlan(false), copyFrom(false) {}
   bool resourcePlan :1;
+  bool copyFrom :1;
 } _WMCreateResourcePlanRequest__isset;
 
 class WMCreateResourcePlanRequest {
@@ -8941,21 +9161,28 @@ class WMCreateResourcePlanRequest {
 
   WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest&);
   WMCreateResourcePlanRequest& operator=(const WMCreateResourcePlanRequest&);
-  WMCreateResourcePlanRequest() {
+  WMCreateResourcePlanRequest() : copyFrom() {
   }
 
   virtual ~WMCreateResourcePlanRequest() throw();
   WMResourcePlan resourcePlan;
+  std::string copyFrom;
 
   _WMCreateResourcePlanRequest__isset __isset;
 
   void __set_resourcePlan(const WMResourcePlan& val);
+
+  void __set_copyFrom(const std::string& val);
 
   bool operator == (const WMCreateResourcePlanRequest & rhs) const
   {
     if (__isset.resourcePlan != rhs.__isset.resourcePlan)
       return false;
     else if (__isset.resourcePlan && !(resourcePlan == rhs.resourcePlan))
+      return false;
+    if (__isset.copyFrom != rhs.__isset.copyFrom)
+      return false;
+    else if (__isset.copyFrom && !(copyFrom == rhs.copyFrom))
       return false;
     return true;
   }
@@ -9159,11 +9386,11 @@ class WMGetResourcePlanResponse {
   }
 
   virtual ~WMGetResourcePlanResponse() throw();
-  WMResourcePlan resourcePlan;
+  WMFullResourcePlan resourcePlan;
 
   _WMGetResourcePlanResponse__isset __isset;
 
-  void __set_resourcePlan(const WMResourcePlan& val);
+  void __set_resourcePlan(const WMFullResourcePlan& val);
 
   bool operator == (const WMGetResourcePlanResponse & rhs) const
   {
@@ -9277,10 +9504,12 @@ inline std::ostream& operator<<(std::ostream& out, const WMGetAllResourcePlanRes
 }
 
 typedef struct _WMAlterResourcePlanRequest__isset {
-  _WMAlterResourcePlanRequest__isset() : resourcePlanName(false), resourcePlan(false), isEnableAndActivate(false) {}
+  _WMAlterResourcePlanRequest__isset() : resourcePlanName(false), resourcePlan(false), isEnableAndActivate(false), isForceDeactivate(false), isReplace(false) {}
   bool resourcePlanName :1;
   bool resourcePlan :1;
   bool isEnableAndActivate :1;
+  bool isForceDeactivate :1;
+  bool isReplace :1;
 } _WMAlterResourcePlanRequest__isset;
 
 class WMAlterResourcePlanRequest {
@@ -9288,13 +9517,15 @@ class WMAlterResourcePlanRequest {
 
   WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest&);
   WMAlterResourcePlanRequest& operator=(const WMAlterResourcePlanRequest&);
-  WMAlterResourcePlanRequest() : resourcePlanName(), isEnableAndActivate(0) {
+  WMAlterResourcePlanRequest() : resourcePlanName(), isEnableAndActivate(0), isForceDeactivate(0), isReplace(0) {
   }
 
   virtual ~WMAlterResourcePlanRequest() throw();
   std::string resourcePlanName;
   WMResourcePlan resourcePlan;
   bool isEnableAndActivate;
+  bool isForceDeactivate;
+  bool isReplace;
 
   _WMAlterResourcePlanRequest__isset __isset;
 
@@ -9303,6 +9534,10 @@ class WMAlterResourcePlanRequest {
   void __set_resourcePlan(const WMResourcePlan& val);
 
   void __set_isEnableAndActivate(const bool val);
+
+  void __set_isForceDeactivate(const bool val);
+
+  void __set_isReplace(const bool val);
 
   bool operator == (const WMAlterResourcePlanRequest & rhs) const
   {
@@ -9317,6 +9552,14 @@ class WMAlterResourcePlanRequest {
     if (__isset.isEnableAndActivate != rhs.__isset.isEnableAndActivate)
       return false;
     else if (__isset.isEnableAndActivate && !(isEnableAndActivate == rhs.isEnableAndActivate))
+      return false;
+    if (__isset.isForceDeactivate != rhs.__isset.isForceDeactivate)
+      return false;
+    else if (__isset.isForceDeactivate && !(isForceDeactivate == rhs.isForceDeactivate))
+      return false;
+    if (__isset.isReplace != rhs.__isset.isReplace)
+      return false;
+    else if (__isset.isReplace && !(isReplace == rhs.isReplace))
       return false;
     return true;
   }

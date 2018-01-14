@@ -57,11 +57,11 @@ SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key 
 SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value;
 
 CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS; 
-CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS; 
-LOAD DATA LOCAL INPATH '../../data/files/in1.txt' into table smb_input1;
-LOAD DATA LOCAL INPATH '../../data/files/in2.txt' into table smb_input1;
-LOAD DATA LOCAL INPATH '../../data/files/in1.txt' into table smb_input2;
-LOAD DATA LOCAL INPATH '../../data/files/in2.txt' into table smb_input2;
+CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
+LOAD DATA LOCAL INPATH '../../data/files/in/000000_0' into table smb_input1;
+LOAD DATA LOCAL INPATH '../../data/files/in/000001_0' into table smb_input1;
+LOAD DATA LOCAL INPATH '../../data/files/in/000000_0' into table smb_input2;
+LOAD DATA LOCAL INPATH '../../data/files/in/000001_0' into table smb_input2;
 
 SET hive.optimize.bucketmapjoin = true;
 SET hive.optimize.bucketmapjoin.sortedmerge = true;

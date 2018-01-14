@@ -125,6 +125,13 @@ public class Utils {
     static final String INIT_FILE = "initFile";
     static final String WM_POOL = "wmPool";
 
+    // We support ways to specify application name modeled after some existing DBs, since
+    // there's no standard approach. 
+    // MSSQL: applicationName https://docs.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url
+    // Postgres 9~: ApplicationName https://jdbc.postgresql.org/documentation/91/connect.html
+    // Note: various ODBC names used include "Application Name", "APP", etc. Add those?
+    static final String[] APPLICATION = new String[] { "applicationName", "ApplicationName" };
+
     // --------------- Begin 2 way ssl options -------------------------
     // Use two way ssl. This param will take effect only when ssl=true
     static final String USE_TWO_WAY_SSL = "twoWay";

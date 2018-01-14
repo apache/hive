@@ -422,6 +422,9 @@ public class NotificationListener extends MetaStoreEventListener {
    * @throws JMSException
    */
   protected Session createSession() throws JMSException {
+    if (conn == null) {
+      return null;
+    }
     // We want message to be sent when session commits, thus we run in
     // transacted mode.
     return conn.createSession(true, Session.SESSION_TRANSACTED);

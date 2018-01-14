@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -313,7 +314,7 @@ public class TestSparkClient {
     SparkClient client = null;
     try {
       test.config(conf);
-      client = SparkClientFactory.createClient(conf, HIVECONF);
+      client = SparkClientFactory.createClient(conf, HIVECONF, UUID.randomUUID().toString());
       test.call(client);
     } finally {
       if (client != null) {

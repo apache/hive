@@ -16,20 +16,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_table_2
 PREHOOK: query: insert into table orc_table_1 values ("<null1>", null),("one", 1),("one", 1),("two", 2),("three", 3),("<null2>", null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@orc_table_1
 POSTHOOK: query: insert into table orc_table_1 values ("<null1>", null),("one", 1),("one", 1),("two", 2),("three", 3),("<null2>", null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@orc_table_1
-POSTHOOK: Lineage: orc_table_1.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: orc_table_1.v1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table_1.a SCRIPT []
+POSTHOOK: Lineage: orc_table_1.v1 SCRIPT []
 PREHOOK: query: insert into table orc_table_2 values (0, "ZERO"),(2, "TWO"), (3, "THREE"),(null, "<NULL1>"),(4, "FOUR"),(null, "<NULL2>")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@orc_table_2
 POSTHOOK: query: insert into table orc_table_2 values (0, "ZERO"),(2, "TWO"), (3, "THREE"),(null, "<NULL1>"),(4, "FOUR"),(null, "<NULL2>")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@orc_table_2
-POSTHOOK: Lineage: orc_table_2.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: orc_table_2.v2 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table_2.c SCRIPT []
+POSTHOOK: Lineage: orc_table_2.v2 SCRIPT []
 PREHOOK: query: select * from orc_table_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.druid.serde;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -48,7 +49,7 @@ public class DruidSelectQueryRecordReader
 
   private Result<SelectResultValue> current;
 
-  private Iterator<EventHolder> values = Iterators.emptyIterator();
+  private Iterator<EventHolder> values = Collections.emptyIterator();
 
   @Override
   protected JavaType getResultTypeDef() {

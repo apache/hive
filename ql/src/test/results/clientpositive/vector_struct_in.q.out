@@ -8,12 +8,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_1
 PREHOOK: query: insert into table test_1 values ('one','1'), ('seven','1')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_1
 POSTHOOK: query: insert into table test_1 values ('one','1'), ('seven','1')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_1
-POSTHOOK: Lineage: test_1.id SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test_1.lineid SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: test_1.id SCRIPT []
+POSTHOOK: Lineage: test_1.lineid SCRIPT []
 PREHOOK: query: explain vectorization expression
 select * from test_1 where struct(`id`, `lineid`)
 IN (
@@ -256,12 +258,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_2
 PREHOOK: query: insert into table test_2 values (1,1), (7,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_2
 POSTHOOK: query: insert into table test_2 values (1,1), (7,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_2
-POSTHOOK: Lineage: test_2.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test_2.lineid EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: test_2.id SCRIPT []
+POSTHOOK: Lineage: test_2.lineid SCRIPT []
 PREHOOK: query: explain vectorization expression
 select * from test_2 where struct(`id`, `lineid`)
 IN (
@@ -504,12 +508,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_3
 PREHOOK: query: insert into table test_3 values ('one',1), ('seven',1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_3
 POSTHOOK: query: insert into table test_3 values ('one',1), ('seven',1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_3
-POSTHOOK: Lineage: test_3.id SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test_3.lineid EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: test_3.id SCRIPT []
+POSTHOOK: Lineage: test_3.lineid SCRIPT []
 PREHOOK: query: explain vectorization expression
 select * from test_3 where struct(`id`, `lineid`)
 IN (
@@ -752,13 +758,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_4
 PREHOOK: query: insert into table test_4 values (1, "b", 1.5), (1, "a", 0.5), (2, "b", 1.5)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_4
 POSTHOOK: query: insert into table test_4 values (1, "b", 1.5), (1, "a", 0.5), (2, "b", 1.5)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_4
-POSTHOOK: Lineage: test_4.my_bigint EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test_4.my_double EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: test_4.my_string SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: test_4.my_bigint SCRIPT []
+POSTHOOK: Lineage: test_4.my_double SCRIPT []
+POSTHOOK: Lineage: test_4.my_string SCRIPT []
 PREHOOK: query: explain vectorization expression
 select * from test_4 where struct(`my_bigint`, `my_string`, `my_double`)
 IN (

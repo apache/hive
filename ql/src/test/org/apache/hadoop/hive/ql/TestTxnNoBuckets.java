@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -67,7 +68,7 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
     int[][] sourceVals1 = {{0,0,0},{3,3,3}};
     int[][] sourceVals2 = {{1,1,1},{2,2,2}};
     runStatementOnDriver("drop table if exists tmp");
-    runStatementOnDriver("create table tmp (c1 integer, c2 integer, c3 integer) stored as orc");
+    runStatementOnDriver("create table tmp (c1 integer, c2 integer, c3 integer) stored as orc tblproperties('transactional'='false')");
     runStatementOnDriver("insert into tmp " + makeValuesClause(sourceVals1));
     runStatementOnDriver("insert into tmp " + makeValuesClause(sourceVals2));
     runStatementOnDriver("drop table if exists nobuckets");
@@ -187,7 +188,7 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("insert into " + Table.ACIDTBL + makeValuesClause(values));
     runStatementOnDriver("create table myctas2 stored as ORC TBLPROPERTIES ('transactional" +
-      "'='true', 'transactional_properties'='default') as select a, b from " + Table.ACIDTBL);
+      "'='true', 'transactional_properties'='default') as select a, b from " + Table.ACIDTBL);//todo: try this with acid default - it seem makeing table acid in listener is too late
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from myctas2 order by ROW__ID");
     String expected2[][] = {
       {"{\"transactionid\":17,\"bucketid\":536870912,\"rowid\":0}\t3\t4", "warehouse/myctas2/delta_0000017_0000017_0000/bucket_00000"},
@@ -531,7 +532,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     //this enables vectorization of ROW__ID
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ROW_IDENTIFIER_ENABLED, true);//HIVE-12631
     runStatementOnDriver("drop table if exists T");
-    runStatementOnDriver("create table T(a int, b int) stored as orc");
+    runStatementOnDriver("create table T(a int, b int) stored as orc tblproperties('transactional'='false')");
     int[][] values = {{1,2},{2,4},{5,6},{6,8},{9,10}};
     runStatementOnDriver("insert into T(a, b) " + makeValuesClause(values));
     //, 'transactional_properties'='default'
@@ -695,6 +696,22 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     //now check that stats were updated
     map = hms.getPartitionColumnStatistics("default","T", partNames, colNames);
     Assert.assertEquals("", 5, map.get(partNames.get(0)).get(0).getStatsData().getLongStats().getHighValue());
+  }
+  @Ignore("enable after HIVE-18294")
+  @Test
+  public void testDefault() throws Exception {
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("create table T (a int, b int) stored as orc");
+    runStatementOnDriver("insert into T values(1,2),(3,4)");
+    String query = "select ROW__ID, a, b, INPUT__FILE__NAME from T order by a, b";
+    List<String> rs = runStatementOnDriver(query);
+    String[][] expected = {
+      //this proves data is written in Acid layout so T was made Acid
+      {"{\"transactionid\":15,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/delta_0000015_0000015_0000/bucket_00000"},
+      {"{\"transactionid\":15,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000015_0000015_0000/bucket_00000"}
+    };
+    checkExpected(rs, expected, "insert data");
+
   }
 }
 

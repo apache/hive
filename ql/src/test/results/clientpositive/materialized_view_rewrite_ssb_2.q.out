@@ -1,3 +1,41 @@
+PREHOOK: query: CREATE TABLE `customer_ext`(
+  `c_custkey` bigint, 
+  `c_name` string, 
+  `c_address` string, 
+  `c_city` string, 
+  `c_nation` string, 
+  `c_region` string, 
+  `c_phone` string, 
+  `c_mktsegment` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customer_ext
+POSTHOOK: query: CREATE TABLE `customer_ext`(
+  `c_custkey` bigint, 
+  `c_name` string, 
+  `c_address` string, 
+  `c_city` string, 
+  `c_nation` string, 
+  `c_region` string, 
+  `c_phone` string, 
+  `c_mktsegment` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customer_ext
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/customer/' into table `customer_ext`
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@customer_ext
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/customer/' into table `customer_ext`
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@customer_ext
 PREHOOK: query: CREATE TABLE `customer`(
   `c_custkey` bigint, 
   `c_name` string, 
@@ -9,6 +47,7 @@ PREHOOK: query: CREATE TABLE `customer`(
   `c_mktsegment` string,
   primary key (`c_custkey`) disable rely)
 STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@customer
@@ -23,9 +62,84 @@ POSTHOOK: query: CREATE TABLE `customer`(
   `c_mktsegment` string,
   primary key (`c_custkey`) disable rely)
 STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@customer
+PREHOOK: query: INSERT INTO `customer`
+SELECT * FROM `customer_ext`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_ext
+PREHOOK: Output: default@customer
+POSTHOOK: query: INSERT INTO `customer`
+SELECT * FROM `customer_ext`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_ext
+POSTHOOK: Output: default@customer
+POSTHOOK: Lineage: customer.c_address SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_address, type:string, comment:null), ]
+POSTHOOK: Lineage: customer.c_city SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_city, type:string, comment:null), ]
+POSTHOOK: Lineage: customer.c_custkey SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_custkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: customer.c_mktsegment SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_mktsegment, type:string, comment:null), ]
+POSTHOOK: Lineage: customer.c_name SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_name, type:string, comment:null), ]
+POSTHOOK: Lineage: customer.c_nation SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_nation, type:string, comment:null), ]
+POSTHOOK: Lineage: customer.c_phone SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_phone, type:string, comment:null), ]
+POSTHOOK: Lineage: customer.c_region SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_region, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE `dates_ext`(
+  `d_datekey` bigint, 
+  `d_date` string, 
+  `d_dayofweek` string, 
+  `d_month` string, 
+  `d_year` int, 
+  `d_yearmonthnum` int, 
+  `d_yearmonth` string, 
+  `d_daynuminweek` int,
+  `d_daynuminmonth` int,
+  `d_daynuminyear` int,
+  `d_monthnuminyear` int,
+  `d_weeknuminyear` int,
+  `d_sellingseason` string,
+  `d_lastdayinweekfl` int,
+  `d_lastdayinmonthfl` int,
+  `d_holidayfl` int ,
+  `d_weekdayfl`int)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dates_ext
+POSTHOOK: query: CREATE TABLE `dates_ext`(
+  `d_datekey` bigint, 
+  `d_date` string, 
+  `d_dayofweek` string, 
+  `d_month` string, 
+  `d_year` int, 
+  `d_yearmonthnum` int, 
+  `d_yearmonth` string, 
+  `d_daynuminweek` int,
+  `d_daynuminmonth` int,
+  `d_daynuminyear` int,
+  `d_monthnuminyear` int,
+  `d_weeknuminyear` int,
+  `d_sellingseason` string,
+  `d_lastdayinweekfl` int,
+  `d_lastdayinmonthfl` int,
+  `d_holidayfl` int ,
+  `d_weekdayfl`int)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dates_ext
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/date/' into table `dates_ext`
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@dates_ext
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/date/' into table `dates_ext`
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@dates_ext
 PREHOOK: query: CREATE TABLE `dates`(
   `d_datekey` bigint, 
   `d_date` string, 
@@ -47,6 +161,7 @@ PREHOOK: query: CREATE TABLE `dates`(
   primary key (`d_datekey`) disable rely
 )
 STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dates
@@ -71,9 +186,77 @@ POSTHOOK: query: CREATE TABLE `dates`(
   primary key (`d_datekey`) disable rely
 )
 STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dates
+PREHOOK: query: INSERT INTO `dates`
+SELECT * FROM `dates_ext`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dates_ext
+PREHOOK: Output: default@dates
+POSTHOOK: query: INSERT INTO `dates`
+SELECT * FROM `dates_ext`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dates_ext
+POSTHOOK: Output: default@dates
+POSTHOOK: Lineage: dates.d_date SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_date, type:string, comment:null), ]
+POSTHOOK: Lineage: dates.d_datekey SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_datekey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: dates.d_daynuminmonth SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_daynuminmonth, type:int, comment:null), ]
+POSTHOOK: Lineage: dates.d_daynuminweek SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_daynuminweek, type:int, comment:null), ]
+POSTHOOK: Lineage: dates.d_daynuminyear SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_daynuminyear, type:int, comment:null), ]
+POSTHOOK: Lineage: dates.d_dayofweek SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_dayofweek, type:string, comment:null), ]
+POSTHOOK: Lineage: dates.d_holidayfl SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_holidayfl, type:int, comment:null), ]
+POSTHOOK: Lineage: dates.d_lastdayinmonthfl SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_lastdayinmonthfl, type:int, comment:null), ]
+POSTHOOK: Lineage: dates.d_lastdayinweekfl SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_lastdayinweekfl, type:int, comment:null), ]
+POSTHOOK: Lineage: dates.d_month SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_month, type:string, comment:null), ]
+POSTHOOK: Lineage: dates.d_monthnuminyear SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_monthnuminyear, type:int, comment:null), ]
+POSTHOOK: Lineage: dates.d_sellingseason SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_sellingseason, type:string, comment:null), ]
+POSTHOOK: Lineage: dates.d_weekdayfl SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_weekdayfl, type:int, comment:null), ]
+POSTHOOK: Lineage: dates.d_weeknuminyear SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_weeknuminyear, type:int, comment:null), ]
+POSTHOOK: Lineage: dates.d_year SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_year, type:int, comment:null), ]
+POSTHOOK: Lineage: dates.d_yearmonth SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_yearmonth, type:string, comment:null), ]
+POSTHOOK: Lineage: dates.d_yearmonthnum SIMPLE [(dates_ext)dates_ext.FieldSchema(name:d_yearmonthnum, type:int, comment:null), ]
+PREHOOK: query: CREATE TABLE `ssb_part_ext`(
+  `p_partkey` bigint, 
+  `p_name` string, 
+  `p_mfgr` string, 
+  `p_category` string, 
+  `p_brand1` string, 
+  `p_color` string, 
+  `p_type` string, 
+  `p_size` int, 
+  `p_container` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ssb_part_ext
+POSTHOOK: query: CREATE TABLE `ssb_part_ext`(
+  `p_partkey` bigint, 
+  `p_name` string, 
+  `p_mfgr` string, 
+  `p_category` string, 
+  `p_brand1` string, 
+  `p_color` string, 
+  `p_type` string, 
+  `p_size` int, 
+  `p_container` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ssb_part_ext
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/part/' into table `ssb_part_ext`
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@ssb_part_ext
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/part/' into table `ssb_part_ext`
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@ssb_part_ext
 PREHOOK: query: CREATE TABLE `ssb_part`(
   `p_partkey` bigint, 
   `p_name` string, 
@@ -86,6 +269,7 @@ PREHOOK: query: CREATE TABLE `ssb_part`(
   `p_container` string,
   primary key (`p_partkey`) disable rely)
 STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ssb_part
@@ -101,9 +285,65 @@ POSTHOOK: query: CREATE TABLE `ssb_part`(
   `p_container` string,
   primary key (`p_partkey`) disable rely)
 STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ssb_part
+PREHOOK: query: INSERT INTO `ssb_part`
+SELECT * FROM `ssb_part_ext`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ssb_part_ext
+PREHOOK: Output: default@ssb_part
+POSTHOOK: query: INSERT INTO `ssb_part`
+SELECT * FROM `ssb_part_ext`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ssb_part_ext
+POSTHOOK: Output: default@ssb_part
+POSTHOOK: Lineage: ssb_part.p_brand1 SIMPLE [(ssb_part_ext)ssb_part_ext.FieldSchema(name:p_brand1, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_part.p_category SIMPLE [(ssb_part_ext)ssb_part_ext.FieldSchema(name:p_category, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_part.p_color SIMPLE [(ssb_part_ext)ssb_part_ext.FieldSchema(name:p_color, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_part.p_container SIMPLE [(ssb_part_ext)ssb_part_ext.FieldSchema(name:p_container, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_part.p_mfgr SIMPLE [(ssb_part_ext)ssb_part_ext.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_part.p_name SIMPLE [(ssb_part_ext)ssb_part_ext.FieldSchema(name:p_name, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_part.p_partkey SIMPLE [(ssb_part_ext)ssb_part_ext.FieldSchema(name:p_partkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: ssb_part.p_size SIMPLE [(ssb_part_ext)ssb_part_ext.FieldSchema(name:p_size, type:int, comment:null), ]
+POSTHOOK: Lineage: ssb_part.p_type SIMPLE [(ssb_part_ext)ssb_part_ext.FieldSchema(name:p_type, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE `supplier_ext`(
+  `s_suppkey` bigint, 
+  `s_name` string, 
+  `s_address` string, 
+  `s_city` string, 
+  `s_nation` string, 
+  `s_region` string, 
+  `s_phone` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@supplier_ext
+POSTHOOK: query: CREATE TABLE `supplier_ext`(
+  `s_suppkey` bigint, 
+  `s_name` string, 
+  `s_address` string, 
+  `s_city` string, 
+  `s_nation` string, 
+  `s_region` string, 
+  `s_phone` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@supplier_ext
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/supplier/' into table `supplier_ext`
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@supplier_ext
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/supplier/' into table `supplier_ext`
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@supplier_ext
 PREHOOK: query: CREATE TABLE `supplier`(
   `s_suppkey` bigint, 
   `s_name` string, 
@@ -114,6 +354,7 @@ PREHOOK: query: CREATE TABLE `supplier`(
   `s_phone` string,
   primary key (`s_suppkey`) disable rely)
 STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@supplier
@@ -127,9 +368,83 @@ POSTHOOK: query: CREATE TABLE `supplier`(
   `s_phone` string,
   primary key (`s_suppkey`) disable rely)
 STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@supplier
+PREHOOK: query: INSERT INTO `supplier`
+SELECT * FROM `supplier_ext`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@supplier_ext
+PREHOOK: Output: default@supplier
+POSTHOOK: query: INSERT INTO `supplier`
+SELECT * FROM `supplier_ext`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@supplier_ext
+POSTHOOK: Output: default@supplier
+POSTHOOK: Lineage: supplier.s_address SIMPLE [(supplier_ext)supplier_ext.FieldSchema(name:s_address, type:string, comment:null), ]
+POSTHOOK: Lineage: supplier.s_city SIMPLE [(supplier_ext)supplier_ext.FieldSchema(name:s_city, type:string, comment:null), ]
+POSTHOOK: Lineage: supplier.s_name SIMPLE [(supplier_ext)supplier_ext.FieldSchema(name:s_name, type:string, comment:null), ]
+POSTHOOK: Lineage: supplier.s_nation SIMPLE [(supplier_ext)supplier_ext.FieldSchema(name:s_nation, type:string, comment:null), ]
+POSTHOOK: Lineage: supplier.s_phone SIMPLE [(supplier_ext)supplier_ext.FieldSchema(name:s_phone, type:string, comment:null), ]
+POSTHOOK: Lineage: supplier.s_region SIMPLE [(supplier_ext)supplier_ext.FieldSchema(name:s_region, type:string, comment:null), ]
+POSTHOOK: Lineage: supplier.s_suppkey SIMPLE [(supplier_ext)supplier_ext.FieldSchema(name:s_suppkey, type:bigint, comment:null), ]
+PREHOOK: query: CREATE TABLE `lineorder_ext`(
+  `lo_orderkey` bigint, 
+  `lo_linenumber` int, 
+  `lo_custkey` bigint not null disable rely,
+  `lo_partkey` bigint not null disable rely,
+  `lo_suppkey` bigint not null disable rely,
+  `lo_orderdate` bigint not null disable rely,
+  `lo_ordpriority` string, 
+  `lo_shippriority` string, 
+  `lo_quantity` double, 
+  `lo_extendedprice` double, 
+  `lo_ordtotalprice` double, 
+  `lo_discount` double, 
+  `lo_revenue` double, 
+  `lo_supplycost` double, 
+  `lo_tax` double, 
+  `lo_commitdate` bigint, 
+  `lo_shipmode` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lineorder_ext
+POSTHOOK: query: CREATE TABLE `lineorder_ext`(
+  `lo_orderkey` bigint, 
+  `lo_linenumber` int, 
+  `lo_custkey` bigint not null disable rely,
+  `lo_partkey` bigint not null disable rely,
+  `lo_suppkey` bigint not null disable rely,
+  `lo_orderdate` bigint not null disable rely,
+  `lo_ordpriority` string, 
+  `lo_shippriority` string, 
+  `lo_quantity` double, 
+  `lo_extendedprice` double, 
+  `lo_ordtotalprice` double, 
+  `lo_discount` double, 
+  `lo_revenue` double, 
+  `lo_supplycost` double, 
+  `lo_tax` double, 
+  `lo_commitdate` bigint, 
+  `lo_shipmode` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lineorder_ext
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/lineorder/' into table `lineorder_ext`
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@lineorder_ext
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/lineorder/' into table `lineorder_ext`
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@lineorder_ext
 PREHOOK: query: CREATE TABLE `lineorder`(
   `lo_orderkey` bigint, 
   `lo_linenumber` int, 
@@ -154,6 +469,7 @@ PREHOOK: query: CREATE TABLE `lineorder`(
   constraint fk3 foreign key (`lo_partkey`) references `ssb_part`(`p_partkey`) disable rely,
   constraint fk4 foreign key (`lo_suppkey`) references `supplier`(`s_suppkey`) disable rely)
 STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@lineorder
@@ -181,9 +497,37 @@ POSTHOOK: query: CREATE TABLE `lineorder`(
   constraint fk3 foreign key (`lo_partkey`) references `ssb_part`(`p_partkey`) disable rely,
   constraint fk4 foreign key (`lo_suppkey`) references `supplier`(`s_suppkey`) disable rely)
 STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@lineorder
+PREHOOK: query: INSERT INTO `lineorder`
+SELECT * FROM `lineorder_ext`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineorder_ext
+PREHOOK: Output: default@lineorder
+POSTHOOK: query: INSERT INTO `lineorder`
+SELECT * FROM `lineorder_ext`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineorder_ext
+POSTHOOK: Output: default@lineorder
+POSTHOOK: Lineage: lineorder.lo_commitdate SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_commitdate, type:bigint, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_custkey SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_custkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_discount SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_discount, type:double, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_extendedprice SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_extendedprice, type:double, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_linenumber SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_linenumber, type:int, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_orderdate SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_orderdate, type:bigint, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_orderkey SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_orderkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_ordpriority SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_ordpriority, type:string, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_ordtotalprice SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_ordtotalprice, type:double, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_partkey SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_partkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_quantity SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_quantity, type:double, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_revenue SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_revenue, type:double, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_shipmode SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_shipmode, type:string, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_shippriority SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_shippriority, type:string, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_suppkey SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_suppkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_supplycost SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_supplycost, type:double, comment:null), ]
+POSTHOOK: Lineage: lineorder.lo_tax SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_tax, type:double, comment:null), ]
 PREHOOK: query: analyze table customer compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@customer

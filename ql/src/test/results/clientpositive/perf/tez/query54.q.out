@@ -1,6 +1,6 @@
 Warning: Shuffle Join MERGEJOIN[184][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 Warning: Shuffle Join MERGEJOIN[185][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 5' is a cross product
-Warning: Shuffle Join MERGEJOIN[183][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 30' is a cross product
+Warning: Shuffle Join MERGEJOIN[183][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 29' is a cross product
 Warning: Shuffle Join MERGEJOIN[186][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 6' is a cross product
 PREHOOK: query: explain
 with my_customers as (
@@ -127,14 +127,13 @@ Reducer 20 <- Reducer 19 (SIMPLE_EDGE)
 Reducer 26 <- Map 25 (SIMPLE_EDGE)
 Reducer 27 <- Reducer 26 (CUSTOM_SIMPLE_EDGE)
 Reducer 28 <- Map 25 (SIMPLE_EDGE)
-Reducer 29 <- Map 25 (SIMPLE_EDGE)
+Reducer 29 <- Reducer 28 (CUSTOM_SIMPLE_EDGE), Reducer 31 (CUSTOM_SIMPLE_EDGE)
 Reducer 3 <- Reducer 13 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
-Reducer 30 <- Reducer 29 (CUSTOM_SIMPLE_EDGE), Reducer 32 (CUSTOM_SIMPLE_EDGE)
-Reducer 31 <- Map 25 (SIMPLE_EDGE)
-Reducer 32 <- Reducer 31 (CUSTOM_SIMPLE_EDGE)
+Reducer 30 <- Map 25 (SIMPLE_EDGE)
+Reducer 31 <- Reducer 30 (CUSTOM_SIMPLE_EDGE)
 Reducer 4 <- Reducer 27 (CUSTOM_SIMPLE_EDGE), Reducer 3 (CUSTOM_SIMPLE_EDGE)
-Reducer 5 <- Reducer 28 (CUSTOM_SIMPLE_EDGE), Reducer 4 (CUSTOM_SIMPLE_EDGE)
-Reducer 6 <- Reducer 30 (CUSTOM_SIMPLE_EDGE), Reducer 5 (CUSTOM_SIMPLE_EDGE)
+Reducer 5 <- Reducer 26 (CUSTOM_SIMPLE_EDGE), Reducer 4 (CUSTOM_SIMPLE_EDGE)
+Reducer 6 <- Reducer 29 (CUSTOM_SIMPLE_EDGE), Reducer 5 (CUSTOM_SIMPLE_EDGE)
 Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
 Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
 Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
@@ -177,11 +176,11 @@ Stage-0
                                     Output:["_col0","_col4","_col11","_col13","_col15"]
                                     Merge Join Operator [MERGEJOIN_186] (rows=58108714324214428 width=158)
                                       Conds:(Inner),Output:["_col0","_col2","_col6","_col13","_col15"]
-                                    <-Reducer 30 [CUSTOM_SIMPLE_EDGE]
+                                    <-Reducer 29 [CUSTOM_SIMPLE_EDGE]
                                       PARTITION_ONLY_SHUFFLE [RS_112]
                                         Merge Join Operator [MERGEJOIN_183] (rows=9131 width=1128)
                                           Conds:(Right Outer),Output:["_col0"]
-                                        <-Reducer 29 [CUSTOM_SIMPLE_EDGE]
+                                        <-Reducer 28 [CUSTOM_SIMPLE_EDGE]
                                           PARTITION_ONLY_SHUFFLE [RS_109]
                                             Group By Operator [GBY_6] (rows=9131 width=1119)
                                               Output:["_col0"],keys:KEY._col0
@@ -196,14 +195,14 @@ Stage-0
                                                       predicate:((d_moy = 3) and (d_year = 1999))
                                                       TableScan [TS_73] (rows=73049 width=1119)
                                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_month_seq","d_year","d_moy"]
-                                        <-Reducer 32 [CUSTOM_SIMPLE_EDGE]
+                                        <-Reducer 31 [CUSTOM_SIMPLE_EDGE]
                                           PARTITION_ONLY_SHUFFLE [RS_110]
                                             Select Operator [SEL_22] (rows=1 width=8)
                                               Filter Operator [FIL_21] (rows=1 width=8)
                                                 predicate:(sq_count_check(_col0) <= 1)
                                                 Group By Operator [GBY_19] (rows=1 width=8)
                                                   Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                                <-Reducer 31 [CUSTOM_SIMPLE_EDGE]
+                                                <-Reducer 30 [CUSTOM_SIMPLE_EDGE]
                                                   PARTITION_ONLY_SHUFFLE [RS_18]
                                                     Group By Operator [GBY_17] (rows=1 width=8)
                                                       Output:["_col0"],aggregations:["count()"]
@@ -224,12 +223,12 @@ Stage-0
                                           Output:["_col0","_col4","_col11","_col13"]
                                           Merge Join Operator [MERGEJOIN_185] (rows=6363893803988 width=1217)
                                             Conds:(Left Outer),Output:["_col2","_col4","_col10","_col13"]
-                                          <-Reducer 28 [CUSTOM_SIMPLE_EDGE]
+                                          <-Reducer 26 [CUSTOM_SIMPLE_EDGE]
                                             PARTITION_ONLY_SHUFFLE [RS_106]
-                                              Group By Operator [GBY_94] (rows=9131 width=1119)
+                                              Group By Operator [GBY_79] (rows=9131 width=1119)
                                                 Output:["_col0"],keys:KEY._col0
                                               <-Map 25 [SIMPLE_EDGE]
-                                                SHUFFLE [RS_93]
+                                                SHUFFLE [RS_78]
                                                   PartitionCols:_col0
                                                   Group By Operator [GBY_77] (rows=18262 width=1119)
                                                     Output:["_col0"],keys:_col0
@@ -252,12 +251,7 @@ Stage-0
                                                           Group By Operator [GBY_82] (rows=1 width=8)
                                                             Output:["_col0"],aggregations:["count()"]
                                                             Select Operator [SEL_80] (rows=9131 width=1119)
-                                                              Group By Operator [GBY_79] (rows=9131 width=1119)
-                                                                Output:["_col0"],keys:KEY._col0
-                                                              <-Map 25 [SIMPLE_EDGE]
-                                                                SHUFFLE [RS_78]
-                                                                  PartitionCols:_col0
-                                                                   Please refer to the previous Group By Operator [GBY_77]
+                                                               Please refer to the previous Group By Operator [GBY_79]
                                               <-Reducer 3 [CUSTOM_SIMPLE_EDGE]
                                                 PARTITION_ONLY_SHUFFLE [RS_102]
                                                   Merge Join Operator [MERGEJOIN_182] (rows=696954748 width=88)

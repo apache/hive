@@ -1,0 +1,42 @@
+PREHOOK: query: CREATE TABLE lv_table(c1 STRING) PARTITIONED BY(c2 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lv_table
+POSTHOOK: query: CREATE TABLE lv_table(c1 STRING) PARTITIONED BY(c2 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lv_table
+PREHOOK: query: CREATE VIEW lv_view PARTITIONED ON (c2) AS SELECT c1, c2 FROM lv_table
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@lv_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lv_view
+POSTHOOK: query: CREATE VIEW lv_view PARTITIONED ON (c2) AS SELECT c1, c2 FROM lv_table
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@lv_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lv_view
+POSTHOOK: Lineage: lv_view.c1 SIMPLE [(lv_table)lv_table.FieldSchema(name:c1, type:string, comment:null), ]
+PREHOOK: query: EXPLAIN SELECT * FROM lv_view
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT * FROM lv_view
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: lv_table
+          properties:
+            insideView TRUE
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: c1 (type: string), c2 (type: string)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            ListSink
+

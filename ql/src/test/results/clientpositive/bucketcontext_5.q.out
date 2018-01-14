@@ -6,35 +6,35 @@ POSTHOOK: query: CREATE TABLE bucket_small (key string, value string) CLUSTERED 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_small
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_small
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_small
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_small
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_small
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_small
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_small
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_small
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_small
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_small
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_small
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket_small
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_small
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket_small
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_small
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_small
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket_small
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_small
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket_small
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_small
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_small
@@ -46,19 +46,19 @@ POSTHOOK: query: CREATE TABLE bucket_big (key string, value string) CLUSTERED BY
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_big
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_big
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_big
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_big
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_big
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_big
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_big
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big
@@ -82,12 +82,12 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: string)
@@ -95,7 +95,7 @@ STAGE PLANS:
                 Position of Big Table: 1
       Bucket Mapjoin Context:
           Alias Bucket Base File Name Mapping:
-            a {srcsortbucket1outof4.txt=[srcsortbucket1outof4.txt, srcsortbucket3outof4.txt], srcsortbucket2outof4.txt=[srcsortbucket2outof4.txt, srcsortbucket4outof4.txt]}
+            a {000000_0=[000000_0, 000002_0], 000001_0=[000001_0, 000003_0]}
           Alias Bucket File Name Mapping:
 #### A masked pattern was here ####
           Alias Bucket Output File Name Mapping:
@@ -106,12 +106,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 27500 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 27500 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -119,7 +119,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 Position of Big Table: 1
-                Statistics: Num rows: 1 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 63932 Basic stats: COMPLETE Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()
@@ -249,12 +249,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 27500 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 27500 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1

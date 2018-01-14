@@ -462,6 +462,14 @@ public class HiveConf extends Configuration {
     REPL_DUMPDIR_TTL("hive.repl.dumpdir.ttl", "7d",
         new TimeValidator(TimeUnit.DAYS),
         "TTL of dump dirs before cleanup."),
+    REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
+        "Indicates whether replication dump only metadata information or data + metadata."),
+    REPL_DUMP_INCLUDE_ACID_TABLES("hive.repl.dump.include.acid.tables", false,
+        "Indicates if repl dump should include information about ACID tables. It should be \n"
+            + "used in conjunction with 'hive.repl.dump.metadata.only' to enable copying of \n"
+            + "metadata for acid tables which do not require the corresponding transaction \n"
+            + "semantics to be applied on target. This can be removed when ACID table \n"
+            + "replication is supported."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -1137,6 +1145,12 @@ public class HiveConf extends Configuration {
     // materialized views
     HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING("hive.materializedview.rewriting", false,
         "Whether to try to rewrite queries using the materialized views enabled for rewriting"),
+    HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW("hive.materializedview.rewriting.time.window", 0,
+        "Time window, specified in seconds, after which outdated materialized views become invalid for automatic query rewriting.\n" +
+        "For instance, if a materialized view is created and afterwards one of its source tables is changed at " +
+        "moment in time t0, the materialized view will not be considered for rewriting anymore after t0 plus " +
+        "the value assigned to this property. Default value 0 means that the materialized view cannot be " +
+        "outdated to be used automatically in query rewriting."),
     HIVE_MATERIALIZED_VIEW_FILE_FORMAT("hive.materializedview.fileformat", "ORC",
         new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
         "Default file format for CREATE MATERIALIZED VIEW statement"),
@@ -1307,7 +1321,7 @@ public class HiveConf extends Configuration {
     HIVE_SCHEMA_EVOLUTION("hive.exec.schema.evolution", true,
         "Use schema evolution to convert self-describing file format's data to the schema desired by the reader."),
 
-    HIVE_TRANSACTIONAL_TABLE_SCAN("hive.transactional.table.scan", false,
+    HIVE_ACID_TABLE_SCAN("hive.acid.table.scan", false,
         "internal usage only -- do transaction (ACID) table scan.", true),
 
     HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY("hive.transactional.events.mem", 10000000,
@@ -1695,6 +1709,10 @@ public class HiveConf extends Configuration {
     HIVE_SHARED_WORK_OPTIMIZATION("hive.optimize.shared.work", true,
         "Whether to enable shared work optimizer. The optimizer finds scan operator over the same table\n" +
         "and follow-up operators in the query plan and merges them if they meet some preconditions. Tez only."),
+    HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION("hive.optimize.shared.work.extended", true,
+        "Whether to enable shared work extended optimizer. The optimizer tries to merge equal operators\n" +
+        "after a work boundary after shared work optimizer has been executed. Requires hive.optimize.shared.work\n" +
+        "to be set to true. Tez only."),
     HIVE_COMBINE_EQUIVALENT_WORK_OPTIMIZATION("hive.combine.equivalent.work.optimization", true, "Whether to " +
             "combine equivalent work objects during physical optimization.\n This optimization looks for equivalent " +
             "work objects and combines them if they meet certain preconditions. Spark only."),
@@ -1832,7 +1850,7 @@ public class HiveConf extends Configuration {
     // annotation. But the file may be compressed, encoded and serialized which may be lesser in size
     // than the actual uncompressed/raw data size. This factor will be multiplied to file size to estimate
     // the raw data size.
-    HIVE_STATS_DESERIALIZATION_FACTOR("hive.stats.deserialization.factor", (float) 1.0,
+    HIVE_STATS_DESERIALIZATION_FACTOR("hive.stats.deserialization.factor", (float) 10.0,
         "Hive/Tez optimizer estimates the data size flowing through each of the operators. In the absence\n" +
         "of basic statistics like number of rows and data size, file size is used to estimate the number\n" +
         "of rows and data size. Since files in tables/partitions are serialized (and optionally\n" +
@@ -3181,6 +3199,13 @@ public class HiveConf extends Configuration {
         "MR LineRecordRedader into LLAP cache, if this feature is enabled. Safety flag."),
     LLAP_ORC_ENABLE_TIME_COUNTERS("hive.llap.io.orc.time.counters", true,
         "Whether to enable time counters for LLAP IO layer (time spent in HDFS, etc.)"),
+    LLAP_IO_VRB_QUEUE_LIMIT_BASE("hive.llap.io.vrb.queue.limit.base", 10000,
+        "The default queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
+        "slower than the IO. The actual queue size is set per fragment, and is adjusted down\n" +
+        "from the base, depending on the schema."),
+    LLAP_IO_VRB_QUEUE_LIMIT_MIN("hive.llap.io.vrb.queue.limit.min", 10,
+        "The minimum queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
+        "slower than the IO (used when determining the size from base size)."),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,
         "Whether or not to allow the planner to run vertices in the AM."),
     LLAP_AUTO_ENFORCE_TREE("hive.llap.auto.enforce.tree", true,
@@ -3396,6 +3421,9 @@ public class HiveConf extends Configuration {
       "Backoff factor on successive blacklists of a node due to some failures. Blacklist times\n" +
       "start at the min timeout and go up to the max timeout based on this backoff factor.",
       "llap.task.scheduler.node.disable.backoff.factor"),
+    LLAP_TASK_SCHEDULER_PREEMPT_INDEPENDENT("hive.llap.task.scheduler.preempt.independent", false,
+      "Whether the AM LLAP scheduler should preempt a lower priority task for a higher pri one\n" +
+      "even if the former doesn't depend on the latter (e.g. for two parallel sides of a union)."),
     LLAP_TASK_SCHEDULER_NUM_SCHEDULABLE_TASKS_PER_NODE(
       "hive.llap.task.scheduler.num.schedulable.tasks.per.node", 0,
       "The number of tasks the AM TaskScheduler will try allocating per node. 0 indicates that\n" +
@@ -3582,6 +3610,7 @@ public class HiveConf extends Configuration {
     HIVE_MM_AVOID_GLOBSTATUS_ON_S3("hive.mm.avoid.s3.globstatus", true,
         "Whether to use listFiles (optimized on S3) instead of globStatus when on S3."),
 
+    // If a parameter is added to the restricted list, add a test in TestRestrictedList.Java
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list",
         "hive.security.authenticator.manager,hive.security.authorization.manager," +
         "hive.security.metastore.authorization.manager,hive.security.metastore.authenticator.manager," +
@@ -3610,7 +3639,9 @@ public class HiveConf extends Configuration {
             "bonecp.,"+
             "hive.druid.broker.address.default,"+
             "hive.druid.coordinator.address.default,"+
-            "hikari.",
+            "hikari.,"+
+            "hadoop.bin.path,"+
+            "yarn.bin.path",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
@@ -4750,6 +4781,10 @@ public class HiveConf extends Configuration {
 
   public static void setHiveSiteLocation(URL location) {
     hiveSiteURL = location;
+  }
+
+  public static void setHivemetastoreSiteUrl(URL location) {
+    hivemetastoreSiteUrl = location;
   }
 
   public static URL getHiveSiteLocation() {

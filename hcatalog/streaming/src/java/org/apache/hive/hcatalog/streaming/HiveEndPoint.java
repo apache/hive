@@ -21,7 +21,7 @@ package org.apache.hive.hcatalog.streaming;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -41,7 +41,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatUtil;
 
@@ -336,15 +337,10 @@ public class HiveEndPoint {
         LOG.warn("Unable to check the endPoint: " + endPoint, e);
         throw new InvalidTable(endPoint.database, endPoint.table, e);
       }
-
-      // 1 - check if TBLPROPERTIES ('transactional'='true') is set on table
-      Map<String, String> params = t.getParameters();
-      if (params != null) {
-        String transactionalProp = params.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-        if (transactionalProp == null || !transactionalProp.equalsIgnoreCase("true")) {
-          LOG.error("'transactional' property is not set on Table " + endPoint);
-          throw new InvalidTable(endPoint.database, endPoint.table, "\'transactional\' property" +
-              " is not set on Table");          }
+      // 1 - check that the table is Acid
+      if (!AcidUtils.isAcidTable(t)) {
+        LOG.error("HiveEndPoint " + endPoint + " must use an acid table");
+        throw new InvalidTable(endPoint.database, endPoint.table, "is not an Acid table");
       }
 
       // 2 - check if partitionvals are legitimate
@@ -456,7 +452,7 @@ public class HiveEndPoint {
       if(SessionState.get() == null) {
         localSession = SessionState.start(new CliSessionState(conf));
       }
-      Driver driver = new Driver(conf);
+      IDriver driver = DriverFactory.newDriver(conf);
 
       try {
         if (LOG.isDebugEnabled()) {
@@ -493,7 +489,7 @@ public class HiveEndPoint {
       }
     }
 
-    private static boolean runDDL(Driver driver, String sql) throws QueryFailedException {
+    private static boolean runDDL(IDriver driver, String sql) throws QueryFailedException {
       int retryCount = 1; // # of times to retry if first attempt fails
       for (int attempt=0; attempt<=retryCount; ++attempt) {
         try {

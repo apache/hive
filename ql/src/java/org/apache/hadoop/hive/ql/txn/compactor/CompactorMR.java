@@ -333,13 +333,22 @@ public class CompactorMR {
       job.getJobName() + "' to " + job.getQueueName() + " queue.  " +
       "(current delta dirs count=" + curDirNumber +
       ", obsolete delta dirs count=" + obsoleteDirNumber + ". TxnIdRange[" + minTxn + "," + maxTxn + "]");
-    RunningJob rj = new JobClient(job).submitJob(job);
-    LOG.info("Submitted compaction job '" + job.getJobName() + "' with jobID=" + rj.getID() + " compaction ID=" + id);
-    txnHandler.setHadoopJobId(rj.getID().toString(), id);
-    rj.waitForCompletion();
-    if (!rj.isSuccessful()) {
-      throw new IOException(compactionType == CompactionType.MAJOR ? "Major" : "Minor" +
-          " compactor job failed for " + jobName + "! Hadoop JobId: " + rj.getID() );
+    JobClient jc = null;
+    try {
+      jc = new JobClient(job);
+      RunningJob rj = jc.submitJob(job);
+      LOG.info("Submitted compaction job '" + job.getJobName() +
+          "' with jobID=" + rj.getID() + " compaction ID=" + id);
+      txnHandler.setHadoopJobId(rj.getID().toString(), id);
+      rj.waitForCompletion();
+      if (!rj.isSuccessful()) {
+        throw new IOException(compactionType == CompactionType.MAJOR ? "Major" : "Minor" +
+               " compactor job failed for " + jobName + "! Hadoop JobId: " + rj.getID());
+      }
+    } finally {
+      if (jc!=null) {
+        jc.close();
+      }
     }
   }
   /**
@@ -364,7 +373,7 @@ public class CompactorMR {
     }
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, colNames.toString());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, colTypes.toString());
-    HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
+    HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_ACID_TABLE_SCAN, true);
     HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
   }
 

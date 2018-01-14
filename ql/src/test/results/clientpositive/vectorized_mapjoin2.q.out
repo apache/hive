@@ -16,18 +16,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@y
 PREHOOK: query: insert into x values(1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@x
 POSTHOOK: query: insert into x values(1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@x
-POSTHOOK: Lineage: x.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: x.a SCRIPT []
 PREHOOK: query: insert into y values(1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@y
 POSTHOOK: query: insert into y values(1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@y
-POSTHOOK: Lineage: y.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: y.b SCRIPT []
 PREHOOK: query: explain vectorization expression
 select count(1) from x, y where a = b
 PREHOOK: type: QUERY

@@ -278,12 +278,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: test2
-          Statistics: Num rows: 5 Data size: 111 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 5 Data size: 299 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Select Operator
             expressions: name (type: string), age (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 5 Data size: 111 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 299 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: DROP TABLE test1

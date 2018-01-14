@@ -40,8 +40,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -140,6 +140,9 @@ public class Context {
 
   // Identify whether the query involves an UPDATE, DELETE or MERGE
   private boolean isUpdateDeleteMerge;
+
+  // Whether the analyzer has been instantiated to read and load materialized view plans
+  private boolean isLoadingMaterializedView;
 
   /**
    * This determines the prefix of the
@@ -1027,6 +1030,15 @@ public class Context {
   public void setIsUpdateDeleteMerge(boolean isUpdate) {
     this.isUpdateDeleteMerge = isUpdate;
   }
+
+  public boolean isLoadingMaterializedView() {
+    return isLoadingMaterializedView;
+  }
+
+  public void setIsLoadingMaterializedView(boolean isLoadingMaterializedView) {
+    this.isLoadingMaterializedView = isLoadingMaterializedView;
+  }
+
   public String getExecutionId() {
     return executionId;
   }

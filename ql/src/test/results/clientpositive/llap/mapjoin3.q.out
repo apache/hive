@@ -42,19 +42,23 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_2
 PREHOOK: query: INSERT INTO test_1 VALUES (1, '20'), (2, '30'), (3, '40')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_1
 POSTHOOK: query: INSERT INTO test_1 VALUES (1, '20'), (2, '30'), (3, '40')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_1
-POSTHOOK: Lineage: test_1.age EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: test_1.member EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test_1.age SCRIPT []
+POSTHOOK: Lineage: test_1.member SCRIPT []
 PREHOOK: query: INSERT INTO test_2 VALUES (1), (2), (3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_2
 POSTHOOK: query: INSERT INTO test_2 VALUES (1), (2), (3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_2
-POSTHOOK: Lineage: test_2.member EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test_2.member SCRIPT []
 PREHOOK: query: EXPLAIN
 SELECT 
 t2.member 

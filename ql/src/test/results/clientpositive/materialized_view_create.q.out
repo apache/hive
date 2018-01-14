@@ -8,13 +8,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_basetable
 PREHOOK: query: insert into cmv_basetable values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cmv_basetable
 POSTHOOK: query: insert into cmv_basetable values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cmv_basetable
-POSTHOOK: Lineage: cmv_basetable.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: cmv_basetable.a SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
 PREHOOK: query: create materialized view cmv_mat_view as select a, b, c from cmv_basetable
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable
@@ -197,15 +199,17 @@ POSTHOOK: query: create table cmv_basetable2 (d int, e varchar(256), f decimal(1
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_basetable2
-PREHOOK: query: insert into cmv_basetable2 values (4, 'alfred', 100.30),(4, 'bob', 6133,14),(5, 'bonnie', 172.2),(6, 'calvin', 8.76),(17, 'charlie', 13144339.8)
+PREHOOK: query: insert into cmv_basetable2 values (4, 'alfred', 100.30),(4, 'bob', 6133.14),(5, 'bonnie', 172.2),(6, 'calvin', 8.76),(17, 'charlie', 13144339.8)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cmv_basetable2
-POSTHOOK: query: insert into cmv_basetable2 values (4, 'alfred', 100.30),(4, 'bob', 6133,14),(5, 'bonnie', 172.2),(6, 'calvin', 8.76),(17, 'charlie', 13144339.8)
+POSTHOOK: query: insert into cmv_basetable2 values (4, 'alfred', 100.30),(4, 'bob', 6133.14),(5, 'bonnie', 172.2),(6, 'calvin', 8.76),(17, 'charlie', 13144339.8)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cmv_basetable2
-POSTHOOK: Lineage: cmv_basetable2.d EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable2.e EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable2.f EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: cmv_basetable2.d SCRIPT []
+POSTHOOK: Lineage: cmv_basetable2.e SCRIPT []
+POSTHOOK: Lineage: cmv_basetable2.f SCRIPT []
 PREHOOK: query: create materialized view cmv_mat_view5 tblproperties ('key'='value') as select a, b, d, c, f from cmv_basetable t1 join cmv_basetable2 t2 on (t1.b = t2.e)
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable
@@ -227,7 +231,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_mat_view5
 #### A masked pattern was here ####
 1	alfred	4	10.30	100.30
-2	bob	4	3.14	6133.00
+2	bob	4	3.14	6133.14
 2	bonnie	5	172342.20	172.20
 3	calvin	6	978.76	8.76
 3	charlie	17	9.80	13144339.80
@@ -240,7 +244,7 @@ key	value
 numFiles	1
 numRows	5
 rawDataSize	1605
-totalSize	710
+totalSize	701
 #### A masked pattern was here ####
 PREHOOK: query: drop materialized view cmv_mat_view
 PREHOOK: type: DROP_MATERIALIZED_VIEW

@@ -8,11 +8,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s1
 PREHOOK: query: insert into table s1 values (1000),(1001),(1002),(1003),(1000)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@s1
 POSTHOOK: query: insert into table s1 values (1000),(1001),(1002),(1003),(1000)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@s1
-POSTHOOK: Lineage: s1.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: s1.id SCRIPT []
 PREHOOK: query: select count(1) from s1 where cast(id as char(4))='1000'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@s1

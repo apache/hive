@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
@@ -50,7 +51,8 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFil
 import org.apache.hadoop.hive.metastore.messaging.event.filters.MessageFormatFilter;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -100,12 +102,12 @@ public class TestReplicationScenarios {
 
   private static HiveConf hconf;
   private static int msPort;
-  private static Driver driver;
+  private static IDriver driver;
   private static HiveMetaStoreClient metaStoreClient;
   private static String proxySettingName;
   static HiveConf hconfMirror;
   static int msPortMirror;
-  static Driver driverMirror;
+  static IDriver driverMirror;
   static HiveMetaStoreClient metaStoreClientMirror;
 
   @Rule
@@ -148,6 +150,8 @@ public class TestReplicationScenarios {
     hconf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hconf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hconf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
+    hconf.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
+        "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
     hconf.set(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL.varname,
               "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
     hconf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, true);
@@ -158,7 +162,7 @@ public class TestReplicationScenarios {
     FileSystem fs = FileSystem.get(testPath.toUri(),hconf);
     fs.mkdirs(testPath);
 
-    driver = new Driver(hconf);
+    driver = DriverFactory.newDriver(hconf);
     SessionState.start(new CliSessionState(hconf));
     metaStoreClient = new HiveMetaStoreClient(hconf);
 
@@ -169,7 +173,7 @@ public class TestReplicationScenarios {
     hconfMirror = new HiveConf(hconf);
     hconfMirror.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
         + msPortMirror);
-    driverMirror = new Driver(hconfMirror);
+    driverMirror = DriverFactory.newDriver(hconfMirror);
     metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
 
     ObjectStore.setTwoMetastoreTesting(true);
@@ -585,7 +589,7 @@ public class TestReplicationScenarios {
             public void run() {
               try {
                 LOG.info("Entered new thread");
-                Driver driver2 = new Driver(hconf);
+                IDriver driver2 = DriverFactory.newDriver(hconf);
                 SessionState.start(new CliSessionState(hconf));
                 CommandProcessorResponse ret = driver2.run("ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=10)");
                 success = (ret.getException() == null);
@@ -660,7 +664,7 @@ public class TestReplicationScenarios {
             public void run() {
               try {
                 LOG.info("Entered new thread");
-                Driver driver2 = new Driver(hconf);
+                IDriver driver2 = DriverFactory.newDriver(hconf);
                 SessionState.start(new CliSessionState(hconf));
                 CommandProcessorResponse ret = driver2.run("DROP TABLE " + dbName + ".ptned");
                 success = (ret.getException() == null);
@@ -1083,9 +1087,9 @@ public class TestReplicationScenarios {
   }
 
   @Test
-  public void testAlters() throws IOException {
+  public void testTableAlters() throws IOException {
 
-    String testName = "alters";
+    String testName = "TableAlters";
     String dbName = createDB(testName, driver);
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
     run("CREATE TABLE " + dbName + ".unptned2(a string) STORED AS TEXTFILE", driver);
@@ -1243,6 +1247,63 @@ public class TestReplicationScenarios {
       assertNull(te);
     }
 
+  }
+
+  @Test
+  public void testDatabaseAlters() throws IOException {
+
+    String testName = "DatabaseAlters";
+    String dbName = createDB(testName, driver);
+    String replDbName = dbName + "_dupe";
+    String ownerName = "test";
+
+    run("ALTER DATABASE " + dbName + " SET OWNER USER " + ownerName, driver);
+
+    // Trigger bootstrap replication
+    Tuple bootstrap = bootstrapLoadAndVerify(dbName, replDbName);
+
+    try {
+      Database replDb = metaStoreClientMirror.getDatabase(replDbName);
+      assertEquals(ownerName, replDb.getOwnerName());
+      assertEquals("USER", replDb.getOwnerType().toString());
+    } catch (TException e) {
+      assertNull(e);
+    }
+
+    // Alter database set DB property
+    String testKey = "blah";
+    String testVal = "foo";
+    run("ALTER DATABASE " + dbName + " SET DBPROPERTIES ('" + testKey + "' = '" + testVal + "')", driver);
+
+    // All alters done, now we replicate them over.
+    Tuple incremental = incrementalLoadAndVerify(dbName, bootstrap.lastReplId, replDbName);
+
+    // Replication done, we need to check if the new property is added
+    try {
+      Database replDb = metaStoreClientMirror.getDatabase(replDbName);
+      assertTrue(replDb.getParameters().containsKey(testKey));
+      assertEquals(testVal, replDb.getParameters().get(testKey));
+    } catch (TException e) {
+      assertNull(e);
+    }
+
+    String newValue = "newFoo";
+    String newOwnerName = "newTest";
+    run("ALTER DATABASE " + dbName + " SET DBPROPERTIES ('" + testKey + "' = '" + newValue + "')", driver);
+    run("ALTER DATABASE " + dbName + " SET OWNER ROLE " + newOwnerName, driver);
+
+    incremental = incrementalLoadAndVerify(dbName, incremental.lastReplId, replDbName);
+
+    // Replication done, we need to check if new value is set for existing property
+    try {
+      Database replDb = metaStoreClientMirror.getDatabase(replDbName);
+      assertTrue(replDb.getParameters().containsKey(testKey));
+      assertEquals(newValue, replDb.getParameters().get(testKey));
+      assertEquals(newOwnerName, replDb.getOwnerName());
+      assertEquals("ROLE", replDb.getOwnerType().toString());
+    } catch (TException e) {
+      assertNull(e);
+    }
   }
 
   @Test
@@ -1895,13 +1956,16 @@ public class TestReplicationScenarios {
     String testName = "dropPartitionEventWithPartitionOnTimestampColumn";
     String dbName = createDB(testName, driver);
     run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b timestamp)", driver);
+    String[] ptn_data = new String[] { "fourteen" };
+    String ptnVal = "2017-10-01 01:00:10.1";
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=\"" + ptnVal +"\") values('" + ptn_data[0] + "')", driver);
 
     // Bootstrap dump/load
     String replDbName = dbName + "_dupe";
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
 
-    String[] ptn_data = new String[] { "fifteen" };
-    String ptnVal = "2017-10-24 00:00:00.0";
+    ptn_data = new String[] { "fifteen" };
+    ptnVal = "2017-10-24 00:00:00.0";
     run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=\"" + ptnVal +"\") values('" + ptn_data[0] + "')", driver);
 
     // Replicate insert event and verify
@@ -1913,6 +1977,35 @@ public class TestReplicationScenarios {
     // Replicate drop partition event and verify
     incrementalLoadAndVerify(dbName, incrDump.lastReplId, replDbName);
     verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList(ptnVal)), metaStoreClientMirror);
+  }
+
+  /**
+   * Verify replication when string partition column value has special chars
+   * @throws IOException
+   */
+  @Test
+  public void testWithStringPartitionSpecialChars() throws IOException {
+    String testName = "testWithStringPartitionSpecialChars";
+    String dbName = createDB(testName, driver);
+    run("CREATE TABLE " + dbName + ".ptned(v string) PARTITIONED BY (p string)", driver);
+    String[] ptn_data = new String[] { "fourteen", "fifteen" };
+    String[] ptnVal = new String [] {"has a space, /, and \t tab", "another set of '#@ chars" };
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(p=\"" + ptnVal[0] +"\") values('" + ptn_data[0] + "')", driver);
+
+    // Bootstrap dump/load
+    String replDbName = dbName + "_dupe";
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(p=\"" + ptnVal[1] +"\") values('" + ptn_data[1] + "')", driver);
+    // Replicate insert event and verify
+    Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
+    verifyRun("SELECT p from " + replDbName + ".ptned ORDER BY p desc", ptnVal, driverMirror);
+
+    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION(p=\"" + ptnVal[0] + "\")", driver);
+
+    // Replicate drop partition event and verify
+    incrementalLoadAndVerify(dbName, incrDump.lastReplId, replDbName);
+    verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList(ptnVal[0])), metaStoreClientMirror);
   }
 
   @Test
@@ -2244,18 +2337,24 @@ public class TestReplicationScenarios {
     String[] unptn_data_load1 = new String[] { "eleven" };
     String[] unptn_data_load2 = new String[] { "eleven", "thirteen" };
 
-    // 3 events to insert, last repl ID: replDumpId+3
+    // x events to insert, last repl ID: replDumpId+x
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
-    // 3 events to insert, last repl ID: replDumpId+6
+    String firstInsertLastReplId = replDumpDb(dbName, replDumpId, null, null).lastReplId;
+    Integer numOfEventsIns1 = Integer.valueOf(firstInsertLastReplId) - Integer.valueOf(replDumpId);
+
+    // x events to insert, last repl ID: replDumpId+2x
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')", driver);
-    // 3 events to insert, last repl ID: replDumpId+9
+    String secondInsertLastReplId = replDumpDb(dbName, firstInsertLastReplId, null, null).lastReplId;
+    Integer numOfEventsIns2 = Integer.valueOf(secondInsertLastReplId) - Integer.valueOf(firstInsertLastReplId);
+
+    // x events to insert, last repl ID: replDumpId+3x
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[2] + "')", driver);
     verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
 
     run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " LIMIT 3", driver);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " LIMIT " + numOfEventsIns1, driver);
     String incrementalDumpLocn = getResult(0, 0, driver);
     String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
@@ -2270,7 +2369,7 @@ public class TestReplicationScenarios {
     lastReplID += 1000;
     String toReplID = String.valueOf(lastReplID);
 
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + toReplID + " LIMIT 3", driver);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + toReplID + " LIMIT " + numOfEventsIns2, driver);
     incrementalDumpLocn = getResult(0, 0, driver);
     incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
@@ -2527,15 +2626,24 @@ public class TestReplicationScenarios {
     String[] unptn_data_load1 = new String[] { "eleven" };
     String[] unptn_data_load2 = new String[] { "eleven", "thirteen" };
 
-    // 3 events to insert, last repl ID: replDumpId+3
+    // x events to insert, last repl ID: replDumpId+x
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
-    // 3 events to insert, last repl ID: replDumpId+6
+    String firstInsertLastReplId = replDumpDb(dbName, replDumpId, null, null).lastReplId;
+    Integer numOfEventsIns1 = Integer.valueOf(firstInsertLastReplId) - Integer.valueOf(replDumpId);
+
+    // x events to insert, last repl ID: replDumpId+2x
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')", driver);
     verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
-    // 1 event to truncate, last repl ID: replDumpId+8
+    String secondInsertLastReplId = replDumpDb(dbName, firstInsertLastReplId, null, null).lastReplId;
+    Integer numOfEventsIns2 = Integer.valueOf(secondInsertLastReplId) - Integer.valueOf(firstInsertLastReplId);
+
+    // y event to truncate, last repl ID: replDumpId+2x+y
     run("TRUNCATE TABLE " + dbName + ".unptned", driver);
     verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", empty, driver);
-    // 3 events to insert, last repl ID: replDumpId+11
+    String thirdTruncLastReplId = replDumpDb(dbName, secondInsertLastReplId, null, null).lastReplId;
+    Integer numOfEventsTrunc3 = Integer.valueOf(thirdTruncLastReplId) - Integer.valueOf(secondInsertLastReplId);
+
+    // x events to insert, last repl ID: replDumpId+3x+y
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data_load1[0] + "')", driver);
     verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data_load1, driver);
 
@@ -2543,7 +2651,7 @@ public class TestReplicationScenarios {
 
     // Dump and load only first insert (1 record)
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " LIMIT 3", driver);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " LIMIT " + numOfEventsIns1, driver);
     String incrementalDumpLocn = getResult(0, 0, driver);
     String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
@@ -2559,7 +2667,7 @@ public class TestReplicationScenarios {
     lastReplID += 1000;
     String toReplID = String.valueOf(lastReplID);
 
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + toReplID + " LIMIT 3", driver);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + toReplID + " LIMIT " + numOfEventsIns2, driver);
     incrementalDumpLocn = getResult(0, 0, driver);
     incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
@@ -2570,7 +2678,7 @@ public class TestReplicationScenarios {
 
     // Dump and load only truncate (0 records)
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " LIMIT 2", driver);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " LIMIT " + numOfEventsTrunc3, driver);
     incrementalDumpLocn = getResult(0, 0, driver);
     incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
@@ -3253,7 +3361,7 @@ public class TestReplicationScenarios {
     verifyRun("SELECT count(*) from " + dbName + "_dupe.unptned", new String[]{"2"}, driverMirror);
   }
 
-  private static String createDB(String name, Driver myDriver) {
+  private static String createDB(String name, IDriver myDriver) {
     LOG.info("Testing " + name);
     String dbName = name + "_" + tid;
     run("CREATE DATABASE " + dbName, myDriver);
@@ -3437,10 +3545,10 @@ public class TestReplicationScenarios {
   }
 
 
-  private String getResult(int rowNum, int colNum, Driver myDriver) throws IOException {
+  private String getResult(int rowNum, int colNum, IDriver myDriver) throws IOException {
     return getResult(rowNum,colNum,false, myDriver);
   }
-  private String getResult(int rowNum, int colNum, boolean reuse, Driver myDriver) throws IOException {
+  private String getResult(int rowNum, int colNum, boolean reuse, IDriver myDriver) throws IOException {
     if (!reuse) {
       lastResults = new ArrayList<String>();
       try {
@@ -3461,7 +3569,7 @@ public class TestReplicationScenarios {
    * Unless for Null Values it actually returns in UpperCase and hence explicitly lowering case
    * before assert.
    */
-  private void verifyResults(String[] data, Driver myDriver) throws IOException {
+  private void verifyResults(String[] data, IDriver myDriver) throws IOException {
     List<String> results = getOutput(myDriver);
     LOG.info("Expecting {}", data);
     LOG.info("Got {}", results);
@@ -3471,7 +3579,7 @@ public class TestReplicationScenarios {
     }
   }
 
-  private List<String> getOutput(Driver myDriver) throws IOException {
+  private List<String> getOutput(IDriver myDriver) throws IOException {
     List<String> results = new ArrayList<>();
     try {
       myDriver.getResults(results);
@@ -3482,7 +3590,7 @@ public class TestReplicationScenarios {
     return results;
   }
 
-  private void printOutput(Driver myDriver) throws IOException {
+  private void printOutput(IDriver myDriver) throws IOException {
     for (String s : getOutput(myDriver)){
       LOG.info(s);
     }
@@ -3543,23 +3651,23 @@ public class TestReplicationScenarios {
     }
   }
 
-  private void verifySetup(String cmd, String[] data, Driver myDriver) throws  IOException {
+  private void verifySetup(String cmd, String[] data, IDriver myDriver) throws  IOException {
     if (VERIFY_SETUP_STEPS){
       run(cmd, myDriver);
       verifyResults(data, myDriver);
     }
   }
 
-  private void verifyRun(String cmd, String data, Driver myDriver) throws IOException {
+  private void verifyRun(String cmd, String data, IDriver myDriver) throws IOException {
     verifyRun(cmd, new String[] { data }, myDriver);
   }
 
-  private void verifyRun(String cmd, String[] data, Driver myDriver) throws IOException {
+  private void verifyRun(String cmd, String[] data, IDriver myDriver) throws IOException {
     run(cmd, myDriver);
     verifyResults(data, myDriver);
   }
 
-  private void verifyFail(String cmd, Driver myDriver) throws RuntimeException {
+  private void verifyFail(String cmd, IDriver myDriver) throws RuntimeException {
     boolean success = false;
     try {
       success = run(cmd, false, myDriver);
@@ -3572,7 +3680,7 @@ public class TestReplicationScenarios {
     assertFalse(success);
   }
 
-  private void verifyRunWithPatternMatch(String cmd, String key, String pattern, Driver myDriver) throws IOException {
+  private void verifyRunWithPatternMatch(String cmd, String key, String pattern, IDriver myDriver) throws IOException {
     run(cmd, myDriver);
     List<String> results = getOutput(myDriver);
     assertTrue(results.size() > 0);
@@ -3587,7 +3695,7 @@ public class TestReplicationScenarios {
     assertTrue(success);
   }
 
-  private static void run(String cmd, Driver myDriver) throws RuntimeException {
+  private static void run(String cmd, IDriver myDriver) throws RuntimeException {
     try {
     run(cmd,false, myDriver); // default arg-less run simply runs, and does not care about failure
     } catch (AssertionError ae){
@@ -3597,7 +3705,7 @@ public class TestReplicationScenarios {
     }
   }
 
-  private static boolean run(String cmd, boolean errorOnFail, Driver myDriver) throws RuntimeException {
+  private static boolean run(String cmd, boolean errorOnFail, IDriver myDriver) throws RuntimeException {
     boolean success = false;
     try {
       CommandProcessorResponse ret = myDriver.run(cmd);

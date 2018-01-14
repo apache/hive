@@ -725,7 +725,7 @@ c                   	string
 	 	 
 #### A masked pattern was here ####
 FROM table1, viewExpandedText:SELECT `_c0` AS `c` FROM (SELECT `test_translate`('abc', 'a', 'b')	 	 
-FROM `default`.`table1`) `default.view8`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
+FROM `default`.`table1`) `default.view8`, tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: DESCRIBE FORMATTED view8
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view8
@@ -802,7 +802,7 @@ m                   	int
 	 	 
 #### A masked pattern was here ####
 FROM src, viewExpandedText:SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 	 
-FROM `default`.`src`) `default.view9`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
+FROM `default`.`src`) `default.view9`, tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: DESCRIBE FORMATTED view9
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view9
@@ -879,7 +879,7 @@ m                   	int
 	 	 
 #### A masked pattern was here ####
 FROM src, viewExpandedText:SELECT `_c0` AS `m` FROM (SELECT `test_max`(length(`src`.`value`))	 	 
-FROM `default`.`src`) `default.view9`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
+FROM `default`.`src`) `default.view9`, tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: DESCRIBE FORMATTED view9
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view9
@@ -1022,7 +1022,7 @@ boom                	int
 	 	 
 #### A masked pattern was here ####
 FROM table1, viewExpandedText:SELECT `test_explode`(array(1,2,3)) AS (`boom`)	 	 
-FROM `default`.`table1`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
+FROM `default`.`table1`, tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: DESCRIBE FORMATTED view11
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view11
@@ -1177,7 +1177,7 @@ key                 	int
 	 	 
 #### A masked pattern was here ####
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 ON key) s, viewExpandedText:SELECT `s`.`key`	 	 
-FROM `default`.`srcbucket` TABLESAMPLE (BUCKET 1 OUT OF 5 ON `key`) `s`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
+FROM `default`.`srcbucket` TABLESAMPLE (BUCKET 1 OUT OF 5 ON `key`) `s`, tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: DESCRIBE FORMATTED view13
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view13
@@ -1297,7 +1297,7 @@ JOIN
      (select 'tst1' as `key`, cast(count(1) as string) as `value` from `default`.`src` `s3`	 	 
                          UNION  ALL	 	 
       select `s4`.`key` as `key`, `s4`.`value` as `value` from `default`.`src` `s4` where `s4`.`key` < 10) `unionsrc2`	 	 
-ON (`unionsrc1`.`key` = `unionsrc2`.`key`), tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
+ON (`unionsrc1`.`key` = `unionsrc2`.`key`), tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: DESCRIBE FORMATTED view14
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view14
@@ -1415,7 +1415,7 @@ value_count         	bigint
 FROM src	 	 
 GROUP BY key, viewExpandedText:SELECT `src`.`key`,COUNT(`src`.`value`) AS `value_count`	 	 
 FROM `default`.`src`	 	 
-GROUP BY `src`.`key`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
+GROUP BY `src`.`key`, tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: DESCRIBE FORMATTED view15
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view15
@@ -1500,7 +1500,7 @@ value               	string
 	 	 
 #### A masked pattern was here ####
 FROM src, viewExpandedText:SELECT DISTINCT `src`.`value`	 	 
-FROM `default`.`src`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
+FROM `default`.`src`, tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: DESCRIBE FORMATTED view16
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view16

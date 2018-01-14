@@ -8,44 +8,52 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@purchase_history
 PREHOOK: query: insert into purchase_history values ('1', 'Belt', 20.00, 21)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@purchase_history
 POSTHOOK: query: insert into purchase_history values ('1', 'Belt', 20.00, 21)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@purchase_history
-POSTHOOK: Lineage: purchase_history.price EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: purchase_history.product SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: purchase_history.s SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: purchase_history.time EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: purchase_history.price SCRIPT []
+POSTHOOK: Lineage: purchase_history.product SCRIPT []
+POSTHOOK: Lineage: purchase_history.s SCRIPT []
+POSTHOOK: Lineage: purchase_history.time SCRIPT []
 PREHOOK: query: insert into purchase_history values ('1', 'Socks', 3.50, 31)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@purchase_history
 POSTHOOK: query: insert into purchase_history values ('1', 'Socks', 3.50, 31)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@purchase_history
-POSTHOOK: Lineage: purchase_history.price EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: purchase_history.product SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: purchase_history.s SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: purchase_history.time EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: purchase_history.price SCRIPT []
+POSTHOOK: Lineage: purchase_history.product SCRIPT []
+POSTHOOK: Lineage: purchase_history.s SCRIPT []
+POSTHOOK: Lineage: purchase_history.time SCRIPT []
 PREHOOK: query: insert into purchase_history values ('3', 'Belt', 20.00, 51)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@purchase_history
 POSTHOOK: query: insert into purchase_history values ('3', 'Belt', 20.00, 51)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@purchase_history
-POSTHOOK: Lineage: purchase_history.price EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: purchase_history.product SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: purchase_history.s SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: purchase_history.time EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: purchase_history.price SCRIPT []
+POSTHOOK: Lineage: purchase_history.product SCRIPT []
+POSTHOOK: Lineage: purchase_history.s SCRIPT []
+POSTHOOK: Lineage: purchase_history.time SCRIPT []
 PREHOOK: query: insert into purchase_history values ('4', 'Shirt', 15.50, 59)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@purchase_history
 POSTHOOK: query: insert into purchase_history values ('4', 'Shirt', 15.50, 59)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@purchase_history
-POSTHOOK: Lineage: purchase_history.price EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: purchase_history.product SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: purchase_history.s SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: purchase_history.time EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: purchase_history.price SCRIPT []
+POSTHOOK: Lineage: purchase_history.product SCRIPT []
+POSTHOOK: Lineage: purchase_history.s SCRIPT []
+POSTHOOK: Lineage: purchase_history.time SCRIPT []
 PREHOOK: query: create table cart_history (s string, cart_id int, `time` int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -56,58 +64,70 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cart_history
 PREHOOK: query: insert into cart_history values ('1', 1, 10)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cart_history
 POSTHOOK: query: insert into cart_history values ('1', 1, 10)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cart_history
-POSTHOOK: Lineage: cart_history.cart_id EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cart_history.s SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cart_history.time EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: cart_history.cart_id SCRIPT []
+POSTHOOK: Lineage: cart_history.s SCRIPT []
+POSTHOOK: Lineage: cart_history.time SCRIPT []
 PREHOOK: query: insert into cart_history values ('1', 2, 20)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cart_history
 POSTHOOK: query: insert into cart_history values ('1', 2, 20)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cart_history
-POSTHOOK: Lineage: cart_history.cart_id EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cart_history.s SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cart_history.time EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: cart_history.cart_id SCRIPT []
+POSTHOOK: Lineage: cart_history.s SCRIPT []
+POSTHOOK: Lineage: cart_history.time SCRIPT []
 PREHOOK: query: insert into cart_history values ('1', 3, 30)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cart_history
 POSTHOOK: query: insert into cart_history values ('1', 3, 30)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cart_history
-POSTHOOK: Lineage: cart_history.cart_id EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cart_history.s SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cart_history.time EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: cart_history.cart_id SCRIPT []
+POSTHOOK: Lineage: cart_history.s SCRIPT []
+POSTHOOK: Lineage: cart_history.time SCRIPT []
 PREHOOK: query: insert into cart_history values ('1', 4, 40)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cart_history
 POSTHOOK: query: insert into cart_history values ('1', 4, 40)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cart_history
-POSTHOOK: Lineage: cart_history.cart_id EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cart_history.s SIMPLE [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cart_history.time EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: cart_history.cart_id SCRIPT []
+POSTHOOK: Lineage: cart_history.s SCRIPT []
+POSTHOOK: Lineage: cart_history.time SCRIPT []
 PREHOOK: query: insert into cart_history values ('3', 5, 50)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cart_history
 POSTHOOK: query: insert into cart_history values ('3', 5, 50)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cart_history
-POSTHOOK: Lineage: cart_history.cart_id EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cart_history.s SIMPLE [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cart_history.time EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: cart_history.cart_id SCRIPT []
+POSTHOOK: Lineage: cart_history.s SCRIPT []
+POSTHOOK: Lineage: cart_history.time SCRIPT []
 PREHOOK: query: insert into cart_history values ('4', 6, 60)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cart_history
 POSTHOOK: query: insert into cart_history values ('4', 6, 60)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cart_history
-POSTHOOK: Lineage: cart_history.cart_id EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cart_history.s SIMPLE [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cart_history.time EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: cart_history.cart_id SCRIPT []
+POSTHOOK: Lineage: cart_history.s SCRIPT []
+POSTHOOK: Lineage: cart_history.time SCRIPT []
 PREHOOK: query: create table events (s string, st2 string, n int, `time` int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -118,64 +138,76 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@events
 PREHOOK: query: insert into events values ('1', 'Bob', 1234, 20)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@events
 POSTHOOK: query: insert into events values ('1', 'Bob', 1234, 20)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@events
-POSTHOOK: Lineage: events.n EXPRESSION [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: events.s SIMPLE [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: events.st2 SIMPLE [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: events.time EXPRESSION [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: events.n SCRIPT []
+POSTHOOK: Lineage: events.s SCRIPT []
+POSTHOOK: Lineage: events.st2 SCRIPT []
+POSTHOOK: Lineage: events.time SCRIPT []
 PREHOOK: query: insert into events values ('1', 'Bob', 1234, 30)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@events
 POSTHOOK: query: insert into events values ('1', 'Bob', 1234, 30)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@events
-POSTHOOK: Lineage: events.n EXPRESSION [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: events.s SIMPLE [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: events.st2 SIMPLE [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: events.time EXPRESSION [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: events.n SCRIPT []
+POSTHOOK: Lineage: events.s SCRIPT []
+POSTHOOK: Lineage: events.st2 SCRIPT []
+POSTHOOK: Lineage: events.time SCRIPT []
 PREHOOK: query: insert into events values ('1', 'Bob', 1234, 25)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@events
 POSTHOOK: query: insert into events values ('1', 'Bob', 1234, 25)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@events
-POSTHOOK: Lineage: events.n EXPRESSION [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: events.s SIMPLE [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: events.st2 SIMPLE [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: events.time EXPRESSION [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: events.n SCRIPT []
+POSTHOOK: Lineage: events.s SCRIPT []
+POSTHOOK: Lineage: events.st2 SCRIPT []
+POSTHOOK: Lineage: events.time SCRIPT []
 PREHOOK: query: insert into events values ('2', 'Sam', 1234, 30)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@events
 POSTHOOK: query: insert into events values ('2', 'Sam', 1234, 30)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@events
-POSTHOOK: Lineage: events.n EXPRESSION [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: events.s SIMPLE [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: events.st2 SIMPLE [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: events.time EXPRESSION [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: events.n SCRIPT []
+POSTHOOK: Lineage: events.s SCRIPT []
+POSTHOOK: Lineage: events.st2 SCRIPT []
+POSTHOOK: Lineage: events.time SCRIPT []
 PREHOOK: query: insert into events values ('3', 'Jeff', 1234, 50)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@events
 POSTHOOK: query: insert into events values ('3', 'Jeff', 1234, 50)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@events
-POSTHOOK: Lineage: events.n EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: events.s SIMPLE [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: events.st2 SIMPLE [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: events.time EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: events.n SCRIPT []
+POSTHOOK: Lineage: events.s SCRIPT []
+POSTHOOK: Lineage: events.st2 SCRIPT []
+POSTHOOK: Lineage: events.time SCRIPT []
 PREHOOK: query: insert into events values ('4', 'Ted', 1234, 60)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@events
 POSTHOOK: query: insert into events values ('4', 'Ted', 1234, 60)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@events
-POSTHOOK: Lineage: events.n EXPRESSION [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: events.s SIMPLE [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: events.st2 SIMPLE [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: events.time EXPRESSION [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: events.n SCRIPT []
+POSTHOOK: Lineage: events.s SCRIPT []
+POSTHOOK: Lineage: events.st2 SCRIPT []
+POSTHOOK: Lineage: events.time SCRIPT []
 PREHOOK: query: explain
 select s
 from (

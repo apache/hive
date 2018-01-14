@@ -100,6 +100,7 @@ public class KerberosHttpClient extends AbstractHttpClient
         );
         // Assuming that a valid UGI with kerberos cred is created by HS2 or LLAP
         UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
+        currentUser.checkTGTAndReloginFromKeytab();
         log.debug("The user credential is {}", currentUser);
         String challenge = currentUser.doAs(new PrivilegedExceptionAction<String>()
         {

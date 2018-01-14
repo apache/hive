@@ -228,7 +228,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       readerSchema = fileMetadata.getSchema();
     }
     readerIncludes = OrcInputFormat.genIncludedColumns(readerSchema, includedColumnIds);
-    if (HiveConf.getBoolVar(jobConf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN)) {
+    if (HiveConf.getBoolVar(jobConf, ConfVars.HIVE_ACID_TABLE_SCAN)) {
       fileIncludes = OrcInputFormat.shiftReaderIncludedForAcid(readerIncludes);
     } else {
       fileIncludes = OrcInputFormat.genIncludedColumns(fileSchema, includedColumnIds);
@@ -275,7 +275,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     });
   }
 
-  protected Void performDataRead() throws IOException {
+  protected Void performDataRead() throws IOException, InterruptedException {
     long startTime = counters.startTimeCounter();
     LlapIoImpl.LOG.info("Processing data for file {}: {}", fileKey, split.getPath());
     if (processStop()) {
@@ -431,7 +431,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     return null;
   }
 
-  private void handleReaderError(long startTime, Throwable t) {
+  private void handleReaderError(long startTime, Throwable t) throws InterruptedException {
     recordReaderTime(startTime);
     consumer.setError(t);
     trace.dumpLog(LOG);

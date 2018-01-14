@@ -20,12 +20,12 @@ STAGE PLANS:
           alias: src
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: null (type: double), null (type: double), null (type: void), 1 (type: bigint), 0 (type: bigint), 0.0 (type: double)
+            expressions: null (type: int), null (type: double), null (type: void), 1 (type: bigint), 0 (type: bigint), 0.0 (type: double)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            Statistics: Num rows: 500 Data size: 12020 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 500 Data size: 12016 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
               Number of rows: 1
-              Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: SELECT null + 7, 1.0 - null, null + null,

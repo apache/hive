@@ -45,7 +45,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN FORMATTED
 SELECT Input4Alias.VALUE, Input4Alias.KEY FROM INPUT4 AS Input4Alias
 POSTHOOK: type: QUERY
-{"STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"TableScan":{"alias:":"input4alias","columns:":["value","key"],"database:":"default","Statistics:":"Num rows: 1 Data size: 5812 Basic stats: COMPLETE Column stats: NONE","table:":"input4","isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"value (type: string), key (type: string)","columnExprMap:":{"_col0":"value","_col1":"key"},"outputColumnNames:":["_col0","_col1"],"Statistics:":"Num rows: 1 Data size: 5812 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_1","children":{"ListSink":{"OperatorId:":"LIST_SINK_3"}}}}}}}}}}
+{"STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"TableScan":{"alias:":"input4alias","columns:":["value","key"],"database:":"default","Statistics:":"Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE","table:":"input4","isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"value (type: string), key (type: string)","columnExprMap:":{"_col0":"value","_col1":"key"},"outputColumnNames:":["_col0","_col1"],"Statistics:":"Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_1","children":{"ListSink":{"OperatorId:":"LIST_SINK_3"}}}}}}}}}}
 PREHOOK: query: SELECT Input4Alias.VALUE, Input4Alias.KEY FROM INPUT4 AS Input4Alias
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input4

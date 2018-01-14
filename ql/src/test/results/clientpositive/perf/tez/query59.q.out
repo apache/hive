@@ -87,16 +87,15 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 10 <- Map 13 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
-Reducer 11 <- Map 15 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 12 (SIMPLE_EDGE)
+Reducer 10 <- Map 14 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 11 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-Reducer 4 <- Map 13 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Map 14 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
-Reducer 6 <- Reducer 11 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
+Reducer 4 <- Map 12 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+Reducer 5 <- Map 13 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+Reducer 6 <- Reducer 10 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
 Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
-Reducer 8 <- Map 1 (SIMPLE_EDGE), Map 12 (SIMPLE_EDGE)
-Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
+Reducer 8 <- Reducer 2 (SIMPLE_EDGE)
+Reducer 9 <- Map 12 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -114,14 +113,14 @@ Stage-0
                 Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"]
                 Merge Join Operator [MERGEJOIN_104] (rows=421657640 width=88)
                   Conds:RS_56._col2, _col1=RS_57._col1, (_col0 - 52)(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col12","_col13","_col14","_col15","_col16","_col17"]
-                <-Reducer 11 [SIMPLE_EDGE]
+                <-Reducer 10 [SIMPLE_EDGE]
                   SHUFFLE [RS_57]
                     PartitionCols:_col1, (_col0 - 52)
                     Select Operator [SEL_55] (rows=383325119 width=88)
                       Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
                       Merge Join Operator [MERGEJOIN_103] (rows=383325119 width=88)
                         Conds:RS_52._col1=RS_53._col0(Inner),Output:["_col0","_col2","_col3","_col4","_col5","_col6","_col7","_col11"]
-                      <-Map 15 [SIMPLE_EDGE]
+                      <-Map 14 [SIMPLE_EDGE]
                         SHUFFLE [RS_53]
                           PartitionCols:_col0
                           Select Operator [SEL_48] (rows=1704 width=1910)
@@ -130,12 +129,12 @@ Stage-0
                               predicate:(s_store_id is not null and s_store_sk is not null)
                               TableScan [TS_46] (rows=1704 width=1910)
                                 default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_id"]
-                      <-Reducer 10 [SIMPLE_EDGE]
+                      <-Reducer 9 [SIMPLE_EDGE]
                         SHUFFLE [RS_52]
                           PartitionCols:_col1
                           Merge Join Operator [MERGEJOIN_102] (rows=348477374 width=88)
                             Conds:RS_49._col0=RS_50._col1(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
-                          <-Map 13 [SIMPLE_EDGE]
+                          <-Map 12 [SIMPLE_EDGE]
                             SHUFFLE [RS_50]
                               PartitionCols:_col1
                               Select Operator [SEL_45] (rows=8116 width=1119)
@@ -144,22 +143,22 @@ Stage-0
                                   predicate:(d_month_seq BETWEEN 1197 AND 1208 and d_week_seq is not null)
                                   TableScan [TS_15] (rows=73049 width=1119)
                                     default@date_dim,d,Tbl:COMPLETE,Col:NONE,Output:["d_month_seq","d_week_seq"]
-                          <-Reducer 9 [SIMPLE_EDGE]
+                          <-Reducer 8 [SIMPLE_EDGE]
                             SHUFFLE [RS_49]
                               PartitionCols:_col0
                               Group By Operator [GBY_41] (rows=316797606 width=88)
                                 Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)","sum(VALUE._col4)","sum(VALUE._col5)"],keys:KEY._col0, KEY._col1
-                              <-Reducer 8 [SIMPLE_EDGE]
+                              <-Reducer 2 [SIMPLE_EDGE]
                                 SHUFFLE [RS_40]
                                   PartitionCols:_col0, _col1
                                   Group By Operator [GBY_39] (rows=633595212 width=88)
                                     Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"],aggregations:["sum(_col2)","sum(_col3)","sum(_col5)","sum(_col6)","sum(_col7)","sum(_col8)"],keys:_col0, _col1
                                     Select Operator [SEL_37] (rows=633595212 width=88)
                                       Output:["_col0","_col1","_col2","_col3","_col5","_col6","_col7","_col8"]
-                                      Merge Join Operator [MERGEJOIN_101] (rows=633595212 width=88)
-                                        Conds:RS_34._col0=RS_35._col0(Inner),Output:["_col1","_col2","_col4","_col5"]
+                                      Merge Join Operator [MERGEJOIN_98] (rows=633595212 width=88)
+                                        Conds:RS_6._col0=RS_7._col0(Inner),Output:["_col1","_col2","_col4","_col5"]
                                       <-Map 1 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_34]
+                                        SHUFFLE [RS_6]
                                           PartitionCols:_col0
                                           Select Operator [SEL_2] (rows=575995635 width=88)
                                             Output:["_col0","_col1","_col2"]
@@ -167,8 +166,8 @@ Stage-0
                                               predicate:(ss_sold_date_sk is not null and ss_store_sk is not null)
                                               TableScan [TS_0] (rows=575995635 width=88)
                                                 default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_store_sk","ss_sales_price"]
-                                      <-Map 12 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_35]
+                                      <-Map 11 [SIMPLE_EDGE]
+                                        SHUFFLE [RS_7]
                                           PartitionCols:_col0
                                           Select Operator [SEL_5] (rows=73049 width=1119)
                                             Output:["_col0","_col1","_col2"]
@@ -183,7 +182,7 @@ Stage-0
                       Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"]
                       Merge Join Operator [MERGEJOIN_100] (rows=383325119 width=88)
                         Conds:RS_24._col1=RS_25._col0(Inner),Output:["_col0","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col12","_col13"]
-                      <-Map 14 [SIMPLE_EDGE]
+                      <-Map 13 [SIMPLE_EDGE]
                         SHUFFLE [RS_25]
                           PartitionCols:_col0
                           Select Operator [SEL_20] (rows=1704 width=1910)
@@ -197,7 +196,7 @@ Stage-0
                           PartitionCols:_col1
                           Merge Join Operator [MERGEJOIN_99] (rows=348477374 width=88)
                             Conds:RS_21._col0=RS_22._col1(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
-                          <-Map 13 [SIMPLE_EDGE]
+                          <-Map 12 [SIMPLE_EDGE]
                             SHUFFLE [RS_22]
                               PartitionCols:_col1
                               Select Operator [SEL_17] (rows=8116 width=1119)
@@ -217,14 +216,5 @@ Stage-0
                                     Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["sum(_col2)","sum(_col3)","sum(_col4)","sum(_col5)","sum(_col6)","sum(_col7)","sum(_col8)"],keys:_col0, _col1
                                     Select Operator [SEL_9] (rows=633595212 width=88)
                                       Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
-                                      Merge Join Operator [MERGEJOIN_98] (rows=633595212 width=88)
-                                        Conds:RS_6._col0=RS_7._col0(Inner),Output:["_col1","_col2","_col4","_col5"]
-                                      <-Map 1 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_6]
-                                          PartitionCols:_col0
-                                           Please refer to the previous Select Operator [SEL_2]
-                                      <-Map 12 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_7]
-                                          PartitionCols:_col0
-                                           Please refer to the previous Select Operator [SEL_5]
+                                       Please refer to the previous Merge Join Operator [MERGEJOIN_98]
 

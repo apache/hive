@@ -8,11 +8,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_const_1
 PREHOOK: query: INSERT INTO varchar_const_1 values(42)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@varchar_const_1
 POSTHOOK: query: INSERT INTO varchar_const_1 values(42)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@varchar_const_1
-POSTHOOK: Lineage: varchar_const_1.c1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: varchar_const_1.c1 SCRIPT []
 PREHOOK: query: EXPLAIN
 SELECT CONCAT(CAST('F' AS CHAR(2)), CAST('F' AS VARCHAR(2))) FROM VARCHAR_CONST_1
 PREHOOK: type: QUERY

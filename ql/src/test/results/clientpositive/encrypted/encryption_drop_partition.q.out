@@ -16,15 +16,17 @@ Encryption key created: 'key_128'
 Encryption zone created: '/build/ql/test/data/warehouse/default/encrypted_table_dp' using key: 'key_128'
 PREHOOK: query: INSERT INTO encrypted_table_dp PARTITION(p)(p,key,value) values('2014-09-23', 1, 'foo'),('2014-09-24', 2, 'bar')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@encrypted_table_dp
 POSTHOOK: query: INSERT INTO encrypted_table_dp PARTITION(p)(p,key,value) values('2014-09-23', 1, 'foo'),('2014-09-24', 2, 'bar')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@encrypted_table_dp@p=2014-09-23
 POSTHOOK: Output: default@encrypted_table_dp@p=2014-09-24
-POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-23).key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-23).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-24).key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-24).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-23).key SCRIPT []
+POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-23).value SCRIPT []
+POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-24).key SCRIPT []
+POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-24).value SCRIPT []
 PREHOOK: query: SELECT * FROM encrypted_table_dp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encrypted_table_dp

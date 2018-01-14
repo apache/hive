@@ -186,36 +186,7 @@ public class HiveServer2 extends CompositeService {
       throw new RuntimeException("Failed to get metastore connection", e);
     }
 
-    String wmQueue = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE);
-    if (wmQueue != null && !wmQueue.isEmpty()) {
-      WMFullResourcePlan resourcePlan;
-      try {
-        resourcePlan = sessionHive.getActiveResourcePlan();
-      } catch (HiveException e) {
-        throw new RuntimeException(e);
-      }
-
-      if (resourcePlan == null) {
-        if (!HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_IN_TEST)) {
-          LOG.error("Cannot activate workload management - no active resource plan");
-        } else {
-          LOG.info("Creating a default resource plan for test");
-          resourcePlan = createTestResourcePlan();
-        }
-      }
-
-      if (resourcePlan != null) {
-        // Initialize workload management.
-        LOG.info("Initializing workload management");
-        try {
-          wm = WorkloadManager.create(wmQueue, hiveConf, resourcePlan);
-        } catch (ExecutionException | InterruptedException e) {
-          throw new ServiceException("Unable to instantiate Workload Manager", e);
-        }
-      }
-      tezSessionPoolManager.updateTriggers(resourcePlan);
-      LOG.info("Updated tez session pool manager with active resource plan: {}", resourcePlan.getPlan().getName());
-    }
+    initializeWorkloadManagement(hiveConf, sessionHive);
 
     // Create views registry
     HiveMaterializedViewsRegistry.get().init(sessionHive);
@@ -291,6 +262,44 @@ public class HiveServer2 extends CompositeService {
         hiveServer2.stop();
       }
     });
+  }
+
+  private void initializeWorkloadManagement(HiveConf hiveConf, Hive sessionHive) {
+    String wmQueue = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE);
+    boolean hasQueue = wmQueue != null && !wmQueue.isEmpty();
+    WMFullResourcePlan resourcePlan;
+    try {
+      resourcePlan = sessionHive.getActiveResourcePlan();
+    } catch (HiveException e) {
+      throw new RuntimeException(e);
+    }
+    if (hasQueue && resourcePlan == null
+        && HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_IN_TEST)) {
+      LOG.info("Creating a default resource plan for test");
+      resourcePlan = createTestResourcePlan();
+    }
+    if (resourcePlan == null) {
+      if (!hasQueue) {
+        LOG.info("Workload management is not enabled and there's no resource plan");
+        return; // TODO: we could activate it anyway, similar to the below; in case someone
+                //       wants to activate a resource plan for Tez triggers only w/o restart.
+      }
+      LOG.warn("Workload management is enabled but there's no resource plan");
+    }
+
+    // Initialize workload management.
+    LOG.info("Initializing workload management");
+    try {
+      wm = WorkloadManager.create(wmQueue, hiveConf, resourcePlan);
+    } catch (ExecutionException | InterruptedException e) {
+      throw new ServiceException("Unable to instantiate Workload Manager", e);
+    }
+
+    if (resourcePlan != null) {
+      tezSessionPoolManager.updateTriggers(resourcePlan);
+      LOG.info("Updated tez session pool manager with active resource plan: {}",
+          resourcePlan.getPlan().getName());
+    }
   }
 
   private WMFullResourcePlan createTestResourcePlan() {

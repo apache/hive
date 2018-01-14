@@ -210,12 +210,14 @@ POSTHOOK: Input: default@srcpart_acid@ds=2008-04-09/hr=12
 2008-04-09	11	413	val_413updated
 PREHOOK: query: insert into srcpart_acid PARTITION (ds='2008-04-08', hr=='11') values ('1001','val1001'),('1002','val1002'),('1003','val1003')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
 POSTHOOK: query: insert into srcpart_acid PARTITION (ds='2008-04-08', hr=='11') values ('1001','val1001'),('1002','val1002'),('1003','val1003')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-08,hr=11).key SCRIPT []
+POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-08,hr=11).value SCRIPT []
 PREHOOK: query: select ds, hr, key, value from srcpart_acid where cast(key as integer) > 1000 order by ds, hr, cast(key as integer)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acid
@@ -708,12 +710,14 @@ POSTHOOK: Input: default@srcpart_acidb@ds=2008-04-09/hr=12
 2008-04-09	11	413	val_413updated
 PREHOOK: query: insert into srcpart_acidb PARTITION (ds='2008-04-08', hr=='11') values ('1001','val1001'),('1002','val1002'),('1003','val1003')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
 POSTHOOK: query: insert into srcpart_acidb PARTITION (ds='2008-04-08', hr=='11') values ('1001','val1001'),('1002','val1002'),('1003','val1003')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-08,hr=11).key SCRIPT []
+POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-08,hr=11).value SCRIPT []
 PREHOOK: query: select ds, hr, key, value from srcpart_acidb where cast(key as integer) > 1000 order by ds, hr, cast(key as integer)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidb
@@ -1223,12 +1227,14 @@ POSTHOOK: Input: default@srcpart_acidv@ds=2008-04-09/hr=12
 2008-04-09	11	413	val_413updated
 PREHOOK: query: insert into srcpart_acidv PARTITION (ds='2008-04-08', hr=='11') values ('1001','val1001'),('1002','val1002'),('1003','val1003')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: query: insert into srcpart_acidv PARTITION (ds='2008-04-08', hr=='11') values ('1001','val1001'),('1002','val1002'),('1003','val1003')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-08,hr=11).key SCRIPT []
+POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-08,hr=11).value SCRIPT []
 PREHOOK: query: select ds, hr, key, value from srcpart_acidv where cast(key as integer) > 1000 order by ds, hr, cast(key as integer)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidv
@@ -2006,12 +2012,14 @@ POSTHOOK: Input: default@srcpart_acidvb@ds=2008-04-09/hr=12
 2008-04-09	11	413	val_413updated
 PREHOOK: query: insert into srcpart_acidvb PARTITION (ds='2008-04-08', hr=='11') values ('1001','val1001'),('1002','val1002'),('1003','val1003')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: query: insert into srcpart_acidvb PARTITION (ds='2008-04-08', hr=='11') values ('1001','val1001'),('1002','val1002'),('1003','val1003')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-08,hr=11).key SCRIPT []
+POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-08,hr=11).value SCRIPT []
 PREHOOK: query: select ds, hr, key, value from srcpart_acidvb where cast(key as integer) > 1000 order by ds, hr, cast(key as integer)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_acidvb

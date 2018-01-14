@@ -703,6 +703,13 @@ public class SessionState {
     // Don't register with deleteOnExit
     createPath(conf, hdfsTmpTableSpace, scratchDirPermission, false, false);
     conf.set(TMP_TABLE_SPACE_KEY, hdfsTmpTableSpace.toUri().toString());
+
+    // _hive.tmp_table_space, _hive.hdfs.session.path, and _hive.local.session.path are respectively
+    // saved in hdfsTmpTableSpace, hdfsSessionPath and localSessionPath.  Saving them as conf
+    // variables is useful to expose them to end users.  But, end users shouldn't change them.
+    // Adding them to restricted list.
+    conf.addToRestrictList(
+        LOCAL_SESSION_PATH_KEY + "," + HDFS_SESSION_PATH_KEY + "," + TMP_TABLE_SPACE_KEY);
   }
 
   /**

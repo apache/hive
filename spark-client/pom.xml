@@ -26,9 +26,9 @@
   </parent>
 
   <groupId>org.apache.hive</groupId>
-  <artifactId>spark-client</artifactId>
+  <artifactId>hive-spark-client</artifactId>
   <packaging>jar</packaging>
-  <name>Spark Remote Client</name>
+  <name>Hive Spark Remote Client</name>
   <version>3.0.0-SNAPSHOT</version>
 
   <properties>

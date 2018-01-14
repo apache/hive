@@ -36,9 +36,15 @@ import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
+import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.ql.index.HiveIndex;
 import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -54,11 +60,13 @@ import org.apache.hive.common.util.HiveStringUtils;
 
 import com.google.common.collect.Lists;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -717,4 +725,124 @@ public final class MetaDataFormatUtils {
     }
   }
 
+  /**
+   * Interface to implement actual conversion to text or json of a resource plan.
+   */
+  public interface RPFormatter {
+    void formatRP(String rpName, Object ... kvPairs) throws IOException;
+    void formatPool(String poolName, int indentLevel, Object ...kvPairs) throws IOException;
+    void formatTrigger(String triggerName, String actionExpression, String triggerExpression,
+        int indentLevel) throws IOException;
+  }
+
+  /**
+   * A n-ary tree for the pools, each node contains a pool and its children.
+   */
+  private static class PoolTreeNode {
+    private WMPool pool;
+    private final List<PoolTreeNode> children = new ArrayList<>();
+    private final List<WMTrigger> triggers = new ArrayList<>();
+
+    private PoolTreeNode() {}
+
+    private void writePoolTreeNode(RPFormatter rpFormatter, int indentLevel) throws IOException {
+      String path = pool.getPoolPath();
+      int idx = path.lastIndexOf('.');
+      if (idx != -1) {
+        path = path.substring(idx + 1);
+      }
+      Double allocFraction = pool.getAllocFraction();
+      String schedulingPolicy = pool.isSetSchedulingPolicy() ? pool.getSchedulingPolicy() : null;
+      Integer parallelism = pool.getQueryParallelism();
+
+      rpFormatter.formatPool(path, indentLevel, "allocFraction", allocFraction,
+          "schedulingPolicy", schedulingPolicy, "parallelism", parallelism);
+      for (WMTrigger trigger : triggers) {
+        rpFormatter.formatTrigger(trigger.getTriggerName(), trigger.getActionExpression(),
+            trigger.getTriggerExpression(), indentLevel);
+      }
+      for (PoolTreeNode node : children) {
+        node.writePoolTreeNode(rpFormatter, indentLevel + 1);
+      }
+    }
+
+    private void sortChildren() {
+      children.sort((PoolTreeNode p1, PoolTreeNode p2) ->
+          Double.compare(p2.pool.getAllocFraction(), p1.pool.getAllocFraction()));
+      for (PoolTreeNode child : children) {
+        child.sortChildren();
+      }
+    }
+
+    static PoolTreeNode makePoolTree(WMFullResourcePlan fullRp) {
+      Map<String, PoolTreeNode> poolMap = new HashMap<>();
+      PoolTreeNode root = new PoolTreeNode();
+      for (WMPool pool : fullRp.getPools()) {
+        // Create or add node for current pool.
+        String path = pool.getPoolPath();
+        PoolTreeNode curr = poolMap.get(path);
+        if (curr == null) {
+          curr = new PoolTreeNode();
+          poolMap.put(path, curr);
+        }
+        curr.pool = pool;
+
+        // Add this node to the parent node.
+        int ind = path.lastIndexOf('.');
+        PoolTreeNode parent;
+        if (ind == -1) {
+          parent = root;
+        } else {
+          String parentPath = path.substring(0, ind);
+          parent = poolMap.get(parentPath);
+          if (parent == null) {
+            parent = new PoolTreeNode();
+            poolMap.put(parentPath, parent);
+          }
+        }
+        parent.children.add(curr);
+      }
+      Map<String, WMTrigger> triggerMap = new HashMap<>();
+      if (fullRp.getTriggers() != null) {
+        for (WMTrigger trigger : fullRp.getTriggers()) {
+          triggerMap.put(trigger.getTriggerName(), trigger);
+        }
+      }
+      if (fullRp.getPoolTriggers() != null) {
+        for (WMPoolTrigger pool2Trigger : fullRp.getPoolTriggers()) {
+          PoolTreeNode node = poolMap.get(pool2Trigger.getPool());
+          WMTrigger trigger = triggerMap.get(pool2Trigger.getTrigger());
+          if (node == null || trigger == null) {
+            throw new IllegalStateException("Invalid trigger to pool: " + pool2Trigger.getPool() +
+                ", " + pool2Trigger.getTrigger());
+          }
+          node.triggers.add(trigger);
+        }
+      }
+      return root;
+    }
+  }
+
+  private static void writeRPLine(RPFormatter rpFormatter, WMResourcePlan plan)
+      throws IOException {
+    Integer parallelism = plan.isSetQueryParallelism() ? plan.getQueryParallelism() : null;
+    String defaultPool = plan.isSetDefaultPoolPath() ? plan.getDefaultPoolPath() : null;
+    rpFormatter.formatRP(plan.getName(), "status", plan.getStatus().toString(),
+         "parallelism", parallelism, "defaultPool", defaultPool);
+  }
+
+  public static void formatFullRP(RPFormatter rpFormatter, WMFullResourcePlan fullRp)
+      throws HiveException {
+    try {
+      WMResourcePlan plan = fullRp.getPlan();
+      writeRPLine(rpFormatter, plan);
+      PoolTreeNode root = PoolTreeNode.makePoolTree(fullRp);
+      root.sortChildren();
+      for (PoolTreeNode pool : root.children) {
+        pool.writePoolTreeNode(rpFormatter, 1);
+      }
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
+  }
 }

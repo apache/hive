@@ -27,17 +27,19 @@ PREHOOK: query: insert into mydim values
   (2, 'joe',   '70068', true),
   (3, 'steve', '22150', true)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@mydim
 POSTHOOK: query: insert into mydim values
   (1, 'bob',   '95136', true),
   (2, 'joe',   '70068', true),
   (3, 'steve', '22150', true)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@mydim
-POSTHOOK: Lineage: mydim.is_current EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: mydim.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: mydim.name SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: mydim.zip SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: mydim.is_current SCRIPT []
+POSTHOOK: Lineage: mydim.key SCRIPT []
+POSTHOOK: Lineage: mydim.name SCRIPT []
+POSTHOOK: Lineage: mydim.zip SCRIPT []
 PREHOOK: query: create table updates_staging_table (ks int, newzip string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -48,12 +50,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@updates_staging_table
 PREHOOK: query: insert into updates_staging_table values (1, 87102), (3, 45220)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@updates_staging_table
 POSTHOOK: query: insert into updates_staging_table values (1, 87102), (3, 45220)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@updates_staging_table
-POSTHOOK: Lineage: updates_staging_table.ks EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: updates_staging_table.newzip SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: updates_staging_table.ks SCRIPT []
+POSTHOOK: Lineage: updates_staging_table.newzip SCRIPT []
 PREHOOK: query: create view updates_staging_view (kv, newzip) as select ks, newzip from updates_staging_table
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@updates_staging_table

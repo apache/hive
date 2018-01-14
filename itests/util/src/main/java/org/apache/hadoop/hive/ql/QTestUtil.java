@@ -182,7 +182,7 @@ public class QTestUtil {
   protected Hive db;
   protected QueryState queryState;
   protected HiveConf conf;
-  private Driver drv;
+  private IDriver drv;
   private BaseSemanticAnalyzer sem;
   protected final boolean overWrite;
   private CliDriver cliDriver;
@@ -558,7 +558,7 @@ public class QTestUtil {
       System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
     }
 
-    queryState = new QueryState.Builder().withHiveConf(new HiveConf(Driver.class)).build();
+    queryState = new QueryState.Builder().withHiveConf(new HiveConf(IDriver.class)).build();
     conf = queryState.getConf();
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
@@ -989,7 +989,7 @@ public class QTestUtil {
 
     // allocate and initialize a new conf since a test can
     // modify conf by using 'set' commands
-    conf = new HiveConf(Driver.class);
+    conf = new HiveConf(IDriver.class);
     initConf();
     initConfFromSetup();
 
@@ -1127,7 +1127,7 @@ public class QTestUtil {
     SessionState.start(conf);
     conf.set("hive.execution.engine", execEngine);
     db = Hive.get(conf);
-    drv = new Driver(conf);
+    drv = DriverFactory.newDriver(conf);
     pd = new ParseDriver();
     sem = new SemanticAnalyzer(queryState);
   }
@@ -1602,7 +1602,6 @@ public class QTestUtil {
           if (matcher.find()) {
             line = line.replaceAll(prp.pattern.pattern(), prp.replacement);
             partialMaskWasMatched = true;
-            break;
           }
         }
       }
@@ -1713,6 +1712,10 @@ public class QTestUtil {
     ArrayList<PatternReplacementPair> ppm = new ArrayList<>();
     ppm.add(new PatternReplacementPair(Pattern.compile("\\{\"transactionid\":[1-9][0-9]*,\"bucketid\":"),
       "{\"transactionid\":### Masked txnid ###,\"bucketid\":"));
+
+    ppm.add(new PatternReplacementPair(Pattern.compile("attempt_[0-9]+"), "attempt_#ID#"));
+    ppm.add(new PatternReplacementPair(Pattern.compile("vertex_[0-9_]+"), "vertex_#ID#"));
+    ppm.add(new PatternReplacementPair(Pattern.compile("task_[0-9_]+"), "task_#ID#"));
     partialPlanMask = ppm.toArray(new PatternReplacementPair[ppm.size()]);
   }
   /* This list may be modified by specific cli drivers to mask strings that change on every test */

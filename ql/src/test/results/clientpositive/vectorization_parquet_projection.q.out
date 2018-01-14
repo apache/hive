@@ -439,13 +439,15 @@ POSTHOOK: Output: default@parquet_nullsplit
 PREHOOK: query: insert into table parquet_nullsplit partition(len='1')
 values ('one', 'red')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@parquet_nullsplit@len=1
 POSTHOOK: query: insert into table parquet_nullsplit partition(len='1')
 values ('one', 'red')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@parquet_nullsplit@len=1
-POSTHOOK: Lineage: parquet_nullsplit PARTITION(len=1).key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: parquet_nullsplit PARTITION(len=1).val SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: parquet_nullsplit PARTITION(len=1).key SCRIPT []
+POSTHOOK: Lineage: parquet_nullsplit PARTITION(len=1).val SCRIPT []
 PREHOOK: query: explain vectorization select count(*) from parquet_nullsplit where len = '1'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization select count(*) from parquet_nullsplit where len = '1'

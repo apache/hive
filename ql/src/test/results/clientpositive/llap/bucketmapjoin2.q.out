@@ -6,36 +6,36 @@ POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) par
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_part
-PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
@@ -47,20 +47,20 @@ POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2 (key int, value string) p
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
-PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/bmj2/000000_0' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_2
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/bmj2/000000_0' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/bmj2/000001_0' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_2@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/bmj2/000001_0' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@ds=2008-04-08
@@ -119,22 +119,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 55 Data size: 15964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 149 Data size: 85004 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 53 Data size: 15383 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 142 Data size: 81010 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 53 Data size: 15383 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 142 Data size: 81010 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 53 Data size: 15383 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 142 Data size: 81010 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: true
@@ -197,22 +197,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 29 Data size: 8514 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 78 Data size: 44908 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 28 Data size: 8220 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 75 Data size: 43180 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 28 Data size: 8220 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 75 Data size: 43180 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 28 Data size: 8220 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 75 Data size: 43180 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: true
@@ -283,17 +283,17 @@ STAGE PLANS:
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col3
                 Position of Big Table: 0
-                Statistics: Num rows: 58 Data size: 16921 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 156 Data size: 89111 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: UDFToString(_col0) (type: string), _col1 (type: string), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 58 Data size: 16921 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 156 Data size: 89111 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 58 Data size: 16921 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 156 Data size: 89111 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -323,7 +323,7 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                     outputColumnNames: key, value1, value2
-                    Statistics: Num rows: 58 Data size: 16921 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 156 Data size: 89111 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value1, 'hll'), compute_stats(value2, 'hll')
                       mode: hash
@@ -545,22 +545,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 55 Data size: 15964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 149 Data size: 85004 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 53 Data size: 15383 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 142 Data size: 81010 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 53 Data size: 15383 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 142 Data size: 81010 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 53 Data size: 15383 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 142 Data size: 81010 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: true
@@ -623,22 +623,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 29 Data size: 8514 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 78 Data size: 44908 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 28 Data size: 8220 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 75 Data size: 43180 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 28 Data size: 8220 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 75 Data size: 43180 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 28 Data size: 8220 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 75 Data size: 43180 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: true
@@ -709,17 +709,17 @@ STAGE PLANS:
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col3
                 Position of Big Table: 0
-                Statistics: Num rows: 58 Data size: 16921 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 156 Data size: 89111 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: UDFToString(_col0) (type: string), _col1 (type: string), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 58 Data size: 16921 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 156 Data size: 89111 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 58 Data size: 16921 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 156 Data size: 89111 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -749,7 +749,7 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                     outputColumnNames: key, value1, value2
-                    Statistics: Num rows: 58 Data size: 16921 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 156 Data size: 89111 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value1, 'hll'), compute_stats(value2, 'hll')
                       mode: hash
@@ -940,20 +940,20 @@ POSTHOOK: Input: default@bucketmapjoin_hash_result_1
 POSTHOOK: Input: default@bucketmapjoin_hash_result_2
 #### A masked pattern was here ####
 0	0	0
-PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
+PREHOOK: query: load data local inpath '../../data/files/bmj2/000000_0' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_2
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
+POSTHOOK: query: load data local inpath '../../data/files/bmj2/000000_0' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@ds=2008-04-09
-PREHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
+PREHOOK: query: load data local inpath '../../data/files/bmj2/000001_0' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_2@ds=2008-04-09
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
+POSTHOOK: query: load data local inpath '../../data/files/bmj2/000001_0' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@ds=2008-04-09
@@ -988,22 +988,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 55 Data size: 15964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 149 Data size: 85004 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 53 Data size: 15383 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 142 Data size: 81010 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 53 Data size: 15383 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 142 Data size: 81010 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 53 Data size: 15383 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 142 Data size: 81010 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: true
@@ -1066,22 +1066,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 58 Data size: 16840 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 156 Data size: 89440 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 56 Data size: 16259 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 149 Data size: 85426 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 56 Data size: 16259 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 149 Data size: 85426 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 56 Data size: 16259 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 149 Data size: 85426 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: true
@@ -1201,17 +1201,17 @@ STAGE PLANS:
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col3
                 Position of Big Table: 1
-                Statistics: Num rows: 61 Data size: 17884 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 163 Data size: 93968 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: UDFToString(_col0) (type: string), _col1 (type: string), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 61 Data size: 17884 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 163 Data size: 93968 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 61 Data size: 17884 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 163 Data size: 93968 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1241,7 +1241,7 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                     outputColumnNames: key, value1, value2
-                    Statistics: Num rows: 61 Data size: 17884 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 163 Data size: 93968 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value1, 'hll'), compute_stats(value2, 'hll')
                       mode: hash

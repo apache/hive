@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +65,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private String serde; // only used for materialized views
   private String storageHandler; // only used for materialized views
   private Map<String, String> serdeProps; // only used for materialized views
+  private List<String> tablesUsed;  // only used for materialized views
   private ReplicationSpec replicationSpec = null;
 
   /**
@@ -243,6 +243,14 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
 
   public void setIfNotExists(boolean ifNotExists) {
     this.ifNotExists = ifNotExists;
+  }
+
+  public List<String> getTablesUsed() {
+    return tablesUsed;
+  }
+
+  public void setTablesUsed(List<String> tablesUsed) {
+    this.tablesUsed = tablesUsed;
   }
 
   @Explain(displayName = "replace", displayOnlyOnTrue = true)

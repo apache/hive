@@ -696,7 +696,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: spam2
-                  Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 1900 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:str:string, 1:mp:map<string,string>, 2:lst:array<string>, 3:strct:struct<a:string,b:string>, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -735,7 +735,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: spam1
-                  Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 1900 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:str:string, 1:mp:map<string,string>, 2:lst:array<string>, 3:strct:struct<a:string,b:string>, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]

@@ -133,6 +133,13 @@ module WMResourcePlanStatus
   VALID_VALUES = Set.new([ACTIVE, ENABLED, DISABLED]).freeze
 end
 
+module WMPoolSchedulingPolicy
+  FAIR = 1
+  FIFO = 2
+  VALUE_MAP = {1 => "FAIR", 2 => "FIFO"}
+  VALID_VALUES = Set.new([FAIR, FIFO]).freeze
+end
+
 class Version
   include ::Thrift::Struct, ::Thrift::Struct_Union
   VERSION = 1
@@ -802,6 +809,7 @@ class Table
   PRIVILEGES = 13
   TEMPORARY = 14
   REWRITEENABLED = 15
+  CREATIONMETADATA = 16
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -818,7 +826,8 @@ class Table
     TABLETYPE => {:type => ::Thrift::Types::STRING, :name => 'tableType'},
     PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true},
     TEMPORARY => {:type => ::Thrift::Types::BOOL, :name => 'temporary', :default => false, :optional => true},
-    REWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'rewriteEnabled', :optional => true}
+    REWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'rewriteEnabled', :optional => true},
+    CREATIONMETADATA => {:type => ::Thrift::Types::MAP, :name => 'creationMetadata', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::BasicTxnInfo}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2661,6 +2670,55 @@ class AddDynamicPartitions
   ::Thrift::Struct.generate_accessors self
 end
 
+class BasicTxnInfo
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ISNULL = 1
+  ID = 2
+  TIME = 3
+  TXNID = 4
+  DBNAME = 5
+  TABLENAME = 6
+  PARTITIONNAME = 7
+
+  FIELDS = {
+    ISNULL => {:type => ::Thrift::Types::BOOL, :name => 'isnull'},
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
+    TIME => {:type => ::Thrift::Types::I64, :name => 'time', :optional => true},
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid', :optional => true},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname', :optional => true},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename', :optional => true},
+    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field isnull is unset!') if @isnull.nil?
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TxnsSnapshot
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TXN_HIGH_WATER_MARK = 1
+  OPEN_TXNS = 2
+
+  FIELDS = {
+    TXN_HIGH_WATER_MARK => {:type => ::Thrift::Types::I64, :name => 'txn_high_water_mark'},
+    OPEN_TXNS => {:type => ::Thrift::Types::LIST, :name => 'open_txns', :element => {:type => ::Thrift::Types::I64}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txn_high_water_mark is unset!') unless @txn_high_water_mark
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field open_txns is unset!') unless @open_txns
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class NotificationEventRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   LASTEVENT = 1
@@ -3253,6 +3311,29 @@ class TableMeta
   ::Thrift::Struct.generate_accessors self
 end
 
+class Materialization
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  MATERIALIZATIONTABLE = 1
+  TABLESUSED = 2
+  INVALIDATIONTIME = 3
+
+  FIELDS = {
+    MATERIALIZATIONTABLE => {:type => ::Thrift::Types::STRUCT, :name => 'materializationTable', :class => ::Table},
+    TABLESUSED => {:type => ::Thrift::Types::SET, :name => 'tablesUsed', :element => {:type => ::Thrift::Types::STRING}},
+    INVALIDATIONTIME => {:type => ::Thrift::Types::I64, :name => 'invalidationTime'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field materializationTable is unset!') unless @materializationTable
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablesUsed is unset!') unless @tablesUsed
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field invalidationTime is unset!') unless @invalidationTime
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class WMResourcePlan
   include ::Thrift::Struct, ::Thrift::Struct_Union
   NAME = 1
@@ -3311,12 +3392,14 @@ class WMTrigger
   TRIGGERNAME = 2
   TRIGGEREXPRESSION = 3
   ACTIONEXPRESSION = 4
+  ISINUNMANAGED = 5
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName'},
     TRIGGERNAME => {:type => ::Thrift::Types::STRING, :name => 'triggerName'},
     TRIGGEREXPRESSION => {:type => ::Thrift::Types::STRING, :name => 'triggerExpression', :optional => true},
-    ACTIONEXPRESSION => {:type => ::Thrift::Types::STRING, :name => 'actionExpression', :optional => true}
+    ACTIONEXPRESSION => {:type => ::Thrift::Types::STRING, :name => 'actionExpression', :optional => true},
+    ISINUNMANAGED => {:type => ::Thrift::Types::BOOL, :name => 'isInUnmanaged', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3405,9 +3488,11 @@ end
 class WMCreateResourcePlanRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   RESOURCEPLAN = 1
+  COPYFROM = 2
 
   FIELDS = {
-    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true}
+    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true},
+    COPYFROM => {:type => ::Thrift::Types::STRING, :name => 'copyFrom', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3485,7 +3570,7 @@ class WMGetResourcePlanResponse
   RESOURCEPLAN = 1
 
   FIELDS = {
-    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true}
+    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMFullResourcePlan, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3532,11 +3617,15 @@ class WMAlterResourcePlanRequest
   RESOURCEPLANNAME = 1
   RESOURCEPLAN = 2
   ISENABLEANDACTIVATE = 3
+  ISFORCEDEACTIVATE = 4
+  ISREPLACE = 5
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
     RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true},
-    ISENABLEANDACTIVATE => {:type => ::Thrift::Types::BOOL, :name => 'isEnableAndActivate', :optional => true}
+    ISENABLEANDACTIVATE => {:type => ::Thrift::Types::BOOL, :name => 'isEnableAndActivate', :optional => true},
+    ISFORCEDEACTIVATE => {:type => ::Thrift::Types::BOOL, :name => 'isForceDeactivate', :optional => true},
+    ISREPLACE => {:type => ::Thrift::Types::BOOL, :name => 'isReplace', :optional => true}
   }
 
   def struct_fields; FIELDS; end

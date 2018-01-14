@@ -1,3 +1,5 @@
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
 set hive.materializedview.rewriting=true;
 set hive.stats.column.autogather=true;
@@ -5,7 +7,7 @@ set hive.stats.column.autogather=true;
 create database db1;
 use db1;
 
-create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int);
+create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true');
 
 insert into cmv_basetable values
  (1, 'alfred', 10.30, 2),
@@ -13,6 +15,8 @@ insert into cmv_basetable values
  (2, 'bonnie', 172342.2, 3),
  (3, 'calvin', 978.76, 3),
  (3, 'charlie', 9.8, 1);
+
+analyze table cmv_basetable compute statistics for columns;
 
 create database db2;
 use db2;

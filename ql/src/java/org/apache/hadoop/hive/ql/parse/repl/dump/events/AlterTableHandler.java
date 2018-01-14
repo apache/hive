@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.parse.EximUtil;
 
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 class AlterTableHandler extends AbstractEventHandler {
@@ -80,7 +81,8 @@ class AlterTableHandler extends AbstractEventHandler {
     LOG.info("Processing#{} ALTER_TABLE message : {}", fromEventId(), event.getMessage());
 
     Table qlMdTableBefore = new Table(before);
-    if (!EximUtil.shouldExportTable(withinContext.replicationSpec, qlMdTableBefore)) {
+    if (!Utils
+        .shouldReplicate(withinContext.replicationSpec, qlMdTableBefore, withinContext.hiveConf)) {
       return;
     }
 
@@ -89,11 +91,12 @@ class AlterTableHandler extends AbstractEventHandler {
       Table qlMdTableAfter = new Table(after);
       Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
       EximUtil.createExportDump(
-        metaDataPath.getFileSystem(withinContext.hiveConf),
-        metaDataPath,
-        qlMdTableAfter,
-        null,
-        withinContext.replicationSpec);
+          metaDataPath.getFileSystem(withinContext.hiveConf),
+          metaDataPath,
+          qlMdTableAfter,
+          null,
+          withinContext.replicationSpec,
+          withinContext.hiveConf);
     }
  
     DumpMetaData dmd = withinContext.createDmd(this);

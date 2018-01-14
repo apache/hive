@@ -1,19 +1,19 @@
 /*
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
@@ -74,6 +74,21 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
   private static final String CONSTRAINTS_ROOT_DIR_NAME = "_constraints";
   private static final String FUNCTION_METADATA_FILE_NAME = "_metadata";
+  public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
+    private final String name;
+    private final String prefix;
+    private ConstraintFileType(String name, String prefix) {
+      this.name = name;
+      this.prefix = prefix;
+    }
+    public String getName() {
+      return this.name;
+    }
+
+    public String getPrefix() {
+      return prefix;
+    }
+  }
 
   private Logger LOG = LoggerFactory.getLogger(ReplDumpTask.class);
   private ReplLogger replLogger;
@@ -177,8 +192,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     replLogger.eventLog(String.valueOf(ev.getEventId()), eventHandler.dumpType().toString());
   }
 
-  private ReplicationSpec getNewEventOnlyReplicationSpec(Long eventId) throws SemanticException {
-    ReplicationSpec rspec = getNewReplicationSpec(eventId.toString(), eventId.toString());
+  private ReplicationSpec getNewEventOnlyReplicationSpec(Long eventId) {
+    ReplicationSpec rspec =
+        getNewReplicationSpec(eventId.toString(), eventId.toString(), conf.getBoolean(
+            HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY.varname, false));
     rspec.setReplSpecType(ReplicationSpec.Type.INCREMENTAL_DUMP);
     return rspec;
   }
@@ -269,8 +286,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private ReplicationSpec getNewReplicationSpec(String evState, String objState) {
-    return new ReplicationSpec(true, false, evState, objState, false, true, true);
+  private ReplicationSpec getNewReplicationSpec(String evState, String objState,
+      boolean isMetadataOnly) {
+    return new ReplicationSpec(true, isMetadataOnly, evState, objState, false, true, true);
   }
 
   private String getNextDumpDir() {
@@ -313,17 +331,25 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot) throws Exception {
     try {
       Path constraintsRoot = new Path(dbRoot, CONSTRAINTS_ROOT_DIR_NAME);
-      Path constraintsFile = new Path(constraintsRoot, tblName);
+      Path commonConstraintsFile = new Path(constraintsRoot, ConstraintFileType.COMMON.getPrefix() + tblName);
+      Path fkConstraintsFile = new Path(constraintsRoot, ConstraintFileType.FOREIGNKEY.getPrefix() + tblName);
       Hive db = getHive();
       List<SQLPrimaryKey> pks = db.getPrimaryKeyList(dbName, tblName);
       List<SQLForeignKey> fks = db.getForeignKeyList(dbName, tblName);
       List<SQLUniqueConstraint> uks = db.getUniqueConstraintList(dbName, tblName);
       List<SQLNotNullConstraint> nns = db.getNotNullConstraintList(dbName, tblName);
-      if ((pks != null && !pks.isEmpty()) || (fks != null && !fks.isEmpty()) || (uks != null && !uks.isEmpty())
+      if ((pks != null && !pks.isEmpty()) || (uks != null && !uks.isEmpty())
           || (nns != null && !nns.isEmpty())) {
         try (JsonWriter jsonWriter =
-            new JsonWriter(constraintsFile.getFileSystem(conf), constraintsFile)) {
-          ConstraintsSerializer serializer = new ConstraintsSerializer(pks, fks, uks, nns, conf);
+            new JsonWriter(commonConstraintsFile.getFileSystem(conf), commonConstraintsFile)) {
+          ConstraintsSerializer serializer = new ConstraintsSerializer(pks, null, uks, nns, conf);
+          serializer.writeTo(jsonWriter, null);
+        }
+      }
+      if (fks != null && !fks.isEmpty()) {
+        try (JsonWriter jsonWriter =
+            new JsonWriter(fkConstraintsFile.getFileSystem(conf), fkConstraintsFile)) {
+          ConstraintsSerializer serializer = new ConstraintsSerializer(null, fks, null, null, conf);
           serializer.writeTo(jsonWriter, null);
         }
       }

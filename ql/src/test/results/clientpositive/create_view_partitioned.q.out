@@ -48,7 +48,7 @@ value               	string
 FROM src	 	 
 WHERE key=86, viewExpandedText:SELECT `src`.`key`, `src`.`value`	 	 
 FROM `default`.`src`	 	 
-WHERE `src`.`key`=86, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
+WHERE `src`.`key`=86, tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: DESCRIBE FORMATTED vp1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@vp1

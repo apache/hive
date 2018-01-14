@@ -14,11 +14,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mydual
 PREHOOK: query: insert into mydual values(1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@mydual
 POSTHOOK: query: insert into mydual values(1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@mydual
-POSTHOOK: Lineage: mydual.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: mydual.a SCRIPT []
 PREHOOK: query: CREATE TABLE over10k(t tinyint,
            si smallint,
            i int,

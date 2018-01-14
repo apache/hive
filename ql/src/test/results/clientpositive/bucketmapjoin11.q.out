@@ -8,20 +8,20 @@ CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1@part=1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_1@part=1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1@part=1
@@ -33,36 +33,36 @@ POSTHOOK: query: ALTER TABLE srcbucket_mapjoin_part_1 CLUSTERED BY (key) INTO 4 
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@srcbucket_mapjoin_part_1
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1@part=2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_1@part=2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1@part=2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_1@part=2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1@part=2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_1@part=2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1@part=2
@@ -76,36 +76,36 @@ CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@part=1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_2@part=1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@part=1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_2@part=1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@part=1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_2@part=1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@part=1
@@ -117,20 +117,20 @@ POSTHOOK: query: ALTER TABLE srcbucket_mapjoin_part_2 CLUSTERED BY (key) INTO 2 
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='2')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='2')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='2')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='2')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@part=2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='2')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='2')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_2@part=2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='2')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='2')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@part=2
@@ -253,12 +253,12 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-            Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int)
@@ -266,7 +266,7 @@ STAGE PLANS:
                 Position of Big Table: 0
       Bucket Mapjoin Context:
           Alias Bucket Base File Name Mapping:
-            b {part=1/srcbucket20.txt=[part=1/srcbucket20.txt, part=1/srcbucket22.txt, part=2/srcbucket20.txt], part=1/srcbucket21.txt=[part=1/srcbucket21.txt, part=1/srcbucket23.txt, part=2/srcbucket21.txt], part=2/srcbucket20.txt=[part=1/srcbucket20.txt, part=2/srcbucket20.txt], part=2/srcbucket21.txt=[part=1/srcbucket21.txt, part=2/srcbucket21.txt], part=2/srcbucket22.txt=[part=1/srcbucket22.txt, part=2/srcbucket20.txt], part=2/srcbucket23.txt=[part=1/srcbucket23.txt, part=2/srcbucket21.txt]}
+            b {part=1/000000_0=[part=1/000000_0, part=1/000002_0, part=2/000000_0], part=1/000001_0=[part=1/000001_0, part=1/000003_0, part=2/000001_0], part=2/000000_0=[part=1/000000_0, part=2/000000_0], part=2/000001_0=[part=1/000001_0, part=2/000001_0], part=2/000002_0=[part=1/000002_0, part=2/000000_0], part=2/000003_0=[part=1/000003_0, part=2/000001_0]}
           Alias Bucket File Name Mapping:
 #### A masked pattern was here ####
           Alias Bucket Output File Name Mapping:
@@ -277,12 +277,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -290,7 +290,7 @@ STAGE PLANS:
                   0 key (type: int)
                   1 key (type: int)
                 Position of Big Table: 0
-                Statistics: Num rows: 2354 Data size: 9418 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 240 Data size: 94182 Basic stats: COMPLETE Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()
@@ -586,12 +586,12 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-            Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: int), part (type: string)
@@ -599,7 +599,7 @@ STAGE PLANS:
                 Position of Big Table: 0
       Bucket Mapjoin Context:
           Alias Bucket Base File Name Mapping:
-            b {part=1/srcbucket20.txt=[part=1/srcbucket20.txt, part=1/srcbucket22.txt, part=2/srcbucket20.txt], part=1/srcbucket21.txt=[part=1/srcbucket21.txt, part=1/srcbucket23.txt, part=2/srcbucket21.txt], part=2/srcbucket20.txt=[part=1/srcbucket20.txt, part=2/srcbucket20.txt], part=2/srcbucket21.txt=[part=1/srcbucket21.txt, part=2/srcbucket21.txt], part=2/srcbucket22.txt=[part=1/srcbucket22.txt, part=2/srcbucket20.txt], part=2/srcbucket23.txt=[part=1/srcbucket23.txt, part=2/srcbucket21.txt]}
+            b {part=1/000000_0=[part=1/000000_0, part=1/000002_0, part=2/000000_0], part=1/000001_0=[part=1/000001_0, part=1/000003_0, part=2/000001_0], part=2/000000_0=[part=1/000000_0, part=2/000000_0], part=2/000001_0=[part=1/000001_0, part=2/000001_0], part=2/000002_0=[part=1/000002_0, part=2/000000_0], part=2/000003_0=[part=1/000003_0, part=2/000001_0]}
           Alias Bucket File Name Mapping:
 #### A masked pattern was here ####
           Alias Bucket Output File Name Mapping:
@@ -610,12 +610,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 2140 Data size: 8562 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 219 Data size: 85620 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -623,7 +623,7 @@ STAGE PLANS:
                   0 key (type: int), part (type: string)
                   1 key (type: int), part (type: string)
                 Position of Big Table: 0
-                Statistics: Num rows: 2354 Data size: 9418 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 240 Data size: 94182 Basic stats: COMPLETE Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()

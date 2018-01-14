@@ -127,11 +127,13 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: insert into mp partition (b=1) values (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@mp@b=1
 POSTHOOK: query: insert into mp partition (b=1) values (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@mp@b=1
-POSTHOOK: Lineage: mp PARTITION(b=1).a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: mp PARTITION(b=1).a SCRIPT []
 PREHOOK: query: desc formatted mp
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@mp

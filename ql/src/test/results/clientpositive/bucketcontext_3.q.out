@@ -6,37 +6,37 @@ POSTHOOK: query: CREATE TABLE bucket_small (key string, value string) partitione
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_small
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_small partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_small partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_small
 POSTHOOK: Output: default@bucket_small@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_small partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_small@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_small partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_small@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-09')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_small partition(ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-09')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_small partition(ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_small
 POSTHOOK: Output: default@bucket_small@ds=2008-04-09
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-09')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_small partition(ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_small@ds=2008-04-09
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-09')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_small partition(ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_small@ds=2008-04-09
@@ -48,36 +48,36 @@ POSTHOOK: query: CREATE TABLE bucket_big (key string, value string) partitioned 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_big
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_big
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big
 POSTHOOK: Output: default@bucket_big@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_big@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_big@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_big@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big@ds=2008-04-08
@@ -196,12 +196,12 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
-            Statistics: Num rows: 54 Data size: 5500 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 54 Data size: 5500 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 112 Data size: 55000 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: string)
@@ -209,7 +209,7 @@ STAGE PLANS:
                 Position of Big Table: 1
       Bucket Mapjoin Context:
           Alias Bucket Base File Name Mapping:
-            a {ds=2008-04-08/srcsortbucket1outof4.txt=[ds=2008-04-08/srcsortbucket1outof4.txt, ds=2008-04-09/srcsortbucket1outof4.txt], ds=2008-04-08/srcsortbucket2outof4.txt=[ds=2008-04-08/srcsortbucket2outof4.txt, ds=2008-04-09/srcsortbucket2outof4.txt], ds=2008-04-08/srcsortbucket3outof4.txt=[ds=2008-04-08/srcsortbucket1outof4.txt, ds=2008-04-09/srcsortbucket1outof4.txt], ds=2008-04-08/srcsortbucket4outof4.txt=[ds=2008-04-08/srcsortbucket2outof4.txt, ds=2008-04-09/srcsortbucket2outof4.txt]}
+            a {ds=2008-04-08/000000_0=[ds=2008-04-08/000000_0, ds=2008-04-09/000000_0], ds=2008-04-08/000001_0=[ds=2008-04-08/000001_0, ds=2008-04-09/000001_0], ds=2008-04-08/000002_0=[ds=2008-04-08/000000_0, ds=2008-04-09/000000_0], ds=2008-04-08/000003_0=[ds=2008-04-08/000001_0, ds=2008-04-09/000001_0]}
           Alias Bucket File Name Mapping:
 #### A masked pattern was here ####
           Alias Bucket Output File Name Mapping:
@@ -220,12 +220,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -233,7 +233,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 Position of Big Table: 1
-                Statistics: Num rows: 63 Data size: 6393 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 132 Data size: 63932 Basic stats: COMPLETE Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()
@@ -370,12 +370,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 58 Data size: 5812 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1

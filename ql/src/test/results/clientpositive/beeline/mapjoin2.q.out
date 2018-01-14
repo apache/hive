@@ -8,20 +8,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl
 PREHOOK: query: insert into tbl values (1, 'one')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tbl
 POSTHOOK: query: insert into tbl values (1, 'one')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl
-POSTHOOK: Lineage: tbl.n EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: tbl.t SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: tbl.n SCRIPT []
+POSTHOOK: Lineage: tbl.t SCRIPT []
 PREHOOK: query: insert into tbl values(2, 'two')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tbl
 POSTHOOK: query: insert into tbl values(2, 'two')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl
-POSTHOOK: Lineage: tbl.n EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: tbl.t SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: tbl.n SCRIPT []
+POSTHOOK: Lineage: tbl.t SCRIPT []
 Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: select a.n, a.t, isnull(b.n), isnull(b.t) from (select * from tbl where n = 1) a  left outer join  (select * from tbl where 1 = 2) b on a.n = b.n
 PREHOOK: type: QUERY

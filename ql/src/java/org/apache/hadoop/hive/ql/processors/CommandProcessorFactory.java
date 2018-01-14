@@ -31,6 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -44,7 +46,7 @@ public final class CommandProcessorFactory {
     // prevent instantiation
   }
 
-  private static final Map<HiveConf, Driver> mapDrivers = Collections.synchronizedMap(new HashMap<HiveConf, Driver>());
+  private static final Map<HiveConf, IDriver> mapDrivers = Collections.synchronizedMap(new HashMap<HiveConf, IDriver>());
 
   public static CommandProcessor get(String cmd)
       throws SQLException {
@@ -121,9 +123,10 @@ public final class CommandProcessorFactory {
       if (conf == null) {
         return new Driver();
       }
-      Driver drv = mapDrivers.get(conf);
+      IDriver drv = mapDrivers.get(conf);
       if (drv == null) {
-        drv = new Driver();
+        // FIXME: why this method didn't use the conf constructor?
+        drv = DriverFactory.newDriver();
         mapDrivers.put(conf, drv);
       } else {
         drv.resetQueryState();
@@ -133,7 +136,7 @@ public final class CommandProcessorFactory {
   }
 
   public static void clean(HiveConf conf) {
-    Driver drv = mapDrivers.get(conf);
+    IDriver drv = mapDrivers.get(conf);
     if (drv != null) {
       drv.destroy();
     }

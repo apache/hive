@@ -35,7 +35,8 @@ import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.history.HiveHistory.QueryInfo;
 import org.apache.hadoop.hive.ql.history.HiveHistory.TaskInfo;
@@ -143,7 +144,7 @@ public class TestHiveHistory extends TestCase {
       SessionState.start(ss);
 
       String cmd = "select a.key+1 from src a";
-      Driver d = new Driver(conf);
+      IDriver d = DriverFactory.newDriver(conf);
       int ret = d.run(cmd).getResponseCode();
       if (ret != 0) {
         fail("Failed");

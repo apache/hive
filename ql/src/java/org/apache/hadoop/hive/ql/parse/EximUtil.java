@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.DBSerializer;
@@ -261,16 +262,15 @@ public class EximUtil {
     }
   }
 
-  public static void createExportDump(FileSystem fs, Path metadataPath,
-      org.apache.hadoop.hive.ql.metadata.Table tableHandle,
-      Iterable<org.apache.hadoop.hive.ql.metadata.Partition> partitions,
-      ReplicationSpec replicationSpec) throws SemanticException, IOException {
+  public static void createExportDump(FileSystem fs, Path metadataPath, Table tableHandle,
+      Iterable<Partition> partitions, ReplicationSpec replicationSpec, HiveConf hiveConf)
+      throws SemanticException, IOException {
 
-    if (replicationSpec == null){
+    if (replicationSpec == null) {
       replicationSpec = new ReplicationSpec(); // instantiate default values if not specified
     }
 
-    if (tableHandle == null){
+    if (tableHandle == null) {
       replicationSpec.setNoop(true);
     }
 
@@ -278,7 +278,7 @@ public class EximUtil {
       if (replicationSpec.isInReplicationScope()) {
         new ReplicationSpecSerializer().writeTo(writer, replicationSpec);
       }
-      new TableSerializer(tableHandle, partitions).writeTo(writer, replicationSpec);
+      new TableSerializer(tableHandle, partitions, hiveConf).writeTo(writer, replicationSpec);
     }
   }
 
@@ -403,51 +403,5 @@ public class EximUtil {
         }
       }
     };
-  }
-
-  /**
-   * Verify if a table should be exported or not
-   */
-  public static Boolean shouldExportTable(ReplicationSpec replicationSpec, Table tableHandle) throws SemanticException {
-    if (replicationSpec == null)
-    {
-      replicationSpec = new ReplicationSpec();
-    }
-
-    if (replicationSpec.isNoop())
-    {
-      return false;
-    }
-
-    if (tableHandle == null)
-    {
-      return false;
-    }
-
-    if (replicationSpec.isInReplicationScope()) {
-      return !(tableHandle == null || tableHandle.isTemporary() || tableHandle.isNonNative() ||
-          (tableHandle.getParameters() != null && StringUtils.equals(tableHandle.getParameters().get("transactional"), "true")));
-    }
-
-    if (tableHandle.isNonNative()) {
-      throw new SemanticException(ErrorMsg.EXIM_FOR_NON_NATIVE.getMsg());
-    }
-
-    return true;
-  }
-
-  /**
-   * Verify if a table should be exported or not by talking to metastore to fetch table info.
-   * Return true when running into errors with metastore call. 
-   */
-  public static Boolean tryValidateShouldExportTable(Hive db, String dbName, String tableName, ReplicationSpec replicationSpec) {
-    try {
-      Table table = db.getTable(dbName, tableName);
-      return EximUtil.shouldExportTable(replicationSpec, table);
-    } catch (Exception e) {
-      // Swallow the exception
-      LOG.error("Failed to validate if the table should be exported or not", e);
-    }
-    return true;
   }
 }

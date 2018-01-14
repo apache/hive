@@ -22,27 +22,27 @@ POSTHOOK: query: create table smb_bucket_3(key int, value string) CLUSTERED BY (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smb_bucket_3
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' overwrite into table smb_bucket_1
+PREHOOK: query: load data local inpath '../../data/files/smb_rc1/000000_0' overwrite into table smb_bucket_1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@smb_bucket_1
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' overwrite into table smb_bucket_1
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc1/000000_0' overwrite into table smb_bucket_1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_bucket_1
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' overwrite into table smb_bucket_2
+PREHOOK: query: load data local inpath '../../data/files/smb_rc2/000000_0' overwrite into table smb_bucket_2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@smb_bucket_2
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' overwrite into table smb_bucket_2
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc2/000000_0' overwrite into table smb_bucket_2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_bucket_2
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' overwrite into table smb_bucket_3
+PREHOOK: query: load data local inpath '../../data/files/smb_rc3/000000_0' overwrite into table smb_bucket_3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@smb_bucket_3
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' overwrite into table smb_bucket_3
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc3/000000_0' overwrite into table smb_bucket_3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_bucket_3
@@ -108,10 +108,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                     Sorted Merge Bucket Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -119,14 +119,14 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col5, _col6
-                      Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -167,7 +167,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
                          Left Outer Join 0 to 1
@@ -175,14 +175,14 @@ STAGE PLANS:
                       0 key (type: int)
                       1 key (type: int)
                     outputColumnNames: _col0, _col1, _col5, _col6
-                    Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -228,7 +228,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
                          Right Outer Join 0 to 1
@@ -236,14 +236,14 @@ STAGE PLANS:
                       0 key (type: int)
                       1 key (type: int)
                     outputColumnNames: _col0, _col1, _col5, _col6
-                    Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -288,7 +288,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
                          Outer Join 0 to 1
@@ -296,14 +296,14 @@ STAGE PLANS:
                       0 key (type: int)
                       1 key (type: int)
                     outputColumnNames: _col0, _col1, _col5, _col6
-                    Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -353,10 +353,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
                     Sorted Merge Bucket Map Join Operator
                       condition map:
                            Inner Join 0 to 1
@@ -364,14 +364,14 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       outputColumnNames: _col0, _col1, _col5, _col6
-                      Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -412,7 +412,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
                          Left Outer Join 0 to 1
@@ -420,14 +420,14 @@ STAGE PLANS:
                       0 key (type: int)
                       1 key (type: int)
                     outputColumnNames: _col0, _col1, _col5, _col6
-                    Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -473,7 +473,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
                          Right Outer Join 0 to 1
@@ -481,14 +481,14 @@ STAGE PLANS:
                       0 key (type: int)
                       1 key (type: int)
                     outputColumnNames: _col0, _col1, _col5, _col6
-                    Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -533,7 +533,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
                          Outer Join 0 to 1
@@ -541,14 +541,14 @@ STAGE PLANS:
                       0 key (type: int)
                       1 key (type: int)
                     outputColumnNames: _col0, _col1, _col5, _col6
-                    Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 2288 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

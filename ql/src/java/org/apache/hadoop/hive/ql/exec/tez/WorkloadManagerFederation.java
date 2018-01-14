@@ -29,7 +29,7 @@ public class WorkloadManagerFederation {
   private static final Logger LOG = LoggerFactory.getLogger(WorkloadManagerFederation.class);
 
   public static TezSessionState getSession(TezSessionState session, HiveConf conf,
-    MappingInput input, boolean isUnmanagedLlapMode, final WmContext wmContext) throws Exception {
+      MappingInput input, boolean isUnmanagedLlapMode, WmContext wmContext) throws Exception {
     Set<String> desiredCounters = new HashSet<>();
     // 1. If WM is not present just go to unmanaged.
     WorkloadManager wm = WorkloadManager.getInstance();
@@ -54,7 +54,7 @@ public class WorkloadManagerFederation {
       wm.updateTriggers(result);
       return result;
     } catch (WorkloadManager.NoPoolMappingException ex) {
-      LOG.info("NoPoolMappingException thrown. Getting an un-managed session..");
+      LOG.info("NoPoolMappingException thrown. Getting an un-managed session");
       return getUnmanagedSession(session, conf, desiredCounters, isUnmanagedLlapMode, wmContext);
     }
   }

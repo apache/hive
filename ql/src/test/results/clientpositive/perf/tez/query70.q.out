@@ -76,15 +76,14 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 10 <- Reducer 9 (SIMPLE_EDGE)
-Reducer 11 <- Reducer 10 (SIMPLE_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 12 (SIMPLE_EDGE)
-Reducer 3 <- Map 13 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
-Reducer 4 <- Reducer 11 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 11 (SIMPLE_EDGE)
+Reducer 3 <- Map 12 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 10 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
 Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
 Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
-Reducer 8 <- Map 1 (SIMPLE_EDGE), Map 12 (SIMPLE_EDGE)
-Reducer 9 <- Map 14 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+Reducer 8 <- Map 13 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -120,7 +119,7 @@ Stage-0
                                 Output:["_col0","_col1","_col2"]
                                 Merge Join Operator [MERGEJOIN_89] (rows=766650239 width=88)
                                   Conds:RS_43._col7=RS_44._col0(Inner),Output:["_col2","_col6","_col7"]
-                                <-Reducer 11 [SIMPLE_EDGE]
+                                <-Reducer 10 [SIMPLE_EDGE]
                                   SHUFFLE [RS_44]
                                     PartitionCols:_col0
                                     Select Operator [SEL_32] (rows=116159124 width=88)
@@ -131,19 +130,42 @@ Stage-0
                                           Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col1 DESC NULLS LAST","partition by:":"_col0"}]
                                           Select Operator [SEL_30] (rows=348477374 width=88)
                                             Output:["_col0","_col1"]
-                                          <-Reducer 10 [SIMPLE_EDGE]
+                                          <-Reducer 9 [SIMPLE_EDGE]
                                             SHUFFLE [RS_29]
                                               PartitionCols:_col0
                                               Group By Operator [GBY_27] (rows=348477374 width=88)
                                                 Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
-                                              <-Reducer 9 [SIMPLE_EDGE]
+                                              <-Reducer 8 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_26]
                                                   PartitionCols:_col0
                                                   Group By Operator [GBY_25] (rows=696954748 width=88)
                                                     Output:["_col0","_col1"],aggregations:["sum(_col2)"],keys:_col6
                                                     Merge Join Operator [MERGEJOIN_88] (rows=696954748 width=88)
                                                       Conds:RS_21._col1=RS_22._col0(Inner),Output:["_col2","_col6"]
-                                                    <-Map 14 [SIMPLE_EDGE]
+                                                    <-Reducer 2 [SIMPLE_EDGE]
+                                                      SHUFFLE [RS_21]
+                                                        PartitionCols:_col1
+                                                        Merge Join Operator [MERGEJOIN_85] (rows=633595212 width=88)
+                                                          Conds:RS_37._col0=RS_38._col0(Inner),Output:["_col1","_col2"]
+                                                        <-Map 1 [SIMPLE_EDGE]
+                                                          SHUFFLE [RS_37]
+                                                            PartitionCols:_col0
+                                                            Select Operator [SEL_2] (rows=575995635 width=88)
+                                                              Output:["_col0","_col1","_col2"]
+                                                              Filter Operator [FIL_78] (rows=575995635 width=88)
+                                                                predicate:(ss_sold_date_sk is not null and ss_store_sk is not null)
+                                                                TableScan [TS_0] (rows=575995635 width=88)
+                                                                  default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_store_sk","ss_net_profit"]
+                                                        <-Map 11 [SIMPLE_EDGE]
+                                                          SHUFFLE [RS_38]
+                                                            PartitionCols:_col0
+                                                            Select Operator [SEL_5] (rows=8116 width=1119)
+                                                              Output:["_col0"]
+                                                              Filter Operator [FIL_79] (rows=8116 width=1119)
+                                                                predicate:(d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223)
+                                                                TableScan [TS_3] (rows=73049 width=1119)
+                                                                  default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
+                                                    <-Map 13 [SIMPLE_EDGE]
                                                       SHUFFLE [RS_22]
                                                         PartitionCols:_col0
                                                         Select Operator [SEL_17] (rows=1704 width=1910)
@@ -152,35 +174,16 @@ Stage-0
                                                             predicate:(s_state is not null and s_store_sk is not null)
                                                             TableScan [TS_15] (rows=1704 width=1910)
                                                               default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_state"]
-                                                    <-Reducer 8 [SIMPLE_EDGE]
-                                                      SHUFFLE [RS_21]
-                                                        PartitionCols:_col1
-                                                        Merge Join Operator [MERGEJOIN_87] (rows=633595212 width=88)
-                                                          Conds:RS_18._col0=RS_19._col0(Inner),Output:["_col1","_col2"]
-                                                        <-Map 1 [SIMPLE_EDGE]
-                                                          SHUFFLE [RS_18]
-                                                            PartitionCols:_col0
-                                                            Select Operator [SEL_2] (rows=575995635 width=88)
-                                                              Output:["_col0","_col1","_col2"]
-                                                              Filter Operator [FIL_78] (rows=575995635 width=88)
-                                                                predicate:(ss_sold_date_sk is not null and ss_store_sk is not null)
-                                                                TableScan [TS_0] (rows=575995635 width=88)
-                                                                  default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_store_sk","ss_net_profit"]
-                                                        <-Map 12 [SIMPLE_EDGE]
-                                                          SHUFFLE [RS_19]
-                                                            PartitionCols:_col0
-                                                            Select Operator [SEL_5] (rows=8116 width=1119)
-                                                              Output:["_col0"]
-                                                              Filter Operator [FIL_79] (rows=8116 width=1119)
-                                                                predicate:(d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223)
-                                                                TableScan [TS_3] (rows=73049 width=1119)
-                                                                  default@date_dim,d1,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
                                 <-Reducer 3 [SIMPLE_EDGE]
                                   SHUFFLE [RS_43]
                                     PartitionCols:_col7
                                     Merge Join Operator [MERGEJOIN_86] (rows=696954748 width=88)
                                       Conds:RS_40._col1=RS_41._col0(Inner),Output:["_col2","_col6","_col7"]
-                                    <-Map 13 [SIMPLE_EDGE]
+                                    <-Reducer 2 [SIMPLE_EDGE]
+                                      SHUFFLE [RS_40]
+                                        PartitionCols:_col1
+                                         Please refer to the previous Merge Join Operator [MERGEJOIN_85]
+                                    <-Map 12 [SIMPLE_EDGE]
                                       SHUFFLE [RS_41]
                                         PartitionCols:_col0
                                         Select Operator [SEL_8] (rows=1704 width=1910)
@@ -189,17 +192,4 @@ Stage-0
                                             predicate:(s_state is not null and s_store_sk is not null)
                                             TableScan [TS_6] (rows=1704 width=1910)
                                               default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_county","s_state"]
-                                    <-Reducer 2 [SIMPLE_EDGE]
-                                      SHUFFLE [RS_40]
-                                        PartitionCols:_col1
-                                        Merge Join Operator [MERGEJOIN_85] (rows=633595212 width=88)
-                                          Conds:RS_37._col0=RS_38._col0(Inner),Output:["_col1","_col2"]
-                                        <-Map 1 [SIMPLE_EDGE]
-                                          SHUFFLE [RS_37]
-                                            PartitionCols:_col0
-                                             Please refer to the previous Select Operator [SEL_2]
-                                        <-Map 12 [SIMPLE_EDGE]
-                                          SHUFFLE [RS_38]
-                                            PartitionCols:_col0
-                                             Please refer to the previous Select Operator [SEL_5]
 

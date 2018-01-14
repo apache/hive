@@ -67,7 +67,7 @@ import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
@@ -182,7 +182,7 @@ public class CliDriver {
     }  else { // local mode
       try {
         CommandProcessor proc = CommandProcessorFactory.get(tokens, (HiveConf) conf);
-        if (proc instanceof Driver) {
+        if (proc instanceof IDriver) {
           // Let Driver strip comments using sql parser
           ret = processLocalCmd(cmd, proc, ss);
         } else {
@@ -227,8 +227,8 @@ public class CliDriver {
       try {
         needRetry = false;
         if (proc != null) {
-          if (proc instanceof Driver) {
-            Driver qp = (Driver) proc;
+          if (proc instanceof IDriver) {
+            IDriver qp = (IDriver) proc;
             PrintStream out = ss.out;
             long start = System.currentTimeMillis();
             if (ss.getIsVerbose()) {
@@ -321,7 +321,7 @@ public class CliDriver {
    * @param qp Driver that executed the command
    * @param out PrintStream which to send output to
    */
-  private void printHeader(Driver qp, PrintStream out) {
+  private void printHeader(IDriver qp, PrintStream out) {
     List<FieldSchema> fieldSchemas = qp.getSchema().getFieldSchemas();
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_HEADER)
           && fieldSchemas != null) {

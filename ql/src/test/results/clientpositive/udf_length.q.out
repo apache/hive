@@ -218,11 +218,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dest1
-          Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: length(name) (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT length(dest1.name) FROM dest1

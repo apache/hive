@@ -81,7 +81,6 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
 
   /** This is used to close non-default sessions, and also all sessions when stopping. */
   private final List<TezSessionState> openSessions = new LinkedList<>();
-  private final List<Trigger> triggers = new LinkedList<>();
   private SessionTriggerProvider sessionTriggerProvider;
   private TriggerActionHandler triggerActionHandler;
   private TriggerValidatorRunnable triggerValidatorRunnable;
@@ -184,9 +183,10 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     if (triggerValidatorRunnable == null) {
       final long triggerValidationIntervalMs = HiveConf.getTimeVar(conf, ConfVars
         .HIVE_TRIGGER_VALIDATION_INTERVAL_MS, TimeUnit.MILLISECONDS);
-      sessionTriggerProvider = new SessionTriggerProvider(openSessions, triggers);
+      sessionTriggerProvider = new SessionTriggerProvider(openSessions, new LinkedList<>());
       triggerActionHandler = new KillTriggerActionHandler();
-      triggerValidatorRunnable = new TriggerValidatorRunnable(sessionTriggerProvider, triggerActionHandler);
+      triggerValidatorRunnable = new TriggerValidatorRunnable(
+          sessionTriggerProvider, triggerActionHandler);
       startTriggerValidator(triggerValidationIntervalMs);
     }
   }
@@ -499,12 +499,14 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   }
 
   public void updateTriggers(final WMFullResourcePlan appliedRp) {
-    if (sessionTriggerProvider != null && appliedRp != null) {
-      List<WMTrigger> wmTriggers = appliedRp.getTriggers();
+    if (sessionTriggerProvider != null) {
+      List<WMTrigger> wmTriggers = appliedRp != null ? appliedRp.getTriggers() : null;
       List<Trigger> triggers = new ArrayList<>();
-      if (appliedRp.isSetTriggers()) {
+      if (wmTriggers != null) {
         for (WMTrigger wmTrigger : wmTriggers) {
-          triggers.add(ExecutionTrigger.fromWMTrigger(wmTrigger));
+          if (wmTrigger.isSetIsInUnmanaged() && wmTrigger.isIsInUnmanaged()) {
+            triggers.add(ExecutionTrigger.fromWMTrigger(wmTrigger));
+          }
         }
       }
       sessionTriggerProvider.setTriggers(Collections.unmodifiableList(triggers));

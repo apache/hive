@@ -8,18 +8,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@p1
 PREHOOK: query: insert into p1 partition(p='a') values (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@p1@p=a
 POSTHOOK: query: insert into p1 partition(p='a') values (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@p1@p=a
-POSTHOOK: Lineage: p1 PARTITION(p=a).i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: p1 PARTITION(p=a).i SCRIPT []
 PREHOOK: query: insert into p1 partition(p='A') values (2),(3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@p1@p=A
 POSTHOOK: query: insert into p1 partition(p='A') values (2),(3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@p1@p=A
-POSTHOOK: Lineage: p1 PARTITION(p=A).i EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: p1 PARTITION(p=A).i SCRIPT []
 PREHOOK: query: describe formatted p1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@p1

@@ -1,6 +1,23 @@
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
 set hive.materializedview.rewriting=true;
 set hive.stats.column.autogather=true;
+
+CREATE TABLE `customer_ext`(
+  `c_custkey` bigint, 
+  `c_name` string, 
+  `c_address` string, 
+  `c_city` string, 
+  `c_nation` string, 
+  `c_region` string, 
+  `c_phone` string, 
+  `c_mktsegment` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH '../../data/files/ssb/customer/' into table `customer_ext`;
 
 CREATE TABLE `customer`(
   `c_custkey` bigint, 
@@ -12,7 +29,35 @@ CREATE TABLE `customer`(
   `c_phone` string, 
   `c_mktsegment` string,
   primary key (`c_custkey`) disable rely)
-STORED AS ORC;
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true');
+
+INSERT INTO `customer`
+SELECT * FROM `customer_ext`;
+
+CREATE TABLE `dates_ext`(
+  `d_datekey` bigint, 
+  `d_date` string, 
+  `d_dayofweek` string, 
+  `d_month` string, 
+  `d_year` int, 
+  `d_yearmonthnum` int, 
+  `d_yearmonth` string, 
+  `d_daynuminweek` int,
+  `d_daynuminmonth` int,
+  `d_daynuminyear` int,
+  `d_monthnuminyear` int,
+  `d_weeknuminyear` int,
+  `d_sellingseason` string,
+  `d_lastdayinweekfl` int,
+  `d_lastdayinmonthfl` int,
+  `d_holidayfl` int ,
+  `d_weekdayfl`int)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH '../../data/files/ssb/date/' into table `dates_ext`;
 
 CREATE TABLE `dates`(
   `d_datekey` bigint, 
@@ -34,7 +79,27 @@ CREATE TABLE `dates`(
   `d_weekdayfl`int,
   primary key (`d_datekey`) disable rely
 )
-STORED AS ORC;
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true');
+
+INSERT INTO `dates`
+SELECT * FROM `dates_ext`;
+
+CREATE TABLE `ssb_part_ext`(
+  `p_partkey` bigint, 
+  `p_name` string, 
+  `p_mfgr` string, 
+  `p_category` string, 
+  `p_brand1` string, 
+  `p_color` string, 
+  `p_type` string, 
+  `p_size` int, 
+  `p_container` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH '../../data/files/ssb/part/' into table `ssb_part_ext`;
 
 CREATE TABLE `ssb_part`(
   `p_partkey` bigint, 
@@ -47,7 +112,25 @@ CREATE TABLE `ssb_part`(
   `p_size` int, 
   `p_container` string,
   primary key (`p_partkey`) disable rely)
-STORED AS ORC;
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true');
+
+INSERT INTO `ssb_part`
+SELECT * FROM `ssb_part_ext`;
+
+CREATE TABLE `supplier_ext`(
+  `s_suppkey` bigint, 
+  `s_name` string, 
+  `s_address` string, 
+  `s_city` string, 
+  `s_nation` string, 
+  `s_region` string, 
+  `s_phone` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH '../../data/files/ssb/supplier/' into table `supplier_ext`;
 
 CREATE TABLE `supplier`(
   `s_suppkey` bigint, 
@@ -58,7 +141,35 @@ CREATE TABLE `supplier`(
   `s_region` string, 
   `s_phone` string,
   primary key (`s_suppkey`) disable rely)
-STORED AS ORC;
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true');
+
+INSERT INTO `supplier`
+SELECT * FROM `supplier_ext`;
+
+CREATE TABLE `lineorder_ext`(
+  `lo_orderkey` bigint, 
+  `lo_linenumber` int, 
+  `lo_custkey` bigint not null disable rely,
+  `lo_partkey` bigint not null disable rely,
+  `lo_suppkey` bigint not null disable rely,
+  `lo_orderdate` bigint not null disable rely,
+  `lo_ordpriority` string, 
+  `lo_shippriority` string, 
+  `lo_quantity` double, 
+  `lo_extendedprice` double, 
+  `lo_ordtotalprice` double, 
+  `lo_discount` double, 
+  `lo_revenue` double, 
+  `lo_supplycost` double, 
+  `lo_tax` double, 
+  `lo_commitdate` bigint, 
+  `lo_shipmode` string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH '../../data/files/ssb/lineorder/' into table `lineorder_ext`;
 
 CREATE TABLE `lineorder`(
   `lo_orderkey` bigint, 
@@ -83,7 +194,11 @@ CREATE TABLE `lineorder`(
   constraint fk2 foreign key (`lo_orderdate`) references `dates`(`d_datekey`) disable rely,
   constraint fk3 foreign key (`lo_partkey`) references `ssb_part`(`p_partkey`) disable rely,
   constraint fk4 foreign key (`lo_suppkey`) references `supplier`(`s_suppkey`) disable rely)
-STORED AS ORC;
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true');
+
+INSERT INTO `lineorder`
+SELECT * FROM `lineorder_ext`;
 
 analyze table customer compute statistics for columns;
 analyze table dates compute statistics for columns;

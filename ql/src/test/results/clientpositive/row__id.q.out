@@ -18,28 +18,34 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hello_acid
 PREHOOK: query: insert into hello_acid partition (load_date='2016-03-01') values (1, 1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@hello_acid@load_date=2016-03-01
 POSTHOOK: query: insert into hello_acid partition (load_date='2016-03-01') values (1, 1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@hello_acid@load_date=2016-03-01
-POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-01).key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-01).value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-01).key SCRIPT []
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-01).value SCRIPT []
 PREHOOK: query: insert into hello_acid partition (load_date='2016-03-02') values (2, 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@hello_acid@load_date=2016-03-02
 POSTHOOK: query: insert into hello_acid partition (load_date='2016-03-02') values (2, 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@hello_acid@load_date=2016-03-02
-POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-02).key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-02).value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-02).key SCRIPT []
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-02).value SCRIPT []
 PREHOOK: query: insert into hello_acid partition (load_date='2016-03-03') values (3, 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@hello_acid@load_date=2016-03-03
 POSTHOOK: query: insert into hello_acid partition (load_date='2016-03-03') values (3, 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@hello_acid@load_date=2016-03-03
-POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-03).key EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-03).value EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-03).key SCRIPT []
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-03).value SCRIPT []
 PREHOOK: query: explain
 select tid from (select row__id.transactionid as tid from hello_acid) sub order by tid
 PREHOOK: type: QUERY
@@ -56,23 +62,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hello_acid
-            Statistics: Num rows: 1 Data size: 1860 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 74 Data size: 18600 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ROW__ID.transactionid (type: bigint)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 1860 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 74 Data size: 18600 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: bigint)
                 sort order: +
-                Statistics: Num rows: 1 Data size: 1860 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 74 Data size: 18600 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: bigint)
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 1860 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 74 Data size: 18600 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 1860 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 74 Data size: 18600 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -117,17 +123,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hello_acid
-            Statistics: Num rows: 1 Data size: 1860 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 74 Data size: 18600 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (ROW__ID.transactionid = 3) (type: boolean)
-              Statistics: Num rows: 1 Data size: 1860 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 37 Data size: 9300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ROW__ID.transactionid (type: bigint)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 1860 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 37 Data size: 9300 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 1860 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 37 Data size: 9300 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

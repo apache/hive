@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.metadata.formatting;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
@@ -544,30 +546,109 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     }
   }
 
+  private static final Charset UTF_8 = Charset.forName("UTF-8");
+
   public void showResourcePlans(DataOutputStream out, List<WMResourcePlan> resourcePlans)
       throws HiveException {
     try {
       for (WMResourcePlan plan : resourcePlans) {
-        out.write(plan.getName().getBytes("UTF-8"));
+        out.write(plan.getName().getBytes(UTF_8));
         out.write(separator);
-        out.write(plan.getStatus().name().getBytes("UTF-8"));
+        out.write(plan.getStatus().name().getBytes(UTF_8));
         out.write(separator);
         if (plan.isSetQueryParallelism()) {
-          out.writeBytes(Integer.toString(plan.getQueryParallelism()));
+          out.write(Integer.toString(plan.getQueryParallelism()).getBytes(UTF_8));
         } else {
-          out.writeBytes("null");
+          out.write("null".getBytes(UTF_8));
         }
         out.write(separator);
         if (plan.isSetDefaultPoolPath()) {
-          out.write(plan.getDefaultPoolPath().getBytes("UTF-8"));
+          out.write(plan.getDefaultPoolPath().getBytes(UTF_8));
         } else {
-          out.writeBytes("null");
+          out.write("null".getBytes(UTF_8));
         }
         out.write(terminator);
       }
     } catch (IOException e) {
       throw new HiveException(e);
     }
+  }
+
+  /**
+   * Class to print text records for resource plans in the following format:
+   * 
+   * <rp_name>[status=<STATUS>,parallelism=<parallelism>,defaultPool=<defaultPool>]
+   *     <queue_name>[allocFraction=<fraction>,schedulingPolicy=<policy>,parallelism=<parallelism>]
+   *       > <trigger_name>: if(<triggerExpression>){<actionExpression>}
+   */
+  private static class TextRPFormatter implements MetaDataFormatUtils.RPFormatter {
+    private final DataOutputStream out;
+
+    TextRPFormatter(DataOutputStream out) {
+      this.out = out;
+    }
+
+    @Override
+    public void formatRP(String rpName, Object ... kvPairs) throws IOException {
+      out.write(rpName.getBytes(UTF_8));
+      writeFields(kvPairs);
+      out.write(terminator);
+    }
+
+    private static final byte[] INDENT = "    ".getBytes(UTF_8);
+
+    @Override
+    public void formatPool(String poolName, int indentLevel, Object ... kvPairs)
+        throws IOException {
+      for (int i = 0; i < indentLevel; ++i) {
+        out.write(INDENT);
+      }
+      out.write(poolName.getBytes(UTF_8));
+      writeFields(kvPairs);
+      out.write(terminator);
+    }
+
+    private void writeFields(Object ... kvPairs)
+        throws IOException {
+      if (kvPairs.length % 2 != 0) {
+        throw new IllegalArgumentException("Expected pairs, got: " + kvPairs.length);
+      }
+      if (kvPairs.length < 2) {
+        return;
+      }
+      out.write('[');
+      out.write(kvPairs[0].toString().getBytes(UTF_8));
+      out.write('=');
+      out.write((kvPairs[1] == null ? "null" : kvPairs[1].toString()).getBytes(UTF_8));
+      for (int i = 2; i < kvPairs.length; i += 2) {
+        out.write(',');
+        out.write(kvPairs[i].toString().getBytes(UTF_8));
+        out.write('=');
+        out.write((kvPairs[i + 1] == null ? "null" : kvPairs[i + 1].toString()).getBytes(UTF_8));
+      }
+      out.write(']');
+    }
+
+    @Override
+    public void formatTrigger(String triggerName, String actionExpression, String triggerExpression,
+        int indentLevel) throws IOException {
+      for (int i = 0; i < indentLevel; ++i) {
+        out.write(INDENT);
+      }
+      out.write("  > ".getBytes(UTF_8));
+      out.write(triggerName.getBytes(UTF_8));
+      out.write(": if(".getBytes(UTF_8));
+      out.write(triggerExpression.getBytes(UTF_8));
+      out.write("){".getBytes(UTF_8));
+      out.write(actionExpression.getBytes(UTF_8));
+      out.write('}');
+      out.write(terminator);
+    }
+  }
+
+  public void showFullResourcePlan(DataOutputStream out, WMFullResourcePlan fullResourcePlan)
+      throws HiveException {
+    MetaDataFormatUtils.formatFullRP(new TextRPFormatter(out), fullResourcePlan);
   }
 
   public void showErrors(DataOutputStream out, List<String> errors) throws HiveException {

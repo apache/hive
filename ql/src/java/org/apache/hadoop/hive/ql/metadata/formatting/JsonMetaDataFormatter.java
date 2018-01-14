@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata.formatting;
 
+import java.io.Closeable;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -445,6 +447,101 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       if (generator != null) {
         IOUtils.closeQuietly(generator);
       }
+    }
+  }
+
+  /**
+   * Formats a resource plan into a json object, the structure is as follows:
+   * {
+   *    name: "<rp_name>",
+   *    parallelism: "<parallelism>",
+   *    defaultQueue: "<defaultQueue>",
+   *    pools : [
+   *      {
+   *        name: "<pool_name>",
+   *        parallelism: "<parallelism>",
+   *        schedulingPolicy: "<policy>",
+   *        triggers: [
+   *          { name: "<triggerName>", trigger: "<trigExpression>", action: "<actionExpr">}
+   *          ...
+   *        ]
+   *      }
+   *      ...
+   *    ]
+   * }
+   */
+  private static class JsonRPFormatter implements MetaDataFormatUtils.RPFormatter, Closeable {
+    private final JsonGenerator generator;
+    private boolean inPool = false;
+
+    JsonRPFormatter(DataOutputStream out) throws IOException {
+      generator = new ObjectMapper().getJsonFactory().createJsonGenerator(out);
+    }
+
+    private void writeNameAndFields(String name, Object ... kvPairs) throws IOException {
+      if (kvPairs.length % 2 != 0) {
+        throw new IllegalArgumentException("Expected pairs");
+      }
+      generator.writeStringField("name", name);
+      for (int i = 0; i < kvPairs.length; i += 2) {
+        generator.writeObjectField(kvPairs[i].toString(), kvPairs[i + 1]);
+      }
+    }
+
+    @Override
+    public void formatRP(String rpName, Object ... kvPairs) throws IOException {
+      generator.writeStartObject();
+      writeNameAndFields(rpName, kvPairs);
+      generator.writeArrayFieldStart("pools");
+    }
+
+    @Override
+    public void formatPool(String poolName, int indentLevel, Object ... kvPairs)
+        throws IOException {
+      if (inPool) {
+        // End the triggers array.
+        generator.writeEndArray();
+        // End the pool object.
+        generator.writeEndObject();
+      } else {
+        inPool = true;
+      }
+      generator.writeStartObject();
+      writeNameAndFields(poolName, kvPairs);
+      generator.writeArrayFieldStart("triggers");
+      // triggers array and pool object left to be ended.
+    }
+
+    @Override
+    public void formatTrigger(String triggerName, String actionExpression, String triggerExpression,
+        int indentLevel) throws IOException {
+      generator.writeStartObject();
+      writeNameAndFields(triggerName, "action", actionExpression, "trigger", triggerExpression);
+      generator.writeEndObject();
+    }
+
+    @Override
+    public void close() throws IOException {
+      if (inPool) {
+        // end the triggers within pool object.
+        generator.writeEndArray();
+        // End the last pool object.
+        generator.writeEndObject();
+      }
+      // End the pools array.
+      generator.writeEndArray();
+      // End the root rp object.
+      generator.writeEndObject();
+      generator.close();
+    }
+  }
+
+  public void showFullResourcePlan(DataOutputStream out, WMFullResourcePlan resourcePlan)
+      throws HiveException {
+    try (JsonRPFormatter formatter = new JsonRPFormatter(out)) {
+      MetaDataFormatUtils.formatFullRP(formatter, resourcePlan);
+    } catch (IOException e) {
+      throw new HiveException(e);
     }
   }
 

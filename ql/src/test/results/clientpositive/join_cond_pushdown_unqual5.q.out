@@ -16,23 +16,27 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rtable
 PREHOOK: query: insert into ltable values (1, null, 'CD5415192314304', '00071'), (2, null, 'CD5415192225530', '00071')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ltable
 POSTHOOK: query: insert into ltable values (1, null, 'CD5415192314304', '00071'), (2, null, 'CD5415192225530', '00071')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ltable
-POSTHOOK: Lineage: ltable.index EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: ltable.la EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: ltable.lk1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: ltable.lk2 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: ltable.index SCRIPT []
+POSTHOOK: Lineage: ltable.la EXPRESSION []
+POSTHOOK: Lineage: ltable.lk1 SCRIPT []
+POSTHOOK: Lineage: ltable.lk2 SCRIPT []
 PREHOOK: query: insert into rtable values (1, 'CD5415192314304', '00071'), (45, 'CD5415192314304', '00072')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@rtable
 POSTHOOK: query: insert into rtable values (1, 'CD5415192314304', '00071'), (45, 'CD5415192314304', '00072')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@rtable
-POSTHOOK: Lineage: rtable.ra EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: rtable.rk1 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: rtable.rk2 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: rtable.ra SCRIPT []
+POSTHOOK: Lineage: rtable.rk1 SCRIPT []
+POSTHOOK: Lineage: rtable.rk2 SCRIPT []
 PREHOOK: query: EXPLAIN SELECT * FROM ltable l LEFT OUTER JOIN rtable r on (l.lk1 = r.rk1 AND l.lk2 = r.rk2) WHERE COALESCE(l.la,'EMPTY')=COALESCE(r.ra,'EMPTY')
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT * FROM ltable l LEFT OUTER JOIN rtable r on (l.lk1 = r.rk1 AND l.lk2 = r.rk2) WHERE COALESCE(l.la,'EMPTY')=COALESCE(r.ra,'EMPTY')

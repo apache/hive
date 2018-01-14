@@ -17,11 +17,12 @@
  */
 package org.apache.hadoop.hive.metastore.cache;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -43,14 +44,9 @@ public class CacheUtils {
 
   public static String buildKey(String dbName, String tableName, List<String> partVals) {
     String key = buildKey(dbName, tableName);
-    if (partVals == null || partVals.size() == 0) {
-      return key;
-    }
-    for (int i = 0; i < partVals.size(); i++) {
-      key += partVals.get(i);
-      if (i != partVals.size() - 1) {
-        key += delimit;
-      }
+    if (CollectionUtils.isNotEmpty(partVals)) {
+      key += delimit;
+      key += String.join(delimit, partVals);
     }
     return key;
   }
@@ -78,28 +74,24 @@ public class CacheUtils {
     String[] comps = key.split(delimit);
     result[0] = comps[0];
     result[1] = comps[1];
-    List<String> vals = new ArrayList<>();
-    for (int i=2;i<comps.length-2;i++) {
-      vals.add(comps[i]);
-    }
-    result[2] = vals;
+    result[2] = Arrays.asList((Arrays.copyOfRange(comps, 2, comps.length - 1)));
     result[3] = comps[comps.length-1];
     return result;
   }
 
   static Table assemble(TableWrapper wrapper, SharedCache sharedCache) {
     Table t = wrapper.getTable().deepCopy();
-    if (wrapper.getSdHash()!=null) {
+    if (wrapper.getSdHash() != null) {
       StorageDescriptor sdCopy = sharedCache.getSdFromCache(wrapper.getSdHash()).deepCopy();
-      if (sdCopy.getBucketCols()==null) {
-        sdCopy.setBucketCols(new ArrayList<>());
+      if (sdCopy.getBucketCols() == null) {
+        sdCopy.setBucketCols(Collections.emptyList());
       }
-      if (sdCopy.getSortCols()==null) {
-        sdCopy.setSortCols(new ArrayList<>());
+      if (sdCopy.getSortCols() == null) {
+        sdCopy.setSortCols(Collections.emptyList());
       }
-      if (sdCopy.getSkewedInfo()==null) {
-        sdCopy.setSkewedInfo(new SkewedInfo(new ArrayList<>(),
-            new ArrayList<>(), new HashMap<>()));
+      if (sdCopy.getSkewedInfo() == null) {
+        sdCopy.setSkewedInfo(new SkewedInfo(Collections.emptyList(),
+          Collections.emptyList(), Collections.emptyMap()));
       }
       sdCopy.setLocation(wrapper.getLocation());
       sdCopy.setParameters(wrapper.getParameters());
@@ -110,17 +102,17 @@ public class CacheUtils {
 
   static Partition assemble(PartitionWrapper wrapper, SharedCache sharedCache) {
     Partition p = wrapper.getPartition().deepCopy();
-    if (wrapper.getSdHash()!=null) {
+    if (wrapper.getSdHash() != null) {
       StorageDescriptor sdCopy = sharedCache.getSdFromCache(wrapper.getSdHash()).deepCopy();
-      if (sdCopy.getBucketCols()==null) {
-        sdCopy.setBucketCols(new ArrayList<>());
+      if (sdCopy.getBucketCols() == null) {
+        sdCopy.setBucketCols(Collections.emptyList());
       }
-      if (sdCopy.getSortCols()==null) {
-        sdCopy.setSortCols(new ArrayList<>());
+      if (sdCopy.getSortCols() == null) {
+        sdCopy.setSortCols(Collections.emptyList());
       }
-      if (sdCopy.getSkewedInfo()==null) {
-        sdCopy.setSkewedInfo(new SkewedInfo(new ArrayList<>(),
-            new ArrayList<>(), new HashMap<>()));
+      if (sdCopy.getSkewedInfo() == null) {
+        sdCopy.setSkewedInfo(new SkewedInfo(Collections.emptyList(),
+          Collections.emptyList(), Collections.emptyMap()));
       }
       sdCopy.setLocation(wrapper.getLocation());
       sdCopy.setParameters(wrapper.getParameters());

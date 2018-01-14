@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.RawLocalFileSystem;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.orc.CompressionKind;
@@ -67,10 +65,7 @@ import org.mockito.Mockito;
 import com.google.common.collect.Lists;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -389,7 +384,7 @@ public class TestOrcRawRecordMerger {
     Configuration conf = new Configuration();
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, "col1");
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, "string");
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_TABLE_SCAN, true);
     Reader reader = Mockito.mock(Reader.class, settings);
     RecordReader recordReader = Mockito.mock(RecordReader.class, settings);
 
@@ -607,7 +602,7 @@ public class TestOrcRawRecordMerger {
         OrcFile.readerOptions(conf));
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_TABLE_SCAN, true);
     OrcRawRecordMerger merger =
         new OrcRawRecordMerger(conf, true, baseReader, false, BUCKET,
             createMaximalTxnList(), new Reader.Options(),
@@ -686,7 +681,7 @@ public class TestOrcRawRecordMerger {
 
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
-    AcidUtils.setTransactionalTableScan(conf,true);
+    AcidUtils.setAcidTableScan(conf,true);
     conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
 
     //the first "split" is for base/
@@ -1154,7 +1149,7 @@ public class TestOrcRawRecordMerger {
     JobConf job = new JobConf();
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, BigRow.getColumnNamesProperty());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, BigRow.getColumnTypesProperty());
-    AcidUtils.setTransactionalTableScan(job,true);
+    AcidUtils.setAcidTableScan(job,true);
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     job.set("mapred.min.split.size", "1");
     job.set("mapred.max.split.size", "2");
@@ -1289,7 +1284,7 @@ public class TestOrcRawRecordMerger {
     job.set("mapred.input.dir", root.toString());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, BigRow.getColumnNamesProperty());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, BigRow.getColumnTypesProperty());
-    AcidUtils.setTransactionalTableScan(job,true);
+    AcidUtils.setAcidTableScan(job,true);
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     InputSplit[] splits = inf.getSplits(job, 5);
     //base has 10 rows, so 5 splits, 1 delta has 2 rows so 1 split, and 1 delta has 3 so 2 splits
@@ -1386,7 +1381,7 @@ public class TestOrcRawRecordMerger {
     job.set("bucket_count", "1");
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
-    AcidUtils.setTransactionalTableScan(job,true);
+    AcidUtils.setAcidTableScan(job,true);
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     InputSplit[] splits = inf.getSplits(job, 5);
     assertEquals(2, splits.length);
@@ -1460,7 +1455,7 @@ public class TestOrcRawRecordMerger {
     job.set("bucket_count", "2");
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
-    AcidUtils.setTransactionalTableScan(job,true);
+    AcidUtils.setAcidTableScan(job,true);
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
 
     // read the keys before the delta is flushed

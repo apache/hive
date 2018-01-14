@@ -113,6 +113,36 @@ public interface TxnStore extends Configurable {
     throws NoSuchTxnException, TxnAbortedException,  MetaException;
 
   /**
+   * Get the last transaction corresponding to given databases and tables.
+   * @return
+   * @throws MetaException
+   */
+  @RetrySemantics.Idempotent
+  public List<BasicTxnInfo> getLastCompletedTransactionForTables(
+      List<String> dbNames, List<String> tableNames, TxnsSnapshot txnsSnapshot)
+          throws MetaException;
+
+  /**
+   * Get the last transaction corresponding to given database and table.
+   * @return
+   * @throws MetaException
+   */
+  @RetrySemantics.Idempotent
+  public BasicTxnInfo getLastCompletedTransactionForTable(
+      String inputDbName, String inputTableName, TxnsSnapshot txnsSnapshot)
+          throws MetaException;
+
+  /**
+   * Get the first transaction corresponding to given database and table after incremental id.
+   * @return
+   * @throws MetaException
+   */
+  @RetrySemantics.Idempotent
+  public BasicTxnInfo getFirstCompletedTransactionForTableAfterCommit(
+      String inputDbName, String inputTableName, long id)
+          throws MetaException;
+
+  /**
    * Obtain a lock.
    * @param rqst information on the lock to obtain.  If the requester is part of a transaction
    *             the txn information must be included in the lock request.

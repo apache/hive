@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -34,9 +35,11 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,12 +140,13 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       if (!conformToAcid(newTable)) {
         // INSERT_ONLY tables don't have to conform to ACID requirement like ORC or bucketing
         if (transactionalPropertiesValue == null || !"insert_only".equalsIgnoreCase(transactionalPropertiesValue)) {
-          throw new MetaException("The table must be stored using an ACID compliant format (such as ORC)");
+          throw new MetaException("The table must be stored using an ACID compliant format (such as ORC): "
+          + Warehouse.getQualifiedName(newTable));
         }
       }
 
       if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
-        throw new MetaException(getTableName(newTable) +
+        throw new MetaException(Warehouse.getQualifiedName(newTable) +
             " cannot be declared transactional because it's an external table");
       }
       validateTableStructure(context.getHandler(), newTable);
@@ -160,7 +164,8 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     if (!hasValidTransactionalValue && !MetaStoreUtils.isInsertOnlyTableParam(oldTable.getParameters())) {
       // if here, there is attempt to set transactional to something other than 'true'
       // and NOT the same value it was before
-      throw new MetaException("TBLPROPERTIES with 'transactional'='true' cannot be unset");
+      throw new MetaException("TBLPROPERTIES with 'transactional'='true' cannot be unset: "
+          + Warehouse.getQualifiedName(newTable));
     }
 
     if (isTransactionalPropertiesPresent) {
@@ -182,8 +187,70 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
         }
       }
     }
+    checkSorted(newTable);
+  }
+  private void checkSorted(Table newTable) throws MetaException {
+    if(!TxnUtils.isAcidTable(newTable)) {
+      return;
+    }
+    StorageDescriptor sd = newTable.getSd();
+    if (sd.getSortCols() != null && sd.getSortCols().size() > 0) {
+      throw new MetaException("Table " + Warehouse.getQualifiedName(newTable)
+        + " cannot support full ACID functionality since it is sorted.");
+    }
   }
 
+  /**
+   * Want to make a a newly create table Acid (unless it explicitly has transactional=false param)
+   * if table can support it.  Also see SemanticAnalyzer.addDefaultProperties() which performs the
+   * same logic.  This code path is more general since it is activated even if you create a table
+   * via Thrift, WebHCat etc but some operations like CTAS create the table (metastore object) as
+   * the last step (i.e. after the data is written) but write itself is has to be aware of the type
+   * of table so this Listener is too late.
+   */
+  private void makeAcid(Table newTable) throws MetaException {
+    if(newTable.getParameters() != null &&
+        newTable.getParameters().containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)) {
+      LOG.info("Could not make " + Warehouse.getQualifiedName(newTable) + " acid: already has " +
+          hive_metastoreConstants.TABLE_IS_TRANSACTIONAL + "=" +
+          newTable.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL));
+      return;
+    }
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    boolean makeAcid =
+        //no point making an acid table if these other props are not set since it will just throw
+        //exceptions when someone tries to use the table.
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
+        "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager".equals(
+            MetastoreConf.getVar(conf, MetastoreConf.ConfVars.HIVE_TXN_MANAGER)
+        );
+
+    if(makeAcid) {
+      if(!conformToAcid(newTable)) {
+        LOG.info("Could not make " + Warehouse.getQualifiedName(newTable) + " acid: wrong IO format");
+        return;
+      }
+      if(!TableType.MANAGED_TABLE.toString().equalsIgnoreCase(newTable.getTableType())) {
+        //todo should this check be in conformToAcid()?
+        LOG.info("Could not make " + Warehouse.getQualifiedName(newTable) + " acid: it's " +
+            newTable.getTableType());
+        return;
+      }
+      if(newTable.getSd().getSortColsSize() > 0) {
+        LOG.info("Could not make " + Warehouse.getQualifiedName(newTable) + " acid: it's sorted");
+        return;
+      }
+      //check if orc and not sorted
+      Map<String, String> parameters = newTable.getParameters();
+      if (parameters == null || parameters.isEmpty()) {
+        parameters = new HashMap<>();
+      }
+      parameters.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+      newTable.setParameters(parameters);
+      LOG.info("Automatically chose to make " + Warehouse.getQualifiedName(newTable) + " acid.");
+    }
+  }
   /**
    * Normalize case and make sure:
    * 1. 'true' is the only value to be set for 'transactional' (if set at all)
@@ -193,6 +260,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     Table newTable = context.getTable();
     Map<String, String> parameters = newTable.getParameters();
     if (parameters == null || parameters.isEmpty()) {
+      makeAcid(newTable);
       return;
     }
     String transactional = null;
@@ -212,13 +280,15 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     }
 
     if (transactional == null) {
+      makeAcid(newTable);
       return;
     }
 
     if ("false".equalsIgnoreCase(transactional)) {
       // just drop transactional=false.  For backward compatibility in case someone has scripts
       // with transactional=false
-      LOG.info("'transactional'='false' is no longer a valid property and will be ignored");
+      LOG.info("'transactional'='false' is no longer a valid property and will be ignored: " +
+        Warehouse.getQualifiedName(newTable));
       return;
     }
 
@@ -226,12 +296,13 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       if (!conformToAcid(newTable)) {
         // INSERT_ONLY tables don't have to conform to ACID requirement like ORC or bucketing
         if (transactionalProperties == null || !"insert_only".equalsIgnoreCase(transactionalProperties)) {
-          throw new MetaException("The table must be stored using an ACID compliant format (such as ORC)");
+          throw new MetaException("The table must be stored using an ACID compliant format (such as ORC): "
+              + Warehouse.getQualifiedName(newTable));
         }
       }
 
       if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
-        throw new MetaException(newTable.getDbName() + "." + newTable.getTableName() +
+        throw new MetaException(Warehouse.getQualifiedName(newTable) +
             " cannot be declared transactional because it's an external table");
       }
 
@@ -241,11 +312,12 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
         normazlieTransactionalPropertyDefault(newTable);
       }
       initializeTransactionalProperties(newTable);
+      checkSorted(newTable);
       return;
     }
-
     // transactional is found, but the value is not in expected range
-    throw new MetaException("'transactional' property of TBLPROPERTIES may only have value 'true'");
+    throw new MetaException("'transactional' property of TBLPROPERTIES may only have value 'true': "
+        + Warehouse.getQualifiedName(newTable));
   }
 
   /**
@@ -262,11 +334,13 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
    * Check that InputFormatClass/OutputFormatClass should implement
    * AcidInputFormat/AcidOutputFormat
    */
-  private boolean conformToAcid(Table table) throws MetaException {
+  public static boolean conformToAcid(Table table) throws MetaException {
     StorageDescriptor sd = table.getSd();
     try {
-      Class inputFormatClass = Class.forName(sd.getInputFormat());
-      Class outputFormatClass = Class.forName(sd.getOutputFormat());
+      Class inputFormatClass = sd.getInputFormat() == null ? null :
+          Class.forName(sd.getInputFormat());
+      Class outputFormatClass = sd.getOutputFormat() == null ? null :
+          Class.forName(sd.getOutputFormat());
 
       if (inputFormatClass == null || outputFormatClass == null ||
           !Class.forName("org.apache.hadoop.hive.ql.io.AcidInputFormat").isAssignableFrom(inputFormatClass) ||
@@ -274,7 +348,9 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
         return false;
       }
     } catch (ClassNotFoundException e) {
-      throw new MetaException("Invalid input/output format for table");
+      LOG.warn("Could not verify InputFormat=" + sd.getInputFormat() + " or OutputFormat=" +
+          sd.getOutputFormat() + "  for " + Warehouse.getQualifiedName(table));
+      return false;
     }
 
     return true;
@@ -299,8 +375,8 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
           parameters.remove(key);
           String validationError = validateTransactionalProperties(tableTransactionalProperties);
           if (validationError != null) {
-            throw new MetaException("Invalid transactional properties specified for the "
-                + "table with the error " + validationError);
+            throw new MetaException("Invalid transactional properties specified for "
+                + Warehouse.getQualifiedName(table) + " with the error " + validationError);
           }
           break;
         }
@@ -366,18 +442,16 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
           );
         if (!validFile) {
           throw new IllegalStateException("Unexpected data file name format.  Cannot convert " +
-            getTableName(table) + " to transactional table.  File: " + fileStatus.getPath());
+            Warehouse.getQualifiedName(table) + " to transactional table.  File: "
+            + fileStatus.getPath());
         }
       }
     } catch (IOException|NoSuchObjectException e) {
-      String msg = "Unable to list files for " + getTableName(table);
+      String msg = "Unable to list files for " + Warehouse.getQualifiedName(table);
       LOG.error(msg, e);
       MetaException e1 = new MetaException(msg);
       e1.initCause(e);
       throw e1;
     }
-  }
-  private static String getTableName(Table table) {
-    return table.getDbName() + "." + table.getTableName();
   }
 }

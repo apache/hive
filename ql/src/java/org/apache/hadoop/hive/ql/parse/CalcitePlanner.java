@@ -51,7 +51,6 @@ import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeVisitor;
 import org.antlr.runtime.tree.TreeVisitorAction;
 import org.apache.calcite.adapter.druid.DruidQuery;
-import org.apache.calcite.adapter.druid.DruidRules;
 import org.apache.calcite.adapter.druid.DruidSchema;
 import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.calcite.adapter.jdbc.JdbcConvention;
@@ -60,6 +59,7 @@ import org.apache.calcite.adapter.jdbc.JdbcTable;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.config.CalciteConnectionProperty;
+import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
@@ -180,6 +180,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateJoinTransp
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatePullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveDruidRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExceptRewriteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExpandDistinctAggregatesRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterAggregateTransposeRule;
@@ -207,8 +208,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceExpressionsRu
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceExpressionsWithStatsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelDecorrelator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveSqCountCheck;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveGBYSemiJoinRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveSqCountCheck;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortJoinReduceRule;
@@ -345,6 +346,32 @@ public class CalcitePlanner extends SemanticAnalyzer {
     final RelNode resPlan = logicalPlan();
     LOG.info("Finished generating logical plan");
     return resPlan;
+  }
+
+  public static RelOptPlanner createPlanner(HiveConf conf) {
+    return createPlanner(conf, new HashSet<RelNode>(), new HashSet<RelNode>());
+  }
+
+  private static RelOptPlanner createPlanner(
+      HiveConf conf, Set<RelNode> corrScalarRexSQWithAgg, Set<RelNode> scalarAggNoGbyNoWin) {
+    final Double maxSplitSize = (double) HiveConf.getLongVar(
+            conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
+    final Double maxMemory = (double) HiveConf.getLongVar(
+            conf, HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
+    HiveAlgorithmsConf algorithmsConf = new HiveAlgorithmsConf(maxSplitSize, maxMemory);
+    HiveRulesRegistry registry = new HiveRulesRegistry();
+    Properties calciteConfigProperties = new Properties();
+    calciteConfigProperties.setProperty(
+            CalciteConnectionProperty.TIME_ZONE.camelName(),
+            conf.getLocalTimeZone().getId());
+    calciteConfigProperties.setProperty(
+            CalciteConnectionProperty.MATERIALIZATIONS_ENABLED.camelName(),
+            Boolean.FALSE.toString());
+    CalciteConnectionConfig calciteConfig = new CalciteConnectionConfigImpl(calciteConfigProperties);
+    boolean isCorrelatedColumns = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS);
+    HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
+               corrScalarRexSQWithAgg, scalarAggNoGbyNoWin, new HiveConfPlannerContext(isCorrelatedColumns));
+    return HiveVolcanoPlanner.createPlanner(confContext);
   }
 
   @Override
@@ -1372,24 +1399,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       /*
        * recreate cluster, so that it picks up the additional traitDef
        */
-      final Double maxSplitSize = (double) HiveConf.getLongVar(
-              conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
-      final Double maxMemory = (double) HiveConf.getLongVar(
-              conf, HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
-      HiveAlgorithmsConf algorithmsConf = new HiveAlgorithmsConf(maxSplitSize, maxMemory);
-      HiveRulesRegistry registry = new HiveRulesRegistry();
-      Properties calciteConfigProperties = new Properties();
-      calciteConfigProperties.setProperty(
-              CalciteConnectionProperty.TIME_ZONE.camelName(),
-              conf.getLocalTimeZone().getId());
-      calciteConfigProperties.setProperty(
-              CalciteConnectionProperty.MATERIALIZATIONS_ENABLED.camelName(),
-              Boolean.FALSE.toString());
-      CalciteConnectionConfig calciteConfig = new CalciteConnectionConfigImpl(calciteConfigProperties);
-      boolean isCorrelatedColumns = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS);
-      HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
-                 corrScalarRexSQWithAgg, scalarAggNoGbyNoWin, new HiveConfPlannerContext(isCorrelatedColumns));
-      RelOptPlanner planner = HiveVolcanoPlanner.createPlanner(confContext);
+      RelOptPlanner planner = createPlanner(conf, corrScalarRexSQWithAgg, scalarAggNoGbyNoWin);
       final RexBuilder rexBuilder = cluster.getRexBuilder();
       final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
 
@@ -1500,7 +1510,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // We disable it for CTAS and MV creation queries (trying to avoid any problem
       // due to data freshness)
       if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING) &&
-              !getQB().isMaterializedView() && !getQB().isCTAS()) {
+              !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS()) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
         // Use Calcite cost model for view rewriting
         RelMetadataProvider calciteMdProvider = DefaultRelMetadataProvider.INSTANCE;
@@ -1509,7 +1519,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // Add views to planner
         List<RelOptMaterialization> materializations = new ArrayList<>();
         try {
-          materializations = Hive.get().getRewritingMaterializedViews();
+          materializations = Hive.get().getValidMaterializedViews();
           // We need to use the current cluster for the scan operator on views,
           // otherwise the planner will throw an Exception (different planners)
           materializations = Lists.transform(materializations,
@@ -1521,7 +1531,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   if (viewScan instanceof Project) {
                     // There is a Project on top (due to nullability)
                     final Project pq = (Project) viewScan;
-                    newViewScan = HiveProject.create(optCluster, copyNodeScan(viewScan),
+                    newViewScan = HiveProject.create(optCluster, copyNodeScan(pq.getInput()),
                         pq.getChildExps(), pq.getRowType(), Collections.<RelCollation> emptyList());
                   } else {
                     newViewScan = copyNodeScan(viewScan);
@@ -1534,7 +1544,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   final RelNode newScan;
                   if (scan instanceof DruidQuery) {
                     final DruidQuery dq = (DruidQuery) scan;
-                    newScan = DruidQuery.create(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
+                    // Ideally we should use HiveRelNode convention. However, since Volcano planner
+                    // throws in that case because DruidQuery does not implement the interface,
+                    // we set it as Bindable. Currently, we do not use convention in Hive, hence that
+                    // should be fine.
+                    // TODO: If we want to make use of convention (e.g., while directly generating operator
+                    // tree instead of AST), this should be changed.
+                    newScan = DruidQuery.create(optCluster, optCluster.traitSetOf(BindableConvention.INSTANCE),
                         scan.getTable(), dq.getDruidTable(),
                         ImmutableList.<RelNode>of(dq.getTableScan()));
                   } else {
@@ -1635,18 +1651,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
               HepMatchOrder.BOTTOM_UP,
-              DruidRules.FILTER,
-              DruidRules.PROJECT_FILTER_TRANSPOSE,
-              DruidRules.AGGREGATE_FILTER_TRANSPOSE,
-              DruidRules.AGGREGATE_PROJECT,
-              DruidRules.PROJECT,
-              DruidRules.AGGREGATE,
-              DruidRules.POST_AGGREGATION_PROJECT,
-              DruidRules.FILTER_AGGREGATE_TRANSPOSE,
-              DruidRules.FILTER_PROJECT_TRANSPOSE,
-              DruidRules.SORT_PROJECT_TRANSPOSE,
-              DruidRules.SORT,
-              DruidRules.PROJECT_SORT_TRANSPOSE
+              HiveDruidRules.FILTER,
+              HiveDruidRules.PROJECT_FILTER_TRANSPOSE,
+              HiveDruidRules.AGGREGATE_FILTER_TRANSPOSE,
+              HiveDruidRules.AGGREGATE_PROJECT,
+              HiveDruidRules.PROJECT,
+              HiveDruidRules.AGGREGATE,
+              HiveDruidRules.POST_AGGREGATION_PROJECT,
+              HiveDruidRules.FILTER_AGGREGATE_TRANSPOSE,
+              HiveDruidRules.FILTER_PROJECT_TRANSPOSE,
+              HiveDruidRules.SORT_PROJECT_TRANSPOSE,
+              HiveDruidRules.SORT,
+              HiveDruidRules.PROJECT_SORT_TRANSPOSE
       );
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Druid transformation rules");
 
@@ -2474,7 +2490,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
                   dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
                   intervals, null, null);
-            tableRel = DruidQuery.create(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
+            tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
                 optTable, druidTable, ImmutableList.<RelNode> of(hts));
           } else if (tableType == TableType.JDBC) {
             LOG.debug("JDBC is running");

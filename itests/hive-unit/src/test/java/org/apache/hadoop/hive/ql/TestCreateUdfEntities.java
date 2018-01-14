@@ -28,15 +28,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class TestCreateUdfEntities {
-  private Driver driver;
+  private IDriver driver;
   private String funcName = "print_test";
 
   @Before
   public void setUp() throws Exception {
 
-    HiveConf conf = new HiveConf(Driver.class);
+    HiveConf conf = new HiveConf(IDriver.class);
     SessionState.start(conf);
-    driver = new Driver(conf);
+    driver = DriverFactory.newDriver(conf);
   }
 
   @After

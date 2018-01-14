@@ -14,7 +14,7 @@ CREATE DATABASE hbaseDB;
 CREATE TABLE hbaseDB.hbase_table_0(key int, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
-TBLPROPERTIES ("hbase.table.name" = "hbase_table_0");
+TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name" = "hbase_table_0");
 
 dfs -ls target/tmp/hbase/data/default/hbase_table_0;
 

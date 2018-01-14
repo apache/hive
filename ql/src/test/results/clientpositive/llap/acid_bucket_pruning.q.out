@@ -17,11 +17,13 @@ POSTHOOK: Output: default@acidtbldefault
 POSTHOOK: Lineage: acidtbldefault.a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: INSERT INTO TABLE acidTblDefault VALUES (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acidtbldefault
 POSTHOOK: query: INSERT INTO TABLE acidTblDefault VALUES (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acidtbldefault
-POSTHOOK: Lineage: acidtbldefault.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acidtbldefault.a SCRIPT []
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT * FROM acidTblDefault WHERE a = 1
 PREHOOK: type: QUERY

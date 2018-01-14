@@ -64,7 +64,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     VectorizedOrcRecordReader(Reader file, Configuration conf,
         FileSplit fileSplit) throws IOException {
 
-      boolean isAcidRead = HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+      boolean isAcidRead = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN);
       if (isAcidRead) {
         OrcInputFormat.raiseAcidTablesMustBeReadWithAcidReaderException(conf);
       }

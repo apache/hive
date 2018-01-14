@@ -16,12 +16,14 @@ Encryption key created: 'key_128'
 Encryption zone created: '/build/ql/test/data/warehouse/default/encrypted_table' using key: 'key_128'
 PREHOOK: query: INSERT INTO encrypted_table values(1,'foo'),(2,'bar')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@encrypted_table
 POSTHOOK: query: INSERT INTO encrypted_table values(1,'foo'),(2,'bar')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@encrypted_table
-POSTHOOK: Lineage: encrypted_table.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: encrypted_table.value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: encrypted_table.key SCRIPT []
+POSTHOOK: Lineage: encrypted_table.value SCRIPT []
 PREHOOK: query: select * from encrypted_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@encrypted_table
@@ -32,30 +34,3 @@ POSTHOOK: Input: default@encrypted_table
 #### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
 1	foo
 2	bar
-PREHOOK: query: describe formatted values__tmp__table__1
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@values__tmp__table__1
-POSTHOOK: query: describe formatted values__tmp__table__1
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@values__tmp__table__1
-# col_name            	data_type           	comment             
-tmp_values_col1     	string              	                    
-tmp_values_col2     	string              	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-#### A masked pattern was here ####
-Retention:          	0                   	 
-#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
-Table Type:         	MANAGED_TABLE       	 
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
-InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   

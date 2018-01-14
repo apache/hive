@@ -39,7 +39,8 @@ CREATE TABLE "WM_TRIGGER" (
     "RP_ID" bigint NOT NULL,
     "NAME" character varying(128) NOT NULL,
     "TRIGGER_EXPRESSION" character varying(1024) DEFAULT NULL::character varying,
-    "ACTION_EXPRESSION" character varying(1024) DEFAULT NULL::character varying
+    "ACTION_EXPRESSION" character varying(1024) DEFAULT NULL::character varying,
+    "IS_IN_UNMANAGED" boolean NOT NULL DEFAULT false
 );
 
 ALTER TABLE ONLY "WM_TRIGGER"
@@ -70,7 +71,7 @@ ALTER TABLE ONLY "WM_POOL_TO_TRIGGER"
 CREATE TABLE "WM_MAPPING" (
     "MAPPING_ID" bigint NOT NULL,
     "RP_ID" bigint NOT NULL,
-    "ENTITY_TYPE" character varying(10) NOT NULL,
+    "ENTITY_TYPE" character varying(128) NOT NULL,
     "ENTITY_NAME" character varying(128) NOT NULL,
     "POOL_ID" bigint,
     "ORDERING" integer

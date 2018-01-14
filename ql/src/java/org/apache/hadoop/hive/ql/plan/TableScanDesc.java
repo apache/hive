@@ -74,7 +74,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   private String tmpStatsDir;
 
   private ExprNodeGenericFuncDesc filterExpr;
-  private transient Serializable filterObject;
+  private Serializable filterObject;
   private String serializedFilterExpr;
   private String serializedFilterObject;
 
@@ -135,7 +135,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     this.alias = alias;
     this.virtualCols = vcs;
     this.tableMetadata = tblMetadata;
-    isAcidTable = AcidUtils.isFullAcidTable(this.tableMetadata);
+    isAcidTable = AcidUtils.isAcidTable(this.tableMetadata);
     if (isAcidTable) {
       acidOperationalProperties = AcidUtils.getAcidOperationalProperties(this.tableMetadata);
     }

@@ -240,6 +240,11 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
       return cliService.getCrossReference(sessionHandle, primaryCatalog, primarySchema,
         primaryTable, foreignCatalog, foreignSchema, foreignTable);
     }
+
+    @Override
+    public void setApplicationName(SessionHandle sh, String value) throws HiveSQLException {
+      cliService.setApplicationName(sh, value);
+    }
   }
 
   protected RetryingThriftCLIServiceClient(HiveConf conf) {

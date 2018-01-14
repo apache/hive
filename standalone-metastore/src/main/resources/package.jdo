@@ -185,6 +185,18 @@
       <field name="tableType">
         <column name="TBL_TYPE" length="128" jdbc-type="VARCHAR"/>
       </field>
+      <field name="creationMetadata" table="MV_CREATION_METADATA">
+        <map key-type="java.lang.String" value-type="java.lang.String"/>
+        <join>
+          <column name="TBL_ID"/>
+        </join>
+        <key>
+           <column name="TBL_NAME" length="180" jdbc-type="VARCHAR"/>
+        </key>
+        <value>
+           <column name="LAST_TRANSACTION_INFO" jdbc-type="LONGVARCHAR"/>
+        </value>
+      </field>
     </class>
 
     <class name="MConstraint" identity-type="application" table="KEY_CONSTRAINTS" detachable="true" objectid-class="MConstraint$PK">
@@ -1163,6 +1175,9 @@
       <field name="actionExpression">
         <column name="ACTION_EXPRESSION" jdbc-type="string" allows-null="true"/>
       </field>
+      <field name="isInUnmanaged">
+        <column name="IS_IN_UNMANAGED" allows-null="false"/>
+      </field>
       <field name="pools" mapped-by="triggers">
         <collection element-type="MWMPool" />
       </field>
@@ -1180,7 +1195,7 @@
         <column name="RP_ID" jdbc-type="integer" allows-null="false"/>
       </field>
       <field name="entityType">
-        <column name="ENTITY_TYPE" jdbc-type="string" length="10" />
+        <column name="ENTITY_TYPE" jdbc-type="string" length="128" />
       </field>
       <field name="entityName">
         <column name="ENTITY_NAME" jdbc-type="string" length="128" />

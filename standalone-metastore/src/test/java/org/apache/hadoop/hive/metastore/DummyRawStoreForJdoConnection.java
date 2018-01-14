@@ -248,6 +248,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public List<String> getMaterializedViewsForRewriting(String dbName)
+      throws MetaException, NoSuchObjectException {
+    return Collections.emptyList();
+  }
+
+  @Override
   public List<TableMeta> getTableMeta(String dbNames, String tableNames, List<String> tableTypes)
       throws MetaException {
     return Collections.emptyList();
@@ -956,11 +962,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public void createResourcePlan(
-      WMResourcePlan resourcePlan, int defaultPoolSize) throws MetaException {
+      WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize) throws MetaException {
   }
 
   @Override
-  public WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
+  public WMFullResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
     return null;
   }
 
@@ -971,7 +977,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public WMFullResourcePlan alterResourcePlan(
-      String name, WMResourcePlan resourcePlan, boolean canActivateDisabled)
+      String name, WMResourcePlan resourcePlan, boolean canActivateDisabled, boolean canDeactivate,
+      boolean isReplace)
       throws NoSuchObjectException, InvalidOperationException, MetaException {
     return null;
   }

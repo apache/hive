@@ -53,7 +53,7 @@ import java.util.regex.Pattern;
 /**
  * A set of definitions of config values used by the Metastore.  One of the key aims of this
  * class is to provide backwards compatibility with existing Hive configuration keys while
- * allowing the metastore to have its own, Hive independant keys.   For this reason access to the
+ * allowing the metastore to have its own, Hive independent keys.   For this reason access to the
  * underlying Configuration object should always be done via the static methods provided here
  * rather than directly via {@link Configuration#get(String)} and
  * {@link Configuration#set(String, String)}.  All the methods of this class will handle checking
@@ -373,6 +373,9 @@ public class MetastoreConf {
     CONNECTION_USER_NAME("javax.jdo.option.ConnectionUserName",
         "javax.jdo.option.ConnectionUserName", "APP",
         "Username to use against metastore database"),
+    CREATE_TABLES_AS_ACID("metastore.create.as.acid", "hive.create.as.acid", false,
+        "Whether the eligible tables should be created as full ACID by default. Does \n" +
+            "not apply to external tables, the ones using storage handlers, etc."),
     COUNT_OPEN_TXNS_INTERVAL("metastore.count.open.txns.interval", "hive.count.open.txns.interval",
         1, TimeUnit.SECONDS, "Time in seconds between checks to count open transactions."),
     DATANUCLEUS_AUTOSTART("datanucleus.autoStartMechanismMode",

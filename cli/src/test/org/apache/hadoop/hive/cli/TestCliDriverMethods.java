@@ -54,7 +54,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.util.Shell;
 
@@ -166,7 +166,7 @@ public class TestCliDriverMethods extends TestCase {
         .thenReturn(true);
     cliDriver.setConf(conf);
 
-    Driver proc = mock(Driver.class);
+    IDriver proc = mock(IDriver.class);
 
     CommandProcessorResponse cpr = mock(CommandProcessorResponse.class);
     when(cpr.getResponseCode()).thenReturn(0);

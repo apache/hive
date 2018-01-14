@@ -73,7 +73,7 @@ public class HBaseQTestUtil extends QTestUtil {
       "CREATE TABLE " + HBASE_SRC_NAME + "(key INT, value STRING)"
         + "  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'"
         + "  WITH SERDEPROPERTIES ('hbase.columns.mapping' = ':key,cf:val')"
-        + "  TBLPROPERTIES ('hbase.table.name' = '" + HBASE_SRC_NAME + "')"
+        + "  TBLPROPERTIES ('hbase.mapreduce.hfileoutputformat.table.name' = '" + HBASE_SRC_NAME + "')"
     );
     runCmd("INSERT OVERWRITE TABLE " + HBASE_SRC_NAME + " SELECT * FROM src");
 

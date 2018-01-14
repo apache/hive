@@ -27,18 +27,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
@@ -48,7 +45,8 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatUtil;
@@ -63,7 +61,7 @@ import org.junit.Test;
 public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
   private static HiveConf   hcatConf;
-  private static Driver driver;
+  private static IDriver driver;
   private static String mypath;
 
   private final byte[] FAMILY     = Bytes.toBytes("testFamily");
@@ -93,7 +91,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
       }
     }
 
-    driver = new Driver(hcatConf);
+    driver = DriverFactory.newDriver(hcatConf);
     SessionState.start(new CliSessionState(hcatConf));
 
   }
@@ -113,7 +111,6 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
   private List<Put> generatePuts(String tableName) throws IOException {
 
-    List<String> columnFamilies = Arrays.asList("testFamily");
     List<Put> myPuts;
     myPuts = new ArrayList<Put>();
     for (int i = 1; i <=10; i++) {
@@ -151,7 +148,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
     String tableName = newTableName("MyTable");
     String databaseName = newTableName("MyDatabase");
-    //Table name will be lower case unless specified by hbase.table.name property
+    //Table name will be lower case unless specified by hbase.mapreduce.hfileoutputformat.table.name property
     String hbaseTableName = "testTable";
     String db_dir = HCatUtil.makePathASafeFileName(getTestDir() + "/hbasedb");
 
@@ -164,17 +161,16 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
         + "(key float, testqualifier1 string, testqualifier2 int) STORED BY " +
         "'org.apache.hadoop.hive.hbase.HBaseStorageHandler'"
         + " WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,testFamily:testQualifier1,testFamily:testQualifier2')"
-        +  " TBLPROPERTIES ('hbase.table.name'='"+hbaseTableName+"')";
+        +  " TBLPROPERTIES ('hbase.mapreduce.hfileoutputformat.table.name'='"+hbaseTableName+"')";
 
     CommandProcessorResponse responseOne = driver.run(deleteQuery);
     assertEquals(0, responseOne.getResponseCode());
 
-
     CommandProcessorResponse responseTwo = driver.run(dbQuery);
     assertEquals(0, responseTwo.getResponseCode());
 
-
     CommandProcessorResponse responseThree = driver.run(tableQuery);
+    assertEquals(0, responseThree.getResponseCode());
 
     Connection connection = null;
     Admin hAdmin = null;
@@ -220,7 +216,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
     String tableName = newTableName("MyTable");
     String databaseName = newTableName("MyDatabase");
-    //Table name will be lower case unless specified by hbase.table.name property
+    //Table name will be lower case unless specified by hbase.mapreduce.hfileoutputformat.table.name property
     String hbaseTableName = (databaseName + "." + tableName).toLowerCase();
     String db_dir = HCatUtil.makePathASafeFileName(getTestDir() + "/hbasedb");
 
@@ -244,6 +240,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
 
     CommandProcessorResponse responseThree = driver.run(tableQuery);
+    assertEquals(0, responseThree.getResponseCode());
 
     Connection connection = null;
     Admin hAdmin = null;
@@ -304,7 +301,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
     String tableName = newTableName("MyTable");
     String databaseName = newTableName("MyDatabase");
-    //Table name will be lower case unless specified by hbase.table.name property
+    //Table name will be lower case unless specified by hbase.mapreduce.hfileoutputformat.table.name property
     String hbaseTableName = (databaseName + "." + tableName).toLowerCase();
     String db_dir = HCatUtil.makePathASafeFileName(getTestDir() + "/hbasedb");
     String POPTXT_FILE_NAME = db_dir+"testfile.txt";
@@ -324,16 +321,14 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
     String selectQuery = "SELECT * from "+databaseName.toLowerCase()+"."+tableName.toLowerCase();
 
-
     CommandProcessorResponse responseOne = driver.run(deleteQuery);
     assertEquals(0, responseOne.getResponseCode());
-
 
     CommandProcessorResponse responseTwo = driver.run(dbQuery);
     assertEquals(0, responseTwo.getResponseCode());
 
-
     CommandProcessorResponse responseThree = driver.run(tableQuery);
+    assertEquals(0, responseThree.getResponseCode());
 
     Connection connection = null;
     Admin hAdmin = null;
@@ -346,7 +341,6 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
       doesTableExist = hAdmin.tableExists(TableName.valueOf(hbaseTableName));
 
       assertTrue(doesTableExist);
-
 
       createTestDataFile(POPTXT_FILE_NAME);
 

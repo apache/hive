@@ -10,11 +10,11 @@ PREHOOK: Input: database:db1
 POSTHOOK: query: use db1
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:db1
-PREHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int)
+PREHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
 PREHOOK: Output: db1@cmv_basetable
-POSTHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int)
+POSTHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@cmv_basetable
@@ -25,6 +25,7 @@ PREHOOK: query: insert into cmv_basetable values
  (3, 'calvin', 978.76, 3),
  (3, 'charlie', 9.8, 1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: db1@cmv_basetable
 POSTHOOK: query: insert into cmv_basetable values
  (1, 'alfred', 10.30, 2),
@@ -33,11 +34,22 @@ POSTHOOK: query: insert into cmv_basetable values
  (3, 'calvin', 978.76, 3),
  (3, 'charlie', 9.8, 1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: db1@cmv_basetable
-POSTHOOK: Lineage: cmv_basetable.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: cmv_basetable.a SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.d SCRIPT []
+PREHOOK: query: analyze table cmv_basetable compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@cmv_basetable
+PREHOOK: Output: db1@cmv_basetable
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table cmv_basetable compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@cmv_basetable
+POSTHOOK: Output: db1@cmv_basetable
+#### A masked pattern was here ####
 PREHOOK: query: create database db2
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:db2

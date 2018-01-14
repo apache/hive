@@ -14,12 +14,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_acid
 PREHOOK: query: insert into table test_acid values (1, '2014-09-14 12:34:30')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_acid
 POSTHOOK: query: insert into table test_acid values (1, '2014-09-14 12:34:30')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_acid
-POSTHOOK: Lineage: test_acid.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: test_acid.ts EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: test_acid.i SCRIPT []
+POSTHOOK: Lineage: test_acid.ts SCRIPT []
 PREHOOK: query: delete from test_acid where ts = '2014-15-16 17:18:19.20'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_acid

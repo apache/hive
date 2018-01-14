@@ -26,7 +26,7 @@ describe extended cmv_mat_view4;
 
 create table cmv_basetable2 (d int, e varchar(256), f decimal(10,2));
 
-insert into cmv_basetable2 values (4, 'alfred', 100.30),(4, 'bob', 6133,14),(5, 'bonnie', 172.2),(6, 'calvin', 8.76),(17, 'charlie', 13144339.8);
+insert into cmv_basetable2 values (4, 'alfred', 100.30),(4, 'bob', 6133.14),(5, 'bonnie', 172.2),(6, 'calvin', 8.76),(17, 'charlie', 13144339.8);
 
 create materialized view cmv_mat_view5 tblproperties ('key'='value') as select a, b, d, c, f from cmv_basetable t1 join cmv_basetable2 t2 on (t1.b = t2.e);
 

@@ -28,7 +28,7 @@ public abstract class ElapsedTimeLoggingWrapper<T> {
   public abstract T invokeInternal() throws Exception;
 
   public T invoke(String message, Logger LOG, boolean toStdErr) throws Exception {
-    Stopwatch sw = new Stopwatch().start();
+    Stopwatch sw = Stopwatch.createStarted();
     try {
       T retVal = invokeInternal();
       return retVal;

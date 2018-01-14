@@ -19,13 +19,11 @@
 package org.apache.hive.hcatalog.listener;
 
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.FileMetadataHandler;
@@ -264,6 +262,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public List<String> getTables(String dbName, String pattern, TableType tableType) throws MetaException {
     return objectStore.getTables(dbName, pattern, tableType);
+  }
+
+  @Override
+  public List<String> getMaterializedViewsForRewriting(String dbName)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getMaterializedViewsForRewriting(dbName);
   }
 
   @Override
@@ -983,13 +987,13 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public void createResourcePlan(WMResourcePlan resourcePlan, int defaultPoolSize)
-      throws AlreadyExistsException, InvalidObjectException, MetaException {
-    objectStore.createResourcePlan(resourcePlan, defaultPoolSize);
+  public void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
+      throws AlreadyExistsException, MetaException, InvalidObjectException, NoSuchObjectException {
+    objectStore.createResourcePlan(resourcePlan, copyFrom, defaultPoolSize);
   }
 
   @Override
-  public WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
+  public WMFullResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
     return objectStore.getResourcePlan(name);
   }
 
@@ -997,12 +1001,11 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public List<WMResourcePlan> getAllResourcePlans() throws MetaException {
     return objectStore.getAllResourcePlans();
   }
-
+ 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan, boolean canActivateDisabled)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException {
-    return objectStore.alterResourcePlan(name, resourcePlan, canActivateDisabled);
+  public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan, boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
+    return objectStore.alterResourcePlan(name, resourcePlan, canActivateDisabled, canDeactivate, isReplace);
   }
 
   @Override

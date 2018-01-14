@@ -216,7 +216,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       LOG.warn("LLAP encode is disabled; cannot use for " + sourceInputFormat.getClass());
       return null;
     }
-    return new LlapInputFormat(sourceInputFormat, sourceSerDe, cvp, executor);
+    return new LlapInputFormat(sourceInputFormat, sourceSerDe, cvp, executor, daemonConf);
   }
 
   @Override

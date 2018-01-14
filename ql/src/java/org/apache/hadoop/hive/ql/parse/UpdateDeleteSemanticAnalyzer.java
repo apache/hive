@@ -175,7 +175,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
     if(!foundColumnInTargetTable) {
       throw new SemanticException(ErrorMsg.INVALID_TARGET_COLUMN_IN_SET_CLAUSE, colName.getText(),
-        getDotName(new String[] {targetTable.getDbName(), targetTable.getTableName()}));
+        targetTable.getFullyQualifiedName());
     }
   }
   private ASTNode findLHSofAssignment(ASTNode assignment) {
@@ -318,7 +318,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
   private void validateTargetTable(Table mTable) throws SemanticException {
     if (mTable.getTableType() == TableType.VIRTUAL_VIEW ||
       mTable.getTableType() == TableType.MATERIALIZED_VIEW) {
-        LOG.error("Table " + getDotName(new String[] {mTable.getDbName(), mTable.getTableName()}) + " is a view or materialized view");
+        LOG.error("Table " + mTable.getFullyQualifiedName() + " is a view or materialized view");
         throw new SemanticException(ErrorMsg.UPDATE_DELETE_VIEW.getMsg());
     }
   }
@@ -866,7 +866,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, target);
 
       rewrittenQueryStr.append(" HAVING count(*) > 1");
-    //say table T has partiton p, we are generating
+    //say table T has partition p, we are generating
     //select cardinality_violation(ROW_ID, p) WHERE ... GROUP BY ROW__ID, p
     //the Group By args are passed to cardinality_violation to add the violating value to the error msg
     try {

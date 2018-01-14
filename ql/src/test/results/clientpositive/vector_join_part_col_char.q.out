@@ -16,13 +16,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@studenttab
 PREHOOK: query: insert into table studenttab values ('calvin garcia',56,2.50), ('oscar miller',66,3.00), ('(yuri xylophone',30,2.74),('alice underhill',46,3.50)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@studenttab
 POSTHOOK: query: insert into table studenttab values ('calvin garcia',56,2.50), ('oscar miller',66,3.00), ('(yuri xylophone',30,2.74),('alice underhill',46,3.50)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@studenttab
-POSTHOOK: Lineage: studenttab.age EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: studenttab.gpa EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: studenttab.name SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: studenttab.age SCRIPT []
+POSTHOOK: Lineage: studenttab.gpa SCRIPT []
+POSTHOOK: Lineage: studenttab.name SCRIPT []
 PREHOOK: query: create table char_tbl1(name string, age int) partitioned  by(gpa char(50)) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

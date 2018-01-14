@@ -8,36 +8,44 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part1
 PREHOOK: query: insert into table part1 partition (p='1', q='1') values ('1','1'), ('2','2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part1@p=1/q=1
 POSTHOOK: query: insert into table part1 partition (p='1', q='1') values ('1','1'), ('2','2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part1@p=1/q=1
-POSTHOOK: Lineage: part1 PARTITION(p=1,q=1).key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: part1 PARTITION(p=1,q=1).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: part1 PARTITION(p=1,q=1).key SCRIPT []
+POSTHOOK: Lineage: part1 PARTITION(p=1,q=1).value SCRIPT []
 PREHOOK: query: insert into table part1 partition (p='1', q='2') values ('3','3'), ('4','4')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part1@p=1/q=2
 POSTHOOK: query: insert into table part1 partition (p='1', q='2') values ('3','3'), ('4','4')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part1@p=1/q=2
-POSTHOOK: Lineage: part1 PARTITION(p=1,q=2).key SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: part1 PARTITION(p=1,q=2).value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: part1 PARTITION(p=1,q=2).key SCRIPT []
+POSTHOOK: Lineage: part1 PARTITION(p=1,q=2).value SCRIPT []
 PREHOOK: query: insert into table part1 partition (p='2', q='1') values ('5','5'), ('6','6')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part1@p=2/q=1
 POSTHOOK: query: insert into table part1 partition (p='2', q='1') values ('5','5'), ('6','6')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part1@p=2/q=1
-POSTHOOK: Lineage: part1 PARTITION(p=2,q=1).key SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: part1 PARTITION(p=2,q=1).value SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: part1 PARTITION(p=2,q=1).key SCRIPT []
+POSTHOOK: Lineage: part1 PARTITION(p=2,q=1).value SCRIPT []
 PREHOOK: query: insert into table part1 partition (p='2', q='2') values ('7','7'), ('8','8')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part1@p=2/q=2
 POSTHOOK: query: insert into table part1 partition (p='2', q='2') values ('7','7'), ('8','8')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part1@p=2/q=2
-POSTHOOK: Lineage: part1 PARTITION(p=2,q=2).key SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: part1 PARTITION(p=2,q=2).value SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: part1 PARTITION(p=2,q=2).key SCRIPT []
+POSTHOOK: Lineage: part1 PARTITION(p=2,q=2).value SCRIPT []
 PREHOOK: query: create table part2(key string, value string) partitioned by (p string, q string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -48,36 +56,44 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part2
 PREHOOK: query: insert into table part2 partition (p='3', q='3') values ('a','a'), ('b','b')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part2@p=3/q=3
 POSTHOOK: query: insert into table part2 partition (p='3', q='3') values ('a','a'), ('b','b')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part2@p=3/q=3
-POSTHOOK: Lineage: part2 PARTITION(p=3,q=3).key SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: part2 PARTITION(p=3,q=3).value SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: part2 PARTITION(p=3,q=3).key SCRIPT []
+POSTHOOK: Lineage: part2 PARTITION(p=3,q=3).value SCRIPT []
 PREHOOK: query: insert into table part2 partition (p='3', q='4') values ('c','c'), ('d','d')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part2@p=3/q=4
 POSTHOOK: query: insert into table part2 partition (p='3', q='4') values ('c','c'), ('d','d')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part2@p=3/q=4
-POSTHOOK: Lineage: part2 PARTITION(p=3,q=4).key SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: part2 PARTITION(p=3,q=4).value SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: part2 PARTITION(p=3,q=4).key SCRIPT []
+POSTHOOK: Lineage: part2 PARTITION(p=3,q=4).value SCRIPT []
 PREHOOK: query: insert into table part2 partition (p='4', q='3') values ('e','e'), ('f','f')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part2@p=4/q=3
 POSTHOOK: query: insert into table part2 partition (p='4', q='3') values ('e','e'), ('f','f')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part2@p=4/q=3
-POSTHOOK: Lineage: part2 PARTITION(p=4,q=3).key SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: part2 PARTITION(p=4,q=3).value SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: part2 PARTITION(p=4,q=3).key SCRIPT []
+POSTHOOK: Lineage: part2 PARTITION(p=4,q=3).value SCRIPT []
 PREHOOK: query: insert into table part2 partition (p='4', q='4') values ('g','g'), ('h','h')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part2@p=4/q=4
 POSTHOOK: query: insert into table part2 partition (p='4', q='4') values ('g','g'), ('h','h')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part2@p=4/q=4
-POSTHOOK: Lineage: part2 PARTITION(p=4,q=4).key SIMPLE [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: part2 PARTITION(p=4,q=4).value SIMPLE [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: part2 PARTITION(p=4,q=4).key SCRIPT []
+POSTHOOK: Lineage: part2 PARTITION(p=4,q=4).value SCRIPT []
 PREHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
@@ -1883,11 +1899,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo
 PREHOOK: query: insert into table foo values ('1'),('2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@foo
 POSTHOOK: query: insert into table foo values ('1'),('2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@foo
-POSTHOOK: Lineage: foo.key SIMPLE [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: foo.key SCRIPT []
 PREHOOK: query: explain
 select p from part2 where p in (select max(key) from foo)
 union all

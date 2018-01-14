@@ -162,7 +162,8 @@ public class TezTask extends Task<TezWork> {
       } else {
         groups = UserGroupInformation.createRemoteUser(ss.getUserName()).getGroups();
       }
-      MappingInput mi = new MappingInput(userName, groups, ss.getHiveVariables().get("wmpool"));
+      MappingInput mi = new MappingInput(userName, groups,
+          ss.getHiveVariables().get("wmpool"), ss.getHiveVariables().get("wmapp"));
 
       WmContext wmContext = ctx.getWmContext();
       // jobConf will hold all the configuration for hadoop, tez, and hive
@@ -175,8 +176,10 @@ public class TezTask extends Task<TezWork> {
       CallerContext callerContext = CallerContext.create(
           "HIVE", queryPlan.getQueryId(), "HIVE_QUERY_ID", queryPlan.getQueryStr());
 
+      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
       session = sessionRef.value = WorkloadManagerFederation.getSession(
           sessionRef.value, conf, mi, getWork().getLlapMode(), wmContext);
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
 
       try {
         ss.setTezSession(session);
@@ -513,7 +516,6 @@ public class TezTask extends Task<TezWork> {
   }
 
   DAGClient submit(JobConf conf, DAG dag, Ref<TezSessionState> sessionStateRef) throws Exception {
-
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
     DAGClient dagClient = null;
     TezSessionState sessionState = sessionStateRef.value;
@@ -523,6 +525,7 @@ public class TezTask extends Task<TezWork> {
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (SessionNotRunning nr) {
         console.printInfo("Tez session was closed. Reopening...");
+        sessionStateRef.value = null;
         sessionStateRef.value = sessionState = getNewTezSessionOnError(sessionState);
         console.printInfo("Session re-established.");
         dagClient = sessionState.getSession().submitDAG(dag);
@@ -532,12 +535,13 @@ public class TezTask extends Task<TezWork> {
       try {
         console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
             + Arrays.toString(e.getStackTrace()) + " retrying...");
+        sessionStateRef.value = null;
         sessionStateRef.value = sessionState = getNewTezSessionOnError(sessionState);
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (Exception retryException) {
         // we failed to submit after retrying. Destroy session and bail.
-        sessionState.destroy();
         sessionStateRef.value = null;
+        sessionState.destroy();
         throw retryException;
       }
     }

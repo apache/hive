@@ -43,18 +43,20 @@ POSTHOOK: Output: default@cd
 POSTHOOK: Output: default@cd@cd_education_status=Primary
 PREHOOK: query: insert into table cd partition (cd_education_status='Primary') values (1, 'M', 'M', 500, 'Good', 0, 0, 0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cd@cd_education_status=Primary
 POSTHOOK: query: insert into table cd partition (cd_education_status='Primary') values (1, 'M', 'M', 500, 'Good', 0, 0, 0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cd@cd_education_status=Primary
-POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_credit_rating SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_demo_sk EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_dep_college_count EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
-POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_dep_count EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_dep_employed_count EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_gender SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_marital_status SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_purchase_estimate EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_credit_rating SCRIPT []
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_demo_sk SCRIPT []
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_dep_college_count SCRIPT []
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_dep_count SCRIPT []
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_dep_employed_count SCRIPT []
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_gender SCRIPT []
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_marital_status SCRIPT []
+POSTHOOK: Lineage: cd PARTITION(cd_education_status=Primary).cd_purchase_estimate SCRIPT []
 PREHOOK: query: explain vectorization detail
 analyze table cd partition (cd_education_status) compute statistics
 PREHOOK: type: QUERY

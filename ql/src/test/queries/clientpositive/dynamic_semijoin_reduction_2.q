@@ -51,8 +51,8 @@ CREATE TABLE src2 as select * from src1;
 insert into src2 select * from src2;
 insert into src2 select * from src2;
 
-load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08');
-load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08');
 
 set hive.strict.checks.bucketing=false;
 set hive.join.emit.interval=2;

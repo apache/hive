@@ -40,9 +40,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: tstparttbl
-            Statistics: Num rows: 1 Data size: 5812 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 120 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              Statistics: Num rows: 1 Data size: 5812 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 120 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: hash
@@ -222,9 +222,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: tstparttbl
-            Statistics: Num rows: 1 Data size: 5812 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 120 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              Statistics: Num rows: 1 Data size: 5812 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 120 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: hash

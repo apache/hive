@@ -353,7 +353,12 @@ class EncodedReaderImpl implements EncodedReader {
       if (hasIndexOnlyCols && (rgs == null)) {
         OrcEncodedColumnBatch ecb = POOLS.ecbPool.take();
         ecb.init(fileKey, stripeIx, OrcEncodedColumnBatch.ALL_RGS, included.length);
-        consumer.consumeData(ecb);
+        try {
+          consumer.consumeData(ecb);
+        } catch (InterruptedException e) {
+          LOG.error("IO thread interrupted while queueing data");
+          throw new IOException(e);
+        }
       } else {
         LOG.warn("Nothing to read for stripe [" + stripe + "]");
       }
@@ -466,15 +471,17 @@ class EncodedReaderImpl implements EncodedReader {
           hasErrorForEcb = false;
         } finally {
           if (hasErrorForEcb) {
-            try {
-              releaseEcbRefCountsOnError(ecb);
-            } catch (Throwable t) {
-              LOG.error("Error during the cleanup of an error; ignoring", t);
-            }
+            releaseEcbRefCountsOnError(ecb);
           }
         }
-        // After this, the non-initial refcounts are the responsibility of the consumer.
-        consumer.consumeData(ecb);
+        try {
+          consumer.consumeData(ecb);
+          // After this, the non-initial refcounts are the responsibility of the consumer.
+        } catch (InterruptedException e) {
+          LOG.error("IO thread interrupted while queueing data");
+          releaseEcbRefCountsOnError(ecb);
+          throw new IOException(e);
+        }
       }
 
       if (isTracingEnabled) {
@@ -584,20 +591,24 @@ class EncodedReaderImpl implements EncodedReader {
   }
 
   private void releaseEcbRefCountsOnError(OrcEncodedColumnBatch ecb) {
-    if (isTracingEnabled) {
-      LOG.trace("Unlocking the batch not sent to consumer, on error");
-    }
-    // We cannot send the ecb to consumer. Discard whatever is already there.
-    for (int colIx = 0; colIx < ecb.getTotalColCount(); ++colIx) {
-      if (!ecb.hasData(colIx)) continue;
-      ColumnStreamData[] datas = ecb.getColumnData(colIx);
-      for (ColumnStreamData data : datas) {
-        if (data == null || data.decRef() != 0) continue;
-        for (MemoryBuffer buf : data.getCacheBuffers()) {
-          if (buf == null) continue;
-          cacheWrapper.releaseBuffer(buf);
+    try {
+      if (isTracingEnabled) {
+        LOG.trace("Unlocking the batch not sent to consumer, on error");
+      }
+      // We cannot send the ecb to consumer. Discard whatever is already there.
+      for (int colIx = 0; colIx < ecb.getTotalColCount(); ++colIx) {
+        if (!ecb.hasData(colIx)) continue;
+        ColumnStreamData[] datas = ecb.getColumnData(colIx);
+        for (ColumnStreamData data : datas) {
+          if (data == null || data.decRef() != 0) continue;
+          for (MemoryBuffer buf : data.getCacheBuffers()) {
+            if (buf == null) continue;
+            cacheWrapper.releaseBuffer(buf);
+          }
         }
       }
+    } catch (Throwable t) {
+      LOG.error("Error during the cleanup of an error; ignoring", t);
     }
   }
 
@@ -1741,16 +1752,17 @@ class EncodedReaderImpl implements EncodedReader {
     }
 
     private boolean ensureRangeWithData() {
-      if (range != null && range.remaining() > 0) return true;
-      ++rangeIx;
-      if (rangeIx == ranges.size()) return false;
-      range = ranges.get(rangeIx).getByteBufferDup();
+      while (range == null || range.remaining() <= 0) {
+        ++rangeIx;
+        if (rangeIx == ranges.size()) return false;
+        range = ranges.get(rangeIx).getByteBufferDup();
+      }
       return true;
     }
 
     @Override
     public int read(byte[] data, int offset, int length) {
-      if (!ensureRangeWithData()) {
+     if (!ensureRangeWithData()) {
         return -1;
       }
       int actualLength = Math.min(length, range.remaining());
@@ -1803,6 +1815,7 @@ class EncodedReaderImpl implements EncodedReader {
       if (isTracingEnabled) {
         LOG.trace("Creating context: " + colCtxs[i].toString());
       }
+      trace.logColumnRead(i, colRgIx, ColumnEncoding.Kind.DIRECT); // Bogus encoding.
     }
     long offset = 0;
     for (OrcProto.Stream stream : streams) {
@@ -1813,7 +1826,8 @@ class EncodedReaderImpl implements EncodedReader {
       if ((StreamName.getArea(streamKind) == StreamName.Area.INDEX)
           && ((sargColumns != null && sargColumns[colIx])
               || (included[colIx] && streamKind == Kind.ROW_INDEX))) {
-          colCtxs[colIx].addStream(offset, stream, -1);
+        trace.logAddStream(colIx, streamKind, offset, length, -1, true);
+        colCtxs[colIx].addStream(offset, stream, -1);
         if (isTracingEnabled) {
           LOG.trace("Adding stream for column " + colIx + ": "
               + streamKind + " at " + offset + ", " + length);

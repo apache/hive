@@ -28,6 +28,8 @@ resourcePlanDdlStatements
     : createResourcePlanStatement
     | alterResourcePlanStatement
     | dropResourcePlanStatement
+    | globalWmStatement
+    | replaceResourcePlanStatement
     | createTriggerStatement
     | alterTriggerStatement
     | dropTriggerStatement
@@ -57,12 +59,19 @@ rpAssignList
 createResourcePlanStatement
 @init { gParent.pushMsg("create resource plan statement", state); }
 @after { gParent.popMsg(state); }
-    : KW_CREATE KW_RESOURCE KW_PLAN name=identifier (KW_WITH rpAssignList)?
-    -> ^(TOK_CREATE_RP $name rpAssignList?)
+    : KW_CREATE KW_RESOURCE KW_PLAN (
+          (name=identifier KW_LIKE likeName=identifier -> ^(TOK_CREATE_RP $name ^(TOK_LIKERP $likeName)))
+        | (name=identifier (KW_WITH rpAssignList)? -> ^(TOK_CREATE_RP $name rpAssignList?))
+      )
     ;
 
-activate : KW_ACTIVATE -> ^(TOK_ACTIVATE);
+
+withReplace : KW_WITH KW_REPLACE -> ^(TOK_REPLACE);
+activate : KW_ACTIVATE withReplace? -> ^(TOK_ACTIVATE withReplace?);
 enable : KW_ENABLE -> ^(TOK_ENABLE);
+disable : KW_DISABLE -> ^(TOK_DISABLE);
+unmanaged : KW_UNMANAGED -> ^(TOK_UNMANAGED);
+
 
 alterResourcePlanStatement
 @init { gParent.pushMsg("alter resource plan statement", state); }
@@ -71,8 +80,25 @@ alterResourcePlanStatement
           (KW_VALIDATE -> ^(TOK_ALTER_RP $name TOK_VALIDATE))
         | (KW_DISABLE -> ^(TOK_ALTER_RP $name TOK_DISABLE))
         | (KW_SET rpAssignList -> ^(TOK_ALTER_RP $name rpAssignList))
-        | (KW_RENAME KW_TO newName=identifier -> ^(TOK_ALTER_RP $name TOK_RENAME $newName))
+        | (KW_RENAME KW_TO newName=identifier -> ^(TOK_ALTER_RP $name ^(TOK_RENAME $newName)))
         | ((activate enable? | enable activate?) -> ^(TOK_ALTER_RP $name activate? enable?))
+      )
+    ;
+
+/** It might make sense to make this more generic, if something else could be enabled/disabled.
+    For now, it's only used for WM. Translate into another form of an alter statement. */
+globalWmStatement
+@init { gParent.pushMsg("global WM statement", state); }
+@after { gParent.popMsg(state); }
+    : (enable | disable) KW_WORKLOAD KW_MANAGEMENT -> ^(TOK_ALTER_RP enable? disable?)
+    ;
+
+replaceResourcePlanStatement
+@init { gParent.pushMsg("replace resource plan statement", state); }
+@after { gParent.popMsg(state); }
+    : KW_REPLACE (
+          (KW_ACTIVE KW_RESOURCE KW_PLAN KW_WITH src=identifier -> ^(TOK_ALTER_RP $src TOK_REPLACE))
+        | (KW_RESOURCE KW_PLAN dest=identifier KW_WITH src=identifier -> ^(TOK_ALTER_RP $src ^(TOK_REPLACE $dest)))
       )
     ;
 
@@ -145,10 +171,16 @@ createTriggerStatement
 alterTriggerStatement
 @init { gParent.pushMsg("alter trigger statement", state); }
 @after { gParent.popMsg(state); }
-    : KW_ALTER KW_TRIGGER rpName=identifier DOT triggerName=identifier
-      KW_WHEN triggerExpression KW_DO triggerActionExpression
-    -> ^(TOK_ALTER_TRIGGER $rpName $triggerName triggerExpression triggerActionExpression)
+    : KW_ALTER KW_TRIGGER rpName=identifier DOT triggerName=identifier (
+        (KW_WHEN triggerExpression KW_DO triggerActionExpression
+          -> ^(TOK_ALTER_TRIGGER $rpName $triggerName triggerExpression triggerActionExpression))
+      | (KW_ADD KW_TO KW_POOL poolName=poolPath -> ^(TOK_ALTER_POOL $rpName $poolName ^(TOK_ADD_TRIGGER $triggerName)))
+      | (KW_DROP KW_FROM KW_POOL poolName=poolPath -> ^(TOK_ALTER_POOL $rpName $poolName ^(TOK_DROP_TRIGGER $triggerName)))
+      | (KW_ADD KW_TO KW_UNMANAGED -> ^(TOK_ALTER_POOL $rpName TOK_UNMANAGED ^(TOK_ADD_TRIGGER $triggerName)))
+      | (KW_DROP KW_FROM KW_UNMANAGED -> ^(TOK_ALTER_POOL $rpName TOK_UNMANAGED ^(TOK_DROP_TRIGGER $triggerName)))
+    )
     ;
+
 
 dropTriggerStatement
 @init { gParent.pushMsg("drop trigger statement", state); }
@@ -204,27 +236,27 @@ dropPoolStatement
 createMappingStatement
 @init { gParent.pushMsg("create mapping statement", state); }
 @after { gParent.popMsg(state); }
-    : (KW_CREATE mappingType=(KW_USER | KW_GROUP)
+    : (KW_CREATE mappingType=(KW_USER | KW_GROUP | KW_APPLICATION)
          KW_MAPPING name=StringLiteral
-         KW_IN rpName=identifier KW_TO poolPath
+         KW_IN rpName=identifier ((KW_TO path=poolPath) | unmanaged)
          (KW_WITH KW_ORDER order=Number)?)
-    -> ^(TOK_CREATE_MAPPING $rpName $mappingType $name poolPath $order?)
+    -> ^(TOK_CREATE_MAPPING $rpName $mappingType $name $path? unmanaged? $order?)
     ;
 
 alterMappingStatement
 @init { gParent.pushMsg("alter mapping statement", state); }
 @after { gParent.popMsg(state); }
-    : (KW_ALTER mappingType=(KW_USER | KW_GROUP) KW_MAPPING
+    : (KW_ALTER mappingType=(KW_USER | KW_GROUP | KW_APPLICATION) KW_MAPPING
          KW_MAPPING name=StringLiteral
-         KW_IN rpName=identifier KW_TO poolPath
+         KW_IN rpName=identifier ((KW_TO path=poolPath) | unmanaged)
          (KW_WITH KW_ORDER order=Number)?)
-    -> ^(TOK_ALTER_MAPPING $rpName $mappingType $name poolPath $order?)
+    -> ^(TOK_ALTER_MAPPING $rpName $mappingType $name $path? unmanaged? $order?)
     ;
 
 dropMappingStatement
 @init { gParent.pushMsg("drop mapping statement", state); }
 @after { gParent.popMsg(state); }
-    : KW_DROP mappingType=(KW_USER | KW_GROUP) KW_MAPPING
+    : KW_DROP mappingType=(KW_USER | KW_GROUP | KW_APPLICATION) KW_MAPPING
          name=StringLiteral KW_IN rpName=identifier
     -> ^(TOK_DROP_MAPPING $rpName $mappingType $name)
     ;

@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.druid.security;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 import com.metamx.http.client.response.ClientResponse;
 import com.metamx.http.client.response.HttpResponseHandler;
@@ -31,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.CookieManager;
 import java.net.URI;
-import java.util.List;
 
 public class ResponseCookieHandler<Intermediate, Final> implements HttpResponseHandler<Intermediate, Final>
 {
@@ -53,14 +51,7 @@ public class ResponseCookieHandler<Intermediate, Final> implements HttpResponseH
   {
     try {
       final HttpHeaders headers = httpResponse.headers();
-      manager.put(uri, Maps.asMap(headers.names(), new Function<String, List<String>>()
-      {
-        @Override
-        public List<String> apply(String input)
-        {
-          return headers.getAll(input);
-        }
-      }));
+      manager.put(uri, Maps.asMap(headers.names(), input -> headers.getAll(input)));
     }
     catch (IOException e) {
       log.error("Error while processing Cookies from header", e);

@@ -12,20 +12,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: INSERT INTO TABLE table1 VALUES (1, 'k1')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT INTO TABLE table1 VALUES (1, 'k1')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: table1.key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: table1.id SCRIPT []
+POSTHOOK: Lineage: table1.key SCRIPT []
 PREHOOK: query: INSERT INTO TABLE table1 VALUES (2, 'k2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT INTO TABLE table1 VALUES (2, 'k2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: table1.key SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: table1.id SCRIPT []
+POSTHOOK: Lineage: table1.key SCRIPT []
 PREHOOK: query: INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1

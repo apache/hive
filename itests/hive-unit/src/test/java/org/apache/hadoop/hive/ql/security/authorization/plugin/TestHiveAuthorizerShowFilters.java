@@ -31,7 +31,8 @@ import org.apache.hadoop.hive.UtilsForTest;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
@@ -48,7 +49,7 @@ import org.mockito.Mockito;
  */
 public class TestHiveAuthorizerShowFilters {
   protected static HiveConf conf;
-  protected static Driver driver;
+  protected static IDriver driver;
   private static final String tableName1 = (TestHiveAuthorizerShowFilters.class.getSimpleName() + "table1")
       .toLowerCase();
   private static final String tableName2 = (TestHiveAuthorizerShowFilters.class.getSimpleName() + "table2")
@@ -123,7 +124,7 @@ public class TestHiveAuthorizerShowFilters {
     UtilsForTest.setNewDerbyDbLocation(conf, TestHiveAuthorizerShowFilters.class.getSimpleName());
 
     SessionState.start(conf);
-    driver = new Driver(conf);
+    driver = DriverFactory.newDriver(conf);
     runCmd("create table " + tableName1
         + " (i int, j int, k string) partitioned by (city string, `date` string) ");
     runCmd("create table " + tableName2 + "(i int)");

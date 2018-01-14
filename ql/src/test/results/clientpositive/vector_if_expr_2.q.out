@@ -12,12 +12,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo
 PREHOOK: query: insert into foo values(1,1),(2,NULL),(3,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@foo
 POSTHOOK: query: insert into foo values(1,1),(2,NULL),(3,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@foo
-POSTHOOK: Lineage: foo.x EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: foo.y EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: foo.x SCRIPT []
+POSTHOOK: Lineage: foo.y SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 select x, IF(x > 0,y,0) from foo order by x
 PREHOOK: type: QUERY

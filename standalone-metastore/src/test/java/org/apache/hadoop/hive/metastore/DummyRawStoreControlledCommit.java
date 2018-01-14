@@ -248,6 +248,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public List<String> getMaterializedViewsForRewriting(String dbName)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getMaterializedViewsForRewriting(dbName);
+  }
+
+  @Override
   public List<TableMeta> getTableMeta(String dbNames, String tableNames, List<String> tableTypes)
       throws MetaException {
     return objectStore.getTableMeta(dbNames, tableNames, tableTypes);
@@ -943,13 +949,13 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void createResourcePlan(WMResourcePlan resourcePlan, int defaultPoolSize)
-      throws AlreadyExistsException, InvalidObjectException, MetaException {
-    objectStore.createResourcePlan(resourcePlan, defaultPoolSize);
+  public void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException {
+    objectStore.createResourcePlan(resourcePlan, copyFrom, defaultPoolSize);
   }
 
   @Override
-  public WMResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
+  public WMFullResourcePlan getResourcePlan(String name) throws NoSuchObjectException {
     return objectStore.getResourcePlan(name);
   }
 
@@ -960,10 +966,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan,
-      boolean canActivateDisabled)
+      boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException {
-    return objectStore.alterResourcePlan(name, resourcePlan, canActivateDisabled);
+    return objectStore.alterResourcePlan(
+      name, resourcePlan, canActivateDisabled, canDeactivate, isReplace);
   }
 
   @Override

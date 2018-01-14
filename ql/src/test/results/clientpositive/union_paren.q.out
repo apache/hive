@@ -59,11 +59,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: insert into t1 values (1),(1),(2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t1
 POSTHOOK: query: insert into t1 values (1),(1),(2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t1.c SCRIPT []
 PREHOOK: query: create table t2(c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -74,11 +76,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
 PREHOOK: query: insert into t2 values (2),(1),(2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t2
 POSTHOOK: query: insert into t2 values (2),(1),(2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t2.c SCRIPT []
 PREHOOK: query: create table t3(c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -89,11 +93,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t3
 PREHOOK: query: insert into t3 values (2),(3),(2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t3
 POSTHOOK: query: insert into t3 values (2),(3),(2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t3
-POSTHOOK: Lineage: t3.c EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t3.c SCRIPT []
 PREHOOK: query: (select * from t1) union all select * from t2 union select * from t3 order by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1

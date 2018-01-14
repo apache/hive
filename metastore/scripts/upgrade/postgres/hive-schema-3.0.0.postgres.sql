@@ -641,7 +641,8 @@ CREATE TABLE "WM_TRIGGER" (
     "RP_ID" bigint NOT NULL,
     "NAME" character varying(128) NOT NULL,
     "TRIGGER_EXPRESSION" character varying(1024) DEFAULT NULL::character varying,
-    "ACTION_EXPRESSION" character varying(1024) DEFAULT NULL::character varying
+    "ACTION_EXPRESSION" character varying(1024) DEFAULT NULL::character varying,
+    "IS_IN_UNMANAGED" boolean NOT NULL DEFAULT false
 );
 
 CREATE TABLE "WM_POOL_TO_TRIGGER" (
@@ -652,11 +653,20 @@ CREATE TABLE "WM_POOL_TO_TRIGGER" (
 CREATE TABLE "WM_MAPPING" (
     "MAPPING_ID" bigint NOT NULL,
     "RP_ID" bigint NOT NULL,
-    "ENTITY_TYPE" character varying(10) NOT NULL,
+    "ENTITY_TYPE" character varying(128) NOT NULL,
     "ENTITY_NAME" character varying(128) NOT NULL,
     "POOL_ID" bigint,
     "ORDERING" integer
 );
+
+CREATE TABLE "MV_CREATION_METADATA" (
+    "TBL_ID" BIGINT NOT NULL,
+    "TBL_NAME" character varying(256) NOT NULL,
+    "LAST_TRANSACTION_INFO" TEXT NOT NULL
+);
+
+ALTER TABLE ONLY "MV_CREATION_METADATA"
+    ADD CONSTRAINT "MV_CREATION_METADATA_FK" FOREIGN KEY ("TBL_ID") REFERENCES "TBLS"("TBL_ID") DEFERRABLE;
 
 --
 -- Name: BUCKETING_COLS_pkey; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:

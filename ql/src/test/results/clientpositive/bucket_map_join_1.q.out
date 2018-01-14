@@ -26,19 +26,19 @@ sorted by (value, key) into 1 BUCKETS stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2
-PREHOOK: query: load data local inpath '../../data/files/SortCol1Col2.txt' overwrite into table table1
+PREHOOK: query: load data local inpath '../../data/files/SortCol1Col2/000000_0' overwrite into table table1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@table1
-POSTHOOK: query: load data local inpath '../../data/files/SortCol1Col2.txt' overwrite into table table1
+POSTHOOK: query: load data local inpath '../../data/files/SortCol1Col2/000000_0' overwrite into table table1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@table1
-PREHOOK: query: load data local inpath '../../data/files/SortCol2Col1.txt' overwrite into table table2
+PREHOOK: query: load data local inpath '../../data/files/SortCol2Col1/000000_0' overwrite into table table2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@table2
-POSTHOOK: query: load data local inpath '../../data/files/SortCol2Col1.txt' overwrite into table table2
+POSTHOOK: query: load data local inpath '../../data/files/SortCol2Col1/000000_0' overwrite into table table2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@table2
@@ -64,12 +64,12 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 210 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (key is not null and value is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 210 Basic stats: COMPLETE Column stats: NONE
               HashTable Sink Operator
                 keys:
                   0 key (type: string), value (type: string)
@@ -81,12 +81,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: (key is not null and value is not null) (type: boolean)
-              Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -94,7 +94,7 @@ STAGE PLANS:
                   0 key (type: string), value (type: string)
                   1 key (type: string), value (type: string)
                 Position of Big Table: 0
-                Statistics: Num rows: 1 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 220 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash

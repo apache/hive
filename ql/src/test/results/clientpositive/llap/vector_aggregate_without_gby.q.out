@@ -16,6 +16,7 @@ values
 (6,20150314, '2015-03-14'),
 (7,20150404, '2015-04-04')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@testvec
 POSTHOOK: query: insert into table testvec
 values
@@ -27,10 +28,11 @@ values
 (6,20150314, '2015-03-14'),
 (7,20150404, '2015-04-04')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@testvec
-POSTHOOK: Lineage: testvec.dt EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: testvec.greg_dt SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: testvec.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: testvec.dt SCRIPT []
+POSTHOOK: Lineage: testvec.greg_dt SCRIPT []
+POSTHOOK: Lineage: testvec.id SCRIPT []
 PREHOOK: query: explain vectorization detail
 select max(dt), max(greg_dt) from testvec where id=5
 PREHOOK: type: QUERY

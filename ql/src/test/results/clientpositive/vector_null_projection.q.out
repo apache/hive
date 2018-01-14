@@ -16,18 +16,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@b
 PREHOOK: query: insert into table a values('aaa')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@a
 POSTHOOK: query: insert into table a values('aaa')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@a
-POSTHOOK: Lineage: a.s SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: a.s SCRIPT []
 PREHOOK: query: insert into table b values('aaa')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@b
 POSTHOOK: query: insert into table b values('aaa')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.s SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: b.s SCRIPT []
 PREHOOK: query: explain vectorization expression
 select NULL from a
 PREHOOK: type: QUERY

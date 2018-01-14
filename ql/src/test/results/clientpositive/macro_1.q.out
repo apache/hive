@@ -26,11 +26,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@macro_test
 PREHOOK: query: insert into table macro_test values ("bb"), ("a"), ("ccc")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@macro_test
 POSTHOOK: query: insert into table macro_test values ("bb"), ("a"), ("ccc")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@macro_test
-POSTHOOK: Lineage: macro_test.x SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: macro_test.x SCRIPT []
 PREHOOK: query: SELECT
     CONCAT(STRING_LEN(x), ":", STRING_LEN_PLUS_ONE(x), ":", STRING_LEN_PLUS_TWO(x)) a
 FROM macro_test

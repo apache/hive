@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
 
 /**
  * Test for unwrapping InvocationTargetException, which is thrown from

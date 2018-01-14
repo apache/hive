@@ -8,12 +8,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@Part1
 PREHOOK: query: insert into Part1 values (3,6),(10,1),(8,0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part1
 POSTHOOK: query: insert into Part1 values (3,6),(10,1),(8,0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part1
-POSTHOOK: Lineage: part1.orderonhand EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: part1.pnum EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part1.orderonhand SCRIPT []
+POSTHOOK: Lineage: part1.pnum SCRIPT []
 PREHOOK: query: create table Supply (PNum int, Qty int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -24,12 +26,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@Supply
 PREHOOK: query: insert into Supply values (3,4),(3,2),(10,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@supply
 POSTHOOK: query: insert into Supply values (3,4),(3,2),(10,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@supply
-POSTHOOK: Lineage: supply.pnum EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: supply.qty EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: supply.pnum SCRIPT []
+POSTHOOK: Lineage: supply.qty SCRIPT []
 PREHOOK: query: select pnum from Part1 p where OrderOnHand in
                 (select count(*) from Supply s where s.pnum = p.pnum)
 PREHOOK: type: QUERY

@@ -65,13 +65,15 @@ POSTHOOK: Input: default@tx1
 NULL	1	NULL,1
 PREHOOK: query: insert into tx1 values (1,1,1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tx1
 POSTHOOK: query: insert into tx1 values (1,1,1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tx1
-POSTHOOK: Lineage: tx1.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: tx1.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: tx1.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: tx1.a SCRIPT []
+POSTHOOK: Lineage: tx1.b SCRIPT []
+POSTHOOK: Lineage: tx1.c SCRIPT []
 PREHOOK: query: select  sum(c),
         grouping(b),
 	'NULL,1' as expected

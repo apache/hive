@@ -24,20 +24,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid2
 PREHOOK: query: insert into acid1 values (1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e'), (6, 'f'), (7, 'g'), (8, 'h')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid1
 POSTHOOK: query: insert into acid1 values (1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e'), (6, 'f'), (7, 'g'), (8, 'h')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid1
-POSTHOOK: Lineage: acid1.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid1.value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid1.key SCRIPT []
+POSTHOOK: Lineage: acid1.value SCRIPT []
 PREHOOK: query: insert into acid2 values (1,'a'),(3,'c'),(5,'e'),(7,'g')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid2
 POSTHOOK: query: insert into acid2 values (1,'a'),(3,'c'),(5,'e'),(7,'g')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid2
-POSTHOOK: Lineage: acid2.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: acid2.value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: acid2.key SCRIPT []
+POSTHOOK: Lineage: acid2.value SCRIPT []
 PREHOOK: query: alter table acid2 update statistics set('numRows'='210', 'rawDataSize'='840')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
 PREHOOK: Input: default@acid2

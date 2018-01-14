@@ -8,18 +8,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@daysales
 PREHOOK: query: insert into daysales partition(dt='2001-01-01') values(1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@daysales@dt=2001-01-01
 POSTHOOK: query: insert into daysales partition(dt='2001-01-01') values(1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@daysales@dt=2001-01-01
-POSTHOOK: Lineage: daysales PARTITION(dt=2001-01-01).customer EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: daysales PARTITION(dt=2001-01-01).customer SCRIPT []
 PREHOOK: query: insert into daysales partition(dt='2001-01-03') values(3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@daysales@dt=2001-01-03
 POSTHOOK: query: insert into daysales partition(dt='2001-01-03') values(3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@daysales@dt=2001-01-03
-POSTHOOK: Lineage: daysales PARTITION(dt=2001-01-03).customer EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: daysales PARTITION(dt=2001-01-03).customer SCRIPT []
 PREHOOK: query: select * from daysales where nvl(dt='2001-01-01' and customer=1, false)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@daysales

@@ -18,22 +18,23 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import com.google.common.base.Strings;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 
+import com.google.common.base.Strings;
 
 public class DagUtils {
+
+  public static final String MAPREDUCE_WORKFLOW_NODE_NAME = "mapreduce.workflow.node.name";
 
   public static String getQueryName(Configuration conf) {
     String name = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYNAME);
     if (Strings.isNullOrEmpty(name)) {
       return conf.get(MRJobConfig.JOB_NAME);
     } else {
-      return name + " (" + conf.get(Driver.MAPREDUCE_WORKFLOW_NODE_NAME) + ")";
+      return name + " (" + conf.get(DagUtils.MAPREDUCE_WORKFLOW_NODE_NAME) + ")";
     }
   }
+
 }

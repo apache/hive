@@ -17,13 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
@@ -35,17 +36,19 @@ public class TableSerializer implements JsonWriter.Serializer {
   public static final String FIELD_NAME = "table";
   private final org.apache.hadoop.hive.ql.metadata.Table tableHandle;
   private final Iterable<Partition> partitions;
+  private final HiveConf hiveConf;
 
   public TableSerializer(org.apache.hadoop.hive.ql.metadata.Table tableHandle,
-      Iterable<Partition> partitions) {
+      Iterable<Partition> partitions, HiveConf hiveConf) {
     this.tableHandle = tableHandle;
     this.partitions = partitions;
+    this.hiveConf = hiveConf;
   }
 
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
-    if (!EximUtil.shouldExportTable(additionalPropertiesProvider, tableHandle)) {
+    if (!Utils.shouldReplicate(additionalPropertiesProvider, tableHandle, hiveConf)) {
       return;
     }
 
@@ -62,8 +65,7 @@ public class TableSerializer implements JsonWriter.Serializer {
     }
   }
 
-  private Table addPropertiesToTable(Table table, ReplicationSpec additionalPropertiesProvider)
-      throws SemanticException, IOException {
+  private Table addPropertiesToTable(Table table, ReplicationSpec additionalPropertiesProvider) {
     if (additionalPropertiesProvider.isInReplicationScope()) {
       // Current replication state must be set on the Table object only for bootstrap dump.
       // Event replication State will be null in case of bootstrap dump.

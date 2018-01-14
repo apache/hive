@@ -6,20 +6,20 @@ POSTHOOK: query: CREATE TABLE bucket_small (key string, value string) partitione
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_small
-PREHOOK: query: load data local inpath '../../data/files/smallsrcsortbucket1outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000000_0' INTO TABLE bucket_small partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: load data local inpath '../../data/files/smallsrcsortbucket1outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000000_0' INTO TABLE bucket_small partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_small
 POSTHOOK: Output: default@bucket_small@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/smallsrcsortbucket2outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000001_0' INTO TABLE bucket_small partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_small@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/smallsrcsortbucket2outof4.txt' INTO TABLE bucket_small partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000001_0' INTO TABLE bucket_small partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_small@ds=2008-04-08
@@ -31,69 +31,69 @@ POSTHOOK: query: CREATE TABLE bucket_big (key string, value string) partitioned 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_big
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_big
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big
 POSTHOOK: Output: default@bucket_big@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_big@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_big@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_big@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_big partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-09')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big partition(ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_big
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-09')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big partition(ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big
 POSTHOOK: Output: default@bucket_big@ds=2008-04-09
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-09')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big partition(ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_big@ds=2008-04-09
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-09')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big partition(ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big@ds=2008-04-09
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-09')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_big partition(ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_big@ds=2008-04-09
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-09')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_big partition(ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big@ds=2008-04-09
-PREHOOK: query: load data local inpath '../../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-09')
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_big partition(ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@bucket_big@ds=2008-04-09
-POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket_big partition(ds='2008-04-09')
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_big partition(ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big@ds=2008-04-09
@@ -222,16 +222,16 @@ STAGE PLANS:
         $hdt$_1:b 
           TableScan
             alias: b
-            Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -243,16 +243,16 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -260,7 +260,7 @@ STAGE PLANS:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
                   Position of Big Table: 0
-                  Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 264 Data size: 127864 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -567,16 +567,16 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
                     0 _col0 (type: string)
@@ -588,16 +588,16 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -605,7 +605,7 @@ STAGE PLANS:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
                   Position of Big Table: 1
-                  Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 264 Data size: 127864 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count()
                     mode: hash
@@ -790,42 +790,42 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 1140 Basic stats: COMPLETE Column stats: NONE
                   tag: 0
                   auto parallelism: false
           TableScan
             alias: b
-            Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
                   tag: 1
                   auto parallelism: false
       Path -> Alias:
@@ -990,7 +990,7 @@ STAGE PLANS:
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
-          Statistics: Num rows: 127 Data size: 12786 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 264 Data size: 127864 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             aggregations: count()
             mode: hash
@@ -1052,16 +1052,16 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
                 Sorted Merge Bucket Map Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -1249,12 +1249,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
-            Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -1442,12 +1442,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c
-            Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 116 Data size: 11624 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 240 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
