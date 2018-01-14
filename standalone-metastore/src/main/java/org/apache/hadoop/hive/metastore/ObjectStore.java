@@ -29,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -8866,10 +8867,28 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  private void prepareQuotes() throws SQLException {
+    if (dbType == DatabaseProduct.MYSQL) {
+      assert pm.currentTransaction().isActive();
+      JDOConnection jdoConn = pm.getDataStoreConnection();
+      Statement statement = null;
+      try {
+        statement = ((Connection)jdoConn.getNativeConnection()).createStatement();
+        statement.execute("SET @@session.sql_mode=ANSI_QUOTES");
+      } finally {
+        if(statement != null){
+          statement.close();
+        }
+        jdoConn.close();
+      }
+    }
+  }
+
   private void lockForUpdate() throws MetaException {
-    String selectQuery = "select \"NEXT_EVENT_ID\" from NOTIFICATION_SEQUENCE";
+    String selectQuery = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
     String selectForUpdateQuery = sqlGenerator.addForUpdateClause(selectQuery);
     new RetryingExecutor(conf, () -> {
+      prepareQuotes();
       Query query = pm.newQuery("javax.jdo.query.SQL", selectForUpdateQuery);
       query.setUnique(true);
       // only need to execute it to get db Lock
