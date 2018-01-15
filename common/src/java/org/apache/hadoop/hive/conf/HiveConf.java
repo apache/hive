@@ -470,6 +470,10 @@ public class HiveConf extends Configuration {
             + "metadata for acid tables which do not require the corresponding transaction \n"
             + "semantics to be applied on target. This can be removed when ACID table \n"
             + "replication is supported."),
+    //https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html#Running_as_the_superuser
+    REPL_ADD_RAW_RESERVED_NAMESPACE("hive.repl.add.raw.reserved.namespace", false,
+        "For TDE with same encryption keys on source and target, allow Distcp super user to access \n"
+            + "the raw bytes from filesystem without decrypting on source and then encrypting on target."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),

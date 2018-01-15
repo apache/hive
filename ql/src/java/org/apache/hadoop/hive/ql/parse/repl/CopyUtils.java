@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse.repl;
 
+import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -31,25 +32,28 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
+import java.net.URI;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CopyUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(CopyUtils.class);
+  // https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html#Running_as_the_superuser
+  private static final String RAW_RESERVED_VIRTUAL_PATH = "/.reserved/raw/";
+  private static final int MAX_COPY_RETRY = 3;
 
   private final HiveConf hiveConf;
   private final long maxCopyFileSize;
   private final long maxNumberOfFiles;
   private final boolean hiveInTest;
   private final String copyAsUser;
-  private final int MAX_COPY_RETRY = 3;
 
   public CopyUtils(String distCpDoAsUser, HiveConf hiveConf) {
     this.hiveConf = hiveConf;
@@ -107,8 +111,7 @@ public class CopyUtils {
                            FileSystem destinationFs, Path destination,
                            boolean useRegularCopy) throws IOException, LoginException {
     int repeat = 0;
-    List<Path> pathList = Lists.transform(fileList,
-                                          fileInfo -> { return fileInfo.getEffectivePath(); });
+    List<Path> pathList = Lists.transform(fileList, ReplChangeManager.FileInfo::getEffectivePath);
     while (!pathList.isEmpty() && (repeat < MAX_COPY_RETRY)) {
       try {
         doCopyOnce(sourceFs, pathList, destinationFs, destination, useRegularCopy);
@@ -143,21 +146,62 @@ public class CopyUtils {
                           boolean useRegularCopy) throws IOException, LoginException {
     UserGroupInformation ugi = Utils.getUGI();
     String currentUser = ugi.getShortUserName();
-    boolean usePrivilegedDistCp = copyAsUser != null && !currentUser.equals(copyAsUser);
+    boolean usePrivilegedUser = copyAsUser != null && !currentUser.equals(copyAsUser);
 
     if (useRegularCopy) {
-      Path[] paths = srcList.toArray(new Path[] {});
-      FileUtil.copy(sourceFs, paths, destinationFs, destination, false, true, hiveConf);
+      doRegularCopyOnce(sourceFs, srcList, destinationFs, destination, usePrivilegedUser);
     } else {
-      FileUtils.distCp(
-              sourceFs, // source file system
-              srcList,  // list of source paths
-              destination,
-              false,
-              usePrivilegedDistCp ? copyAsUser : null,
-              hiveConf,
-              ShimLoader.getHadoopShims()
-      );
+      doDistCpCopyOnce(sourceFs, srcList, destination, usePrivilegedUser);
+    }
+  }
+
+  private void doDistCpCopyOnce(FileSystem sourceFs, List<Path> srcList, Path destination,
+      boolean usePrivilegedUser) throws IOException {
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.REPL_ADD_RAW_RESERVED_NAMESPACE)) {
+      srcList = srcList.stream().map(path -> {
+        URI uri = path.toUri();
+        return new Path(uri.getScheme(), uri.getAuthority(),
+            RAW_RESERVED_VIRTUAL_PATH + uri.getPath());
+      }).collect(Collectors.toList());
+      URI destinationUri = destination.toUri();
+      destination = new Path(destinationUri.getScheme(), destinationUri.getAuthority(),
+          RAW_RESERVED_VIRTUAL_PATH + destinationUri.getPath());
+      hiveConf.set("distcp.options.px","");
+    }
+
+    FileUtils.distCp(
+        sourceFs, // source file system
+        srcList,  // list of source paths
+        destination,
+        false,
+        usePrivilegedUser ? copyAsUser : null,
+        hiveConf,
+        ShimLoader.getHadoopShims()
+    );
+  }
+
+  private void doRegularCopyOnce(FileSystem sourceFs, List<Path> srcList, FileSystem destinationFs,
+      Path destination, boolean usePrivilegedUser) throws IOException {
+  /*
+    even for regular copy we have to use the same user permissions that distCp will use since
+    hive-server user might be different that the super user required to copy relevant files.
+   */
+    final Path[] paths = srcList.toArray(new Path[] {});
+    if (usePrivilegedUser) {
+      final Path finalDestination = destination;
+      UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(
+          copyAsUser, UserGroupInformation.getLoginUser());
+      try {
+        proxyUser.doAs((PrivilegedExceptionAction<Boolean>) () -> {
+          FileUtil
+              .copy(sourceFs, paths, destinationFs, finalDestination, false, true, hiveConf);
+          return true;
+        });
+      } catch (InterruptedException e) {
+        throw new IOException(e);
+      }
+    } else {
+      FileUtil.copy(sourceFs, paths, destinationFs, destination, false, true, hiveConf);
     }
   }
 
