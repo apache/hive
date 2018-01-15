@@ -175,6 +175,16 @@
     <profile>
       <id>sources</id>
       <build>
+        <resources>
+          <resource>
+            <directory>${basedir}/src/resources</directory>
+            <includes>
+              <include>
+                META-INF/services/org.apache.hadoop.hive.serde2.objectinspector.primitive.TypeRegistry
+              </include>
+            </includes>
+          </resource>
+        </resources>
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -196,6 +206,16 @@
   <build>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>${basedir}/src/resources</directory>
+        <includes>
+          <include>
+            META-INF/services/org.apache.hadoop.hive.serde2.objectinspector.primitive.TypeRegistry
+          </include>
+        </includes>
+      </resource>
+    </resources>
   </build>
 
 </project>

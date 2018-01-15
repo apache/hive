@@ -432,6 +432,9 @@
         <directory>${basedir}/src/main/resources</directory>
         <includes>
           <include>package.jdo</include>
+          <include>
+            META-INF/services/org.apache.hadoop.hive.serde2.objectinspector.primitive.TypeRegistry
+          </include>
         </includes>
       </resource>
     </resources>

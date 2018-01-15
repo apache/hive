@@ -24,6 +24,8 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.DateTimeException;
 import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
@@ -130,26 +132,15 @@ public final class PrimitiveObjectInspectorUtils {
   public static final PrimitiveTypeEntry unknownTypeEntry = new PrimitiveTypeEntry(
       PrimitiveCategory.UNKNOWN, "unknown", null, Object.class, null);
 
-  static {
-    PrimitiveTypeEntry.registerType(binaryTypeEntry);
-    PrimitiveTypeEntry.registerType(stringTypeEntry);
-    PrimitiveTypeEntry.registerType(charTypeEntry);
-    PrimitiveTypeEntry.registerType(varcharTypeEntry);
-    PrimitiveTypeEntry.registerType(booleanTypeEntry);
-    PrimitiveTypeEntry.registerType(intTypeEntry);
-    PrimitiveTypeEntry.registerType(longTypeEntry);
-    PrimitiveTypeEntry.registerType(floatTypeEntry);
-    PrimitiveTypeEntry.registerType(voidTypeEntry);
-    PrimitiveTypeEntry.registerType(doubleTypeEntry);
-    PrimitiveTypeEntry.registerType(byteTypeEntry);
-    PrimitiveTypeEntry.registerType(shortTypeEntry);
-    PrimitiveTypeEntry.registerType(dateTypeEntry);
-    PrimitiveTypeEntry.registerType(timestampTypeEntry);
-    PrimitiveTypeEntry.registerType(timestampTZTypeEntry);
-    PrimitiveTypeEntry.registerType(intervalYearMonthTypeEntry);
-    PrimitiveTypeEntry.registerType(intervalDayTimeTypeEntry);
-    PrimitiveTypeEntry.registerType(decimalTypeEntry);
-    PrimitiveTypeEntry.registerType(unknownTypeEntry);
+  public static class PrimitiveTypeRegistry implements TypeRegistry {
+    @Override
+    public List<PrimitiveTypeEntry> getPrimitiveTypeEntries() {
+      return Arrays.asList(binaryTypeEntry, stringTypeEntry, charTypeEntry, varcharTypeEntry,
+          booleanTypeEntry, intTypeEntry, longTypeEntry, floatTypeEntry, voidTypeEntry,
+          doubleTypeEntry, byteTypeEntry, shortTypeEntry, dateTypeEntry, timestampTypeEntry,
+          timestampTZTypeEntry, intervalYearMonthTypeEntry, intervalDayTimeTypeEntry,
+          decimalTypeEntry, unknownTypeEntry);
+    }
   }
 
   /**

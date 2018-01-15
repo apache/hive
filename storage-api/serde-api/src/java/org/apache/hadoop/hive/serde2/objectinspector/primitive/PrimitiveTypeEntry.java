@@ -10,7 +10,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * TypeEntry stores information about a Hive Primitive TypeInfo.
@@ -21,37 +24,48 @@ public class PrimitiveTypeEntry implements Writable, Cloneable {
 
   private static final Map<PrimitiveObjectInspector.PrimitiveCategory, PrimitiveTypeEntry>
       primitiveCategoryToTypeEntry =
-      new HashMap<>();
+      new ConcurrentHashMap<>();
   private static final Map<Class<?>, PrimitiveTypeEntry> primitiveJavaTypeToTypeEntry =
-      new HashMap<>();
+      new ConcurrentHashMap<>();
   private static final Map<Class<?>, PrimitiveTypeEntry> primitiveJavaClassToTypeEntry =
-      new HashMap<>();
+      new ConcurrentHashMap<>();
   private static final Map<Class<?>, PrimitiveTypeEntry> primitiveWritableClassToTypeEntry =
-      new HashMap<>();
+      new ConcurrentHashMap<>();
 
   // Base type name to PrimitiveTypeEntry map.
   private static final Map<String, PrimitiveTypeEntry> typeNameToTypeEntry =
-      new HashMap<>();
+      new ConcurrentHashMap<>();
 
-  public static void addParameterizedType(PrimitiveTypeEntry t) {
-    typeNameToTypeEntry.put(t.toString(), t);
+  //find all the TypeRegistry implementations in the runtime
+  private static ServiceLoader<TypeRegistry> typeRegistries =
+      ServiceLoader.load(TypeRegistry.class);
+
+  static {
+    //register all the primitiveTypeEntry objects in the internal maps
+    //of PrimitiveTypeEntry
+    for (TypeRegistry typeRegistry : typeRegistries) {
+      List<PrimitiveTypeEntry> primitiveTypeEntryList = typeRegistry.getPrimitiveTypeEntries();
+      registerType(primitiveTypeEntryList);
+    }
   }
 
-  public static void registerType(PrimitiveTypeEntry t) {
-    if (t.primitiveCategory != PrimitiveObjectInspector.PrimitiveCategory.UNKNOWN) {
-      primitiveCategoryToTypeEntry.put(t.primitiveCategory, t);
-    }
-    if (t.primitiveJavaType != null) {
-      primitiveJavaTypeToTypeEntry.put(t.primitiveJavaType, t);
-    }
-    if (t.primitiveJavaClass != null) {
-      primitiveJavaClassToTypeEntry.put(t.primitiveJavaClass, t);
-    }
-    if (t.primitiveWritableClass != null) {
-      primitiveWritableClassToTypeEntry.put(t.primitiveWritableClass, t);
-    }
-    if (t.typeName != null) {
-      typeNameToTypeEntry.put(t.typeName, t);
+  public static void registerType(List<PrimitiveTypeEntry> typeEntries) {
+    for (PrimitiveTypeEntry t : typeEntries) {
+      if (t.primitiveCategory != PrimitiveObjectInspector.PrimitiveCategory.UNKNOWN) {
+        primitiveCategoryToTypeEntry.put(t.primitiveCategory, t);
+      }
+      if (t.primitiveJavaType != null) {
+        primitiveJavaTypeToTypeEntry.put(t.primitiveJavaType, t);
+      }
+      if (t.primitiveJavaClass != null) {
+        primitiveJavaClassToTypeEntry.put(t.primitiveJavaClass, t);
+      }
+      if (t.primitiveWritableClass != null) {
+        primitiveWritableClassToTypeEntry.put(t.primitiveWritableClass, t);
+      }
+      if (t.typeName != null) {
+        typeNameToTypeEntry.put(t.typeName, t);
+      }
     }
   }
 

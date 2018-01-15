@@ -11,6 +11,7 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TypeRegistry;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoParser;
 import org.apache.hadoop.io.BooleanWritable;
@@ -26,6 +27,7 @@ import org.apache.hadoop.io.Text;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
 
 public class StorageSchemaUtils {
@@ -106,28 +108,15 @@ public class StorageSchemaUtils {
           Object.class, null);
 
 
-  static {
-    PrimitiveTypeEntry.registerType(binaryTypeEntry);
-    PrimitiveTypeEntry.registerType(stringTypeEntry);
-    PrimitiveTypeEntry.registerType(charTypeEntry);
-    PrimitiveTypeEntry.registerType(varcharTypeEntry);
-    PrimitiveTypeEntry.registerType(booleanTypeEntry);
-    PrimitiveTypeEntry.registerType(intTypeEntry);
-    PrimitiveTypeEntry.registerType(longTypeEntry);
-    PrimitiveTypeEntry.registerType(floatTypeEntry);
-    PrimitiveTypeEntry.registerType(voidTypeEntry);
-    PrimitiveTypeEntry.registerType(doubleTypeEntry);
-    PrimitiveTypeEntry.registerType(byteTypeEntry);
-    PrimitiveTypeEntry.registerType(shortTypeEntry);
-    PrimitiveTypeEntry.registerType(dateTypeEntry);
-    PrimitiveTypeEntry.registerType(timestampTypeEntry);
-    PrimitiveTypeEntry.registerType(timestampTZTypeEntry);
-    PrimitiveTypeEntry.registerType(intervalYearMonthTypeEntry);
-    PrimitiveTypeEntry.registerType(intervalDayTimeTypeEntry);
-    PrimitiveTypeEntry.registerType(decimalTypeEntry);
-    PrimitiveTypeEntry.registerType(unknownTypeEntry);
+  public static class MetastoreTypeRegistry implements TypeRegistry {
+    @Override
+    public List<PrimitiveTypeEntry> getPrimitiveTypeEntries() {
+      return Arrays.asList(binaryTypeEntry, stringTypeEntry, charTypeEntry, varcharTypeEntry, booleanTypeEntry,
+          intTypeEntry, longTypeEntry, floatTypeEntry, voidTypeEntry, doubleTypeEntry, byteTypeEntry,
+          shortTypeEntry, dateTypeEntry, timestampTypeEntry, timestampTZTypeEntry, intervalYearMonthTypeEntry,
+          intervalDayTimeTypeEntry, decimalTypeEntry, unknownTypeEntry);
+    }
   }
-
 
   public static final char COMMA = ',';
   public static List<TypeInfo> getTypeInfosFromTypeString(String columnTypeProperty) {
