@@ -14,30 +14,28 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MyUnionPushDown extends RelOptRule {
-  static Logger LOG = LoggerFactory.getLogger(MyUnionPushDown.class);
+public class JDBCUnionPushDownRule extends RelOptRule {
+  static Logger LOG = LoggerFactory.getLogger(JDBCUnionPushDownRule.class);
 
-  final static public MyUnionPushDown INSTANCE = new MyUnionPushDown ();
+  final static public JDBCUnionPushDownRule INSTANCE = new JDBCUnionPushDownRule ();
 
-  public MyUnionPushDown() {
+  public JDBCUnionPushDownRule() {
     super(operand(HiveUnion.class,
             operand(HiveJdbcConverter.class, any()),
             operand(HiveJdbcConverter.class, any())));
   }
-  
+
   @Override
   public boolean matches(RelOptRuleCall call) {
     final HiveUnion union = call.rel(0);
     final HiveJdbcConverter converter1 = call.rel(1);
     final HiveJdbcConverter converter2 = call.rel(2);
     
-    if (converter1.getJdbcConvention().dialect.equals(converter2.getJdbcConvention().dialect) == false) {
+    if (converter1.getJdbcDialect().equals(converter2.getJdbcDialect()) == false) {
       return false;//TODOY ask
     }
     
-    boolean res = union.getInputs().size() == 2;
-    
-    return res;
+    return union.getInputs().size() == 2;
   }
 
   @Override
@@ -47,8 +45,7 @@ public class MyUnionPushDown extends RelOptRule {
     final HiveUnion union = call.rel(0);
     final HiveJdbcConverter converter1 = call.rel(1);
     final HiveJdbcConverter converter2 = call.rel(2);
-    
-    
+
     final List<RelNode> unionInput = Arrays.asList(converter1.getInput(), converter2.getInput());
     Union newHiveUnion = (Union) union.copy(union.getTraitSet(), unionInput, union.all);
     JdbcUnion newJdbcUnion = (JdbcUnion) new JdbcUnionRule(converter1.getJdbcConvention()).convert(newHiveUnion);
@@ -58,5 +55,5 @@ public class MyUnionPushDown extends RelOptRule {
       call.transformTo(ConverterRes);
     }
   }
-  
+
 };

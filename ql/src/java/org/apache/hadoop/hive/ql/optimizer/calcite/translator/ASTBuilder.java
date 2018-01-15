@@ -20,17 +20,9 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.math.BigDecimal;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
-import org.apache.calcite.adapter.java.JavaTypeFactory;
-import org.apache.calcite.adapter.jdbc.JdbcImplementor;
-import org.apache.calcite.adapter.jdbc.JdbcTableScan;
-import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rex.RexLiteral;
-import org.apache.calcite.sql.SqlDialect;
-import org.apache.calcite.sql.dialect.JethrodataSqlDialect;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.TimeString;
@@ -74,12 +66,10 @@ public class ASTBuilder {
   }
 
   public static ASTNode table(final RelNode scan) {
-    JdbcHiveTableScan jdbcHiveTableScan = null;
-    
     HiveTableScan hts = null;
     if (scan instanceof HiveJdbcConverter) {
       HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
-      jdbcHiveTableScan = jdbcConverter.getTableScan();
+      JdbcHiveTableScan jdbcHiveTableScan = jdbcConverter.getTableScan();
       
       hts = jdbcHiveTableScan.getHiveTableScan();
     } else if (scan instanceof DruidQuery) {
@@ -110,7 +100,6 @@ public class ASTBuilder {
     } else if (scan instanceof HiveJdbcConverter) {
             HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
             final String query = jdbcConverter.generateSql (jdbcConverter.getJdbcConvention().dialect);
-            final String query2 = jdbcConverter.generateSql (jdbcConverter.getJdbcConvention().dialect);
             logger.info("JETHRO: The HiveJdbcConverter generated sql message is: " + System.lineSeparator() + query);
             propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
                 .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_QUERY + "\"")
@@ -127,7 +116,7 @@ public class ASTBuilder {
               .add(HiveParser.StringLiteral, "\"insideView\"")
               .add(HiveParser.StringLiteral, "\"TRUE\""));
     }
-    
+
     b.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTIES, "TOK_TABLEPROPERTIES").add(propList));
 
     // NOTE: Calcite considers tbls to be equal if their names are the same. Hence
@@ -136,8 +125,7 @@ public class ASTBuilder {
     // However in HIVE DB name can not appear in select list; in case of join
     // where table names differ only in DB name, Hive would require user
     // introducing explicit aliases for tbl.
-    String tableName = hts.getTableAlias();
-    b.add(HiveParser.Identifier, tableName);
+    b.add(HiveParser.Identifier, hts.getTableAlias());
     return b.node();
   }
 

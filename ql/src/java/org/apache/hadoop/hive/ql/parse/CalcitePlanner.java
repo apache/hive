@@ -222,13 +222,14 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSubQueryRemoveRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MyAggregationPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCAggregationPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MyFilterJoinRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MyFilterPushDown;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCFilterPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MyJoinExtractFilterRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MyJoinPushDown;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MyProjectPushDownRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MySortPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCJoinPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCProjectPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCSortPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCUnionPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MyAbstractSplitFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
@@ -1668,7 +1669,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 11. Apply Jdbc transformation rules
       if (LOG.isDebugEnabled()) {
-        LOG.debug("JETHRO: Original plan for jdbc rules:" +System.lineSeparator()+ RelOptUtil.toString(calciteOptimizedPlan));
+        LOG.debug("Original plan for jdbc rules:" + System.lineSeparator() + RelOptUtil.toString(calciteOptimizedPlan));
       }
 
       calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, true, mdProvider.getMetadataProvider(), null,
@@ -1677,14 +1678,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
               MyAbstractSplitFilter.SPLIT_FILTER_ABOVE_JOIN, MyAbstractSplitFilter.SPLIT_FILTER_ABOVE_CONVERTER,
               MyFilterJoinRule.INSTANCE,
               
-              MyJoinPushDown.INSTANCE,
-              MyFilterPushDown.INSTANCE, MyProjectPushDownRule.INSTANCE, 
-              MyAggregationPushDownRule.INSTANCE, MySortPushDownRule.INSTANCE
+              JDBCJoinPushDownRule.INSTANCE, JDBCUnionPushDownRule.INSTANCE,
+              JDBCFilterPushDownRule.INSTANCE, JDBCProjectPushDownRule.INSTANCE, 
+              JDBCAggregationPushDownRule.INSTANCE, JDBCSortPushDownRule.INSTANCE
               //,new HiveFilterJoinRule.FILTER_ON_JOIN
       );
 
       if (LOG.isDebugEnabled()) {
-        LOG.debug("JETHRO: Updated plan after jdbc rules:" + System.lineSeparator()+ RelOptUtil.toString(calciteOptimizedPlan));
+        LOG.debug("Updated plan after jdbc rules:" + System.lineSeparator() + RelOptUtil.toString(calciteOptimizedPlan));
       }
 
       // 12. Run rules to aid in translation from Calcite tree to Hive tree

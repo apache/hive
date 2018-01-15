@@ -45,7 +45,12 @@ public final class MyJoinExtractFilterRule extends AbstractJoinExtractFilterRule
   @Override
   public boolean matches(RelOptRuleCall call) {
     final Join join = call.rel(0);
-    return MyAbstractSplitFilter.canSplitFilter(join.getCondition());
+    final HiveJdbcConverter conv1 = call.rel(1);
+    final HiveJdbcConverter conv2 = call.rel(2);
+    if (conv1.getJdbcDialect().equals(conv2.getJdbcDialect()) == false) {
+      return false;
+    }
+    return MyAbstractSplitFilter.canSplitFilter(join.getCondition(), conv1.getJdbcDialect());
   }
 
 }

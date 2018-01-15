@@ -8,17 +8,18 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlDialect;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MyJoinPushDown extends RelOptRule {
-  static Logger LOG = LoggerFactory.getLogger(MyJoinPushDown.class);
+public class JDBCJoinPushDownRule extends RelOptRule {
+  static Logger LOG = LoggerFactory.getLogger(JDBCJoinPushDownRule.class);
   
-  final static public MyJoinPushDown INSTANCE = new MyJoinPushDown ();
+  final static public JDBCJoinPushDownRule INSTANCE = new JDBCJoinPushDownRule ();
   
-  public MyJoinPushDown() {
+  public JDBCJoinPushDownRule() {
     super(operand(HiveJoin.class,
             operand(HiveJdbcConverter.class, any()),
             operand(HiveJdbcConverter.class, any())));
@@ -27,11 +28,12 @@ public class MyJoinPushDown extends RelOptRule {
   @Override
   public boolean matches(RelOptRuleCall call) {
     final HiveJoin join = call.rel(0);
-    RexNode cond = join.getCondition();
+    final RexNode cond = join.getCondition();
     final HiveJdbcConverter converter1 = call.rel(1);
     final HiveJdbcConverter converter2 = call.rel(2);
     
-    if (converter1.getJdbcConvention().dialect.equals(converter2.getJdbcConvention().dialect) == false) {
+    final SqlDialect dialect = converter1.getJdbcDialect();
+    if (dialect.equals(converter2.getJdbcConvention().dialect) == false) {
       return false;//TODOY ask
     }
 
@@ -39,7 +41,7 @@ public class MyJoinPushDown extends RelOptRule {
       return false;//We don't want to push cross join
     }
     
-    boolean visitorRes = MyJdbcRexCallValidator.isValidJdbcOperation(cond);
+    boolean visitorRes = MyJdbcRexCallValidator.isValidJdbcOperation(cond, dialect);
     return visitorRes;
   }
   

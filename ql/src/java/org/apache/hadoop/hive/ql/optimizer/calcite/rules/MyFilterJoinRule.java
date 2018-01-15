@@ -30,9 +30,16 @@ public class MyFilterJoinRule extends HiveFilterJoinRule {
   public boolean matches(RelOptRuleCall call) {
     Filter filter = call.rel(0);
     Join   join = call.rel(1);
-    boolean visitorRes = MyJdbcRexCallValidator.isValidJdbcOperation(filter.getCondition());
+    HiveJdbcConverter   conv1 = call.rel(2);
+    HiveJdbcConverter   conv2 = call.rel(3);
+    
+    if (conv1.getJdbcDialect().equals(conv2.getJdbcDialect()) == false) {
+      return false;
+    }
+    
+    boolean visitorRes = MyJdbcRexCallValidator.isValidJdbcOperation(filter.getCondition(),conv1.getJdbcDialect());
     if (visitorRes) {
-      return MyJdbcRexCallValidator.isValidJdbcOperation(join.getCondition());  
+      return MyJdbcRexCallValidator.isValidJdbcOperation(join.getCondition(), conv1.getJdbcDialect());  
     }
     return false;
   }

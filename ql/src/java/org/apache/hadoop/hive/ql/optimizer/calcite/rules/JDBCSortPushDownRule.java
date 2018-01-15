@@ -14,21 +14,22 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverte
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MySortPushDownRule extends RelOptRule {
-  static Logger LOG = LoggerFactory.getLogger(MySortPushDownRule.class);
+public class JDBCSortPushDownRule extends RelOptRule {
+  static Logger LOG = LoggerFactory.getLogger(JDBCSortPushDownRule.class);
 
-  public static final MySortPushDownRule INSTANCE = new MySortPushDownRule ();
+  public static final JDBCSortPushDownRule INSTANCE = new JDBCSortPushDownRule ();
 
-  public MySortPushDownRule() {
+  public JDBCSortPushDownRule() {
     super(operand(HiveSortLimit.class,
         operand(HiveJdbcConverter.class, operand(RelNode.class, any()))));
   }
   
   public boolean matches(RelOptRuleCall call) {
     final Sort sort = (Sort) call.rel(0);
+    final HiveJdbcConverter conv = call.rel(1);
 
     for (RexNode curr_call : sort.getChildExps()) {
-      if (MyJdbcRexCallValidator.isValidJdbcOperation(curr_call) == false) {
+      if (MyJdbcRexCallValidator.isValidJdbcOperation(curr_call, conv.getJdbcDialect()) == false) {
         return false;
       }
     }

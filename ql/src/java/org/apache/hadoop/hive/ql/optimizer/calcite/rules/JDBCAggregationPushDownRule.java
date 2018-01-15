@@ -16,16 +16,16 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverte
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MyAggregationPushDownRule extends RelOptRule {
-  static Logger LOG = LoggerFactory.getLogger(MyAggregationPushDownRule.class);
+public class JDBCAggregationPushDownRule extends RelOptRule {
+  static Logger LOG = LoggerFactory.getLogger(JDBCAggregationPushDownRule.class);
   
-  public static final MyAggregationPushDownRule INSTANCE = new MyAggregationPushDownRule ();
+  public static final JDBCAggregationPushDownRule INSTANCE = new JDBCAggregationPushDownRule ();
   
-  public MyAggregationPushDownRule() {
+  public JDBCAggregationPushDownRule() {
     super(operand(HiveAggregate.class,
             operand(HiveJdbcConverter.class, any())));
   }
-  
+
   @Override
   public boolean matches(RelOptRuleCall call) {
     final HiveAggregate agg = call.rel(0);
@@ -35,7 +35,7 @@ public class MyAggregationPushDownRule extends RelOptRule {
       
       SqlAggFunction f = relOptRuleOperand.getAggregation();
       SqlKind kind = f.getKind();
-      if (converter.getJdbcConvention().dialect.supportsAggregateFunction(kind) == false) {
+      if (converter.getJdbcDialect().supportsAggregateFunction(kind) == false) {
         return false;
       }
       

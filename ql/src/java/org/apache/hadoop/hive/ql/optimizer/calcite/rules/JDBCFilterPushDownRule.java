@@ -14,16 +14,16 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverte
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MyFilterPushDown extends RelOptRule {
-  static Logger LOG = LoggerFactory.getLogger(MyFilterPushDown.class);
+public class JDBCFilterPushDownRule extends RelOptRule {
+  static Logger LOG = LoggerFactory.getLogger(JDBCFilterPushDownRule.class);
   
-  public static final MyFilterPushDown INSTANCE = new MyFilterPushDown ();
-  
-  public MyFilterPushDown() {
+  public static final JDBCFilterPushDownRule INSTANCE = new JDBCFilterPushDownRule ();
+
+  public JDBCFilterPushDownRule() {
     super(operand(HiveFilter.class,
-        operand(HiveJdbcConverter.class, any())));
+            operand(HiveJdbcConverter.class, any())));
   }
-  
+
   @Override
   public boolean matches(RelOptRuleCall call) {
     final HiveFilter filter = call.rel(0);
@@ -31,21 +31,21 @@ public class MyFilterPushDown extends RelOptRule {
     
     RexNode cond = filter.getCondition ();
 
-    return MyJdbcRexCallValidator.isValidJdbcOperation(cond, converter.getJdbcConvention().dialect);
+    return MyJdbcRexCallValidator.isValidJdbcOperation(cond, converter.getJdbcDialect());
   }
 
   @Override
   public void onMatch(RelOptRuleCall call) {
     LOG.debug("MyFilterPushDown has been called");
-    
+
     final HiveFilter filter = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
-    
+
     Filter newHiveFilter = filter.copy(filter.getTraitSet(), converter.getInput(),filter.getCondition());
     JdbcFilter newJdbcFilter = (JdbcFilter) new JdbcFilterRule(converter.getJdbcConvention()).convert(newHiveFilter);
     if (newJdbcFilter != null) {
       RelNode ConverterRes = converter.copy(converter.getTraitSet(), Arrays.asList(newJdbcFilter));
-      
+
       call.transformTo(ConverterRes);
     }
   }

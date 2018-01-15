@@ -46,6 +46,7 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ReflectUtil;
 import org.apache.calcite.util.ReflectiveVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter;
 
 import com.google.common.collect.ImmutableList;
 
@@ -89,6 +90,9 @@ public class HiveRelColumnsAlignment implements ReflectiveVisitor {
   }
 
   protected final RelNode dispatchAlign(RelNode node, List<RelFieldCollation> collations) {
+    if (node instanceof HiveJdbcConverter) {
+      return node;
+    }
     return alignDispatcher.invoke(node, collations);
   }
 
@@ -119,11 +123,9 @@ public class HiveRelColumnsAlignment implements ReflectiveVisitor {
     final RelNode child = dispatchAlign(rel.getInput(), propagateCollations.build());
 
     // 3) We annotate the Aggregate operator with this info
-    final Aggregate newAggregate = (Aggregate) rel.copy(rel.getTraitSet(),
+    final HiveAggregate newAggregate = (HiveAggregate) rel.copy(rel.getTraitSet(),
             ImmutableList.of(child));
-    if (newAggregate instanceof HiveAggregate) {
-      ((HiveAggregate) newAggregate).setAggregateColumnsOrder(aggregateColumnsOrder);
-    }
+    newAggregate.setAggregateColumnsOrder(aggregateColumnsOrder);
     return newAggregate;
   }
 

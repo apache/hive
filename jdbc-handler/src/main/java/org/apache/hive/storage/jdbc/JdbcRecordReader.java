@@ -43,7 +43,7 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
 
 
   public JdbcRecordReader(JobConf conf, JdbcInputSplit split) {
-    //LOGGER.debug("Initializing JdbcRecordReader");
+    LOGGER.trace("Initializing JdbcRecordReader");
     this.split = split;
     this.conf = conf;
   }

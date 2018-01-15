@@ -1,4 +1,16 @@
 add jar /home/msydoron/eclipse-workspace/JethroDataJDBCDriver/target/jethro-jdbc-3.6-standalone.jar;
+
+
+create table hivetable_1(x1 int, y1 double);    
+
+INSERT INTO hivetable_1
+VALUES
+(9,9.0),
+(99,99.0),
+(999,999.0),
+(9999,9999.0), 
+(99999,99999.0);
+
 CREATE EXTERNAL TABLE ext_mytable1 (x1 INT, y1 DOUBLE)
 STORED BY
 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -9,7 +21,27 @@ TBLPROPERTIES ( "hive.sql.database.type" = "JETHRO_DATA",
                 "hive.sql.dbcp.password" = "jethro", 
                 "hive.sql.table" = "mytable1",
                 "hive.sql.dbcp.maxActive" = "1");
-                
+
+
+
+--insert into ext_mytable1 select * from hivetable_1 where 11<x1;
+
+
+
+--CREATE TABLE jethro_table_1
+--STORED BY
+--'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+--TBLPROPERTIES ( "hive.sql.database.type" = "JETHRO_DATA",
+--                "hive.sql.jdbc.driver" = "com.jethrodata.JethroDriver",
+--                "hive.sql.jdbc.url" = "jdbc:JethroData://10.0.0.221:9111/demo3",
+--                "hive.sql.dbcp.username" = "jethro",
+--                "hive.sql.dbcp.password" = "jethro", 
+----                "hive.sql.table" = "mytable1",
+--                "hive.sql.dbcp.maxActive" = "1")
+--AS select * from hivetable_1;   
+
+
+
 CREATE EXTERNAL TABLE ext_mytable2 (x2 INT, y2 DOUBLE)
 STORED BY
 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -85,4 +117,7 @@ INNER JOIN ext_mytable2 ON ext_mytable1.x1=ext_mytable2.x2 and ext_mytable1.y1=e
 --
 ----select x, count(*) from ext_mytable where x==10 group by x;
 --
+
+
+
 

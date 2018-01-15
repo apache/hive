@@ -22,6 +22,10 @@ public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
     return _convention;
   }
 
+  public SqlDialect getJdbcDialect() {
+    return _convention.dialect;
+  }
+
   public HiveJdbcConverter(RelOptCluster cluster,  RelTraitSet traits,
       JdbcRel input, JdbcConvention jc) {
     super(cluster, ConventionTraitDef.INSTANCE, traits, input);

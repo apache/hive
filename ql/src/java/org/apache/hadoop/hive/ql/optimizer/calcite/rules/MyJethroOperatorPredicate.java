@@ -24,15 +24,14 @@ class JethroOperatorsPredicate {
     if (dialect != null) {
       return dialect.supportsFunction(operator, type, paramsList);
     }
-    
+
     if (allowedJethroOperators.contains(operator.toString().toLowerCase())) {
       return true;//type.getSqlTypeName()
     }
     LOG.debug("JETHRO: Skipped push down for " + operator.toString() + ", due to unsupporetd function.");
     return false;
   }
-  
-  
+
   public static boolean validRexCall (RexCall call, SqlDialect dialect) {
     final SqlOperator operator = call.getOperator();
     //SqlKind kind = call.getKind();

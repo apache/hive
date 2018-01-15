@@ -13,12 +13,7 @@ public class MyJdbcRexCallValidator {
   
   static private class JdbcRexCallValidatorVisitor extends RexVisitorImpl<Void> {
     final private SqlDialect dialect; 
-    
-    JdbcRexCallValidatorVisitor () {
-      super (true);
-      dialect = null;
-    }
-    
+
     public JdbcRexCallValidatorVisitor(SqlDialect dialect) {
       super (true);
       this.dialect = dialect;
@@ -44,10 +39,6 @@ public class MyJdbcRexCallValidator {
     }
   }
   
-  static public boolean isValidJdbcOperation (RexNode cond) {
-    return new JdbcRexCallValidatorVisitor ().go (cond);
-  }
-
   public static boolean isValidJdbcOperation(RexNode cond, SqlDialect dialect) {
     return new JdbcRexCallValidatorVisitor (dialect).go (cond);
   }
