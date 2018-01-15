@@ -31,7 +31,7 @@ public class JDBCFilterPushDownRule extends RelOptRule {
     
     RexNode cond = filter.getCondition ();
 
-    return MyJdbcRexCallValidator.isValidJdbcOperation(cond, converter.getJdbcDialect());
+    return JDBCRexCallValidator.isValidJdbcOperation(cond, converter.getJdbcDialect());
   }
 
   @Override

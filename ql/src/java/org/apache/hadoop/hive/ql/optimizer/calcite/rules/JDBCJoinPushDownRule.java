@@ -41,7 +41,7 @@ public class JDBCJoinPushDownRule extends RelOptRule {
       return false;//We don't want to push cross join
     }
     
-    boolean visitorRes = MyJdbcRexCallValidator.isValidJdbcOperation(cond, dialect);
+    boolean visitorRes = JDBCRexCallValidator.isValidJdbcOperation(cond, dialect);
     return visitorRes;
   }
   

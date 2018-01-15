@@ -23,16 +23,16 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 
-public final class MyJoinExtractFilterRule extends AbstractJoinExtractFilterRule {
+public final class JDBCExtractJoinFilterRule extends AbstractJoinExtractFilterRule {
   //~ Static fields/initializers ---------------------------------------------
-
+  final static public JDBCExtractJoinFilterRule INSTANCE = new JDBCExtractJoinFilterRule ();
 
   //~ Constructors -----------------------------------------------------------
 
   /**
    * Creates an JoinExtractFilterRule.
    */
-  public MyJoinExtractFilterRule() {
+  public JDBCExtractJoinFilterRule() {
     super(operand(HiveJoin.class,
             operand(HiveJdbcConverter.class, any()),
             operand(HiveJdbcConverter.class, any())), 
@@ -50,7 +50,7 @@ public final class MyJoinExtractFilterRule extends AbstractJoinExtractFilterRule
     if (conv1.getJdbcDialect().equals(conv2.getJdbcDialect()) == false) {
       return false;
     }
-    return MyAbstractSplitFilter.canSplitFilter(join.getCondition(), conv1.getJdbcDialect());
+    return JDBCAbstractSplitFilterRule.canSplitFilter(join.getCondition(), conv1.getJdbcDialect());
   }
 
 }

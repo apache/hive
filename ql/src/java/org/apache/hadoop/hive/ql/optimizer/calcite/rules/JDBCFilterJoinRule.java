@@ -13,12 +13,12 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
  * Rule that tries to push filter expressions into a join condition and into
  * the inputs of the join.
  */
-public class MyFilterJoinRule extends HiveFilterJoinRule {
+public class JDBCFilterJoinRule extends HiveFilterJoinRule {
   
-  final static public MyFilterJoinRule INSTANCE = new MyFilterJoinRule ();
+  final static public JDBCFilterJoinRule INSTANCE = new JDBCFilterJoinRule ();
   
   
-  public MyFilterJoinRule() {
+  public JDBCFilterJoinRule() {
     super(RelOptRule.operand(HiveFilter.class, 
             RelOptRule.operand(HiveJoin.class, 
                 RelOptRule.operand(HiveJdbcConverter.class, RelOptRule.any()),
@@ -37,9 +37,9 @@ public class MyFilterJoinRule extends HiveFilterJoinRule {
       return false;
     }
     
-    boolean visitorRes = MyJdbcRexCallValidator.isValidJdbcOperation(filter.getCondition(),conv1.getJdbcDialect());
+    boolean visitorRes = JDBCRexCallValidator.isValidJdbcOperation(filter.getCondition(),conv1.getJdbcDialect());
     if (visitorRes) {
-      return MyJdbcRexCallValidator.isValidJdbcOperation(join.getCondition(), conv1.getJdbcDialect());  
+      return JDBCRexCallValidator.isValidJdbcOperation(join.getCondition(), conv1.getJdbcDialect());  
     }
     return false;
   }

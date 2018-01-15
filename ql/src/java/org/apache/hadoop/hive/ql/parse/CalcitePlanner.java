@@ -223,14 +223,14 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCAggregationPushDownRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MyFilterJoinRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCFilterJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCFilterPushDownRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MyJoinExtractFilterRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCExtractJoinFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCJoinPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCProjectPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCSortPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCUnionPushDownRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MyAbstractSplitFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCAbstractSplitFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
@@ -1674,14 +1674,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, true, mdProvider.getMetadataProvider(), null,
               HepMatchOrder.TOP_DOWN,
-              new MyJoinExtractFilterRule(),
-              MyAbstractSplitFilter.SPLIT_FILTER_ABOVE_JOIN, MyAbstractSplitFilter.SPLIT_FILTER_ABOVE_CONVERTER,
-              MyFilterJoinRule.INSTANCE,
+              JDBCExtractJoinFilterRule.INSTANCE,
+              JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_JOIN, JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_CONVERTER,
+              JDBCFilterJoinRule.INSTANCE,
               
               JDBCJoinPushDownRule.INSTANCE, JDBCUnionPushDownRule.INSTANCE,
               JDBCFilterPushDownRule.INSTANCE, JDBCProjectPushDownRule.INSTANCE, 
               JDBCAggregationPushDownRule.INSTANCE, JDBCSortPushDownRule.INSTANCE
-              //,new HiveFilterJoinRule.FILTER_ON_JOIN
       );
 
       if (LOG.isDebugEnabled()) {

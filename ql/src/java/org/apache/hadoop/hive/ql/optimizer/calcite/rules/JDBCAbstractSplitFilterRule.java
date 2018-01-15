@@ -18,11 +18,11 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class MyAbstractSplitFilter extends RelOptRule {
-  static Logger LOG = LoggerFactory.getLogger(MyAbstractSplitFilter.class);
+public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
+  static Logger LOG = LoggerFactory.getLogger(JDBCAbstractSplitFilterRule.class);
 
-  static public MyAbstractSplitFilter SPLIT_FILTER_ABOVE_JOIN = new MyUpperJoinFilterFilter ();
-  static public MyAbstractSplitFilter SPLIT_FILTER_ABOVE_CONVERTER = new MySplitFilter ();
+  static public JDBCAbstractSplitFilterRule SPLIT_FILTER_ABOVE_JOIN = new JDBCSplitFilterAboveJoinRule ();
+  static public JDBCAbstractSplitFilterRule SPLIT_FILTER_ABOVE_CONVERTER = new JDBCSplitFilterRule ();
 
   static public class FilterSupportedFunctionsVisitor extends RexVisitorImpl<Void> {
 
@@ -50,7 +50,7 @@ public abstract class MyAbstractSplitFilter extends RelOptRule {
       if (call.getKind() == SqlKind.AND) {
         return super.visitCall(call);
       } else {
-        boolean isValidCall = MyJdbcRexCallValidator.isValidJdbcOperation(call, dialect);
+        boolean isValidCall = JDBCRexCallValidator.isValidJdbcOperation(call, dialect);
         if (isValidCall) {
           validJdbcNode.add(call);
         } else {
@@ -65,7 +65,7 @@ public abstract class MyAbstractSplitFilter extends RelOptRule {
     }
   }
 
-  protected MyAbstractSplitFilter (RelOptRuleOperand operand) {
+  protected JDBCAbstractSplitFilterRule (RelOptRuleOperand operand) {
     super (operand);
   }
 
@@ -123,8 +123,8 @@ public abstract class MyAbstractSplitFilter extends RelOptRule {
     call.transformTo(newJdbcInvalidFilter);
   }
 
-  public static class MyUpperJoinFilterFilter extends MyAbstractSplitFilter {
-    public MyUpperJoinFilterFilter() {
+  public static class JDBCSplitFilterAboveJoinRule extends JDBCAbstractSplitFilterRule {
+    public JDBCSplitFilterAboveJoinRule() {
       super(operand(HiveFilter.class,
               operand(HiveJoin.class, 
                   operand(HiveJdbcConverter.class, any()))));
@@ -139,7 +139,7 @@ public abstract class MyAbstractSplitFilter extends RelOptRule {
 
       RexNode joinCond = join.getCondition ();
 
-      return super.matches(call) && MyJdbcRexCallValidator.isValidJdbcOperation(joinCond, conv.getJdbcDialect());
+      return super.matches(call) && JDBCRexCallValidator.isValidJdbcOperation(joinCond, conv.getJdbcDialect());
     }
 
     @Override
@@ -149,8 +149,8 @@ public abstract class MyAbstractSplitFilter extends RelOptRule {
     }
   }
 
-  public static class MySplitFilter extends MyAbstractSplitFilter {
-    public MySplitFilter() {
+  public static class JDBCSplitFilterRule extends JDBCAbstractSplitFilterRule {
+    public JDBCSplitFilterRule() {
       super(operand(HiveFilter.class,
               operand(HiveJdbcConverter.class, any())));
     }

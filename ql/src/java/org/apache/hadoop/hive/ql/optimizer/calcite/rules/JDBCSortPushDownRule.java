@@ -29,7 +29,7 @@ public class JDBCSortPushDownRule extends RelOptRule {
     final HiveJdbcConverter conv = call.rel(1);
 
     for (RexNode curr_call : sort.getChildExps()) {
-      if (MyJdbcRexCallValidator.isValidJdbcOperation(curr_call, conv.getJdbcDialect()) == false) {
+      if (JDBCRexCallValidator.isValidJdbcOperation(curr_call, conv.getJdbcDialect()) == false) {
         return false;
       }
     }
