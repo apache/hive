@@ -80,6 +80,8 @@ cd $workingDir/
   fi
   rm -rf ../yetus
   mkdir ../yetus
+  #Wait until git gc finishes in the background before proceeding:
+  while ! git gc 2>/dev/null; do sleep 1s ; done
   cp -R . ../yetus
   mkdir $logDir/yetus
   patchCommandPath=$workingDir/scratch/smart-apply-patch.sh
