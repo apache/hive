@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,17 +23,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
-import org.apache.hadoop.hive.cli.CliSessionState;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
@@ -43,98 +41,68 @@ import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.io.HiveInputFormat;
-import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * TestHiveMetaStoreWithEnvironmentContext. Test case for _with_environment_context
  * calls in {@link org.apache.hadoop.hive.metastore.HiveMetaStore}
  */
-public class TestHiveMetaStoreWithEnvironmentContext extends TestCase {
+public class TestHiveMetaStoreWithEnvironmentContext {
 
-  private HiveConf hiveConf;
+  private Configuration conf;
   private HiveMetaStoreClient msc;
   private EnvironmentContext envContext;
   private final Database db = new Database();
-  private Table table = new Table();
-  private final Partition partition = new Partition();
+  private Table table;
+  private Partition partition;
 
   private static final String dbName = "hive3252";
   private static final String tblName = "tmptbl";
   private static final String renamed = "tmptbl2";
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-
+  @Before
+  public void setUp() throws Exception {
     System.setProperty("hive.metastore.event.listeners",
         DummyListener.class.getName());
 
-    int port = MetaStoreTestUtils.startMetaStoreWithRetry();
-
-    hiveConf = new HiveConf(this.getClass());
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
-    hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
-    hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-    SessionState.start(new CliSessionState(hiveConf));
-    msc = new HiveMetaStoreClient(hiveConf);
+    conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setLongVar(conf, ConfVars.THRIFT_CONNECTION_RETRIES, 3);
+    MetastoreConf.setBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    int port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
+    MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
+    msc = new HiveMetaStoreClient(conf);
 
     msc.dropDatabase(dbName, true, true);
 
-    Map<String, String> envProperties = new HashMap<String, String>();
+    Map<String, String> envProperties = new HashMap<>();
     envProperties.put("hadoop.job.ugi", "test_user");
     envContext = new EnvironmentContext(envProperties);
 
     db.setName(dbName);
 
-    Map<String, String> tableParams = new HashMap<String, String>();
-    tableParams.put("a", "string");
-    List<FieldSchema> partitionKeys = new ArrayList<FieldSchema>();
-    partitionKeys.add(new FieldSchema("b", "string", ""));
+    table = new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName)
+        .addTableParam("a", "string")
+        .addPartCol("b", "string")
+        .addCol("a", "string")
+        .addCol("b", "string")
+        .build();
 
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
-    cols.add(new FieldSchema("a", "string", ""));
-    cols.add(new FieldSchema("b", "string", ""));
-    StorageDescriptor sd = new StorageDescriptor();
-    sd.setCols(cols);
-    sd.setCompressed(false);
-    sd.setParameters(tableParams);
-    sd.setSerdeInfo(new SerDeInfo());
-    sd.getSerdeInfo().setName(tblName);
-    sd.getSerdeInfo().setParameters(new HashMap<String, String>());
-    sd.getSerdeInfo().getParameters().put(serdeConstants.SERIALIZATION_FORMAT, "1");
-    sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
-    sd.setInputFormat(HiveInputFormat.class.getName());
-    sd.setOutputFormat(HiveOutputFormat.class.getName());
 
-    table.setDbName(dbName);
-    table.setTableName(tblName);
-    table.setParameters(tableParams);
-    table.setPartitionKeys(partitionKeys);
-    table.setSd(sd);
-
-    List<String> partValues = new ArrayList<String>();
-    partValues.add("2011");
-    partition.setDbName(dbName);
-    partition.setTableName(tblName);
-    partition.setValues(partValues);
-    partition.setSd(table.getSd().deepCopy());
-    partition.getSd().setSerdeInfo(table.getSd().getSerdeInfo().deepCopy());
+    partition = new PartitionBuilder()
+        .fromTable(table)
+        .addValue("2011")
+        .build();
 
     DummyListener.notifyList.clear();
   }
 
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
-  }
-
+  @Test
   public void testEnvironmentContext() throws Exception {
     int listSize = 0;
 
@@ -163,7 +131,7 @@ public class TestHiveMetaStoreWithEnvironmentContext extends TestCase {
     assert partEvent.getStatus();
     assertEquals(envContext, partEvent.getEnvironmentContext());
 
-    List<String> partVals = new ArrayList<String>();
+    List<String> partVals = new ArrayList<>();
     partVals.add("2012");
     msc.appendPartition(dbName, tblName, partVals, envContext);
     listSize++;
@@ -185,7 +153,7 @@ public class TestHiveMetaStoreWithEnvironmentContext extends TestCase {
     listSize++;
     assertEquals(notifyList.size(), listSize);
 
-    List<String> dropPartVals = new ArrayList<String>();
+    List<String> dropPartVals = new ArrayList<>();
     dropPartVals.add("2011");
     msc.dropPartition(dbName, tblName, dropPartVals, envContext);
     listSize++;

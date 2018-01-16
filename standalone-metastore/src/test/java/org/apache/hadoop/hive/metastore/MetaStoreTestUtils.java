@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.slf4j.Logger;
@@ -50,6 +51,7 @@ public class MetaStoreTestUtils {
   public static int startMetaStore(Configuration conf) throws Exception {
     return startMetaStore(HadoopThriftAuthBridge.getBridge(), conf);
   }
+
 
   public static void startMetaStore(final int port, final HadoopThriftAuthBridge bridge) throws Exception {
     MetaStoreTestUtils.startMetaStore(port, bridge, null);
@@ -91,19 +93,22 @@ public class MetaStoreTestUtils {
 
   public static int startMetaStoreWithRetry(final HadoopThriftAuthBridge bridge, Configuration conf)
       throws Exception {
-    Exception metaStoreException = null;
-    int metaStorePort = 0;
+    int metaStorePort = findFreePort();
+    startMetaStoreWithRetry(metaStorePort, bridge, conf);
+    return metaStorePort;
+  }
 
+  private static void startMetaStoreWithRetry(int port, HadoopThriftAuthBridge bridge,
+                                             Configuration conf) throws Exception {
+    Exception metaStoreException = null;
     for (int tryCount = 0; tryCount < MetaStoreTestUtils.RETRY_COUNT; tryCount++) {
       try {
-        metaStorePort = MetaStoreTestUtils.findFreePort();
-        MetaStoreTestUtils.startMetaStore(metaStorePort, bridge, conf);
-        return metaStorePort;
+        MetaStoreTestUtils.startMetaStore(port, bridge, conf);
+        return;
       } catch (ConnectException ce) {
         metaStoreException = ce;
       }
     }
-
     throw metaStoreException;
   }
 
@@ -198,11 +203,20 @@ public class MetaStoreTestUtils {
   /**
    * Setup a configuration file for standalone mode.  There are a few config variables that have
    * defaults that require parts of Hive that aren't present in standalone mode.  This method
-   * sets them to something that will work without the rest of Hive.
+   * sets them to something that will work without the rest of Hive.  It only changes them if
+   * they have not already been set, to avoid clobbering intentional changes.
    * @param conf Configuration object
    */
   public static void setConfForStandloneMode(Configuration conf) {
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TASK_THREADS_ALWAYS,
-        EventCleanerTask.class.getName());
+    if (MetastoreConf.getVar(conf, ConfVars.TASK_THREADS_ALWAYS).equals(
+        ConfVars.TASK_THREADS_ALWAYS.getDefaultVal())) {
+      MetastoreConf.setVar(conf, ConfVars.TASK_THREADS_ALWAYS,
+          EventCleanerTask.class.getName());
+    }
+    if (MetastoreConf.getVar(conf, ConfVars.EXPRESSION_PROXY_CLASS).equals(
+        ConfVars.EXPRESSION_PROXY_CLASS.getDefaultVal())) {
+      MetastoreConf.setClass(conf, ConfVars.EXPRESSION_PROXY_CLASS,
+          DefaultPartitionExpressionProxy.class, PartitionExpressionProxy.class);
+    }
   }
 }
