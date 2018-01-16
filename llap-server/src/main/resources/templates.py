@@ -4,9 +4,6 @@ yarnfile = """
   "queue": "%(queue.string)s",
   "configuration": {
     "properties": {
-      "service.hdfs.keytab.dir": "%(service_keytab_dir)s",
-      "service.am.login.keytab.name": "%(service_keytab)s",
-      "service.keytab.principal.name": "%(service_principal)s",
       "yarn.service.rolling-log.include-pattern": ".*\\\\.done",
       "yarn.component.placement.policy" : "%(placement)d",
       "yarn.container.health.threshold.percent": "%(health_percent)d",
@@ -48,6 +45,10 @@ yarnfile = """
       }
     }
   ],
+  "kerberos_principal" : {
+    "principal_name" : "%(service_principal)s",
+    "keytab" : "%(service_keytab_path)s"
+  },
   "quicklinks": {
     "LLAP Daemon JMX Endpoint": "http://llap-0.${SERVICE_NAME}.${USER}.${DOMAIN}:15002/jmx"
   }

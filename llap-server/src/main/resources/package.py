@@ -124,6 +124,15 @@ def main(args):
 			service_keytab = "llap.keytab"
 		if not service_principal:
 			service_principal = "llap@EXAMPLE.COM"
+	service_keytab_path = service_keytab_dir
+	if service_keytab_path:
+		if service_keytab:
+			service_keytab_path += "/" + service_keytab
+	else:
+		service_keytab_path = service_keytab
+	if service_keytab_path:
+		service_keytab_path = "hdfs:///user/hive/" + service_keytab_path
+
 	if not input:
 		print "Cannot find input files"
 		sys.exit(1)
@@ -155,8 +164,7 @@ def main(args):
 		"service.am.container.mb" : args.service_am_container_mb,
 		"service_appconfig_global_append": construct_service_site_global_string(args.service_appconfig_global),
 		"service_am_jvm_heapsize" : service_am_jvm_heapsize,
-		"service_keytab_dir" : service_keytab_dir,
-		"service_keytab" : service_keytab,
+		"service_keytab_path" : service_keytab_path,
 		"service_principal" : service_principal,
 		"placement" : args.service_placement,
 		"health_percent": args.health_percent,
