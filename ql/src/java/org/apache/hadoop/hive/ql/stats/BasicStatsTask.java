@@ -113,13 +113,11 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     private Partish partish;
     private FileStatus[] partfileStatus;
     private BasicStatsWork work;
-    private boolean atomic;
     private boolean followedColStats1;
 
     public BasicStatsProcessor(Partish partish, BasicStatsWork work, HiveConf conf, boolean followedColStats2) {
       this.partish = partish;
       this.work = work;
-      atomic = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_ATOMIC);
       followedColStats1 = followedColStats2;
     }
 
@@ -141,12 +139,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       if (!work.isExplicitAnalyze() && !followedColStats1) {
         StatsSetupConst.clearColumnStatsState(parameters);
       }
-      // non-partitioned tables:
-      // XXX: I don't aggree with this logic
-      // FIXME: deprecate atomic? what's its purpose?
-      if (!existStats(parameters) && atomic) {
-        return null;
-      }
+
       if(partfileStatus == null){
         LOG.warn("Partition/partfiles is null for: " + partish.getPartition().getSpec());
         return null;
@@ -164,7 +157,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       if (StatsSetupConst.areBasicStatsUptoDate(parameters)) {
         if (statsAggregator != null) {
           String prefix = getAggregationPrefix(p.getTable(), p.getPartition());
-          updateStats(statsAggregator, parameters, prefix, atomic);
+          updateStats(statsAggregator, parameters, prefix);
         }
       }
 
@@ -172,20 +165,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     }
 
     public void collectFileStatus(Warehouse wh) throws MetaException {
-      Map<String, String> parameters = partish.getPartParameters();
-      if (!existStats(parameters) && atomic) {
-        return;
-      }
       partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());
-    }
-
-    @Deprecated
-    private boolean existStats(Map<String, String> parameters) {
-      return parameters.containsKey(StatsSetupConst.ROW_COUNT)
-          || parameters.containsKey(StatsSetupConst.NUM_FILES)
-          || parameters.containsKey(StatsSetupConst.TOTAL_SIZE)
-          || parameters.containsKey(StatsSetupConst.RAW_DATA_SIZE)
-          || parameters.containsKey(StatsSetupConst.NUM_PARTITIONS);
     }
 
     private void updateQuickStats(Map<String, String> parameters, FileStatus[] partfileStatus) throws MetaException {
@@ -211,7 +191,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       return prefix;
     }
 
-    private void updateStats(StatsAggregator statsAggregator, Map<String, String> parameters, String aggKey, boolean atomic) throws HiveException {
+    private void updateStats(StatsAggregator statsAggregator, Map<String, String> parameters, String aggKey) throws HiveException {
 
       for (String statType : StatsSetupConst.statsRequireCompute) {
         String value = statsAggregator.aggregateStats(aggKey, statType);
@@ -225,10 +205,6 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
             }
           }
           parameters.put(statType, String.valueOf(longValue));
-        } else {
-          if (atomic) {
-            throw new HiveException(ErrorMsg.STATSAGGREGATOR_MISSED_SOMESTATS, statType);
-          }
         }
       }
     }
