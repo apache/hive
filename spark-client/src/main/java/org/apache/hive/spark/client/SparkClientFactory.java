@@ -34,9 +34,6 @@ import com.google.common.base.Throwables;
 @InterfaceAudience.Private
 public final class SparkClientFactory {
 
-  /** Used to run the driver in-process, mostly for testing. */
-  static final String CONF_KEY_IN_PROCESS = "spark.client.do_not_use.run_driver_in_process";
-
   /** Used by client and driver to share a client ID for establishing an RPC session. */
   static final String CONF_CLIENT_ID = "spark.client.authentication.client_id";
 
