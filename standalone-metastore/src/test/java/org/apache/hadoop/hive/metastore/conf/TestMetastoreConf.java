@@ -25,7 +25,6 @@ import org.hamcrest.core.StringEndsWith;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +47,7 @@ public class TestMetastoreConf {
 
   @After
   public void unsetProperties() {
+    MetastoreConf.setHiveSiteLocation(null);
     for (MetastoreConf.ConfVars var : MetastoreConf.dataNucleusAndJdoConfs) {
       System.getProperties().remove(var.getVarname());
     }
