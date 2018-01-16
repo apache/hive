@@ -17,11 +17,14 @@
  */
 package org.apache.hadoop.hive.ql;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -697,9 +700,9 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     map = hms.getPartitionColumnStatistics("default","T", partNames, colNames);
     Assert.assertEquals("", 5, map.get(partNames.get(0)).get(0).getStatsData().getLongStats().getHighValue());
   }
-  @Ignore("enable after HIVE-18294")
   @Test
   public void testDefault() throws Exception {
+    hiveConf.set(MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID.getVarname(), "true");
     runStatementOnDriver("drop table if exists T");
     runStatementOnDriver("create table T (a int, b int) stored as orc");
     runStatementOnDriver("insert into T values(1,2),(3,4)");
@@ -711,6 +714,49 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
       {"{\"transactionid\":15,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000015_0000015_0000/bucket_00000"}
     };
     checkExpected(rs, expected, "insert data");
+  }
+  /**
+   * see HIVE-18429
+   */
+  @Test
+  public void testEmptyCompactionResult() throws Exception {
+    hiveConf.set(MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID.getVarname(), "true");
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("create table T (a int, b int) stored as orc");
+    int[][] data = {{1,2}, {3,4}};
+    runStatementOnDriver("insert into T" + makeValuesClause(data));
+    runStatementOnDriver("insert into T" + makeValuesClause(data));
+
+    //delete the bucket files so now we have empty delta dirs
+    List<String> rs = runStatementOnDriver("select distinct INPUT__FILE__NAME from T");
+    FileSystem fs = FileSystem.get(hiveConf);
+    for(String path : rs) {
+      fs.delete(new Path(path), true);
+    }
+    runStatementOnDriver("alter table T compact 'major'");
+    TestTxnCommands2.runWorker(hiveConf);
+
+    //check status of compaction job
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
+    Assert.assertTrue(resp.getCompacts().get(0).getHadoopJobId().startsWith("job_local"));
+
+    //now run another compaction make sure empty dirs don't cause issues
+    runStatementOnDriver("insert into T" + makeValuesClause(data));
+    runStatementOnDriver("alter table T compact 'major'");
+    TestTxnCommands2.runWorker(hiveConf);
+
+    //check status of compaction job
+    resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 2, resp.getCompactsSize());
+    for(int i = 0; i < 2; i++) {
+      Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(i).getState());
+      Assert.assertTrue(resp.getCompacts().get(i).getHadoopJobId().startsWith("job_local"));
+    }
+    rs = runStatementOnDriver("select a, b from T order by a, b");
+    Assert.assertEquals(stringifyValues(data), rs);
 
   }
 }
