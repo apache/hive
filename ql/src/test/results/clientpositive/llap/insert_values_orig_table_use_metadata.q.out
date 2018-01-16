@@ -205,9 +205,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 1 Data size: 295399 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 2953990 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 295399 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 2953990 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -254,24 +254,26 @@ PREHOOK: query: insert into table acid_ivot values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_ivot
 POSTHOOK: query: insert into table acid_ivot values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_ivot
-POSTHOOK: Lineage: acid_ivot.cbigint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cboolean1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cboolean2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cdouble EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cfloat EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.csmallint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cstring1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cstring2 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.ctimestamp1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.ctimestamp2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.ctinyint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivot.cbigint SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cboolean1 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cboolean2 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cdouble SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cfloat SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cint SCRIPT []
+POSTHOOK: Lineage: acid_ivot.csmallint SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cstring1 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cstring2 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.ctimestamp1 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.ctimestamp2 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.ctinyint SCRIPT []
 PREHOOK: query: select count(*) from acid_ivot
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_ivot
@@ -325,24 +327,26 @@ PREHOOK: query: insert into table acid_ivot values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_ivot
 POSTHOOK: query: insert into table acid_ivot values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_ivot
-POSTHOOK: Lineage: acid_ivot.cbigint EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cboolean1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cboolean2 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cdouble EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cfloat EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cint EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.csmallint EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cstring1 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cstring2 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.ctimestamp1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.ctimestamp2 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.ctinyint EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivot.cbigint SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cboolean1 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cboolean2 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cdouble SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cfloat SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cint SCRIPT []
+POSTHOOK: Lineage: acid_ivot.csmallint SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cstring1 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cstring2 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.ctimestamp1 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.ctimestamp2 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.ctinyint SCRIPT []
 PREHOOK: query: desc formatted acid_ivot
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@acid_ivot
@@ -408,9 +412,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 1 Data size: 1554 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 15540 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 1554 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 15540 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -457,24 +461,26 @@ PREHOOK: query: insert into table acid_ivot values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_ivot
 POSTHOOK: query: insert into table acid_ivot values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_ivot
-POSTHOOK: Lineage: acid_ivot.cbigint EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cboolean1 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cboolean2 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cdouble EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cfloat EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cint EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.csmallint EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cstring1 SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.cstring2 SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.ctimestamp1 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.ctimestamp2 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
-POSTHOOK: Lineage: acid_ivot.ctinyint EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: acid_ivot.cbigint SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cboolean1 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cboolean2 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cdouble SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cfloat SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cint SCRIPT []
+POSTHOOK: Lineage: acid_ivot.csmallint SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cstring1 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.cstring2 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.ctimestamp1 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.ctimestamp2 SCRIPT []
+POSTHOOK: Lineage: acid_ivot.ctinyint SCRIPT []
 PREHOOK: query: desc formatted acid_ivot
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@acid_ivot
@@ -540,9 +546,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 1 Data size: 3109 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 31090 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 3109 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 31090 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -670,9 +676,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 1 Data size: 298508 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 2985080 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 298508 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 2985080 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -903,17 +909,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sp
-                  Statistics: Num rows: 1 Data size: 5820 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 99 Data size: 58912 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 1 Data size: 5820 Basic stats: PARTIAL Column stats: COMPLETE
+                    Statistics: Num rows: 99 Data size: 58912 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -924,10 +930,10 @@ STAGE PLANS:
                 aggregations: count(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -953,13 +959,15 @@ POSTHOOK: Input: default@sp@ds=2008-04-08/hr=11
 PREHOOK: query: insert into table sp PARTITION (ds="2008-04-08", hr="11") values
         ('1', '2'), ('3', '4')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@sp@ds=2008-04-08/hr=11
 POSTHOOK: query: insert into table sp PARTITION (ds="2008-04-08", hr="11") values
         ('1', '2'), ('3', '4')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@sp@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: sp PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: sp PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: sp PARTITION(ds=2008-04-08,hr=11).key SCRIPT []
+POSTHOOK: Lineage: sp PARTITION(ds=2008-04-08,hr=11).value SCRIPT []
 PREHOOK: query: desc formatted sp PARTITION (ds="2008-04-08", hr="11")
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@sp
