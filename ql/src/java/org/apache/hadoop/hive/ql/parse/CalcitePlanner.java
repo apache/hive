@@ -2510,7 +2510,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             if (jt == null) {
               throw new SemanticException ("Table " + tableName + " was not found in the database");
             }
-            
 
             JdbcHiveTableScan jdbcTableRel = new JdbcHiveTableScan (cluster, optTable, jt, jc, hts);
             tableRel = new HiveJdbcConverter(cluster, jdbcTableRel.getTraitSet().replace (HiveRelNode.CONVENTION), jdbcTableRel, jc);

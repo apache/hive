@@ -154,6 +154,12 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
       super(operand(HiveFilter.class,
               operand(HiveJdbcConverter.class, any())));
     }
+    
+    @Override
+    public boolean matches(RelOptRuleCall call) {
+      final HiveJdbcConverter conv = call.rel(1);
+      return super.matches(call, conv.getJdbcDialect());
+    }
 
     @Override
     public void onMatch(RelOptRuleCall call) {
