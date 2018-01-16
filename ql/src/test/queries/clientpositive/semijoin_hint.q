@@ -13,6 +13,7 @@ set hive.stats.autogather=true;
 set hive.tez.bigtable.minsize.semijoin.reduction=1;
 set hive.tez.min.bloom.filter.entries=1;
 set hive.tez.dynamic.semijoin.reduction.threshold=-999999999999;
+set hive.metastore.aggregate.stats.cache.enabled=false;
 
 -- Create Tables
 create table alltypesorc_int ( cint int, cstring string ) stored as ORC;
@@ -96,4 +97,3 @@ explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join src
 
 -- This should NOT create a semijoin
 explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1);
-
