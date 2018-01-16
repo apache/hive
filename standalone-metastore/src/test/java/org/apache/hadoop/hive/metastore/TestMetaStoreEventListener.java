@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,13 +26,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.cli.CliSessionState;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.IndexBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
@@ -60,10 +66,15 @@ import org.apache.hadoop.hive.metastore.events.PreDropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.events.PreLoadPartitionDoneEvent;
-import org.apache.hadoop.hive.ql.DriverFactory;
-import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.processors.SetProcessor;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Lists;
 
@@ -74,52 +85,37 @@ import junit.framework.TestCase;
  * {@link org.apache.hadoop.hive.metastore.MetaStoreEventListener} and
  * {@link org.apache.hadoop.hive.metastore.MetaStorePreEventListener}
  */
-public class TestMetaStoreEventListener extends TestCase {
-  private HiveConf hiveConf;
+public class TestMetaStoreEventListener {
+  private Configuration conf;
   private HiveMetaStoreClient msc;
-  private IDriver driver;
 
   private static final String dbName = "hive2038";
   private static final String tblName = "tmptbl";
   private static final String renamed = "tmptbl2";
-  private static final String metaConfKey = "hive.metastore.partition.name.whitelist.pattern";
+  private static final String metaConfKey = "metastore.partition.name.whitelist.pattern";
   private static final String metaConfVal = "";
 
-  @Override
-  protected void setUp() throws Exception {
-
-    super.setUp();
-
+  @Before
+  public void setUp() throws Exception {
     System.setProperty("hive.metastore.event.listeners",
         DummyListener.class.getName());
     System.setProperty("hive.metastore.pre.event.listeners",
         DummyPreListener.class.getName());
 
-    hiveConf = new HiveConf(this.getClass());
+    conf = MetastoreConf.newMetastoreConf();
 
-    hiveConf.setVar(HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN, metaConfVal);
-    int port = MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
+    MetastoreConf.setVar(conf, ConfVars.PARTITION_NAME_WHITELIST_PATTERN, metaConfVal);
+    MetastoreConf.setLongVar(conf, ConfVars.THRIFT_CONNECTION_RETRIES, 3);
+    MetastoreConf.setBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    int port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
+    MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
 
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
-    hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
-    hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-    hiveConf.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
-        "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
-    SessionState.start(new CliSessionState(hiveConf));
-    msc = new HiveMetaStoreClient(hiveConf);
-    driver = DriverFactory.newDriver(hiveConf);
+    msc = new HiveMetaStoreClient(conf);
 
-    driver.run("drop database if exists " + dbName + " cascade");
-
+    msc.dropDatabase(dbName, true, true, true);
     DummyListener.notifyList.clear();
     DummyPreListener.notifyList.clear();
-  }
-
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
   }
 
   private void validateCreateDb(Database expectedDb, Database actualDb) {
@@ -226,6 +222,7 @@ public class TestMetaStoreEventListener extends TestCase {
     validateIndex(expectedIndex, actualIndex);
   }
 
+  @Test
   public void testListener() throws Exception {
     int listSize = 0;
 
@@ -234,21 +231,28 @@ public class TestMetaStoreEventListener extends TestCase {
     assertEquals(notifyList.size(), listSize);
     assertEquals(preNotifyList.size(), listSize);
 
-    driver.run("create database " + dbName);
+    Database db = new DatabaseBuilder()
+        .setName(dbName)
+        .build();
+    msc.createDatabase(db);
     listSize++;
     PreCreateDatabaseEvent preDbEvent = (PreCreateDatabaseEvent)(preNotifyList.get(preNotifyList.size() - 1));
-    Database db = msc.getDatabase(dbName);
+    db = msc.getDatabase(dbName);
     assertEquals(listSize, notifyList.size());
     assertEquals(listSize + 1, preNotifyList.size());
     validateCreateDb(db, preDbEvent.getDatabase());
 
     CreateDatabaseEvent dbEvent = (CreateDatabaseEvent)(notifyList.get(listSize - 1));
-    assert dbEvent.getStatus();
+    Assert.assertTrue(dbEvent.getStatus());
     validateCreateDb(db, dbEvent.getDatabase());
 
-
-    driver.run("use " + dbName);
-    driver.run(String.format("create table %s (a string) partitioned by (b string)", tblName));
+    Table table = new TableBuilder()
+        .setDbName(db)
+        .setTableName(tblName)
+        .addCol("a", "string")
+        .addPartCol("b", "string")
+        .build();
+    msc.createTable(table);
     PreCreateTableEvent preTblEvent = (PreCreateTableEvent)(preNotifyList.get(preNotifyList.size() - 1));
     listSize++;
     Table tbl = msc.getTable(dbName, tblName);
@@ -256,33 +260,45 @@ public class TestMetaStoreEventListener extends TestCase {
     assertEquals(notifyList.size(), listSize);
 
     CreateTableEvent tblEvent = (CreateTableEvent)(notifyList.get(listSize - 1));
-    assert tblEvent.getStatus();
+    Assert.assertTrue(tblEvent.getStatus());
     validateCreateTable(tbl, tblEvent.getTable());
 
-    driver.run("create index tmptbl_i on table tmptbl(a) as 'compact' " +
-        "WITH DEFERRED REBUILD IDXPROPERTIES ('prop1'='val1', 'prop2'='val2')");
+    String indexName = "tmptbl_i";
+    Index index = new IndexBuilder()
+        .setDbAndTableName(table)
+        .setIndexName(indexName)
+        .addCol("a", "string")
+        .setDeferredRebuild(true)
+        .addIndexParam("prop1", "val1")
+        .addIndexParam("prop2", "val2")
+        .build();
+    Table indexTable = new TableBuilder()
+        .fromIndex(index)
+        .build();
+    msc.createIndex(index, indexTable);
     listSize += 2;  // creates index table internally
     assertEquals(notifyList.size(), listSize);
 
     AddIndexEvent addIndexEvent = (AddIndexEvent)notifyList.get(listSize - 1);
-    assert addIndexEvent.getStatus();
-    PreAddIndexEvent preAddIndexEvent = (PreAddIndexEvent)(preNotifyList.get(preNotifyList.size() - 3));
+    Assert.assertTrue(addIndexEvent.getStatus());
+    PreAddIndexEvent preAddIndexEvent = (PreAddIndexEvent)(preNotifyList.get(preNotifyList.size() - 2));
 
-    Index oldIndex = msc.getIndex(dbName, "tmptbl", "tmptbl_i");
+    Index oldIndex = msc.getIndex(dbName, tblName, indexName);
 
     validateAddIndex(oldIndex, addIndexEvent.getIndex());
 
     validateAddIndex(oldIndex, preAddIndexEvent.getIndex());
 
-    driver.run("alter index tmptbl_i on tmptbl set IDXPROPERTIES " +
-        "('prop1'='val1_new', 'prop3'='val3')");
+    Index alteredIndex = new Index(oldIndex);
+    alteredIndex.getParameters().put("prop3", "val3");
+    msc.alter_index(dbName, tblName, indexName, alteredIndex);
     listSize++;
     assertEquals(notifyList.size(), listSize);
 
-    Index newIndex = msc.getIndex(dbName, "tmptbl", "tmptbl_i");
+    Index newIndex = msc.getIndex(dbName, tblName, indexName);
 
     AlterIndexEvent alterIndexEvent = (AlterIndexEvent) notifyList.get(listSize - 1);
-    assert alterIndexEvent.getStatus();
+    Assert.assertTrue(alterIndexEvent.getStatus());
     validateAlterIndex(oldIndex, alterIndexEvent.getOldIndex(),
         newIndex, alterIndexEvent.getNewIndex());
 
@@ -290,25 +306,29 @@ public class TestMetaStoreEventListener extends TestCase {
     validateAlterIndex(oldIndex, preAlterIndexEvent.getOldIndex(),
         newIndex, preAlterIndexEvent.getNewIndex());
 
-    driver.run("drop index tmptbl_i on tmptbl");
+    msc.dropIndex(dbName, tblName, indexName, true);
     listSize++;
     assertEquals(notifyList.size(), listSize);
 
     DropIndexEvent dropIndexEvent = (DropIndexEvent) notifyList.get(listSize - 1);
-    assert dropIndexEvent.getStatus();
+    Assert.assertTrue(dropIndexEvent.getStatus());
     validateDropIndex(newIndex, dropIndexEvent.getIndex());
 
     PreDropIndexEvent preDropIndexEvent = (PreDropIndexEvent) (preNotifyList.get(preNotifyList.size() - 1));
     validateDropIndex(newIndex, preDropIndexEvent.getIndex());
 
-    driver.run("alter table tmptbl add partition (b='2011')");
+    Partition part = new PartitionBuilder()
+        .fromTable(table)
+        .addValue("2011")
+        .build();
+    msc.add_partition(part);
     listSize++;
     assertEquals(notifyList.size(), listSize);
     PreAddPartitionEvent prePartEvent = (PreAddPartitionEvent)(preNotifyList.get(preNotifyList.size() - 1));
 
     AddPartitionEvent partEvent = (AddPartitionEvent)(notifyList.get(listSize-1));
-    assert partEvent.getStatus();
-    Partition part = msc.getPartition("hive2038", "tmptbl", "b=2011");
+    Assert.assertTrue(partEvent.getStatus());
+    part = msc.getPartition("hive2038", "tmptbl", "b=2011");
     Partition partAdded = partEvent.getPartitionIterator().next();
     validateAddPartition(part, partAdded);
     validateTableInAddPartition(tbl, partEvent.getTable());
@@ -316,8 +336,8 @@ public class TestMetaStoreEventListener extends TestCase {
 
     // Test adding multiple partitions in a single partition-set, atomically.
     int currentTime = (int)System.currentTimeMillis();
-    HiveMetaStoreClient hmsClient = new HiveMetaStoreClient(hiveConf);
-    Table table = hmsClient.getTable(dbName, "tmptbl");
+    HiveMetaStoreClient hmsClient = new HiveMetaStoreClient(conf);
+    table = hmsClient.getTable(dbName, "tmptbl");
     Partition partition1 = new Partition(Arrays.asList("20110101"), dbName, "tmptbl", currentTime,
                                         currentTime, table.getSd(), table.getParameters());
     Partition partition2 = new Partition(Arrays.asList("20110102"), dbName, "tmptbl", currentTime,
@@ -334,7 +354,8 @@ public class TestMetaStoreEventListener extends TestCase {
     assertEquals("Unexpected partition value.", partition2.getValues(), multiParts.get(1).getValues());
     assertEquals("Unexpected partition value.", partition3.getValues(), multiParts.get(2).getValues());
 
-    driver.run(String.format("alter table %s touch partition (%s)", tblName, "b='2011'"));
+    part.setLastAccessTime((int)(System.currentTimeMillis()/1000));
+    msc.alter_partition(dbName, tblName, part);
     listSize++;
     assertEquals(notifyList.size(), listSize);
     PreAlterPartitionEvent preAlterPartEvent =
@@ -345,7 +366,7 @@ public class TestMetaStoreEventListener extends TestCase {
     Partition origP = msc.getPartition(dbName, tblName, "b=2011");
 
     AlterPartitionEvent alterPartEvent = (AlterPartitionEvent)notifyList.get(listSize - 1);
-    assert alterPartEvent.getStatus();
+    Assert.assertTrue(alterPartEvent.getStatus());
     validateAlterPartition(origP, origP, alterPartEvent.getOldPartition().getDbName(),
         alterPartEvent.getOldPartition().getTableName(),
         alterPartEvent.getOldPartition().getValues(), alterPartEvent.getNewPartition());
@@ -355,7 +376,7 @@ public class TestMetaStoreEventListener extends TestCase {
         preAlterPartEvent.getTableName(), preAlterPartEvent.getNewPartition().getValues(),
         preAlterPartEvent.getNewPartition());
 
-    List<String> part_vals = new ArrayList<String>();
+    List<String> part_vals = new ArrayList<>();
     part_vals.add("c=2012");
     int preEventListSize;
     preEventListSize = preNotifyList.size() + 1;
@@ -374,25 +395,31 @@ public class TestMetaStoreEventListener extends TestCase {
         (PreAddPartitionEvent)(preNotifyList.get(preNotifyList.size() - 1));
     validateAddPartition(newPart, preAppendPartEvent.getPartitions().get(0));
 
-    driver.run(String.format("alter table %s rename to %s", tblName, renamed));
+    Table renamedTable = new Table(table);
+    renamedTable.setTableName(renamed);
+    msc.alter_table(dbName, tblName, renamedTable);
     listSize++;
     assertEquals(notifyList.size(), listSize);
     PreAlterTableEvent preAlterTableE = (PreAlterTableEvent) preNotifyList.get(preNotifyList.size() - 1);
 
-    Table renamedTable = msc.getTable(dbName, renamed);
+    renamedTable = msc.getTable(dbName, renamed);
 
     AlterTableEvent alterTableE = (AlterTableEvent) notifyList.get(listSize-1);
-    assert alterTableE.getStatus();
+    Assert.assertTrue(alterTableE.getStatus());
     validateAlterTable(tbl, renamedTable, alterTableE.getOldTable(), alterTableE.getNewTable());
     validateAlterTable(tbl, renamedTable, preAlterTableE.getOldTable(),
         preAlterTableE.getNewTable());
 
     //change the table name back
-    driver.run(String.format("alter table %s rename to %s", renamed, tblName));
+    table = new Table(renamedTable);
+    table.setTableName(tblName);
+    msc.alter_table(dbName, renamed, table);
     listSize++;
     assertEquals(notifyList.size(), listSize);
 
-    driver.run(String.format("alter table %s ADD COLUMNS (c int)", tblName));
+    table = msc.getTable(dbName, tblName);
+    table.getSd().addToCols(new FieldSchema("c", "int", ""));
+    msc.alter_table(dbName, tblName, table);
     listSize++;
     assertEquals(notifyList.size(), listSize);
     preAlterTableE = (PreAlterTableEvent) preNotifyList.get(preNotifyList.size() - 1);
@@ -400,19 +427,19 @@ public class TestMetaStoreEventListener extends TestCase {
     Table altTable = msc.getTable(dbName, tblName);
 
     alterTableE = (AlterTableEvent) notifyList.get(listSize-1);
-    assert alterTableE.getStatus();
+    Assert.assertTrue(alterTableE.getStatus());
     validateAlterTableColumns(tbl, altTable, alterTableE.getOldTable(), alterTableE.getNewTable());
     validateAlterTableColumns(tbl, altTable, preAlterTableE.getOldTable(),
         preAlterTableE.getNewTable());
 
-    Map<String,String> kvs = new HashMap<String, String>(1);
+    Map<String,String> kvs = new HashMap<>(1);
     kvs.put("b", "2011");
     msc.markPartitionForEvent("hive2038", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
     listSize++;
     assertEquals(notifyList.size(), listSize);
 
     LoadPartitionDoneEvent partMarkEvent = (LoadPartitionDoneEvent)notifyList.get(listSize - 1);
-    assert partMarkEvent.getStatus();
+    Assert.assertTrue(partMarkEvent.getStatus());
     validateLoadPartitionDone("tmptbl", kvs, partMarkEvent.getTable().getTableName(),
         partMarkEvent.getPartitionName());
 
@@ -421,64 +448,66 @@ public class TestMetaStoreEventListener extends TestCase {
     validateLoadPartitionDone("tmptbl", kvs, prePartMarkEvent.getTableName(),
         prePartMarkEvent.getPartitionName());
 
-    driver.run(String.format("alter table %s drop partition (b='2011')", tblName));
+    msc.dropPartition(dbName, tblName, Collections.singletonList("2011"));
     listSize++;
     assertEquals(notifyList.size(), listSize);
     PreDropPartitionEvent preDropPart = (PreDropPartitionEvent) preNotifyList.get(preNotifyList
         .size() - 1);
 
     DropPartitionEvent dropPart = (DropPartitionEvent)notifyList.get(listSize - 1);
-    assert dropPart.getStatus();
+    Assert.assertTrue(dropPart.getStatus());
     validateDropPartition(Collections.singletonList(part).iterator(), dropPart.getPartitionIterator());
     validateTableInDropPartition(tbl, dropPart.getTable());
 
     validateDropPartition(Collections.singletonList(part).iterator(), preDropPart.getPartitionIterator());
     validateTableInDropPartition(tbl, preDropPart.getTable());
 
-    driver.run("drop table " + tblName);
+    msc.dropTable(dbName, tblName);
     listSize++;
     assertEquals(notifyList.size(), listSize);
     PreDropTableEvent preDropTbl = (PreDropTableEvent)preNotifyList.get(preNotifyList.size() - 1);
 
     DropTableEvent dropTbl = (DropTableEvent)notifyList.get(listSize-1);
-    assert dropTbl.getStatus();
+    Assert.assertTrue(dropTbl.getStatus());
     validateDropTable(tbl, dropTbl.getTable());
     validateDropTable(tbl, preDropTbl.getTable());
 
-    driver.run("drop database " + dbName);
+    msc.dropDatabase(dbName);
     listSize++;
     assertEquals(notifyList.size(), listSize);
     PreDropDatabaseEvent preDropDB = (PreDropDatabaseEvent)preNotifyList.get(preNotifyList.size() - 1);
 
     DropDatabaseEvent dropDB = (DropDatabaseEvent)notifyList.get(listSize-1);
-    assert dropDB.getStatus();
+    Assert.assertTrue(dropDB.getStatus());
     validateDropDb(db, dropDB.getDatabase());
     validateDropDb(db, preDropDB.getDatabase());
 
-    SetProcessor.setVariable("metaconf:hive.metastore.try.direct.sql", "false");
+    msc.setMetaConf("metastore.try.direct.sql", "false");
     ConfigChangeEvent event = (ConfigChangeEvent) notifyList.get(notifyList.size() - 1);
-    assertEquals("hive.metastore.try.direct.sql", event.getKey());
+    assertEquals("metastore.try.direct.sql", event.getKey());
     assertEquals("true", event.getOldValue());
     assertEquals("false", event.getNewValue());
   }
 
+  @Test
   public void testMetaConfNotifyListenersClosingClient() throws Exception {
-    HiveMetaStoreClient closingClient = new HiveMetaStoreClient(hiveConf, null);
+    HiveMetaStoreClient closingClient = new HiveMetaStoreClient(conf, null);
     closingClient.setMetaConf(metaConfKey, "[test pattern modified]");
     ConfigChangeEvent event = (ConfigChangeEvent) DummyListener.getLastEvent();
     assertEquals(event.getOldValue(), metaConfVal);
     assertEquals(event.getNewValue(), "[test pattern modified]");
     closingClient.close();
 
-    Thread.sleep(5 * 1000);
+    Thread.sleep(2 * 1000);
 
     event = (ConfigChangeEvent) DummyListener.getLastEvent();
     assertEquals(event.getOldValue(), "[test pattern modified]");
     assertEquals(event.getNewValue(), metaConfVal);
   }
 
+  @Test
   public void testMetaConfNotifyListenersNonClosingClient() throws Exception {
-    HiveMetaStoreClient nonClosingClient = new HiveMetaStoreClient(hiveConf, null);
+    HiveMetaStoreClient nonClosingClient = new HiveMetaStoreClient(conf, null);
     nonClosingClient.setMetaConf(metaConfKey, "[test pattern modified]");
     ConfigChangeEvent event = (ConfigChangeEvent) DummyListener.getLastEvent();
     assertEquals(event.getOldValue(), metaConfVal);
@@ -486,35 +515,37 @@ public class TestMetaStoreEventListener extends TestCase {
     // This should also trigger meta listener notification via TServerEventHandler#deleteContext
     nonClosingClient.getTTransport().close();
 
-    Thread.sleep(5 * 1000);
+    Thread.sleep(2 * 1000);
 
     event = (ConfigChangeEvent) DummyListener.getLastEvent();
     assertEquals(event.getOldValue(), "[test pattern modified]");
     assertEquals(event.getNewValue(), metaConfVal);
   }
 
+  @Test
   public void testMetaConfDuplicateNotification() throws Exception {
-    HiveMetaStoreClient closingClient = new HiveMetaStoreClient(hiveConf, null);
+    HiveMetaStoreClient closingClient = new HiveMetaStoreClient(conf, null);
     closingClient.setMetaConf(metaConfKey, metaConfVal);
     int beforeCloseNotificationEventCounts = DummyListener.notifyList.size();
     closingClient.close();
 
-    Thread.sleep(5 * 1000);
+    Thread.sleep(2 * 1000);
 
     int afterCloseNotificationEventCounts = DummyListener.notifyList.size();
     // Setting key to same value, should not trigger configChange event during shutdown
     assertEquals(beforeCloseNotificationEventCounts, afterCloseNotificationEventCounts);
   }
 
+  @Test
   public void testMetaConfSameHandler() throws Exception {
-    HiveMetaStoreClient closingClient = new HiveMetaStoreClient(hiveConf, null);
+    HiveMetaStoreClient closingClient = new HiveMetaStoreClient(conf, null);
     closingClient.setMetaConf(metaConfKey, "[test pattern modified]");
     ConfigChangeEvent event = (ConfigChangeEvent) DummyListener.getLastEvent();
     int beforeCloseNotificationEventCounts = DummyListener.notifyList.size();
     IHMSHandler beforeHandler = event.getIHMSHandler();
     closingClient.close();
 
-    Thread.sleep(5 * 1000);
+    Thread.sleep(2 * 1000);
     event = (ConfigChangeEvent) DummyListener.getLastEvent();
     int afterCloseNotificationEventCounts = DummyListener.notifyList.size();
     IHMSHandler afterHandler = event.getIHMSHandler();

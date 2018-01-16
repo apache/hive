@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,18 +18,12 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.lang.Exception;
 import java.lang.Override;
-import java.lang.RuntimeException;
-import java.lang.StackTraceElement;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
 import java.sql.Clob;
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.DriverPropertyInfo;
 import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.SQLClientInfoException;
@@ -44,20 +38,6 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 import java.util.Properties;
-
-import javax.jdo.JDOCanRetryException;
-
-import junit.framework.TestCase;
-import org.junit.Test;
-
-import org.apache.derby.jdbc.EmbeddedDriver;
-
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.ObjectStore;
-
-import org.apache.hadoop.hive.metastore.TestObjectStoreInitRetry;
-
 
 /**
  * Fake derby driver - companion class to enable testing by TestObjectStoreInitRetry
@@ -421,4 +401,4 @@ public class FakeDerby extends org.apache.derby.jdbc.EmbeddedDriver {
   }
 
 
-};
+}

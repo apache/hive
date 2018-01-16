@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,37 +18,15 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 
-public class TestEmbeddedHiveMetaStore extends TestHiveMetaStore {
-
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    warehouse = new Warehouse(hiveConf);
-    client = createClient();
-  }
-
-  @Override
-  protected void tearDown() throws Exception {
-    try {
-      super.tearDown();
-      client.close();
-    } catch (Throwable e) {
-      System.err.println("Unable to close metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw new Exception(e);
-    }
-  }
+public class TestSetUGIOnOnlyServer extends TestSetUGIOnBothClientServer {
 
   @Override
   protected HiveMetaStoreClient createClient() throws Exception {
-    try {
-      return new HiveMetaStoreClient(hiveConf);
-    } catch (Throwable e) {
-      System.err.println("Unable to open the metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw new Exception(e);
-    }
+    MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
+    MetastoreConf.setBoolVar(conf, ConfVars.EXECUTE_SET_UGI, false);
+    return new HiveMetaStoreClient(conf);
   }
 }

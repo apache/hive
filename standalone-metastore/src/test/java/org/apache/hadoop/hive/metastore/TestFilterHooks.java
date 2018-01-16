@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,10 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.UtilsForTest;
-import org.apache.hadoop.hive.cli.CliSessionState;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -36,9 +32,13 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.DriverFactory;
-import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.IndexBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -51,7 +51,7 @@ public class TestFilterHooks {
   private static final Logger LOG = LoggerFactory.getLogger(TestFilterHooks.class);
 
   public static class DummyMetaStoreFilterHookImpl extends DefaultMetaStoreFilterHookImpl {
-    public static boolean blockResults = false;
+    private static boolean blockResults = false;
 
     public DummyMetaStoreFilterHookImpl(Configuration conf) {
       super(conf);
@@ -60,7 +60,7 @@ public class TestFilterHooks {
     @Override
     public List<String> filterDatabases(List<String> dbList) throws MetaException  {
       if (blockResults) {
-        return new ArrayList<String>();
+        return new ArrayList<>();
       }
       return super.filterDatabases(dbList);
     }
@@ -76,7 +76,7 @@ public class TestFilterHooks {
     @Override
     public List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException {
       if (blockResults) {
-        return new ArrayList<String>();
+        return new ArrayList<>();
       }
       return super.filterTableNames(dbName, tableList);
     }
@@ -92,7 +92,7 @@ public class TestFilterHooks {
     @Override
     public List<Table> filterTables(List<Table> tableList) throws MetaException {
       if (blockResults) {
-        return new ArrayList<Table>();
+        return new ArrayList<>();
       }
       return super.filterTables(tableList);
     }
@@ -100,7 +100,7 @@ public class TestFilterHooks {
     @Override
     public List<Partition> filterPartitions(List<Partition> partitionList) throws MetaException {
       if (blockResults) {
-        return new ArrayList<Partition>();
+        return new ArrayList<>();
       }
       return super.filterPartitions(partitionList);
     }
@@ -109,7 +109,7 @@ public class TestFilterHooks {
     public List<PartitionSpec> filterPartitionSpecs(
         List<PartitionSpec> partitionSpecList) throws MetaException {
       if (blockResults) {
-        return new ArrayList<PartitionSpec>();
+        return new ArrayList<>();
       }
       return super.filterPartitionSpecs(partitionSpecList);
     }
@@ -126,7 +126,7 @@ public class TestFilterHooks {
     public List<String> filterPartitionNames(String dbName, String tblName,
         List<String> partitionNames) throws MetaException {
       if (blockResults) {
-        return new ArrayList<String>();
+        return new ArrayList<>();
       }
       return super.filterPartitionNames(dbName, tblName, partitionNames);
     }
@@ -143,7 +143,7 @@ public class TestFilterHooks {
     public List<String> filterIndexNames(String dbName, String tblName,
         List<String> indexList) throws MetaException {
       if (blockResults) {
-        return new ArrayList<String>();
+        return new ArrayList<>();
       }
       return super.filterIndexNames(dbName, tblName, indexList);
     }
@@ -151,7 +151,7 @@ public class TestFilterHooks {
     @Override
     public List<Index> filterIndexes(List<Index> indexeList) throws MetaException {
       if (blockResults) {
-        return new ArrayList<Index>();
+        return new ArrayList<>();
       }
       return super.filterIndexes(indexeList);
     }
@@ -162,47 +162,69 @@ public class TestFilterHooks {
   private static final String TAB1 = "tab1";
   private static final String TAB2 = "tab2";
   private static final String INDEX1 = "idx1";
-  private static HiveConf hiveConf;
+  private static Configuration conf;
   private static HiveMetaStoreClient msc;
-  private static IDriver driver;
 
   @BeforeClass
   public static void setUp() throws Exception {
     DummyMetaStoreFilterHookImpl.blockResults = false;
 
-    hiveConf = new HiveConf(TestFilterHooks.class);
-    hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
-    hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-    hiveConf.setVar(ConfVars.METASTORE_FILTER_HOOK, DummyMetaStoreFilterHookImpl.class.getName());
-    UtilsForTest.setNewDerbyDbLocation(hiveConf, TestFilterHooks.class.getSimpleName());
-    int port = MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
+    conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setLongVar(conf, ConfVars.THRIFT_CONNECTION_RETRIES, 3);
+    MetastoreConf.setBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    MetastoreConf.setClass(conf, ConfVars.FILTER_HOOK, DummyMetaStoreFilterHookImpl.class,
+        MetaStoreFilterHook.class);
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    int port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
+    MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
 
-    SessionState.start(new CliSessionState(hiveConf));
-    msc = new HiveMetaStoreClient(hiveConf);
-    driver = DriverFactory.newDriver(hiveConf);
+    msc = new HiveMetaStoreClient(conf);
 
-    driver.run("drop database if exists " + DBNAME1  + " cascade");
-    driver.run("drop database if exists " + DBNAME2  + " cascade");
-    driver.run("create database " + DBNAME1);
-    driver.run("create database " + DBNAME2);
-    driver.run("use " + DBNAME1);
-    driver.run("create table " + DBNAME1 + "." + TAB1 + " (id int, name string)");
-    driver.run("create table " + TAB2 + " (id int) partitioned by (name string)");
-    driver.run("ALTER TABLE " + TAB2 + " ADD PARTITION (name='value1')");
-    driver.run("ALTER TABLE " + TAB2 + " ADD PARTITION (name='value2')");
-    driver.run("CREATE INDEX " + INDEX1 + " on table " + TAB1 + "(id) AS 'COMPACT' WITH DEFERRED REBUILD");
+    msc.dropDatabase(DBNAME1, true, true, true);
+    msc.dropDatabase(DBNAME2, true, true, true);
+    Database db1 = new DatabaseBuilder()
+        .setName(DBNAME1)
+        .build();
+    msc.createDatabase(db1);
+    Database db2 = new DatabaseBuilder()
+        .setName(DBNAME2)
+        .build();
+    msc.createDatabase(db2);
+    Table tab1 = new TableBuilder()
+        .setDbName(DBNAME1)
+        .setTableName(TAB1)
+        .addCol("id", "int")
+        .addCol("name", "string")
+        .build();
+    msc.createTable(tab1);
+    Table tab2 = new TableBuilder()
+        .setDbName(DBNAME1)
+        .setTableName(TAB2)
+        .addCol("id", "int")
+        .addPartCol("name", "string")
+        .build();
+    msc.createTable(tab2);
+    Partition part1 = new PartitionBuilder()
+        .fromTable(tab2)
+        .addValue("value1")
+        .build();
+    msc.add_partition(part1);
+    Partition part2 = new PartitionBuilder()
+        .fromTable(tab2)
+        .addValue("value2")
+        .build();
+    msc.add_partition(part2);
+    Index index = new IndexBuilder()
+        .setDbAndTableName(tab1)
+        .setIndexName(INDEX1)
+        .setDeferredRebuild(true)
+        .addCol("id", "int")
+        .build();
+    msc.createIndex(index, new TableBuilder().fromIndex(index).build());
   }
 
   @AfterClass
   public static void tearDown() throws Exception {
-    DummyMetaStoreFilterHookImpl.blockResults = false;
-    driver.run("drop database if exists " + DBNAME1  + " cascade");
-    driver.run("drop database if exists " + DBNAME2  + " cascade");
-    driver.close();
-    driver.destroy();
     msc.close();
   }
 

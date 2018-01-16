@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,10 +18,11 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.junit.Assert;
+import org.junit.Before;
 
 
 public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
@@ -33,17 +34,18 @@ public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
     isThriftClient = true;
   }
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     super.setUp();
 
     if (isServerStarted) {
-      assertNotNull("Unable to connect to the MetaStore server", client);
-      hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
+      Assert.assertNotNull("Unable to connect to the MetaStore server", client);
+      MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
       return;
     }
 
-    port = MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
+    port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(),
+        conf);
     System.out.println("Starting MetaStore Server on port " + port);
     isServerStarted = true;
 
@@ -53,8 +55,8 @@ public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
 
   @Override
   protected HiveMetaStoreClient createClient() throws Exception {
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
-    hiveConf.setBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI, false);
-    return new HiveMetaStoreClient(hiveConf);
+    MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
+    MetastoreConf.setBoolVar(conf, ConfVars.EXECUTE_SET_UGI, false);
+    return new HiveMetaStoreClient(conf);
   }
 }

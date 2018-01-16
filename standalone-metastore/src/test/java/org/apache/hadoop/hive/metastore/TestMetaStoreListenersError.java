@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,23 +20,28 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Test for unwrapping InvocationTargetException, which is thrown from
  * constructor of listener class
  */
-public class TestMetaStoreListenersError extends TestCase {
+public class TestMetaStoreListenersError {
 
+  @Test
   public void testInitListenerException() throws Throwable {
 
     System.setProperty("hive.metastore.init.hooks", ErrorInitListener.class.getName());
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
     int port = MetaStoreTestUtils.findFreePort();
     try {
-      HiveMetaStore.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
+      HiveMetaStore.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), conf);
+      Assert.fail();
     } catch (Throwable throwable) {
       Assert.assertEquals(MetaException.class, throwable.getClass());
       Assert.assertEquals(
@@ -47,13 +52,17 @@ public class TestMetaStoreListenersError extends TestCase {
     }
   }
 
+  @Test
   public void testEventListenerException() throws Throwable {
 
     System.setProperty("hive.metastore.init.hooks", "");
     System.setProperty("hive.metastore.event.listeners", ErrorEventListener.class.getName());
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
     int port = MetaStoreTestUtils.findFreePort();
     try {
-      HiveMetaStore.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
+      HiveMetaStore.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), conf);
+      Assert.fail();
     } catch (Throwable throwable) {
       Assert.assertEquals(MetaException.class, throwable.getClass());
       Assert.assertEquals(
