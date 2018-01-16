@@ -23,8 +23,11 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.llap.counters.LlapWmCounters;
+import org.apache.hadoop.hive.llap.counters.WmFragmentCounters;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
@@ -70,6 +73,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.SocketFactory;
+
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
@@ -125,6 +129,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private UserGroupInformation fsTaskUgi;
   private final SocketFactory socketFactory;
   private boolean isGuaranteed;
+  private WmFragmentCounters wmCounters;
 
   @VisibleForTesting
   public TaskRunnerCallable(SubmitWorkRequestProto request, QueryFragmentInfo fragmentInfo,
@@ -134,7 +139,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
                             FragmentCompletionHandler fragmentCompleteHandler, HadoopShim tezHadoopShim,
                             TezTaskAttemptID attemptId, SignableVertexSpec vertex, TezEvent initialEvent,
                             UserGroupInformation fsTaskUgi, SchedulerFragmentCompletingListener completionListener,
-                            SocketFactory socketFactory, boolean isGuaranteed) {
+                            SocketFactory socketFactory, boolean isGuaranteed, WmFragmentCounters wmCounters) {
     this.request = request;
     this.fragmentInfo = fragmentInfo;
     this.conf = conf;
@@ -169,6 +174,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.completionListener = completionListener;
     this.socketFactory = socketFactory;
     this.isGuaranteed = isGuaranteed;
+    this.wmCounters = wmCounters;
   }
 
   public long getStartTime() {
@@ -266,12 +272,9 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         synchronized (this) {
           if (shouldRunTask) {
             taskRunner = new TezTaskRunner2(conf, fsTaskUgi, fragmentInfo.getLocalDirs(),
-                taskSpec,
-                vertex.getQueryIdentifier().getAppAttemptNumber(),
+                taskSpec, vertex.getQueryIdentifier().getAppAttemptNumber(),
                 serviceConsumerMetadata, envMap, startedInputsMap, taskReporter, executor,
-                objectRegistry,
-                pid,
-                executionContext, memoryAvailable, false, tezHadoopShim);
+                objectRegistry, pid, executionContext, memoryAvailable, false, tezHadoopShim);
           }
         }
         if (taskRunner == null) {
@@ -559,6 +562,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     }
 
     protected void logFragmentEnd(boolean success) {
+      LOG.info("WM counters: {}", wmCounters);
       HistoryLogger.logFragmentEnd(vertex.getQueryIdentifier().getApplicationIdString(),
           request.getContainerIdString(), executionContext.getHostName(), queryId,
           fragmentInfo.getQueryInfo().getDagIdentifier(), vertex.getVertexName(),
@@ -607,5 +611,26 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
 
   public void setIsGuaranteed(boolean isGuaranteed) {
     this.isGuaranteed = isGuaranteed;
+    if (wmCounters != null) {
+      wmCounters.changeGuaranteed(isGuaranteed);
+    }
+  }
+
+  public void setWmCountersDone() {
+    if (wmCounters != null) {
+      wmCounters.changeStateDone();
+    }
+  }
+
+  public void setWmCountersQueued() {
+    if (wmCounters != null) {
+      wmCounters.changeStateQueued(isGuaranteed);
+    }
+  }
+
+  public void setWmCountersRunning() {
+    if (wmCounters != null) {
+      wmCounters.changeStateRunning(isGuaranteed);
+    }
   }
 }
