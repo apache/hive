@@ -7335,9 +7335,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
       int defaultPoolSize = MetastoreConf.getIntVar(
           conf, MetastoreConf.ConfVars.WM_DEFAULT_POOL_SIZE);
+      WMResourcePlan plan = request.getResourcePlan();
+      if (defaultPoolSize > 0 && plan.isSetQueryParallelism()) {
+        // If the default pool is not disabled, override the size with the specified parallelism.
+        defaultPoolSize = plan.getQueryParallelism();
+      }
       try {
-        getMS().createResourcePlan(
-            request.getResourcePlan(), request.getCopyFrom(), defaultPoolSize);
+        getMS().createResourcePlan(plan, request.getCopyFrom(), defaultPoolSize);
         return new WMCreateResourcePlanResponse();
       } catch (MetaException e) {
         LOG.error("Exception while trying to persist resource plan", e);
