@@ -22,30 +22,27 @@ package org.apache.hadoop.hive.metastore.columnstats.aggr;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 
 public class BooleanColumnStatsAggregator extends ColumnStatsAggregator {
 
   @Override
-  public ColumnStatisticsObj aggregate(String colName, List<String> partNames,
-      List<ColumnStatistics> css) throws MetaException {
+  public ColumnStatisticsObj aggregate(List<ColStatsObjWithSourceInfo> colStatsWithSourceInfo,
+      List<String> partNames, boolean areAllPartsFound) throws MetaException {
     ColumnStatisticsObj statsObj = null;
-    BooleanColumnStatsData aggregateData = null;
     String colType = null;
-    for (ColumnStatistics cs : css) {
-      if (cs.getStatsObjSize() != 1) {
-        throw new MetaException(
-            "The number of columns should be exactly one in aggrStats, but found "
-                + cs.getStatsObjSize());
-      }
-      ColumnStatisticsObj cso = cs.getStatsObjIterator().next();
+    String colName = null;
+    BooleanColumnStatsData aggregateData = null;
+    for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
+      ColumnStatisticsObj cso = csp.getColStatsObj();
       if (statsObj == null) {
+        colName = cso.getColName();
         colType = cso.getColType();
-        statsObj = ColumnStatsAggregatorFactory.newColumnStaticsObj(colName, colType, cso
-            .getStatsData().getSetField());
+        statsObj = ColumnStatsAggregatorFactory.newColumnStaticsObj(colName, colType,
+            cso.getStatsData().getSetField());
       }
       BooleanColumnStatsData newData = cso.getStatsData().getBooleanStats();
       if (aggregateData == null) {
