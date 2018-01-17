@@ -120,7 +120,7 @@ public class PartitionPruner extends Transform {
 
     // It cannot contain a non-deterministic function
     if ((expr instanceof ExprNodeGenericFuncDesc)
-        && !FunctionRegistry.isDeterministic(((ExprNodeGenericFuncDesc) expr)
+        && !FunctionRegistry.isConsistentWithinQuery(((ExprNodeGenericFuncDesc) expr)
         .getGenericUDF())) {
       return false;
     }

@@ -112,7 +112,7 @@ public class PartitionPrune {
         hiveUDF = SqlFunctionConverter.getHiveUDF(call.getOperator(),
             call.getType(), call.operands.size());
         if (hiveUDF != null &&
-            !FunctionRegistry.isDeterministic(hiveUDF)) {
+            !FunctionRegistry.isConsistentWithinQuery(hiveUDF)) {
           return null;
         }
       } finally {

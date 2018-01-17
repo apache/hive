@@ -73,7 +73,7 @@ public abstract class PrunerExpressionOperatorFactory {
           }
         }
         unknown = isAllNull;
-      } else if (!FunctionRegistry.isDeterministic(fd.getGenericUDF())) {
+      } else if (!FunctionRegistry.isConsistentWithinQuery(fd.getGenericUDF())) {
         // If it's a non-deterministic UDF, set unknown to true
         unknown = true;
       } else {

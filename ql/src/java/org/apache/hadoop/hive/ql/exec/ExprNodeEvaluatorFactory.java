@@ -99,7 +99,7 @@ public final class ExprNodeEvaluatorFactory {
   }
 
   private static ExprNodeEvaluator iterate(ExprNodeEvaluator eval, EvaluatorContext context) {
-    if (!(eval instanceof ExprNodeConstantEvaluator) && eval.isDeterministic()) {
+    if (!(eval instanceof ExprNodeConstantEvaluator) && eval.isConsistentWithinQuery()) {
       ExprNodeEvaluator replace = context.getEvaluated(eval);
       if (replace != null) {
         return replace;

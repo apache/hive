@@ -198,7 +198,7 @@ public final class ExprWalkerProcFactory {
       String alias = null;
       ExprNodeGenericFuncDesc expr = (ExprNodeGenericFuncDesc) nd;
 
-      if (!FunctionRegistry.isDeterministic(expr.getGenericUDF())) {
+      if (!FunctionRegistry.isConsistentWithinQuery(expr.getGenericUDF())) {
         // this GenericUDF can't be pushed down
         ExprInfo exprInfo = ctx.addOrGetExprInfo(expr);
         exprInfo.isCandidate = false;

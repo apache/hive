@@ -1492,6 +1492,40 @@ public final class FunctionRegistry {
   }
 
   /**
+   * Returns whether a GenericUDF is a runtime constant or not.
+   */
+  public static boolean isRuntimeConstant(GenericUDF genericUDF) {
+    UDFType genericUDFType = AnnotationUtils.getAnnotation(genericUDF.getClass(), UDFType.class);
+    if (genericUDFType != null && genericUDFType.runtimeConstant()) {
+      return true;
+    }
+
+    if (genericUDF instanceof GenericUDFBridge) {
+      GenericUDFBridge bridge = (GenericUDFBridge) genericUDF;
+      UDFType bridgeUDFType = AnnotationUtils.getAnnotation(bridge.getUdfClass(), UDFType.class);
+      if (bridgeUDFType != null && bridgeUDFType.runtimeConstant()) {
+        return true;
+      }
+    }
+
+    if (genericUDF instanceof GenericUDFMacro) {
+      GenericUDFMacro macro = (GenericUDFMacro) (genericUDF);
+      return macro.isRuntimeConstant();
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns whether the expression, for a single query, returns the same result given
+   * the same arguments/children. This includes deterministic functions as well as runtime
+   * constants (which may not be deterministic across queries).
+   */
+  public static boolean isConsistentWithinQuery(GenericUDF genericUDF) {
+    return (isDeterministic(genericUDF) || isRuntimeConstant(genericUDF)) && !isStateful(genericUDF);
+  }
+
+  /**
    * Returns whether the exprNodeDesc is a node of "and", "or", "not".
    */
   public static boolean isOpAndOrNot(ExprNodeDesc desc) {
