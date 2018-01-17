@@ -29,7 +29,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -72,6 +71,7 @@ import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 
@@ -949,13 +949,6 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
-      String tableName) throws MetaException, NoSuchObjectException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public String getMetastoreDbUuid() throws MetaException {
     throw new MetaException("Get metastore uuid is not implemented");
   }
@@ -1053,5 +1046,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName,
       String poolPath) throws NoSuchObjectException, InvalidOperationException, MetaException {
+  }
+
+  @Override
+  public List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String dbName)
+      throws MetaException, NoSuchObjectException {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

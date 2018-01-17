@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
 
 public interface RawStore extends Configurable {
@@ -599,17 +600,15 @@ public interface RawStore extends Configurable {
     List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException;
 
   /**
-   * Get all partition column statistics for a table in a db
+   * Get column stats for all partitions of all tables in the database
    *
    * @param dbName
-   * @param tableName
-   * @return Map of partition column statistics. Key in the map is partition name. Value is a list
-   *         of column stat object for each column in the partition
+   * @return List of column stats objects for all partitions of all tables in the database
    * @throws MetaException
    * @throws NoSuchObjectException
    */
-  Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
-      String tableName) throws MetaException, NoSuchObjectException;
+  List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String dbName)
+      throws MetaException, NoSuchObjectException;
 
   /**
    * Get the next notification event.

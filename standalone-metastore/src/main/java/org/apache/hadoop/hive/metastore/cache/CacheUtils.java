@@ -34,6 +34,14 @@ import org.apache.hadoop.hive.metastore.utils.StringUtils;
 public class CacheUtils {
   private static final String delimit = "\u0001";
 
+  public static String buildKey(String dbName) {
+    return dbName;
+  }
+
+  public static String buildKeyWithDelimit(String dbName) {
+    return buildKey(dbName) + delimit;
+  }
+
   public static String buildKey(String dbName, String tableName) {
     return dbName + delimit + tableName;
   }
@@ -77,6 +85,10 @@ public class CacheUtils {
     result[2] = Arrays.asList((Arrays.copyOfRange(comps, 2, comps.length - 1)));
     result[3] = comps[comps.length-1];
     return result;
+  }
+
+  public static Object[] splitAggrColStats(String key) {
+    return key.split(delimit);
   }
 
   static Table assemble(TableWrapper wrapper, SharedCache sharedCache) {
