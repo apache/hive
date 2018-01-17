@@ -161,6 +161,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private final QueryFragmentCounters counters;
   private final UserGroupInformation ugi;
   private final SchemaEvolution evolution;
+  private final boolean useCodecPool;
 
   // Read state.
   private int stripeIxFrom;
@@ -173,6 +174,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private CompressionCodec codec;
   private Object fileKey;
   private FileSystem fs;
+
   /**
    * stripeRgs[stripeIx'] => boolean array (could be a bitmask) of rg-s that need to be read.
    * Contains only stripes that are read, and only columns included. null => read all RGs.
@@ -212,6 +214,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+    this.useCodecPool = HiveConf.getBoolVar(daemonConf, ConfVars.HIVE_ORC_CODEC_POOL);
 
     // moved this part of code from performDataRead as LlapInputFormat need to know the file schema
     // to decide if schema evolution is supported or not.
@@ -443,7 +446,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     ensureOrcReader();
     // Reader creation updates HDFS counters, don't do it here.
     DataWrapperForOrc dw = new DataWrapperForOrc();
-    stripeReader = orcReader.encodedReader(fileKey, dw, dw, POOL_FACTORY, trace);
+    stripeReader = orcReader.encodedReader(fileKey, dw, dw, POOL_FACTORY, trace,
+        HiveConf.getBoolVar(daemonConf, ConfVars.HIVE_ORC_CODEC_POOL));
     stripeReader.setTracing(LlapIoImpl.ORC_LOGGER.isTraceEnabled());
   }
 
@@ -739,18 +743,24 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
     assert footerRange.next == null; // Can only happens w/zcr for a single input buffer.
     if (hasCache) {
-      LlapBufferOrBuffers cacheBuf = metadataCache.putStripeTail(stripeKey, footerRange.getData());
+      LlapBufferOrBuffers cacheBuf = metadataCache.putStripeTail(
+          stripeKey, footerRange.getData().duplicate());
       metadataCache.decRefBuffer(cacheBuf); // We don't use this one.
     }
-    ByteBuffer bb = footerRange.getData();
+    ByteBuffer bb = footerRange.getData().duplicate();
 
     CompressionKind kind = orcReader.getCompressionKind();
-    CompressionCodec codec = OrcCodecPool.getCodec(kind);
+    boolean isPool = useCodecPool;
+    CompressionCodec codec = isPool ? OrcCodecPool.getCodec(kind) : WriterImpl.createCodec(kind);
     try {
       return buildStripeFooter(Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)),
           bb.remaining(), codec, orcReader.getCompressionSize());
     } finally {
-      OrcCodecPool.returnCodec(kind, codec);
+      if (isPool) {
+        OrcCodecPool.returnCodec(kind, codec);
+      } else {
+        codec.close();
+      }
     }
   }
 
