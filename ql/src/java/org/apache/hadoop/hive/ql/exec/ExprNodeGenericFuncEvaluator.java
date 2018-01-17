@@ -145,7 +145,7 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
     }
     outputOI = genericUDF.initializeAndFoldConstants(childrenOIs);
     isConstant = ObjectInspectorUtils.isConstantObjectInspector(outputOI)
-        && isDeterministic();
+        && isConsistentWithinQuery();
     return outputOI;
   }
 
@@ -168,6 +168,16 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
     boolean result = FunctionRegistry.isStateful(genericUDF);
     for (ExprNodeEvaluator child : children) {
       if(result = result || child.isStateful()) {
+        return result;
+      }
+    }
+    return result;
+  }
+
+  public boolean isRuntimeConstant() {
+    boolean result = FunctionRegistry.isRuntimeConstant(genericUDF);
+    for (ExprNodeEvaluator child : children) {
+      if(result = result || child.isRuntimeConstant()) {
         return result;
       }
     }

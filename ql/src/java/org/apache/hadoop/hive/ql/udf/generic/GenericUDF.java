@@ -163,8 +163,7 @@ public abstract class GenericUDF implements Closeable {
 
     if (allConstant &&
         !ObjectInspectorUtils.isConstantObjectInspector(oi) &&
-        FunctionRegistry.isDeterministic(this) &&
-        !FunctionRegistry.isStateful(this) &&
+        FunctionRegistry.isConsistentWithinQuery(this) &&
         ObjectInspectorUtils.supportsConstantObjectInspector(oi)) {
       DeferredObject[] argumentValues =
         new DeferredJavaObject[arguments.length];

@@ -183,7 +183,7 @@ public class HiveIntersectRewriteRule extends RelOptRule {
           .makeCall(
               SqlFunctionConverter.getCalciteFn("=", calciteArgTypesBldr.build(),
                   TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()),
-                  true), childRexNodeLst);
+                  true, false), childRexNodeLst);
     } catch (CalciteSemanticException e) {
       LOG.debug(e.toString());
       throw new RuntimeException(e);

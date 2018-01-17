@@ -1136,7 +1136,7 @@ public class TypeCheckProcFactory {
         // If the function is deterministic and the children are constants,
         // we try to fold the expression to remove e.g. cast on constant
         if (ctx.isFoldExpr() && desc instanceof ExprNodeGenericFuncDesc &&
-                FunctionRegistry.isDeterministic(genericUDF) &&
+                FunctionRegistry.isConsistentWithinQuery(genericUDF) &&
                 ExprNodeDescUtils.isAllConstants(children)) {
           ExprNodeDesc constantExpr = ConstantPropagateProcFactory.foldExpr((ExprNodeGenericFuncDesc)desc);
           if (constantExpr != null) {

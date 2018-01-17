@@ -102,6 +102,22 @@ public abstract class ExprNodeEvaluator<T extends ExprNodeDesc> {
   }
 
   /**
+   * Return whether this node (or any children nodes) are runtime constants.
+   */
+  public boolean isRuntimeConstant() {
+    return false;
+  }
+
+  /**
+   * Returns whether the expression, for a single query, returns the same result given
+   * the same arguments. This includes deterministic functions as well as runtime
+   * constants (which may not be deterministic across queries).
+   */
+  public boolean isConsistentWithinQuery() {
+    return (isDeterministic() || isRuntimeConstant()) && !isStateful();
+  }
+
+  /**
    * Return child evaluators if exist
    */
   public ExprNodeEvaluator[] getChildren() {

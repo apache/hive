@@ -79,6 +79,13 @@ public class GenericUDFMacro extends GenericUDF implements Serializable {
     return false;
   }
  
+  public boolean isRuntimeConstant() {
+    if(body != null) {
+      return body.isRuntimeConstant();
+    }
+    return false;
+  }
+
   private void checkNotNull(Object object, String msg) {
     if(object == null) {
       throw new NullPointerException(msg);
