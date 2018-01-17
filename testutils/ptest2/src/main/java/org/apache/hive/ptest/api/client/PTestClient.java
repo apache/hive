@@ -283,6 +283,8 @@ public class PTestClient {
     }
   }
   public static void main(String[] args) throws Exception {
+    //TODO This line can be removed once precommit jenkins jobs move to Java 8
+    System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
     CommandLineParser parser = new GnuParser();
     Options options = new Options();
     options.addOption(HELP_SHORT, HELP_LONG, false, "Display help text and exit");
