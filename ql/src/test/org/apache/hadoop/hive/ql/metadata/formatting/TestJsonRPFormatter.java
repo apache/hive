@@ -27,6 +27,7 @@ import java.io.DataOutputStream;
 import java.util.ArrayList;
 
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
@@ -94,6 +95,12 @@ public class TestJsonRPFormatter {
     fullRp.addToPoolTriggers(pool2Trigger);
   }
 
+  private void addMapping(WMFullResourcePlan fullRp, String type, String name, String poolName) {
+    WMMapping mapping = new WMMapping(fullRp.getPlan().getName(), type, name);
+    mapping.setPoolPath(poolName);
+    fullRp.addToMappings(mapping);
+  }
+
   @Test
   public void testJsonEmptyRPFormatter() throws Exception {
     WMFullResourcePlan fullRp = createRP("test_rp_1", null, null);
@@ -118,6 +125,8 @@ public class TestJsonRPFormatter {
     addPool(fullRp, "pool1", 0.3, 3, "fair");
     addTrigger(fullRp, "trigger1", "KILL", "BYTES > 2", "pool1");
     addPool(fullRp, "pool2", 0.7, 7, "fcfs");
+    addMapping(fullRp, "user", "foo", "pool2");
+    addMapping(fullRp, "user", "bar", "pool2");
     formatter.showFullResourcePlan(out, fullRp);
     out.flush();
 
@@ -139,6 +148,12 @@ public class TestJsonRPFormatter {
     assertEquals(0.7, pool2.get("allocFraction").asDouble(), 0.00001);
     assertTrue(pool2.get("triggers").isArray());
     assertEquals(0, pool2.get("triggers").size());
+    assertTrue(pool2.get("mappings").isArray());
+    JsonNode type0 = pool2.get("mappings").get(0);
+    assertEquals("user", type0.get("type").asText());
+    assertTrue(type0.get("values").isArray());
+    assertEquals("foo", type0.get("values").get(0).asText());
+    assertEquals("bar", type0.get("values").get(1).asText());
 
     JsonNode pool1 = jsonTree.get("pools").get(1);
     assertEquals("pool1", pool1.get("name").asText());

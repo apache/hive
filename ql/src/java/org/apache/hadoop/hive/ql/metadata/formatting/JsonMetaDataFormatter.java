@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
+import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -472,7 +473,6 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
    */
   private static class JsonRPFormatter implements MetaDataFormatUtils.RPFormatter, Closeable {
     private final JsonGenerator generator;
-    private boolean inPool = false;
 
     JsonRPFormatter(DataOutputStream out) throws IOException {
       generator = new ObjectMapper().getJsonFactory().createJsonGenerator(out);
@@ -489,49 +489,81 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     }
 
     @Override
-    public void formatRP(String rpName, Object ... kvPairs) throws IOException {
+    public void startRP(String rpName, Object ... kvPairs) throws IOException {
       generator.writeStartObject();
       writeNameAndFields(rpName, kvPairs);
+    }
+
+    @Override
+    public void endRP() throws IOException {
+      // End the root rp object.
+      generator.writeEndObject();
+    }
+
+    @Override
+    public void startPools() throws IOException {
       generator.writeArrayFieldStart("pools");
     }
 
     @Override
-    public void formatPool(String poolName, int indentLevel, Object ... kvPairs)
-        throws IOException {
-      if (inPool) {
-        // End the triggers array.
-        generator.writeEndArray();
-        // End the pool object.
-        generator.writeEndObject();
-      } else {
-        inPool = true;
-      }
-      generator.writeStartObject();
-      writeNameAndFields(poolName, kvPairs);
-      generator.writeArrayFieldStart("triggers");
-      // triggers array and pool object left to be ended.
+    public void endPools() throws IOException {
+      // End the pools array.
+      generator.writeEndArray();
     }
 
     @Override
-    public void formatTrigger(String triggerName, String actionExpression, String triggerExpression,
-        int indentLevel) throws IOException {
+    public void startPool(String poolName, Object ... kvPairs) throws IOException {
+      generator.writeStartObject();
+      writeNameAndFields(poolName, kvPairs);
+    }
+
+    @Override
+    public void startTriggers() throws IOException {
+      generator.writeArrayFieldStart("triggers");
+    }
+
+    @Override
+    public void endTriggers() throws IOException {
+      generator.writeEndArray();
+    }
+
+    @Override
+    public void startMappings() throws IOException {
+      generator.writeArrayFieldStart("mappings");
+    }
+
+    @Override
+    public void endMappings() throws IOException {
+      generator.writeEndArray();
+    }
+
+    @Override
+    public void endPool() throws IOException {
+      generator.writeEndObject();
+    }
+
+    @Override
+    public void formatTrigger(String triggerName, String actionExpression,
+        String triggerExpression) throws IOException {
       generator.writeStartObject();
       writeNameAndFields(triggerName, "action", actionExpression, "trigger", triggerExpression);
       generator.writeEndObject();
     }
 
     @Override
-    public void close() throws IOException {
-      if (inPool) {
-        // end the triggers within pool object.
-        generator.writeEndArray();
-        // End the last pool object.
-        generator.writeEndObject();
+    public void formatMappingType(String type, List<String> names) throws IOException {
+      generator.writeStartObject();
+      generator.writeStringField("type", type);
+      generator.writeArrayFieldStart("values");
+      for (String name : names) {
+        generator.writeString(name);
       }
-      // End the pools array.
       generator.writeEndArray();
-      // End the root rp object.
       generator.writeEndObject();
+    }
+
+    @Override
+    public void close() throws IOException {
       generator.close();
     }
   }

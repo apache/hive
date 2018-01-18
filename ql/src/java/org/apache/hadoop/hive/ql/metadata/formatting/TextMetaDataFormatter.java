@@ -154,7 +154,6 @@ class TextMetaDataFormatter implements MetaDataFormatter {
 
       if (colPath.equals(tableName)) {
         if ((partCols != null) && !partCols.isEmpty() && showPartColsSeparately) {
-
           mdt = new TextMetaDataTable();
           output += MetaDataFormatUtils.LINE_DELIM + "# Partition Information" + MetaDataFormatUtils.LINE_DELIM + "# ";
           mdt.addRow(MetaDataFormatUtils.getColumnsHeader(null));
@@ -164,7 +163,6 @@ class TextMetaDataFormatter implements MetaDataFormatter {
           output += mdt.renderTable(isOutputPadded);
         }
       } else {
-
         String statsState;
         if (tbl.getParameters() != null && (statsState = tbl.getParameters().get(StatsSetupConst.COLUMN_STATS_ACCURATE)) != null) {
           StringBuilder str = new StringBuilder();
@@ -559,13 +557,13 @@ class TextMetaDataFormatter implements MetaDataFormatter {
         if (plan.isSetQueryParallelism()) {
           out.write(Integer.toString(plan.getQueryParallelism()).getBytes(UTF_8));
         } else {
-          out.write("null".getBytes(UTF_8));
+          write(out, "null");
         }
         out.write(separator);
         if (plan.isSetDefaultPoolPath()) {
           out.write(plan.getDefaultPoolPath().getBytes(UTF_8));
         } else {
-          out.write("null".getBytes(UTF_8));
+          write(out, "null");
         }
         out.write(terminator);
       }
@@ -582,30 +580,64 @@ class TextMetaDataFormatter implements MetaDataFormatter {
    *       > <trigger_name>: if(<triggerExpression>){<actionExpression>}
    */
   private static class TextRPFormatter implements MetaDataFormatUtils.RPFormatter {
+    private static final byte[] INDENT = str("    ");
+    private static final byte[] INDENT2 = str(" |  ");
+    private static final byte[] INDENT_BRANCH = str(" +  ");
+
     private final DataOutputStream out;
+    private int indentLevel = 0;
 
     TextRPFormatter(DataOutputStream out) {
       this.out = out;
     }
 
     @Override
-    public void formatRP(String rpName, Object ... kvPairs) throws IOException {
-      out.write(rpName.getBytes(UTF_8));
+    public void startRP(String rpName, Object ... kvPairs) throws IOException {
+      write(out, rpName);
       writeFields(kvPairs);
       out.write(terminator);
     }
 
-    private static final byte[] INDENT = "    ".getBytes(UTF_8);
+    @Override
+    public void endRP() throws IOException {
+    }
 
     @Override
-    public void formatPool(String poolName, int indentLevel, Object ... kvPairs)
-        throws IOException {
-      for (int i = 0; i < indentLevel; ++i) {
-        out.write(INDENT);
-      }
-      out.write(poolName.getBytes(UTF_8));
+    public void startPools() throws IOException {
+    }
+
+    @Override
+    public void endPools() throws IOException {
+    }
+
+    @Override
+    public void startPool(String poolName, Object ... kvPairs) throws IOException {
+      ++indentLevel;
+      writeIndent(true);
+      write(out, poolName);
       writeFields(kvPairs);
       out.write(terminator);
+    }
+
+    @Override
+    public void endPool() throws IOException {
+      --indentLevel;
+    }
+
+    @Override
+    public void startTriggers() throws IOException {
+    }
+
+    @Override
+    public void startMappings() throws IOException {
+    }
+
+    @Override
+    public void endTriggers() throws IOException {
+    }
+
+    @Override
+    public void endMappings() throws IOException {
     }
 
     private void writeFields(Object ... kvPairs)
@@ -630,25 +662,66 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     }
 
     @Override
-    public void formatTrigger(String triggerName, String actionExpression, String triggerExpression,
-        int indentLevel) throws IOException {
-      for (int i = 0; i < indentLevel; ++i) {
+    public void formatTrigger(
+        String triggerName, String actionExpression, String triggerExpression) throws IOException {
+      writeIndent(false);
+      write(out, "trigger ");
+      write(out, triggerName);
+      write(out, ": if (");
+      write(out, triggerExpression);
+      write(out, ") { ");
+      write(out, actionExpression);
+      write(out, " }");
+      out.write(terminator);
+    }
+
+    @Override
+    public void formatMappingType(String type, List<String> names) throws IOException {
+      final int maxList = 5;
+      writeIndent(false);
+      write(out, "mapped for ");
+      out.write(type.toLowerCase().getBytes(UTF_8));
+      if (!names.isEmpty()) {
+        write(out, "s: ");
+        int count = Math.min(maxList, names.size());
+        for (int i = 0; i < count; ++i) {
+          if (i != 0) {
+            write(out, ", ");
+          }
+          out.write(names.get(i).getBytes(UTF_8));
+        }
+        int remaining = names.size() - count;
+        if (remaining > 0) {
+          out.write((" and " + remaining + " others").getBytes(UTF_8));
+        }
+      }
+      out.write(terminator);
+    }
+
+    private void writeIndent(boolean isPool) throws IOException {
+      for (int i = 0; i < indentLevel - 1; ++i) {
         out.write(INDENT);
       }
-      out.write("  > ".getBytes(UTF_8));
-      out.write(triggerName.getBytes(UTF_8));
-      out.write(": if(".getBytes(UTF_8));
-      out.write(triggerExpression.getBytes(UTF_8));
-      out.write("){".getBytes(UTF_8));
-      out.write(actionExpression.getBytes(UTF_8));
-      out.write('}');
-      out.write(terminator);
+      if (isPool) {
+        out.write(INDENT_BRANCH);
+      } else {
+        out.write(INDENT);
+        out.write(INDENT2);
+      }
     }
   }
 
   public void showFullResourcePlan(DataOutputStream out, WMFullResourcePlan fullResourcePlan)
       throws HiveException {
     MetaDataFormatUtils.formatFullRP(new TextRPFormatter(out), fullResourcePlan);
+  }
+
+  private static byte[] str(String str) {
+    return str.getBytes(UTF_8);
+  }
+
+  private static void write(DataOutputStream out, String val) throws IOException {
+    out.write(str(val));
   }
 
   public void showErrors(DataOutputStream out, List<String> errors) throws HiveException {
