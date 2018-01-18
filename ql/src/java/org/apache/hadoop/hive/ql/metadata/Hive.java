@@ -1614,7 +1614,8 @@ public class Hive {
               LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
                   " was not in the cache");
             }
-            materialization = HiveMaterializedViewsRegistry.get().createMaterializedView(materializedViewTable);
+            materialization = HiveMaterializedViewsRegistry.get().createMaterializedView(
+                conf, materializedViewTable);
             if (materialization != null) {
               result.add(materialization);
             }

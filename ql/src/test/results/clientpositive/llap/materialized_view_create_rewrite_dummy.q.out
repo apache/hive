@@ -1,0 +1,517 @@
+PREHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cmv_basetable
+POSTHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cmv_basetable
+PREHOOK: query: insert into cmv_basetable values
+ (1, 'alfred', 10.30, 2),
+ (2, 'bob', 3.14, 3),
+ (2, 'bonnie', 172342.2, 3),
+ (3, 'calvin', 978.76, 3),
+ (3, 'charlie', 9.8, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@cmv_basetable
+POSTHOOK: query: insert into cmv_basetable values
+ (1, 'alfred', 10.30, 2),
+ (2, 'bob', 3.14, 3),
+ (2, 'bonnie', 172342.2, 3),
+ (3, 'calvin', 978.76, 3),
+ (3, 'charlie', 9.8, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@cmv_basetable
+POSTHOOK: Lineage: cmv_basetable.a SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.d SCRIPT []
+PREHOOK: query: analyze table cmv_basetable compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable
+PREHOOK: Output: default@cmv_basetable
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table cmv_basetable compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Output: default@cmv_basetable
+#### A masked pattern was here ####
+PREHOOK: query: create materialized view cmv_mat_view enable rewrite
+as select a, b, c from cmv_basetable where a = 2
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_basetable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cmv_mat_view
+POSTHOOK: query: create materialized view cmv_mat_view enable rewrite
+as select a, b, c from cmv_basetable where a = 2
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cmv_mat_view
+PREHOOK: query: select * from cmv_mat_view
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_mat_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from cmv_mat_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_mat_view
+#### A masked pattern was here ####
+2	bob	3.14
+2	bonnie	172342.20
+PREHOOK: query: show tblproperties cmv_mat_view
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties cmv_mat_view
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+numFiles	1
+numRows	2
+rawDataSize	408
+totalSize	453
+#### A masked pattern was here ####
+PREHOOK: query: create materialized view if not exists cmv_mat_view2 enable rewrite
+as select a, c from cmv_basetable where a = 3
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_basetable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cmv_mat_view2
+POSTHOOK: query: create materialized view if not exists cmv_mat_view2 enable rewrite
+as select a, c from cmv_basetable where a = 3
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cmv_mat_view2
+PREHOOK: query: select * from cmv_mat_view2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_mat_view2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from cmv_mat_view2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_mat_view2
+#### A masked pattern was here ####
+3	9.80
+3	978.76
+PREHOOK: query: show tblproperties cmv_mat_view2
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties cmv_mat_view2
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+numFiles	1
+numRows	2
+rawDataSize	232
+totalSize	322
+#### A masked pattern was here ####
+PREHOOK: query: explain
+select a, c from cmv_basetable where a = 3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select a, c from cmv_basetable where a = 3
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: default.cmv_mat_view2
+          Select Operator
+            expressions: a (type: int), c (type: decimal(10,2))
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: select a, c from cmv_basetable where a = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable
+PREHOOK: Input: default@cmv_mat_view2
+#### A masked pattern was here ####
+POSTHOOK: query: select a, c from cmv_basetable where a = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Input: default@cmv_mat_view2
+#### A masked pattern was here ####
+3	9.80
+3	978.76
+PREHOOK: query: alter materialized view cmv_mat_view2 disable rewrite
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+PREHOOK: Input: default@cmv_mat_view2
+PREHOOK: Output: default@cmv_mat_view2
+POSTHOOK: query: alter materialized view cmv_mat_view2 disable rewrite
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: Input: default@cmv_mat_view2
+POSTHOOK: Output: default@cmv_mat_view2
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain
+select * from (
+  (select a, c from cmv_basetable where a = 3) table1
+  join
+  (select a, c from cmv_basetable where d = 3) table2
+  on table1.a = table2.a)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select * from (
+  (select a, c from cmv_basetable where a = 3) table1
+  join
+  (select a, c from cmv_basetable where d = 3) table2
+  on table1.a = table2.a)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cmv_basetable
+                  Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (a = 3) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c (type: decimal(10,2))
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: decimal(10,2))
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cmv_basetable
+                  Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((3 = a) and (d = 3)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c (type: decimal(10,2))
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: decimal(10,2))
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 3 (type: int), _col0 (type: decimal(10,2)), 3 (type: int), _col1 (type: decimal(10,2))
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select * from (
+  (select a, c from cmv_basetable where a = 3) table1
+  join
+  (select a, c from cmv_basetable where d = 3) table2
+  on table1.a = table2.a)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (
+  (select a, c from cmv_basetable where a = 3) table1
+  join
+  (select a, c from cmv_basetable where d = 3) table2
+  on table1.a = table2.a)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable
+#### A masked pattern was here ####
+3	9.80	3	978.76
+3	978.76	3	978.76
+PREHOOK: query: explain
+alter materialized view cmv_mat_view2 enable rewrite
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: query: explain
+alter materialized view cmv_mat_view2 enable rewrite
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Alter Materialized View Operator:
+        Alter Materialized View
+          name: default.cmv_mat_view2
+          operation: UPDATE_REWRITE_FLAG
+
+PREHOOK: query: alter materialized view cmv_mat_view2 enable rewrite
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+PREHOOK: Input: default@cmv_mat_view2
+PREHOOK: Output: default@cmv_mat_view2
+POSTHOOK: query: alter materialized view cmv_mat_view2 enable rewrite
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
+POSTHOOK: Input: default@cmv_mat_view2
+POSTHOOK: Output: default@cmv_mat_view2
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain
+select * from (
+  (select a, c from cmv_basetable where a = 3) table1
+  join
+  (select a, c from cmv_basetable where d = 3) table2
+  on table1.a = table2.a)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select * from (
+  (select a, c from cmv_basetable where a = 3) table1
+  join
+  (select a, c from cmv_basetable where d = 3) table2
+  on table1.a = table2.a)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: default.cmv_mat_view2
+                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: c (type: decimal(10,2))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: decimal(10,2))
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cmv_basetable
+                  Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((3 = a) and (d = 3)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c (type: decimal(10,2))
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: decimal(10,2))
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 450 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 3 (type: int), _col0 (type: decimal(10,2)), 3 (type: int), _col1 (type: decimal(10,2))
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 2 Data size: 450 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 450 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select * from (
+  (select a, c from cmv_basetable where a = 3) table1
+  join
+  (select a, c from cmv_basetable where d = 3) table2
+  on table1.a = table2.a)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable
+PREHOOK: Input: default@cmv_mat_view2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (
+  (select a, c from cmv_basetable where a = 3) table1
+  join
+  (select a, c from cmv_basetable where d = 3) table2
+  on table1.a = table2.a)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Input: default@cmv_mat_view2
+#### A masked pattern was here ####
+3	9.80	3	978.76
+3	978.76	3	978.76
+PREHOOK: query: drop materialized view cmv_mat_view2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_mat_view2
+PREHOOK: Output: default@cmv_mat_view2
+POSTHOOK: query: drop materialized view cmv_mat_view2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_mat_view2
+POSTHOOK: Output: default@cmv_mat_view2
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain
+select * from (
+  (select a, c from cmv_basetable where a = 3) table1
+  join
+  (select a, c from cmv_basetable where d = 3) table2
+  on table1.a = table2.a)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select * from (
+  (select a, c from cmv_basetable where a = 3) table1
+  join
+  (select a, c from cmv_basetable where d = 3) table2
+  on table1.a = table2.a)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cmv_basetable
+                  Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (a = 3) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c (type: decimal(10,2))
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: decimal(10,2))
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cmv_basetable
+                  Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((3 = a) and (d = 3)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c (type: decimal(10,2))
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: decimal(10,2))
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 3 (type: int), _col0 (type: decimal(10,2)), 3 (type: int), _col1 (type: decimal(10,2))
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select * from (
+  (select a, c from cmv_basetable where a = 3) table1
+  join
+  (select a, c from cmv_basetable where d = 3) table2
+  on table1.a = table2.a)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cmv_basetable
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (
+  (select a, c from cmv_basetable where a = 3) table1
+  join
+  (select a, c from cmv_basetable where d = 3) table2
+  on table1.a = table2.a)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cmv_basetable
+#### A masked pattern was here ####
+3	9.80	3	978.76
+3	978.76	3	978.76
+PREHOOK: query: drop materialized view cmv_mat_view
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_mat_view
+PREHOOK: Output: default@cmv_mat_view
+POSTHOOK: query: drop materialized view cmv_mat_view
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_mat_view
+POSTHOOK: Output: default@cmv_mat_view
