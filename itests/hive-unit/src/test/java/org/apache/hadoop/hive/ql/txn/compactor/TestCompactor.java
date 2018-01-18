@@ -63,8 +63,10 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
+import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
@@ -74,6 +76,7 @@ import org.apache.hive.hcatalog.streaming.HiveEndPoint;
 import org.apache.hive.hcatalog.streaming.StreamingConnection;
 import org.apache.hive.hcatalog.streaming.StreamingException;
 import org.apache.hive.hcatalog.streaming.TransactionBatch;
+import org.apache.orc.OrcConf;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -1159,7 +1162,8 @@ public class TestCompactor {
     executeStatementOnDriver("drop table if exists " + tblName1, driver);
     executeStatementOnDriver("drop table if exists " + tblName2, driver);
     executeStatementOnDriver("CREATE TABLE " + tblName1 + "(a INT, b STRING) " +
-        " CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+        " CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC" +
+        " TBLPROPERTIES ('transactional'='true', 'orc.compress.size'='2700')", driver);
     executeStatementOnDriver("CREATE TABLE " + tblName2 + "(a INT, b STRING) " +
         " CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES (" +
         "'transactional'='true'," +
@@ -1228,6 +1232,22 @@ public class TestCompactor {
     Assert.assertEquals("ttp1", rsp.getCompacts().get(1).getTablename());
     Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(1).getState());
 
+    /**
+     * we just did a major compaction on ttp1.  Open any file produced by it and check buffer size.
+     * It should be the default.
+     */
+    List<String> rs = execSelectAndDumpData("select distinct INPUT__FILE__NAME from "
+        + tblName1, driver, "Find Orc File bufer default");
+    Assert.assertTrue("empty rs?", rs != null && rs.size() > 0);
+    Path p = new Path(rs.get(0));
+    Reader orcReader = OrcFile.createReader(p.getFileSystem(conf), p);
+    Assert.assertEquals("Expected default compression size",
+        2700, orcReader.getCompressionSize());
+    //make sure 2700 is not the default so that we are testing if tblproperties indeed propagate
+    Assert.assertNotEquals("Unexpected default compression size", 2700,
+        OrcConf.BUFFER_SIZE.getDefaultValue());
+
+
     // Insert one more row - this should trigger hive.compactor.delta.pct.threshold to be reached for ttp2
     executeStatementOnDriver("insert into " + tblName1 + " values (6, 'f')", driver);
     executeStatementOnDriver("insert into " + tblName2 + " values (6, 'f')", driver);
@@ -1254,12 +1274,14 @@ public class TestCompactor {
     executeStatementOnDriver("alter table " + tblName2 + " compact 'major'" +
         " with overwrite tblproperties (" +
         "'compactor.mapreduce.map.memory.mb'='3072'," +
-        "'tblprops.orc.compress.size'='8192')", driver);
+        "'tblprops.orc.compress.size'='3141')", driver);
 
     rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(4, rsp.getCompacts().size());
     Assert.assertEquals("ttp2", rsp.getCompacts().get(0).getTablename());
     Assert.assertEquals(TxnStore.INITIATED_RESPONSE, rsp.getCompacts().get(0).getState());
+    //make sure we are checking the right (latest) compaction entry
+    Assert.assertEquals(4, rsp.getCompacts().get(0).getId());
 
     // Run the Worker explicitly, in order to get the reference to the compactor MR job
     stop = new AtomicBoolean(true);
@@ -1271,7 +1293,18 @@ public class TestCompactor {
     t.run();
     job = t.getMrJob();
     Assert.assertEquals(3072, job.getMemoryForMapTask());
-    Assert.assertTrue(job.get("hive.compactor.table.props").contains("orc.compress.size4:8192"));
+    Assert.assertTrue(job.get("hive.compactor.table.props").contains("orc.compress.size4:3141"));
+    /*createReader(FileSystem fs, Path path) throws IOException {
+                                    */
+    //we just ran Major compaction so we should have a base_x in tblName2 that has the new files
+    // Get the name of a file and look at its properties to see if orc.compress.size was respected.
+    rs = execSelectAndDumpData("select distinct INPUT__FILE__NAME from " + tblName2,
+        driver, "Find Compacted Orc File");
+    Assert.assertTrue("empty rs?", rs != null && rs.size() > 0);
+    p = new Path(rs.get(0));
+    orcReader = OrcFile.createReader(p.getFileSystem(conf), p);
+    Assert.assertEquals("File written with wrong buffer size",
+        3141, orcReader.getCompressionSize());
   }
 
   private void writeBatch(StreamingConnection connection, DelimitedInputWriter writer,
