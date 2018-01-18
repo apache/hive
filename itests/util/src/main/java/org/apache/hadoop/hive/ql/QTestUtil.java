@@ -112,6 +112,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -1122,6 +1123,9 @@ public class QTestUtil {
     if (mr != null) {
       createRemoteDirs();
     }
+
+    // Create views registry
+    HiveMaterializedViewsRegistry.get().init();
 
     testWarehouse = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
     String execEngine = conf.get("hive.execution.engine");

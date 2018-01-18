@@ -79,8 +79,9 @@ public class MaterializedViewRegistryUpdateHook implements QueryLifeTimeHook {
           }
 
           if (isRewriteEnabled) {
-            Table mvTable = Hive.get().getTable(tableName);
-            HiveMaterializedViewsRegistry.get().createMaterializedView(mvTable);
+            Hive db = Hive.get();
+            Table mvTable = db.getTable(tableName);
+            HiveMaterializedViewsRegistry.get().createMaterializedView(db.getConf(), mvTable);
           } else if (work.getAlterMaterializedViewDesc() != null) {
             // Disabling rewriting, removing from cache
             String[] names =  tableName.split("\\.");

@@ -189,7 +189,7 @@ public class HiveServer2 extends CompositeService {
     initializeWorkloadManagement(hiveConf, sessionHive);
 
     // Create views registry
-    HiveMaterializedViewsRegistry.get().init(sessionHive);
+    HiveMaterializedViewsRegistry.get().init();
 
     // Setup web UI
     try {
