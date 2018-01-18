@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
@@ -67,6 +68,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -729,46 +731,79 @@ public final class MetaDataFormatUtils {
    * Interface to implement actual conversion to text or json of a resource plan.
    */
   public interface RPFormatter {
-    void formatRP(String rpName, Object ... kvPairs) throws IOException;
-    void formatPool(String poolName, int indentLevel, Object ...kvPairs) throws IOException;
-    void formatTrigger(String triggerName, String actionExpression, String triggerExpression,
-        int indentLevel) throws IOException;
+    void startRP(String rpName, Object ... kvPairs) throws IOException;
+    void endRP() throws IOException;
+    void startPools() throws IOException;
+    void startPool(String poolName, Object ...kvPairs) throws IOException;
+    void endPool() throws IOException;
+    void endPools() throws IOException;
+    void startTriggers() throws IOException;
+    void formatTrigger(String triggerName,
+        String actionExpression, String triggerExpression) throws IOException;
+    void endTriggers() throws IOException;
+    void startMappings() throws IOException;
+    void formatMappingType(String type, List<String> names) throws IOException;
+    void endMappings() throws IOException;
   }
 
   /**
    * A n-ary tree for the pools, each node contains a pool and its children.
    */
   private static class PoolTreeNode {
+    private String nonPoolName;
     private WMPool pool;
     private final List<PoolTreeNode> children = new ArrayList<>();
     private final List<WMTrigger> triggers = new ArrayList<>();
+    private final HashMap<String, List<String>> mappings = new HashMap<>();
+    private boolean isDefault;
 
     private PoolTreeNode() {}
 
-    private void writePoolTreeNode(RPFormatter rpFormatter, int indentLevel) throws IOException {
-      String path = pool.getPoolPath();
-      int idx = path.lastIndexOf('.');
-      if (idx != -1) {
-        path = path.substring(idx + 1);
+    private void writePoolTreeNode(RPFormatter rpFormatter) throws IOException {
+      if (pool != null) {
+        String path = pool.getPoolPath();
+        int idx = path.lastIndexOf('.');
+        if (idx != -1) {
+          path = path.substring(idx + 1);
+        }
+        Double allocFraction = pool.getAllocFraction();
+        String schedulingPolicy = pool.isSetSchedulingPolicy() ? pool.getSchedulingPolicy() : null;
+        Integer parallelism = pool.getQueryParallelism();
+        rpFormatter.startPool(path, "allocFraction", allocFraction,
+            "schedulingPolicy", schedulingPolicy, "parallelism", parallelism);
+      } else {
+        rpFormatter.startPool(nonPoolName);
       }
-      Double allocFraction = pool.getAllocFraction();
-      String schedulingPolicy = pool.isSetSchedulingPolicy() ? pool.getSchedulingPolicy() : null;
-      Integer parallelism = pool.getQueryParallelism();
-
-      rpFormatter.formatPool(path, indentLevel, "allocFraction", allocFraction,
-          "schedulingPolicy", schedulingPolicy, "parallelism", parallelism);
+      rpFormatter.startTriggers();
       for (WMTrigger trigger : triggers) {
         rpFormatter.formatTrigger(trigger.getTriggerName(), trigger.getActionExpression(),
-            trigger.getTriggerExpression(), indentLevel);
+            trigger.getTriggerExpression());
       }
+      rpFormatter.endTriggers();
+      rpFormatter.startMappings();
+      for (Map.Entry<String, List<String>> mappingsOfType : mappings.entrySet()) {
+        rpFormatter.formatMappingType(mappingsOfType.getKey(), mappingsOfType.getValue());
+      }
+      if (isDefault) {
+        rpFormatter.formatMappingType("default", Lists.<String>newArrayList());
+      }
+      rpFormatter.endMappings();
+      rpFormatter.startPools();
       for (PoolTreeNode node : children) {
-        node.writePoolTreeNode(rpFormatter, indentLevel + 1);
+        node.writePoolTreeNode(rpFormatter);
       }
+      rpFormatter.endPools();
+      rpFormatter.endPool();
     }
 
     private void sortChildren() {
-      children.sort((PoolTreeNode p1, PoolTreeNode p2) ->
-          Double.compare(p2.pool.getAllocFraction(), p1.pool.getAllocFraction()));
+      children.sort((PoolTreeNode p1, PoolTreeNode p2) -> {
+        if (p2.pool == null) {
+          return (p1.pool == null) ? 0 : -1;
+        }
+        if (p1.pool == null) return 1;
+        return Double.compare(p2.pool.getAllocFraction(), p1.pool.getAllocFraction());
+      });
       for (PoolTreeNode child : children) {
         child.sortChildren();
       }
@@ -786,6 +821,10 @@ public final class MetaDataFormatUtils {
           poolMap.put(path, curr);
         }
         curr.pool = pool;
+        if (fullRp.getPlan().isSetDefaultPoolPath()
+            && fullRp.getPlan().getDefaultPoolPath().equals(path)) {
+          curr.isDefault = true;
+        }
 
         // Add this node to the parent node.
         int ind = path.lastIndexOf('.');
@@ -803,12 +842,19 @@ public final class MetaDataFormatUtils {
         parent.children.add(curr);
       }
       Map<String, WMTrigger> triggerMap = new HashMap<>();
-      if (fullRp.getTriggers() != null) {
+      List<WMTrigger> unmanagedTriggers = new ArrayList<>();
+      HashSet<WMTrigger> unusedTriggers = new HashSet<>();
+      if (fullRp.isSetTriggers()) {
         for (WMTrigger trigger : fullRp.getTriggers()) {
           triggerMap.put(trigger.getTriggerName(), trigger);
+          if (trigger.isIsInUnmanaged()) {
+            unmanagedTriggers.add(trigger);
+          } else {
+            unusedTriggers.add(trigger);
+          }
         }
       }
-      if (fullRp.getPoolTriggers() != null) {
+      if (fullRp.isSetPoolTriggers()) {
         for (WMPoolTrigger pool2Trigger : fullRp.getPoolTriggers()) {
           PoolTreeNode node = poolMap.get(pool2Trigger.getPool());
           WMTrigger trigger = triggerMap.get(pool2Trigger.getTrigger());
@@ -816,31 +862,83 @@ public final class MetaDataFormatUtils {
             throw new IllegalStateException("Invalid trigger to pool: " + pool2Trigger.getPool() +
                 ", " + pool2Trigger.getTrigger());
           }
+          unusedTriggers.remove(trigger);
           node.triggers.add(trigger);
         }
       }
+      HashMap<String, List<String>> unmanagedMappings = new HashMap<>();
+      HashMap<String, List<String>> invalidMappings = new HashMap<>();
+      if (fullRp.isSetMappings()) {
+        for (WMMapping mapping : fullRp.getMappings()) {
+          if (mapping.isSetPoolPath()) {
+            PoolTreeNode destNode = poolMap.get(mapping.getPoolPath());
+            addMappingToMap((destNode == null) ? invalidMappings : destNode.mappings, mapping);
+          } else {
+            addMappingToMap(unmanagedMappings, mapping);
+          }
+        }
+      }
+
+      if (!unmanagedTriggers.isEmpty() || !unmanagedMappings.isEmpty()) {
+        PoolTreeNode curr = createNonPoolNode(poolMap, "unmanaged queries", root);
+        curr.triggers.addAll(unmanagedTriggers);
+        curr.mappings.putAll(unmanagedMappings);
+      }
+      // TODO: perhaps we should also summarize the triggers pointing to invalid pools.
+      if (!unusedTriggers.isEmpty()) {
+        PoolTreeNode curr = createNonPoolNode(poolMap, "unused triggers", root);
+        curr.triggers.addAll(unusedTriggers);
+      }
+      if (!invalidMappings.isEmpty()) {
+        PoolTreeNode curr = createNonPoolNode(poolMap, "invalid mappings", root);
+        curr.mappings.putAll(invalidMappings);
+      }
       return root;
     }
-  }
 
-  private static void writeRPLine(RPFormatter rpFormatter, WMResourcePlan plan)
-      throws IOException {
-    Integer parallelism = plan.isSetQueryParallelism() ? plan.getQueryParallelism() : null;
-    String defaultPool = plan.isSetDefaultPoolPath() ? plan.getDefaultPoolPath() : null;
-    rpFormatter.formatRP(plan.getName(), "status", plan.getStatus().toString(),
-         "parallelism", parallelism, "defaultPool", defaultPool);
+    private static PoolTreeNode createNonPoolNode(
+        Map<String, PoolTreeNode> poolMap, String name, PoolTreeNode root) {
+      PoolTreeNode result;
+      do {
+        name = "<" + name + ">";
+        result = poolMap.get(name);
+        // We expect this to never happen in practice. Can pool paths even have angled braces?
+      } while (result != null);
+      result = new PoolTreeNode();
+      result.nonPoolName = name;
+      poolMap.put(name, result);
+      root.children.add(result);
+      return result;
+    }
+
+    private static void addMappingToMap(HashMap<String, List<String>> map, WMMapping mapping) {
+      List<String> list = map.get(mapping.getEntityType());
+      if (list == null) {
+        list = new ArrayList<String>();
+        map.put(mapping.getEntityType(), list);
+      }
+      list.add(mapping.getEntityName());
+    }
   }
 
   public static void formatFullRP(RPFormatter rpFormatter, WMFullResourcePlan fullRp)
       throws HiveException {
     try {
       WMResourcePlan plan = fullRp.getPlan();
-      writeRPLine(rpFormatter, plan);
+      Integer parallelism = plan.isSetQueryParallelism() ? plan.getQueryParallelism() : null;
+      String defaultPool = plan.isSetDefaultPoolPath() ? plan.getDefaultPoolPath() : null;
+      rpFormatter.startRP(plan.getName(), "status", plan.getStatus().toString(),
+           "parallelism", parallelism, "defaultPool", defaultPool);
+      rpFormatter.startPools();
+
       PoolTreeNode root = PoolTreeNode.makePoolTree(fullRp);
       root.sortChildren();
       for (PoolTreeNode pool : root.children) {
-        pool.writePoolTreeNode(rpFormatter, 1);
+        pool.writePoolTreeNode(rpFormatter);
       }
+
+      rpFormatter.endPools();
+      rpFormatter.endRP();
     } catch (IOException e) {
       throw new HiveException(e);
     }

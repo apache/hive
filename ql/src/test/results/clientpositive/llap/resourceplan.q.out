@@ -3199,7 +3199,8 @@ PREHOOK: type: SHOW RESOURCEPLAN
 POSTHOOK: query: SHOW RESOURCE PLAN plan_1
 POSTHOOK: type: SHOW RESOURCEPLAN
 plan_1[status=DISABLED,parallelism=null,defaultPool=default]
-    default[allocFraction=1.0,schedulingPolicy=null,parallelism=4]
+ +  default[allocFraction=1.0,schedulingPolicy=null,parallelism=4]
+     |  mapped for default
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -3224,7 +3225,8 @@ PREHOOK: type: SHOW RESOURCEPLAN
 POSTHOOK: query: SHOW RESOURCE PLAN plan_2
 POSTHOOK: type: SHOW RESOURCEPLAN
 plan_2[status=DISABLED,parallelism=4,defaultPool=default]
-    default[allocFraction=1.0,schedulingPolicy=null,parallelism=4]
+ +  default[allocFraction=1.0,schedulingPolicy=null,parallelism=4]
+     |  mapped for default
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -3997,6 +3999,25 @@ table	table.pool.child1	table
 table	table.pool.child1	trigger1
 table	table.pool.child2	trigger1
 table	table.pool.child2	trigger2
+PREHOOK: query: SHOW RESOURCE PLAN `table`
+PREHOOK: type: SHOW RESOURCEPLAN
+POSTHOOK: query: SHOW RESOURCE PLAN `table`
+POSTHOOK: type: SHOW RESOURCEPLAN
+table[status=DISABLED,parallelism=1,defaultPool=table.pool]
+ +  table[allocFraction=0.0,schedulingPolicy=fifo,parallelism=1]
+     |  trigger table: if (BYTES_WRITTEN > 100K) { MOVE TO table }
+     +  pool[allocFraction=0.9,schedulingPolicy=fair,parallelism=3]
+         |  mapped for default
+         +  child2[allocFraction=0.7,schedulingPolicy=fair,parallelism=3]
+             |  trigger trigger2: if (BYTES_READ > 100) { KILL }
+             |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
+         +  child1[allocFraction=0.3,schedulingPolicy=fair,parallelism=1]
+             |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
+             |  trigger table: if (BYTES_WRITTEN > 100K) { MOVE TO table }
+ +  <unmanaged queries>
+     |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
+ +  <unused triggers>
+     |  trigger trigger: if (BYTES_WRITTEN > 100K) { MOVE TO default }
 PREHOOK: query: ALTER TRIGGER `table`.`trigger1` DROP FROM POOL `table`.pool.child2
 PREHOOK: type: ALTER POOL
 POSTHOOK: query: ALTER TRIGGER `table`.`trigger1` DROP FROM POOL `table`.pool.child2
@@ -4092,6 +4113,23 @@ PREHOOK: query: ALTER USER MAPPING "user1" IN plan_2 UNMANAGED
 PREHOOK: type: ALTER MAPPING
 POSTHOOK: query: ALTER USER MAPPING "user1" IN plan_2 UNMANAGED
 POSTHOOK: type: ALTER MAPPING
+PREHOOK: query: SHOW RESOURCE PLAN plan_2
+PREHOOK: type: SHOW RESOURCEPLAN
+POSTHOOK: query: SHOW RESOURCE PLAN plan_2
+POSTHOOK: type: SHOW RESOURCEPLAN
+plan_2[status=DISABLED,parallelism=4,defaultPool=def]
+ +  def[allocFraction=1.0,schedulingPolicy=null,parallelism=4]
+     |  mapped for users: user2
+     |  mapped for default
+     +  c2[allocFraction=0.7,schedulingPolicy=fair,parallelism=1]
+         |  trigger trigger_1: if (BYTES_READ = 0) { MOVE TO null_pool }
+         |  mapped for groups: group2
+     +  c1[allocFraction=0.3,schedulingPolicy=fair,parallelism=3]
+         |  mapped for groups: group1
+         |  mapped for applications: app1
+ +  <unmanaged queries>
+     |  mapped for users: user1
+     |  mapped for groups: group3
 PREHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_mappings
@@ -4148,10 +4186,14 @@ PREHOOK: type: SHOW RESOURCEPLAN
 POSTHOOK: query: SHOW RESOURCE PLAN plan_2
 POSTHOOK: type: SHOW RESOURCEPLAN
 plan_2[status=DISABLED,parallelism=4,defaultPool=def]
-    def[allocFraction=1.0,schedulingPolicy=null,parallelism=4]
-        c2[allocFraction=0.7,schedulingPolicy=fair,parallelism=1]
-          > trigger_1: if(BYTES_READ = 0){MOVE TO null_pool}
-        c1[allocFraction=0.3,schedulingPolicy=fair,parallelism=3]
+ +  def[allocFraction=1.0,schedulingPolicy=null,parallelism=4]
+     |  mapped for default
+     +  c2[allocFraction=0.7,schedulingPolicy=fair,parallelism=1]
+         |  trigger trigger_1: if (BYTES_READ = 0) { MOVE TO null_pool }
+     +  c1[allocFraction=0.3,schedulingPolicy=fair,parallelism=3]
+         |  mapped for groups: group1
+ +  <unmanaged queries>
+     |  mapped for users: user1
 PREHOOK: query: DROP RESOURCE PLAN plan_2
 PREHOOK: type: DROP RESOURCEPLAN
 POSTHOOK: query: DROP RESOURCE PLAN plan_2
