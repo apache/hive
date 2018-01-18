@@ -105,6 +105,8 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
@@ -1819,7 +1821,7 @@ public interface IMetaStoreClient {
   void dropResourcePlan(String resourcePlanName)
       throws NoSuchObjectException, MetaException, TException;
 
-  WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMResourcePlan resourcePlan,
+  WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
@@ -1843,7 +1845,7 @@ public interface IMetaStoreClient {
   void createWMPool(WMPool pool)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
-  void alterWMPool(WMPool pool, String poolPath)
+  void alterWMPool(WMNullablePool pool, String poolPath)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
 
   void dropWMPool(String resourcePlanName, String poolPath)

@@ -133,6 +133,8 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
@@ -9904,7 +9906,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan changes,
+  public WMFullResourcePlan alterResourcePlan(String name, WMNullableResourcePlan changes,
       boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
     throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
     name = name == null ? null : normalizeIdentifier(name);
@@ -9935,14 +9937,15 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private WMFullResourcePlan handleSimpleAlter(String name, WMResourcePlan changes,
+  private WMFullResourcePlan handleSimpleAlter(String name, WMNullableResourcePlan changes,
       boolean canActivateDisabled, boolean canDeactivate)
           throws InvalidOperationException, NoSuchObjectException, MetaException {
     MWMResourcePlan plan = name == null ? getActiveMWMResourcePlan()
         : getMWMResourcePlan(name, !changes.isSetStatus());
     boolean hasNameChange = changes.isSetName() && !changes.getName().equals(name);
     // Verify that field changes are consistent with what Hive does. Note: we could handle this.
-    if (changes.isSetQueryParallelism() || changes.isSetDefaultPoolPath() || hasNameChange) {
+    if (changes.isSetIsSetQueryParallelism()
+        || changes.isSetIsSetDefaultPoolPath() || hasNameChange) {
       if (changes.isSetStatus()) {
         throw new InvalidOperationException("Cannot change values during status switch.");
       } else if (plan.getStatus() != MWMResourcePlan.Status.DISABLED) {
@@ -9960,15 +9963,23 @@ public class ObjectStore implements RawStore, Configurable {
         plan.setName(newName);
       }
     }
-    if (changes.isSetQueryParallelism()) {
-      if (changes.getQueryParallelism() <= 0) {
-        throw new InvalidOperationException("queryParallelism should be positive.");
+    if (changes.isSetIsSetQueryParallelism() && changes.isIsSetQueryParallelism()) {
+      if (changes.isSetQueryParallelism()) {
+        if (changes.getQueryParallelism() <= 0) {
+          throw new InvalidOperationException("queryParallelism should be positive.");
+        }
+        plan.setQueryParallelism(changes.getQueryParallelism());
+      } else {
+        plan.setQueryParallelism(null);
       }
-      plan.setQueryParallelism(changes.getQueryParallelism());
     }
-    if (changes.isSetDefaultPoolPath()) {
-      MWMPool pool = getPool(plan, changes.getDefaultPoolPath());
-      plan.setDefaultPool(pool);
+    if (changes.isSetIsSetDefaultPoolPath() && changes.isIsSetDefaultPoolPath()) {
+      if (changes.isSetDefaultPoolPath()) {
+        MWMPool pool = getPool(plan, changes.getDefaultPoolPath());
+        plan.setDefaultPool(pool);
+      } else {
+        plan.setDefaultPool(null);
+      }
     }
 
     // Handle the status change.
@@ -9979,7 +9990,7 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  private WMFullResourcePlan handleAlterReplace(String name, WMResourcePlan changes)
+  private WMFullResourcePlan handleAlterReplace(String name, WMNullableResourcePlan changes)
           throws InvalidOperationException, NoSuchObjectException, MetaException {
     // Verify that field changes are consistent with what Hive does. Note: we could handle this.
     if (changes.isSetQueryParallelism() || changes.isSetDefaultPoolPath()) {
@@ -10432,7 +10443,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void alterPool(WMPool pool, String poolPath) throws AlreadyExistsException,
+  public void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
       NoSuchObjectException, InvalidOperationException, MetaException {
     boolean commited = false;
     try {
@@ -10446,17 +10457,22 @@ public class ObjectStore implements RawStore, Configurable {
       if (pool.isSetQueryParallelism()) {
         mPool.setQueryParallelism(pool.getQueryParallelism());
       }
-      if (pool.isSetSchedulingPolicy()) {
-        String policy = pool.getSchedulingPolicy();
-        if (!MetaStoreUtils.isValidSchedulingPolicy(policy)) {
-          throw new InvalidOperationException("Invalid scheduling policy " + policy);
+      if (pool.isSetIsSetSchedulingPolicy() && pool.isIsSetSchedulingPolicy()) {
+        if (pool.isSetSchedulingPolicy()) {
+          String policy = pool.getSchedulingPolicy();
+          if (!MetaStoreUtils.isValidSchedulingPolicy(policy)) {
+            throw new InvalidOperationException("Invalid scheduling policy " + policy);
+          }
+          mPool.setSchedulingPolicy(pool.getSchedulingPolicy());
+        } else {
+          mPool.setSchedulingPolicy(null);
         }
-        mPool.setSchedulingPolicy(pool.getSchedulingPolicy());
       }
       if (pool.isSetPoolPath() && !pool.getPoolPath().equals(mPool.getPath())) {
         moveDescendents(resourcePlan, mPool.getPath(), pool.getPoolPath());
         mPool.setPath(pool.getPoolPath());
       }
+
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, (Query)null);

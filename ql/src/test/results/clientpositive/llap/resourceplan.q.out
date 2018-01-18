@@ -3279,6 +3279,20 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	4	default
 plan_3	DISABLED	4	default
+PREHOOK: query: ALTER RESOURCE PLAN plan_3 UNSET QUERY_PARALLELISM
+PREHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: query: ALTER RESOURCE PLAN plan_3 UNSET QUERY_PARALLELISM
+POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+plan_2	DISABLED	4	default
+plan_3	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = default1
 PREHOOK: type: ALTER RESOURCEPLAN
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find pool: default1)
@@ -3291,7 +3305,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	4	default
-plan_3	DISABLED	4	default
+plan_3	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
@@ -3315,7 +3329,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	4	default
-plan_3	DISABLED	4	default
+plan_3	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is disabled and should be enabled before activation (or in the same command))
@@ -3328,7 +3342,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	4	default
-plan_3	DISABLED	4	default
+plan_3	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
@@ -3342,7 +3356,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	4	default
-plan_3	DISABLED	4	default
+plan_3	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
@@ -3356,7 +3370,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	4	default
-plan_3	ENABLED	4	default
+plan_3	ENABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
@@ -3370,7 +3384,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	4	default
-plan_3	ACTIVE	4	default
+plan_3	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
@@ -3384,7 +3398,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	4	default
-plan_3	ACTIVE	4	default
+plan_3	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is active; activate another plan first, or disable workload management.)
@@ -3397,7 +3411,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	4	default
-plan_3	ACTIVE	4	default
+plan_3	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is active; activate another plan first, or disable workload management.)
@@ -3410,7 +3424,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	4	default
-plan_3	ACTIVE	4	default
+plan_3	ACTIVE	NULL	default
 PREHOOK: query: DISABLE WORKLOAD MANAGEMENT
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: DISABLE WORKLOAD MANAGEMENT
@@ -3424,7 +3438,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	4	default
-plan_3	ENABLED	4	default
+plan_3	ENABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
@@ -3442,7 +3456,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	4	default
-plan_3	ACTIVE	4	default
+plan_3	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE
@@ -3456,7 +3470,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	ENABLED	4	default
-plan_3	ACTIVE	4	default
+plan_3	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 ACTIVATE
@@ -3470,7 +3484,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	ACTIVE	4	default
-plan_3	ENABLED	4	default
+plan_3	ENABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
@@ -3484,7 +3498,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	ACTIVE	4	default
-plan_3	ENABLED	4	default
+plan_3	ENABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
@@ -3498,7 +3512,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	ACTIVE	4	default
-plan_3	DISABLED	4	default
+plan_3	DISABLED	NULL	default
 PREHOOK: query: DROP RESOURCE PLAN plan_2
 PREHOOK: type: DROP RESOURCEPLAN
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Cannot drop an active resource plan)
@@ -3757,6 +3771,40 @@ PREHOOK: query: ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.7, QUERY_PAR
 PREHOOK: type: ALTER POOL
 POSTHOOK: query: ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.7, QUERY_PARALLELISM = 1
 POSTHOOK: type: ALTER POOL
+PREHOOK: query: ALTER POOL plan_2.default.c2 SET SCHEDULING_POLICY='fair'
+PREHOOK: type: ALTER POOL
+POSTHOOK: query: ALTER POOL plan_2.default.c2 SET SCHEDULING_POLICY='fair'
+POSTHOOK: type: ALTER POOL
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+plan_1	default	1.0	4	NULL
+plan_2	default	1.0	4	NULL
+plan_2	default.c1	0.3	3	fair
+plan_2	default.c2	0.7	1	fair
+table	default	1.0	4	NULL
+PREHOOK: query: ALTER POOL plan_2.default.c2 UNSET SCHEDULING_POLICY
+PREHOOK: type: ALTER POOL
+POSTHOOK: query: ALTER POOL plan_2.default.c2 UNSET SCHEDULING_POLICY
+POSTHOOK: type: ALTER POOL
+PREHOOK: query: SELECT * FROM SYS.WM_POOLS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_POOLS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_pools
+#### A masked pattern was here ####
+plan_1	default	1.0	4	NULL
+plan_2	default	1.0	4	NULL
+plan_2	default.c1	0.3	3	fair
+plan_2	default.c2	0.7	1	NULL
+table	default	1.0	4	NULL
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 VALIDATE
 PREHOOK: type: ALTER RESOURCEPLAN
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 VALIDATE
@@ -3788,7 +3836,7 @@ POSTHOOK: Input: sys@wm_pools
 plan_1	default	1.0	4	NULL
 plan_2	def	1.0	4	NULL
 plan_2	def.c1	0.3	3	fair
-plan_2	def.c2	0.7	1	fair
+plan_2	def.c2	0.7	1	NULL
 table	default	1.0	4	NULL
 PREHOOK: query: DROP POOL plan_2.default
 PREHOOK: type: DROP POOL
@@ -3804,7 +3852,7 @@ POSTHOOK: Input: sys@wm_pools
 plan_1	default	1.0	4	NULL
 plan_2	def	1.0	4	NULL
 plan_2	def.c1	0.3	3	fair
-plan_2	def.c2	0.7	1	fair
+plan_2	def.c2	0.7	1	NULL
 table	default	1.0	4	NULL
 PREHOOK: query: CREATE POOL plan_2.child1.child2 WITH
     QUERY_PARALLELISM=2, SCHEDULING_POLICY='fifo', ALLOC_FRACTION=0.8
@@ -3849,7 +3897,7 @@ POSTHOOK: Input: sys@wm_pools
 plan_1	default	1.0	4	NULL
 plan_2	def	1.0	4	NULL
 plan_2	def.c1	0.3	3	fair
-plan_2	def.c2	0.7	1	fair
+plan_2	def.c2	0.7	1	NULL
 table	default	1.0	4	NULL
 table	table	0.0	1	fifo
 table	table.pool1	0.9	3	fair
@@ -3870,7 +3918,7 @@ POSTHOOK: Input: sys@wm_pools
 plan_1	default	1.0	4	NULL
 plan_2	def	1.0	4	NULL
 plan_2	def.c1	0.3	3	fair
-plan_2	def.c2	0.7	1	fair
+plan_2	def.c2	0.7	1	NULL
 table	default	1.0	4	NULL
 table	table	0.0	1	fifo
 table	table.pool	0.9	3	fair
@@ -3890,7 +3938,7 @@ POSTHOOK: Input: sys@wm_pools
 plan_1	default	1.0	4	NULL
 plan_2	def	1.0	4	NULL
 plan_2	def.c1	0.3	3	fair
-plan_2	def.c2	0.7	1	fair
+plan_2	def.c2	0.7	1	NULL
 table	default	1.0	4	NULL
 table	table	0.0	1	fifo
 table	table.pool	0.9	3	fair
@@ -3910,7 +3958,7 @@ POSTHOOK: Input: sys@wm_pools
 plan_1	default	1.0	4	NULL
 plan_2	def	1.0	4	NULL
 plan_2	def.c1	0.3	3	fair
-plan_2	def.c2	0.7	1	fair
+plan_2	def.c2	0.7	1	NULL
 table	default	1.0	4	NULL
 table	table	0.0	1	fifo
 table	table.pool	0.9	3	fair
@@ -3946,11 +3994,26 @@ POSTHOOK: Input: sys@wm_pools
 plan_1	default	1.0	4	NULL
 plan_2	def	1.0	4	NULL
 plan_2	def.c1	0.3	3	fair
-plan_2	def.c2	0.7	1	fair
+plan_2	def.c2	0.7	1	NULL
 table	table	0.0	1	fifo
 table	table.pool	0.9	3	fair
 table	table.pool.child1	0.3	1	fair
 table	table.pool.child2	0.7	3	fair
+PREHOOK: query: ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL
+PREHOOK: type: ALTER RESOURCEPLAN
+POSTHOOK: query: ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL
+POSTHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@wm_resourceplans
+#### A masked pattern was here ####
+plan_1	ACTIVE	NULL	default
+plan_2	DISABLED	4	def
+table	DISABLED	1	NULL
 PREHOOK: query: ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
 POSTHOOK: query: ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
@@ -4003,11 +4066,10 @@ PREHOOK: query: SHOW RESOURCE PLAN `table`
 PREHOOK: type: SHOW RESOURCEPLAN
 POSTHOOK: query: SHOW RESOURCE PLAN `table`
 POSTHOOK: type: SHOW RESOURCEPLAN
-table[status=DISABLED,parallelism=1,defaultPool=table.pool]
+table[status=DISABLED,parallelism=1,defaultPool=null]
  +  table[allocFraction=0.0,schedulingPolicy=fifo,parallelism=1]
      |  trigger table: if (BYTES_WRITTEN > 100K) { MOVE TO table }
      +  pool[allocFraction=0.9,schedulingPolicy=fair,parallelism=3]
-         |  mapped for default
          +  child2[allocFraction=0.7,schedulingPolicy=fair,parallelism=3]
              |  trigger trigger2: if (BYTES_READ > 100) { KILL }
              |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
@@ -4121,7 +4183,7 @@ plan_2[status=DISABLED,parallelism=4,defaultPool=def]
  +  def[allocFraction=1.0,schedulingPolicy=null,parallelism=4]
      |  mapped for users: user2
      |  mapped for default
-     +  c2[allocFraction=0.7,schedulingPolicy=fair,parallelism=1]
+     +  c2[allocFraction=0.7,schedulingPolicy=null,parallelism=1]
          |  trigger trigger_1: if (BYTES_READ = 0) { MOVE TO null_pool }
          |  mapped for groups: group2
      +  c1[allocFraction=0.3,schedulingPolicy=fair,parallelism=3]
@@ -4188,7 +4250,7 @@ POSTHOOK: type: SHOW RESOURCEPLAN
 plan_2[status=DISABLED,parallelism=4,defaultPool=def]
  +  def[allocFraction=1.0,schedulingPolicy=null,parallelism=4]
      |  mapped for default
-     +  c2[allocFraction=0.7,schedulingPolicy=fair,parallelism=1]
+     +  c2[allocFraction=0.7,schedulingPolicy=null,parallelism=1]
          |  trigger trigger_1: if (BYTES_READ = 0) { MOVE TO null_pool }
      +  c1[allocFraction=0.3,schedulingPolicy=fair,parallelism=3]
          |  mapped for groups: group1
@@ -4213,7 +4275,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 plan_1	ENABLED	NULL	default
 plan_2	DISABLED	NULL	default
 plan_4	ACTIVE	NULL	default
-table	DISABLED	1	table.pool
+table	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools
@@ -4302,7 +4364,7 @@ plan_2	DISABLED	NULL	default
 plan_4	ACTIVE	NULL	default
 plan_4a	DISABLED	NULL	default
 plan_4b	DISABLED	NULL	default
-table	DISABLED	1	table.pool
+table	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools
@@ -4376,7 +4438,7 @@ plan_2	DISABLED	NULL	default
 plan_4	ACTIVE	NULL	default
 plan_4a	DISABLED	NULL	default
 plan_4a-old-0	DISABLED	NULL	default
-table	DISABLED	1	table.pool
+table	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools
@@ -4412,7 +4474,7 @@ plan_2	DISABLED	NULL	default
 plan_4	ACTIVE	NULL	default
 plan_4-old-0	DISABLED	NULL	default
 plan_4a-old-0	DISABLED	NULL	default
-table	DISABLED	1	table.pool
+table	DISABLED	1	NULL
 PREHOOK: query: CREATE RESOURCE PLAN plan_4a LIKE plan_4
 PREHOOK: type: CREATE RESOURCEPLAN
 POSTHOOK: query: CREATE RESOURCE PLAN plan_4a LIKE plan_4
@@ -4439,7 +4501,7 @@ plan_4	ACTIVE	NULL	default
 plan_4-old-0	DISABLED	NULL	default
 plan_4-old-1	DISABLED	NULL	default
 plan_4a-old-0	DISABLED	NULL	default
-table	DISABLED	1	table.pool
+table	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools

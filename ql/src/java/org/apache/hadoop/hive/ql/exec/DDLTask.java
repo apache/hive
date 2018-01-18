@@ -105,6 +105,7 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
@@ -725,7 +726,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return 0;
     }
 
-    WMResourcePlan resourcePlan = desc.getResourcePlan();
+    WMNullableResourcePlan resourcePlan = desc.getResourcePlan();
     final WorkloadManager wm = WorkloadManager.getInstance();
     final TezSessionPoolManager pm = TezSessionPoolManager.getInstance();
     boolean isActivate = false, isInTest = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
@@ -818,9 +819,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int createOrAlterWMPool(Hive db, CreateOrAlterWMPoolDesc desc) throws HiveException {
     if (desc.isUpdate()) {
-      db.alterWMPool(desc.getPool(), desc.getPoolPath());
+      db.alterWMPool(desc.getAlterPool(), desc.getPoolPath());
     } else {
-      db.createWMPool(desc.getPool());
+      db.createWMPool(desc.getCreatePool());
     }
     return 0;
   }

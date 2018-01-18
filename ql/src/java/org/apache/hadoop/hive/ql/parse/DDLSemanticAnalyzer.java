@@ -62,6 +62,8 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
@@ -951,7 +953,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // This command exists solely to output this message. TODO: can we do it w/o an error?
       throw new SemanticException("Activate a resource plan to enable workload management");
     case HiveParser.TOK_DISABLE:
-      WMResourcePlan anyRp = new WMResourcePlan();
+      WMNullableResourcePlan anyRp = new WMNullableResourcePlan();
       anyRp.setStatus(WMResourcePlanStatus.ENABLED);
       AlterResourcePlanDesc desc = new AlterResourcePlanDesc(
           anyRp, null, false, false, true, false);
@@ -963,7 +965,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Invalid syntax for ALTER RESOURCE PLAN statement");
     }
     String rpName = unescapeIdentifier(ast.getChild(0).getText());
-    WMResourcePlan resourcePlan = new WMResourcePlan();
+    WMNullableResourcePlan resourcePlan = new WMNullableResourcePlan();
     boolean isEnableActivate = false, isReplace = false;
     boolean validate = false;
     for (int i = 1; i < ast.getChildCount(); ++i) {
@@ -1008,18 +1010,32 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           resourcePlan.setStatus(WMResourcePlanStatus.ACTIVE);
         }
         break;
-      case HiveParser.TOK_QUERY_PARALLELISM:
+      case HiveParser.TOK_QUERY_PARALLELISM: {
         if (child.getChildCount() != 1) {
           throw new SemanticException("Expected one argument");
         }
-        resourcePlan.setQueryParallelism(Integer.parseInt(child.getChild(0).getText()));
+        Tree val = child.getChild(0);
+        resourcePlan.setIsSetQueryParallelism(true);
+        if (val.getType() == HiveParser.TOK_NULL) {
+          resourcePlan.unsetQueryParallelism();
+        } else {
+          resourcePlan.setQueryParallelism(Integer.parseInt(val.getText()));
+        }
         break;
-      case HiveParser.TOK_DEFAULT_POOL:
+      }
+      case HiveParser.TOK_DEFAULT_POOL: {
         if (child.getChildCount() != 1) {
           throw new SemanticException("Expected one argument");
         }
-        resourcePlan.setDefaultPoolPath(poolPath(child.getChild(0)));
+        Tree val = child.getChild(0);
+        resourcePlan.setIsSetDefaultPoolPath(true);
+        if (val.getType() == HiveParser.TOK_NULL) {
+          resourcePlan.unsetDefaultPoolPath();
+        } else {
+          resourcePlan.setDefaultPoolPath(poolPath(child.getChild(0)));
+        }
         break;
+      }
       case HiveParser.TOK_RENAME:
         if (child.getChildCount() != 1) {
           throw new SemanticException("Expected one argument");
@@ -1179,7 +1195,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeAlterPool(ASTNode ast) throws SemanticException {
     if (ast.getChildCount() < 3) {
-      throw new SemanticException("Invalid syntax for alter pool.");
+      throw new SemanticException("Invalid syntax for alter pool: " + ast.toStringTree());
     }
     String rpName = unescapeIdentifier(ast.getChild(0).getText());
     Tree poolTarget = ast.getChild(1);
@@ -1192,9 +1208,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       poolPath = poolPath(ast.getChild(1));
     }
 
-    WMPool poolChanges = null;
+    WMNullablePool poolChanges = null;
     for (int i = 2; i < ast.getChildCount(); ++i) {
       Tree child = ast.getChild(i);
+                    LOG.error("TODO# got2 " + child.toStringTree());
+
       if (child.getChildCount() != 1) {
         throw new SemanticException("Invalid syntax in alter pool expected parameter.");
       }
@@ -1211,7 +1229,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException("Cannot alter the unmanaged pool");
         }
         if (poolChanges == null) {
-          poolChanges = new WMPool(rpName, null);
+          poolChanges = new WMNullablePool(rpName, null);
         }
         switch (child.getType()) {
         case HiveParser.TOK_ALLOC_FRACTION:
@@ -1221,7 +1239,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           poolChanges.setQueryParallelism(Integer.parseInt(param.getText()));
           break;
         case HiveParser.TOK_SCHEDULING_POLICY:
-          poolChanges.setSchedulingPolicy(PlanUtils.stripQuotes(param.getText()));
+          poolChanges.setIsSetSchedulingPolicy(true);
+          if (param.getType() != HiveParser.TOK_NULL) {
+            poolChanges.setSchedulingPolicy(PlanUtils.stripQuotes(param.getText()));
+          }
           break;
         case HiveParser.TOK_PATH:
           poolChanges.setPoolPath(poolPath(param));

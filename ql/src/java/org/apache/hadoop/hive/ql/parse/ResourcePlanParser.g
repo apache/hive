@@ -56,6 +56,21 @@ rpAssignList
   : rpAssign (COMMA rpAssign)* -> rpAssign+
   ;
 
+rpUnassign
+@init { gParent.pushMsg("rpAssign", state); }
+@after { gParent.popMsg(state); }
+  : (
+      (KW_QUERY_PARALLELISM) -> ^(TOK_QUERY_PARALLELISM TOK_NULL)
+    | (KW_DEFAULT KW_POOL) -> ^(TOK_DEFAULT_POOL TOK_NULL)
+    )
+  ;
+
+rpUnassignList
+@init { gParent.pushMsg("rpAssignList", state); }
+@after { gParent.popMsg(state); }
+  : rpUnassign (COMMA rpUnassign)* -> rpUnassign+
+  ;
+
 createResourcePlanStatement
 @init { gParent.pushMsg("create resource plan statement", state); }
 @after { gParent.popMsg(state); }
@@ -80,6 +95,7 @@ alterResourcePlanStatement
           (KW_VALIDATE -> ^(TOK_ALTER_RP $name TOK_VALIDATE))
         | (KW_DISABLE -> ^(TOK_ALTER_RP $name TOK_DISABLE))
         | (KW_SET rpAssignList -> ^(TOK_ALTER_RP $name rpAssignList))
+        | (KW_UNSET rpUnassignList -> ^(TOK_ALTER_RP $name rpUnassignList))
         | (KW_RENAME KW_TO newName=identifier -> ^(TOK_ALTER_RP $name ^(TOK_RENAME $newName)))
         | ((activate enable? | enable activate?) -> ^(TOK_ALTER_RP $name activate? enable?))
       )
@@ -219,6 +235,7 @@ alterPoolStatement
 @after { gParent.popMsg(state); }
     : KW_ALTER KW_POOL rpName=identifier DOT poolPath (
         (KW_SET poolAssignList -> ^(TOK_ALTER_POOL $rpName poolPath poolAssignList))
+        | (KW_UNSET KW_SCHEDULING_POLICY -> ^(TOK_ALTER_POOL $rpName poolPath ^(TOK_SCHEDULING_POLICY TOK_NULL)))
         | (KW_ADD KW_TRIGGER triggerName=identifier
             -> ^(TOK_ALTER_POOL $rpName poolPath ^(TOK_ADD_TRIGGER $triggerName)))
         | (KW_DROP KW_TRIGGER triggerName=identifier

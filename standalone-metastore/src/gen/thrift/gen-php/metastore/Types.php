@@ -21152,6 +21152,196 @@ class WMResourcePlan {
 
 }
 
+class WMNullableResourcePlan {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $name = null;
+  /**
+   * @var int
+   */
+  public $status = null;
+  /**
+   * @var int
+   */
+  public $queryParallelism = null;
+  /**
+   * @var bool
+   */
+  public $isSetQueryParallelism = null;
+  /**
+   * @var string
+   */
+  public $defaultPoolPath = null;
+  /**
+   * @var bool
+   */
+  public $isSetDefaultPoolPath = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'name',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'status',
+          'type' => TType::I32,
+          ),
+        4 => array(
+          'var' => 'queryParallelism',
+          'type' => TType::I32,
+          ),
+        5 => array(
+          'var' => 'isSetQueryParallelism',
+          'type' => TType::BOOL,
+          ),
+        6 => array(
+          'var' => 'defaultPoolPath',
+          'type' => TType::STRING,
+          ),
+        7 => array(
+          'var' => 'isSetDefaultPoolPath',
+          'type' => TType::BOOL,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['name'])) {
+        $this->name = $vals['name'];
+      }
+      if (isset($vals['status'])) {
+        $this->status = $vals['status'];
+      }
+      if (isset($vals['queryParallelism'])) {
+        $this->queryParallelism = $vals['queryParallelism'];
+      }
+      if (isset($vals['isSetQueryParallelism'])) {
+        $this->isSetQueryParallelism = $vals['isSetQueryParallelism'];
+      }
+      if (isset($vals['defaultPoolPath'])) {
+        $this->defaultPoolPath = $vals['defaultPoolPath'];
+      }
+      if (isset($vals['isSetDefaultPoolPath'])) {
+        $this->isSetDefaultPoolPath = $vals['isSetDefaultPoolPath'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'WMNullableResourcePlan';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->status);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->queryParallelism);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isSetQueryParallelism);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->defaultPoolPath);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isSetDefaultPoolPath);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('WMNullableResourcePlan');
+    if ($this->name !== null) {
+      $xfer += $output->writeFieldBegin('name', TType::STRING, 1);
+      $xfer += $output->writeString($this->name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->status !== null) {
+      $xfer += $output->writeFieldBegin('status', TType::I32, 2);
+      $xfer += $output->writeI32($this->status);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->queryParallelism !== null) {
+      $xfer += $output->writeFieldBegin('queryParallelism', TType::I32, 4);
+      $xfer += $output->writeI32($this->queryParallelism);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->isSetQueryParallelism !== null) {
+      $xfer += $output->writeFieldBegin('isSetQueryParallelism', TType::BOOL, 5);
+      $xfer += $output->writeBool($this->isSetQueryParallelism);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->defaultPoolPath !== null) {
+      $xfer += $output->writeFieldBegin('defaultPoolPath', TType::STRING, 6);
+      $xfer += $output->writeString($this->defaultPoolPath);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->isSetDefaultPoolPath !== null) {
+      $xfer += $output->writeFieldBegin('isSetDefaultPoolPath', TType::BOOL, 7);
+      $xfer += $output->writeBool($this->isSetDefaultPoolPath);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class WMPool {
   static $_TSPEC;
 
@@ -21310,6 +21500,196 @@ class WMPool {
     if ($this->schedulingPolicy !== null) {
       $xfer += $output->writeFieldBegin('schedulingPolicy', TType::STRING, 5);
       $xfer += $output->writeString($this->schedulingPolicy);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class WMNullablePool {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $resourcePlanName = null;
+  /**
+   * @var string
+   */
+  public $poolPath = null;
+  /**
+   * @var double
+   */
+  public $allocFraction = null;
+  /**
+   * @var int
+   */
+  public $queryParallelism = null;
+  /**
+   * @var string
+   */
+  public $schedulingPolicy = null;
+  /**
+   * @var bool
+   */
+  public $isSetSchedulingPolicy = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'resourcePlanName',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'poolPath',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'allocFraction',
+          'type' => TType::DOUBLE,
+          ),
+        4 => array(
+          'var' => 'queryParallelism',
+          'type' => TType::I32,
+          ),
+        5 => array(
+          'var' => 'schedulingPolicy',
+          'type' => TType::STRING,
+          ),
+        6 => array(
+          'var' => 'isSetSchedulingPolicy',
+          'type' => TType::BOOL,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['resourcePlanName'])) {
+        $this->resourcePlanName = $vals['resourcePlanName'];
+      }
+      if (isset($vals['poolPath'])) {
+        $this->poolPath = $vals['poolPath'];
+      }
+      if (isset($vals['allocFraction'])) {
+        $this->allocFraction = $vals['allocFraction'];
+      }
+      if (isset($vals['queryParallelism'])) {
+        $this->queryParallelism = $vals['queryParallelism'];
+      }
+      if (isset($vals['schedulingPolicy'])) {
+        $this->schedulingPolicy = $vals['schedulingPolicy'];
+      }
+      if (isset($vals['isSetSchedulingPolicy'])) {
+        $this->isSetSchedulingPolicy = $vals['isSetSchedulingPolicy'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'WMNullablePool';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->resourcePlanName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->poolPath);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::DOUBLE) {
+            $xfer += $input->readDouble($this->allocFraction);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->queryParallelism);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->schedulingPolicy);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isSetSchedulingPolicy);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('WMNullablePool');
+    if ($this->resourcePlanName !== null) {
+      $xfer += $output->writeFieldBegin('resourcePlanName', TType::STRING, 1);
+      $xfer += $output->writeString($this->resourcePlanName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->poolPath !== null) {
+      $xfer += $output->writeFieldBegin('poolPath', TType::STRING, 2);
+      $xfer += $output->writeString($this->poolPath);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->allocFraction !== null) {
+      $xfer += $output->writeFieldBegin('allocFraction', TType::DOUBLE, 3);
+      $xfer += $output->writeDouble($this->allocFraction);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->queryParallelism !== null) {
+      $xfer += $output->writeFieldBegin('queryParallelism', TType::I32, 4);
+      $xfer += $output->writeI32($this->queryParallelism);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->schedulingPolicy !== null) {
+      $xfer += $output->writeFieldBegin('schedulingPolicy', TType::STRING, 5);
+      $xfer += $output->writeString($this->schedulingPolicy);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->isSetSchedulingPolicy !== null) {
+      $xfer += $output->writeFieldBegin('isSetSchedulingPolicy', TType::BOOL, 6);
+      $xfer += $output->writeBool($this->isSetSchedulingPolicy);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -22634,7 +23014,7 @@ class WMAlterResourcePlanRequest {
    */
   public $resourcePlanName = null;
   /**
-   * @var \metastore\WMResourcePlan
+   * @var \metastore\WMNullableResourcePlan
    */
   public $resourcePlan = null;
   /**
@@ -22660,7 +23040,7 @@ class WMAlterResourcePlanRequest {
         2 => array(
           'var' => 'resourcePlan',
           'type' => TType::STRUCT,
-          'class' => '\metastore\WMResourcePlan',
+          'class' => '\metastore\WMNullableResourcePlan',
           ),
         3 => array(
           'var' => 'isEnableAndActivate',
@@ -22723,7 +23103,7 @@ class WMAlterResourcePlanRequest {
           break;
         case 2:
           if ($ftype == TType::STRUCT) {
-            $this->resourcePlan = new \metastore\WMResourcePlan();
+            $this->resourcePlan = new \metastore\WMNullableResourcePlan();
             $xfer += $this->resourcePlan->read($input);
           } else {
             $xfer += $input->skip($ftype);
@@ -23899,7 +24279,7 @@ class WMAlterPoolRequest {
   static $_TSPEC;
 
   /**
-   * @var \metastore\WMPool
+   * @var \metastore\WMNullablePool
    */
   public $pool = null;
   /**
@@ -23913,7 +24293,7 @@ class WMAlterPoolRequest {
         1 => array(
           'var' => 'pool',
           'type' => TType::STRUCT,
-          'class' => '\metastore\WMPool',
+          'class' => '\metastore\WMNullablePool',
           ),
         2 => array(
           'var' => 'poolPath',
@@ -23952,7 +24332,7 @@ class WMAlterPoolRequest {
       {
         case 1:
           if ($ftype == TType::STRUCT) {
-            $this->pool = new \metastore\WMPool();
+            $this->pool = new \metastore\WMNullablePool();
             $xfer += $this->pool->read($input);
           } else {
             $xfer += $input->skip($ftype);
