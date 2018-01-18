@@ -3360,6 +3360,36 @@ class WMResourcePlan
   ::Thrift::Struct.generate_accessors self
 end
 
+class WMNullableResourcePlan
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  NAME = 1
+  STATUS = 2
+  QUERYPARALLELISM = 4
+  ISSETQUERYPARALLELISM = 5
+  DEFAULTPOOLPATH = 6
+  ISSETDEFAULTPOOLPATH = 7
+
+  FIELDS = {
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+    STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :optional => true, :enum_class => ::WMResourcePlanStatus},
+    QUERYPARALLELISM => {:type => ::Thrift::Types::I32, :name => 'queryParallelism', :optional => true},
+    ISSETQUERYPARALLELISM => {:type => ::Thrift::Types::BOOL, :name => 'isSetQueryParallelism', :optional => true},
+    DEFAULTPOOLPATH => {:type => ::Thrift::Types::STRING, :name => 'defaultPoolPath', :optional => true},
+    ISSETDEFAULTPOOLPATH => {:type => ::Thrift::Types::BOOL, :name => 'isSetDefaultPoolPath', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field name is unset!') unless @name
+    unless @status.nil? || ::WMResourcePlanStatus::VALID_VALUES.include?(@status)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field status!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class WMPool
   include ::Thrift::Struct, ::Thrift::Struct_Union
   RESOURCEPLANNAME = 1
@@ -3374,6 +3404,34 @@ class WMPool
     ALLOCFRACTION => {:type => ::Thrift::Types::DOUBLE, :name => 'allocFraction', :optional => true},
     QUERYPARALLELISM => {:type => ::Thrift::Types::I32, :name => 'queryParallelism', :optional => true},
     SCHEDULINGPOLICY => {:type => ::Thrift::Types::STRING, :name => 'schedulingPolicy', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field resourcePlanName is unset!') unless @resourcePlanName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field poolPath is unset!') unless @poolPath
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class WMNullablePool
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  RESOURCEPLANNAME = 1
+  POOLPATH = 2
+  ALLOCFRACTION = 3
+  QUERYPARALLELISM = 4
+  SCHEDULINGPOLICY = 5
+  ISSETSCHEDULINGPOLICY = 6
+
+  FIELDS = {
+    RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName'},
+    POOLPATH => {:type => ::Thrift::Types::STRING, :name => 'poolPath'},
+    ALLOCFRACTION => {:type => ::Thrift::Types::DOUBLE, :name => 'allocFraction', :optional => true},
+    QUERYPARALLELISM => {:type => ::Thrift::Types::I32, :name => 'queryParallelism', :optional => true},
+    SCHEDULINGPOLICY => {:type => ::Thrift::Types::STRING, :name => 'schedulingPolicy', :optional => true},
+    ISSETSCHEDULINGPOLICY => {:type => ::Thrift::Types::BOOL, :name => 'isSetSchedulingPolicy', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3622,7 +3680,7 @@ class WMAlterResourcePlanRequest
 
   FIELDS = {
     RESOURCEPLANNAME => {:type => ::Thrift::Types::STRING, :name => 'resourcePlanName', :optional => true},
-    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMResourcePlan, :optional => true},
+    RESOURCEPLAN => {:type => ::Thrift::Types::STRUCT, :name => 'resourcePlan', :class => ::WMNullableResourcePlan, :optional => true},
     ISENABLEANDACTIVATE => {:type => ::Thrift::Types::BOOL, :name => 'isEnableAndActivate', :optional => true},
     ISFORCEDEACTIVATE => {:type => ::Thrift::Types::BOOL, :name => 'isForceDeactivate', :optional => true},
     ISREPLACE => {:type => ::Thrift::Types::BOOL, :name => 'isReplace', :optional => true}
@@ -3879,7 +3937,7 @@ class WMAlterPoolRequest
   POOLPATH = 2
 
   FIELDS = {
-    POOL => {:type => ::Thrift::Types::STRUCT, :name => 'pool', :class => ::WMPool, :optional => true},
+    POOL => {:type => ::Thrift::Types::STRUCT, :name => 'pool', :class => ::WMNullablePool, :optional => true},
     POOLPATH => {:type => ::Thrift::Types::STRING, :name => 'poolPath', :optional => true}
   }
 

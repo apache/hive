@@ -1073,12 +1073,31 @@ struct WMResourcePlan {
   4: optional string defaultPoolPath;
 }
 
+struct WMNullableResourcePlan {
+  1: required string name;
+  2: optional WMResourcePlanStatus status;
+  4: optional i32 queryParallelism;
+  5: optional bool isSetQueryParallelism;
+  6: optional string defaultPoolPath;
+  7: optional bool isSetDefaultPoolPath;
+}
+
 struct WMPool {
   1: required string resourcePlanName;
   2: required string poolPath;
   3: optional double allocFraction;
   4: optional i32 queryParallelism;
   5: optional string schedulingPolicy;
+}
+
+
+struct WMNullablePool {
+  1: required string resourcePlanName;
+  2: required string poolPath;
+  3: optional double allocFraction;
+  4: optional i32 queryParallelism;
+  5: optional string schedulingPolicy;
+  6: optional bool isSetSchedulingPolicy;
 }
 
 struct WMTrigger {
@@ -1144,7 +1163,7 @@ struct WMGetAllResourcePlanResponse {
 
 struct WMAlterResourcePlanRequest {
   1: optional string resourcePlanName;
-  2: optional WMResourcePlan resourcePlan;
+  2: optional WMNullableResourcePlan resourcePlan;
   3: optional bool isEnableAndActivate;
   4: optional bool isForceDeactivate;
   5: optional bool isReplace;
@@ -1207,7 +1226,7 @@ struct WMCreatePoolResponse {
 }
 
 struct WMAlterPoolRequest {
-  1: optional WMPool pool;
+  1: optional WMNullablePool pool;
   2: optional string poolPath;
 }
 

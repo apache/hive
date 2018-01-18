@@ -58,6 +58,8 @@ import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.Role;
@@ -762,7 +764,7 @@ public interface RawStore extends Configurable {
 
   List<WMResourcePlan> getAllResourcePlans() throws MetaException;
 
-  WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan,
+  WMFullResourcePlan alterResourcePlan(String name, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException;
@@ -790,7 +792,7 @@ public interface RawStore extends Configurable {
   void createPool(WMPool pool) throws AlreadyExistsException, NoSuchObjectException,
       InvalidOperationException, MetaException;
 
-  void alterPool(WMPool pool, String poolPath) throws AlreadyExistsException,
+  void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
       NoSuchObjectException, InvalidOperationException, MetaException;
 
   void dropWMPool(String resourcePlanName, String poolPath)

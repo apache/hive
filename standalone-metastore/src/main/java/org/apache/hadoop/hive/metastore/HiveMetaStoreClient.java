@@ -2676,7 +2676,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMResourcePlan resourcePlan,
+  public WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMAlterResourcePlanRequest request = new WMAlterResourcePlanRequest();
@@ -2744,7 +2744,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void alterWMPool(WMPool pool, String poolPath)
+  public void alterWMPool(WMNullablePool pool, String poolPath)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMAlterPoolRequest request = new WMAlterPoolRequest();
     request.setPool(pool);

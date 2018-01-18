@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.cache;
 
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -74,6 +76,8 @@ import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.cache.SharedCache.StatsType;
@@ -105,6 +109,7 @@ import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.annotations.VisibleForTesting;
 
 // TODO filter->expr
@@ -2615,7 +2620,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan,
+  public WMFullResourcePlan alterResourcePlan(String name, WMNullableResourcePlan resourcePlan,
     boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException {
@@ -2671,7 +2676,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void alterPool(WMPool pool, String poolPath) throws AlreadyExistsException,
+  public void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
       NoSuchObjectException, InvalidOperationException, MetaException {
     rawStore.alterPool(pool, poolPath);
   }

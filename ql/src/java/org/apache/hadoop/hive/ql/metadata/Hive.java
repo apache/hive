@@ -132,6 +132,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
@@ -4857,12 +4859,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public WMFullResourcePlan alterResourcePlan(String rpName, WMResourcePlan resourcePlan,
-      boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace)
-          throws HiveException {
+  public WMFullResourcePlan alterResourcePlan(String rpName, WMNullableResourcePlan resourcePlan,
+      boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace) throws HiveException {
     try {
-      return getMSC().alterResourcePlan(
-          rpName, resourcePlan, canActivateDisabled, isForceDeactivate, isReplace);
+      return getMSC().alterResourcePlan(rpName, resourcePlan, canActivateDisabled,
+          isForceDeactivate, isReplace);
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -4916,7 +4917,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public void alterWMPool(WMPool pool, String poolPath) throws HiveException {
+  public void alterWMPool(WMNullablePool pool, String poolPath) throws HiveException {
     try {
       getMSC().alterWMPool(pool, poolPath);
     } catch (Exception e) {

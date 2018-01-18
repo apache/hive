@@ -14907,6 +14907,139 @@ class WMResourcePlan:
   def __ne__(self, other):
     return not (self == other)
 
+class WMNullableResourcePlan:
+  """
+  Attributes:
+   - name
+   - status
+   - queryParallelism
+   - isSetQueryParallelism
+   - defaultPoolPath
+   - isSetDefaultPoolPath
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'name', None, None, ), # 1
+    (2, TType.I32, 'status', None, None, ), # 2
+    None, # 3
+    (4, TType.I32, 'queryParallelism', None, None, ), # 4
+    (5, TType.BOOL, 'isSetQueryParallelism', None, None, ), # 5
+    (6, TType.STRING, 'defaultPoolPath', None, None, ), # 6
+    (7, TType.BOOL, 'isSetDefaultPoolPath', None, None, ), # 7
+  )
+
+  def __init__(self, name=None, status=None, queryParallelism=None, isSetQueryParallelism=None, defaultPoolPath=None, isSetDefaultPoolPath=None,):
+    self.name = name
+    self.status = status
+    self.queryParallelism = queryParallelism
+    self.isSetQueryParallelism = isSetQueryParallelism
+    self.defaultPoolPath = defaultPoolPath
+    self.isSetDefaultPoolPath = isSetDefaultPoolPath
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.name = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.status = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.I32:
+          self.queryParallelism = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.BOOL:
+          self.isSetQueryParallelism = iprot.readBool()
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.defaultPoolPath = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.BOOL:
+          self.isSetDefaultPoolPath = iprot.readBool()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('WMNullableResourcePlan')
+    if self.name is not None:
+      oprot.writeFieldBegin('name', TType.STRING, 1)
+      oprot.writeString(self.name)
+      oprot.writeFieldEnd()
+    if self.status is not None:
+      oprot.writeFieldBegin('status', TType.I32, 2)
+      oprot.writeI32(self.status)
+      oprot.writeFieldEnd()
+    if self.queryParallelism is not None:
+      oprot.writeFieldBegin('queryParallelism', TType.I32, 4)
+      oprot.writeI32(self.queryParallelism)
+      oprot.writeFieldEnd()
+    if self.isSetQueryParallelism is not None:
+      oprot.writeFieldBegin('isSetQueryParallelism', TType.BOOL, 5)
+      oprot.writeBool(self.isSetQueryParallelism)
+      oprot.writeFieldEnd()
+    if self.defaultPoolPath is not None:
+      oprot.writeFieldBegin('defaultPoolPath', TType.STRING, 6)
+      oprot.writeString(self.defaultPoolPath)
+      oprot.writeFieldEnd()
+    if self.isSetDefaultPoolPath is not None:
+      oprot.writeFieldBegin('isSetDefaultPoolPath', TType.BOOL, 7)
+      oprot.writeBool(self.isSetDefaultPoolPath)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.name is None:
+      raise TProtocol.TProtocolException(message='Required field name is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.name)
+    value = (value * 31) ^ hash(self.status)
+    value = (value * 31) ^ hash(self.queryParallelism)
+    value = (value * 31) ^ hash(self.isSetQueryParallelism)
+    value = (value * 31) ^ hash(self.defaultPoolPath)
+    value = (value * 31) ^ hash(self.isSetDefaultPoolPath)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class WMPool:
   """
   Attributes:
@@ -15015,6 +15148,140 @@ class WMPool:
     value = (value * 31) ^ hash(self.allocFraction)
     value = (value * 31) ^ hash(self.queryParallelism)
     value = (value * 31) ^ hash(self.schedulingPolicy)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class WMNullablePool:
+  """
+  Attributes:
+   - resourcePlanName
+   - poolPath
+   - allocFraction
+   - queryParallelism
+   - schedulingPolicy
+   - isSetSchedulingPolicy
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'resourcePlanName', None, None, ), # 1
+    (2, TType.STRING, 'poolPath', None, None, ), # 2
+    (3, TType.DOUBLE, 'allocFraction', None, None, ), # 3
+    (4, TType.I32, 'queryParallelism', None, None, ), # 4
+    (5, TType.STRING, 'schedulingPolicy', None, None, ), # 5
+    (6, TType.BOOL, 'isSetSchedulingPolicy', None, None, ), # 6
+  )
+
+  def __init__(self, resourcePlanName=None, poolPath=None, allocFraction=None, queryParallelism=None, schedulingPolicy=None, isSetSchedulingPolicy=None,):
+    self.resourcePlanName = resourcePlanName
+    self.poolPath = poolPath
+    self.allocFraction = allocFraction
+    self.queryParallelism = queryParallelism
+    self.schedulingPolicy = schedulingPolicy
+    self.isSetSchedulingPolicy = isSetSchedulingPolicy
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.resourcePlanName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.poolPath = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.DOUBLE:
+          self.allocFraction = iprot.readDouble()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.I32:
+          self.queryParallelism = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.schedulingPolicy = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.BOOL:
+          self.isSetSchedulingPolicy = iprot.readBool()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('WMNullablePool')
+    if self.resourcePlanName is not None:
+      oprot.writeFieldBegin('resourcePlanName', TType.STRING, 1)
+      oprot.writeString(self.resourcePlanName)
+      oprot.writeFieldEnd()
+    if self.poolPath is not None:
+      oprot.writeFieldBegin('poolPath', TType.STRING, 2)
+      oprot.writeString(self.poolPath)
+      oprot.writeFieldEnd()
+    if self.allocFraction is not None:
+      oprot.writeFieldBegin('allocFraction', TType.DOUBLE, 3)
+      oprot.writeDouble(self.allocFraction)
+      oprot.writeFieldEnd()
+    if self.queryParallelism is not None:
+      oprot.writeFieldBegin('queryParallelism', TType.I32, 4)
+      oprot.writeI32(self.queryParallelism)
+      oprot.writeFieldEnd()
+    if self.schedulingPolicy is not None:
+      oprot.writeFieldBegin('schedulingPolicy', TType.STRING, 5)
+      oprot.writeString(self.schedulingPolicy)
+      oprot.writeFieldEnd()
+    if self.isSetSchedulingPolicy is not None:
+      oprot.writeFieldBegin('isSetSchedulingPolicy', TType.BOOL, 6)
+      oprot.writeBool(self.isSetSchedulingPolicy)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.resourcePlanName is None:
+      raise TProtocol.TProtocolException(message='Required field resourcePlanName is unset!')
+    if self.poolPath is None:
+      raise TProtocol.TProtocolException(message='Required field poolPath is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.resourcePlanName)
+    value = (value * 31) ^ hash(self.poolPath)
+    value = (value * 31) ^ hash(self.allocFraction)
+    value = (value * 31) ^ hash(self.queryParallelism)
+    value = (value * 31) ^ hash(self.schedulingPolicy)
+    value = (value * 31) ^ hash(self.isSetSchedulingPolicy)
     return value
 
   def __repr__(self):
@@ -16013,7 +16280,7 @@ class WMAlterResourcePlanRequest:
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'resourcePlanName', None, None, ), # 1
-    (2, TType.STRUCT, 'resourcePlan', (WMResourcePlan, WMResourcePlan.thrift_spec), None, ), # 2
+    (2, TType.STRUCT, 'resourcePlan', (WMNullableResourcePlan, WMNullableResourcePlan.thrift_spec), None, ), # 2
     (3, TType.BOOL, 'isEnableAndActivate', None, None, ), # 3
     (4, TType.BOOL, 'isForceDeactivate', None, None, ), # 4
     (5, TType.BOOL, 'isReplace', None, None, ), # 5
@@ -16042,7 +16309,7 @@ class WMAlterResourcePlanRequest:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRUCT:
-          self.resourcePlan = WMResourcePlan()
+          self.resourcePlan = WMNullableResourcePlan()
           self.resourcePlan.read(iprot)
         else:
           iprot.skip(ftype)
@@ -17041,7 +17308,7 @@ class WMAlterPoolRequest:
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRUCT, 'pool', (WMPool, WMPool.thrift_spec), None, ), # 1
+    (1, TType.STRUCT, 'pool', (WMNullablePool, WMNullablePool.thrift_spec), None, ), # 1
     (2, TType.STRING, 'poolPath', None, None, ), # 2
   )
 
@@ -17060,7 +17327,7 @@ class WMAlterPoolRequest:
         break
       if fid == 1:
         if ftype == TType.STRUCT:
-          self.pool = WMPool()
+          self.pool = WMNullablePool()
           self.pool.read(iprot)
         else:
           iprot.skip(ftype)
