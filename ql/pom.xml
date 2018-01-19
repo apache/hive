@@ -891,7 +891,6 @@
                   <include>org.objenesis:objenesis</include>
                   <include>org.apache.parquet:parquet-hadoop-bundle</include>
                   <include>org.apache.thrift:libthrift</include>
-                  <include>org.apache.thrift:libfb303</include>
                   <include>javax.jdo:jdo-api</include>
                   <include>commons-lang:commons-lang</include>
                   <include>org.apache.commons:commons-lang3</include>
