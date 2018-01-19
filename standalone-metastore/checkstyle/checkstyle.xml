@@ -65,7 +65,7 @@
   <module name="Translation"/>
 
   <module name="Header">
-    <property name="headerFile" value="${basedir}/asf.header"/>
+    <property name="headerFile" value="${config_loc}/asf.header"/>
   </module>
 
   <!-- Maximum file line length -->
@@ -78,7 +78,7 @@
 
   <!-- List of files to ignore -->
   <module name="SuppressionFilter">
-    <property name="file" value="${basedir}/suppressions.xml"/>
+    <property name="file" value="${config_loc}/suppressions.xml"/>
   </module>
 
   <!-- Ignore JavaCC/JJTree files -->
@@ -140,7 +140,7 @@
     <!-- Checks for Size Violations.                    -->
     <!-- See http://checkstyle.sf.net/config_sizes.html -->
     <module name="LineLength">
-      <property name="max" value="100"/>
+      <property name="max" value="120"/>
       <property name="ignorePattern" value="^ *\* *[^ ]+$"/>
     </module>
     <module name="MethodLength"/>
@@ -192,7 +192,6 @@
     <module name="InnerAssignment"/>
     <module name="MissingSwitchDefault"/>
     <module name="MissingOverride"/>
-    <module name="RedundantThrows"/>
     <module name="SimplifyBooleanExpression"/>
     <module name="SimplifyBooleanReturn"/>
     <module name="StringLiteralEquality"/>
