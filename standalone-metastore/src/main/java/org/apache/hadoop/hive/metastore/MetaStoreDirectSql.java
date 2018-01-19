@@ -390,8 +390,7 @@ class MetaStoreDirectSql {
    * @param tableType Table type, or null if we want to get all tables
    * @return list of table names
    */
-  public List<String> getTables(String db_name, TableType tableType) throws MetaException {
-    List<String> ret = new ArrayList<String>();
+  public List<String> getTables(String dbName, TableType tableType) throws MetaException {
     String queryText = "SELECT " + TBLS + ".\"TBL_NAME\""
       + " FROM " + TBLS + " "
       + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
@@ -399,51 +398,35 @@ class MetaStoreDirectSql {
       + (tableType == null ? "" : "AND " + TBLS + ".\"TBL_TYPE\" = ? ") ;
 
     List<String> pms = new ArrayList<String>();
-    pms.add(db_name);
+    pms.add(dbName);
     if (tableType != null) {
       pms.add(tableType.toString());
     }
 
     Query<?> queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object[]> sqlResult = ensureList(executeWithArray(
-        queryParams, pms.toArray(), queryText));
-
-    if (!sqlResult.isEmpty()) {
-      for (Object[] line : sqlResult) {
-        ret.add(extractSqlString(line[0]));
-      }
-    }
-    return ret;
+    return executeWithArray(
+        queryParams, pms.toArray(), queryText);
   }
 
   /**
    * Get table names by using direct SQL queries.
    *
    * @param dbName Metastore database namme
-   * @param tableType Table type, or null if we want to get all tables
    * @return list of table names
    */
-  public List<String> getMaterializedViewsForRewriting(String db_name) throws MetaException {
-    List<String> ret = new ArrayList<String>();
+  public List<String> getMaterializedViewsForRewriting(String dbName) throws MetaException {
     String queryText = "SELECT " + TBLS + ".\"TBL_NAME\""
       + " FROM " + TBLS + " "
       + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
       + " WHERE " + DBS + ".\"NAME\" = ? AND " + TBLS + ".\"TBL_TYPE\" = ? " ;
 
     List<String> pms = new ArrayList<String>();
-    pms.add(db_name);
+    pms.add(dbName);
     pms.add(TableType.MATERIALIZED_VIEW.toString());
 
     Query<?> queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object[]> sqlResult = ensureList(executeWithArray(
-        queryParams, pms.toArray(), queryText));
-
-    if (!sqlResult.isEmpty()) {
-      for (Object[] line : sqlResult) {
-        ret.add(extractSqlString(line[0]));
-      }
-    }
-    return ret;
+    return executeWithArray(
+        queryParams, pms.toArray(), queryText);
   }
 
   /**
