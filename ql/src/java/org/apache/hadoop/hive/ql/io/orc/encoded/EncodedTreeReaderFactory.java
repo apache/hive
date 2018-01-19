@@ -2740,7 +2740,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       }
       if (fields != null) {
         for (TreeReader child : fields) {
-          ((SettableTreeReader) child).setBuffers(batch, sameStripe);
+          if (child != null) {
+            ((SettableTreeReader) child).setBuffers(batch, sameStripe);
+          }
         }
       }
     }

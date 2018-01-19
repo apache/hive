@@ -233,6 +233,7 @@ public class OrcEncodedDataConsumer
     PositionProvider[] pps = createPositionProviders(columnReaders, batchKey, stripeMetadata);
     if (pps == null) return;
     for (int i = 0; i < columnReaders.length; i++) {
+      if (columnReaders[i] == null) continue;
       // TODO: we could/should trace seek destinations; pps needs a "peek" method
       columnReaders[i].seek(pps);
     }
@@ -246,6 +247,7 @@ public class OrcEncodedDataConsumer
     if (pps == null) return;
     for (int i = 0; i < columnReaders.length; i++) {
       TreeReader reader = columnReaders[i];
+      if (reader == null) continue;
       // Note: we assume this never happens for SerDe reader - the batch would never have vectors.
       // That is always true now; but it wasn't some day, the below would throw in getColumnData.
       ((SettableTreeReader) reader).setBuffers(batch, sameStripe);
