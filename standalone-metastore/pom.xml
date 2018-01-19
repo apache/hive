@@ -50,7 +50,7 @@
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
-    <maven.checkstyle.plugin.version>2.15</maven.checkstyle.plugin.version>
+    <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
 
     <!-- Dependency versions -->
     <antlr.version>3.5.2</antlr.version>
@@ -474,7 +474,7 @@
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
           <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
-          <propertyExpansion>basedir=${checkstyle.conf.dir}</propertyExpansion>
+          <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
         </configuration>
       </plugin>
       <plugin>
