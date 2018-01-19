@@ -17,25 +17,32 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
-import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class DropConstraintHandler extends AbstractEventHandler {
-  DropConstraintHandler(NotificationEvent event) {
+class CreateDatabaseHandler extends AbstractEventHandler {
+  CreateDatabaseHandler(NotificationEvent event) {
     super(event);
   }
 
   @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} DROP_CONSTRAINT_MESSAGE message : {}", fromEventId(), event.getMessage());
-    DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
-    dmd.write();
+    LOG.info("Processing#{} CREATE_DATABASE message : {}", fromEventId(), event.getMessage());
+    CreateDatabaseMessage createDatabaseMsg =
+        deserializer.getCreateDatabaseMessage(event.getMessage());
+    Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
+    FileSystem fileSystem = metaDataPath.getFileSystem(withinContext.hiveConf);
+    EximUtil.createDbExportDump(fileSystem, metaDataPath, createDatabaseMsg.getDatabaseObject(),
+        withinContext.replicationSpec);
+    withinContext.createDmd(this).write();
   }
 
   @Override
   public DumpType dumpType() {
-    return DumpType.EVENT_DROP_CONSTRAINT;
+    return DumpType.EVENT_CREATE_DATABASE;
   }
 }

@@ -219,7 +219,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       replicationSpec.setReplSpecType(ReplicationSpec.Type.IMPORT);
     }
 
-    String dbname = SessionState.get().getCurrentDatabase();
+    String dbname = rv.getTable().getDbName();
     if ((parsedDbName !=null) && (!parsedDbName.isEmpty())){
       // If the parsed statement contained a db.tablename specification, prefer that.
       dbname = parsedDbName;

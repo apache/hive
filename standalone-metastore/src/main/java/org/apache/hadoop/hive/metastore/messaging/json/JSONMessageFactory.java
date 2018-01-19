@@ -99,7 +99,7 @@ public class JSONMessageFactory extends MessageFactory {
 
   @Override
   public CreateDatabaseMessage buildCreateDatabaseMessage(Database db) {
-    return new JSONCreateDatabaseMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db.getName(), now());
+    return new JSONCreateDatabaseMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db, now());
   }
 
   @Override

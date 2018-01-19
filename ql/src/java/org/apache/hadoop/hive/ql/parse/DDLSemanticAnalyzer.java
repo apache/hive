@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMNullablePool;
 import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -1346,7 +1345,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     CreateDatabaseDesc createDatabaseDesc =
-        new CreateDatabaseDesc(dbName, dbComment, dbLocation, ifNotExists);
+        new CreateDatabaseDesc(dbName, dbComment, dbLocation, ifNotExists, new ReplicationSpec());
     if (dbProps != null) {
       createDatabaseDesc.setDatabaseProperties(dbProps);
     }
@@ -1398,7 +1397,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     inputs.add(new ReadEntity(database));
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_EXCLUSIVE));
 
-    DropDatabaseDesc dropDatabaseDesc = new DropDatabaseDesc(dbName, ifExists, ifCascade);
+    DropDatabaseDesc dropDatabaseDesc = new DropDatabaseDesc(dbName, ifExists, ifCascade,
+        new ReplicationSpec());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropDatabaseDesc), conf));
   }
 
