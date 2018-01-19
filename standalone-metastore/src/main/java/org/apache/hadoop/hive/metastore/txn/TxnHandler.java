@@ -112,6 +112,7 @@ import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnState;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -1045,7 +1046,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   public AllocateTableWriteIdResponse allocateTableWriteId(AllocateTableWriteIdRequest rqst)
           throws NoSuchTxnException, TxnAbortedException, MetaException {
-    long txnId = rqst.getTxnId();
+    List<Long> txnIds = rqst.getTxnIds();
     String fullTableName = TxnUtils.getFullTableName(rqst.getDbName(), rqst.getTableName());
     try {
       Connection dbConn = null;
@@ -1055,50 +1056,68 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-
-        // Validate the transaction's state. Write ID should be allocated only for open transactions
-        TxnStatus txnStatus = findTxnState(txnId, stmt);
-        if (txnStatus != TxnStatus.OPEN) {
-          raiseTxnUnexpectedState(txnStatus, txnId);
-          shouldNeverHappen(txnId);
-          //dbConn is rolled back in finally{}
-        }
-
-        // If table write ID is already allocated for the current transaction, then just return it
-        // else allocate it
+        List<TxnToWriteId> txnToWriteIds = new ArrayList<>();
+        List<Long> newAllocTxns = new ArrayList<>();
+        String s;
         long writeId;
-        String s = "select t2w_writeid from TXN_TO_WRITE_ID where t2w_txnid = " + txnId
-                                              + " and t2w_table = " + quoteString(fullTableName);
-        LOG.debug("Going to execute query <" + s + ">");
-        rs = stmt.executeQuery(s);
-        if (rs.next()) {
-          writeId = rs.getLong(1);
-        } else {
-          // Get the next write ID for the given table and increment it
-          s = sqlGenerator.addForUpdateClause(
-                  "select nwi_next from NEXT_WRITE_ID where nwi_table = " + quoteString(fullTableName));
 
+        for (long txnId : txnIds) {
+          // Validate the transaction's state. Write ID should be allocated only for open transactions
+          TxnStatus txnStatus = findTxnState(txnId, stmt);
+          if (txnStatus != TxnStatus.OPEN) {
+            raiseTxnUnexpectedState(txnStatus, txnId);
+            shouldNeverHappen(txnId);
+            //dbConn is rolled back in finally{}
+          }
+
+          // If table write ID is already allocated for the current transaction, then just return it
+          // else allocate it
+          s = "select t2w_writeid from TXN_TO_WRITE_ID where t2w_txnid = " + txnId
+                  + " and t2w_table = " + quoteString(fullTableName);
           LOG.debug("Going to execute query <" + s + ">");
           rs = stmt.executeQuery(s);
-          if (!rs.next()) {
-            throw new MetaException("Transaction database not properly " +
-                    "configured, can't find next per table write id.");
+          if (rs.next()) {
+            writeId = rs.getLong(1);
+            txnToWriteIds.add(new TxnToWriteId(txnId, writeId));
+          } else {
+            newAllocTxns.add(txnId);
           }
-          writeId = rs.getLong(1);
-          s = "update NEXT_WRITE_ID set nwi_next = " + (writeId + 1)
-                  + " where nwi_table = " + quoteString(fullTableName);
-          LOG.debug("Going to execute update <" + s + ">");
-          stmt.executeUpdate(s);
+        }
 
+        long numOfWriteIds = newAllocTxns.size();
+
+        // If all the txns in the list have already allocated write ids, then just skip new allocations
+        if (0 == numOfWriteIds) {
+          return new AllocateTableWriteIdResponse(txnToWriteIds);
+        }
+
+        // Get the next write ID for the given table and increment it
+        s = sqlGenerator.addForUpdateClause(
+                "select nwi_next from NEXT_WRITE_ID where nwi_table = " + quoteString(fullTableName));
+
+        LOG.debug("Going to execute query <" + s + ">");
+        rs = stmt.executeQuery(s);
+        if (!rs.next()) {
+          throw new MetaException("Transaction database not properly " +
+                  "configured, can't find next per table write id.");
+        }
+        writeId = rs.getLong(1);
+        s = "update NEXT_WRITE_ID set nwi_next = " + (writeId + numOfWriteIds)
+                + " where nwi_table = " + quoteString(fullTableName);
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
+
+        for (long txnId : newAllocTxns) {
           s = "insert into TXN_TO_WRITE_ID (t2w_txnid, t2w_table, t2w_writeid) values ("
                   + txnId + ", " + quoteString(fullTableName) + ", " + writeId + ")";
           LOG.debug("Going to execute insert <" + s + ">");
           stmt.execute(s);
+          txnToWriteIds.add(new TxnToWriteId(txnId, writeId++));
         }
 
         LOG.debug("Going to commit");
         dbConn.commit();
-        return new AllocateTableWriteIdResponse(writeId);
+        return new AllocateTableWriteIdResponse(txnToWriteIds);
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);

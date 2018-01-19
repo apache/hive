@@ -124,7 +124,7 @@ CREATE TABLE COMPLETED_COMPACTIONS (
   CC_START bigint,
   CC_END bigint,
   CC_RUN_AS varchar(128),
-  CC_HIGHEST_TXN_ID bigint,
+  CC_HIGHEST_WRITE_ID bigint,
   CC_META_INFO varchar(2048) for bit data,
   CC_HADOOP_JOB_ID varchar(32)
 );

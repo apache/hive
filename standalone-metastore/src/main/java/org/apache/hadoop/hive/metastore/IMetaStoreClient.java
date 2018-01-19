@@ -102,6 +102,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
@@ -1457,6 +1458,15 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException;
+
+  /**
+   * Allocate a per table write ID and associate it with the given transaction
+   * @param txnIds ids of transaction batchto which the allocated write ID to be associated.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the write ID to be allocated
+   * @throws TException
+   */
+  List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName) throws TException;
 
   /**
    * Show the list of currently open transactions.  This is for use by "show transactions" in the

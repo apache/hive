@@ -96,6 +96,15 @@ public final class TxnDbUtil {
           "  CTC_TIMESTAMP timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL)");
       stmt.execute("CREATE TABLE NEXT_TXN_ID (" + "  NTXN_NEXT bigint NOT NULL)");
       stmt.execute("INSERT INTO NEXT_TXN_ID VALUES(1)");
+
+      stmt.execute("CREATE TABLE TXN_TO_WRITE_ID (" +
+          " T2W_TXNID bigint," +
+          " T2W_TABLE varchar(256) NOT NULL," +
+          " T2W_WRITEID bigint NOT NULL)");
+      stmt.execute("CREATE TABLE NEXT_WRITE_ID (" +
+          " NWI_TABLE varchar(256) NOT NULL," +
+          " NWI_NEXT bigint NOT NULL)");
+
       stmt.execute("CREATE TABLE HIVE_LOCKS (" +
           " HL_LOCK_EXT_ID bigint NOT NULL," +
           " HL_LOCK_INT_ID bigint NOT NULL," +
@@ -130,7 +139,7 @@ public final class TxnDbUtil {
           " CQ_WORKER_ID varchar(128)," +
           " CQ_START bigint," +
           " CQ_RUN_AS varchar(128)," +
-          " CQ_HIGHEST_TXN_ID bigint," +
+          " CQ_HIGHEST_WRITE_ID bigint," +
           " CQ_META_INFO varchar(2048) for bit data," +
           " CQ_HADOOP_JOB_ID varchar(32))");
 
@@ -149,7 +158,7 @@ public final class TxnDbUtil {
         " CC_START bigint," +
         " CC_END bigint," +
         " CC_RUN_AS varchar(128)," +
-        " CC_HIGHEST_TXN_ID bigint," +
+        " CC_HIGHEST_WRITE_ID bigint," +
         " CC_META_INFO varchar(2048) for bit data," +
         " CC_HADOOP_JOB_ID varchar(32))");
       
@@ -219,6 +228,8 @@ public final class TxnDbUtil {
         success &= dropTable(stmt, "COMPLETED_TXN_COMPONENTS", retryCount);
         success &= dropTable(stmt, "TXNS", retryCount);
         success &= dropTable(stmt, "NEXT_TXN_ID", retryCount);
+        success &= dropTable(stmt, "TXN_TO_WRITE_ID", retryCount);
+        success &= dropTable(stmt, "NEXT_WRITE_ID", retryCount);
         success &= dropTable(stmt, "HIVE_LOCKS", retryCount);
         success &= dropTable(stmt, "NEXT_LOCK_ID", retryCount);
         success &= dropTable(stmt, "COMPACTION_QUEUE", retryCount);

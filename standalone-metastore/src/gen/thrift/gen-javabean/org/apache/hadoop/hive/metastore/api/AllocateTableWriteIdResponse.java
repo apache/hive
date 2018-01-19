@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class AllocateTableWriteIdResponse implements org.apache.thrift.TBase<AllocateTableWriteIdResponse, AllocateTableWriteIdResponse._Fields>, java.io.Serializable, Cloneable, Comparable<AllocateTableWriteIdResponse> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("AllocateTableWriteIdResponse");
 
-  private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)1);
+  private static final org.apache.thrift.protocol.TField TXN_TO_WRITE_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("txnToWriteIds", org.apache.thrift.protocol.TType.LIST, (short)1);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -46,11 +46,11 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new AllocateTableWriteIdResponseTupleSchemeFactory());
   }
 
-  private long writeId; // required
+  private List<TxnToWriteId> txnToWriteIds; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    WRITE_ID((short)1, "writeId");
+    TXN_TO_WRITE_IDS((short)1, "txnToWriteIds");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -65,8 +65,8 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // WRITE_ID
-          return WRITE_ID;
+        case 1: // TXN_TO_WRITE_IDS
+          return TXN_TO_WRITE_IDS;
         default:
           return null;
       }
@@ -107,13 +107,12 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final int __WRITEID_ISSET_ID = 0;
-  private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.WRITE_ID, new org.apache.thrift.meta_data.FieldMetaData("writeId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.TXN_TO_WRITE_IDS, new org.apache.thrift.meta_data.FieldMetaData("txnToWriteIds", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TxnToWriteId.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AllocateTableWriteIdResponse.class, metaDataMap);
   }
@@ -122,19 +121,23 @@ import org.slf4j.LoggerFactory;
   }
 
   public AllocateTableWriteIdResponse(
-    long writeId)
+    List<TxnToWriteId> txnToWriteIds)
   {
     this();
-    this.writeId = writeId;
-    setWriteIdIsSet(true);
+    this.txnToWriteIds = txnToWriteIds;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public AllocateTableWriteIdResponse(AllocateTableWriteIdResponse other) {
-    __isset_bitfield = other.__isset_bitfield;
-    this.writeId = other.writeId;
+    if (other.isSetTxnToWriteIds()) {
+      List<TxnToWriteId> __this__txnToWriteIds = new ArrayList<TxnToWriteId>(other.txnToWriteIds.size());
+      for (TxnToWriteId other_element : other.txnToWriteIds) {
+        __this__txnToWriteIds.add(new TxnToWriteId(other_element));
+      }
+      this.txnToWriteIds = __this__txnToWriteIds;
+    }
   }
 
   public AllocateTableWriteIdResponse deepCopy() {
@@ -143,39 +146,54 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
-    setWriteIdIsSet(false);
-    this.writeId = 0;
+    this.txnToWriteIds = null;
   }
 
-  public long getWriteId() {
-    return this.writeId;
+  public int getTxnToWriteIdsSize() {
+    return (this.txnToWriteIds == null) ? 0 : this.txnToWriteIds.size();
   }
 
-  public void setWriteId(long writeId) {
-    this.writeId = writeId;
-    setWriteIdIsSet(true);
+  public java.util.Iterator<TxnToWriteId> getTxnToWriteIdsIterator() {
+    return (this.txnToWriteIds == null) ? null : this.txnToWriteIds.iterator();
   }
 
-  public void unsetWriteId() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __WRITEID_ISSET_ID);
+  public void addToTxnToWriteIds(TxnToWriteId elem) {
+    if (this.txnToWriteIds == null) {
+      this.txnToWriteIds = new ArrayList<TxnToWriteId>();
+    }
+    this.txnToWriteIds.add(elem);
   }
 
-  /** Returns true if field writeId is set (has been assigned a value) and false otherwise */
-  public boolean isSetWriteId() {
-    return EncodingUtils.testBit(__isset_bitfield, __WRITEID_ISSET_ID);
+  public List<TxnToWriteId> getTxnToWriteIds() {
+    return this.txnToWriteIds;
   }
 
-  public void setWriteIdIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __WRITEID_ISSET_ID, value);
+  public void setTxnToWriteIds(List<TxnToWriteId> txnToWriteIds) {
+    this.txnToWriteIds = txnToWriteIds;
+  }
+
+  public void unsetTxnToWriteIds() {
+    this.txnToWriteIds = null;
+  }
+
+  /** Returns true if field txnToWriteIds is set (has been assigned a value) and false otherwise */
+  public boolean isSetTxnToWriteIds() {
+    return this.txnToWriteIds != null;
+  }
+
+  public void setTxnToWriteIdsIsSet(boolean value) {
+    if (!value) {
+      this.txnToWriteIds = null;
+    }
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case WRITE_ID:
+    case TXN_TO_WRITE_IDS:
       if (value == null) {
-        unsetWriteId();
+        unsetTxnToWriteIds();
       } else {
-        setWriteId((Long)value);
+        setTxnToWriteIds((List<TxnToWriteId>)value);
       }
       break;
 
@@ -184,8 +202,8 @@ import org.slf4j.LoggerFactory;
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case WRITE_ID:
-      return getWriteId();
+    case TXN_TO_WRITE_IDS:
+      return getTxnToWriteIds();
 
     }
     throw new IllegalStateException();
@@ -198,8 +216,8 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
-    case WRITE_ID:
-      return isSetWriteId();
+    case TXN_TO_WRITE_IDS:
+      return isSetTxnToWriteIds();
     }
     throw new IllegalStateException();
   }
@@ -217,12 +235,12 @@ import org.slf4j.LoggerFactory;
     if (that == null)
       return false;
 
-    boolean this_present_writeId = true;
-    boolean that_present_writeId = true;
-    if (this_present_writeId || that_present_writeId) {
-      if (!(this_present_writeId && that_present_writeId))
+    boolean this_present_txnToWriteIds = true && this.isSetTxnToWriteIds();
+    boolean that_present_txnToWriteIds = true && that.isSetTxnToWriteIds();
+    if (this_present_txnToWriteIds || that_present_txnToWriteIds) {
+      if (!(this_present_txnToWriteIds && that_present_txnToWriteIds))
         return false;
-      if (this.writeId != that.writeId)
+      if (!this.txnToWriteIds.equals(that.txnToWriteIds))
         return false;
     }
 
@@ -233,10 +251,10 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
-    boolean present_writeId = true;
-    list.add(present_writeId);
-    if (present_writeId)
-      list.add(writeId);
+    boolean present_txnToWriteIds = true && (isSetTxnToWriteIds());
+    list.add(present_txnToWriteIds);
+    if (present_txnToWriteIds)
+      list.add(txnToWriteIds);
 
     return list.hashCode();
   }
@@ -249,12 +267,12 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
-    lastComparison = Boolean.valueOf(isSetWriteId()).compareTo(other.isSetWriteId());
+    lastComparison = Boolean.valueOf(isSetTxnToWriteIds()).compareTo(other.isSetTxnToWriteIds());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetWriteId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.writeId, other.writeId);
+    if (isSetTxnToWriteIds()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.txnToWriteIds, other.txnToWriteIds);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -279,8 +297,12 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("AllocateTableWriteIdResponse(");
     boolean first = true;
 
-    sb.append("writeId:");
-    sb.append(this.writeId);
+    sb.append("txnToWriteIds:");
+    if (this.txnToWriteIds == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.txnToWriteIds);
+    }
     first = false;
     sb.append(")");
     return sb.toString();
@@ -288,8 +310,8 @@ import org.slf4j.LoggerFactory;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetWriteId()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'writeId' is unset! Struct:" + toString());
+    if (!isSetTxnToWriteIds()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'txnToWriteIds' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -305,8 +327,6 @@ import org.slf4j.LoggerFactory;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
-      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -331,10 +351,21 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // WRITE_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.writeId = iprot.readI64();
-              struct.setWriteIdIsSet(true);
+          case 1: // TXN_TO_WRITE_IDS
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list598 = iprot.readListBegin();
+                struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list598.size);
+                TxnToWriteId _elem599;
+                for (int _i600 = 0; _i600 < _list598.size; ++_i600)
+                {
+                  _elem599 = new TxnToWriteId();
+                  _elem599.read(iprot);
+                  struct.txnToWriteIds.add(_elem599);
+                }
+                iprot.readListEnd();
+              }
+              struct.setTxnToWriteIdsIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -352,9 +383,18 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(WRITE_ID_FIELD_DESC);
-      oprot.writeI64(struct.writeId);
-      oprot.writeFieldEnd();
+      if (struct.txnToWriteIds != null) {
+        oprot.writeFieldBegin(TXN_TO_WRITE_IDS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.txnToWriteIds.size()));
+          for (TxnToWriteId _iter601 : struct.txnToWriteIds)
+          {
+            _iter601.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -372,14 +412,30 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, AllocateTableWriteIdResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      oprot.writeI64(struct.writeId);
+      {
+        oprot.writeI32(struct.txnToWriteIds.size());
+        for (TxnToWriteId _iter602 : struct.txnToWriteIds)
+        {
+          _iter602.write(oprot);
+        }
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, AllocateTableWriteIdResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      struct.writeId = iprot.readI64();
-      struct.setWriteIdIsSet(true);
+      {
+        org.apache.thrift.protocol.TList _list603 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list603.size);
+        TxnToWriteId _elem604;
+        for (int _i605 = 0; _i605 < _list603.size; ++_i605)
+        {
+          _elem604 = new TxnToWriteId();
+          _elem604.read(iprot);
+          struct.txnToWriteIds.add(_elem604);
+        }
+      }
+      struct.setTxnToWriteIdsIsSet(true);
     }
   }
 

@@ -2307,12 +2307,12 @@ end
 
 class AllocateTableWriteIdRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  TXNID = 1
+  TXNIDS = 1
   DBNAME = 2
   TABLENAME = 3
 
   FIELDS = {
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'},
+    TXNIDS => {:type => ::Thrift::Types::LIST, :name => 'txnIds', :element => {:type => ::Thrift::Types::I64}},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'}
   }
@@ -2320,7 +2320,7 @@ class AllocateTableWriteIdRequest
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnId is unset!') unless @txnId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnIds is unset!') unless @txnIds
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
   end
@@ -2328,18 +2328,38 @@ class AllocateTableWriteIdRequest
   ::Thrift::Struct.generate_accessors self
 end
 
-class AllocateTableWriteIdResponse
+class TxnToWriteId
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  WRITEID = 1
+  TXNID = 1
+  WRITEID = 2
 
   FIELDS = {
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId'}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnId is unset!') unless @txnId
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field writeId is unset!') unless @writeId
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AllocateTableWriteIdResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TXNTOWRITEIDS = 1
+
+  FIELDS = {
+    TXNTOWRITEIDS => {:type => ::Thrift::Types::LIST, :name => 'txnToWriteIds', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TxnToWriteId}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnToWriteIds is unset!') unless @txnToWriteIds
   end
 
   ::Thrift::Struct.generate_accessors self

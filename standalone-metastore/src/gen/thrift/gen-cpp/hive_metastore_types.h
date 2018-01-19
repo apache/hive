@@ -374,6 +374,8 @@ class AddTransactionalTableRequest;
 
 class AllocateTableWriteIdRequest;
 
+class TxnToWriteId;
+
 class AllocateTableWriteIdResponse;
 
 class LockComponent;
@@ -6170,15 +6172,15 @@ class AllocateTableWriteIdRequest {
 
   AllocateTableWriteIdRequest(const AllocateTableWriteIdRequest&);
   AllocateTableWriteIdRequest& operator=(const AllocateTableWriteIdRequest&);
-  AllocateTableWriteIdRequest() : txnId(0), dbName(), tableName() {
+  AllocateTableWriteIdRequest() : dbName(), tableName() {
   }
 
   virtual ~AllocateTableWriteIdRequest() throw();
-  int64_t txnId;
+  std::vector<int64_t>  txnIds;
   std::string dbName;
   std::string tableName;
 
-  void __set_txnId(const int64_t val);
+  void __set_txnIds(const std::vector<int64_t> & val);
 
   void __set_dbName(const std::string& val);
 
@@ -6186,7 +6188,7 @@ class AllocateTableWriteIdRequest {
 
   bool operator == (const AllocateTableWriteIdRequest & rhs) const
   {
-    if (!(txnId == rhs.txnId))
+    if (!(txnIds == rhs.txnIds))
       return false;
     if (!(dbName == rhs.dbName))
       return false;
@@ -6215,22 +6217,67 @@ inline std::ostream& operator<<(std::ostream& out, const AllocateTableWriteIdReq
 }
 
 
+class TxnToWriteId {
+ public:
+
+  TxnToWriteId(const TxnToWriteId&);
+  TxnToWriteId& operator=(const TxnToWriteId&);
+  TxnToWriteId() : txnId(0), writeId(0) {
+  }
+
+  virtual ~TxnToWriteId() throw();
+  int64_t txnId;
+  int64_t writeId;
+
+  void __set_txnId(const int64_t val);
+
+  void __set_writeId(const int64_t val);
+
+  bool operator == (const TxnToWriteId & rhs) const
+  {
+    if (!(txnId == rhs.txnId))
+      return false;
+    if (!(writeId == rhs.writeId))
+      return false;
+    return true;
+  }
+  bool operator != (const TxnToWriteId &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TxnToWriteId & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TxnToWriteId &a, TxnToWriteId &b);
+
+inline std::ostream& operator<<(std::ostream& out, const TxnToWriteId& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
 class AllocateTableWriteIdResponse {
  public:
 
   AllocateTableWriteIdResponse(const AllocateTableWriteIdResponse&);
   AllocateTableWriteIdResponse& operator=(const AllocateTableWriteIdResponse&);
-  AllocateTableWriteIdResponse() : writeId(0) {
+  AllocateTableWriteIdResponse() {
   }
 
   virtual ~AllocateTableWriteIdResponse() throw();
-  int64_t writeId;
+  std::vector<TxnToWriteId>  txnToWriteIds;
 
-  void __set_writeId(const int64_t val);
+  void __set_txnToWriteIds(const std::vector<TxnToWriteId> & val);
 
   bool operator == (const AllocateTableWriteIdResponse & rhs) const
   {
-    if (!(writeId == rhs.writeId))
+    if (!(txnToWriteIds == rhs.txnToWriteIds))
       return false;
     return true;
   }

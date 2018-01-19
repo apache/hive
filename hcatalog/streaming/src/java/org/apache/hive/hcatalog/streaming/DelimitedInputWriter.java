@@ -255,16 +255,16 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
   }
 
   @Override
-  public void write(long transactionId, byte[] record)
+  public void write(long writeId, byte[] record)
           throws SerializationError, StreamingIOFailure {
     try {
       byte[] orderedFields = reorderFields(record);
       Object encodedRow = encode(orderedFields);
       int bucket = getBucket(encodedRow);
-      getRecordUpdater(bucket).insert(transactionId, encodedRow);
+      getRecordUpdater(bucket).insert(writeId, encodedRow);
     } catch (IOException e) {
-      throw new StreamingIOFailure("Error writing record in transaction ("
-              + transactionId + ")", e);
+      throw new StreamingIOFailure("Error writing record in transaction write id ("
+              + writeId + ")", e);
     }
   }
 

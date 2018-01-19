@@ -754,13 +754,18 @@ struct AddTransactionalTableRequest {
 }
 
 struct AllocateTableWriteIdRequest {
-    1: required i64 txnId,
+    1: required list<i64> txnIds,
     2: required string dbName,
     3: required string tableName,
 }
 
+struct TxnToWriteId {
+    1: required i64 txnId,
+    2: required i64 writeId,
+}
+
 struct AllocateTableWriteIdResponse {
-    1: required i64 writeId,
+    1: required list<TxnToWriteId> txnToWriteIds,
 }
 
 struct LockComponent {

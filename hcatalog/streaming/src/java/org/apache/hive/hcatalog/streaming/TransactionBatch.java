@@ -58,6 +58,13 @@ public interface TransactionBatch  {
    */
   public Long getCurrentTxnId();
 
+
+  /**
+   * Get write Id mapping to currently open transaction
+   * @return write id
+   */
+  public Long getCurrentWriteId();
+
   /**
    * get state of current transaction
    */
