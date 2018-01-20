@@ -1179,6 +1179,7 @@ struct WMValidateResourcePlanRequest {
 
 struct WMValidateResourcePlanResponse {
   1: optional list<string> errors;
+  2: optional list<string> warnings;
 }
 
 struct WMDropResourcePlanRequest {

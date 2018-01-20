@@ -140,6 +140,7 @@ import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
@@ -10128,10 +10129,10 @@ public class ObjectStore implements RawStore, Configurable {
     if (doValidate) {
       // Note: this may use additional inputs from the caller, e.g. maximum query
       // parallelism in the cluster based on physical constraints.
-      List<String> planErrors = getResourcePlanErrors(mResourcePlan);
-      if (!planErrors.isEmpty()) {
+      WMValidateResourcePlanResponse response = getResourcePlanErrors(mResourcePlan);
+      if (!response.getErrors().isEmpty()) {
         throw new InvalidOperationException(
-            "ResourcePlan: " + name + " is invalid: " + planErrors);
+            "ResourcePlan: " + name + " is invalid: " + response.getErrors());
       }
     }
     if (doActivate) {
@@ -10164,8 +10165,6 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private static class PoolData {
-    int queryParallelism = 0;
-    int totalChildrenQueryParallelism = 0;
     double totalChildrenAllocFraction = 0;
     boolean found = false;
     boolean hasChildren = false;
@@ -10180,12 +10179,16 @@ public class ObjectStore implements RawStore, Configurable {
     return poolData;
   }
 
-  private List<String> getResourcePlanErrors(MWMResourcePlan mResourcePlan) {
-    List<String> errors = new ArrayList<>();
-    if (mResourcePlan.getQueryParallelism() != null && mResourcePlan.getQueryParallelism() < 1) {
-      errors.add("Query parallelism should for resource plan be positive. Got: " +
-        mResourcePlan.getQueryParallelism());
+  private WMValidateResourcePlanResponse getResourcePlanErrors(MWMResourcePlan mResourcePlan) {
+    WMValidateResourcePlanResponse response = new WMValidateResourcePlanResponse();
+    response.setErrors(new ArrayList());
+    response.setWarnings(new ArrayList());
+    Integer rpParallelism = mResourcePlan.getQueryParallelism();
+    if (rpParallelism != null && rpParallelism < 1) {
+      response.addToErrors("Query parallelism should for resource plan be positive. Got: " +
+          rpParallelism);
     }
+    int totalQueryParallelism = 0;
     Map<String, PoolData> poolInfo = new HashMap<>();
     for (MWMPool pool : mResourcePlan.getPools()) {
       PoolData currentPoolData = getPoolData(poolInfo, pool.getPath());
@@ -10195,45 +10198,54 @@ public class ObjectStore implements RawStore, Configurable {
       parentPoolData.hasChildren = true;
       parentPoolData.totalChildrenAllocFraction += pool.getAllocFraction();
       if (pool.getQueryParallelism() != null && pool.getQueryParallelism() < 1) {
-        errors.add("Invalid query parallelism for pool: " + pool.getPath());
+        response.addToErrors("Invalid query parallelism for pool: " + pool.getPath());
       } else {
-        currentPoolData.queryParallelism = pool.getQueryParallelism();
-        parentPoolData.totalChildrenQueryParallelism += pool.getQueryParallelism();
+        totalQueryParallelism += pool.getQueryParallelism();
       }
       if (!MetaStoreUtils.isValidSchedulingPolicy(pool.getSchedulingPolicy())) {
-        errors.add("Invalid scheduling policy "
-            + pool.getSchedulingPolicy() + " for pool: " + pool.getPath());
+        response.addToErrors("Invalid scheduling policy " + pool.getSchedulingPolicy() +
+            " for pool: " + pool.getPath());
+      }
+    }
+    if (rpParallelism != null) {
+      if (rpParallelism < totalQueryParallelism) {
+        response.addToErrors("Sum of all pools' query parallelism: " + totalQueryParallelism  +
+            " exceeds resource plan query parallelism: " + rpParallelism);
+      } else if (rpParallelism != totalQueryParallelism) {
+        response.addToWarnings("Sum of all pools' query parallelism: " + totalQueryParallelism  +
+            " is less than resource plan query parallelism: " + rpParallelism);
       }
     }
     for (Entry<String, PoolData> entry : poolInfo.entrySet()) {
-      PoolData poolData = entry.getValue();
+      final PoolData poolData = entry.getValue();
+      final boolean isRoot = entry.getKey().isEmpty();
       // Special case for root parent
-      if (entry.getKey().equals("")) {
+      if (isRoot) {
         poolData.found = true;
-        poolData.queryParallelism = mResourcePlan.getQueryParallelism() == null ?
-            poolData.totalChildrenQueryParallelism : mResourcePlan.getQueryParallelism();
-      }
-      if (!poolData.found) {
-        errors.add("Pool does not exists but has children: " + entry.getKey());
-      }
-      if (poolData.hasChildren) {
-        if (Math.abs(1.0 - poolData.totalChildrenAllocFraction) > 0.001) {
-          errors.add("Sum of children pools' alloc fraction should be equal 1.0 got: " +
+        if (!poolData.hasChildren) {
+          response.addToErrors("Root has no children");
+        } else if (Math.abs(1.0 - poolData.totalChildrenAllocFraction) > 0.001) {
+          response.addToErrors("Sum of root children pools' alloc fraction should be 1.0 got: " +
               poolData.totalChildrenAllocFraction + " for pool: " + entry.getKey());
         }
-        if (poolData.queryParallelism != poolData.totalChildrenQueryParallelism) {
-          errors.add("Sum of children pools' query parallelism: " +
-              poolData.totalChildrenQueryParallelism + " is not equal to pool parallelism: " +
-              poolData.queryParallelism + " for pool: " + entry.getKey());
+      }
+      if (!poolData.found) {
+        response.addToErrors("Pool does not exists but has children: " + entry.getKey());
+      }
+      if (poolData.hasChildren) {
+        if (!isRoot && 1.0 <= poolData.totalChildrenAllocFraction) {
+          response.addToErrors("Sum of children pools' alloc fraction should be less than 1 got: "
+              + poolData.totalChildrenAllocFraction + " for pool: " + entry.getKey());
         }
       }
     }
-    // TODO: validate trigger and action expressions. mResourcePlan.getTriggers()
-    return errors;
+    // trigger and action expressions are not validated here, since counters are not
+    // available and grammar check is there in the language itself.
+    return response;
   }
 
   @Override
-  public List<String> validateResourcePlan(String name)
+  public WMValidateResourcePlanResponse validateResourcePlan(String name)
       throws NoSuchObjectException, InvalidObjectException, MetaException {
     name = normalizeIdentifier(name);
     Query query = null;

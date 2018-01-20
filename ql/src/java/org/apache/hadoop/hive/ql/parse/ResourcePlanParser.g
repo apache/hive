@@ -16,12 +16,31 @@
 */
 parser grammar ResourcePlanParser;
 
-options
-{
+options {
   output=AST;
   ASTLabelType=ASTNode;
   backtrack=false;
   k=3;
+}
+
+@members {
+  @Override
+  public Object recoverFromMismatchedSet(IntStream input,
+      RecognitionException re, BitSet follow) throws RecognitionException {
+    return gParent.recoverFromMismatchedSet(input, re, follow);
+  }
+
+  @Override
+  public void displayRecognitionError(String[] tokenNames,
+      RecognitionException e) {
+    gParent.displayRecognitionError(tokenNames, e);
+  }
+}
+
+@rulecatch {
+  catch (RecognitionException e) {
+    throw e;
+  }
 }
 
 resourcePlanDdlStatements
@@ -133,9 +152,15 @@ poolPath
 triggerExpression
 @init { gParent.pushMsg("triggerExpression", state); }
 @after { gParent.popMsg(state); }
-    : triggerOrExpression -> ^(TOK_TRIGGER_EXPRESSION triggerOrExpression)
+    : triggerAtomExpression -> ^(TOK_TRIGGER_EXPRESSION triggerAtomExpression)
     ;
 
+triggerExpressionStandalone : triggerExpression EOF ;
+
+/*
+  The rules triggerOrExpression and triggerAndExpression are not being used right now.
+  Only > operator is supported, this should be changed if logic in ExpressionFactory changes.
+*/
 triggerOrExpression
 @init { gParent.pushMsg("triggerOrExpression", state); }
 @after { gParent.popMsg(state); }
@@ -151,22 +176,21 @@ triggerAndExpression
 triggerAtomExpression
 @init { gParent.pushMsg("triggerAtomExpression", state); }
 @after { gParent.popMsg(state); }
-    : (identifier comparisionOperator triggerLiteral)
-    | (LPAREN triggerOrExpression RPAREN)
+    : identifier comparisionOperator triggerLiteral
     ;
 
 triggerLiteral
 @init { gParent.pushMsg("triggerLiteral", state); }
 @after { gParent.popMsg(state); }
-    : (Number (KW_HOUR|KW_MINUTE|KW_SECOND)?)
-    | ByteLengthLiteral
-    | StringLiteral
+    : Number
+    | TimeFullLiteral
+    | ByteLengthFullLiteral
     ;
 
 comparisionOperator
 @init { gParent.pushMsg("comparisionOperator", state); }
 @after { gParent.popMsg(state); }
-    : EQUAL | LESSTHAN | LESSTHANOREQUALTO | GREATERTHAN | GREATERTHANOREQUALTO
+    : GREATERTHAN
     ;
 
 triggerActionExpression
@@ -175,6 +199,8 @@ triggerActionExpression
     : KW_KILL
     | (KW_MOVE^ KW_TO! poolPath)
     ;
+
+triggerActionExpressionStandalone : triggerActionExpression EOF ;
 
 createTriggerStatement
 @init { gParent.pushMsg("create trigger statement", state); }
@@ -263,7 +289,7 @@ createMappingStatement
 alterMappingStatement
 @init { gParent.pushMsg("alter mapping statement", state); }
 @after { gParent.popMsg(state); }
-    : (KW_ALTER mappingType=(KW_USER | KW_GROUP | KW_APPLICATION) KW_MAPPING
+    : (KW_ALTER mappingType=(KW_USER | KW_GROUP | KW_APPLICATION)
          KW_MAPPING name=StringLiteral
          KW_IN rpName=identifier ((KW_TO path=poolPath) | unmanaged)
          (KW_WITH KW_ORDER order=Number)?)

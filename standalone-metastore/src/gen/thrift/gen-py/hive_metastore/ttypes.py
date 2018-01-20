@@ -16520,15 +16520,18 @@ class WMValidateResourcePlanResponse:
   """
   Attributes:
    - errors
+   - warnings
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.LIST, 'errors', (TType.STRING,None), None, ), # 1
+    (2, TType.LIST, 'warnings', (TType.STRING,None), None, ), # 2
   )
 
-  def __init__(self, errors=None,):
+  def __init__(self, errors=None, warnings=None,):
     self.errors = errors
+    self.warnings = warnings
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -16549,6 +16552,16 @@ class WMValidateResourcePlanResponse:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.LIST:
+          self.warnings = []
+          (_etype717, _size714) = iprot.readListBegin()
+          for _i718 in xrange(_size714):
+            _elem719 = iprot.readString()
+            self.warnings.append(_elem719)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -16562,8 +16575,15 @@ class WMValidateResourcePlanResponse:
     if self.errors is not None:
       oprot.writeFieldBegin('errors', TType.LIST, 1)
       oprot.writeListBegin(TType.STRING, len(self.errors))
-      for iter714 in self.errors:
-        oprot.writeString(iter714)
+      for iter720 in self.errors:
+        oprot.writeString(iter720)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.warnings is not None:
+      oprot.writeFieldBegin('warnings', TType.LIST, 2)
+      oprot.writeListBegin(TType.STRING, len(self.warnings))
+      for iter721 in self.warnings:
+        oprot.writeString(iter721)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -16576,6 +16596,7 @@ class WMValidateResourcePlanResponse:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.errors)
+    value = (value * 31) ^ hash(self.warnings)
     return value
 
   def __repr__(self):
@@ -17139,11 +17160,11 @@ class WMGetTriggersForResourePlanResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.triggers = []
-          (_etype718, _size715) = iprot.readListBegin()
-          for _i719 in xrange(_size715):
-            _elem720 = WMTrigger()
-            _elem720.read(iprot)
-            self.triggers.append(_elem720)
+          (_etype725, _size722) = iprot.readListBegin()
+          for _i726 in xrange(_size722):
+            _elem727 = WMTrigger()
+            _elem727.read(iprot)
+            self.triggers.append(_elem727)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -17160,8 +17181,8 @@ class WMGetTriggersForResourePlanResponse:
     if self.triggers is not None:
       oprot.writeFieldBegin('triggers', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.triggers))
-      for iter721 in self.triggers:
-        iter721.write(oprot)
+      for iter728 in self.triggers:
+        iter728.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
@@ -152,8 +153,13 @@ public class TestJsonRPFormatter {
     JsonNode type0 = pool2.get("mappings").get(0);
     assertEquals("user", type0.get("type").asText());
     assertTrue(type0.get("values").isArray());
-    assertEquals("foo", type0.get("values").get(0).asText());
-    assertEquals("bar", type0.get("values").get(1).asText());
+    assertEquals(2, type0.get("values").size());
+    HashSet<String> vals = new HashSet<>();
+    for (int i = 0; i < type0.get("values").size(); ++i) {
+      vals.add(type0.get("values").get(i).asText());
+    }
+    assertTrue(vals.contains("foo"));
+    assertTrue(vals.contains("bar"));
 
     JsonNode pool1 = jsonTree.get("pools").get(1);
     assertEquals("pool1", pool1.get("name").asText());

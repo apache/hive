@@ -9851,8 +9851,9 @@ inline std::ostream& operator<<(std::ostream& out, const WMValidateResourcePlanR
 }
 
 typedef struct _WMValidateResourcePlanResponse__isset {
-  _WMValidateResourcePlanResponse__isset() : errors(false) {}
+  _WMValidateResourcePlanResponse__isset() : errors(false), warnings(false) {}
   bool errors :1;
+  bool warnings :1;
 } _WMValidateResourcePlanResponse__isset;
 
 class WMValidateResourcePlanResponse {
@@ -9865,16 +9866,23 @@ class WMValidateResourcePlanResponse {
 
   virtual ~WMValidateResourcePlanResponse() throw();
   std::vector<std::string>  errors;
+  std::vector<std::string>  warnings;
 
   _WMValidateResourcePlanResponse__isset __isset;
 
   void __set_errors(const std::vector<std::string> & val);
+
+  void __set_warnings(const std::vector<std::string> & val);
 
   bool operator == (const WMValidateResourcePlanResponse & rhs) const
   {
     if (__isset.errors != rhs.__isset.errors)
       return false;
     else if (__isset.errors && !(errors == rhs.errors))
+      return false;
+    if (__isset.warnings != rhs.__isset.warnings)
+      return false;
+    else if (__isset.warnings && !(warnings == rhs.warnings))
       return false;
     return true;
   }
