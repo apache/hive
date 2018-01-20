@@ -17,6 +17,12 @@ package org.apache.hadoop.hive.ql.wm;
 
 import java.util.Objects;
 
+import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hadoop.hive.ql.parse.ParseException;
+
 /**
  * Action that gets invoked for trigger violations.
  */
@@ -46,16 +52,40 @@ public class Action {
   private final String poolName;
 
   public static Action fromMetastoreExpression(String metastoreActionExpression) {
-    if (metastoreActionExpression.equalsIgnoreCase(Type.KILL_QUERY.getDisplayName())) {
-      return new Action(Type.KILL_QUERY);
-    } else {
-      final String poolName = metastoreActionExpression.substring(Type.MOVE_TO_POOL.getDisplayName().length()).trim();
-      if (poolName.isEmpty()) {
-        throw new IllegalArgumentException("Invalid move action expression (" + metastoreActionExpression + "). Pool " +
-          "name is empty");
-      } else {
-        return new Action(Type.MOVE_TO_POOL, poolName);
+    ParseDriver driver = new ParseDriver();
+    ASTNode node = null;
+    try {
+      node = driver.parseTriggerActionExpression(metastoreActionExpression);
+    } catch (ParseException e) {
+      throw new IllegalArgumentException(
+          "Invalid action expression: " + metastoreActionExpression, e);
+    }
+    if (node == null || node.getChildCount() != 2 ||
+        node.getChild(1).getType() != HiveParser.EOF) {
+      throw new IllegalArgumentException(
+          "Invalid action expression: " + metastoreActionExpression);
+    }
+    node = (ASTNode) node.getChild(0);
+    switch (node.getType()) {
+    case HiveParser.KW_KILL:
+      if (node.getChildCount() != 0) {
+        throw new IllegalArgumentException("Invalid KILL action");
       }
+      return new Action(Type.KILL_QUERY);
+    case HiveParser.KW_MOVE: {
+      if (node.getChildCount() != 1) {
+        throw new IllegalArgumentException("Invalid move to action, expected poolPath");
+      }
+      Tree poolNode = node.getChild(0);
+      StringBuilder poolPath = new StringBuilder(poolNode.getText());
+      for (int i = 0; i < poolNode.getChildCount(); ++i) {
+        poolPath.append(poolNode.getChild(0).getText());
+      }
+      return new Action(Type.MOVE_TO_POOL, poolPath.toString());
+    }
+    default:
+      throw new IllegalArgumentException("Unhandled action expression, type: " + node.getType() +
+          ": " + metastoreActionExpression);
     }
   }
 

@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -50,7 +51,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
-import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -578,15 +578,26 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
   }
 
   @Override
-  public void showErrors(DataOutputStream out, List<String> errors) throws HiveException {
+  public void showErrors(DataOutputStream out, WMValidateResourcePlanResponse response)
+      throws HiveException {
     JsonGenerator generator = null;
     try {
       generator = new ObjectMapper().getJsonFactory().createJsonGenerator(out);
-      generator.writeStartArray();
-      for (String error : errors) {
+      generator.writeStartObject();
+
+      generator.writeArrayFieldStart("errors");
+      for (String error : response.getErrors()) {
         generator.writeString(error);
       }
       generator.writeEndArray();
+
+      generator.writeArrayFieldStart("warnings");
+      for (String error : response.getWarnings()) {
+        generator.writeString(error);
+      }
+      generator.writeEndArray();
+
+      generator.writeEndObject();
     } catch (IOException e) {
       throw new HiveException(e);
     } finally {

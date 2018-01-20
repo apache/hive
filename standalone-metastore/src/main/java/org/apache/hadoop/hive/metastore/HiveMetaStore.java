@@ -7417,10 +7417,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public WMValidateResourcePlanResponse validate_resource_plan(WMValidateResourcePlanRequest request)
         throws NoSuchObjectException, MetaException, TException {
       try {
-        List<String> errors = getMS().validateResourcePlan(request.getResourcePlanName());
-        WMValidateResourcePlanResponse resp = new WMValidateResourcePlanResponse();
-        resp.setErrors(errors);
-        return resp;
+        return getMS().validateResourcePlan(request.getResourcePlanName());
       } catch (MetaException e) {
         LOG.error("Exception while trying to validate resource plan", e);
         throw e;

@@ -3729,9 +3729,11 @@ end
 class WMValidateResourcePlanResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
   ERRORS = 1
+  WARNINGS = 2
 
   FIELDS = {
-    ERRORS => {:type => ::Thrift::Types::LIST, :name => 'errors', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+    ERRORS => {:type => ::Thrift::Types::LIST, :name => 'errors', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    WARNINGS => {:type => ::Thrift::Types::LIST, :name => 'warnings', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

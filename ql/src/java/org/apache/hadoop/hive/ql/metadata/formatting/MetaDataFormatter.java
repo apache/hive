@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -128,6 +129,7 @@ public interface MetaDataFormatter {
   void showFullResourcePlan(DataOutputStream out, WMFullResourcePlan resourcePlan)
       throws HiveException;
 
-  void showErrors(DataOutputStream out, List<String> errors) throws HiveException;
+  void showErrors(DataOutputStream out, WMValidateResourcePlanResponse errors)
+      throws HiveException;
 }
 
