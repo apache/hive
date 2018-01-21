@@ -14,8 +14,15 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverte
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * JDBCSortPushDownRule convert a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit}
+ * into a {@link org.apache.calcite.adapter.jdbc.JdbcRules.JdbcSort}
+ * and pushes it down below the {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter}}
+ * operator so it will be sent to the external table.
+ */
+
 public class JDBCSortPushDownRule extends RelOptRule {
-  static Logger LOG = LoggerFactory.getLogger(JDBCSortPushDownRule.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JDBCSortPushDownRule.class);
 
   public static final JDBCSortPushDownRule INSTANCE = new JDBCSortPushDownRule ();
 

@@ -14,8 +14,15 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * JDBCUnionPushDownRule convert a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion}
+ * into a {@link org.apache.calcite.adapter.jdbc.JdbcRules.JdbcUnion}
+ * and pushes it down below the {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter}}
+ * operator so it will be sent to the external table.
+ */
+
 public class JDBCUnionPushDownRule extends RelOptRule {
-  static Logger LOG = LoggerFactory.getLogger(JDBCUnionPushDownRule.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JDBCUnionPushDownRule.class);
 
   final static public JDBCUnionPushDownRule INSTANCE = new JDBCUnionPushDownRule ();
 

@@ -50,7 +50,8 @@ public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
     return new HiveJdbcConverter(getCluster(), traitSet, sole(inputs), _convention);
   }
   
-  public String generateSql(SqlDialect dialect) {
+  public String generateSql() {
+    SqlDialect dialect = getJdbcDialect();
     final JdbcImplementor jdbcImplementor =
         new JdbcImplementor(dialect,
             (JavaTypeFactory) getCluster().getTypeFactory());

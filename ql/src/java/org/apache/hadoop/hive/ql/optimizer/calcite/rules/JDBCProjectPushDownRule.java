@@ -14,8 +14,15 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * JDBCProjectPushDownRule convert a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject}
+ * into a {@link org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregateRule.JdbcProject}
+ * and pushes it down below the {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter}}
+ * operator so it will be sent to the external table.
+ */
+
 public class JDBCProjectPushDownRule extends RelOptRule {
-  static Logger LOG = LoggerFactory.getLogger(JDBCProjectPushDownRule.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JDBCProjectPushDownRule.class);
   
   public static final JDBCProjectPushDownRule INSTANCE = new JDBCProjectPushDownRule ();
   

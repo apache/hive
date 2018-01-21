@@ -13,6 +13,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
  * Rule that tries to push filter expressions into a join condition and into
  * the inputs of the join.
  */
+
 public class JDBCFilterJoinRule extends HiveFilterJoinRule {
   
   final static public JDBCFilterJoinRule INSTANCE = new JDBCFilterJoinRule ();
@@ -23,7 +24,7 @@ public class JDBCFilterJoinRule extends HiveFilterJoinRule {
             RelOptRule.operand(HiveJoin.class, 
                 RelOptRule.operand(HiveJdbcConverter.class, RelOptRule.any()),
                 RelOptRule.operand(HiveJdbcConverter.class, RelOptRule.any()))),
-        "MyFilterJoinRule", true, HiveRelFactories.HIVE_BUILDER);
+        "JDBCFilterJoinRule", true, HiveRelFactories.HIVE_BUILDER);
   }
 
   @Override

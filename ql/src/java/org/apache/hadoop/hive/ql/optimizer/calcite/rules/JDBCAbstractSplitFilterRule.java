@@ -18,6 +18,14 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+/**
+ * JDBCAbstractSplitFilterRule split a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter} into
+ * two {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter} operators where the lower operator
+ * could be pushed down below the {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter}}
+ * operator and therefore could be sent to the external table.
+ */
+
 public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
   static Logger LOG = LoggerFactory.getLogger(JDBCAbstractSplitFilterRule.class);
 
@@ -39,7 +47,6 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
     public ArrayList<RexCall> getValidJdbcNode() {
       return validJdbcNode;
     }
-
 
     public ArrayList<RexCall> getInvalidJdbcNode() {
       return invalidJdbcNode;

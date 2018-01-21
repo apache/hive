@@ -99,7 +99,7 @@ public class ASTBuilder {
               .add(HiveParser.StringLiteral, "\"" + dq.getQueryType().getQueryName() + "\""));
     } else if (scan instanceof HiveJdbcConverter) {
             HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
-            final String query = jdbcConverter.generateSql (jdbcConverter.getJdbcConvention().dialect);
+            final String query = jdbcConverter.generateSql ();
             logger.info("JETHRO: The HiveJdbcConverter generated sql message is: " + System.lineSeparator() + query);
             propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
                 .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_QUERY + "\"")

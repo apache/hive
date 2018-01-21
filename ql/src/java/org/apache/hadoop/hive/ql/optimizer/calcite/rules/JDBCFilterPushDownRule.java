@@ -14,8 +14,15 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverte
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * JDBCExtractJoinFilterRule extracts out the {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter}
+ * from a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin} operator. 
+ * if the HiveFilter could be replaced by two HiveFilter operators that one of them could be pushed down below the
+ * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter}
+ */
+
 public class JDBCFilterPushDownRule extends RelOptRule {
-  static Logger LOG = LoggerFactory.getLogger(JDBCFilterPushDownRule.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JDBCFilterPushDownRule.class);
   
   public static final JDBCFilterPushDownRule INSTANCE = new JDBCFilterPushDownRule ();
 
