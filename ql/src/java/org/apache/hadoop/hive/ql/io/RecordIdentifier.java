@@ -45,7 +45,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
    */
   public enum Field {
     //note the enum names match field names in the struct
-    writeId(TypeInfoFactory.longTypeInfo,
+    transactionId(TypeInfoFactory.longTypeInfo,
       PrimitiveObjectInspectorFactory.javaLongObjectInspector),
     bucketId(TypeInfoFactory.intTypeInfo, PrimitiveObjectInspectorFactory.javaIntObjectInspector),
     rowId(TypeInfoFactory.longTypeInfo, PrimitiveObjectInspectorFactory.javaLongObjectInspector);
@@ -88,13 +88,13 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
         Arrays.fill(struct, null);
         return;
       }
-      struct[Field.writeId.ordinal()] = ri.getWriteId();
+      struct[Field.transactionId.ordinal()] = ri.getWriteId();
       struct[Field.bucketId.ordinal()] = ri.getBucketProperty();
       struct[Field.rowId.ordinal()] = ri.getRowId();
     }
   }
   
-  private long writeId;
+  private long transactionId;
   private int bucketId;
   private long rowId;
 
@@ -102,7 +102,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
   }
 
   public RecordIdentifier(long writeId, int bucket, long rowId) {
-    this.writeId = writeId;
+    this.transactionId = writeId;
     this.bucketId = bucket;
     this.rowId = rowId;
   }
@@ -114,7 +114,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
    * @param rowId the row id
    */
   public void setValues(long writeId, int bucketId, long rowId) {
-    this.writeId = writeId;
+    this.transactionId = writeId;
     this.bucketId = bucketId;
     this.rowId = rowId;
   }
@@ -124,7 +124,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
    * @param other the object to copy from
    */
   public void set(RecordIdentifier other) {
-    this.writeId = other.writeId;
+    this.transactionId = other.transactionId;
     this.bucketId = other.bucketId;
     this.rowId = other.rowId;
   }
@@ -138,7 +138,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
    * @return the write id
    */
   public long getWriteId() {
-    return writeId;
+    return transactionId;
   }
 
   /**
@@ -161,8 +161,8 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
     if (other == null) {
       return -1;
     }
-    if (writeId != other.writeId) {
-      return writeId < other.writeId ? -1 : 1;
+    if (transactionId != other.transactionId) {
+      return transactionId < other.transactionId ? -1 : 1;
     }
     if (bucketId != other.bucketId) {
       return bucketId < other.bucketId ? - 1 : 1;
@@ -183,14 +183,14 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
 
   @Override
   public void write(DataOutput dataOutput) throws IOException {
-    dataOutput.writeLong(writeId);
+    dataOutput.writeLong(transactionId);
     dataOutput.writeInt(bucketId);
     dataOutput.writeLong(rowId);
   }
 
   @Override
   public void readFields(DataInput dataInput) throws IOException {
-    writeId = dataInput.readLong();
+    transactionId = dataInput.readLong();
     bucketId = dataInput.readInt();
     rowId = dataInput.readLong();
   }
@@ -204,14 +204,14 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
       return false;
     }
     RecordIdentifier oth = (RecordIdentifier) other;
-    return oth.writeId == writeId &&
+    return oth.transactionId == transactionId &&
         oth.bucketId == bucketId &&
         oth.rowId == rowId;
   }
   @Override
   public int hashCode() {
     int result = 17;
-    result = 31 * result + (int)(writeId ^ (writeId >>> 32));
+    result = 31 * result + (int)(transactionId ^ (transactionId >>> 32));
     result = 31 * result + bucketId;
     result = 31 * result + (int)(rowId ^ (rowId >>> 32));
     return result;
@@ -223,7 +223,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
       BucketCodec.determineVersion(bucketId);
     String s = "(" + codec.getVersion() + "." + codec.decodeWriterId(bucketId) +
       "." + codec.decodeStatementId(bucketId) + ")";
-    return "{originalWriteId: " + writeId + ", " + bucketToString() + ", row: " + getRowId() +"}";
+    return "{originalWriteId: " + transactionId + ", " + bucketToString() + ", row: " + getRowId() +"}";
   }
   protected String bucketToString() {
     BucketCodec codec =

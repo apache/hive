@@ -236,7 +236,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addDeltaFile(t, null, 21L, 24L, 4);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "st", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "st", CompactionType.MINOR);
     txnHandler.compact(rqst);
@@ -262,7 +262,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addDeltaFile(t, p, 21L, 24L, 4);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "sp", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "sp", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
@@ -285,7 +285,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "mtwb", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MINOR);
     txnHandler.compact(rqst);
@@ -344,7 +344,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, null, 23L, 25L, 3);
     addLengthFile(t, null, 23L, 25L, 3);
     addDeltaFile(t, null, 26L, 27L, 2);
-    burnThroughTransactions(27, new HashSet<Long>(Arrays.asList(23L)), null);
+    burnThroughTransactions("default", "mtwb", 27, new HashSet<Long>(Arrays.asList(23L)), null);
 
     CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MINOR);
     txnHandler.compact(rqst);
@@ -380,7 +380,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, null, 23L, 25L, 3);
     addLengthFile(t, null, 23L, 25L, 3);
     addDeltaFile(t, null, 26L, 27L, 2);
-    burnThroughTransactions(27, null, new HashSet<Long>(Arrays.asList(24L, 25L)));
+    burnThroughTransactions("default", "mtwb", 27, null, new HashSet<Long>(Arrays.asList(24L, 25L)));
 
     CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MINOR);
     txnHandler.compact(rqst);
@@ -416,7 +416,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, p, 21L, 22L, 2);
     addDeltaFile(t, p, 23L, 24L, 2);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "mpwb", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "mpwb", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
@@ -469,7 +469,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, null, 1L, 2L, 2);
     addDeltaFile(t, null, 3L, 4L, 2);
 
-    burnThroughTransactions(5);
+    burnThroughTransactions("default", "mtnb", 5);
 
     CompactionRequest rqst = new CompactionRequest("default", "mtnb", CompactionType.MINOR);
     txnHandler.compact(rqst);
@@ -522,7 +522,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "matwb", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "matwb", CompactionType.MAJOR);
     txnHandler.compact(rqst);
@@ -598,7 +598,7 @@ public class TestWorker extends CompactorTest {
     * and then the 'requested'
     * minor compaction to combine delta_21_23, delta_25_33 and delta_35_35 to make delta_21_35
     * or major compaction to create base_35*/
-    burnThroughTransactions(35);
+    burnThroughTransactions("default", "mapwb", 35);
     CompactionRequest rqst = new CompactionRequest("default", "mapwb", type);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
@@ -690,7 +690,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, p, 21L, 22L, 2);
     addDeltaFile(t, p, 23L, 24L, 2);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "mapwb", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "mapwb", CompactionType.MAJOR);
     rqst.setPartitionname("ds=today");
@@ -734,7 +734,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, null, 1L, 2L, 2);
     addDeltaFile(t, null, 3L, 4L, 2);
 
-    burnThroughTransactions(4);
+    burnThroughTransactions("default", "matnb", 4);
 
     CompactionRequest rqst = new CompactionRequest("default", "matnb", CompactionType.MAJOR);
     txnHandler.compact(rqst);
@@ -778,7 +778,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "matl", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "matl", CompactionType.MAJOR);
     txnHandler.compact(rqst);
@@ -822,7 +822,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "mtl", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "mtl", CompactionType.MINOR);
     txnHandler.compact(rqst);
@@ -865,7 +865,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, p, 21L, 22L, 2, 2, false);
     addDeltaFile(t, p, 23L, 26L, 4);
 
-    burnThroughTransactions(27);
+    burnThroughTransactions("default", "mapwbmb", 27);
 
     CompactionRequest rqst = new CompactionRequest("default", "mapwbmb", CompactionType.MAJOR);
     rqst.setPartitionname("ds=today");
@@ -919,7 +919,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, null, 23L, 25L, 3);
     addLengthFile(t, null, 23L, 25L, 3);
     addDeltaFile(t, null, 26L, 27L, 2);
-    burnThroughTransactions(27, new HashSet<Long>(Arrays.asList(23L)), null);
+    burnThroughTransactions("default", "mtwb", 27, new HashSet<Long>(Arrays.asList(23L)), null);
 
     CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MAJOR);
     txnHandler.compact(rqst);
@@ -955,7 +955,7 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, null, 23L, 25L, 3);
     addLengthFile(t, null, 23L, 25L, 3);
     addDeltaFile(t, null, 26L, 27L, 2);
-    burnThroughTransactions(27, null, new HashSet<Long>(Arrays.asList(24L, 25L)));
+    burnThroughTransactions("default", "mtwb", 27, null, new HashSet<Long>(Arrays.asList(24L, 25L)));
 
     CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MAJOR);
     txnHandler.compact(rqst);
@@ -991,19 +991,19 @@ public class TestWorker extends CompactorTest {
 
     addDeltaFile(t, null, 1L, 2L, 2);
     addDeltaFile(t, null, 3L, 4L, 2);
-    burnThroughTransactions(4);
+    burnThroughTransactions("default", "dt", 4);
 
     CompactionRequest rqst = new CompactionRequest("default", "dt", CompactionType.MAJOR);
     txnHandler.compact(rqst);
 
+    // Drop table will clean the table entry from the compaction queue and hence worker have no effect
     ms.dropTable("default", "dt");
 
     startWorker();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
-    Assert.assertEquals(1, compacts.size());
-    Assert.assertTrue(TxnStore.SUCCEEDED_RESPONSE.equals(compacts.get(0).getState()));
+    Assert.assertEquals(0, compacts.size());
   }
 
   @Test
@@ -1015,20 +1015,20 @@ public class TestWorker extends CompactorTest {
     addDeltaFile(t, p, 21L, 22L, 2);
     addDeltaFile(t, p, 23L, 24L, 2);
 
-    burnThroughTransactions(25);
+    burnThroughTransactions("default", "dp", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "dp", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
 
+    // Drop partition will clean the partition entry from the compaction queue and hence worker have no effect
     ms.dropPartition("default", "dp", Collections.singletonList("today"), true);
 
     startWorker();
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
-    Assert.assertEquals(1, compacts.size());
-    Assert.assertTrue(TxnStore.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
+    Assert.assertEquals(0, compacts.size());
   }
 
   @After

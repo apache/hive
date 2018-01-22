@@ -476,9 +476,9 @@ public class TestOrcRawRecordMerger {
     assertEquals(OrcRecordUpdater.FIELDS, fields.size());
     assertEquals("operation",
         fields.get(OrcRecordUpdater.OPERATION).getFieldName());
-    assertEquals("currentWriteId",
+    assertEquals("currentTransaction",
         fields.get(OrcRecordUpdater.CURRENT_WRITEID).getFieldName());
-    assertEquals("originalWriteId",
+    assertEquals("originalTransaction",
         fields.get(OrcRecordUpdater.ORIGINAL_WRITEID).getFieldName());
     assertEquals("bucket",
         fields.get(OrcRecordUpdater.BUCKET).getFieldName());

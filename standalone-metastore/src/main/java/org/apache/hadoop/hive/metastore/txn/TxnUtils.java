@@ -190,7 +190,7 @@ public class TxnUtils {
    * {@link org.apache.hadoop.hive.ql.io.AcidUtils#getFullTableName(String, String)}
    */
   public static String getFullTableName(String dbName, String tableName) {
-    return dbName + "." + tableName;
+    return dbName.toLowerCase() + "." + tableName.toLowerCase();
   }
 
   /**
