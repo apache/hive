@@ -386,8 +386,7 @@ public class JoinDesc extends AbstractOperatorDesc {
     }
     Map<String, String> explainColMap = new HashMap<>();
     for(String col:this.colExprMap.keySet()){
-      String taggedCol = this.reversedExprs.get(col) + ":"
-          + this.colExprMap.get(col).getExprString();
+      String taggedCol = this.reversedExprs.get(col) + ":" + this.colExprMap.get(col);
       explainColMap.put(col, taggedCol);
     }
     return explainColMap;
