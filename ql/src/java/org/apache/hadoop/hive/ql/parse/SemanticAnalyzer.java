@@ -9410,6 +9410,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return true;
   }
 
+  boolean shouldMerge(final QBJoinTree node, final QBJoinTree target) {
+    boolean isNodeOuterJoin=false, isNodeSemiJoin=false, hasNodePostJoinFilters=false;
+    boolean isTargetOuterJoin=false, isTargetSemiJoin=false, hasTargetPostJoinFilters=false;
+
+    isNodeOuterJoin = !node.getNoOuterJoin();
+    isNodeSemiJoin= !node.getNoSemiJoin();
+    hasNodePostJoinFilters = node.getPostJoinFilters().size() !=0;
+
+    isTargetOuterJoin = !target.getNoOuterJoin();
+    isTargetSemiJoin= !target.getNoSemiJoin();
+    hasTargetPostJoinFilters = target.getPostJoinFilters().size() !=0;
+
+    if((hasNodePostJoinFilters && (isNodeOuterJoin || isNodeSemiJoin))
+        || (hasTargetPostJoinFilters && (isTargetOuterJoin || isTargetSemiJoin))) {
+      return false;
+    }
+    return true;
+  }
+
   // try merge join tree from inner most source
   // (it was merged from outer most to inner, which could be invalid)
   //
@@ -9446,8 +9465,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (prevType != null && prevType != currType) {
           break;
         }
-        if ((!node.getNoOuterJoin() && node.getPostJoinFilters().size() != 0) ||
-                (!target.getNoOuterJoin() && target.getPostJoinFilters().size() != 0)) {
+        if(!shouldMerge(node, target)) {
           // Outer joins with post-filtering conditions cannot be merged
           break;
         }
