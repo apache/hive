@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.metastore.utils;
+package org.apache.hadoop.hive.metastore.avro.utils;
 
 import org.apache.avro.Schema;
 import org.apache.hadoop.conf.Configuration;
@@ -9,9 +9,8 @@ import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.type.MetastoreTypeInfo;
 import org.apache.hadoop.hive.metastore.type.MetastoreTypeInfoParser;
-import org.apache.hadoop.hive.serde2.avro.AvroSerDeConstants;
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeException;
-import org.apache.hadoop.hive.serde2.avro.MetastoreTypeInfoToSchema;
+import org.apache.hadoop.hive.metastore.utils.StorageSchemaUtils;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.avro;
+package org.apache.hadoop.hive.metastore.avro.utils;
 
 import static org.apache.avro.Schema.Type.BOOLEAN;
 import static org.apache.avro.Schema.Type.BYTES;
@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.type.DecimalMetastoreTypeInfo;
 import org.apache.hadoop.hive.metastore.type.MetastoreTypeInfo;
 import org.apache.hadoop.hive.metastore.type.MetastoreTypeInfoFactory;
-import org.apache.hadoop.hive.metastore.utils.AvroSchemaUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,7 +45,7 @@ import java.util.Set;
  * Convert an Avro Schema to a Hive TypeInfo. This class is copied from Hive source code for
  * standalone metastore
  */
-public class SchemaToTypeInfo {
+public class SchemaToMetastoreTypeInfo {
   // Conversion of Avro primitive types to Hive primitive types
   // Avro             Hive
   // Null

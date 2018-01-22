@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.serde2.avro;
+package org.apache.hadoop.hive.metastore.avro.utils;
 
 /**
  * This class contains some of the constants which are specific to AvroSerDe

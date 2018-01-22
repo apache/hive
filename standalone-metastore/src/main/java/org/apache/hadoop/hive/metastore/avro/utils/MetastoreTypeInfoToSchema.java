@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.avro;
+package org.apache.hadoop.hive.metastore.avro.utils;
 
 import org.apache.avro.Schema;
 import org.apache.hadoop.hive.metastore.type.CharMetastoreTypeInfo;
@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.type.PrimitiveMetastoreTypeInfo;
 import org.apache.hadoop.hive.metastore.type.StructMetastoreTypeInfo;
 import org.apache.hadoop.hive.metastore.type.UnionMetastoreTypeInfo;
 import org.apache.hadoop.hive.metastore.type.VarcharMetastoreTypeInfo;
-import org.apache.hadoop.hive.metastore.utils.AvroSchemaUtils;
 import org.apache.hadoop.hive.metastore.type.MetastoreTypeInfo;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.node.JsonNodeFactory;

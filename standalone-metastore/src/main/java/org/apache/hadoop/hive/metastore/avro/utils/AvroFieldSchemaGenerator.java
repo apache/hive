@@ -1,10 +1,9 @@
-package org.apache.hadoop.hive.metastore.utils;
+package org.apache.hadoop.hive.metastore.avro.utils;
 
 import org.apache.avro.Schema;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.type.MetastoreTypeInfo;
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeException;
-import org.apache.hadoop.hive.serde2.avro.SchemaToTypeInfo;
+import org.apache.hadoop.hive.metastore.utils.StorageSchemaUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,7 @@ public class AvroFieldSchemaGenerator {
     verifySchemaIsARecord(schema);
 
     this.columnNames = generateColumnNames(schema);
-    this.columnTypes = SchemaToTypeInfo.generateColumnTypes(schema);
+    this.columnTypes = SchemaToMetastoreTypeInfo.generateColumnTypes(schema);
     this.columnComments = generateColumnComments(schema);
     assert columnNames.size() == columnTypes.size();
   }
@@ -65,7 +64,7 @@ public class AvroFieldSchemaGenerator {
       }
       //In case of complex types getTypeName() will recusively go into typeName
       //of individual fields when the ColumnType was constructed
-      //in SchemaToTypeInfo.generateColumnTypes in the constructor
+      //in SchemaToMetastoreTypeInfo.generateColumnTypes in the constructor
       fieldSchema.setType(columnTypes.get(i).getTypeName());
       fieldSchema.setComment(StorageSchemaUtils.determineFieldComment(columnComments.get(i)));
       fieldSchemas.add(fieldSchema);

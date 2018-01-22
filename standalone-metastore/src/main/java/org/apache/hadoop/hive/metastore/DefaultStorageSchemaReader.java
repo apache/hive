@@ -18,18 +18,17 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.type.MetastoreTypeInfo;
-import org.apache.hadoop.hive.metastore.utils.AvroSchemaUtils;
+import org.apache.hadoop.hive.metastore.avro.utils.AvroSchemaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StorageSchemaUtils;
 
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeException;
+import org.apache.hadoop.hive.metastore.avro.utils.AvroSerdeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,7 +138,7 @@ public class DefaultStorageSchemaReader implements StorageSchemaReader {
       fieldSchema.setName(columnNames.get(i));
       //In case of complex types getTypeName() will recusively go into typeName
       //of individual fields when the ColumnType was constructed
-      //in SchemaToTypeInfo.generateColumnTypes in the constructor
+      //in SchemaToMetastoreTypeInfo.generateColumnTypes in the constructor
       fieldSchema.setType(columnTypes.get(i).getTypeName());
       fieldSchema.setComment(StorageSchemaUtils.determineFieldComment(columnComments.get(i)));
     }

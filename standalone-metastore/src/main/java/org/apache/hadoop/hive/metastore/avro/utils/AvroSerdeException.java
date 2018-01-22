@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.serde2.avro;
+package org.apache.hadoop.hive.metastore.avro.utils;
 
 public class AvroSerdeException extends Exception {
   public AvroSerdeException(String s, Exception ex) {
