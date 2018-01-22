@@ -1,5 +1,6 @@
 PREHOOK: query: FROM src SELECT TRANSFORM(key, value) USING 'script_does_not_exist' AS (key, value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 FAILED: Execution Error, return code 20000 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask. Unable to initialize custom script.

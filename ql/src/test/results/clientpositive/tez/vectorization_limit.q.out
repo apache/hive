@@ -59,11 +59,11 @@ WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT cbigint, cdouble FROM alltypesorc WHERE cbigint < cdouble and cint > 0 limit 7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cbigint, cdouble FROM alltypesorc WHERE cbigint < cdouble and cint > 0 limit 7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -1887561756	-10011.0
 -1887561756	-13877.0
 -1887561756	-2281.0
@@ -194,11 +194,11 @@ STAGE PLANS:
 PREHOOK: query: select ctinyint,cdouble,csmallint from alltypesorc where ctinyint is not null order by ctinyint,cdouble limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select ctinyint,cdouble,csmallint from alltypesorc where ctinyint is not null order by ctinyint,cdouble limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -64	-10462.0	-10462
 -64	-15920.0	-15920
 -64	-1600.0	-1600
@@ -358,11 +358,11 @@ STAGE PLANS:
 PREHOOK: query: select ctinyint,avg(cdouble + 1) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select ctinyint,avg(cdouble + 1) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -46	3033.55
 -47	-574.6428571428571
 -48	1672.909090909091
@@ -515,11 +515,11 @@ STAGE PLANS:
 PREHOOK: query: select distinct(ctinyint) from alltypesorc limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select distinct(ctinyint) from alltypesorc limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -46
 -47
 -48
@@ -686,11 +686,11 @@ STAGE PLANS:
 PREHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -46	24
 -47	22
 -48	29
@@ -734,11 +734,11 @@ STAGE PLANS:
 PREHOOK: query: select ctinyint,cdouble from alltypesorc order by ctinyint limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select ctinyint,cdouble from alltypesorc order by ctinyint limit 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain vectorization detail
 select cdouble, sum(ctinyint) as sum from alltypesorc where ctinyint is not null group by cdouble order by sum, cdouble limit 20
 PREHOOK: type: QUERY
@@ -910,11 +910,11 @@ STAGE PLANS:
 PREHOOK: query: select cdouble, sum(ctinyint) as sum from alltypesorc where ctinyint is not null group by cdouble order by sum, cdouble limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select cdouble, sum(ctinyint) as sum from alltypesorc where ctinyint is not null group by cdouble order by sum, cdouble limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -10462.0	-64
 -1121.0	-89
 -11322.0	-101

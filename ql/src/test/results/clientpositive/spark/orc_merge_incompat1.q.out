@@ -158,15 +158,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5b
 POSTHOOK: Output: default@orc_merge5b
 Found 6 items
-#### A masked pattern was here ####
+-rw-r--r--   3 ### USER ### ### GROUP ###        657 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        657 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        657 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        668 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        668 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        668 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from orc_merge5b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from orc_merge5b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 13	bar	80.0	2	1969-12-31 16:00:05
 13	bar	80.0	2	1969-12-31 16:00:05
 13	bar	80.0	2	1969-12-31 16:00:05
@@ -202,15 +207,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5b
 POSTHOOK: Output: default@orc_merge5b
 Found 4 items
-#### A masked pattern was here ####
+-rw-r--r--   3 ### USER ### ### GROUP ###       1329 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        668 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        668 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        668 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from orc_merge5b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from orc_merge5b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 13	bar	80.0	2	1969-12-31 16:00:05
 13	bar	80.0	2	1969-12-31 16:00:05
 13	bar	80.0	2	1969-12-31 16:00:05

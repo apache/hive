@@ -70,16 +70,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileStatus;
@@ -138,6 +135,8 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 import junit.framework.TestSuite;
@@ -163,9 +162,13 @@ public class QTestUtil {
   private static final String TEST_TMP_DIR_PROPERTY = "test.tmp.dir"; // typically target/tmp
   private static final String BUILD_DIR_PROPERTY = "build.dir"; // typically target
 
+  public static final String PATH_HDFS_REGEX = "(hdfs://)([a-zA-Z0-9:/_\\-\\.=])+";
+  public static final String PATH_HDFS_WITH_DATE_USER_GROUP_REGEX = "([a-z]+) ([a-z]+)([ ]+)([0-9]+) ([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}) " + PATH_HDFS_REGEX;
+
   private String testWarehouse;
   private final String testFiles;
   protected final String outDir;
+  protected String overrideResultsDir;
   protected final String logDir;
   private final TreeMap<String, String> qMap;
   private final Set<String> qSkipSet;
@@ -535,7 +538,7 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-      String confDir, String hadzoopVer, String initScript, String cleanupScript,
+      String confDir, String hadoopVer, String initScript, String cleanupScript,
       boolean withLlapIo, FsType fsType)
     throws Exception {
     LOG.info("Setting up QTestUtil with outDir={}, logDir={}, clusterType={}, confDir={}," +
@@ -1541,6 +1544,7 @@ public class QTestUtil {
     String ret = (new File(outDir, testName)).getPath();
     // List of configurations. Currently the list consists of hadoop version and execution mode only
     List<String> configs = new ArrayList<String>();
+    configs.add(this.clusterType.toString());
     configs.add(this.hadoopVer);
 
     Deque<String> stack = new LinkedList<String>();
@@ -1548,7 +1552,7 @@ public class QTestUtil {
     sb.append(testName);
     stack.push(sb.toString());
 
-    // example file names are input1.q.out_0.20.0_minimr or input2.q.out_0.17
+    // example file names are input1.q.out_mr_0.17 or input2.q.out_0.17
     for (String s: configs) {
       sb.append('_');
       sb.append(s);
@@ -1653,7 +1657,6 @@ public class QTestUtil {
   private final Pattern[] planMask = toPattern(new String[] {
       ".*file:.*",
       ".*pfile:.*",
-      ".*hdfs:.*",
       ".*/tmp/.*",
       ".*invalidscheme:.*",
       ".*lastUpdateTime.*",
@@ -1725,9 +1728,16 @@ public class QTestUtil {
     partialPlanMask = ppm.toArray(new PatternReplacementPair[ppm.size()]);
   }
   /* This list may be modified by specific cli drivers to mask strings that change on every test */
-  private final List<Pair<Pattern, String>> patternsWithMaskComments = new ArrayList<Pair<Pattern, String>>() {{
-    add(toPatternPair("(pblob|s3.?|swift|wasb.?).*hive-staging.*","### BLOBSTORE_STAGING_PATH ###"));
-  }};
+  private final List<Pair<Pattern, String>> patternsWithMaskComments =
+      new ArrayList<Pair<Pattern, String>>() {
+        {
+          add(toPatternPair("(pblob|s3.?|swift|wasb.?).*hive-staging.*",
+              "### BLOBSTORE_STAGING_PATH ###"));
+          add(toPatternPair(PATH_HDFS_WITH_DATE_USER_GROUP_REGEX,
+              "### USER ### ### GROUP ###$3$4 ### HDFS DATE ### $6### HDFS PATH ###"));
+          add(toPatternPair(PATH_HDFS_REGEX, "$1### HDFS PATH ###"));
+        }
+      };
 
   private Pair<Pattern, String> toPatternPair(String patternStr, String maskComment) {
     return ImmutablePair.of(Pattern.compile(patternStr), maskComment);
@@ -2497,5 +2507,4 @@ public class QTestUtil {
       }
     }
   }
-
 }

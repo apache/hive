@@ -1,11 +1,11 @@
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@result
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@result
 #### A masked pattern was here ####
@@ -20,11 +20,11 @@ POSTHOOK: Input: default@src
 PREHOOK: query: select count(*) from result
 PREHOOK: type: QUERY
 PREHOOK: Input: default@result
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from result
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@result
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 309
 #### A masked pattern was here ####
 select key from src group by key
@@ -38,11 +38,11 @@ POSTHOOK: Input: default@src
 PREHOOK: query: select count(*) from result
 PREHOOK: type: QUERY
 PREHOOK: Input: default@result
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from result
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@result
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 309
 PREHOOK: query: drop table result
 PREHOOK: type: DROPTABLE

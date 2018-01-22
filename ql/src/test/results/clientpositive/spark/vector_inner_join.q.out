@@ -193,12 +193,12 @@ PREHOOK: query: select t1.a from orc_table_2a t2 join orc_table_1a t1 on t1.a = 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1a
 PREHOOK: Input: default@orc_table_2a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.a from orc_table_2a t2 join orc_table_1a t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1a
 POSTHOOK: Input: default@orc_table_2a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3
 PREHOOK: query: explain vectorization detail
 select t2.c from orc_table_2a t2 left semi join orc_table_1a t1 on t1.a = t2.c where t2.c > 2
@@ -365,12 +365,12 @@ PREHOOK: query: select t2.c from orc_table_2a t2 left semi join orc_table_1a t1 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1a
 PREHOOK: Input: default@orc_table_2a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t2.c from orc_table_2a t2 left semi join orc_table_1a t1 on t1.a = t2.c where t2.c > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1a
 POSTHOOK: Input: default@orc_table_2a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3
 PREHOOK: query: CREATE TABLE orc_table_1b(v1 STRING, a INT) STORED AS ORC
 PREHOOK: type: CREATETABLE
@@ -569,12 +569,12 @@ PREHOOK: query: select t1.v1, t1.a from orc_table_2b t2 join orc_table_1b t1 on 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1b
 PREHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.v1, t1.a from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1b
 POSTHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 three	3
 PREHOOK: query: explain vectorization detail
 select t1.v1, t1.a, t2.c, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
@@ -730,12 +730,12 @@ PREHOOK: query: select t1.v1, t1.a, t2.c, t2.v2 from orc_table_2b t2 join orc_ta
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1b
 PREHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.v1, t1.a, t2.c, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1b
 POSTHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 three	3	3	THREE
 PREHOOK: query: explain vectorization detail
 select t1.v1, t1.a*2, t2.c*5, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
@@ -900,12 +900,12 @@ PREHOOK: query: select t1.v1, t1.a*2, t2.c*5, t2.v2 from orc_table_2b t2 join or
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1b
 PREHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.v1, t1.a*2, t2.c*5, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1b
 POSTHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 three	6	15	THREE
 PREHOOK: query: explain vectorization detail
 select t1.v1, t2.v2, t2.c from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
@@ -1069,12 +1069,12 @@ PREHOOK: query: select t1.v1, t2.v2, t2.c from orc_table_2b t2 join orc_table_1b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1b
 PREHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.v1, t2.v2, t2.c from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1b
 POSTHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 three	THREE	3
 PREHOOK: query: explain vectorization detail
 select t1.a, t1.v1, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
@@ -1238,12 +1238,12 @@ PREHOOK: query: select t1.a, t1.v1, t2.v2 from orc_table_2b t2 join orc_table_1b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1b
 PREHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.a, t1.v1, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1b
 POSTHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	three	THREE
 PREHOOK: query: explain vectorization detail
 select t1.v1, t2.v2, t2.c from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
@@ -1407,12 +1407,12 @@ PREHOOK: query: select t1.v1, t2.v2, t2.c from orc_table_1b t1 join orc_table_2b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1b
 PREHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.v1, t2.v2, t2.c from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1b
 POSTHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 three	THREE	3
 PREHOOK: query: explain vectorization detail
 select t1.a, t1.v1, t2.v2 from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
@@ -1576,10 +1576,10 @@ PREHOOK: query: select t1.a, t1.v1, t2.v2 from orc_table_1b t1 join orc_table_2b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1b
 PREHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.a, t1.v1, t2.v2 from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1b
 POSTHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	three	THREE

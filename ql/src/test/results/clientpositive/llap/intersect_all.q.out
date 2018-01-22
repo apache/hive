@@ -37,11 +37,11 @@ POSTHOOK: Lineage: b.value SCRIPT []
 PREHOOK: query: select key, value, count(1) as c from a group by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key, value, count(1) as c from a group by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3	1
 1	2	2
 1	3	1
@@ -49,60 +49,60 @@ PREHOOK: query: select * from a intersect all select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from a intersect all select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 1	2
 PREHOOK: query: select * from b intersect all select * from a intersect all select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from b intersect all select * from a intersect all select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 1	2
 PREHOOK: query: select * from a intersect all select * from b union all select * from a intersect all select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from a intersect all select * from b union all select * from a intersect all select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 1	2
 PREHOOK: query: select * from a intersect all select * from b union select * from a intersect all select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from a intersect all select * from b union select * from a intersect all select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 1	2
 PREHOOK: query: select * from a intersect all select * from b intersect all select * from a intersect all select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from a intersect all select * from b intersect all select * from a intersect all select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 1	2
 PREHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1 
@@ -111,14 +111,14 @@ select * from (select a.key, b.value from a join b on a.key=b.key)sub2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1 
 intersect all 
 select * from (select a.key, b.value from a join b on a.key=b.key)sub2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 1	2
 1	2
@@ -129,14 +129,14 @@ select * from (select b.value as key, a.key as value from a join b on a.key=b.ke
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1
 intersect all
 select * from (select b.value as key, a.key as value from a join b on a.key=b.key)sub2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select * from src intersect all select * from src
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from src intersect all select * from src
@@ -285,11 +285,11 @@ STAGE PLANS:
 PREHOOK: query: select * from src intersect all select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src intersect all select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 0	val_0
 0	val_0
@@ -1028,11 +1028,11 @@ STAGE PLANS:
 PREHOOK: query: select * from src intersect all select * from src intersect all select * from src intersect all select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src intersect all select * from src intersect all select * from src intersect all select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 0	val_0
 0	val_0
@@ -1688,10 +1688,10 @@ PREHOOK: query: select value from a group by value intersect all select key from
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select value from a group by value intersect all select key from b group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2

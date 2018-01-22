@@ -78,11 +78,11 @@ POSTHOOK: Lineage: parquet_complex_types.st1 SIMPLE [(parquet_complex_types_stag
 PREHOOK: query: select count(*) from parquet_complex_types
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from parquet_complex_types
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1023
 PREHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
@@ -154,11 +154,11 @@ STAGE PLANS:
 PREHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 [100,101]	100	101	100	0
 [102,103]	102	103	103	1
 [104,105]	104	105	104	0
@@ -333,11 +333,11 @@ STAGE PLANS:
 PREHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2144	2145
 2142	2143
 2140	2141
@@ -366,11 +366,11 @@ POSTHOOK: Lineage: parquet_complex_types.st1 SIMPLE [(parquet_complex_types_stag
 PREHOOK: query: select count(*) from parquet_complex_types
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from parquet_complex_types
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1024
 PREHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
@@ -442,11 +442,11 @@ STAGE PLANS:
 PREHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 [100,101]	100	101	100	0
 [102,103]	102	103	103	1
 [104,105]	104	105	104	0
@@ -621,11 +621,11 @@ STAGE PLANS:
 PREHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2146	2147
 2144	2145
 2142	2143
@@ -654,11 +654,11 @@ POSTHOOK: Lineage: parquet_complex_types.st1 SIMPLE [(parquet_complex_types_stag
 PREHOOK: query: select count(*) from parquet_complex_types
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from parquet_complex_types
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1025
 PREHOOK: query: explain vectorization expression select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
@@ -730,11 +730,11 @@ STAGE PLANS:
 PREHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select l1, l1[0], l1[1], l1[listIndex], listIndex from parquet_complex_types limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 [100,101]	100	101	100	0
 [102,103]	102	103	103	1
 [104,105]	104	105	104	0
@@ -909,11 +909,11 @@ STAGE PLANS:
 PREHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(l1[0]), l1[1] from parquet_complex_types where l1[0] > 1000 group by l1[1] order by l1[1] desc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_complex_types
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2148	2149
 2146	2147
 2144	2145

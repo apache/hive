@@ -256,7 +256,7 @@ PREHOOK: Input: default@part2@p=3/q=4
 PREHOOK: Input: default@part2@p=4/q=3
 PREHOOK: Input: default@part2@p=4/q=4
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
@@ -273,7 +273,7 @@ POSTHOOK: Input: default@part2@p=3/q=4
 POSTHOOK: Input: default@part2@p=4/q=3
 POSTHOOK: Input: default@part2@p=4/q=4
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	5
 6	6
 7	7
@@ -298,7 +298,7 @@ PREHOOK: Input: default@part2@p=3/q=4
 PREHOOK: Input: default@part2@p=4/q=3
 PREHOOK: Input: default@part2@p=4/q=4
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
@@ -315,7 +315,7 @@ POSTHOOK: Input: default@part2@p=3/q=4
 POSTHOOK: Input: default@part2@p=4/q=3
 POSTHOOK: Input: default@part2@p=4/q=4
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	5
 6	6
 7	7
@@ -486,7 +486,7 @@ PREHOOK: Input: default@part2@p=3/q=4
 PREHOOK: Input: default@part2@p=4/q=3
 PREHOOK: Input: default@part2@p=4/q=4
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
@@ -503,7 +503,7 @@ POSTHOOK: Input: default@part2@p=3/q=4
 POSTHOOK: Input: default@part2@p=4/q=3
 POSTHOOK: Input: default@part2@p=4/q=4
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	5
 6	6
 7	7
@@ -528,7 +528,7 @@ PREHOOK: Input: default@part2@p=3/q=4
 PREHOOK: Input: default@part2@p=4/q=3
 PREHOOK: Input: default@part2@p=4/q=4
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
@@ -545,7 +545,7 @@ POSTHOOK: Input: default@part2@p=3/q=4
 POSTHOOK: Input: default@part2@p=4/q=3
 POSTHOOK: Input: default@part2@p=4/q=4
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	5
 6	6
 7	7
@@ -696,7 +696,7 @@ PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.q=src.key) a
 union all
@@ -708,7 +708,7 @@ POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	3
 3	3
 4	4
@@ -1294,7 +1294,7 @@ PREHOOK: Input: default@part2@p=3/q=4
 PREHOOK: Input: default@part2@p=4/q=3
 PREHOOK: Input: default@part2@p=4/q=4
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with top as
 (select key from src order by key limit 200)
 select * from
@@ -1313,7 +1313,7 @@ POSTHOOK: Input: default@part2@p=3/q=4
 POSTHOOK: Input: default@part2@p=4/q=3
 POSTHOOK: Input: default@part2@p=4/q=4
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	3
 4	4
 7	7
@@ -1336,7 +1336,7 @@ PREHOOK: Input: default@part2@p=3/q=4
 PREHOOK: Input: default@part2@p=4/q=3
 PREHOOK: Input: default@part2@p=4/q=4
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with top as
 (select key from src order by key limit 200)
 select * from
@@ -1355,7 +1355,7 @@ POSTHOOK: Input: default@part2@p=3/q=4
 POSTHOOK: Input: default@part2@p=4/q=3
 POSTHOOK: Input: default@part2@p=4/q=4
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	3
 4	4
 7	7
@@ -1573,7 +1573,7 @@ PREHOOK: Input: default@part2@p=3/q=4
 PREHOOK: Input: default@part2@p=4/q=3
 PREHOOK: Input: default@part2@p=4/q=4
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with top as
 (select key, value from src order by key, value limit 200)
 select * from
@@ -1592,7 +1592,7 @@ POSTHOOK: Input: default@part2@p=3/q=4
 POSTHOOK: Input: default@part2@p=4/q=3
 POSTHOOK: Input: default@part2@p=4/q=4
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	7
 8	8
 PREHOOK: query: with top as
@@ -1613,7 +1613,7 @@ PREHOOK: Input: default@part2@p=3/q=4
 PREHOOK: Input: default@part2@p=4/q=3
 PREHOOK: Input: default@part2@p=4/q=4
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with top as
 (select key, value from src order by key, value limit 200)
 select * from
@@ -1632,7 +1632,7 @@ POSTHOOK: Input: default@part2@p=3/q=4
 POSTHOOK: Input: default@part2@p=4/q=3
 POSTHOOK: Input: default@part2@p=4/q=4
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	7
 8	8
 PREHOOK: query: explain
@@ -2187,7 +2187,7 @@ PREHOOK: Input: default@part2@p=3/q=3
 PREHOOK: Input: default@part2@p=3/q=4
 PREHOOK: Input: default@part2@p=4/q=3
 PREHOOK: Input: default@part2@p=4/q=4
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select p from part2 where p in (select max(key) from foo)
 union all
 select p from part1 where p in (select max(key) from foo union all select min(key) from foo)
@@ -2203,7 +2203,7 @@ POSTHOOK: Input: default@part2@p=3/q=3
 POSTHOOK: Input: default@part2@p=3/q=4
 POSTHOOK: Input: default@part2@p=4/q=3
 POSTHOOK: Input: default@part2@p=4/q=4
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 1
 1

@@ -221,7 +221,7 @@ PREHOOK: Input: default@date_dim
 PREHOOK: Input: default@inventory
 PREHOOK: Input: default@item
 PREHOOK: Input: default@warehouse
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with inv as
 (select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
        ,stdev,mean, case mean when 0 then null else stdev/mean end cov
@@ -252,4 +252,4 @@ POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@inventory
 POSTHOOK: Input: default@item
 POSTHOOK: Input: default@warehouse
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###

@@ -1,26 +1,28 @@
-#### A masked pattern was here ####
+PREHOOK: query: insert overwrite directory "hdfs://### HDFS PATH ###" select key from src where (key < 20) order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
+POSTHOOK: query: insert overwrite directory "hdfs://### HDFS PATH ###" select key from src where (key < 20) order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+PREHOOK: query: create external table roottable (key string) row format delimited fields terminated by '\\t' stored as textfile location 'hdfs:///'
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@roottable
-#### A masked pattern was here ####
+POSTHOOK: query: create external table roottable (key string) row format delimited fields terminated by '\\t' stored as textfile location 'hdfs://### HDFS PATH ###'
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@roottable
 PREHOOK: query: select count(*) from roottable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@roottable
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from roottable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@roottable
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 20
 #### A masked pattern was here ####

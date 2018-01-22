@@ -198,13 +198,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@part_mm
 PREHOOK: Input: default@part_mm@key_mm=455
 PREHOOK: Input: default@part_mm@key_mm=456
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from part_mm order by key, key_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_mm
 POSTHOOK: Input: default@part_mm@key_mm=455
 POSTHOOK: Input: default@part_mm@key_mm=456
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	455
 0	455
 0	456
@@ -228,13 +228,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@part_mm
 PREHOOK: Input: default@part_mm@key_mm=455
 PREHOOK: Input: default@part_mm@key_mm=456
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from part_mm order by key, key_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_mm
 POSTHOOK: Input: default@part_mm@key_mm=455
 POSTHOOK: Input: default@part_mm@key_mm=456
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	455
 0	455
 0	456
@@ -266,13 +266,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@part_mm
 PREHOOK: Input: default@part_mm@key_mm=455
 PREHOOK: Input: default@part_mm@key_mm=456
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from part_mm order by key, key_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_mm
 POSTHOOK: Input: default@part_mm@key_mm=455
 POSTHOOK: Input: default@part_mm@key_mm=456
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table part_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_mm
@@ -311,11 +311,11 @@ POSTHOOK: Lineage: simple_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(
 PREHOOK: query: select * from simple_mm order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@simple_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from simple_mm order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 10
 97
@@ -340,11 +340,11 @@ POSTHOOK: Lineage: simple_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(
 PREHOOK: query: select * from simple_mm order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@simple_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from simple_mm order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 10
@@ -366,11 +366,11 @@ POSTHOOK: Output: default@simple_mm
 PREHOOK: query: select * from simple_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@simple_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from simple_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table simple_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@simple_mm
@@ -427,7 +427,7 @@ PREHOOK: Input: default@dp_mm@key1=123/key2=100
 PREHOOK: Input: default@dp_mm@key1=123/key2=103
 PREHOOK: Input: default@dp_mm@key1=123/key2=97
 PREHOOK: Input: default@dp_mm@key1=123/key2=98
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from dp_mm order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dp_mm
@@ -437,7 +437,7 @@ POSTHOOK: Input: default@dp_mm@key1=123/key2=100
 POSTHOOK: Input: default@dp_mm@key1=123/key2=103
 POSTHOOK: Input: default@dp_mm@key1=123/key2=97
 POSTHOOK: Input: default@dp_mm@key1=123/key2=98
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	123	0
 10	123	10
 97	123	97
@@ -486,11 +486,11 @@ POSTHOOK: Lineage: union_mm.id EXPRESSION [(intermediate)intermediate.FieldSchem
 PREHOOK: query: select * from union_mm order by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from union_mm order by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 1
 10
@@ -537,11 +537,11 @@ POSTHOOK: Lineage: union_mm.id EXPRESSION [(intermediate)intermediate.FieldSchem
 PREHOOK: query: select * from union_mm order by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from union_mm order by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 1
@@ -619,11 +619,11 @@ POSTHOOK: Lineage: union_mm.id EXPRESSION [(intermediate)intermediate.FieldSchem
 PREHOOK: query: select * from union_mm order by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from union_mm order by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 0
@@ -741,7 +741,7 @@ PREHOOK: Input: default@partunion_mm@key=11
 PREHOOK: Input: default@partunion_mm@key=97
 PREHOOK: Input: default@partunion_mm@key=98
 PREHOOK: Input: default@partunion_mm@key=99
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from partunion_mm order by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partunion_mm
@@ -756,7 +756,7 @@ POSTHOOK: Input: default@partunion_mm@key=11
 POSTHOOK: Input: default@partunion_mm@key=97
 POSTHOOK: Input: default@partunion_mm@key=98
 POSTHOOK: Input: default@partunion_mm@key=99
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	0
 1	1
 10	10
@@ -809,11 +809,11 @@ POSTHOOK: Lineage: skew_mm.k4 SIMPLE [(intermediate)intermediate.FieldSchema(nam
 PREHOOK: query: select * from skew_mm order by k2, k1, k4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@skew_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from skew_mm order by k2, k1, k4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@skew_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	0	0
 10	10	10
 97	97	97
@@ -920,7 +920,7 @@ PREHOOK: Input: default@skew_dp_union_mm@k3=14
 PREHOOK: Input: default@skew_dp_union_mm@k3=4
 PREHOOK: Input: default@skew_dp_union_mm@k3=97
 PREHOOK: Input: default@skew_dp_union_mm@k3=98
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from skew_dp_union_mm order by k2, k1, k4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@skew_dp_union_mm
@@ -936,7 +936,7 @@ POSTHOOK: Input: default@skew_dp_union_mm@k3=14
 POSTHOOK: Input: default@skew_dp_union_mm@k3=4
 POSTHOOK: Input: default@skew_dp_union_mm@k3=97
 POSTHOOK: Input: default@skew_dp_union_mm@k3=98
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	0	0	0
 1	2	3	4
 10	10	10	10
@@ -983,11 +983,11 @@ POSTHOOK: Lineage: merge0_mm.id SIMPLE [(intermediate)intermediate.FieldSchema(n
 PREHOOK: query: select * from merge0_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge0_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from merge0_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge0_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 98
 97
 100
@@ -1012,11 +1012,11 @@ POSTHOOK: Lineage: merge0_mm.id SIMPLE [(intermediate)intermediate.FieldSchema(n
 PREHOOK: query: select * from merge0_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge0_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from merge0_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge0_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 98
 97
 100
@@ -1063,11 +1063,11 @@ POSTHOOK: Lineage: merge2_mm.id SIMPLE [(intermediate)intermediate.FieldSchema(n
 PREHOOK: query: select * from merge2_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge2_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from merge2_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge2_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 98
 97
 100
@@ -1092,11 +1092,11 @@ POSTHOOK: Lineage: merge2_mm.id SIMPLE [(intermediate)intermediate.FieldSchema(n
 PREHOOK: query: select * from merge2_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge2_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from merge2_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge2_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 98
 97
 100
@@ -1159,7 +1159,7 @@ PREHOOK: Input: default@merge1_mm@key=100
 PREHOOK: Input: default@merge1_mm@key=103
 PREHOOK: Input: default@merge1_mm@key=97
 PREHOOK: Input: default@merge1_mm@key=98
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from merge1_mm order by id, key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge1_mm
@@ -1169,7 +1169,7 @@ POSTHOOK: Input: default@merge1_mm@key=100
 POSTHOOK: Input: default@merge1_mm@key=103
 POSTHOOK: Input: default@merge1_mm@key=97
 POSTHOOK: Input: default@merge1_mm@key=98
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	0
 10	10
 97	97
@@ -1210,7 +1210,7 @@ PREHOOK: Input: default@merge1_mm@key=100
 PREHOOK: Input: default@merge1_mm@key=103
 PREHOOK: Input: default@merge1_mm@key=97
 PREHOOK: Input: default@merge1_mm@key=98
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from merge1_mm order by id, key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge1_mm
@@ -1220,7 +1220,7 @@ POSTHOOK: Input: default@merge1_mm@key=100
 POSTHOOK: Input: default@merge1_mm@key=103
 POSTHOOK: Input: default@merge1_mm@key=97
 POSTHOOK: Input: default@merge1_mm@key=98
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	0
 0	0
 10	10
@@ -1266,11 +1266,11 @@ POSTHOOK: Lineage: ctas0_mm.p SIMPLE [(intermediate)intermediate.FieldSchema(nam
 PREHOOK: query: select * from ctas0_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ctas0_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from ctas0_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ctas0_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 98	455
 97	455
 100	457
@@ -1312,11 +1312,11 @@ POSTHOOK: Lineage: ctas1_mm.p EXPRESSION [(intermediate)intermediate.FieldSchema
 PREHOOK: query: select * from ctas1_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ctas1_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from ctas1_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ctas1_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 98	455
 97	455
 100	457
@@ -1388,11 +1388,11 @@ POSTHOOK: Lineage: multi0_2_mm.key2 SIMPLE [(intermediate)intermediate.FieldSche
 PREHOOK: query: select * from multi0_1_mm order by key, key2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multi0_1_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from multi0_1_mm order by key, key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multi0_1_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	456
 10	456
 97	455
@@ -1402,11 +1402,11 @@ POSTHOOK: Input: default@multi0_1_mm
 PREHOOK: query: select * from multi0_2_mm order by key, key2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multi0_2_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from multi0_2_mm order by key, key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multi0_2_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 455	97
 455	98
 456	0
@@ -1440,11 +1440,11 @@ POSTHOOK: Lineage: multi0_2_mm.key2 SIMPLE [(intermediate)intermediate.FieldSche
 PREHOOK: query: select * from multi0_1_mm order by key, key2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multi0_1_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from multi0_1_mm order by key, key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multi0_1_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	456
 10	456
 97	455
@@ -1460,11 +1460,11 @@ POSTHOOK: Input: default@multi0_1_mm
 PREHOOK: query: select * from multi0_2_mm order by key, key2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multi0_2_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from multi0_2_mm order by key, key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multi0_2_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	456
 10	456
 97	455
@@ -1528,13 +1528,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@multi1_mm
 PREHOOK: Input: default@multi1_mm@p=1
 PREHOOK: Input: default@multi1_mm@p=2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from multi1_mm order by key, key2, p
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multi1_mm
 POSTHOOK: Input: default@multi1_mm@p=1
 POSTHOOK: Input: default@multi1_mm@p=2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	456	2
 10	456	2
 97	455	2
@@ -1576,13 +1576,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@multi1_mm
 PREHOOK: Input: default@multi1_mm@p=1
 PREHOOK: Input: default@multi1_mm@p=2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from multi1_mm order by key, key2, p
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multi1_mm
 POSTHOOK: Input: default@multi1_mm@p=1
 POSTHOOK: Input: default@multi1_mm@p=2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	456	1
 0	456	2
 10	456	1
@@ -1641,7 +1641,7 @@ PREHOOK: Input: default@multi1_mm@p=2
 PREHOOK: Input: default@multi1_mm@p=455
 PREHOOK: Input: default@multi1_mm@p=456
 PREHOOK: Input: default@multi1_mm@p=457
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key, key2, p from multi1_mm order by key, key2, p
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multi1_mm
@@ -1650,7 +1650,7 @@ POSTHOOK: Input: default@multi1_mm@p=2
 POSTHOOK: Input: default@multi1_mm@p=455
 POSTHOOK: Input: default@multi1_mm@p=456
 POSTHOOK: Input: default@multi1_mm@p=457
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	456	1
 0	456	1
 0	456	2
@@ -1712,7 +1712,7 @@ PREHOOK: Input: default@multi1_mm@p=2
 PREHOOK: Input: default@multi1_mm@p=455
 PREHOOK: Input: default@multi1_mm@p=456
 PREHOOK: Input: default@multi1_mm@p=457
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key, key2, p from multi1_mm order by key, key2, p
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multi1_mm
@@ -1721,7 +1721,7 @@ POSTHOOK: Input: default@multi1_mm@p=2
 POSTHOOK: Input: default@multi1_mm@p=455
 POSTHOOK: Input: default@multi1_mm@p=456
 POSTHOOK: Input: default@multi1_mm@p=457
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	456	1
 0	456	1
 0	456	1
@@ -1971,11 +1971,11 @@ POSTHOOK: Lineage: skewjoin_mm.value SIMPLE [(src)src2.FieldSchema(name:value, t
 PREHOOK: query: select count(distinct key) from skewjoin_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@skewjoin_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(distinct key) from skewjoin_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@skewjoin_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 309
 PREHOOK: query: drop table skewjoin_mm
 PREHOOK: type: DROPTABLE
@@ -2037,7 +2037,7 @@ where t1.value = 'value1' and t2.value = 'value2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet1_mm
 PREHOOK: Input: default@parquet2_mm
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select parquet1_mm.id, t1.value, t2.value FROM parquet1_mm
   JOIN parquet2_mm t1 ON parquet1_mm.id=t1.id
   JOIN parquet2_mm t2 ON parquet1_mm.id=t2.id
@@ -2045,7 +2045,7 @@ where t1.value = 'value1' and t2.value = 'value2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet1_mm
 POSTHOOK: Input: default@parquet2_mm
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	value1	value2
 PREHOOK: query: drop table parquet1_mm
 PREHOOK: type: DROPTABLE
@@ -2102,11 +2102,11 @@ a                   	int
 PREHOOK: query: SELECT * FROM temp1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM temp1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 98
 97
 100

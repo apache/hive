@@ -10,14 +10,14 @@ PREHOOK: query: create table encryptedTable(value string)
     partitioned by (key string) clustered by (value) into 2 buckets stored as orc
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@encryptedTable
 POSTHOOK: query: create table encryptedTable(value string)
     partitioned by (key string) clustered by (value) into 2 buckets stored as orc
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encryptedTable
 Encryption key created: 'key_1'
@@ -130,7 +130,7 @@ PREHOOK: Input: default@unencryptedtable@key=238
 PREHOOK: Input: default@unencryptedtable@key=501
 PREHOOK: Input: default@unencryptedtable@key=502
 PREHOOK: Input: default@unencryptedtable@key=86
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from unencryptedTable order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@unencryptedtable
@@ -138,7 +138,7 @@ POSTHOOK: Input: default@unencryptedtable@key=238
 POSTHOOK: Input: default@unencryptedtable@key=501
 POSTHOOK: Input: default@unencryptedtable@key=502
 POSTHOOK: Input: default@unencryptedtable@key=86
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 val_238	238
 val_501	501
 val_502	502

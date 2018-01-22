@@ -88,11 +88,11 @@ POSTHOOK: Lineage: parquet_map_type.stringmap SIMPLE [(parquet_map_type_staging)
 PREHOOK: query: select count(*) from parquet_map_type
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from parquet_map_type
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1023
 PREHOOK: query: explain vectorization expression select stringMap, intMap, doubleMap, stringMap['k2'], intMap[456],
 doubleMap[123.123], stringMap[stringIndex], intMap[intIndex], doubleMap[doubleIndex] from parquet_map_type limit 10
@@ -167,12 +167,12 @@ PREHOOK: query: select stringMap, intMap, doubleMap, stringMap['k2'], intMap[456
 stringMap[stringIndex], intMap[intIndex], doubleMap[doubleIndex] from parquet_map_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select stringMap, intMap, doubleMap, stringMap['k2'], intMap[456], doubleMap[123.123],
 stringMap[stringIndex], intMap[intIndex], doubleMap[doubleIndex] from parquet_map_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"k1":"v1","k2":"v1-2"}	{456:2,123:1}	{123.123:1.1,456.456:1.2}	v1-2	2	1.1	v1	1	1.2
 {"k1":"v2","k2":"v2-2"}	{456:4,123:3}	{123.123:2.1,456.456:2.2}	v2-2	4	2.1	v2	3	2.2
 {"k1":"v3","k2":"v3-2"}	{456:6,123:5}	{123.123:3.1,456.456:3.2}	v3-2	6	3.1	v3	5	3.2
@@ -350,12 +350,12 @@ PREHOOK: query: select sum(intMap[123]), sum(doubleMap[123.123]), stringMap['k1'
 from parquet_map_type where stringMap['k1'] like 'v100%' group by stringMap['k1'] order by stringMap['k1'] limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(intMap[123]), sum(doubleMap[123.123]), stringMap['k1']
 from parquet_map_type where stringMap['k1'] like 'v100%' group by stringMap['k1'] order by stringMap['k1'] limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 199	100.1	v100
 1999	1000.1	v1000
 2001	1001.1	v1001
@@ -386,22 +386,22 @@ POSTHOOK: Lineage: parquet_map_type.stringmap SIMPLE [(parquet_map_type_staging)
 PREHOOK: query: select count(*) from parquet_map_type
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from parquet_map_type
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1024
 PREHOOK: query: select stringMap, intMap, doubleMap, stringMap['k2'], intMap[456], doubleMap[123.123],
 stringMap[stringIndex], intMap[intIndex], doubleMap[doubleIndex] from parquet_map_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select stringMap, intMap, doubleMap, stringMap['k2'], intMap[456], doubleMap[123.123],
 stringMap[stringIndex], intMap[intIndex], doubleMap[doubleIndex] from parquet_map_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"k1":"v1","k2":"v1-2"}	{456:2,123:1}	{123.123:1.1,456.456:1.2}	v1-2	2	1.1	v1	1	1.2
 {"k1":"v2","k2":"v2-2"}	{456:4,123:3}	{123.123:2.1,456.456:2.2}	v2-2	4	2.1	v2	3	2.2
 {"k1":"v3","k2":"v3-2"}	{456:6,123:5}	{123.123:3.1,456.456:3.2}	v3-2	6	3.1	v3	5	3.2
@@ -416,12 +416,12 @@ PREHOOK: query: select sum(intMap[123]), sum(doubleMap[123.123]), stringMap['k1'
 from parquet_map_type where stringMap['k1'] like 'v100%' group by stringMap['k1'] order by stringMap['k1'] limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(intMap[123]), sum(doubleMap[123.123]), stringMap['k1']
 from parquet_map_type where stringMap['k1'] like 'v100%' group by stringMap['k1'] order by stringMap['k1'] limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 199	100.1	v100
 1999	1000.1	v1000
 2001	1001.1	v1001
@@ -452,22 +452,22 @@ POSTHOOK: Lineage: parquet_map_type.stringmap SIMPLE [(parquet_map_type_staging)
 PREHOOK: query: select count(*) from parquet_map_type
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from parquet_map_type
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1025
 PREHOOK: query: select stringMap, intMap, doubleMap, stringMap['k2'], intMap[456], doubleMap[123.123],
 stringMap[stringIndex], intMap[intIndex], doubleMap[doubleIndex] from parquet_map_type limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select stringMap, intMap, doubleMap, stringMap['k2'], intMap[456], doubleMap[123.123],
 stringMap[stringIndex], intMap[intIndex], doubleMap[doubleIndex] from parquet_map_type limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"k1":"v1","k2":"v1-2"}	{456:2,123:1}	{123.123:1.1,456.456:1.2}	v1-2	2	1.1	v1	1	1.2
 {"k1":"v2","k2":"v2-2"}	{456:4,123:3}	{123.123:2.1,456.456:2.2}	v2-2	4	2.1	v2	3	2.2
 {"k1":"v3","k2":"v3-2"}	{456:6,123:5}	{123.123:3.1,456.456:3.2}	v3-2	6	3.1	v3	5	3.2
@@ -482,12 +482,12 @@ PREHOOK: query: select sum(intMap[123]), sum(doubleMap[123.123]), stringMap['k1'
 from parquet_map_type where stringMap['k1'] like 'v100%' group by stringMap['k1'] order by stringMap['k1'] limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(intMap[123]), sum(doubleMap[123.123]), stringMap['k1']
 from parquet_map_type where stringMap['k1'] like 'v100%' group by stringMap['k1'] order by stringMap['k1'] limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_map_type
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 199	100.1	v100
 1999	1000.1	v1000
 2001	1001.1	v1001

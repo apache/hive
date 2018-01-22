@@ -69,11 +69,11 @@ STAGE PLANS:
 PREHOOK: query: select cint / 0, ctinyint / 0, cbigint / 0, cdouble / 0.0 from alltypesorc limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select cint / 0, ctinyint / 0, cbigint / 0, cdouble / 0.0 from alltypesorc limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL
@@ -285,12 +285,12 @@ PREHOOK: query: select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) 
 from alltypesorc where cbigint > 0 and cbigint < 100000000 order by s1, s2 limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L) 
 from alltypesorc where cbigint > 0 and cbigint < 100000000 order by s1, s2 limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -985319	NULL	-0.000001217879691754650
 -985319	2.0297994862577501E-4	-0.000001217879691754650
 -63925	0.11256941728588189	-0.000018771998435666797
@@ -502,12 +502,12 @@ PREHOOK: query: select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s
 from alltypesorc where cdouble >= -500 and cdouble < -199 order by s1, s2 limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0), cbigint / (cdouble + 200.0), 3 / (cdouble + 200.0), 1.2 / (cdouble + 200.0) 
 from alltypesorc where cdouble >= -500 and cdouble < -199 order by s1, s2 limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -292.0	NULL	1.0	NULL	-0.010273972602739725	-0.00410958904109589
 -290.0	NULL	1.0	NULL	-0.010344827586206896	-0.004137931034482759
 -289.0	NULL	1.0	NULL	-0.010380622837370242	-0.004152249134948096
@@ -719,12 +719,12 @@ PREHOOK: query: select cint, cbigint, ctinyint, (cint / (cint - 528534767)) as c
 from alltypesorc where cint > 500000000 or cdouble > 1000000000 or ctinyint = 0 order by c1, c2 limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select cint, cbigint, ctinyint, (cint / (cint - 528534767)) as c1, (cbigint / (cbigint - 1018195815)) as c2, (ctinyint / ctinyint) as c3, (cint % (cint - 528534767)) as c4, (cbigint % (cbigint - 1018195815)), (ctinyint % ctinyint) as c3
 from alltypesorc where cint > 500000000 or cdouble > 1000000000 or ctinyint = 0 order by c1, c2 limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 528534767	NULL	-50	NULL	NULL	1.0	NULL	NULL	0
 528534767	NULL	33	NULL	NULL	1.0	NULL	NULL	0
 528534767	NULL	-28	NULL	NULL	1.0	NULL	NULL	0

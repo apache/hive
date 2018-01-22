@@ -6,7 +6,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key, value
 FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 POSTHOOK: type: QUERY
@@ -15,7 +15,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key, value
 FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 PREHOOK: type: QUERY
@@ -66,9 +66,11 @@ Stage-1
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:newDB
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:newDB
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 #### A masked pattern was here ####
@@ -78,10 +80,11 @@ Stage-0
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:newDB
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:newDB
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: describe database extended newDB
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:newdb
@@ -235,12 +238,12 @@ PREHOOK: query: analyze table src_stats compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_stats
 PREHOOK: Output: default@src_stats
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table src_stats compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_stats
 POSTHOOK: Output: default@src_stats
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze analyze table src_stats compute statistics for columns
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze analyze table src_stats compute statistics for columns
@@ -285,11 +288,11 @@ POSTHOOK: Output: database:default
 PREHOOK: query: SELECT SIGMOID(2) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT SIGMOID(2) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze SELECT SIGMOID(2) FROM src LIMIT 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze SELECT SIGMOID(2) FROM src LIMIT 1
@@ -417,11 +420,11 @@ Stage-1
 PREHOOK: query: select key from src_autho_test order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from src_autho_test order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_autho_test
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 0
@@ -586,12 +589,12 @@ PREHOOK: query: with cte as (select * from src  order by key limit 5)
 select * from cte
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with cte as (select * from src  order by key limit 5)
 select * from cte
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze with cte as (select * from src  order by key limit 5)
 select * from cte
 PREHOOK: type: QUERY
@@ -816,7 +819,7 @@ PREHOOK: Input: default@tab
 PREHOOK: Input: default@tab@ds=2008-04-08
 PREHOOK: Input: default@tab_part
 PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select a.key, a.value, b.value
 from tab a join tab_part b on a.key = b.key
 POSTHOOK: type: QUERY
@@ -824,7 +827,7 @@ POSTHOOK: Input: default@tab
 POSTHOOK: Input: default@tab@ds=2008-04-08
 POSTHOOK: Input: default@tab_part
 POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze
 select a.key, a.value, b.value
 from tab a join tab_part b on a.key = b.key

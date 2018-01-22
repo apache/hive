@@ -36,12 +36,12 @@ PREHOOK: query: select * from a except distinct select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from a except distinct select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: drop table a
 PREHOOK: type: DROPTABLE
@@ -99,105 +99,105 @@ PREHOOK: query: select * from a except distinct select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from a except distinct select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	3
 PREHOOK: query: select * from b except distinct select * from a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from b except distinct select * from a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	20
 PREHOOK: query: select * from b except distinct select * from a intersect distinct select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from b except distinct select * from a intersect distinct select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	20
 PREHOOK: query: select * from b except distinct select * from a except distinct select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from b except distinct select * from a except distinct select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select * from a except distinct select * from b union all select * from a except distinct select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from a except distinct select * from b union all select * from a except distinct select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	3
 PREHOOK: query: select * from a except distinct select * from b union select * from a except distinct select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from a except distinct select * from b union select * from a except distinct select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	3
 PREHOOK: query: select * from a except distinct select * from b except distinct select * from a except distinct select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from a except distinct select * from b except distinct select * from a except distinct select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1 
 except distinct 
 select * from (select a.key, b.value from a join b on a.key=b.key)sub2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1 
 except distinct 
 select * from (select a.key, b.value from a join b on a.key=b.key)sub2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1
 except distinct
 select * from (select b.value as key, a.key as value from a join b on a.key=b.key)sub2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1
 except distinct
 select * from (select b.value as key, a.key as value from a join b on a.key=b.key)sub2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 2	20
 1	2
@@ -358,11 +358,11 @@ STAGE PLANS:
 PREHOOK: query: select * from src except distinct select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src except distinct select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select * from src except distinct select * from src except distinct select * from src except distinct select * from src
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from src except distinct select * from src except distinct select * from src except distinct select * from src
@@ -682,11 +682,11 @@ STAGE PLANS:
 PREHOOK: query: select * from src except distinct select * from src except distinct select * from src except distinct select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src except distinct select * from src except distinct select * from src except distinct select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select value from a group by value except distinct select key from b group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select value from a group by value except distinct select key from b group by key
@@ -851,10 +851,10 @@ PREHOOK: query: select value from a group by value except distinct select key fr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select value from a group by value except distinct select key from b group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3

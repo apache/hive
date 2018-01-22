@@ -37,12 +37,12 @@ PREHOOK: query: analyze table src_stats compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_stats
 PREHOOK: Output: default@src_stats
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table src_stats compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_stats
 POSTHOOK: Output: default@src_stats
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze analyze table src_stats compute statistics for columns
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze analyze table src_stats compute statistics for columns
@@ -162,12 +162,12 @@ PREHOOK: query: select count(*) from (select * from src union select * from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from (select * from src union select * from src1)subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 319
 PREHOOK: query: insert overwrite table src_multi2 select subq.key, src.value from (select * from src union select * from src1)subq join src on subq.key=src.key
 PREHOOK: type: QUERY
@@ -260,11 +260,11 @@ POSTHOOK: Lineage: acid_uami.vc SCRIPT []
 PREHOOK: query: select * from acid_uami order by de
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uami
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from acid_uami order by de
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uami
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	109.23	mary had a little lamb
 10	119.23	and everywhere that mary went
 6553	923.19	its fleece was white as snow
@@ -310,11 +310,11 @@ Stage-3
 PREHOOK: query: select * from acid_uami order by de
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uami
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from acid_uami order by de
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uami
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	109.23	mary had a little lamb
 10	119.23	and everywhere that mary went
 6553	923.19	its fleece was white as snow
@@ -330,11 +330,11 @@ POSTHOOK: Output: default@acid_uami
 PREHOOK: query: select * from acid_uami order by de
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uami
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from acid_uami order by de
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uami
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	3.14	mary had a little lamb
 10	3.14	and everywhere that mary went
 6553	923.19	its fleece was white as snow
@@ -353,7 +353,7 @@ PREHOOK: query: create table acid_dot(
     cboolean1 BOOLEAN,
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_dot
 POSTHOOK: query: create table acid_dot(
@@ -370,17 +370,17 @@ POSTHOOK: query: create table acid_dot(
     cboolean1 BOOLEAN,
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_dot
 PREHOOK: query: select count(*) from acid_dot
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_dot
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from acid_dot
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_dot
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 12288
 PREHOOK: query: delete from acid_dot where cint < -1070551679
 PREHOOK: type: QUERY
@@ -423,11 +423,11 @@ Stage-3
 PREHOOK: query: select count(*) from acid_dot
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_dot
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from acid_dot
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_dot
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 12288
 PREHOOK: query: delete from acid_dot where cint < -1070551679
 PREHOOK: type: QUERY
@@ -440,9 +440,9 @@ POSTHOOK: Output: default@acid_dot
 PREHOOK: query: select count(*) from acid_dot
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_dot
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from acid_dot
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_dot
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 12280

@@ -259,19 +259,19 @@ STAGE PLANS:
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT dest2.* FROM dest2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT dest2.* FROM dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE dest1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1
@@ -461,11 +461,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM tmptable x SORT BY x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM tmptable x SORT BY x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE tmtable
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE tmtable

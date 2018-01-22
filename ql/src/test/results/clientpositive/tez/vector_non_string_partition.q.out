@@ -133,12 +133,12 @@ PREHOOK: query: SELECT cint, ctinyint FROM non_string_part WHERE cint > 0 ORDER 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@non_string_part
 PREHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cint, ctinyint FROM non_string_part WHERE cint > 0 ORDER BY cint LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@non_string_part
 POSTHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 762	NULL
 762	NULL
 6981	NULL
@@ -254,12 +254,12 @@ PREHOOK: query: SELECT cint, cstring1 FROM non_string_part WHERE cint > 0 ORDER 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@non_string_part
 PREHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cint, cstring1 FROM non_string_part WHERE cint > 0 ORDER BY cint, cstring1 LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@non_string_part
 POSTHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 762	3WsVeqb28VWEEOLI8ail
 762	40ks5556SV
 6981	1FNNhmiFLGw425NA13g

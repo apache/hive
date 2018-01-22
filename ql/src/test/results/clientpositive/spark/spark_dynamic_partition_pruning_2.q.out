@@ -98,11 +98,11 @@ POSTHOOK: Output: default@agg_01@dim_shops_id=3
 PREHOOK: query: select * from dim_shops
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from dim_shops
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	foo
 2	bar
 3	baz
@@ -112,14 +112,14 @@ PREHOOK: Input: default@agg_01
 PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from agg_01
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@agg_01
 POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	1
 2	1
 3	1
@@ -279,7 +279,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -294,7 +294,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 bar	3	15
 foo	3	6
 PREHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
@@ -433,7 +433,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -448,7 +448,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 bar	3	15
 foo	3	6
 PREHOOK: query: EXPLAIN SELECT d1.label
@@ -545,7 +545,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT d1.label
 FROM agg_01 agg,
 dim_shops d1
@@ -556,7 +556,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 bar
 bar
 bar
@@ -657,7 +657,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@agg_01
 PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
@@ -667,7 +667,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@agg_01
 POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 2
 3
@@ -821,7 +821,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
 FROM agg_01 agg,
 dim_shops d1
@@ -836,7 +836,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 bar	3	15
 foo	3	6
 PREHOOK: query: EXPLAIN 
@@ -1010,7 +1010,7 @@ PREHOOK: Input: default@agg_01@dim_shops_id=1
 PREHOOK: Input: default@agg_01@dim_shops_id=2
 PREHOOK: Input: default@agg_01@dim_shops_id=3
 PREHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
 UNION ALL
 SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
@@ -1020,7 +1020,7 @@ POSTHOOK: Input: default@agg_01@dim_shops_id=1
 POSTHOOK: Input: default@agg_01@dim_shops_id=2
 POSTHOOK: Input: default@agg_01@dim_shops_id=3
 POSTHOOK: Input: default@dim_shops
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 2
 3
@@ -1133,7 +1133,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*)
 from srcpart s1,
      srcpart s2
@@ -1144,5 +1144,5 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2000000
