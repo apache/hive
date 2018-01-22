@@ -287,12 +287,14 @@ public class HiveServer2 extends CompositeService {
       LOG.warn("Workload management is enabled but there's no resource plan");
     }
 
-    // Initialize workload management.
-    LOG.info("Initializing workload management");
-    try {
-      wm = WorkloadManager.create(wmQueue, hiveConf, resourcePlan);
-    } catch (ExecutionException | InterruptedException e) {
-      throw new ServiceException("Unable to instantiate Workload Manager", e);
+    if (hasQueue) {
+      // Initialize workload management.
+      LOG.info("Initializing workload management");
+      try {
+        wm = WorkloadManager.create(wmQueue, hiveConf, resourcePlan);
+      } catch (ExecutionException | InterruptedException e) {
+        throw new ServiceException("Unable to instantiate Workload Manager", e);
+      }
     }
 
     if (resourcePlan != null) {
