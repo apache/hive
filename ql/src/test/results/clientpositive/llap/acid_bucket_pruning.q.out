@@ -58,10 +58,10 @@ STAGE PLANS:
                       File Output Operator
                         compressed: false
                         GlobalTableId: 0
-#### A masked pattern was here ####
+                        directory: hdfs://### HDFS PATH ###
                         NumFilesPerFileSink: 1
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
+                        Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -80,9 +80,9 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: may be used (ACID table)
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [acidtbldefault]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: acidtbldefault
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -95,6 +95,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.acidtbldefault
                     numFiles 17
                     numRows 0
@@ -118,6 +119,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.acidtbldefault
                       numFiles 17
                       numRows 0
@@ -144,18 +146,18 @@ STAGE PLANS:
 PREHOOK: query: select count(*) from acidTblDefault WHERE a = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtbldefault
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from acidTblDefault WHERE a = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtbldefault
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 PREHOOK: query: select count(*) from acidTblDefault WHERE a = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtbldefault
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from acidTblDefault WHERE a = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtbldefault
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1

@@ -414,7 +414,7 @@ PREHOOK: Input: default@part_table2
 PREHOOK: Input: default@part_table2@part2_col=1
 PREHOOK: Input: default@part_table2@part2_col=2
 PREHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT *
 FROM   part_table1 pt1,
        part_table2 pt2,
@@ -428,7 +428,7 @@ POSTHOOK: Input: default@part_table2
 POSTHOOK: Input: default@part_table2@part2_col=1
 POSTHOOK: Input: default@part_table2@part2_col=2
 POSTHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	1	1	1	1
 PREHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
@@ -581,7 +581,7 @@ PREHOOK: Input: default@part_table3@part3_col=1
 PREHOOK: Input: default@part_table3@part3_col=2
 PREHOOK: Input: default@part_table3@part3_col=3
 PREHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT *
 FROM   part_table1 pt1,
        part_table2 pt2,
@@ -601,7 +601,7 @@ POSTHOOK: Input: default@part_table3@part3_col=1
 POSTHOOK: Input: default@part_table3@part3_col=2
 POSTHOOK: Input: default@part_table3@part3_col=3
 POSTHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	1	1	1	1	1	1
 PREHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
@@ -789,7 +789,7 @@ PREHOOK: Input: default@part_table4@part4_col=2
 PREHOOK: Input: default@part_table4@part4_col=3
 PREHOOK: Input: default@part_table4@part4_col=4
 PREHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT *
 FROM   part_table1 pt1,
        part_table2 pt2,
@@ -816,7 +816,7 @@ POSTHOOK: Input: default@part_table4@part4_col=2
 POSTHOOK: Input: default@part_table4@part4_col=3
 POSTHOOK: Input: default@part_table4@part4_col=4
 POSTHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	1	1	1	1	1	1	1	1
 PREHOOK: query: explain SELECT *
         FROM   part_table1 pt1,
@@ -1042,7 +1042,7 @@ PREHOOK: Input: default@part_table5@part5_col=3
 PREHOOK: Input: default@part_table5@part5_col=4
 PREHOOK: Input: default@part_table5@part5_col=5
 PREHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT *
 FROM   part_table1 pt1,
        part_table2 pt2,
@@ -1077,7 +1077,7 @@ POSTHOOK: Input: default@part_table5@part5_col=3
 POSTHOOK: Input: default@part_table5@part5_col=4
 POSTHOOK: Input: default@part_table5@part5_col=5
 POSTHOOK: Input: default@reg_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	1	1	1	1	1	1	1	1	1	1
 PREHOOK: query: DROP TABLE part_table1
 PREHOOK: type: DROPTABLE

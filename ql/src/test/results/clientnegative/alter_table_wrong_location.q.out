@@ -6,4 +6,4 @@ POSTHOOK: query: create table testwrongloc(id int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testwrongloc
-#### A masked pattern was here ####
+FAILED: SemanticException Cannot connect to namenode, please check if host/port pair for hdfs://### HDFS PATH ### is valid

@@ -62,7 +62,7 @@ PREHOOK: Input: default@llap_stats@cint=-9566
 PREHOOK: Input: default@llap_stats@cint=15007
 PREHOOK: Input: default@llap_stats@cint=4963
 PREHOOK: Input: default@llap_stats@cint=7021
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from llap_stats
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@llap_stats
@@ -76,7 +76,7 @@ POSTHOOK: Input: default@llap_stats@cint=-9566
 POSTHOOK: Input: default@llap_stats@cint=15007
 POSTHOOK: Input: default@llap_stats@cint=4963
 POSTHOOK: Input: default@llap_stats@cint=7021
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -17	-50	-13326
 -17	-11	-15431
 -17	61	-15549
@@ -179,7 +179,7 @@ PREHOOK: Output: default@llap_stats@cint=-9566
 PREHOOK: Output: default@llap_stats@cint=15007
 PREHOOK: Output: default@llap_stats@cint=4963
 PREHOOK: Output: default@llap_stats@cint=7021
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table llap_stats partition (cint) compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@llap_stats
@@ -204,7 +204,7 @@ POSTHOOK: Output: default@llap_stats@cint=-9566
 POSTHOOK: Output: default@llap_stats@cint=15007
 POSTHOOK: Output: default@llap_stats@cint=4963
 POSTHOOK: Output: default@llap_stats@cint=7021
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE llap_stats
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@llap_stats

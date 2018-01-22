@@ -46,9 +46,9 @@ STAGE PLANS:
                       value expressions: _col1 (type: string)
                       auto parallelism: false
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [src]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -61,6 +61,7 @@ STAGE PLANS:
                     columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src
                     numFiles 1
                     numRows 500
@@ -82,6 +83,7 @@ STAGE PLANS:
                       columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src
                       numFiles 1
                       numRows 500
@@ -106,10 +108,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -122,6 +124,7 @@ STAGE PLANS:
                         columns.comments 
                         columns.types string:string
 #### A masked pattern was here ####
+                        location hdfs://### HDFS PATH ###
                         name default.bucket5_1
                         numFiles 0
                         numRows 0
@@ -141,7 +144,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-#### A masked pattern was here ####
+          source: hdfs://### HDFS PATH ###
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -154,6 +157,7 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
+                location hdfs://### HDFS PATH ###
                 name default.bucket5_1
                 numFiles 0
                 numRows 0
@@ -169,7 +173,7 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
-#### A masked pattern was here ####
+          Stats Aggregation Key Prefix: hdfs://### HDFS PATH ###
 
 PREHOOK: query: insert overwrite table bucket5_1
 select * from src cluster by key
@@ -186,20 +190,20 @@ POSTHOOK: Lineage: bucket5_1.value SIMPLE [(src)src.FieldSchema(name:value, type
 PREHOOK: query: select sum(hash(key)),sum(hash(value)) from bucket5_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket5_1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(hash(key)),sum(hash(value)) from bucket5_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket5_1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 21025334	36210398070
 PREHOOK: query: select sum(hash(key)),sum(hash(value)) from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(hash(key)),sum(hash(value)) from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 21025334	36210398070
 PREHOOK: query: create table complex_tbl_1(aid string, bid string, t int, ctime string, etime bigint, l string, et string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
@@ -320,11 +324,11 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
-#### A masked pattern was here ####
+                    directory: hdfs://### HDFS PATH ###
                     NumFilesPerFileSink: 1
                     Static Partition Specification: ds=2010-03-29/
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-#### A masked pattern was here ####
+                    Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -335,6 +339,7 @@ STAGE PLANS:
                           columns.comments 
                           columns.types string:string:int:string:bigint:string:string
 #### A masked pattern was here ####
+                          location hdfs://### HDFS PATH ###
                           name default.complex_tbl_1
                           partition_columns ds
                           partition_columns.types string
@@ -354,7 +359,7 @@ STAGE PLANS:
           partition:
             ds 2010-03-29
           replace: true
-#### A masked pattern was here ####
+          source: hdfs://### HDFS PATH ###
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -365,6 +370,7 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string:int:string:bigint:string:string
 #### A masked pattern was here ####
+                location hdfs://### HDFS PATH ###
                 name default.complex_tbl_1
                 partition_columns ds
                 partition_columns.types string
@@ -378,5 +384,5 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
-#### A masked pattern was here ####
+          Stats Aggregation Key Prefix: hdfs://### HDFS PATH ###
 

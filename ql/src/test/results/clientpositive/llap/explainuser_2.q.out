@@ -128,12 +128,12 @@ PREHOOK: query: ANALYZE TABLE ss COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ss
 PREHOOK: Output: default@ss
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: ANALYZE TABLE ss COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ss
 POSTHOOK: Output: default@ss
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: ANALYZE TABLE sr COMPUTE STATISTICS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sr
@@ -146,12 +146,12 @@ PREHOOK: query: ANALYZE TABLE sr COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sr
 PREHOOK: Output: default@sr
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: ANALYZE TABLE sr COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sr
 POSTHOOK: Output: default@sr
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: ANALYZE TABLE cs COMPUTE STATISTICS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cs
@@ -164,12 +164,12 @@ PREHOOK: query: ANALYZE TABLE cs COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cs
 PREHOOK: Output: default@cs
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: ANALYZE TABLE cs COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cs
 POSTHOOK: Output: default@cs
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN
 SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 

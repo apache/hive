@@ -255,11 +255,11 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src)s2.null, (src)s
 PREHOOK: query: select * from tmptable x sort by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from tmptable x sort by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 tst1	500
 tst2	500
 tst3	500
@@ -536,11 +536,11 @@ POSTHOOK: Lineage: tmptable12.value EXPRESSION [(src)s1.null, (src1)s2.null, (sr
 PREHOOK: query: select * from tmptable12 x sort by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable12
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from tmptable12 x sort by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable12
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 tst1	500
 tst2	25
 tst3	1000
@@ -632,12 +632,12 @@ PREHOOK: query: select unionsrc.key, unionsrc.value FROM (select s1.key as key, 
                                           select s2.key as key, s2.value as value from src s2) unionsrc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value as value from src s1 UNION DISTINCT  
                                           select s2.key as key, s2.value as value from src s2) unionsrc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 103	val_103
 105	val_105
@@ -1236,11 +1236,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name
 PREHOOK: query: SELECT DEST1.* FROM DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT DEST1.* FROM DEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	1
 10	1
 100	1
@@ -1554,11 +1554,11 @@ tst1	1
 PREHOOK: query: SELECT DEST2.* FROM DEST2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT DEST2.* FROM DEST2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	1
 10	val_10	1
 100	val_100	1
@@ -2127,11 +2127,11 @@ POSTHOOK: Lineage: dest218.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(na
 PREHOOK: query: SELECT DEST118.* FROM DEST118 SORT BY DEST118.key, DEST118.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest118
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT DEST118.* FROM DEST118 SORT BY DEST118.key, DEST118.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest118
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 10	val_10
 100	val_100
@@ -2445,11 +2445,11 @@ tst1	500
 PREHOOK: query: SELECT DEST218.* FROM DEST218 SORT BY DEST218.key, DEST218.val1, DEST218.val2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest218
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT DEST218.* FROM DEST218 SORT BY DEST218.key, DEST218.val1, DEST218.val2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest218
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	val_0
 10	val_10	val_10
 100	val_100	val_100
@@ -3028,11 +3028,11 @@ POSTHOOK: Lineage: dest219.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(na
 PREHOOK: query: SELECT DEST119.* FROM DEST119 SORT BY DEST119.key, DEST119.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest119
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT DEST119.* FROM DEST119 SORT BY DEST119.key, DEST119.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest119
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	1
 10	1
 100	1
@@ -3346,11 +3346,11 @@ tst1	1
 PREHOOK: query: SELECT DEST219.* FROM DEST219 SORT BY DEST219.key, DEST219.val1, DEST219.val2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest219
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT DEST219.* FROM DEST219 SORT BY DEST219.key, DEST219.val1, DEST219.val2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest219
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	val_0
 10	val_10	val_10
 100	val_100	val_100
@@ -3778,9 +3778,9 @@ STAGE PLANS:
                           tag: -1
                           auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [dst_union22_delta]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: ds=1
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3795,6 +3795,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.dst_union22_delta
                     numFiles 1
                     numRows 500
@@ -3817,6 +3818,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.dst_union22_delta
                       partition_columns ds
                       partition_columns.types string
@@ -3853,9 +3855,9 @@ STAGE PLANS:
                         value expressions: _col1 (type: string), _col2 (type: string)
                         auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [a]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: ds=1
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3870,6 +3872,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string:string:string
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.dst_union22
                     numFiles 1
                     numRows 500
@@ -3892,6 +3895,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string:string:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.dst_union22
                       partition_columns ds
                       partition_columns.types string
@@ -3928,9 +3932,9 @@ STAGE PLANS:
                         value expressions: _col1 (type: string), _col2 (type: string)
                         auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [dst_union22_delta]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: ds=1
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3945,6 +3949,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.dst_union22_delta
                     numFiles 1
                     numRows 500
@@ -3967,6 +3972,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string:string:string:string:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.dst_union22_delta
                       partition_columns ds
                       partition_columns.types string
@@ -3991,11 +3997,11 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Static Partition Specification: ds=2/
                   Statistics: Num rows: 332 Data size: 104486 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -4006,6 +4012,7 @@ STAGE PLANS:
                         columns.comments 
                         columns.types string:string:string:string
 #### A masked pattern was here ####
+                        location hdfs://### HDFS PATH ###
                         name default.dst_union22
                         partition_columns ds
                         partition_columns.types string
@@ -4054,10 +4061,10 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
-#### A masked pattern was here ####
+                    directory: hdfs://### HDFS PATH ###
                     NumFilesPerFileSink: 1
                     Statistics: Num rows: 1 Data size: 1845 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                    Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4119,7 +4126,7 @@ STAGE PLANS:
           partition:
             ds 2
           replace: true
-#### A masked pattern was here ####
+          source: hdfs://### HDFS PATH ###
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -4130,6 +4137,7 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string:string:string
 #### A masked pattern was here ####
+                location hdfs://### HDFS PATH ###
                 name default.dst_union22
                 partition_columns ds
                 partition_columns.types string
@@ -4143,7 +4151,7 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
-#### A masked pattern was here ####
+          Stats Aggregation Key Prefix: hdfs://### HDFS PATH ###
       Column Stats Desc:
           Columns: k1, k2, k3, k4
           Column Types: string, string, string, string
@@ -4192,12 +4200,12 @@ PREHOOK: query: select * from dst_union22 where ds = '2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dst_union22
 PREHOOK: Input: default@dst_union22@ds=2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from dst_union22 where ds = '2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dst_union22
 POSTHOOK: Input: default@dst_union22@ds=2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 103	val_103	103	val_103	2
 113	val_113	113	val_113	2
 120	val_120	120	val_120	2
@@ -4628,7 +4636,7 @@ from (
   select key as key2, value as value2 from src) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select s.key2, s.value2
 from (
   select transform(key, value) using 'cat' as (key2, value2)
@@ -4637,7 +4645,7 @@ from (
   select key as key2, value as value2 from src) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 103	val_103
 105	val_105
@@ -5063,9 +5071,9 @@ STAGE PLANS:
                           tag: -1
                           auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [src2]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src2
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5078,6 +5086,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src2
                     numFiles 1
                     numRows 309
@@ -5099,6 +5108,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src2
                       numFiles 1
                       numRows 309
@@ -5139,9 +5149,9 @@ STAGE PLANS:
                         value expressions: _col1 (type: bigint)
                         auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [src5]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src5
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5154,6 +5164,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src5
                     numFiles 1
                     numRows 309
@@ -5175,6 +5186,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src5
                       numFiles 1
                       numRows 309
@@ -5217,9 +5229,9 @@ STAGE PLANS:
                           tag: -1
                           auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [src3]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src3
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5232,6 +5244,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src3
                     numFiles 1
                     numRows 309
@@ -5253,6 +5266,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src3
                       numFiles 1
                       numRows 309
@@ -5295,9 +5309,9 @@ STAGE PLANS:
                           tag: -1
                           auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [src4]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src4
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5310,6 +5324,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src4
                     numFiles 1
                     numRows 309
@@ -5331,6 +5346,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src4
                       numFiles 1
                       numRows 309
@@ -5420,10 +5436,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 77 Data size: 13919 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5466,7 +5482,7 @@ PREHOOK: Input: default@src2
 PREHOOK: Input: default@src3
 PREHOOK: Input: default@src4
 PREHOOK: Input: default@src5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select s.key, s.count from (
   select key, count from src2  where key < 10
   UNION DISTINCT
@@ -5481,7 +5497,7 @@ POSTHOOK: Input: default@src2
 POSTHOOK: Input: default@src3
 POSTHOOK: Input: default@src4
 POSTHOOK: Input: default@src5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	1
 0	3
 2	1
@@ -5552,9 +5568,9 @@ STAGE PLANS:
                           tag: -1
                           auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [src2]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src2
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5567,6 +5583,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src2
                     numFiles 1
                     numRows 309
@@ -5588,6 +5605,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src2
                       numFiles 1
                       numRows 309
@@ -5630,9 +5648,9 @@ STAGE PLANS:
                           tag: -1
                           auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [src3]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src3
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5645,6 +5663,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src3
                     numFiles 1
                     numRows 309
@@ -5666,6 +5685,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src3
                       numFiles 1
                       numRows 309
@@ -5703,9 +5723,9 @@ STAGE PLANS:
                         tag: 0
                         auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [a]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src4
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5718,6 +5738,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src4
                     numFiles 1
                     numRows 309
@@ -5739,6 +5760,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src4
                       numFiles 1
                       numRows 309
@@ -5777,9 +5799,9 @@ STAGE PLANS:
                         value expressions: _col1 (type: bigint)
                         auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [b]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src5
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5792,6 +5814,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src5
                     numFiles 1
                     numRows 309
@@ -5813,6 +5836,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src5
                       numFiles 1
                       numRows 309
@@ -5859,10 +5883,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 108 Data size: 19391 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -5930,7 +5954,7 @@ PREHOOK: Input: default@src2
 PREHOOK: Input: default@src3
 PREHOOK: Input: default@src4
 PREHOOK: Input: default@src5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select s.key, s.count from (
   select key, count from src2  where key < 10
   UNION DISTINCT
@@ -5943,7 +5967,7 @@ POSTHOOK: Input: default@src2
 POSTHOOK: Input: default@src3
 POSTHOOK: Input: default@src4
 POSTHOOK: Input: default@src5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	3
 2	1
 4	1
@@ -6013,9 +6037,9 @@ STAGE PLANS:
                           tag: -1
                           auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [src2]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src2
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -6028,6 +6052,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src2
                     numFiles 1
                     numRows 309
@@ -6049,6 +6074,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src2
                       numFiles 1
                       numRows 309
@@ -6086,9 +6112,9 @@ STAGE PLANS:
                         tag: 1
                         auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [b]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src5
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -6101,6 +6127,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src5
                     numFiles 1
                     numRows 309
@@ -6122,6 +6149,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src5
                       numFiles 1
                       numRows 309
@@ -6164,9 +6192,9 @@ STAGE PLANS:
                           tag: -1
                           auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [src3]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src3
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -6179,6 +6207,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src3
                     numFiles 1
                     numRows 309
@@ -6200,6 +6229,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src3
                       numFiles 1
                       numRows 309
@@ -6237,9 +6267,9 @@ STAGE PLANS:
                         tag: 0
                         auto parallelism: true
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [a]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src4
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -6252,6 +6282,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src4
                     numFiles 1
                     numRows 309
@@ -6273,6 +6304,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src4
                       numFiles 1
                       numRows 309
@@ -6319,10 +6351,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 79 Data size: 14280 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -6410,7 +6442,7 @@ PREHOOK: Input: default@src2
 PREHOOK: Input: default@src3
 PREHOOK: Input: default@src4
 PREHOOK: Input: default@src5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select s.key, s.count from (
   select key, count from src2  where key < 10
   UNION DISTINCT
@@ -6423,7 +6455,7 @@ POSTHOOK: Input: default@src2
 POSTHOOK: Input: default@src3
 POSTHOOK: Input: default@src4
 POSTHOOK: Input: default@src5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	1
 0	3
 2	1
@@ -6648,7 +6680,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-#### A masked pattern was here ####
+          destination: hdfs://### HDFS PATH ###
 
 PREHOOK: query: EXPLAIN
 SELECT 
@@ -6859,7 +6891,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT 
 count(1) as counts,
 key,
@@ -6884,7 +6916,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	0	val_0
 1	10	val_10
 1	100	val_100
@@ -7218,7 +7250,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT 
 count(1) as counts,
 key,
@@ -7243,7 +7275,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	0	val_0
 1	103	val_103
 1	105	val_105
@@ -7577,7 +7609,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT 
 count(1) as counts,
 key,
@@ -7602,7 +7634,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	0	val_0
 1	103	val_103
 1	105	val_105
@@ -8076,13 +8108,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@dim_pho
 PREHOOK: Input: default@jackson_sev_add
 PREHOOK: Input: default@jackson_sev_same
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select b.* from jackson_sev_same a join (select * from dim_pho UNION DISTINCT select * from jackson_sev_add)b on a.key=b.key and b.key=97
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dim_pho
 POSTHOOK: Input: default@jackson_sev_add
 POSTHOOK: Input: default@jackson_sev_same
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 97	val_97
 97	val_97
 PREHOOK: query: create table union_subq_union(key int, value string)
@@ -8364,11 +8396,11 @@ POSTHOOK: Lineage: union_subq_union.value EXPRESSION [(src)src.FieldSchema(name:
 PREHOOK: query: select * from union_subq_union order by key, value limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_subq_union
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from union_subq_union order by key, value limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_subq_union
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 2	val_2
 4	val_4
@@ -8624,11 +8656,11 @@ POSTHOOK: Lineage: union_subq_union29.value EXPRESSION [(src)src.FieldSchema(nam
 PREHOOK: query: select * from union_subq_union29 order by key, value limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_subq_union29
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from union_subq_union29 order by key, value limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_subq_union29
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 2	val_2
 4	val_4
@@ -8923,11 +8955,11 @@ POSTHOOK: Lineage: union_out.id EXPRESSION []
 PREHOOK: query: select * from union_out
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_out
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from union_out
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_out
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 4
 1
 2
@@ -9280,11 +9312,11 @@ POSTHOOK: Lineage: union_subq_union30.value EXPRESSION [(src)src.FieldSchema(nam
 PREHOOK: query: select * from union_subq_union30 order by key, value limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_subq_union30
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from union_subq_union30 order by key, value limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_subq_union30
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 2	val_2
 4	val_4
@@ -9630,11 +9662,11 @@ POSTHOOK: Lineage: t4.value EXPRESSION [(t1)t1.FieldSchema(name:value, type:stri
 PREHOOK: query: select * from t3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from t3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	1
 2	1
 4	1
@@ -9644,11 +9676,11 @@ POSTHOOK: Input: default@t3
 PREHOOK: query: select * from t4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t4
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from t4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t4
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 val_0	1
 val_2	1
 val_4	1
@@ -9980,11 +10012,11 @@ POSTHOOK: Lineage: t6.cnt EXPRESSION [(t1)t1.null, (t2)t2.null, ]
 PREHOOK: query: select * from t5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from t5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	3
 2	1
 4	1
@@ -9994,11 +10026,11 @@ POSTHOOK: Input: default@t5
 PREHOOK: query: select * from t6
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t6
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from t6
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t6
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	3
 2	1
 4	1
@@ -10325,11 +10357,11 @@ POSTHOOK: Lineage: t8.cnt EXPRESSION [(t1)t1.null, (t9)t9.null, ]
 PREHOOK: query: select * from t7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t7
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from t7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t7
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	1
 2	1
 4	1
@@ -10339,11 +10371,11 @@ POSTHOOK: Input: default@t7
 PREHOOK: query: select * from t8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t8
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from t8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t8
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	1
 2	1
 4	1
@@ -10444,7 +10476,7 @@ SELECT CAST(key AS BIGINT) AS key FROM t2) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t1
 UNION DISTINCT
@@ -10452,7 +10484,7 @@ SELECT CAST(key AS BIGINT) AS key FROM t2) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0.0
 2.0
 4.0
@@ -10588,7 +10620,7 @@ SELECT CAST(key AS DOUBLE) AS key FROM t2) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM 
 (SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key
 UNION DISTINCT
@@ -10596,7 +10628,7 @@ SELECT CAST(key AS DOUBLE) AS key FROM t2) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0.0
 2.0
 4.0
@@ -10732,7 +10764,7 @@ SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t2
 UNION DISTINCT
@@ -10740,7 +10772,7 @@ SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0.0
 2.0
 4.0
@@ -10876,7 +10908,7 @@ SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM 
 (SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION DISTINCT
@@ -10884,7 +10916,7 @@ SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0.0	0
 2.0	2
 4.0	4
@@ -11020,7 +11052,7 @@ SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
 UNION DISTINCT
@@ -11028,7 +11060,7 @@ SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0.0	0
 2.0	2
 4.0	4
@@ -11242,11 +11274,11 @@ POSTHOOK: Lineage: test_src.value EXPRESSION [(src)src.FieldSchema(name:value, t
 PREHOOK: query: SELECT COUNT(*) FROM test_src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(*) FROM test_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 310
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src 
 SELECT key, value FROM (
@@ -11443,11 +11475,11 @@ POSTHOOK: Lineage: test_src.value EXPRESSION [(src)src.null, (src)src.FieldSchem
 PREHOOK: query: SELECT COUNT(*) FROM test_src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(*) FROM test_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 310
 PREHOOK: query: -- union34.q
 
@@ -11719,7 +11751,7 @@ PREHOOK: Input: default@src10_1
 PREHOOK: Input: default@src10_2
 PREHOOK: Input: default@src10_3
 PREHOOK: Input: default@src10_4
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION DISTINCT
@@ -11730,7 +11762,7 @@ POSTHOOK: Input: default@src10_1
 POSTHOOK: Input: default@src10_2
 POSTHOOK: Input: default@src10_3
 POSTHOOK: Input: default@src10_4
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 238	val_238
 484	val_484
 278	val_278
@@ -11918,7 +11950,7 @@ PREHOOK: Input: default@src10_1
 PREHOOK: Input: default@src10_2
 PREHOOK: Input: default@src10_3
 PREHOOK: Input: default@src10_4
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION DISTINCT
@@ -11929,7 +11961,7 @@ POSTHOOK: Input: default@src10_1
 POSTHOOK: Input: default@src10_2
 POSTHOOK: Input: default@src10_3
 POSTHOOK: Input: default@src10_4
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 238	val_238
 484	val_484
 278	val_278

@@ -495,7 +495,7 @@ PREHOOK: Input: default@partitioned_table2
 PREHOOK: Input: default@partitioned_table2@part_col=2
 PREHOOK: Input: default@partitioned_table2@part_col=3
 PREHOOK: Input: default@regular_table1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT count(*)
 FROM   partitioned_table1
 WHERE  partitioned_table1.part_col IN (SELECT regular_table1.col1
@@ -511,7 +511,7 @@ POSTHOOK: Input: default@partitioned_table2
 POSTHOOK: Input: default@partitioned_table2@part_col=2
 POSTHOOK: Input: default@partitioned_table2@part_col=3
 POSTHOOK: Input: default@regular_table1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 6
 PREHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, regular_table1 rt1,
 regular_table1 rt2 WHERE rt1.col1 = partitioned_table1.part_col AND rt2.col1 =
@@ -671,7 +671,7 @@ PREHOOK: Input: default@partitioned_table1@part_col=1
 PREHOOK: Input: default@partitioned_table1@part_col=2
 PREHOOK: Input: default@partitioned_table1@part_col=3
 PREHOOK: Input: default@regular_table1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT count(*)
 FROM   partitioned_table1,
        regular_table1 rt1,
@@ -686,7 +686,7 @@ POSTHOOK: Input: default@partitioned_table1@part_col=1
 POSTHOOK: Input: default@partitioned_table1@part_col=2
 POSTHOOK: Input: default@partitioned_table1@part_col=3
 POSTHOOK: Input: default@regular_table1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 6
 Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, partitioned_table2, regular_table1 rt1 
@@ -890,7 +890,7 @@ PREHOOK: Input: default@partitioned_table2@part_col=1
 PREHOOK: Input: default@partitioned_table2@part_col=2
 PREHOOK: Input: default@partitioned_table2@part_col=3
 PREHOOK: Input: default@regular_table1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT count(*)
 FROM   partitioned_table1,
 	   partitioned_table2,
@@ -910,7 +910,7 @@ POSTHOOK: Input: default@partitioned_table2@part_col=1
 POSTHOOK: Input: default@partitioned_table2@part_col=2
 POSTHOOK: Input: default@partitioned_table2@part_col=3
 POSTHOOK: Input: default@regular_table1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 72
 PREHOOK: query: EXPLAIN SELECT count(*) FROM regular_table1, partitioned_table1 WHERE regular_table1.col1
 = partitioned_table1.part_col AND regular_table1.col2 BETWEEN 1 AND 3
@@ -1028,7 +1028,7 @@ PREHOOK: Input: default@partitioned_table1@part_col=1
 PREHOOK: Input: default@partitioned_table1@part_col=2
 PREHOOK: Input: default@partitioned_table1@part_col=3
 PREHOOK: Input: default@regular_table1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT count(*)
 FROM   regular_table1,
        partitioned_table1
@@ -1040,7 +1040,7 @@ POSTHOOK: Input: default@partitioned_table1@part_col=1
 POSTHOOK: Input: default@partitioned_table1@part_col=2
 POSTHOOK: Input: default@partitioned_table1@part_col=3
 POSTHOOK: Input: default@regular_table1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 12
 PREHOOK: query: EXPLAIN WITH q1 AS (SELECT regular_table1.col1 AS col FROM regular_table1 WHERE
 regular_table1.col2 > 1), q2 AS (SELECT partitioned_table1.part_col AS col FROM
@@ -1172,7 +1172,7 @@ PREHOOK: Input: default@partitioned_table1@part_col=1
 PREHOOK: Input: default@partitioned_table1@part_col=2
 PREHOOK: Input: default@partitioned_table1@part_col=3
 PREHOOK: Input: default@regular_table1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: WITH q1
      AS (SELECT regular_table1.col1 AS col
          FROM   regular_table1
@@ -1191,7 +1191,7 @@ POSTHOOK: Input: default@partitioned_table1@part_col=1
 POSTHOOK: Input: default@partitioned_table1@part_col=2
 POSTHOOK: Input: default@partitioned_table1@part_col=3
 POSTHOOK: Input: default@regular_table1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 5
 PREHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1, partitioned_table2 WHERE
 partitioned_table1.part_col = partitioned_table2.part_col AND partitioned_table2.col > 1
@@ -1312,7 +1312,7 @@ PREHOOK: Input: default@partitioned_table2
 PREHOOK: Input: default@partitioned_table2@part_col=1
 PREHOOK: Input: default@partitioned_table2@part_col=2
 PREHOOK: Input: default@partitioned_table2@part_col=3
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT count(*)
 FROM   partitioned_table1,
        partitioned_table2
@@ -1327,7 +1327,7 @@ POSTHOOK: Input: default@partitioned_table2
 POSTHOOK: Input: default@partitioned_table2@part_col=1
 POSTHOOK: Input: default@partitioned_table2@part_col=2
 POSTHOOK: Input: default@partitioned_table2@part_col=3
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 90
 PREHOOK: query: -- set auto convert size to a higher value so map-joins are triggered for the partitioned tables
 
@@ -1465,7 +1465,7 @@ PREHOOK: Input: default@partitioned_table5
 PREHOOK: Input: default@partitioned_table5@part_col1=1/part_col2=1
 PREHOOK: Input: default@partitioned_table5@part_col1=2/part_col2=2
 PREHOOK: Input: default@partitioned_table5@part_col1=3/part_col2=3
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT count(*)
 FROM   partitioned_table4,
        partitioned_table5
@@ -1480,7 +1480,7 @@ POSTHOOK: Input: default@partitioned_table5
 POSTHOOK: Input: default@partitioned_table5@part_col1=1/part_col2=1
 POSTHOOK: Input: default@partitioned_table5@part_col1=2/part_col2=2
 POSTHOOK: Input: default@partitioned_table5@part_col1=3/part_col2=3
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 108
 PREHOOK: query: EXPLAIN SELECT count(*) FROM partitioned_table1 JOIN regular_table1 ON
 partitioned_table1.part_col = regular_table1.col1 JOIN regular_table2 ON
@@ -1639,7 +1639,7 @@ PREHOOK: Input: default@partitioned_table1@part_col=2
 PREHOOK: Input: default@partitioned_table1@part_col=3
 PREHOOK: Input: default@regular_table1
 PREHOOK: Input: default@regular_table2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT count(*)
 FROM   partitioned_table1
        JOIN regular_table1
@@ -1653,7 +1653,7 @@ POSTHOOK: Input: default@partitioned_table1@part_col=2
 POSTHOOK: Input: default@partitioned_table1@part_col=3
 POSTHOOK: Input: default@regular_table1
 POSTHOOK: Input: default@regular_table2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 12
 PREHOOK: query: -- reset auto convert size to previous value
 

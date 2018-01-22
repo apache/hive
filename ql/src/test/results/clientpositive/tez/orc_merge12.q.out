@@ -97,20 +97,20 @@ POSTHOOK: Output: default@alltypesorc3xcols
 PREHOOK: query: select count(*) from alltypesorc3xcols
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc3xcols
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from alltypesorc3xcols
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc3xcols
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 24576
 PREHOOK: query: select sum(hash(*)) from alltypesorc3xcols
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc3xcols
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(hash(*)) from alltypesorc3xcols
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc3xcols
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -302946892512
 PREHOOK: query: alter table alltypesorc3xcols concatenate
 PREHOOK: type: ALTER_TABLE_MERGE
@@ -123,27 +123,27 @@ POSTHOOK: Output: default@alltypesorc3xcols
 PREHOOK: query: select count(*) from alltypesorc3xcols
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc3xcols
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from alltypesorc3xcols
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc3xcols
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 24576
 PREHOOK: query: select sum(hash(*)) from alltypesorc3xcols
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc3xcols
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select sum(hash(*)) from alltypesorc3xcols
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc3xcols
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -302946892512
 PREHOOK: query: select * from alltypesorc3xcols limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc3xcols
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 -- BEGIN ORC FILE DUMP --
-#### A masked pattern was here ####
+Structure for hdfs://### HDFS PATH ###
 File Version: 0.12 with ORC_135
 Rows: 24576
 Compression: ZLIB

@@ -9,20 +9,21 @@ POSTHOOK: type: DROPDATABASE
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:encrypted_db
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:encrypted_db
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Encryption key created: 'key_128'
 Encryption zone created: '/build/ql/test/data/warehouse/encrypted_db.db' using key: 'key_128'
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:encrypted_db
 PREHOOK: Output: encrypted_db@encrypted_table
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:encrypted_db
 POSTHOOK: Output: encrypted_db@encrypted_table
 PREHOOK: query: INSERT OVERWRITE TABLE encrypted_db.encrypted_table SELECT * FROM src

@@ -161,12 +161,12 @@ PREHOOK: query: analyze table tab2 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab2
 PREHOOK: Output: default@tab2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table tab2 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab2
 POSTHOOK: Output: default@tab2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
@@ -232,7 +232,7 @@ PREHOOK: Input: default@tab
 PREHOOK: Input: default@tab@ds=2008-04-08
 PREHOOK: Input: default@tab_part
 PREHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
@@ -240,7 +240,7 @@ POSTHOOK: Input: default@tab
 POSTHOOK: Input: default@tab@ds=2008-04-08
 POSTHOOK: Input: default@tab_part
 POSTHOOK: Input: default@tab_part@ds=2008-04-08
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 40
 PREHOOK: query: explain select count(*) from (select x.key as key, min(x.value) as value from tab2 x group by x.key) a join (select x.key as key, min(x.value) as value from tab2 x group by x.key) b on a.key = b.key join src1 c on a.value = c.value where c.key < 0
 PREHOOK: type: QUERY

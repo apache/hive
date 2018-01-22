@@ -87,13 +87,13 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 WHERE src1.key = 97
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT src1.key, src2.value
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 WHERE src1.key = 97
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 97	val_97
 97	val_97
 97	val_97
@@ -248,11 +248,11 @@ POSTHOOK: Lineage: dest.value SIMPLE [(src)src3.FieldSchema(name:value, type:str
 PREHOOK: query: SELECT sum(hash(dest.key,dest.value)) FROM dest
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT sum(hash(dest.key,dest.value)) FROM dest
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 33815990627
 PREHOOK: query: CREATE TABLE a (c1 STRING, c2 INT)
 PREHOOK: type: CREATETABLE
@@ -558,7 +558,7 @@ PREHOOK: Input: default@b
 PREHOOK: Input: default@c
 PREHOOK: Input: default@d
 PREHOOK: Input: default@e
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: WITH t1 AS (
 SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3 FROM a JOIN b ON a.c2 = b.c4
 ),
@@ -578,7 +578,7 @@ POSTHOOK: Input: default@b
 POSTHOOK: Input: default@c
 POSTHOOK: Input: default@d
 POSTHOOK: Input: default@e
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 a1	b1	d1
 a2	b2	d2
 c1	d1	d1

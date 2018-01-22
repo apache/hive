@@ -132,13 +132,13 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into1
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -1142373758
 PREHOOK: query: explain 
 select count(*) from insert_into1
@@ -159,11 +159,11 @@ STAGE PLANS:
 PREHOOK: query: select count(*) from insert_into1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from insert_into1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 100
 PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 SELECT * FROM src ORDER BY key LIMIT 100
 PREHOOK: type: QUERY
@@ -287,13 +287,13 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into1
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -2284747516
 PREHOOK: query: explain
 SELECT COUNT(*) FROM insert_into1
@@ -314,11 +314,11 @@ STAGE PLANS:
 PREHOOK: query: select count(*) from insert_into1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from insert_into1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 200
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE insert_into1 SELECT * FROM src ORDER BY key LIMIT 10
 PREHOOK: type: QUERY
@@ -442,13 +442,13 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into1
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -2693537120
 PREHOOK: query: explain
 SELECT COUNT(*) FROM insert_into1
@@ -469,11 +469,11 @@ STAGE PLANS:
 PREHOOK: query: select count(*) from insert_into1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from insert_into1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
 PREHOOK: query: explain insert overwrite table insert_into1 select 1, 'a'
 PREHOOK: type: QUERY
@@ -674,11 +674,11 @@ POSTHOOK: Lineage: insert_into1.value SIMPLE []
 PREHOOK: query: select * from insert_into1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from insert_into1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	a
 2	b
 PREHOOK: query: explain
@@ -809,11 +809,11 @@ STAGE PLANS:
 PREHOOK: query: select count(*) from insert_into1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from insert_into1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3
 PREHOOK: query: DROP TABLE insert_into1
 PREHOOK: type: DROPTABLE

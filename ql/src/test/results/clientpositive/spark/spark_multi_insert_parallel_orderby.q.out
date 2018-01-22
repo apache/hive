@@ -72,11 +72,11 @@ STAGE PLANS:
 PREHOOK: query: select key,value from src order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key,value from src order by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 0	val_0
 0	val_0
@@ -210,11 +210,11 @@ POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 PREHOOK: query: select * from e1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 0	val_0
 0	val_0
@@ -228,11 +228,11 @@ POSTHOOK: Input: default@e1
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from e2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 0
@@ -349,11 +349,11 @@ POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 PREHOOK: query: select * from e1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 0	val_0
 0	val_0
@@ -857,11 +857,11 @@ POSTHOOK: Input: default@e1
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from e2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 0
@@ -1487,20 +1487,20 @@ POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 PREHOOK: query: select count(*) from e1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from e2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 0

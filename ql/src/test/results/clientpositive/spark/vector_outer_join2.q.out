@@ -89,11 +89,11 @@ POSTHOOK: Lineage: small_alltypesorc4a.ctinyint SIMPLE [(alltypesorc)alltypesorc
 PREHOOK: query: select * from small_alltypesorc1a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc1a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from small_alltypesorc1a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc1a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false
 NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false
 NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false
@@ -102,11 +102,11 @@ NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	19
 PREHOOK: query: select * from small_alltypesorc2a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc2a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from small_alltypesorc2a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc2a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -64	-7196	NULL	-1615920595	-64.0	-7196.0	NULL	X5rDjl	1969-12-31 16:00:11.912	1969-12-31 15:59:58.174	NULL	false
 -64	-7196	NULL	-1639157869	-64.0	-7196.0	NULL	IJ0Oj7qAiqNGsN7gn	1969-12-31 16:00:01.785	1969-12-31 15:59:58.174	NULL	false
 -64	-7196	NULL	-527203677	-64.0	-7196.0	NULL	JBE4H5RoK412Cs260I72	1969-12-31 15:59:50.184	1969-12-31 15:59:58.174	NULL	true
@@ -115,11 +115,11 @@ POSTHOOK: Input: default@small_alltypesorc2a
 PREHOOK: query: select * from small_alltypesorc3a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc3a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from small_alltypesorc3a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc3a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 NULL	-13166	626923679	NULL	NULL	-13166.0	821UdmGbkEf4j	NULL	1969-12-31 15:59:55.089	1969-12-31 16:00:15.69	true	NULL
 NULL	-14426	626923679	NULL	NULL	-14426.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:11.505	1969-12-31 16:00:13.309	true	NULL
 NULL	-14847	626923679	NULL	NULL	-14847.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:00.612	1969-12-31 15:59:43.704	true	NULL
@@ -128,11 +128,11 @@ NULL	-15830	253665376	NULL	NULL	-15830.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:02.58
 PREHOOK: query: select * from small_alltypesorc4a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc4a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from small_alltypesorc4a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc4a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -60	-200	NULL	NULL	-60.0	-200.0	NULL	NULL	1969-12-31 16:00:11.996	1969-12-31 15:59:55.451	NULL	NULL
 -61	-7196	NULL	NULL	-61.0	-7196.0	NULL	8Mlns2Tl6E0g	1969-12-31 15:59:44.823	1969-12-31 15:59:58.174	NULL	false
 -61	-7196	NULL	NULL	-61.0	-7196.0	NULL	fUJIN	1969-12-31 16:00:11.842	1969-12-31 15:59:58.174	NULL	false
@@ -192,20 +192,20 @@ PREHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a
 PREHOOK: Output: default@small_alltypesorc_a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
 POSTHOOK: Output: default@small_alltypesorc_a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select * from small_alltypesorc_a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from small_alltypesorc_a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -60	-200	NULL	NULL	-60.0	-200.0	NULL	NULL	1969-12-31 16:00:11.996	1969-12-31 15:59:55.451	NULL	NULL
 -61	-7196	NULL	NULL	-61.0	-7196.0	NULL	8Mlns2Tl6E0g	1969-12-31 15:59:44.823	1969-12-31 15:59:58.174	NULL	false
 -61	-7196	NULL	NULL	-61.0	-7196.0	NULL	fUJIN	1969-12-31 16:00:11.842	1969-12-31 15:59:58.174	NULL	false
@@ -493,7 +493,7 @@ left outer join small_alltypesorc_a hd
 ) t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*), sum(t1.c_cbigint) from (select c.cbigint as c_cbigint
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
@@ -503,5 +503,5 @@ left outer join small_alltypesorc_a hd
 ) t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 34	-26289186744

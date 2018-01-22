@@ -105,60 +105,60 @@ STAGE PLANS:
 PREHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct education_level) from employee
 PREHOOK: type: QUERY
 PREHOOK: Input: default@employee
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct education_level) from employee
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	4	3
 PREHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level) from employee
 PREHOOK: type: QUERY
 PREHOOK: Input: default@employee
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level) from employee
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	4	2	3
 PREHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee
 PREHOOK: type: QUERY
 PREHOOK: Input: default@employee
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 4	2	3
 PREHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level), count(distinct education_level) from employee
 PREHOOK: type: QUERY
 PREHOOK: Input: default@employee
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level), count(distinct education_level) from employee
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 4	2	3	3
 PREHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level), 
 count(distinct education_level, department_id) from employee
 PREHOOK: type: QUERY
 PREHOOK: Input: default@employee
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level), 
 count(distinct education_level, department_id) from employee
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 4	2	3	9
 PREHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
 count(distinct education_level, department_id), count(distinct department_id, education_level) from employee
 PREHOOK: type: QUERY
 PREHOOK: Input: default@employee
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
 count(distinct education_level, department_id), count(distinct department_id, education_level) from employee
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	4	2	3	9	9
 PREHOOK: query: explain select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
 count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee
@@ -251,12 +251,12 @@ PREHOOK: query: select count(distinct gender), count(distinct department_id), co
 count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee
 PREHOOK: type: QUERY
 PREHOOK: Input: default@employee
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
 count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	4	2	3	9	9	10
 PREHOOK: query: select 
 count(case when i=3 and department_id is not null then 1 else null end) as c0, 
@@ -267,7 +267,7 @@ education_level from employee group by department_id, gender, education_level gr
 (department_id, gender, education_level))subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@employee
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select 
 count(case when i=3 and department_id is not null then 1 else null end) as c0, 
 count(case when i=5 and gender is not null then 1 else null end) as c1, 
@@ -277,20 +277,20 @@ education_level from employee group by department_id, gender, education_level gr
 (department_id, gender, education_level))subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 4	2	3
 PREHOOK: query: select grouping__id as i, department_id, gender, education_level from employee 
 group by department_id, gender, education_level grouping sets 
 (department_id, gender, education_level, (education_level, department_id))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@employee
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select grouping__id as i, department_id, gender, education_level from employee 
 group by department_id, gender, education_level grouping sets 
 (department_id, gender, education_level, (education_level, department_id))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 6	NULL	NULL	NULL
 6	NULL	NULL	2
 5	NULL	F	NULL

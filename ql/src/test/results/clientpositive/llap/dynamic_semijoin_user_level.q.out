@@ -106,12 +106,12 @@ PREHOOK: query: analyze table alltypesorc_int compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc_int
 PREHOOK: Output: default@alltypesorc_int
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table alltypesorc_int compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_int
 POSTHOOK: Output: default@alltypesorc_int
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: analyze table srcpart_date compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_date
@@ -120,7 +120,7 @@ PREHOOK: Input: default@srcpart_date@ds=2008-04-09
 PREHOOK: Output: default@srcpart_date
 PREHOOK: Output: default@srcpart_date@ds=2008-04-08
 PREHOOK: Output: default@srcpart_date@ds=2008-04-09
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table srcpart_date compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_date
@@ -129,7 +129,7 @@ POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
 POSTHOOK: Output: default@srcpart_date
 POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
 POSTHOOK: Output: default@srcpart_date@ds=2008-04-09
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: analyze table srcpart_small compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart_small
@@ -138,7 +138,7 @@ PREHOOK: Input: default@srcpart_small@ds=2008-04-09
 PREHOOK: Output: default@srcpart_small
 PREHOOK: Output: default@srcpart_small@ds=2008-04-08
 PREHOOK: Output: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table srcpart_small compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_small
@@ -147,7 +147,7 @@ POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
 POSTHOOK: Output: default@srcpart_small
 POSTHOOK: Output: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
@@ -212,7 +212,7 @@ PREHOOK: Input: default@srcpart_date@ds=2008-04-09
 PREHOOK: Input: default@srcpart_small
 PREHOOK: Input: default@srcpart_small@ds=2008-04-08
 PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_date
@@ -221,7 +221,7 @@ POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
 POSTHOOK: Input: default@srcpart_small
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.ds)
 PREHOOK: type: QUERY
@@ -278,7 +278,7 @@ PREHOOK: Input: default@srcpart_date@ds=2008-04-09
 PREHOOK: Input: default@srcpart_small
 PREHOOK: Input: default@srcpart_small@ds=2008-04-08
 PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.ds)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_date
@@ -287,7 +287,7 @@ POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
 POSTHOOK: Input: default@srcpart_small
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
 PREHOOK: type: QUERY
@@ -350,7 +350,7 @@ PREHOOK: Input: default@srcpart_date@ds=2008-04-09
 PREHOOK: Input: default@srcpart_small
 PREHOOK: Input: default@srcpart_small@ds=2008-04-08
 PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_int
@@ -360,7 +360,7 @@ POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
 POSTHOOK: Input: default@srcpart_small
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
 PREHOOK: type: QUERY
@@ -452,7 +452,7 @@ PREHOOK: Input: default@srcpart_date@ds=2008-04-09
 PREHOOK: Input: default@srcpart_small
 PREHOOK: Input: default@srcpart_small@ds=2008-04-08
 PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_int
@@ -462,7 +462,7 @@ POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
 POSTHOOK: Input: default@srcpart_small
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
 PREHOOK: type: QUERY
@@ -515,7 +515,7 @@ PREHOOK: Input: default@srcpart_date@ds=2008-04-09
 PREHOOK: Input: default@srcpart_small
 PREHOOK: Input: default@srcpart_small@ds=2008-04-08
 PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_date
@@ -524,7 +524,7 @@ POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
 POSTHOOK: Input: default@srcpart_small
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
 PREHOOK: type: QUERY
@@ -602,7 +602,7 @@ PREHOOK: Input: default@srcpart_date@ds=2008-04-09
 PREHOOK: Input: default@srcpart_small
 PREHOOK: Input: default@srcpart_small@ds=2008-04-08
 PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_date
@@ -611,7 +611,7 @@ POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
 POSTHOOK: Input: default@srcpart_small
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
 PREHOOK: type: QUERY
@@ -680,7 +680,7 @@ PREHOOK: Input: default@srcpart_date@ds=2008-04-09
 PREHOOK: Input: default@srcpart_small
 PREHOOK: Input: default@srcpart_small@ds=2008-04-08
 PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_int
@@ -690,7 +690,7 @@ POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
 POSTHOOK: Input: default@srcpart_small
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
 PREHOOK: type: QUERY
@@ -785,7 +785,7 @@ PREHOOK: Input: default@srcpart_date@ds=2008-04-09
 PREHOOK: Input: default@srcpart_small
 PREHOOK: Input: default@srcpart_small@ds=2008-04-08
 PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_int
@@ -795,7 +795,7 @@ POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
 POSTHOOK: Input: default@srcpart_small
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN extended select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
 PREHOOK: type: QUERY
@@ -842,9 +842,10 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [srcpart_date]
+              hdfs://### HDFS PATH ### [srcpart_date]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: ds=2008-04-08
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -855,6 +856,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.srcpart_date
                     numFiles 1
                     numRows 1000
@@ -877,6 +879,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.srcpart_date
                       partition_columns ds
                       partition_columns.types string
@@ -887,7 +890,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.srcpart_date
                   name: default.srcpart_date
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: ds=2008-04-09
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -898,6 +901,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.srcpart_date
                     numFiles 1
                     numRows 1000
@@ -920,6 +924,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.srcpart_date
                       partition_columns ds
                       partition_columns.types string
@@ -976,9 +981,10 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [srcpart_small]
+              hdfs://### HDFS PATH ### [srcpart_small]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: ds=2008-04-08
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -989,6 +995,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key1":"true","value1":"true"}}
                     bucket_count -1
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.srcpart_small
                     numFiles 0
                     numRows 0
@@ -1011,6 +1018,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.srcpart_small
                       partition_columns ds
                       partition_columns.types string
@@ -1021,7 +1029,7 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.srcpart_small
                   name: default.srcpart_small
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: ds=2008-04-09
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -1032,6 +1040,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key1":"true","value1":"true"}}
                     bucket_count -1
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.srcpart_small
                     numFiles 1
                     numRows 20
@@ -1054,6 +1063,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.srcpart_small
                       partition_columns ds
                       partition_columns.types string
@@ -1103,10 +1113,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1193,7 +1203,7 @@ PREHOOK: Input: default@srcpart_date@ds=2008-04-09
 PREHOOK: Input: default@srcpart_small
 PREHOOK: Input: default@srcpart_small@ds=2008-04-08
 PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_date
@@ -1202,7 +1212,7 @@ POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
 POSTHOOK: Input: default@srcpart_small
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
 PREHOOK: type: QUERY
@@ -1252,7 +1262,7 @@ PREHOOK: Input: default@srcpart_date@ds=2008-04-09
 PREHOOK: Input: default@srcpart_small
 PREHOOK: Input: default@srcpart_small@ds=2008-04-08
 PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart_date
@@ -1261,7 +1271,7 @@ POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
 POSTHOOK: Input: default@srcpart_small
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
 PREHOOK: type: QUERY
@@ -1324,7 +1334,7 @@ PREHOOK: Input: default@srcpart_date@ds=2008-04-09
 PREHOOK: Input: default@srcpart_small
 PREHOOK: Input: default@srcpart_small@ds=2008-04-08
 PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_int
@@ -1334,7 +1344,7 @@ POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
 POSTHOOK: Input: default@srcpart_small
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
 PREHOOK: type: QUERY
@@ -1397,7 +1407,7 @@ PREHOOK: Input: default@srcpart_date@ds=2008-04-09
 PREHOOK: Input: default@srcpart_small
 PREHOOK: Input: default@srcpart_small@ds=2008-04-08
 PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_int
@@ -1407,7 +1417,7 @@ POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
 POSTHOOK: Input: default@srcpart_small
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: explain select * from alltypesorc_int join
                                       (select srcpart_date.key as key from srcpart_date
