@@ -475,6 +475,7 @@
         <configuration>
           <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
           <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
         </configuration>
       </plugin>
       <plugin>
