@@ -17,17 +17,20 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.BooleanWritable;
 
 public class WritableHiveVarcharObjectInspector extends AbstractPrimitiveWritableObjectInspector
 implements SettableHiveVarcharObjectInspector {
@@ -49,8 +52,11 @@ implements SettableHiveVarcharObjectInspector {
       return null;
     }
 
-    if (o instanceof Text) {
-      String str = ((Text)o).toString();
+    if ((o instanceof Text) || (o instanceof TimestampWritable)
+        || (o instanceof HiveDecimalWritable) || (o instanceof DoubleWritable)
+        || (o instanceof FloatWritable) || (o instanceof LongWritable) || (o instanceof IntWritable)
+        || (o instanceof BooleanWritable)) {
+      String str = o.toString();
       return new HiveVarchar(str, ((VarcharTypeInfo)typeInfo).getLength());
     }
 
@@ -69,8 +75,11 @@ implements SettableHiveVarcharObjectInspector {
       return null;
     }
 
-    if (o instanceof Text) {
-      String str = ((Text)o).toString();
+    if ((o instanceof Text) || (o instanceof TimestampWritable)
+        || (o instanceof HiveDecimalWritable) || (o instanceof DoubleWritable)
+        || (o instanceof FloatWritable) || (o instanceof LongWritable) || (o instanceof IntWritable)
+        || (o instanceof BooleanWritable)) {
+      String str = o.toString();
       HiveVarcharWritable hcw = new HiveVarcharWritable();
       hcw.set(str, ((VarcharTypeInfo)typeInfo).getLength());
       return hcw;
