@@ -17,8 +17,11 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -28,10 +31,13 @@ import java.util.concurrent.Executors;
 
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +60,9 @@ public final class MaterializationsInvalidationCache {
   /* Singleton */
   private static final MaterializationsInvalidationCache SINGLETON = new MaterializationsInvalidationCache();
 
+  /* If this boolean is true, this class has no functionality. Only for debugging purposes. */
+  private boolean disable;
+
   /* Key is the database name. Each value is a map from the unique view qualified name to
    * the materialization invalidation info. This invalidation object contains information
    * such as the tables used by the materialized view or the invalidation time, i.e., first
@@ -62,10 +71,10 @@ public final class MaterializationsInvalidationCache {
       new ConcurrentHashMap<String, ConcurrentMap<String, MaterializationInvalidationInfo>>();
 
   /*
-   * Key is a qualified table name. The value is a (sorted) tree set (supporting concurrent
-   * modifications) that will keep the modifications for a given table in the order that they
-   * happen. This is useful to quickly check the invalidation time for a given materialized
-   * view. 
+   * Key is a qualified table name. The value is a (sorted) tree map (supporting concurrent
+   * modifications) that will keep the modifications for a given table in the order of their
+   * transaction id. This is useful to quickly check the invalidation time for a given
+   * materialization.
    */
   private final ConcurrentMap<String, ConcurrentSkipListMap<Long, Long>> tableModifications =
       new ConcurrentHashMap<String, ConcurrentSkipListMap<Long, Long>>();
@@ -99,6 +108,14 @@ public final class MaterializationsInvalidationCache {
   public synchronized void init(final RawStore store, final TxnStore txnStore) {
     this.store = store;
     this.txnStore = txnStore;
+
+    // This will only be true for debugging purposes
+    this.disable = MetastoreConf.getVar(store.getConf(),
+        MetastoreConf.ConfVars.MATERIALIZATIONS_INVALIDATION_CACHE_IMPL).equals("DISABLE");
+    if (disable) {
+      // Nothing to do
+      return;
+    }
 
     if (!initialized) {
       this.initialized = true;
@@ -162,6 +179,10 @@ public final class MaterializationsInvalidationCache {
    */
   private void addMaterializedView(String dbName, String tableName, Set<String> tablesUsed,
       String validTxnList, OpType opType) {
+    if (disable) {
+      // Nothing to do
+      return;
+    }
     // We are going to create the map for each view in the given database
     ConcurrentMap<String, MaterializationInvalidationInfo> cq =
         new ConcurrentHashMap<String, MaterializationInvalidationInfo>();
@@ -225,6 +246,10 @@ public final class MaterializationsInvalidationCache {
    */
   public void notifyTableModification(String dbName, String tableName,
       long txnId, long newModificationTime) {
+    if (disable) {
+      // Nothing to do
+      return;
+    }
     if (LOG.isDebugEnabled()) {
       LOG.debug("Notification for table {} in database {} received -> id: {}, time: {}",
           tableName, dbName, txnId, newModificationTime);
@@ -246,6 +271,10 @@ public final class MaterializationsInvalidationCache {
    * @param tableName
    */
   public void dropMaterializedView(String dbName, String tableName) {
+    if (disable) {
+      // Nothing to do
+      return;
+    }
     materializations.get(dbName).remove(tableName);
   }
 
@@ -308,12 +337,12 @@ public final class MaterializationsInvalidationCache {
     ValidTxnList txnList = new ValidReadTxnList(txnListString);
     long firstModificationTimeAfterCreation = 0L;
     for (String qNameTableUsed : materialization.getTablesUsed()) {
-      final Long tn = tableModifications.get(qNameTableUsed)
-          .higherKey(txnList.getHighWatermark());
+      final Entry<Long, Long> tn = tableModifications.get(qNameTableUsed)
+          .higherEntry(txnList.getHighWatermark());
       if (tn != null) {
         if (firstModificationTimeAfterCreation == 0L ||
-            tn < firstModificationTimeAfterCreation) {
-          firstModificationTimeAfterCreation = tn;
+            tn.getValue() < firstModificationTimeAfterCreation) {
+          firstModificationTimeAfterCreation = tn.getValue();
         }
       }
       // Min open txn might be null if there were no open transactions
@@ -344,6 +373,107 @@ public final class MaterializationsInvalidationCache {
     CREATE,
     LOAD,
     ALTER
+  }
+
+  /**
+   * Removes transaction events that are not relevant anymore.
+   * @param minTime events generated before this time (ms) can be deleted from the cache
+   * @return number of events that were deleted from the cache
+   */
+  public long cleanup(long minTime) {
+    // To remove, mv should meet two conditions:
+    // 1) Current time - time of transaction > config parameter, and
+    // 2) Transaction should not be associated with invalidation of a MV
+    if (disable || !initialized) {
+      // Bail out
+      return 0L;
+    }
+    // We execute the cleanup in two steps
+    // First we gather all the transactions that need to be kept
+    final Multimap<String, Long> keepTxnInfos = HashMultimap.create();
+    for (Map.Entry<String, ConcurrentMap<String, MaterializationInvalidationInfo>> e : materializations.entrySet()) {
+      for (MaterializationInvalidationInfo m : e.getValue().values()) {
+        ValidTxnList txnList = new ValidReadTxnList(m.getValidTxnList());
+        boolean canBeDeleted = false;
+        String currentTableForInvalidatingTxn = null;
+        long currentInvalidatingTxnId = 0L;
+        long currentInvalidatingTxnTime = 0L;
+        for (String qNameTableUsed : m.getTablesUsed()) {
+          final Entry<Long, Long> tn = tableModifications.get(qNameTableUsed)
+              .higherEntry(txnList.getHighWatermark());
+          if (tn != null) {
+            if (currentInvalidatingTxnTime == 0L ||
+                tn.getValue() < currentInvalidatingTxnTime) {
+              // This transaction 1) is the first one examined for this materialization, or
+              // 2) it is the invalidating transaction. Hence we add it to the transactions to keep.
+              // 1.- We remove the previous invalidating transaction from the transactions
+              // to be kept (if needed).
+              if (canBeDeleted && currentInvalidatingTxnTime < minTime) {
+                keepTxnInfos.remove(currentTableForInvalidatingTxn, currentInvalidatingTxnId);
+              }
+              // 2.- We add this transaction to the transactions that should be kept.
+              canBeDeleted = !keepTxnInfos.get(qNameTableUsed).contains(tn.getKey());
+              keepTxnInfos.put(qNameTableUsed, tn.getKey());
+              // 3.- We record this transaction as the current invalidating transaction.
+              currentTableForInvalidatingTxn = qNameTableUsed;
+              currentInvalidatingTxnId = tn.getKey();
+              currentInvalidatingTxnTime = tn.getValue();
+            }
+          }
+          if (txnList.getMinOpenTxn() != null) {
+            // Invalid transaction list is sorted
+            int pos = 0;
+            for (Entry<Long, Long> t : tableModifications.get(qNameTableUsed)
+                .subMap(txnList.getMinOpenTxn(), txnList.getHighWatermark()).entrySet()) {
+              while (pos < txnList.getInvalidTransactions().length &&
+                  txnList.getInvalidTransactions()[pos] != t.getKey()) {
+                pos++;
+              }
+              if (pos >= txnList.getInvalidTransactions().length) {
+                break;
+              }
+              if (currentInvalidatingTxnTime == 0L ||
+                  t.getValue() < currentInvalidatingTxnTime) {
+                // This transaction 1) is the first one examined for this materialization, or
+                // 2) it is the invalidating transaction. Hence we add it to the transactions to keep.
+                // 1.- We remove the previous invalidating transaction from the transactions
+                // to be kept (if needed).
+                if (canBeDeleted && currentInvalidatingTxnTime < minTime) {
+                  keepTxnInfos.remove(currentTableForInvalidatingTxn, currentInvalidatingTxnId);
+                }
+                // 2.- We add this transaction to the transactions that should be kept.
+                canBeDeleted = !keepTxnInfos.get(qNameTableUsed).contains(t.getKey());
+                keepTxnInfos.put(qNameTableUsed, t.getKey());
+                // 3.- We record this transaction as the current invalidating transaction.
+                currentTableForInvalidatingTxn = qNameTableUsed;
+                currentInvalidatingTxnId = t.getKey();
+                currentInvalidatingTxnTime = t.getValue();
+              }
+            }
+          }
+        }
+      }
+    }
+    // Second, we remove the transactions
+    long removed = 0L;
+    for (Entry<String, ConcurrentSkipListMap<Long, Long>> e : tableModifications.entrySet()) {
+      Collection<Long> c = keepTxnInfos.get(e.getKey());
+      for (Iterator<Entry<Long, Long>> it = e.getValue().entrySet().iterator(); it.hasNext();) {
+        Entry<Long, Long> v = it.next();
+        // We need to check again the time because some of the transactions might not be explored
+        // above, e.g., transactions above the highest transaction mark for all the materialized
+        // views.
+        if (v.getValue() < minTime && (c.isEmpty() || !c.contains(v.getKey()))) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Transaction removed from cache for table {} -> id: {}, time: {}",
+                e.getKey(), v.getKey(), v.getValue());
+          }
+          it.remove();
+          removed++;
+        }
+      }
+    }
+    return removed;
   }
 
 }
