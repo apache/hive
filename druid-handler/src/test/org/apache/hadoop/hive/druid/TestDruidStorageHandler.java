@@ -45,6 +45,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.junit.Assert;
 import org.junit.Before;
@@ -88,7 +89,7 @@ public class TestDruidStorageHandler {
   private DruidStorageHandler druidStorageHandler;
 
   private DataSegment createSegment(String location) throws IOException {
-    return createSegment(location, new Interval(100, 170), "v1", new LinearShardSpec(0));
+    return createSegment(location, new Interval(100, 170, DateTimeZone.UTC), "v1", new LinearShardSpec(0));
   }
 
   private DataSegment createSegment(String location, Interval interval, String version,
@@ -321,7 +322,7 @@ public class TestDruidStorageHandler {
     // This create and publish the segment to be overwritten
     List<DataSegment> existingSegments = Arrays
             .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-                    new Interval(100, 150), "v0", new LinearShardSpec(0)));
+                    new Interval(100, 150, DateTimeZone.UTC), "v0", new LinearShardSpec(0)));
     DruidStorageHandlerUtils
             .publishSegmentsAndCommit(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
@@ -332,7 +333,7 @@ public class TestDruidStorageHandler {
 
     // This creates and publish new segment
     DataSegment dataSegment = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-            new Interval(180, 250), "v1", new LinearShardSpec(0));
+            new Interval(180, 250, DateTimeZone.UTC), "v1", new LinearShardSpec(0));
 
     Path descriptorPath = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment,
             new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
@@ -374,7 +375,7 @@ public class TestDruidStorageHandler {
     // This create and publish the segment to be overwritten
     List<DataSegment> existingSegments = Arrays
             .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-                    new Interval(100, 150), "v0", new LinearShardSpec(0)));
+                    new Interval(100, 150, DateTimeZone.UTC), "v0", new LinearShardSpec(0)));
     DruidStorageHandlerUtils
             .publishSegmentsAndCommit(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
@@ -425,7 +426,7 @@ public class TestDruidStorageHandler {
 
     // #5
     DataSegment dataSegment1 = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-            new Interval(180, 250), "v1", new LinearShardSpec(0));
+            new Interval(180, 250, DateTimeZone.UTC), "v1", new LinearShardSpec(0));
     Path descriptorPath1 = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment1,
             new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
     );
@@ -440,7 +441,7 @@ public class TestDruidStorageHandler {
 
     // #6
     DataSegment dataSegment2 = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-            new Interval(200, 250), "v1", new LinearShardSpec(0));
+            new Interval(200, 250, DateTimeZone.UTC), "v1", new LinearShardSpec(0));
     Path descriptorPath2 = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment2,
             new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
     );
@@ -455,7 +456,7 @@ public class TestDruidStorageHandler {
 
     // #7
     DataSegment dataSegment3 = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-            new Interval(100, 200), "v1", new LinearShardSpec(0));
+            new Interval(100, 200, DateTimeZone.UTC), "v1", new LinearShardSpec(0));
     Path descriptorPath3 = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment3,
             new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
     );
@@ -514,7 +515,7 @@ public class TestDruidStorageHandler {
     Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
     List<DataSegment> existingSegments = Arrays
             .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-                    new Interval(100, 150), "v0", new LinearShardSpec(1)));
+                    new Interval(100, 150, DateTimeZone.UTC), "v0", new LinearShardSpec(1)));
     HdfsDataSegmentPusherConfig pusherConfig = new HdfsDataSegmentPusherConfig();
     pusherConfig.setStorageDirectory(config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)));
     DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
@@ -527,7 +528,7 @@ public class TestDruidStorageHandler {
                     dataSegmentPusher
             );
     DataSegment dataSegment = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-            new Interval(100, 150), "v1", new LinearShardSpec(0));
+            new Interval(100, 150, DateTimeZone.UTC), "v1", new LinearShardSpec(0));
     Path descriptorPath = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment,
             new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
     );
@@ -571,7 +572,7 @@ public class TestDruidStorageHandler {
 
     List<DataSegment> existingSegments = Arrays
             .asList(createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-                    new Interval(100, 150), "v0", new LinearShardSpec(0)));
+                    new Interval(100, 150, DateTimeZone.UTC), "v0", new LinearShardSpec(0)));
     DruidStorageHandlerUtils
             .publishSegmentsAndCommit(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
                     existingSegments,
@@ -581,7 +582,7 @@ public class TestDruidStorageHandler {
             );
 
     DataSegment dataSegment = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-            new Interval(100, 150), "v0", new LinearShardSpec(0));
+            new Interval(100, 150, DateTimeZone.UTC), "v0", new LinearShardSpec(0));
     Path descriptorPath = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment,
             new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
     );
@@ -621,7 +622,7 @@ public class TestDruidStorageHandler {
     Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
     List<DataSegment> existingSegments = Arrays
             .asList(createSegment(new Path(taskDirPath, "index_old.zip").toString(),
-                    new Interval(100, 150), "v0", new LinearShardSpec(1)));
+                    new Interval(100, 150, DateTimeZone.UTC), "v0", new LinearShardSpec(1)));
     HdfsDataSegmentPusherConfig pusherConfig = new HdfsDataSegmentPusherConfig();
     pusherConfig.setStorageDirectory(config.get(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY)));
     DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
@@ -633,7 +634,7 @@ public class TestDruidStorageHandler {
                     dataSegmentPusher
             );
     DataSegment dataSegment = createSegment(new Path(taskDirPath, "index.zip").toString(),
-            new Interval(100, 150), "v1", new LinearShardSpec(0));
+            new Interval(100, 150, DateTimeZone.UTC), "v1", new LinearShardSpec(0));
     Path descriptorPath = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment,
             new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
     );
@@ -641,7 +642,7 @@ public class TestDruidStorageHandler {
 
     // Create segment file at the destination location with LinearShardSpec(2)
     DataSegment segment = createSegment(new Path(taskDirPath, "index_conflict.zip").toString(),
-            new Interval(100, 150), "v1", new LinearShardSpec(1));
+            new Interval(100, 150, DateTimeZone.UTC), "v1", new LinearShardSpec(1));
     Path segmentPath = new Path(dataSegmentPusher.getPathForHadoop(), dataSegmentPusher.makeIndexPathName(segment, DruidStorageHandlerUtils.INDEX_ZIP));
     FileUtils.writeStringToFile(new File(segmentPath.toUri()), "dummy");
 
@@ -682,13 +683,13 @@ public class TestDruidStorageHandler {
     Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
     List<DataSegment> existingSegments = Arrays.asList(
             createSegment(new Path(taskDirPath, "index_old_1.zip").toString(),
-                    new Interval(100, 150),
+                    new Interval(100, 150, DateTimeZone.UTC),
                     "v0", new LinearShardSpec(0)),
             createSegment(new Path(taskDirPath, "index_old_2.zip").toString(),
-                    new Interval(150, 200),
+                    new Interval(150, 200, DateTimeZone.UTC),
                     "v0", new LinearShardSpec(0)),
             createSegment(new Path(taskDirPath, "index_old_3.zip").toString(),
-                    new Interval(200, 300),
+                    new Interval(200, 300, DateTimeZone.UTC),
                     "v0", new LinearShardSpec(0)));
     HdfsDataSegmentPusherConfig pusherConfig = new HdfsDataSegmentPusherConfig();
     pusherConfig.setStorageDirectory(taskDirPath.toString());
@@ -703,7 +704,7 @@ public class TestDruidStorageHandler {
 
     // Try appending segment with conflicting interval
     DataSegment conflictingSegment = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-            new Interval(100, 300), "v1", new LinearShardSpec(0));
+            new Interval(100, 300, DateTimeZone.UTC), "v1", new LinearShardSpec(0));
     Path descriptorPath = DruidStorageHandlerUtils
             .makeSegmentDescriptorOutputPath(conflictingSegment,
                     new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
@@ -723,11 +724,11 @@ public class TestDruidStorageHandler {
     Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
     List<DataSegment> existingSegments = Arrays
             .asList(createSegment(new Path(taskDirPath, "index_old_1.zip").toString(),
-                    new Interval(100, 150), "v0", new NoneShardSpec()),
+                    new Interval(100, 150, DateTimeZone.UTC), "v0", new NoneShardSpec()),
                     createSegment(new Path(taskDirPath, "index_old_2.zip").toString(),
-                            new Interval(200, 250), "v0", new LinearShardSpec(0)),
+                            new Interval(200, 250, DateTimeZone.UTC), "v0", new LinearShardSpec(0)),
                     createSegment(new Path(taskDirPath, "index_old_3.zip").toString(),
-                            new Interval(250, 300), "v0", new LinearShardSpec(0)));
+                            new Interval(250, 300, DateTimeZone.UTC), "v0", new LinearShardSpec(0)));
     HdfsDataSegmentPusherConfig pusherConfig = new HdfsDataSegmentPusherConfig();
     pusherConfig.setStorageDirectory(taskDirPath.toString());
     DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(pusherConfig, config, DruidStorageHandlerUtils.JSON_MAPPER);
@@ -741,7 +742,7 @@ public class TestDruidStorageHandler {
 
     // Try appending to non extendable shard spec
     DataSegment conflictingSegment = createSegment(new Path(taskDirPath, DruidStorageHandlerUtils.INDEX_ZIP).toString(),
-            new Interval(100, 150), "v1", new LinearShardSpec(0));
+            new Interval(100, 150, DateTimeZone.UTC), "v1", new LinearShardSpec(0));
     Path descriptorPath = DruidStorageHandlerUtils
             .makeSegmentDescriptorOutputPath(conflictingSegment,
                     new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)

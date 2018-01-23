@@ -230,7 +230,7 @@ public class TestDruidRecordWriter {
       Assert.assertEquals(
               (Double) expected.get("unique_hosts"),
               (Double) HyperUniquesAggregatorFactory
-                      .estimateCardinality(actual.getRaw("unique_hosts")),
+                      .estimateCardinality(actual.getRaw("unique_hosts"), false),
               0.001
       );
     }
