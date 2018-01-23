@@ -44,6 +44,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -1293,7 +1294,9 @@ public class Hive {
    * @throws HiveException
    */
   public List<RelOptMaterialization> getValidMaterializedViews() throws HiveException {
-    final long diff = conf.getIntVar(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW) * 1000;
+    final long diff =
+        HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW,
+            TimeUnit.MILLISECONDS);
     final long minTime = System.currentTimeMillis() - diff;
     try {
       // Final result
