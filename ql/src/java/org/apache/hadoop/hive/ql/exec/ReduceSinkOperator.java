@@ -163,7 +163,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       cntr = 1;
       logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
 
-      statsMap.put(getCounterName(Counter.RECORDS_OUT_INTERMEDIATE, hconf), recordCounter);
+      final String vertexName = hconf.get(Operator.CONTEXT_NAME_KEY, "");
+      statsMap.put(Utilities.getVertexCounterName(Counter.RECORDS_OUT_INTERMEDIATE.name(), vertexName), recordCounter);
 
       List<ExprNodeDesc> keys = conf.getKeyCols();
 
@@ -247,15 +248,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       throw new RuntimeException(e);
     }
   }
-
-  public String getCounterName(Counter counter, Configuration hconf) {
-    String context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
-    if (context != null && !context.isEmpty()) {
-      context = "_" + context.replace(" ", "_");
-    }
-    return counter + context;
-  }
-
 
   /**
    * Initializes array of ExprNodeEvaluator. Adds Union field for distinct

@@ -374,8 +374,9 @@ public class SparkTask extends Task<SparkWork> {
             hiveCounters.add(((FileSinkOperator) operator).getCounterName(counter));
           }
         } else if (operator instanceof ReduceSinkOperator) {
+          final String contextName = conf.get(Operator.CONTEXT_NAME_KEY, "");
           for (ReduceSinkOperator.Counter counter : ReduceSinkOperator.Counter.values()) {
-            hiveCounters.add(((ReduceSinkOperator) operator).getCounterName(counter, conf));
+            hiveCounters.add(Utilities.getVertexCounterName(counter.name(), contextName));
           }
         } else if (operator instanceof ScriptOperator) {
           for (ScriptOperator.Counter counter : ScriptOperator.Counter.values()) {

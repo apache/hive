@@ -23,10 +23,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -158,7 +164,7 @@ public class HiveSplitGenerator extends InputInitializer {
         // Need to instantiate the realInputFormat
         InputFormat<?, ?> inputFormat =
           (InputFormat<?, ?>) ReflectionUtils.newInstance(JavaUtils.loadClass(realInputFormatName),
-              jobConf);
+            jobConf);
 
         int totalResource = 0;
         int taskResource = 0;
@@ -178,10 +184,10 @@ public class HiveSplitGenerator extends InputInitializer {
         if (HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1) <= 1) {
           // broken configuration from mapred-default.xml
           final long blockSize = conf.getLong(DFSConfigKeys.DFS_BLOCK_SIZE_KEY,
-              DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
+            DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
           final long minGrouping = conf.getLong(
-              TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE,
-              TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE_DEFAULT);
+            TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE,
+            TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE_DEFAULT);
           final long preferredSplitSize = Math.min(blockSize / 2, minGrouping);
           HiveConf.setLongVar(jobConf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, preferredSplitSize);
           LOG.info("The preferred split size is " + preferredSplitSize);
@@ -189,15 +195,47 @@ public class HiveSplitGenerator extends InputInitializer {
 
         // Create the un-grouped splits
         float waves =
-            conf.getFloat(TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES,
-                TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
+          conf.getFloat(TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES,
+            TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
 
         // Raw splits
         InputSplit[] splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));
         // Sort the splits, so that subsequent grouping is consistent.
         Arrays.sort(splits, new InputSplitComparator());
         LOG.info("Number of input splits: " + splits.length + ". " + availableSlots
-            + " available slots, " + waves + " waves. Input format is: " + realInputFormatName);
+          + " available slots, " + waves + " waves. Input format is: " + realInputFormatName);
+
+        // increment/set input counters
+        InputInitializerContext inputInitializerContext = getContext();
+        TezCounters tezCounters = null;
+        String counterName;
+        String groupName = null;
+        String vertexName = null;
+        if (inputInitializerContext != null) {
+          tezCounters = new TezCounters();
+          groupName = HiveInputCounters.class.getName();
+          vertexName = jobConf.get(Operator.CONTEXT_NAME_KEY, "");
+          counterName = Utilities.getVertexCounterName(HiveInputCounters.RAW_INPUT_SPLITS.name(), vertexName);
+          tezCounters.findCounter(groupName, counterName).increment(splits.length);
+          final List<Path> paths = Utilities.getInputPathsTez(jobConf, work);
+          counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_DIRECTORIES.name(), vertexName);
+          tezCounters.findCounter(groupName, counterName).increment(paths.size());
+          final Set<String> files = new HashSet<>();
+          for (InputSplit inputSplit : splits) {
+            if (inputSplit instanceof FileSplit) {
+              final FileSplit fileSplit = (FileSplit) inputSplit;
+              final Path path = fileSplit.getPath();
+              // The assumption here is the path is a file. Only case this is different is ACID deltas.
+              // The isFile check is avoided here for performance reasons.
+              final String fileStr = path.toString();
+              if (!files.contains(fileStr)) {
+                files.add(fileStr);
+              }
+            }
+          }
+          counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_FILES.name(), vertexName);
+          tezCounters.findCounter(groupName, counterName).increment(files.size());
+        }
 
         if (work.getIncludedBuckets() != null) {
           splits = pruneBuckets(work, splits);
@@ -208,6 +246,15 @@ public class HiveSplitGenerator extends InputInitializer {
         // And finally return them in a flat array
         InputSplit[] flatSplits = groupedSplits.values().toArray(new InputSplit[0]);
         LOG.info("Number of split groups: " + flatSplits.length);
+        if (inputInitializerContext != null) {
+          counterName = Utilities.getVertexCounterName(HiveInputCounters.GROUPED_INPUT_SPLITS.name(), vertexName);
+          tezCounters.findCounter(groupName, counterName).setValue(flatSplits.length);
+
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Published tez counters: " + tezCounters);
+          }
+          inputInitializerContext.addCounters(tezCounters);
+        }
 
         List<TaskLocationHint> locationHints = splitGrouper.createTaskLocationHints(flatSplits, generateConsistentSplits);
 
