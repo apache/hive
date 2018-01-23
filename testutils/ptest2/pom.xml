@@ -169,6 +169,7 @@ limitations under the License.
         <configuration>
           <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
           <propertyExpansion>basedir=${checkstyle.conf.dir}</propertyExpansion>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
         </configuration>
       </plugin>
       <plugin>
