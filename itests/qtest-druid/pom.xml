@@ -37,7 +37,7 @@
   <!-- test intra-project -->
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
-    <druid.curator.version>2.11.0</druid.curator.version>
+    <druid.curator.version>4.0.0</druid.curator.version>
     <druid.jersey.version>1.19.3</druid.jersey.version>
     <druid.jetty.version>9.3.19.v20170502</druid.jetty.version>
     <druid.derby.version>10.11.1.1</druid.derby.version>
