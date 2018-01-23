@@ -21,6 +21,11 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 500
    RECORDS_OUT_1_default.src2: 84
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
 PREHOOK: query: insert into table src2 partition (value) select * from src where key < 200
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -32,6 +37,11 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 500
    RECORDS_OUT_1_default.src2: 189
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
 PREHOOK: query: drop table src2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src2
@@ -51,6 +61,11 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 500
    RECORDS_OUT_1_default.src2: 189
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
 PREHOOK: query: insert into table src2 partition (value) select * from src where key < 300
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -62,6 +77,11 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 500
    RECORDS_OUT_1_default.src2: 292
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
 PREHOOK: query: drop table src2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src2
@@ -91,6 +111,11 @@ Stage-2 HIVE COUNTERS:
    RECORDS_IN_Map_1: 500
    RECORDS_OUT_1_default.src2: 84
    RECORDS_OUT_2_default.src3: 105
+Stage-2 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
 PREHOOK: query: from src
 insert into table src2 partition (value) select * where key < 100
 insert into table src3 partition (value) select * where key >= 100 and key < 300
@@ -106,6 +131,11 @@ Stage-2 HIVE COUNTERS:
    RECORDS_IN_Map_1: 500
    RECORDS_OUT_1_default.src2: 84
    RECORDS_OUT_2_default.src3: 208
+Stage-2 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
 PREHOOK: query: drop table src2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src2
@@ -130,6 +160,15 @@ Stage-1 HIVE COUNTERS:
    RECORDS_IN_Map_1: 500
    RECORDS_IN_Map_3: 500
    RECORDS_OUT_1_default.src2: 189
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   GROUPED_INPUT_SPLITS_Map_3: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_DIRECTORIES_Map_3: 1
+   INPUT_FILES_Map_1: 1
+   INPUT_FILES_Map_3: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+   RAW_INPUT_SPLITS_Map_3: 1
 PREHOOK: query: insert into table src2 partition (value)
 select temps.* from (
   select * from src where key < 100
@@ -146,3 +185,12 @@ Stage-1 HIVE COUNTERS:
    RECORDS_IN_Map_1: 500
    RECORDS_IN_Map_3: 500
    RECORDS_OUT_1_default.src2: 292
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   GROUPED_INPUT_SPLITS_Map_3: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_DIRECTORIES_Map_3: 1
+   INPUT_FILES_Map_1: 1
+   INPUT_FILES_Map_3: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+   RAW_INPUT_SPLITS_Map_3: 1

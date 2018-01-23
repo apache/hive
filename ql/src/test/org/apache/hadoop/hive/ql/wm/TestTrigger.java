@@ -72,9 +72,16 @@ public class TestTrigger {
     assertTrue(trigger.apply(100000));
 
     expression = ExpressionFactory.createExpression(new VertexCounterLimit(VertexCounterLimit.VertexCounter
-      .TOTAL_TASKS,10000));
+      .VERTEX_TOTAL_TASKS, 10000));
     trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
-    assertEquals("counter: TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
+    assertEquals("counter: VERTEX_TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
+    assertFalse(trigger.apply(1000));
+    assertTrue(trigger.apply(100000));
+
+    expression = ExpressionFactory.createExpression(new VertexCounterLimit(VertexCounterLimit.VertexCounter
+      .DAG_TOTAL_TASKS, 10000));
+    trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
+    assertEquals("counter: DAG_TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
     assertFalse(trigger.apply(1000));
     assertTrue(trigger.apply(100000));
 
@@ -163,10 +170,17 @@ public class TestTrigger {
     assertEquals(expected, expression);
     assertEquals(expected.hashCode(), expression.hashCode());
 
-    expression = ExpressionFactory.fromString(" TOTAL_TASKS > 10000");
+    expression = ExpressionFactory.fromString(" VERTEX_TOTAL_TASKS > 10000");
     expected = ExpressionFactory.createExpression(new VertexCounterLimit(VertexCounterLimit.VertexCounter
-      .TOTAL_TASKS,10000));
-    assertEquals("counter: TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
+      .VERTEX_TOTAL_TASKS, 10000));
+    assertEquals("counter: VERTEX_TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
+    assertEquals(expected, expression);
+    assertEquals(expected.hashCode(), expression.hashCode());
+
+    expression = ExpressionFactory.fromString(" DAG_TOTAL_TASKS > 10000");
+    expected = ExpressionFactory.createExpression(new VertexCounterLimit(VertexCounterLimit.VertexCounter
+      .DAG_TOTAL_TASKS, 10000));
+    assertEquals("counter: DAG_TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
     assertEquals(expected, expression);
     assertEquals(expected.hashCode(), expression.hashCode());
 

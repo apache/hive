@@ -3246,6 +3246,20 @@ public final class Utilities {
   }
 
   /**
+   * Appends vertex name to specified counter name.
+   *
+   * @param counter counter to be appended with
+   * @param vertexName   vertex name
+   * @return counter name with vertex name appended
+   */
+  public static String getVertexCounterName(String counter, String vertexName) {
+    if (vertexName != null && !vertexName.isEmpty()) {
+      vertexName = "_" + vertexName.replace(" ", "_");
+    }
+    return counter + vertexName;
+  }
+
+  /**
    * Computes a list of all input paths needed to compute the given MapWork. All aliases
    * are considered and a merged list of input paths is returned. If any input path points
    * to an empty table or partition a dummy file in the scratch dir is instead created and
