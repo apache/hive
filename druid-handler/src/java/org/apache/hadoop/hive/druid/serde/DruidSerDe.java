@@ -98,6 +98,7 @@ import io.druid.query.groupby.GroupByQuery;
 import io.druid.query.metadata.metadata.ColumnAnalysis;
 import io.druid.query.metadata.metadata.SegmentAnalysis;
 import io.druid.query.metadata.metadata.SegmentMetadataQuery;
+import io.druid.query.scan.ScanQuery;
 import io.druid.query.select.SelectQuery;
 import io.druid.query.timeseries.TimeseriesQuery;
 import io.druid.query.topn.TopNQuery;
@@ -244,6 +245,15 @@ public class DruidSerDe extends AbstractSerDe {
           case Query.GROUP_BY:
             inferSchema((GroupByQuery) query, tsTZTypeInfo, columnNames, columnTypes,
                     mapColumnNamesTypes.build());
+            break;
+          case Query.SCAN:
+            String broker = HiveConf.getVar(configuration,
+                HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
+            if (org.apache.commons.lang3.StringUtils.isEmpty(broker)) {
+              throw new SerDeException("Druid broker address not specified in configuration");
+            }
+            inferSchema((ScanQuery) query, tsTZTypeInfo, columnNames, columnTypes, broker,
+                mapColumnNamesTypes.build());
             break;
           default:
             throw new SerDeException("Not supported Druid query");
@@ -406,6 +416,43 @@ public class DruidSerDe extends AbstractSerDe {
     }
   }
 
+  /* Scan query */
+  private void inferSchema(ScanQuery query, TimestampLocalTZTypeInfo timeColumnTypeInfo,
+      List<String> columnNames, List<PrimitiveTypeInfo> columnTypes,
+      String address, Map<String, PrimitiveTypeInfo> mapColumnNamesTypes)
+      throws SerDeException {
+    // The type for metric columns is not explicit in the query, thus in this case
+    // we need to emit a metadata query to know their type
+    SegmentMetadataQueryBuilder builder = new Druids.SegmentMetadataQueryBuilder();
+    builder.dataSource(query.getDataSource());
+    builder.merge(true);
+    builder.analysisTypes();
+    SegmentMetadataQuery metadataQuery = builder.build();
+    // Execute query in Druid
+    SegmentAnalysis schemaInfo;
+    try {
+      schemaInfo = submitMetadataRequest(address, metadataQuery);
+    } catch (IOException e) {
+      throw new SerDeException(e);
+    }
+    if (schemaInfo == null) {
+      throw new SerDeException("Connected to Druid but could not retrieve datasource information");
+    }
+    for (String column : query.getColumns()) {
+      columnNames.add(column);
+      PrimitiveTypeInfo typeInfo = mapColumnNamesTypes.get(column);
+      if (typeInfo != null) {
+        // If datasource was created by Hive, we consider Hive type
+        columnTypes.add(typeInfo);
+      } else {
+        ColumnAnalysis columnAnalysis = schemaInfo.getColumns().get(column);
+        // If column is absent from Druid consider it as a dimension with type string.
+        String type = columnAnalysis == null ? DruidSerDeUtils.STRING_TYPE : columnAnalysis.getType();
+        columnTypes.add(DruidSerDeUtils.convertDruidToHiveType(type));
+      }
+    }
+  }
+
   /* GroupBy query */
   private void inferSchema(GroupByQuery query, TimestampLocalTZTypeInfo timeColumnTypeInfo,
           List<String> columnNames, List<PrimitiveTypeInfo> columnTypes,
@@ -543,7 +590,7 @@ public class DruidSerDe extends AbstractSerDe {
               new TimestampLocalTZWritable(
                   new TimestampTZ(
                       ZonedDateTime.ofInstant(
-                          Instant.ofEpochMilli((Long) value),
+                          Instant.ofEpochMilli(((Number) value).longValue()),
                           ((TimestampLocalTZTypeInfo) types[i]).timeZone()))));
           break;
         case BYTE:
