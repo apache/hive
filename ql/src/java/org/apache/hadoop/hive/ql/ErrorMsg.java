@@ -114,15 +114,12 @@ public enum ErrorMsg {
   CLUSTERBY_ORDERBY_CONFLICT(10050, "Cannot have both CLUSTER BY and ORDER BY clauses"),
   NO_LIMIT_WITH_ORDERBY(10051, "In strict mode, if ORDER BY is specified, "
       + "LIMIT must also be specified"),
-  NO_CARTESIAN_PRODUCT(10052, "In strict mode, cartesian product is not allowed. "
-      + "If you really want to perform the operation, set hive.mapred.mode=nonstrict"),
   UNION_NOTIN_SUBQ(10053, "Top level UNION is not supported currently; "
       + "use a subquery for the UNION"),
   INVALID_INPUT_FORMAT_TYPE(10054, "Input format must implement InputFormat"),
   INVALID_OUTPUT_FORMAT_TYPE(10055, "Output Format must implement HiveOutputFormat, "
       + "otherwise it should be either IgnoreKeyTextOutputFormat or SequenceFileOutputFormat"),
-  NO_VALID_PARTN(10056, "The query does not reference any valid partition. "
-      + "To run this query, set hive.mapred.mode=nonstrict"),
+  NO_VALID_PARTN(10056, HiveConf.StrictChecks.NO_PARTITIONLESS_MSG),
   NO_OUTER_MAPJOIN(10057, "MAPJOIN cannot be performed with OUTER JOIN"),
   INVALID_MAPJOIN_HINT(10058, "All tables are specified as map-table for join"),
   INVALID_MAPJOIN_TABLE(10059, "Result of a union cannot be a map table"),
@@ -206,12 +203,6 @@ public enum ErrorMsg {
   INCOMPATIBLE_SCHEMA(10120, "The existing table is not compatible with the import spec. "),
   EXIM_FOR_NON_NATIVE(10121, "Export/Import cannot be done for a non-native table. "),
   INSERT_INTO_BUCKETIZED_TABLE(10122, "Bucketized tables do not support INSERT INTO:"),
-  NO_COMPARE_BIGINT_STRING(10123, "In strict mode, comparing bigints and strings is not allowed, "
-      + "it may result in a loss of precision. "
-      + "If you really want to perform the operation, set hive.mapred.mode=nonstrict"),
-  NO_COMPARE_BIGINT_DOUBLE(10124, "In strict mode, comparing bigints and doubles is not allowed, "
-      + "it may result in a loss of precision. "
-      + "If you really want to perform the operation, set hive.mapred.mode=nonstrict"),
   PARTSPEC_DIFFER_FROM_SCHEMA(10125, "Partition columns in partition specification are "
       + "not the same as that defined in the table schema. "
       + "The names and orders have to be exactly the same."),

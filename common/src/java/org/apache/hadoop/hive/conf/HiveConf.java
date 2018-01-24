@@ -4961,7 +4961,7 @@ public class HiveConf extends Configuration {
 
     private static final String NO_LIMIT_MSG = makeMessage(
         "Order by-s without limit", ConfVars.HIVE_STRICT_CHECKS_LARGE_QUERY);
-    private static final String NO_PARTITIONLESS_MSG = makeMessage(
+    public static final String NO_PARTITIONLESS_MSG = makeMessage(
         "Queries against partitioned tables without a partition filter",
         ConfVars.HIVE_STRICT_CHECKS_LARGE_QUERY);
     private static final String NO_COMPARES_MSG = makeMessage(
@@ -4972,7 +4972,7 @@ public class HiveConf extends Configuration {
         "Load into bucketed tables", ConfVars.HIVE_STRICT_CHECKS_BUCKETING);
 
     private static String makeMessage(String what, ConfVars setting) {
-      return what + " are disabled for safety reasons. If you know what you are doing, please set"
+      return what + " are disabled for safety reasons. If you know what you are doing, please set "
           + setting.varname + " to false and that " + ConfVars.HIVEMAPREDMODE.varname + " is not"
           + " set to 'strict' to proceed. Note that if you may get errors or incorrect results if"
           + " you make a mistake while using some of the unsafe features.";
