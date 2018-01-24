@@ -1,0 +1,50 @@
+PREHOOK: query: create table repro (lvalue int, charstring string) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repro
+POSTHOOK: query: create table repro (lvalue int, charstring string) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repro
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/escape_crlf.parquet' overwrite into table repro
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@repro
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/escape_crlf.parquet' overwrite into table repro
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@repro
+PREHOOK: query: select count(*) from repro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repro
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from repro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repro
+#### A masked pattern was here ####
+3
+PREHOOK: query: select * from repro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repro
+#### A masked pattern was here ####
+POSTHOOK: query: select * from repro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repro
+#### A masked pattern was here ####
+1	newline
+here
+2	carriage return
+here
+3	both
+here
+PREHOOK: query: select * from repro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repro
+#### A masked pattern was here ####
+POSTHOOK: query: select * from repro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repro
+#### A masked pattern was here ####
+1	newline\nhere
+2	carriage return\rhere
+3	both\r\nhere

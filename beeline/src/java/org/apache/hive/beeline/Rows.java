@@ -30,6 +30,8 @@ import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import org.apache.hadoop.hive.common.cli.EscapeCRLFHelper;
+
 /**
  * Abstract base class representing a set of rows to be displayed.
  * Holds column values as strings
@@ -166,6 +168,10 @@ abstract class Rows implements Iterator {
           value = convertBinaryArray ? new String((byte[])o) : Arrays.toString((byte[])o);
         } else {
           value = o.toString();
+        }
+
+        if (beeLine.getOpts().getEscapeCRLF()) {
+          value = EscapeCRLFHelper.escapeCRLF(value);
         }
 
         values[i] = value.intern();
