@@ -614,7 +614,7 @@ public class HadoopJobExecHelper {
 
     for (TaskCompletionEvent taskCompletion : taskCompletions) {
       if (!taskCompletion.isMapTask()) {
-        reducersRunTimes.add(new Integer(taskCompletion.getTaskRunTime()));
+        reducersRunTimes.add(Integer.valueOf(taskCompletion.getTaskRunTime()));
       }
     }
     // Compute the reducers run time statistics for the job

@@ -316,7 +316,7 @@ abstract public class AbstractBucketJoinProc implements NodeProcessor {
         }
         List<String> fileNames =
             getBucketFilePathsOfPartition(tbl.getDataLocation(), pGraphContext);
-        Integer num = new Integer(tbl.getNumBuckets());
+        Integer num = Integer.valueOf(tbl.getNumBuckets());
 
         // The number of files for the table should be same as number of buckets.
         if (fileNames.size() != 0 && fileNames.size() != num) {

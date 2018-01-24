@@ -288,12 +288,12 @@ public class HCatRecordSerDe extends AbstractSerDe {
         conf.getBoolean(
           HCatConstants.HCAT_DATA_TINY_SMALL_INT_PROMOTION,
           HCatConstants.HCAT_DATA_TINY_SMALL_INT_PROMOTION_DEFAULT)) {
-        return new Integer((Short) f);
+        return Integer.valueOf((Short) f);
       } else if (f instanceof Byte &&
         conf.getBoolean(
           HCatConstants.HCAT_DATA_TINY_SMALL_INT_PROMOTION,
           HCatConstants.HCAT_DATA_TINY_SMALL_INT_PROMOTION_DEFAULT)) {
-        return new Integer((Byte) f);
+        return Integer.valueOf((Byte) f);
       }
     }
 

@@ -186,13 +186,13 @@ public class TestDefaultHCatRecord extends TestCase {
   private HCatRecord[] getHCatRecords() {
 
     List<Object> rec_1 = new ArrayList<Object>(8);
-    rec_1.add(new Byte("123"));
-    rec_1.add(new Short("456"));
-    rec_1.add(new Integer(789));
-    rec_1.add(new Long(1000L));
-    rec_1.add(new Float(5.3F));
-    rec_1.add(new Double(5.3D));
-    rec_1.add(new Boolean(true));
+    rec_1.add(Byte.valueOf("123"));
+    rec_1.add(Short.valueOf("456"));
+    rec_1.add(Integer.valueOf(789));
+    rec_1.add(Long.valueOf(1000L));
+    rec_1.add(Float.valueOf(5.3F));
+    rec_1.add(Double.valueOf(5.3D));
+    rec_1.add(Boolean.valueOf(true));
     rec_1.add(new String("hcat and hadoop"));
     rec_1.add(null);
     rec_1.add("null");
@@ -200,24 +200,24 @@ public class TestDefaultHCatRecord extends TestCase {
     HCatRecord tup_1 = new DefaultHCatRecord(rec_1);
 
     List<Object> rec_2 = new ArrayList<Object>(8);
-    rec_2.add(new Byte("123"));
-    rec_2.add(new Short("456"));
-    rec_2.add(new Integer(789));
-    rec_2.add(new Long(1000L));
-    rec_2.add(new Float(5.3F));
-    rec_2.add(new Double(5.3D));
-    rec_2.add(new Boolean(true));
+    rec_2.add(Byte.valueOf("123"));
+    rec_2.add(Short.valueOf("456"));
+    rec_2.add(Integer.valueOf(789));
+    rec_2.add(Long.valueOf(1000L));
+    rec_2.add(Float.valueOf(5.3F));
+    rec_2.add(Double.valueOf(5.3D));
+    rec_2.add(Boolean.valueOf(true));
     rec_2.add(new String("hcat and hadoop"));
     rec_2.add(null);
     rec_2.add("null");
     HCatRecord tup_2 = new DefaultHCatRecord(rec_2);
 
     List<Object> rec_3 = new ArrayList<Object>(10);
-    rec_3.add(new Byte("123"));
-    rec_3.add(new Short("456"));
-    rec_3.add(new Integer(789));
-    rec_3.add(new Long(1000L));
-    rec_3.add(new Double(5.3D));
+    rec_3.add(Byte.valueOf("123"));
+    rec_3.add(Short.valueOf("456"));
+    rec_3.add(Integer.valueOf(789));
+    rec_3.add(Long.valueOf(1000L));
+    rec_3.add(Double.valueOf(5.3D));
     rec_3.add(new String("hcat and hadoop"));
     rec_3.add(null);
     List<Integer> innerList = new ArrayList<Integer>();
@@ -225,27 +225,27 @@ public class TestDefaultHCatRecord extends TestCase {
     innerList.add(007);
     rec_3.add(innerList);
     Map<Short, String> map = new HashMap<Short, String>(3);
-    map.put(new Short("2"), "hcat is cool");
-    map.put(new Short("3"), "is it?");
-    map.put(new Short("4"), "or is it not?");
+    map.put(Short.valueOf("2"), "hcat is cool");
+    map.put(Short.valueOf("3"), "is it?");
+    map.put(Short.valueOf("4"), "or is it not?");
     rec_3.add(map);
 
     HCatRecord tup_3 = new DefaultHCatRecord(rec_3);
 
     List<Object> rec_4 = new ArrayList<Object>(8);
-    rec_4.add(new Byte("123"));
-    rec_4.add(new Short("456"));
-    rec_4.add(new Integer(789));
-    rec_4.add(new Long(1000L));
-    rec_4.add(new Double(5.3D));
+    rec_4.add(Byte.valueOf("123"));
+    rec_4.add(Short.valueOf("456"));
+    rec_4.add(Integer.valueOf(789));
+    rec_4.add(Long.valueOf(1000L));
+    rec_4.add(Double.valueOf(5.3D));
     rec_4.add(new String("hcat and hadoop"));
     rec_4.add(null);
     rec_4.add("null");
 
     Map<Short, String> map2 = new HashMap<Short, String>(3);
-    map2.put(new Short("2"), "hcat is cool");
-    map2.put(new Short("3"), "is it?");
-    map2.put(new Short("4"), "or is it not?");
+    map2.put(Short.valueOf("2"), "hcat is cool");
+    map2.put(Short.valueOf("3"), "is it?");
+    map2.put(Short.valueOf("4"), "or is it not?");
     rec_4.add(map2);
     List<Integer> innerList2 = new ArrayList<Integer>();
     innerList2.add(314);
@@ -305,7 +305,7 @@ public class TestDefaultHCatRecord extends TestCase {
 
   private List<?> getStruct() {
     List<Object> struct = new ArrayList<Object>();
-    struct.add(new Integer(1));
+    struct.add(Integer.valueOf(1));
     struct.add(new String("x"));
     return struct;
   }

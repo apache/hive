@@ -288,7 +288,7 @@ public class FunctionMisc extends Function {
         }
         Integer count = group.get(key);
         if (count == null) {
-          count = new Integer(0); 
+          count = Integer.valueOf(0); 
         }
         group.put(key, count + 1);        
       }

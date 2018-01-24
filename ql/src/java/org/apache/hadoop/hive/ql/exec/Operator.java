@@ -1049,10 +1049,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public String dump(int level, HashSet<Integer> seenOpts) {
-    if (seenOpts.contains(new Integer(id))) {
+    if (seenOpts.contains(Integer.valueOf(id))) {
       return null;
     }
-    seenOpts.add(new Integer(id));
+    seenOpts.add(Integer.valueOf(id));
 
     StringBuilder s = new StringBuilder();
     String ls = getLevelString(level);
