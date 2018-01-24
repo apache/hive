@@ -381,7 +381,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     LOG.info("Finding random live service instance");
     Collection<LlapServiceInstance> allInstances = instanceSet.getAll();
     if (allInstances.size() > 0) {
-      int randIdx = rand.nextInt() % allInstances.size();
+      int randIdx = rand.nextInt(allInstances.size());;
       serviceInstance = allInstances.toArray(serviceInstanceArray)[randIdx];
     }
     return serviceInstance;
