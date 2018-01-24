@@ -44,6 +44,7 @@ public class QFileBeeLineClient implements AutoCloseable {
     "!set verbose false",
     "!set silent true",
     "!set showheader false",
+    "!set escapeCRLF false",
     "USE default;",
     "SHOW TABLES;",
   };
@@ -56,6 +57,7 @@ public class QFileBeeLineClient implements AutoCloseable {
     "!set verbose true",
     "!set silent false",
     "!set showheader true",
+    "!set escapeCRLF false",
     "!set outputformat table",
     "USE default;"
   };

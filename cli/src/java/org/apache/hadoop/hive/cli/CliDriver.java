@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.cli.OptionsProcessor;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
+import org.apache.hadoop.hive.common.cli.EscapeCRLFHelper;
 import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.FetchConverter;
@@ -222,6 +223,7 @@ public class CliDriver {
   int processLocalCmd(String cmd, CommandProcessor proc, CliSessionState ss) {
     int tryCount = 0;
     boolean needRetry;
+    boolean escapeCRLF = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_ESCAPE_CRLF);
     int ret = 0;
 
     do {
@@ -259,6 +261,9 @@ public class CliDriver {
               }
               while (qp.getResults(res)) {
                 for (String r : res) {
+                  if (escapeCRLF) {
+                    r = EscapeCRLFHelper.escapeCRLF(r);
+                  }
                   out.println(r);
                 }
                 counter += res.size();

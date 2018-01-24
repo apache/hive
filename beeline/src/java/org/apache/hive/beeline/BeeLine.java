@@ -1003,6 +1003,7 @@ public class BeeLine implements Closeable {
   public void updateOptsForCli() {
     getOpts().updateBeeLineOptsFromConf();
     getOpts().setShowHeader(false);
+    getOpts().setEscapeCRLF(false);
     getOpts().setOutputFormat("dsv");
     getOpts().setDelimiterForDSV(' ');
     getOpts().setNullEmptyString(true);
