@@ -643,7 +643,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
         if (envContext != null){
           ifPurge = Boolean.parseBoolean(envContext.getProperties().get("ifPurge"));
         }
-        getWh().deleteDir(tablePath, true, ifPurge);
+        getWh().deleteDir(tablePath, true, ifPurge, false);
       } catch (Exception err) {
         LOG.error("Failed to delete temp table directory: " + tablePath, err);
         // Forgive error

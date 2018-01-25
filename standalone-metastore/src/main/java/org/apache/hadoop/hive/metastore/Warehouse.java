@@ -228,7 +228,14 @@ public class Warehouse {
   }
 
   public boolean deleteDir(Path f, boolean recursive, boolean ifPurge) throws MetaException {
-    cm.recycle(f, RecycleType.MOVE, ifPurge);
+    return deleteDir(f, recursive, ifPurge, true);
+  }
+
+  public boolean deleteDir(Path f, boolean recursive, boolean ifPurge, boolean needCmRecycle) throws MetaException {
+    // no need to create the CM recycle file for temporary tables
+    if (needCmRecycle) {
+      cm.recycle(f, RecycleType.MOVE, ifPurge);
+    }
     FileSystem fs = getFs(f);
     return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
   }
