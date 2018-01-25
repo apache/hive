@@ -17,15 +17,18 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -65,8 +68,8 @@ public final class MaterializationsInvalidationCache {
    * happen. This is useful to quickly check the invalidation time for a given materialized
    * view. 
    */
-  private final ConcurrentMap<String, ConcurrentSkipListSet<TableModificationKey>> tableModifications =
-      new ConcurrentHashMap<String, ConcurrentSkipListSet<TableModificationKey>>();
+  private final ConcurrentMap<String, ConcurrentSkipListMap<Long, Long>> tableModifications =
+      new ConcurrentHashMap<String, ConcurrentSkipListMap<Long, Long>>();
 
   /* Whether the cache has been initialized or not. */
   private boolean initialized;
@@ -112,7 +115,7 @@ public final class MaterializationsInvalidationCache {
       try {
         for (String dbName : store.getAllDatabases()) {
           for (Table mv : store.getTableObjectsByName(dbName, store.getTables(dbName, null, TableType.MATERIALIZED_VIEW))) {
-            addMaterializedView(mv, ImmutableSet.copyOf(mv.getCreationMetadata().keySet()), OpType.LOAD);
+            addMaterializedView(mv, ImmutableSet.copyOf(mv.getCreationMetadata().getTablesUsed()), OpType.LOAD);
           }
         }
         LOG.info("Initialized materializations invalidation cache");
@@ -160,53 +163,46 @@ public final class MaterializationsInvalidationCache {
     // Start the process to add materialization to the cache
     // Before loading the materialization in the cache, we need to update some
     // important information in the registry to account for rewriting invalidation
-    for (String qNameTableUsed : tablesUsed) {
-      // First we insert a new tree set to keep table modifications, unless it already exists
-      ConcurrentSkipListSet<TableModificationKey> modificationsTree =
-          new ConcurrentSkipListSet<TableModificationKey>();
-      final ConcurrentSkipListSet<TableModificationKey> prevModificationsTree = tableModifications.putIfAbsent(
-          qNameTableUsed, modificationsTree);
-      if (prevModificationsTree != null) {
-        modificationsTree = prevModificationsTree;
-      }
-      // We obtain the access time to the table when the materialized view was created.
-      // This is a map from table fully qualified name to last modification before MV creation.
-      BasicTxnInfo e = materializedViewTable.getCreationMetadata().get(qNameTableUsed);
-      if (e.isIsnull()) {
-        // This can happen when the materialized view was created on non-transactional tables
-        // with rewrite disabled but then it was enabled by alter statement
-        continue;
-      }
-      final TableModificationKey lastModificationBeforeCreation =
-          new TableModificationKey(e.getId(), e.getTime());
-      modificationsTree.add(lastModificationBeforeCreation);
-      if (opType == OpType.LOAD) {
-        // If we are not creating the MV at this instant, but instead it was created previously
-        // and we are loading it into the cache, we need to go through the transaction logs and
-        // check if the MV is still valid.
-        try {
-          String[] names =  qNameTableUsed.split("\\.");
-          BasicTxnInfo e2 = txnStore.getFirstCompletedTransactionForTableAfterCommit(
-              names[0], names[1], lastModificationBeforeCreation.id);
-          if (!e2.isIsnull()) {
-            modificationsTree.add(new TableModificationKey(e2.getId(), e2.getTime()));
-            // We do not need to do anything more for current table, as we detected
-            // a modification event that was in the metastore.
-            continue;
-          }
-        } catch (MetaException ex) {
-          LOG.debug("Materialized view " +
-              Warehouse.getQualifiedName(materializedViewTable.getDbName(), materializedViewTable.getTableName()) +
-              " ignored; error loading view into invalidation cache", ex);
-          return;
-        }
-      }
+    String txnListString = materializedViewTable.getCreationMetadata().getValidTxnList();
+    if (txnListString == null) {
+      // This can happen when the materialized view was created on non-transactional tables
+      return;
     }
     if (opType == OpType.CREATE || opType == OpType.ALTER) {
       // You store the materialized view
       cq.put(materializedViewTable.getTableName(),
           new MaterializationInvalidationInfo(materializedViewTable, tablesUsed));
     } else {
+      ValidTxnList txnList = new ValidReadTxnList(txnListString);
+      for (String qNameTableUsed : tablesUsed) {
+        // First we insert a new tree set to keep table modifications, unless it already exists
+        ConcurrentSkipListMap<Long, Long> modificationsTree =
+                new ConcurrentSkipListMap<Long, Long>();
+        final ConcurrentSkipListMap<Long, Long> prevModificationsTree = tableModifications.putIfAbsent(
+                qNameTableUsed, modificationsTree);
+        if (prevModificationsTree != null) {
+          modificationsTree = prevModificationsTree;
+        }
+        // If we are not creating the MV at this instant, but instead it was created previously
+        // and we are loading it into the cache, we need to go through the transaction entries and
+        // check if the MV is still valid.
+        try {
+          String[] names =  qNameTableUsed.split("\\.");
+          BasicTxnInfo e = txnStore.getFirstCompletedTransactionForTableAfterCommit(
+                  names[0], names[1], txnList);
+          if (!e.isIsnull()) {
+            modificationsTree.put(e.getTxnid(), e.getTime());
+            // We do not need to do anything more for current table, as we detected
+            // a modification event that was in the metastore.
+            continue;
+          }
+        } catch (MetaException ex) {
+          LOG.debug("Materialized view " +
+                  Warehouse.getQualifiedName(materializedViewTable.getDbName(), materializedViewTable.getTableName()) +
+                  " ignored; error loading view into invalidation cache", ex);
+          return;
+        }
+      }
       // For LOAD, you only add it if it does exist as you might be loading an outdated MV
       cq.putIfAbsent(materializedViewTable.getTableName(),
           new MaterializationInvalidationInfo(materializedViewTable, tablesUsed));
@@ -218,23 +214,23 @@ public final class MaterializationsInvalidationCache {
   }
 
   /**
-   * This method is called when a table is modified. That way we can keep a track of the
+   * This method is called when a table is modified. That way we can keep track of the
    * invalidation for the MVs that use that table.
    */
   public void notifyTableModification(String dbName, String tableName,
-      long eventId, long newModificationTime) {
+      long txnId, long newModificationTime) {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Notification for table {} in database {} received -> id: {}, time: {}",
-          tableName, dbName, eventId, newModificationTime);
+          tableName, dbName, txnId, newModificationTime);
     }
-    ConcurrentSkipListSet<TableModificationKey> modificationsTree =
-        new ConcurrentSkipListSet<TableModificationKey>();
-    final ConcurrentSkipListSet<TableModificationKey> prevModificationsTree =
+    ConcurrentSkipListMap<Long, Long> modificationsTree =
+        new ConcurrentSkipListMap<Long, Long>();
+    final ConcurrentSkipListMap<Long, Long> prevModificationsTree =
         tableModifications.putIfAbsent(Warehouse.getQualifiedName(dbName, tableName), modificationsTree);
     if (prevModificationsTree != null) {
       modificationsTree = prevModificationsTree;
     }
-    modificationsTree.add(new TableModificationKey(eventId, newModificationTime));
+    modificationsTree.put(txnId, newModificationTime);
   }
 
   /**
@@ -296,69 +292,49 @@ public final class MaterializationsInvalidationCache {
   }
 
   private long getInvalidationTime(MaterializationInvalidationInfo materialization) {
+    String txnListString = materialization.getMaterializationTable().getCreationMetadata().getValidTxnList();
+    if (txnListString == null) {
+      // This can happen when the materialization was created on non-transactional tables
+      return Long.MIN_VALUE;
+    }
+
+    // We will obtain the modification time as follows.
+    // First, we obtain the first element after high watermark (if any)
+    // Then, we iterate through the elements from min open txn till high
+    // watermark, updating the modification time after creation if needed
+    ValidTxnList txnList = new ValidReadTxnList(txnListString);
     long firstModificationTimeAfterCreation = 0L;
     for (String qNameTableUsed : materialization.getTablesUsed()) {
-      BasicTxnInfo e = materialization.getMaterializationTable().getCreationMetadata().get(qNameTableUsed);
-      if (e == null) {
-        // This can happen when the materialized view was created on non-transactional tables
-        // with rewrite disabled but then it was enabled by alter statement
-        return Long.MIN_VALUE;
-      }
-      final TableModificationKey lastModificationBeforeCreation =
-          new TableModificationKey(e.getId(), e.getTime());
-      final TableModificationKey post = tableModifications.get(qNameTableUsed)
-          .higher(lastModificationBeforeCreation);
-      if (post != null) {
+      final Long tn = tableModifications.get(qNameTableUsed)
+          .higherKey(txnList.getHighWatermark());
+      if (tn != null) {
         if (firstModificationTimeAfterCreation == 0L ||
-            post.time < firstModificationTimeAfterCreation) {
-          firstModificationTimeAfterCreation = post.time;
+            tn < firstModificationTimeAfterCreation) {
+          firstModificationTimeAfterCreation = tn;
+        }
+      }
+      // Min open txn might be null if there were no open transactions
+      // when this transaction was being executed
+      if (txnList.getMinOpenTxn() != null) {
+        // Invalid transaction list is sorted
+        int pos = 0;
+        for (Map.Entry<Long, Long> t : tableModifications.get(qNameTableUsed)
+                .subMap(txnList.getMinOpenTxn(), txnList.getHighWatermark()).entrySet()) {
+          while (pos < txnList.getInvalidTransactions().length &&
+              txnList.getInvalidTransactions()[pos] != t.getKey()) {
+            pos++;
+          }
+          if (pos >= txnList.getInvalidTransactions().length) {
+            break;
+          }
+          if (firstModificationTimeAfterCreation == 0L ||
+              t.getValue() < firstModificationTimeAfterCreation) {
+            firstModificationTimeAfterCreation = t.getValue();
+          }
         }
       }
     }
     return firstModificationTimeAfterCreation;
-  }
-
-  private static class TableModificationKey implements Comparable<TableModificationKey> {
-    private long id;
-    private long time;
-
-    private TableModificationKey(long id, long time) {
-      this.id = id;
-      this.time = time;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if(this == obj) {
-        return true;
-      }
-      if((obj == null) || (obj.getClass() != this.getClass())) {
-        return false;
-      }
-      TableModificationKey tableModificationKey = (TableModificationKey) obj;
-      return id == tableModificationKey.id && time == tableModificationKey.time;
-    }
-
-    @Override
-    public int hashCode() {
-      int hash = 7;
-      hash = 31 * hash + Long.hashCode(id);
-      hash = 31 * hash + Long.hashCode(time);
-      return hash;
-    }
-
-    @Override
-    public int compareTo(TableModificationKey other) {
-      if (id == other.id) {
-        return Long.compare(time, other.time);
-      }
-      return Long.compare(id, other.id);
-    }
-
-    @Override
-    public String toString() {
-      return "TableModificationKey{" + id + "," + time + "}";
-    }
   }
 
   private enum OpType {

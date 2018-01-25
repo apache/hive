@@ -27,6 +27,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collections;
@@ -54,11 +55,13 @@ import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.MaterializationsInvalidationCache;
@@ -103,7 +106,6 @@ import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnState;
-import org.apache.hadoop.hive.metastore.api.TxnsSnapshot;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -840,13 +842,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         dbConn.commit();
 
         // Update registry with modifications
-        s = "select ctc_database, ctc_table, ctc_id, ctc_timestamp from COMPLETED_TXN_COMPONENTS where ctc_txnid = " + txnid;
+        s = "select ctc_database, ctc_table, ctc_timestamp from COMPLETED_TXN_COMPONENTS where ctc_txnid = " + txnid;
         rs = stmt.executeQuery(s);
         if (rs.next()) {
           LOG.debug("Going to register table modification in invalidation cache <" + s + ">");
           MaterializationsInvalidationCache.get().notifyTableModification(
-              rs.getString(1), rs.getString(2), rs.getLong(3),
-              rs.getTimestamp(4, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime());
+              rs.getString(1), rs.getString(2), txnid,
+              rs.getTimestamp(3, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime());
         }
         close(rs);
         dbConn.commit();
@@ -913,73 +915,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   /**
-   * Gets the information of the last transaction committed for the input table
-   * given the transaction snapshot provided.
-   */
-  @Override
-  @RetrySemantics.ReadOnly
-  public List<BasicTxnInfo> getLastCompletedTransactionForTables(
-      List<String> dbNames, List<String> tableNames, TxnsSnapshot txnsSnapshot) throws MetaException {
-    List<BasicTxnInfo> r = new ArrayList<>();
-    for (int i = 0; i < dbNames.size(); i++) {
-      r.add(getLastCompletedTransactionForTable(dbNames.get(i), tableNames.get(i), txnsSnapshot));
-    }
-    return r;
-  }
-
-  /**
-   * Gets the information of the last transaction committed for the input table
-   * given the transaction snapshot provided.
-   */
-  @Override
-  @RetrySemantics.ReadOnly
-  public BasicTxnInfo getLastCompletedTransactionForTable(
-      String inputDbName, String inputTableName, TxnsSnapshot txnsSnapshot) throws MetaException {
-    Connection dbConn = null;
-    Statement stmt = null;
-    ResultSet rs = null;
-    try {
-      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-      stmt = dbConn.createStatement();
-      stmt.setMaxRows(1);
-      String s = "select ctc_id, ctc_timestamp, ctc_txnid, ctc_database, ctc_table "
-          + "from COMPLETED_TXN_COMPONENTS "
-          + "where ctc_database=" + quoteString(inputDbName) + " and ctc_table=" + quoteString(inputTableName)
-          + " and ctc_txnid <= " + txnsSnapshot.getTxn_high_water_mark()
-          + (txnsSnapshot.getOpen_txns().isEmpty() ?
-              " " : " and ctc_txnid NOT IN(" + StringUtils.join(",", txnsSnapshot.getOpen_txns()) + ") ")
-          + "order by ctc_id desc";
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Going to execute query <" + s + ">");
-      }
-      rs = stmt.executeQuery(s);
-      if(!rs.next()) {
-        return new BasicTxnInfo(true);
-      }
-      final BasicTxnInfo txnInfo = new BasicTxnInfo(false);
-      txnInfo.setId(rs.getLong(1));
-      txnInfo.setTime(rs.getTimestamp(2, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime());
-      txnInfo.setTxnid(rs.getLong(3));
-      txnInfo.setDbname(rs.getString(4));
-      txnInfo.setTablename(rs.getString(5));
-      return txnInfo;
-    } catch (SQLException ex) {
-      LOG.warn("getLastCompletedTransactionForTable failed due to " + getMessage(ex), ex);
-      throw new MetaException("Unable to retrieve commits information due to " + StringUtils.stringifyException(ex));
-    } finally {
-      close(rs, stmt, dbConn);
-    }
-  }
-
-  /**
    * Gets the information of the first transaction for the given table
    * after the transaction with the input id was committed (if any). 
    */
   @Override
   @RetrySemantics.ReadOnly
   public BasicTxnInfo getFirstCompletedTransactionForTableAfterCommit(
-      String inputDbName, String inputTableName, long incrementalIdentifier)
+      String inputDbName, String inputTableName, ValidTxnList txnList)
           throws MetaException {
+    final List<Long> openTxns = Arrays.asList(ArrayUtils.toObject(txnList.getInvalidTransactions()));
+
     Connection dbConn = null;
     Statement stmt = null;
     ResultSet rs = null;
@@ -987,23 +932,26 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
       stmt = dbConn.createStatement();
       stmt.setMaxRows(1);
-      String s = "select ctc_id, ctc_timestamp, ctc_txnid, ctc_database, ctc_table "
+      String s = "select ctc_timestamp, ctc_txnid, ctc_database, ctc_table "
           + "from COMPLETED_TXN_COMPONENTS "
           + "where ctc_database=" + quoteString(inputDbName) + " and ctc_table=" + quoteString(inputTableName)
-          + " and ctc_id > " + incrementalIdentifier + " order by ctc_id asc";
+          + " and ctc_txnid > " + txnList.getHighWatermark()
+          + (txnList.getInvalidTransactions().length == 0 ?
+              " " : " or ctc_txnid IN(" + StringUtils.join(",", openTxns) + ") ")
+          + "order by ctc_timestamp asc";
       if (LOG.isDebugEnabled()) {
         LOG.debug("Going to execute query <" + s + ">");
       }
       rs = stmt.executeQuery(s);
+
       if(!rs.next()) {
         return new BasicTxnInfo(true);
       }
       final BasicTxnInfo txnInfo = new BasicTxnInfo(false);
-      txnInfo.setId(rs.getLong(1));
-      txnInfo.setTime(rs.getTimestamp(2, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime());
-      txnInfo.setTxnid(rs.getLong(3));
-      txnInfo.setDbname(rs.getString(4));
-      txnInfo.setTablename(rs.getString(5));
+      txnInfo.setTime(rs.getTimestamp(1, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime());
+      txnInfo.setTxnid(rs.getLong(2));
+      txnInfo.setDbname(rs.getString(3));
+      txnInfo.setTablename(rs.getString(4));
       return txnInfo;
     } catch (SQLException ex) {
       LOG.warn("getLastCompletedTransactionForTable failed due to " + getMessage(ex), ex);

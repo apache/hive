@@ -4350,7 +4350,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // One last test: if we are enabling the rewrite, we need to check that query
     // only uses transactional (MM and ACID) tables
     if (enableFlag) {
-      for (String tableName : materializedViewTable.getCreationMetadata().keySet()) {
+      for (String tableName : materializedViewTable.getCreationMetadata().getTablesUsed()) {
         Table table = getTable(tableName, true);
         if (!AcidUtils.isAcidTable(table)) {
           throw new SemanticException("Automatic rewriting for materialized view cannot "

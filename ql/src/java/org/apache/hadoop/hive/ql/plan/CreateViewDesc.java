@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -65,7 +66,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private String serde; // only used for materialized views
   private String storageHandler; // only used for materialized views
   private Map<String, String> serdeProps; // only used for materialized views
-  private List<String> tablesUsed;  // only used for materialized views
+  private Set<String> tablesUsed;  // only used for materialized views
   private ReplicationSpec replicationSpec = null;
 
   /**
@@ -245,11 +246,11 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.ifNotExists = ifNotExists;
   }
 
-  public List<String> getTablesUsed() {
+  public Set<String> getTablesUsed() {
     return tablesUsed;
   }
 
-  public void setTablesUsed(List<String> tablesUsed) {
+  public void setTablesUsed(Set<String> tablesUsed) {
     this.tablesUsed = tablesUsed;
   }
 

@@ -286,7 +286,7 @@ public class TestTablesCreateDropAlterTruncate {
     Assert.assertNull("Comparing ViewOriginalText", createdTable.getViewOriginalText());
     Assert.assertNull("Comparing ViewExpandedText", createdTable.getViewExpandedText());
     Assert.assertEquals("Comparing TableType", "MANAGED_TABLE", createdTable.getTableType());
-    Assert.assertTrue("Creation metadata should be empty", createdTable.getCreationMetadata().isEmpty());
+    Assert.assertTrue("Creation metadata should be empty", createdTable.getCreationMetadata() == null);
 
     // Storage Descriptor data
     StorageDescriptor createdSd = createdTable.getSd();

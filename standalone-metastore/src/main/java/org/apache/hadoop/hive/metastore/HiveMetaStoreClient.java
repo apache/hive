@@ -2170,25 +2170,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public List<BasicTxnInfo> getLastCompletedTransactionForTables(
-      List<String> dbNames, List<String> tableNames, ValidTxnList txnList)
-          throws TException {
-    TxnsSnapshot txnsSnapshot = new TxnsSnapshot();
-    txnsSnapshot.setTxn_high_water_mark(txnList.getHighWatermark());
-    txnsSnapshot.setOpen_txns(Arrays.asList(ArrayUtils.toObject(txnList.getInvalidTransactions())));
-    return client.get_last_completed_transaction_for_tables(dbNames, tableNames, txnsSnapshot);
-  }
-
-  @Override
-  public BasicTxnInfo getLastCompletedTransactionForTable(String dbName, String tableName, ValidTxnList txnList)
-      throws TException {
-    TxnsSnapshot txnsSnapshot = new TxnsSnapshot();
-    txnsSnapshot.setTxn_high_water_mark(txnList.getHighWatermark());
-    txnsSnapshot.setOpen_txns(Arrays.asList(ArrayUtils.toObject(txnList.getInvalidTransactions())));
-    return client.get_last_completed_transaction_for_table(dbName, tableName, txnsSnapshot);
-  }
-
-  @Override
   public ValidTxnList getValidTxns() throws TException {
     return TxnUtils.createValidReadTxnList(client.get_open_txns(), 0);
   }

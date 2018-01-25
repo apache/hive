@@ -50,6 +50,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -79,6 +80,7 @@ import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -5121,10 +5123,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       if (crtView.isMaterialized()) {
         // We need to update the status of the creation signature
-        String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-        oldview.getTTable().setCreationMetadata(
-            generateCreationMetadata(db, crtView.getTablesUsed(),
-                txnString == null ? null : new ValidReadTxnList(txnString)));
+        CreationMetadata cm =
+            new CreationMetadata(oldview.getDbName(), oldview.getTableName(),
+                ImmutableSet.copyOf(crtView.getTablesUsed()));
+        cm.setValidTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
+        oldview.getTTable().setCreationMetadata(cm);
         db.alterTable(crtView.getViewName(), oldview, null);
         // This is a replace/rebuild, so we need an exclusive lock
         addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_EXCLUSIVE));
@@ -5156,10 +5159,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Table tbl = crtView.toTable(conf);
       // We set the signature for the view if it is a materialized view
       if (tbl.isMaterializedView()) {
-        String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-        tbl.getTTable().setCreationMetadata(
-            generateCreationMetadata(db, crtView.getTablesUsed(),
-                txnString == null ? null : new ValidReadTxnList(txnString)));
+        CreationMetadata cm =
+            new CreationMetadata(tbl.getDbName(), tbl.getTableName(),
+                ImmutableSet.copyOf(crtView.getTablesUsed()));
+        cm.setValidTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
+        tbl.getTTable().setCreationMetadata(cm);
       }
       db.createTable(tbl, crtView.getIfNotExists());
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
@@ -5169,38 +5173,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       queryState.getLineageState().setLineage(new Path(crtView.getViewName()), dc, tbl.getCols());
     }
     return 0;
-  }
-
-  private Map<String, BasicTxnInfo> generateCreationMetadata(
-      Hive db, List<String> tablesUsed, ValidReadTxnList txnList)
-          throws SemanticException {
-    Map<String, BasicTxnInfo> signature = new HashMap<>();
-    try {
-      if (!CollectionUtils.isEmpty(tablesUsed)) {
-        if (txnList == null) {
-          for (String fullyQualifiedName : tablesUsed) {
-            signature.put(fullyQualifiedName, new BasicTxnInfo(true));
-          }
-        } else {
-          List<String> dbNames = new ArrayList<>();
-          List<String> tableNames = new ArrayList<>();
-          for (String fullyQualifiedName : tablesUsed) {
-            // Add to creation metadata
-            String[] names =  fullyQualifiedName.split("\\.");
-            dbNames.add(names[0]);
-            tableNames.add(names[1]);
-          }
-          List<BasicTxnInfo> txnInfos =
-              db.getMSC().getLastCompletedTransactionForTables(dbNames, tableNames, txnList);
-          for (int i = 0; i < tablesUsed.size(); i++) {
-            signature.put(tablesUsed.get(i), txnInfos.get(i));
-          }
-        }
-      }
-    } catch (Exception ex) {
-      throw new SemanticException(ex);
-    }
-    return signature;
   }
 
   private int truncateTable(Hive db, TruncateTableDesc truncateTableDesc) throws HiveException {

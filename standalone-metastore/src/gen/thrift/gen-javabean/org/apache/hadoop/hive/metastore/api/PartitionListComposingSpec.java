@@ -350,14 +350,14 @@ import org.slf4j.LoggerFactory;
           case 1: // PARTITIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list262 = iprot.readListBegin();
-                struct.partitions = new ArrayList<Partition>(_list262.size);
-                Partition _elem263;
-                for (int _i264 = 0; _i264 < _list262.size; ++_i264)
+                org.apache.thrift.protocol.TList _list252 = iprot.readListBegin();
+                struct.partitions = new ArrayList<Partition>(_list252.size);
+                Partition _elem253;
+                for (int _i254 = 0; _i254 < _list252.size; ++_i254)
                 {
-                  _elem263 = new Partition();
-                  _elem263.read(iprot);
-                  struct.partitions.add(_elem263);
+                  _elem253 = new Partition();
+                  _elem253.read(iprot);
+                  struct.partitions.add(_elem253);
                 }
                 iprot.readListEnd();
               }
@@ -383,9 +383,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARTITIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitions.size()));
-          for (Partition _iter265 : struct.partitions)
+          for (Partition _iter255 : struct.partitions)
           {
-            _iter265.write(oprot);
+            _iter255.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -416,9 +416,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetPartitions()) {
         {
           oprot.writeI32(struct.partitions.size());
-          for (Partition _iter266 : struct.partitions)
+          for (Partition _iter256 : struct.partitions)
           {
-            _iter266.write(oprot);
+            _iter256.write(oprot);
           }
         }
       }
@@ -430,14 +430,14 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list267 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.partitions = new ArrayList<Partition>(_list267.size);
-          Partition _elem268;
-          for (int _i269 = 0; _i269 < _list267.size; ++_i269)
+          org.apache.thrift.protocol.TList _list257 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.partitions = new ArrayList<Partition>(_list257.size);
+          Partition _elem258;
+          for (int _i259 = 0; _i259 < _list257.size; ++_i259)
           {
-            _elem268 = new Partition();
-            _elem268.read(iprot);
-            struct.partitions.add(_elem268);
+            _elem258 = new Partition();
+            _elem258.read(iprot);
+            struct.partitions.add(_elem258);
           }
         }
         struct.setPartitionsIsSet(true);

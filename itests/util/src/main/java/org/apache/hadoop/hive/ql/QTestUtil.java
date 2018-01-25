@@ -926,6 +926,26 @@ public class QTestUtil {
     conf.set("hive.metastore.filter.hook",
         "org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl");
     db = Hive.get(conf);
+
+    // First delete any MVs to avoid race conditions
+    for (String dbName : db.getAllDatabases()) {
+      SessionState.get().setCurrentDatabase(dbName);
+      for (String tblName : db.getAllTables()) {
+        Table tblObj = null;
+        try {
+          tblObj = db.getTable(tblName);
+        } catch (InvalidTableException e) {
+          LOG.warn("Trying to drop table " + e.getTableName() + ". But it does not exist.");
+          continue;
+        }
+        // only remove MVs first
+        if (!tblObj.isMaterializedView()) {
+          continue;
+        }
+        db.dropTable(dbName, tblName, true, true, fsType == FsType.encrypted_hdfs);
+      }
+    }
+
     // Delete any tables other than the source tables
     // and any databases other than the default database.
     for (String dbName : db.getAllDatabases()) {

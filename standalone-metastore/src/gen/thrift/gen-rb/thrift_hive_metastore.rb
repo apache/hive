@@ -2546,36 +2546,6 @@ module ThriftHiveMetastore
       return
     end
 
-    def get_last_completed_transaction_for_tables(db_names, table_names, txns_snapshot)
-      send_get_last_completed_transaction_for_tables(db_names, table_names, txns_snapshot)
-      return recv_get_last_completed_transaction_for_tables()
-    end
-
-    def send_get_last_completed_transaction_for_tables(db_names, table_names, txns_snapshot)
-      send_message('get_last_completed_transaction_for_tables', Get_last_completed_transaction_for_tables_args, :db_names => db_names, :table_names => table_names, :txns_snapshot => txns_snapshot)
-    end
-
-    def recv_get_last_completed_transaction_for_tables()
-      result = receive_message(Get_last_completed_transaction_for_tables_result)
-      return result.success unless result.success.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_last_completed_transaction_for_tables failed: unknown result')
-    end
-
-    def get_last_completed_transaction_for_table(db_name, table_name, txns_snapshot)
-      send_get_last_completed_transaction_for_table(db_name, table_name, txns_snapshot)
-      return recv_get_last_completed_transaction_for_table()
-    end
-
-    def send_get_last_completed_transaction_for_table(db_name, table_name, txns_snapshot)
-      send_message('get_last_completed_transaction_for_table', Get_last_completed_transaction_for_table_args, :db_name => db_name, :table_name => table_name, :txns_snapshot => txns_snapshot)
-    end
-
-    def recv_get_last_completed_transaction_for_table()
-      result = receive_message(Get_last_completed_transaction_for_table_result)
-      return result.success unless result.success.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_last_completed_transaction_for_table failed: unknown result')
-    end
-
     def get_next_notification(rqst)
       send_get_next_notification(rqst)
       return recv_get_next_notification()
@@ -4984,20 +4954,6 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'add_dynamic_partitions', seqid)
-    end
-
-    def process_get_last_completed_transaction_for_tables(seqid, iprot, oprot)
-      args = read_args(iprot, Get_last_completed_transaction_for_tables_args)
-      result = Get_last_completed_transaction_for_tables_result.new()
-      result.success = @handler.get_last_completed_transaction_for_tables(args.db_names, args.table_names, args.txns_snapshot)
-      write_result(result, oprot, 'get_last_completed_transaction_for_tables', seqid)
-    end
-
-    def process_get_last_completed_transaction_for_table(seqid, iprot, oprot)
-      args = read_args(iprot, Get_last_completed_transaction_for_table_args)
-      result = Get_last_completed_transaction_for_table_result.new()
-      result.success = @handler.get_last_completed_transaction_for_table(args.db_name, args.table_name, args.txns_snapshot)
-      write_result(result, oprot, 'get_last_completed_transaction_for_table', seqid)
     end
 
     def process_get_next_notification(seqid, iprot, oprot)
@@ -11078,78 +11034,6 @@ module ThriftHiveMetastore
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::TxnAbortedException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_last_completed_transaction_for_tables_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DB_NAMES = 1
-    TABLE_NAMES = 2
-    TXNS_SNAPSHOT = 3
-
-    FIELDS = {
-      DB_NAMES => {:type => ::Thrift::Types::LIST, :name => 'db_names', :element => {:type => ::Thrift::Types::STRING}},
-      TABLE_NAMES => {:type => ::Thrift::Types::LIST, :name => 'table_names', :element => {:type => ::Thrift::Types::STRING}},
-      TXNS_SNAPSHOT => {:type => ::Thrift::Types::STRUCT, :name => 'txns_snapshot', :class => ::TxnsSnapshot}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_last_completed_transaction_for_tables_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::BasicTxnInfo}}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_last_completed_transaction_for_table_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    DB_NAME = 1
-    TABLE_NAME = 2
-    TXNS_SNAPSHOT = 3
-
-    FIELDS = {
-      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
-      TABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'table_name'},
-      TXNS_SNAPSHOT => {:type => ::Thrift::Types::STRUCT, :name => 'txns_snapshot', :class => ::TxnsSnapshot}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_last_completed_transaction_for_table_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::BasicTxnInfo}
     }
 
     def struct_fields; FIELDS; end

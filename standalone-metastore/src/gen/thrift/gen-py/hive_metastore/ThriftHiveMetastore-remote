@@ -176,8 +176,6 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  CompactionResponse compact2(CompactionRequest rqst)')
   print('  ShowCompactResponse show_compact(ShowCompactRequest rqst)')
   print('  void add_dynamic_partitions(AddDynamicPartitions rqst)')
-  print('   get_last_completed_transaction_for_tables( db_names,  table_names, TxnsSnapshot txns_snapshot)')
-  print('  BasicTxnInfo get_last_completed_transaction_for_table(string db_name, string table_name, TxnsSnapshot txns_snapshot)')
   print('  NotificationEventResponse get_next_notification(NotificationEventRequest rqst)')
   print('  CurrentNotificationEventId get_current_notificationEventId()')
   print('  NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)')
@@ -1187,18 +1185,6 @@ elif cmd == 'add_dynamic_partitions':
     print('add_dynamic_partitions requires 1 args')
     sys.exit(1)
   pp.pprint(client.add_dynamic_partitions(eval(args[0]),))
-
-elif cmd == 'get_last_completed_transaction_for_tables':
-  if len(args) != 3:
-    print('get_last_completed_transaction_for_tables requires 3 args')
-    sys.exit(1)
-  pp.pprint(client.get_last_completed_transaction_for_tables(eval(args[0]),eval(args[1]),eval(args[2]),))
-
-elif cmd == 'get_last_completed_transaction_for_table':
-  if len(args) != 3:
-    print('get_last_completed_transaction_for_table requires 3 args')
-    sys.exit(1)
-  pp.pprint(client.get_last_completed_transaction_for_table(args[0],args[1],eval(args[2]),))
 
 elif cmd == 'get_next_notification':
   if len(args) != 1:
