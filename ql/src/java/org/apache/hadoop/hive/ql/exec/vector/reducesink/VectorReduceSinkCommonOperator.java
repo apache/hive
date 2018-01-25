@@ -405,6 +405,7 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     if (LOG.isInfoEnabled()) {
       LOG.info(toString() + ": records written - " + numRows);
     }
+    this.runTimeNumRows = numRows;
     recordCounter.set(numRows);
   }
 
