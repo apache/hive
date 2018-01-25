@@ -588,8 +588,7 @@ public class SparkCompiler extends TaskCompiler {
       LOG.debug("Skipping cross product analysis");
     }
 
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)
-        && ctx.getExplainAnalyze() == null) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
       (new Vectorizer()).resolve(physicalCtx);
     } else {
       LOG.debug("Skipping vectorization");
