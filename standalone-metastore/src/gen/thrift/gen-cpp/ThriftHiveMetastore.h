@@ -174,8 +174,6 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void compact2(CompactionResponse& _return, const CompactionRequest& rqst) = 0;
   virtual void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) = 0;
   virtual void add_dynamic_partitions(const AddDynamicPartitions& rqst) = 0;
-  virtual void get_last_completed_transaction_for_tables(std::vector<BasicTxnInfo> & _return, const std::vector<std::string> & db_names, const std::vector<std::string> & table_names, const TxnsSnapshot& txns_snapshot) = 0;
-  virtual void get_last_completed_transaction_for_table(BasicTxnInfo& _return, const std::string& db_name, const std::string& table_name, const TxnsSnapshot& txns_snapshot) = 0;
   virtual void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) = 0;
   virtual void get_current_notificationEventId(CurrentNotificationEventId& _return) = 0;
   virtual void get_notification_events_count(NotificationEventsCountResponse& _return, const NotificationEventsCountRequest& rqst) = 0;
@@ -716,12 +714,6 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void add_dynamic_partitions(const AddDynamicPartitions& /* rqst */) {
-    return;
-  }
-  void get_last_completed_transaction_for_tables(std::vector<BasicTxnInfo> & /* _return */, const std::vector<std::string> & /* db_names */, const std::vector<std::string> & /* table_names */, const TxnsSnapshot& /* txns_snapshot */) {
-    return;
-  }
-  void get_last_completed_transaction_for_table(BasicTxnInfo& /* _return */, const std::string& /* db_name */, const std::string& /* table_name */, const TxnsSnapshot& /* txns_snapshot */) {
     return;
   }
   void get_next_notification(NotificationEventResponse& /* _return */, const NotificationEventRequest& /* rqst */) {
@@ -19798,242 +19790,6 @@ class ThriftHiveMetastore_add_dynamic_partitions_presult {
 
 };
 
-typedef struct _ThriftHiveMetastore_get_last_completed_transaction_for_tables_args__isset {
-  _ThriftHiveMetastore_get_last_completed_transaction_for_tables_args__isset() : db_names(false), table_names(false), txns_snapshot(false) {}
-  bool db_names :1;
-  bool table_names :1;
-  bool txns_snapshot :1;
-} _ThriftHiveMetastore_get_last_completed_transaction_for_tables_args__isset;
-
-class ThriftHiveMetastore_get_last_completed_transaction_for_tables_args {
- public:
-
-  ThriftHiveMetastore_get_last_completed_transaction_for_tables_args(const ThriftHiveMetastore_get_last_completed_transaction_for_tables_args&);
-  ThriftHiveMetastore_get_last_completed_transaction_for_tables_args& operator=(const ThriftHiveMetastore_get_last_completed_transaction_for_tables_args&);
-  ThriftHiveMetastore_get_last_completed_transaction_for_tables_args() {
-  }
-
-  virtual ~ThriftHiveMetastore_get_last_completed_transaction_for_tables_args() throw();
-  std::vector<std::string>  db_names;
-  std::vector<std::string>  table_names;
-  TxnsSnapshot txns_snapshot;
-
-  _ThriftHiveMetastore_get_last_completed_transaction_for_tables_args__isset __isset;
-
-  void __set_db_names(const std::vector<std::string> & val);
-
-  void __set_table_names(const std::vector<std::string> & val);
-
-  void __set_txns_snapshot(const TxnsSnapshot& val);
-
-  bool operator == (const ThriftHiveMetastore_get_last_completed_transaction_for_tables_args & rhs) const
-  {
-    if (!(db_names == rhs.db_names))
-      return false;
-    if (!(table_names == rhs.table_names))
-      return false;
-    if (!(txns_snapshot == rhs.txns_snapshot))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_get_last_completed_transaction_for_tables_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_get_last_completed_transaction_for_tables_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-
-class ThriftHiveMetastore_get_last_completed_transaction_for_tables_pargs {
- public:
-
-
-  virtual ~ThriftHiveMetastore_get_last_completed_transaction_for_tables_pargs() throw();
-  const std::vector<std::string> * db_names;
-  const std::vector<std::string> * table_names;
-  const TxnsSnapshot* txns_snapshot;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_get_last_completed_transaction_for_tables_result__isset {
-  _ThriftHiveMetastore_get_last_completed_transaction_for_tables_result__isset() : success(false) {}
-  bool success :1;
-} _ThriftHiveMetastore_get_last_completed_transaction_for_tables_result__isset;
-
-class ThriftHiveMetastore_get_last_completed_transaction_for_tables_result {
- public:
-
-  ThriftHiveMetastore_get_last_completed_transaction_for_tables_result(const ThriftHiveMetastore_get_last_completed_transaction_for_tables_result&);
-  ThriftHiveMetastore_get_last_completed_transaction_for_tables_result& operator=(const ThriftHiveMetastore_get_last_completed_transaction_for_tables_result&);
-  ThriftHiveMetastore_get_last_completed_transaction_for_tables_result() {
-  }
-
-  virtual ~ThriftHiveMetastore_get_last_completed_transaction_for_tables_result() throw();
-  std::vector<BasicTxnInfo>  success;
-
-  _ThriftHiveMetastore_get_last_completed_transaction_for_tables_result__isset __isset;
-
-  void __set_success(const std::vector<BasicTxnInfo> & val);
-
-  bool operator == (const ThriftHiveMetastore_get_last_completed_transaction_for_tables_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_get_last_completed_transaction_for_tables_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_get_last_completed_transaction_for_tables_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_get_last_completed_transaction_for_tables_presult__isset {
-  _ThriftHiveMetastore_get_last_completed_transaction_for_tables_presult__isset() : success(false) {}
-  bool success :1;
-} _ThriftHiveMetastore_get_last_completed_transaction_for_tables_presult__isset;
-
-class ThriftHiveMetastore_get_last_completed_transaction_for_tables_presult {
- public:
-
-
-  virtual ~ThriftHiveMetastore_get_last_completed_transaction_for_tables_presult() throw();
-  std::vector<BasicTxnInfo> * success;
-
-  _ThriftHiveMetastore_get_last_completed_transaction_for_tables_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-};
-
-typedef struct _ThriftHiveMetastore_get_last_completed_transaction_for_table_args__isset {
-  _ThriftHiveMetastore_get_last_completed_transaction_for_table_args__isset() : db_name(false), table_name(false), txns_snapshot(false) {}
-  bool db_name :1;
-  bool table_name :1;
-  bool txns_snapshot :1;
-} _ThriftHiveMetastore_get_last_completed_transaction_for_table_args__isset;
-
-class ThriftHiveMetastore_get_last_completed_transaction_for_table_args {
- public:
-
-  ThriftHiveMetastore_get_last_completed_transaction_for_table_args(const ThriftHiveMetastore_get_last_completed_transaction_for_table_args&);
-  ThriftHiveMetastore_get_last_completed_transaction_for_table_args& operator=(const ThriftHiveMetastore_get_last_completed_transaction_for_table_args&);
-  ThriftHiveMetastore_get_last_completed_transaction_for_table_args() : db_name(), table_name() {
-  }
-
-  virtual ~ThriftHiveMetastore_get_last_completed_transaction_for_table_args() throw();
-  std::string db_name;
-  std::string table_name;
-  TxnsSnapshot txns_snapshot;
-
-  _ThriftHiveMetastore_get_last_completed_transaction_for_table_args__isset __isset;
-
-  void __set_db_name(const std::string& val);
-
-  void __set_table_name(const std::string& val);
-
-  void __set_txns_snapshot(const TxnsSnapshot& val);
-
-  bool operator == (const ThriftHiveMetastore_get_last_completed_transaction_for_table_args & rhs) const
-  {
-    if (!(db_name == rhs.db_name))
-      return false;
-    if (!(table_name == rhs.table_name))
-      return false;
-    if (!(txns_snapshot == rhs.txns_snapshot))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_get_last_completed_transaction_for_table_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_get_last_completed_transaction_for_table_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-
-class ThriftHiveMetastore_get_last_completed_transaction_for_table_pargs {
- public:
-
-
-  virtual ~ThriftHiveMetastore_get_last_completed_transaction_for_table_pargs() throw();
-  const std::string* db_name;
-  const std::string* table_name;
-  const TxnsSnapshot* txns_snapshot;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_get_last_completed_transaction_for_table_result__isset {
-  _ThriftHiveMetastore_get_last_completed_transaction_for_table_result__isset() : success(false) {}
-  bool success :1;
-} _ThriftHiveMetastore_get_last_completed_transaction_for_table_result__isset;
-
-class ThriftHiveMetastore_get_last_completed_transaction_for_table_result {
- public:
-
-  ThriftHiveMetastore_get_last_completed_transaction_for_table_result(const ThriftHiveMetastore_get_last_completed_transaction_for_table_result&);
-  ThriftHiveMetastore_get_last_completed_transaction_for_table_result& operator=(const ThriftHiveMetastore_get_last_completed_transaction_for_table_result&);
-  ThriftHiveMetastore_get_last_completed_transaction_for_table_result() {
-  }
-
-  virtual ~ThriftHiveMetastore_get_last_completed_transaction_for_table_result() throw();
-  BasicTxnInfo success;
-
-  _ThriftHiveMetastore_get_last_completed_transaction_for_table_result__isset __isset;
-
-  void __set_success(const BasicTxnInfo& val);
-
-  bool operator == (const ThriftHiveMetastore_get_last_completed_transaction_for_table_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_get_last_completed_transaction_for_table_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_get_last_completed_transaction_for_table_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_get_last_completed_transaction_for_table_presult__isset {
-  _ThriftHiveMetastore_get_last_completed_transaction_for_table_presult__isset() : success(false) {}
-  bool success :1;
-} _ThriftHiveMetastore_get_last_completed_transaction_for_table_presult__isset;
-
-class ThriftHiveMetastore_get_last_completed_transaction_for_table_presult {
- public:
-
-
-  virtual ~ThriftHiveMetastore_get_last_completed_transaction_for_table_presult() throw();
-  BasicTxnInfo* success;
-
-  _ThriftHiveMetastore_get_last_completed_transaction_for_table_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-};
-
 typedef struct _ThriftHiveMetastore_get_next_notification_args__isset {
   _ThriftHiveMetastore_get_next_notification_args__isset() : rqst(false) {}
   bool rqst :1;
@@ -23871,12 +23627,6 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void add_dynamic_partitions(const AddDynamicPartitions& rqst);
   void send_add_dynamic_partitions(const AddDynamicPartitions& rqst);
   void recv_add_dynamic_partitions();
-  void get_last_completed_transaction_for_tables(std::vector<BasicTxnInfo> & _return, const std::vector<std::string> & db_names, const std::vector<std::string> & table_names, const TxnsSnapshot& txns_snapshot);
-  void send_get_last_completed_transaction_for_tables(const std::vector<std::string> & db_names, const std::vector<std::string> & table_names, const TxnsSnapshot& txns_snapshot);
-  void recv_get_last_completed_transaction_for_tables(std::vector<BasicTxnInfo> & _return);
-  void get_last_completed_transaction_for_table(BasicTxnInfo& _return, const std::string& db_name, const std::string& table_name, const TxnsSnapshot& txns_snapshot);
-  void send_get_last_completed_transaction_for_table(const std::string& db_name, const std::string& table_name, const TxnsSnapshot& txns_snapshot);
-  void recv_get_last_completed_transaction_for_table(BasicTxnInfo& _return);
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst);
   void send_get_next_notification(const NotificationEventRequest& rqst);
   void recv_get_next_notification(NotificationEventResponse& _return);
@@ -24126,8 +23876,6 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_compact2(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_show_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_dynamic_partitions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_get_last_completed_transaction_for_tables(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_get_last_completed_transaction_for_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_next_notification(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_current_notificationEventId(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_notification_events_count(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -24313,8 +24061,6 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["compact2"] = &ThriftHiveMetastoreProcessor::process_compact2;
     processMap_["show_compact"] = &ThriftHiveMetastoreProcessor::process_show_compact;
     processMap_["add_dynamic_partitions"] = &ThriftHiveMetastoreProcessor::process_add_dynamic_partitions;
-    processMap_["get_last_completed_transaction_for_tables"] = &ThriftHiveMetastoreProcessor::process_get_last_completed_transaction_for_tables;
-    processMap_["get_last_completed_transaction_for_table"] = &ThriftHiveMetastoreProcessor::process_get_last_completed_transaction_for_table;
     processMap_["get_next_notification"] = &ThriftHiveMetastoreProcessor::process_get_next_notification;
     processMap_["get_current_notificationEventId"] = &ThriftHiveMetastoreProcessor::process_get_current_notificationEventId;
     processMap_["get_notification_events_count"] = &ThriftHiveMetastoreProcessor::process_get_notification_events_count;
@@ -25832,26 +25578,6 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->add_dynamic_partitions(rqst);
   }
 
-  void get_last_completed_transaction_for_tables(std::vector<BasicTxnInfo> & _return, const std::vector<std::string> & db_names, const std::vector<std::string> & table_names, const TxnsSnapshot& txns_snapshot) {
-    size_t sz = ifaces_.size();
-    size_t i = 0;
-    for (; i < (sz - 1); ++i) {
-      ifaces_[i]->get_last_completed_transaction_for_tables(_return, db_names, table_names, txns_snapshot);
-    }
-    ifaces_[i]->get_last_completed_transaction_for_tables(_return, db_names, table_names, txns_snapshot);
-    return;
-  }
-
-  void get_last_completed_transaction_for_table(BasicTxnInfo& _return, const std::string& db_name, const std::string& table_name, const TxnsSnapshot& txns_snapshot) {
-    size_t sz = ifaces_.size();
-    size_t i = 0;
-    for (; i < (sz - 1); ++i) {
-      ifaces_[i]->get_last_completed_transaction_for_table(_return, db_name, table_name, txns_snapshot);
-    }
-    ifaces_[i]->get_last_completed_transaction_for_table(_return, db_name, table_name, txns_snapshot);
-    return;
-  }
-
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -26613,12 +26339,6 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void add_dynamic_partitions(const AddDynamicPartitions& rqst);
   int32_t send_add_dynamic_partitions(const AddDynamicPartitions& rqst);
   void recv_add_dynamic_partitions(const int32_t seqid);
-  void get_last_completed_transaction_for_tables(std::vector<BasicTxnInfo> & _return, const std::vector<std::string> & db_names, const std::vector<std::string> & table_names, const TxnsSnapshot& txns_snapshot);
-  int32_t send_get_last_completed_transaction_for_tables(const std::vector<std::string> & db_names, const std::vector<std::string> & table_names, const TxnsSnapshot& txns_snapshot);
-  void recv_get_last_completed_transaction_for_tables(std::vector<BasicTxnInfo> & _return, const int32_t seqid);
-  void get_last_completed_transaction_for_table(BasicTxnInfo& _return, const std::string& db_name, const std::string& table_name, const TxnsSnapshot& txns_snapshot);
-  int32_t send_get_last_completed_transaction_for_table(const std::string& db_name, const std::string& table_name, const TxnsSnapshot& txns_snapshot);
-  void recv_get_last_completed_transaction_for_table(BasicTxnInfo& _return, const int32_t seqid);
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst);
   int32_t send_get_next_notification(const NotificationEventRequest& rqst);
   void recv_get_next_notification(NotificationEventResponse& _return, const int32_t seqid);

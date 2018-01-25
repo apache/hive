@@ -39,12 +39,11 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BasicTxnInfo");
 
   private static final org.apache.thrift.protocol.TField ISNULL_FIELD_DESC = new org.apache.thrift.protocol.TField("isnull", org.apache.thrift.protocol.TType.BOOL, (short)1);
-  private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I64, (short)2);
-  private static final org.apache.thrift.protocol.TField TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("time", org.apache.thrift.protocol.TType.I64, (short)3);
-  private static final org.apache.thrift.protocol.TField TXNID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnid", org.apache.thrift.protocol.TType.I64, (short)4);
-  private static final org.apache.thrift.protocol.TField DBNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbname", org.apache.thrift.protocol.TType.STRING, (short)5);
-  private static final org.apache.thrift.protocol.TField TABLENAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tablename", org.apache.thrift.protocol.TType.STRING, (short)6);
-  private static final org.apache.thrift.protocol.TField PARTITIONNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionname", org.apache.thrift.protocol.TType.STRING, (short)7);
+  private static final org.apache.thrift.protocol.TField TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("time", org.apache.thrift.protocol.TType.I64, (short)2);
+  private static final org.apache.thrift.protocol.TField TXNID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnid", org.apache.thrift.protocol.TType.I64, (short)3);
+  private static final org.apache.thrift.protocol.TField DBNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbname", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField TABLENAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tablename", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField PARTITIONNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionname", org.apache.thrift.protocol.TType.STRING, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,7 +52,6 @@ import org.slf4j.LoggerFactory;
   }
 
   private boolean isnull; // required
-  private long id; // optional
   private long time; // optional
   private long txnid; // optional
   private String dbname; // optional
@@ -63,12 +61,11 @@ import org.slf4j.LoggerFactory;
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     ISNULL((short)1, "isnull"),
-    ID((short)2, "id"),
-    TIME((short)3, "time"),
-    TXNID((short)4, "txnid"),
-    DBNAME((short)5, "dbname"),
-    TABLENAME((short)6, "tablename"),
-    PARTITIONNAME((short)7, "partitionname");
+    TIME((short)2, "time"),
+    TXNID((short)3, "txnid"),
+    DBNAME((short)4, "dbname"),
+    TABLENAME((short)5, "tablename"),
+    PARTITIONNAME((short)6, "partitionname");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -85,17 +82,15 @@ import org.slf4j.LoggerFactory;
       switch(fieldId) {
         case 1: // ISNULL
           return ISNULL;
-        case 2: // ID
-          return ID;
-        case 3: // TIME
+        case 2: // TIME
           return TIME;
-        case 4: // TXNID
+        case 3: // TXNID
           return TXNID;
-        case 5: // DBNAME
+        case 4: // DBNAME
           return DBNAME;
-        case 6: // TABLENAME
+        case 5: // TABLENAME
           return TABLENAME;
-        case 7: // PARTITIONNAME
+        case 6: // PARTITIONNAME
           return PARTITIONNAME;
         default:
           return null;
@@ -138,18 +133,15 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __ISNULL_ISSET_ID = 0;
-  private static final int __ID_ISSET_ID = 1;
-  private static final int __TIME_ISSET_ID = 2;
-  private static final int __TXNID_ISSET_ID = 3;
+  private static final int __TIME_ISSET_ID = 1;
+  private static final int __TXNID_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.ID,_Fields.TIME,_Fields.TXNID,_Fields.DBNAME,_Fields.TABLENAME,_Fields.PARTITIONNAME};
+  private static final _Fields optionals[] = {_Fields.TIME,_Fields.TXNID,_Fields.DBNAME,_Fields.TABLENAME,_Fields.PARTITIONNAME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ISNULL, new org.apache.thrift.meta_data.FieldMetaData("isnull", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.TIME, new org.apache.thrift.meta_data.FieldMetaData("time", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.TXNID, new org.apache.thrift.meta_data.FieldMetaData("txnid", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -181,7 +173,6 @@ import org.slf4j.LoggerFactory;
   public BasicTxnInfo(BasicTxnInfo other) {
     __isset_bitfield = other.__isset_bitfield;
     this.isnull = other.isnull;
-    this.id = other.id;
     this.time = other.time;
     this.txnid = other.txnid;
     if (other.isSetDbname()) {
@@ -203,8 +194,6 @@ import org.slf4j.LoggerFactory;
   public void clear() {
     setIsnullIsSet(false);
     this.isnull = false;
-    setIdIsSet(false);
-    this.id = 0;
     setTimeIsSet(false);
     this.time = 0;
     setTxnidIsSet(false);
@@ -234,28 +223,6 @@ import org.slf4j.LoggerFactory;
 
   public void setIsnullIsSet(boolean value) {
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISNULL_ISSET_ID, value);
-  }
-
-  public long getId() {
-    return this.id;
-  }
-
-  public void setId(long id) {
-    this.id = id;
-    setIdIsSet(true);
-  }
-
-  public void unsetId() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ID_ISSET_ID);
-  }
-
-  /** Returns true if field id is set (has been assigned a value) and false otherwise */
-  public boolean isSetId() {
-    return EncodingUtils.testBit(__isset_bitfield, __ID_ISSET_ID);
-  }
-
-  public void setIdIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ID_ISSET_ID, value);
   }
 
   public long getTime() {
@@ -381,14 +348,6 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case ID:
-      if (value == null) {
-        unsetId();
-      } else {
-        setId((Long)value);
-      }
-      break;
-
     case TIME:
       if (value == null) {
         unsetTime();
@@ -437,9 +396,6 @@ import org.slf4j.LoggerFactory;
     case ISNULL:
       return isIsnull();
 
-    case ID:
-      return getId();
-
     case TIME:
       return getTime();
 
@@ -468,8 +424,6 @@ import org.slf4j.LoggerFactory;
     switch (field) {
     case ISNULL:
       return isSetIsnull();
-    case ID:
-      return isSetId();
     case TIME:
       return isSetTime();
     case TXNID:
@@ -503,15 +457,6 @@ import org.slf4j.LoggerFactory;
       if (!(this_present_isnull && that_present_isnull))
         return false;
       if (this.isnull != that.isnull)
-        return false;
-    }
-
-    boolean this_present_id = true && this.isSetId();
-    boolean that_present_id = true && that.isSetId();
-    if (this_present_id || that_present_id) {
-      if (!(this_present_id && that_present_id))
-        return false;
-      if (this.id != that.id)
         return false;
     }
 
@@ -572,11 +517,6 @@ import org.slf4j.LoggerFactory;
     if (present_isnull)
       list.add(isnull);
 
-    boolean present_id = true && (isSetId());
-    list.add(present_id);
-    if (present_id)
-      list.add(id);
-
     boolean present_time = true && (isSetTime());
     list.add(present_time);
     if (present_time)
@@ -619,16 +559,6 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetIsnull()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isnull, other.isnull);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetId()).compareTo(other.isSetId());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.id, other.id);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -706,12 +636,6 @@ import org.slf4j.LoggerFactory;
     sb.append("isnull:");
     sb.append(this.isnull);
     first = false;
-    if (isSetId()) {
-      if (!first) sb.append(", ");
-      sb.append("id:");
-      sb.append(this.id);
-      first = false;
-    }
     if (isSetTime()) {
       if (!first) sb.append(", ");
       sb.append("time:");
@@ -811,15 +735,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.id = iprot.readI64();
-              struct.setIdIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 3: // TIME
+          case 2: // TIME
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.time = iprot.readI64();
               struct.setTimeIsSet(true);
@@ -827,7 +743,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // TXNID
+          case 3: // TXNID
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.txnid = iprot.readI64();
               struct.setTxnidIsSet(true);
@@ -835,7 +751,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // DBNAME
+          case 4: // DBNAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.dbname = iprot.readString();
               struct.setDbnameIsSet(true);
@@ -843,7 +759,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // TABLENAME
+          case 5: // TABLENAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.tablename = iprot.readString();
               struct.setTablenameIsSet(true);
@@ -851,7 +767,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // PARTITIONNAME
+          case 6: // PARTITIONNAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.partitionname = iprot.readString();
               struct.setPartitionnameIsSet(true);
@@ -875,11 +791,6 @@ import org.slf4j.LoggerFactory;
       oprot.writeFieldBegin(ISNULL_FIELD_DESC);
       oprot.writeBool(struct.isnull);
       oprot.writeFieldEnd();
-      if (struct.isSetId()) {
-        oprot.writeFieldBegin(ID_FIELD_DESC);
-        oprot.writeI64(struct.id);
-        oprot.writeFieldEnd();
-      }
       if (struct.isSetTime()) {
         oprot.writeFieldBegin(TIME_FIELD_DESC);
         oprot.writeI64(struct.time);
@@ -930,28 +841,22 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeBool(struct.isnull);
       BitSet optionals = new BitSet();
-      if (struct.isSetId()) {
+      if (struct.isSetTime()) {
         optionals.set(0);
       }
-      if (struct.isSetTime()) {
+      if (struct.isSetTxnid()) {
         optionals.set(1);
       }
-      if (struct.isSetTxnid()) {
+      if (struct.isSetDbname()) {
         optionals.set(2);
       }
-      if (struct.isSetDbname()) {
+      if (struct.isSetTablename()) {
         optionals.set(3);
       }
-      if (struct.isSetTablename()) {
+      if (struct.isSetPartitionname()) {
         optionals.set(4);
       }
-      if (struct.isSetPartitionname()) {
-        optionals.set(5);
-      }
-      oprot.writeBitSet(optionals, 6);
-      if (struct.isSetId()) {
-        oprot.writeI64(struct.id);
-      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetTime()) {
         oprot.writeI64(struct.time);
       }
@@ -974,28 +879,24 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.isnull = iprot.readBool();
       struct.setIsnullIsSet(true);
-      BitSet incoming = iprot.readBitSet(6);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
-        struct.id = iprot.readI64();
-        struct.setIdIsSet(true);
-      }
-      if (incoming.get(1)) {
         struct.time = iprot.readI64();
         struct.setTimeIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(1)) {
         struct.txnid = iprot.readI64();
         struct.setTxnidIsSet(true);
       }
-      if (incoming.get(3)) {
+      if (incoming.get(2)) {
         struct.dbname = iprot.readString();
         struct.setDbnameIsSet(true);
       }
-      if (incoming.get(4)) {
+      if (incoming.get(3)) {
         struct.tablename = iprot.readString();
         struct.setTablenameIsSet(true);
       }
-      if (incoming.get(5)) {
+      if (incoming.get(4)) {
         struct.partitionname = iprot.readString();
         struct.setPartitionnameIsSet(true);
       }

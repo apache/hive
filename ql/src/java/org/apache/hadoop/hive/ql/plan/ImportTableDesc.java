@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -100,6 +101,8 @@ public class ImportTableDesc {
                   table.getSd().getSerdeInfo().getSerializationLib(),
                   null, // storagehandler passed as table params
                   table.getSd().getSerdeInfo().getParameters());
+          this.createViewDesc.setTablesUsed(table.getCreationMetadata() != null ?
+              table.getCreationMetadata().getTablesUsed() : ImmutableSet.of());
         } else {
           this.createViewDesc = new CreateViewDesc(dbDotView,
                   table.getAllCols(),

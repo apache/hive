@@ -782,16 +782,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_dynamic_partitions\n");
   }
 
-  void get_last_completed_transaction_for_tables(std::vector<BasicTxnInfo> & _return, const std::vector<std::string> & db_names, const std::vector<std::string> & table_names, const TxnsSnapshot& txns_snapshot) {
-    // Your implementation goes here
-    printf("get_last_completed_transaction_for_tables\n");
-  }
-
-  void get_last_completed_transaction_for_table(BasicTxnInfo& _return, const std::string& db_name, const std::string& table_name, const TxnsSnapshot& txns_snapshot) {
-    // Your implementation goes here
-    printf("get_last_completed_transaction_for_table\n");
-  }
-
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {
     // Your implementation goes here
     printf("get_next_notification\n");

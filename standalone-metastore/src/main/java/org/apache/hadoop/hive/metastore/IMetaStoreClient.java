@@ -1338,24 +1338,6 @@ public interface IMetaStoreClient {
           throws MetaException, TException;
 
   /**
-   * Get the last completed transaction for the given tables. Although transactions in Hive
-   * might happen concurrently, the order is based on the actual commit to the metastore
-   * table holding the completed transactions.
-   */
-  @InterfaceAudience.LimitedPrivate({"HCatalog"})
-  List<BasicTxnInfo> getLastCompletedTransactionForTables(List<String> dbNames, List<String> tableNames, ValidTxnList txnList)
-      throws TException;
-
-  /**
-   * Get the last completed transaction for the given table. Although transactions in Hive
-   * might happen concurrently, the order is based on the actual commit to the metastore
-   * table holding the completed transactions.
-   */
-  @InterfaceAudience.LimitedPrivate({"HCatalog"})
-  BasicTxnInfo getLastCompletedTransactionForTable(String dbName, String tableName, ValidTxnList txnList)
-      throws TException;
-
-  /**
    * Get a structure that details valid transactions.
    * @return list of valid transactions
    * @throws TException

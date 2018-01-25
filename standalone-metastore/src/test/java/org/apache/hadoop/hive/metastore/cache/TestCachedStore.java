@@ -225,7 +225,6 @@ public class TestCachedStore {
     Table tbl1 =
         new Table(tblName1, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<>(), tblParams,
             null, null, TableType.MANAGED_TABLE.toString());
-    tbl1.setCreationMetadata(new HashMap<String, BasicTxnInfo>());
     cachedStore.createTable(tbl1);
     tbl1 = cachedStore.getTable(dbName, tblName1);
 

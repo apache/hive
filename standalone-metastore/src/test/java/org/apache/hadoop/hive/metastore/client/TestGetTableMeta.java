@@ -23,8 +23,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
@@ -149,7 +151,9 @@ public class TestGetTableMeta {
 
 
     if (type == TableType.MATERIALIZED_VIEW) {
-      table.setCreationMetadata(new HashMap<>());
+      CreationMetadata cm = new CreationMetadata(
+          dbName, tableName, ImmutableSet.of());
+      table.setCreationMetadata(cm);
     }
 
     if (type == TableType.EXTERNAL_TABLE) {

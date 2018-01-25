@@ -6951,19 +6951,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public List<BasicTxnInfo> get_last_completed_transaction_for_tables(
-        List<String> dbNames, List<String> tableNames, TxnsSnapshot txnsSnapshot)
-            throws TException {
-      return getTxnHandler().getLastCompletedTransactionForTables(dbNames, tableNames, txnsSnapshot);
-    }
-
-    @Override
-    public BasicTxnInfo get_last_completed_transaction_for_table(String dbName, String tableName, TxnsSnapshot txnsSnapshot)
-        throws TException {
-      return getTxnHandler().getLastCompletedTransactionForTable(dbName, tableName, txnsSnapshot);
-    }
-
-    @Override
     public NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
             throws TException {
       try {

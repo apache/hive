@@ -68,7 +68,6 @@ import javax.jdo.identity.IntIdentity;
 import javax.sql.DataSource;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -80,10 +79,10 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -149,6 +148,7 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
+import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MDelegationToken;
@@ -193,10 +193,7 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
-import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
-import org.apache.thrift.TSerializer;
-import org.apache.thrift.protocol.TJSONProtocol;
 import org.datanucleus.AbstractNucleusContext;
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ClassLoaderResolverImpl;
@@ -1150,7 +1147,7 @@ public class ObjectStore implements RawStore, Configurable {
         if (MetaStoreUtils.isMaterializedViewTable(tbl)) {
           // Add to the invalidation cache
           MaterializationsInvalidationCache.get().createMaterializedView(
-              tbl, tbl.getCreationMetadata().keySet());
+              tbl, tbl.getCreationMetadata().getTablesUsed());
         }
       }
     }
@@ -1236,6 +1233,14 @@ public class ObjectStore implements RawStore, Configurable {
         }
 
         preDropStorageDescriptor(tbl.getSd());
+
+        if (tbl.getCreationMetadata() != null) {
+          // Remove creation metadata
+          MCreationMetadata mcm = tbl.getCreationMetadata();
+          tbl.setCreationMetadata(null);
+          pm.deletePersistent(mcm);
+        }
+
         // then remove the table
         pm.deletePersistentAll(tbl);
       }
@@ -1552,12 +1557,36 @@ public class ObjectStore implements RawStore, Configurable {
         pm.retrieveAll(mtbl.getSd().getCD());
         nmtbl.mcd = mtbl.getSd().getCD();
       }
+      // Retrieve creation metadata if needed
+      if (mtbl != null &&
+          TableType.MATERIALIZED_VIEW.toString().equals(mtbl.getTableType())) {
+        mtbl.setCreationMetadata(getCreationMetadata(db, table));
+      }
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, query);
     }
     nmtbl.mtbl = mtbl;
     return nmtbl;
+  }
+
+  private MCreationMetadata getCreationMetadata(String dbName, String tblName) {
+    boolean commited = false;
+    MCreationMetadata mcm = null;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(
+          MCreationMetadata.class, "tblName == table && dbName == db");
+      query.declareParameters("java.lang.String table, java.lang.String db");
+      query.setUnique(true);
+      mcm = (MCreationMetadata) query.execute(tblName, dbName);
+      pm.retrieve(mcm);
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return mcm;
   }
 
   private MTable getMTable(String db, String table) {
@@ -1885,56 +1914,37 @@ public class ObjectStore implements RawStore, Configurable {
             .getSkewedColValueLocationMaps()), sd.isStoredAsSubDirectories());
   }
 
-  private Map<String, String> convertToMCreationMetadata(
-      Map<String, BasicTxnInfo> m) throws MetaException {
+  private MCreationMetadata convertToMCreationMetadata(
+      CreationMetadata m) throws MetaException {
     if (m == null) {
       return null;
     }
-    Map<String, String> r = new HashMap<>();
-    for (Entry<String, BasicTxnInfo> e : m.entrySet()) {
-      r.put(e.getKey(), serializeBasicTransactionInfo(e.getValue()));
+    Set<MTable> tablesUsed = new HashSet<>();
+    for (String fullyQualifiedName : m.getTablesUsed()) {
+      String[] names =  fullyQualifiedName.split("\\.");
+      tablesUsed.add(getMTable(names[0], names[1], false).mtbl);
     }
-    return r;
+    return new MCreationMetadata(m.getDbName(), m.getTblName(),
+        tablesUsed, m.getValidTxnList());
   }
 
-  private Map<String, BasicTxnInfo> convertToCreationMetadata(
-      Map<String, String> m) throws MetaException {
-    if (m == null) {
+  private CreationMetadata convertToCreationMetadata(
+      MCreationMetadata s) throws MetaException {
+    if (s == null) {
       return null;
     }
-    Map<String, BasicTxnInfo> r = new HashMap<>();
-    for (Entry<String, String> e : m.entrySet()) {
-      r.put(e.getKey(), deserializeBasicTransactionInfo(e.getValue()));
+    Set<String> tablesUsed = new HashSet<>();
+    for (MTable mtbl : s.getTables()) {
+      tablesUsed.add(
+          Warehouse.getQualifiedName(
+              mtbl.getDatabase().getName(), mtbl.getTableName()));
+    }
+    CreationMetadata r = new CreationMetadata(
+        s.getDbName(), s.getTblName(), tablesUsed);
+    if (s.getTxnList() != null) {
+      r.setValidTxnList(s.getTxnList());
     }
     return r;
-  }
-
-  private String serializeBasicTransactionInfo(BasicTxnInfo entry)
-      throws MetaException {
-    if (entry.isIsnull()) {
-      return "";
-    }
-    try {
-      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-      return serializer.toString(entry, "UTF-8");
-    } catch (TException e) {
-      throw new MetaException("Error serializing object " + entry + ": " + e.toString());
-    }
-  }
-
-  private BasicTxnInfo deserializeBasicTransactionInfo(String s)
-      throws MetaException {
-    if (s.equals("")) {
-      return new BasicTxnInfo(true);
-    }
-    try {
-      TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
-      BasicTxnInfo r = new BasicTxnInfo();
-      deserializer.deserialize(r, s, "UTF-8");
-      return r;
-    } catch (TException e) {
-      throw new MetaException("Error deserializing object " + s + ": " + e.toString());
-    }
   }
 
   @Override
@@ -3703,9 +3713,10 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setViewOriginalText(newt.getViewOriginalText());
       oldt.setViewExpandedText(newt.getViewExpandedText());
       oldt.setRewriteEnabled(newt.isRewriteEnabled());
-      registerCreationSignature = !MapUtils.isEmpty(newt.getCreationMetadata());
+      registerCreationSignature = newt.getCreationMetadata() != null;
       if (registerCreationSignature) {
-        oldt.setCreationMetadata(newt.getCreationMetadata());
+        oldt.getCreationMetadata().setTables(newt.getCreationMetadata().getTables());
+        oldt.getCreationMetadata().setTxnList(newt.getCreationMetadata().getTxnList());
       }
 
       // commit the changes
@@ -3718,7 +3729,7 @@ public class ObjectStore implements RawStore, Configurable {
             registerCreationSignature) {
           // Add to the invalidation cache if the creation signature has changed
           MaterializationsInvalidationCache.get().alterMaterializedView(
-              newTable, newTable.getCreationMetadata().keySet());
+              newTable, newTable.getCreationMetadata().getTablesUsed());
         }
       }
     }

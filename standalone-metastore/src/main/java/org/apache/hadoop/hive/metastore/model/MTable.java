@@ -35,7 +35,7 @@ public class MTable {
   private String viewOriginalText;
   private String viewExpandedText;
   private boolean rewriteEnabled;
-  private Map<String, String> creationMetadata;
+  private MCreationMetadata creationMetadata;
   private String tableType;
 
   public MTable() {}
@@ -57,7 +57,7 @@ public class MTable {
   public MTable(String tableName, MDatabase database, MStorageDescriptor sd, String owner,
       int createTime, int lastAccessTime, int retention, List<MFieldSchema> partitionKeys,
       Map<String, String> parameters, String viewOriginalText, String viewExpandedText,
-      boolean rewriteEnabled, Map<String, String> creationMetadata,
+      boolean rewriteEnabled, MCreationMetadata creationMetadata,
       String tableType) {
     this.tableName = tableName;
     this.database = database;
@@ -176,14 +176,14 @@ public class MTable {
   /**
    * @return the metadata information related to a materialized view creation
    */
-  public Map<String, String> getCreationMetadata() {
+  public MCreationMetadata getCreationMetadata() {
     return creationMetadata;
   }
 
   /**
    * @param creationMetadata the metadata information to set
    */
-  public void setCreationMetadata(Map<String, String> creationMetadata) {
+  public void setCreationMetadata(MCreationMetadata creationMetadata) {
     this.creationMetadata = creationMetadata;
   }
 

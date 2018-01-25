@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.*;
 
@@ -113,33 +114,14 @@ public interface TxnStore extends Configurable {
     throws NoSuchTxnException, TxnAbortedException,  MetaException;
 
   /**
-   * Get the last transaction corresponding to given databases and tables.
-   * @return
-   * @throws MetaException
-   */
-  @RetrySemantics.Idempotent
-  public List<BasicTxnInfo> getLastCompletedTransactionForTables(
-      List<String> dbNames, List<String> tableNames, TxnsSnapshot txnsSnapshot)
-          throws MetaException;
-
-  /**
-   * Get the last transaction corresponding to given database and table.
-   * @return
-   * @throws MetaException
-   */
-  @RetrySemantics.Idempotent
-  public BasicTxnInfo getLastCompletedTransactionForTable(
-      String inputDbName, String inputTableName, TxnsSnapshot txnsSnapshot)
-          throws MetaException;
-
-  /**
-   * Get the first transaction corresponding to given database and table after incremental id.
+   * Get the first transaction corresponding to given database and table after transactions
+   * referenced in the transaction snapshot.
    * @return
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
   public BasicTxnInfo getFirstCompletedTransactionForTableAfterCommit(
-      String inputDbName, String inputTableName, long id)
+      String inputDbName, String inputTableName, ValidTxnList txnList)
           throws MetaException;
 
   /**

@@ -172,8 +172,6 @@ public class TestHive extends TestCase {
 
       tbl.setRewriteEnabled(false);
 
-      tbl.setCreationMetadata(new HashMap<String, BasicTxnInfo>());
-
       // create table
       setNullCreateTableGrants();
       try {
@@ -234,8 +232,6 @@ public class TestHive extends TestCase {
       tbl.setStoredAsSubDirectories(false);
 
       tbl.setRewriteEnabled(false);
-
-      tbl.setCreationMetadata(new HashMap<String, BasicTxnInfo>());
 
       setNullCreateTableGrants();
       try {
