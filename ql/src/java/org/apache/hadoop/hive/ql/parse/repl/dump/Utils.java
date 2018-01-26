@@ -176,7 +176,7 @@ public class Utils {
     }
 
     if (replicationSpec.isInReplicationScope()) {
-      boolean isAcidTable = AcidUtils.isAcidTable(tableHandle);
+      boolean isAcidTable = AcidUtils.isTransactionalTable(tableHandle);
       if (isAcidTable) {
         return hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES);
       }
