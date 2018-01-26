@@ -6,7 +6,6 @@ SELECT 'Upgrading MetaStore schema from 2.3.0 to 3.0.0' AS Status from dual;
 @044-HIVE-16997.oracle.sql;
 @045-HIVE-16886.oracle.sql;
 @046-HIVE-17566.oracle.sql;
-@047-HIVE-18202-oracle.sql;
 @048-HIVE-14498.oracle.sql;
 @049-HIVE-18489.oracle.sql;
 

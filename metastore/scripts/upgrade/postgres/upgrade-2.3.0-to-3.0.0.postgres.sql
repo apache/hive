@@ -6,7 +6,6 @@ SELECT 'Upgrading MetaStore schema from 2.3.0 to 3.0.0';
 \i 043-HIVE-16997.postgres.sql;
 \i 044-HIVE-16886.postgres.sql;
 \i 045-HIVE-17566.postgres.sql;
-\i 046-HIVE-18202.postgres.sql;
 \i 047-HIVE-14498.postgres.sql;
 \i 048-HIVE-18489.postgres.sql;
 
