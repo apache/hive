@@ -198,7 +198,6 @@ public class QTestUtil {
   private MiniLlapCluster llapCluster = null;
   private String hadoopVer = null;
   private QTestSetup setup = null;
-  private TezSessionState tezSessionState = null;
   private SparkSession sparkSession = null;
   private boolean isSessionStateStarted = false;
   private static final String javaVersion = getJavaVersion();
@@ -1192,7 +1191,7 @@ public class QTestUtil {
     boolean canReuseSession = !qNoSessionReuseQuerySet.contains(tname);
     if (oldSs != null && canReuseSession && clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
       // Copy the tezSessionState from the old CliSessionState.
-      tezSessionState = oldSs.getTezSession();
+      TezSessionState tezSessionState = oldSs.getTezSession();
       oldSs.setTezSession(null);
       ss.setTezSession(tezSessionState);
       oldSs.close();
@@ -1207,6 +1206,9 @@ public class QTestUtil {
 
     if (oldSs != null && oldSs.out != null && oldSs.out != System.out) {
       oldSs.out.close();
+    }
+    if (oldSs != null) {
+      oldSs.close();
     }
     SessionState.start(ss);
 
@@ -1237,7 +1239,7 @@ public class QTestUtil {
     SessionState oldSs = SessionState.get();
     if (oldSs != null && canReuseSession && clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
       // Copy the tezSessionState from the old CliSessionState.
-      tezSessionState = oldSs.getTezSession();
+      TezSessionState tezSessionState = oldSs.getTezSession();
       ss.setTezSession(tezSessionState);
       oldSs.setTezSession(null);
       oldSs.close();
@@ -1251,6 +1253,9 @@ public class QTestUtil {
     }
     if (oldSs != null && oldSs.out != null && oldSs.out != System.out) {
       oldSs.out.close();
+    }
+    if (oldSs != null) {
+      oldSs.close();
     }
     SessionState.start(ss);
 

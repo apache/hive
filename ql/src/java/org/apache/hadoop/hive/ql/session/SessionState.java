@@ -561,7 +561,9 @@ public class SessionState {
 
   public static void endStart(SessionState startSs)
       throws CancellationException, InterruptedException {
-    if (startSs.tezSessionState == null) return;
+    if (startSs.tezSessionState == null) {
+      return;
+    }
     startSs.tezSessionState.endOpen();
   }
 
@@ -617,7 +619,9 @@ public class SessionState {
     }
 
     String engine = HiveConf.getVar(startSs.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
-    if (!engine.equals("tez") || startSs.isHiveServerQuery) return;
+    if (!engine.equals("tez") || startSs.isHiveServerQuery) {
+      return;
+    }
 
     try {
       if (startSs.tezSessionState == null) {
@@ -857,7 +861,7 @@ public class SessionState {
       fs.cancelDeleteOnExit(path);
       fs.delete(path, true);
       LOG.info("Deleted directory: {} on fs with scheme {}", path, fs.getScheme());
-    } catch (IOException e) {
+    } catch (IllegalArgumentException | UnsupportedOperationException | IOException e) {
       LOG.error("Failed to delete path at {} on fs with scheme {}", path,
           (fs == null ? "Unknown-null" : fs.getScheme()), e);
     }
@@ -1275,7 +1279,9 @@ public class SessionState {
    */
   public void loadAuxJars() throws IOException {
     String[] jarPaths = StringUtils.split(sessionConf.getAuxJars(), ',');
-    if (ArrayUtils.isEmpty(jarPaths)) return;
+    if (ArrayUtils.isEmpty(jarPaths)) {
+      return;
+    }
 
     URLClassLoader currentCLoader =
         (URLClassLoader) SessionState.get().getConf().getClassLoader();
@@ -1708,7 +1714,9 @@ public class SessionState {
     }
 
     registry.clear();
-    if (txnMgr != null) txnMgr.closeTxnManager();
+    if (txnMgr != null) {
+      txnMgr.closeTxnManager();
+    }
     JavaUtils.closeClassLoadersTo(sessionConf.getClassLoader(), parentLoader);
     File resourceDir =
         new File(getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
@@ -1750,12 +1758,16 @@ public class SessionState {
       boolean isLocalMetastore =
           HiveConfUtil.isEmbeddedMetaStore(sessionConf.getVar(HiveConf.ConfVars.METASTOREURIS));
       if (isLocalMetastore) {
-        if (sessionConf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL)
-            .equals(ObjectStore.class.getName()) ||
-            sessionConf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL)
-                .equals(CachedStore.class.getName()) && sessionConf
-                .getVar(ConfVars.METASTORE_CACHED_RAW_STORE_IMPL)
-                .equals(ObjectStore.class.getName())) {
+
+        String rawStoreImpl = sessionConf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL);
+        String realStoreImpl;
+        if (rawStoreImpl.equals(CachedStore.class.getName())) {
+          realStoreImpl = sessionConf.getVar(ConfVars.METASTORE_CACHED_RAW_STORE_IMPL);
+        } else {
+          realStoreImpl = rawStoreImpl;
+        }
+        Class<?> clazz = Class.forName(realStoreImpl);
+        if (ObjectStore.class.isAssignableFrom(clazz)) {
           ObjectStore.unCacheDataNucleusClassLoaders();
         }
       }
@@ -1823,7 +1835,9 @@ public class SessionState {
 
   /** Called from TezTask to attach a TezSession to use to the threadlocal. Ugly pattern... */
   public void setTezSession(TezSessionState session) {
-    if (tezSessionState == session) return; // The same object.
+    if (tezSessionState == session) {
+      return; // The same object.
+    }
     if (tezSessionState != null) {
       tezSessionState.markFree();
       tezSessionState.setKillQuery(null);
