@@ -6,7 +6,6 @@ SELECT 'Upgrading MetaStore schema from 2.3.0 to 3.0.0' AS MESSAGE;
 :r 029-HIVE-16997.mssql.sql
 :r 030-HIVE-16886.mssql.sql
 :r 031-HIVE-17566.mssql.sql
-:r 032-HIVE-18202.mssql.sql
 :r 033-HIVE-14498.mssql.sql
 :r 034-HIVE-18489.mssql.sql
 

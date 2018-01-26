@@ -5,7 +5,6 @@ RUN '043-HIVE-16922.derby.sql';
 RUN '044-HIVE-16997.derby.sql';
 RUN '045-HIVE-16886.derby.sql';
 RUN '046-HIVE-17566.derby.sql';
-RUN '047-HIVE-18202.derby.sql';
 RUN '048-HIVE-14498.derby.sql';
 RUN '049-HIVE-18489.derby.sql';
 
