@@ -3684,12 +3684,12 @@ public final class Utilities {
 
   /**
    * Returns true if a plan is both configured for vectorized execution
-   * and the node is vectorized and the Input File Format is marked VectorizedInputFileFormat.
+   * and the node is vectorized.
    *
    * The plan may be configured for vectorization
    * but vectorization disallowed eg. for FetchOperator execution.
    */
-  public static boolean getUseVectorizedInputFileFormat(Configuration conf) {
+  public static boolean getIsVectorized(Configuration conf) {
     if (conf.get(VECTOR_MODE) != null) {
       // this code path is necessary, because with HS2 and client
       // side split generation we end up not finding the map work.
@@ -3697,13 +3697,12 @@ public final class Utilities {
       // generation is multi-threaded - HS2 plan cache uses thread
       // locals).
       return
-          conf.getBoolean(VECTOR_MODE, false) &&
-          conf.getBoolean(USE_VECTORIZED_INPUT_FILE_FORMAT, false);
+          conf.getBoolean(VECTOR_MODE, false);
     } else {
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) &&
         Utilities.getPlanPath(conf) != null) {
         MapWork mapWork = Utilities.getMapWork(conf);
-        return (mapWork.getVectorMode() && mapWork.getUseVectorizedInputFileFormat());
+        return mapWork.getVectorMode();
       } else {
         return false;
       }
@@ -3711,10 +3710,9 @@ public final class Utilities {
   }
 
 
-  public static boolean getUseVectorizedInputFileFormat(Configuration conf, MapWork mapWork) {
+  public static boolean getIsVectorized(Configuration conf, MapWork mapWork) {
     return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) &&
-        mapWork.getVectorMode() &&
-        mapWork.getUseVectorizedInputFileFormat();
+        mapWork.getVectorMode();
   }
 
   /**

@@ -149,6 +149,7 @@ public class MapWork extends BaseWork {
   private VectorizerReason notEnabledInputFileFormatReason;
 
   private Set<String> vectorizationInputFileFormatClassNameSet;
+  private List<VectorPartitionDesc> vectorPartitionDescList;
   private List<String> vectorizationEnabledConditionsMet;
   private List<String> vectorizationEnabledConditionsNotMet;
 
@@ -268,7 +269,7 @@ public class MapWork extends BaseWork {
     boolean canWrapAny = false, doCheckIfs = false;
     if (isLlapOn) {
       // We can wrap inputs if the execution is vectorized, or if we use a wrapper.
-      canWrapAny = Utilities.getUseVectorizedInputFileFormat(conf, this);
+      canWrapAny = Utilities.getIsVectorized(conf, this);
       // ExecDriver has no plan path, so we cannot derive VRB stuff for the wrapper.
       if (!canWrapAny && !isExecDriver) {
         canWrapAny = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED);
@@ -792,6 +793,14 @@ public class MapWork extends BaseWork {
     return vectorizationInputFileFormatClassNameSet;
   }
 
+  public void setVectorPartitionDescList(List<VectorPartitionDesc> vectorPartitionDescList) {
+    this.vectorPartitionDescList = vectorPartitionDescList;
+  }
+
+  public List<VectorPartitionDesc> getVectorPartitionDescList() {
+    return vectorPartitionDescList;
+  }
+
   public void setVectorizationEnabledConditionsMet(ArrayList<String> vectorizationEnabledConditionsMet) {
     this.vectorizationEnabledConditionsMet = VectorizationCondition.addBooleans(vectorizationEnabledConditionsMet, true);
   }
@@ -821,6 +830,14 @@ public class MapWork extends BaseWork {
     public Set<String> inputFileFormats() {
       return mapWork.getVectorizationInputFileFormatClassNameSet();
     }
+
+    /*
+    // Too many Q out file changes for the moment...
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "vectorPartitionDescs", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String vectorPartitionDescs() {
+      return mapWork.getVectorPartitionDescList().toString();
+    }
+    */
 
     @Explain(vectorization = Vectorization.SUMMARY, displayName = "inputFormatFeatureSupport", explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public String getInputFormatSupport() {
