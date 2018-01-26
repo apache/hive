@@ -227,7 +227,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
       int outputColumn = outputProjectionColumnMap[i];
       vOutContext.addProjectionColumn(columnName, outputColumn);
     }
-    vOutContext.setInitialTypeInfos(Arrays.asList(outputTypeInfos));
   }
 
   /*
