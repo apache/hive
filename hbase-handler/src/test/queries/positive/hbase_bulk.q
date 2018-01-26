@@ -9,7 +9,7 @@ create table hbsort(key string, val string, val2 string)
 stored as
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.hbase.HiveHFileOutputFormat'
-TBLPROPERTIES ('hfile.family.path' = '/tmp/hbsort/cf','hbase.mapreduce.hfileoutputformat.table.name'='hbsort');
+TBLPROPERTIES ('hfile.family.path' = '/tmp/hbsort/cf');
 
 -- this is a dummy table used for controlling how the input file
 -- for TotalOrderPartitioner is created
