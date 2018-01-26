@@ -3226,7 +3226,11 @@ public class TestReplicationScenarios {
     // Create table
     run("CREATE TABLE " + dbName + ".acid_table (key int, value int) PARTITIONED BY (load_date date) " +
         "CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+    run("CREATE TABLE " + dbName + ".mm_table (key int, value int) PARTITIONED BY (load_date date) " +
+        "CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true'," +
+        " 'transactional_properties'='insert_only')", driver);
     verifyIfTableExist(dbName, "acid_table", metaStoreClient);
+    verifyIfTableExist(dbName, "mm_table", metaStoreClient);
 
     // Bootstrap test
     advanceDumpDir();
@@ -3236,6 +3240,7 @@ public class TestReplicationScenarios {
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
     run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
     verifyIfTableNotExist(dbName + "_dupe", "acid_table", metaStoreClientMirror);
+    verifyIfTableNotExist(dbName + "_dupe", "mm_table", metaStoreClientMirror);
 
     // Test alter table
     run("ALTER TABLE " + dbName + ".acid_table RENAME TO " + dbName + ".acid_table_rename", driver);
@@ -3253,7 +3258,11 @@ public class TestReplicationScenarios {
     // Create another table for incremental repl verification
     run("CREATE TABLE " + dbName + ".acid_table_incremental (key int, value int) PARTITIONED BY (load_date date) " +
         "CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+    run("CREATE TABLE " + dbName + ".mm_table_incremental (key int, value int) PARTITIONED BY (load_date date) " +
+        "CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true'," +
+        " 'transactional_properties'='insert_only')", driver);
     verifyIfTableExist(dbName, "acid_table_incremental", metaStoreClient);
+    verifyIfTableExist(dbName, "mm_table_incremental", metaStoreClient);
 
     // Perform REPL-DUMP/LOAD
     advanceDumpDir();
@@ -3265,6 +3274,7 @@ public class TestReplicationScenarios {
     printOutput(driverMirror);
     run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'", driverMirror);
     verifyIfTableNotExist(dbName + "_dupe", "acid_table_incremental", metaStoreClientMirror);
+    verifyIfTableNotExist(dbName + "_dupe", "mm_table_incremental", metaStoreClientMirror);
 
     // Test adding a constraint
     run("ALTER TABLE " + dbName + ".acid_table_incremental ADD CONSTRAINT key_pk PRIMARY KEY (key) DISABLE NOVALIDATE", driver);
