@@ -71,7 +71,7 @@ public class HBaseSerDe extends AbstractSerDe {
   public static final Logger LOG = LoggerFactory.getLogger(HBaseSerDe.class);
 
   public static final String HBASE_COLUMNS_MAPPING = "hbase.columns.mapping";
-  public static final String HBASE_TABLE_NAME = "hbase.mapreduce.hfileoutputformat.table.name";
+  public static final String HBASE_TABLE_NAME = "hbase.table.name";
   public static final String HBASE_TABLE_DEFAULT_STORAGE_TYPE = "hbase.table.default.storage.type";
   public static final String HBASE_KEY_COL = ":key";
   public static final String HBASE_TIMESTAMP_COL = ":timestamp";

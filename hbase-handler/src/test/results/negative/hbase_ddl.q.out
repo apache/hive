@@ -5,14 +5,14 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name" = "hbase_table_0")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table_1
 POSTHOOK: query: CREATE TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name" = "hbase_table_0")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table_1
